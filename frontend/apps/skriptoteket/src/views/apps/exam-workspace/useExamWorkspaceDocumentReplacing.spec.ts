@@ -20,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -89,7 +90,7 @@ async function openHolding(): Promise<ReturnType<typeof useExamWorkspaceEditing>
   const baseline = exam();
   fakeServer(api, baseline);
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: async () => ({
           holder_tab_id: "tab-A",

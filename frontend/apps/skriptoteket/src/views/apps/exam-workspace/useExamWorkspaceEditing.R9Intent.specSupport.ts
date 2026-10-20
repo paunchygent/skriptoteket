@@ -21,6 +21,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -85,7 +86,7 @@ export async function openIntentSession(
 ): Promise<{ editing: IntentEditing; server: IntentServer }> {
   const server = fakeServer(api, exam());
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),

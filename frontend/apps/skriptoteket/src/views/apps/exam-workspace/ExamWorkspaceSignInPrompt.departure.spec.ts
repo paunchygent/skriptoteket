@@ -32,6 +32,7 @@ import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftS
 import { guestDocumentResponse, newGuestDraft } from "./examWorkspaceGuestDraft";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import { useExamWorkspaceGuestSignIn } from "./useExamWorkspaceGuestSignIn";
 import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
@@ -72,7 +73,7 @@ async function openWith(
   let signIn!: ReturnType<typeof useExamWorkspaceGuestSignIn>;
   const host = defineComponent({
     setup() {
-      editing = useExamWorkspaceEditing(guest.store);
+      editing = useExamWorkspaceEditing(guest.store, nullRouteProjection());
       signIn = useExamWorkspaceGuestSignIn({
         history: editing.history,
         store: guest.store,
@@ -109,11 +110,7 @@ async function openWith(
     },
   });
   const wrapper = mount(host, { attachTo: document.body, global: { plugins: [createPinia()] } });
-  const token = await editing.noteRouteRequest();
-  if (token === null) {
-    throw new Error("expected the route request to settle");
-  }
-  expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
+  expect(await editing.requestRoute(original.lineage_id)).toBe("installed");
   await flushPromises();
   return { editing, wrapper };
 }

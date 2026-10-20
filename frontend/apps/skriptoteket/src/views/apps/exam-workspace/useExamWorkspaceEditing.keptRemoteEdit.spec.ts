@@ -27,6 +27,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -103,7 +104,7 @@ it.each([false, true])(
     let offline = false;
     // A native ApiError is needed for the lease driver to classify foreign ownership.
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: () => {
             if (holder !== "A") {

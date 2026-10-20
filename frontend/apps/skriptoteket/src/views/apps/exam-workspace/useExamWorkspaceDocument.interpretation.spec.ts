@@ -3,8 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
-import { currentDocument, currentItem, openMatchingDocument, openMatchingDocumentWithFence, savedResponse } from "./useExamWorkspaceDocument.specSupport";
-import { createSyncFence } from "./examWorkspaceSyncFence";
+import { currentDocument, currentItem, openMatchingDocumentWithFence, savedResponse, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
@@ -31,14 +30,14 @@ function interpretedItem() {
 
 describe("document conversion-key actions", () => {
   it("undo makes the copy dirty and export-blocked, then saves the empty key and retained facit", async () => {
-    const state = await openMatchingDocument(api.getExamWorkspaceDocument, interpretedItem());
+    const { fence, state } = await openMatchingDocumentWithFence(api.getExamWorkspaceDocument, interpretedItem());
     state.undoItemInterpretation("item_001");
     expect(state.isDirty.value).toBe(true);
     expect(examWorkspaceItemReadiness(currentItem(state))).toContain("missing_answer_key");
     expect(currentItem(state).facit_text).toBe("Stockholm och Oslo");
     const copy = currentDocument(state);
     api.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
-    expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
+    expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
     const payload = api.copyExamWorkspaceDocument.mock.calls[0]?.[2];
     expect(payload.items[0].answer_key.origin).toBe("absent");
     expect(payload.items[0].gaps.every((gap: { automatic_values: string[] }) => gap.automatic_values.length === 0)).toBe(true);
@@ -52,7 +51,7 @@ describe("document conversion-key actions", () => {
       const source = interpretedItem();
       source.answer_key.origin = origin;
       const readiness = examWorkspaceItemReadiness(source);
-      const state = await openMatchingDocument(api.getExamWorkspaceDocument, source);
+      const { fence, state } = await openMatchingDocumentWithFence(api.getExamWorkspaceDocument, source);
       state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
       expect(currentItem(state).gaps[0]?.automatic_values).toEqual([]);
       expect(currentItem(state).answer_key.origin).toBe(origin);
@@ -66,7 +65,7 @@ describe("document conversion-key actions", () => {
       expect(state.isDirty.value).toBe(true);
       const copy = currentDocument(state);
       api.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
-      expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
+      expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
       const payload = api.copyExamWorkspaceDocument.mock.calls[0]?.[2];
       expect(payload.items[0].answer_key.origin).toBe(origin);
       expect(payload.items[0].gaps).toEqual(currentItem(state).gaps);

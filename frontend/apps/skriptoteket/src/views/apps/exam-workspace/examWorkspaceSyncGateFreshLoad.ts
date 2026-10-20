@@ -32,7 +32,7 @@ import type {
 } from "../../../api/examWorkspace";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
-import type { ExamWorkspaceSyncGateKeptEdit } from "./useExamWorkspaceSyncGate";
+import type { ExamWorkspaceSyncGateKeptEdit } from "./examWorkspaceSyncGateKept";
 import type { ExamWorkspaceSyncGatePhase } from "./useExamWorkspaceSyncGate";
 import type { ExamWorkspaceSyncGateTimer } from "./examWorkspaceSyncGateTimer";
 

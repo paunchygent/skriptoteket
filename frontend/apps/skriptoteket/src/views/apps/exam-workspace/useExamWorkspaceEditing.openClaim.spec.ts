@@ -26,6 +26,7 @@ import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceEditLeaseResponse } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -154,7 +155,7 @@ describe("the gate waits for the open claim", () => {
     fakeServer(api, baseline);
     const lease = manualLeaseServer();
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, { server: lease.server, tabId: "tab-A" }),
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: lease.server, tabId: "tab-A" }),
     );
     const readonlySeen: boolean[] = [];
     watch(
@@ -165,11 +166,7 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const token = await editing.noteRouteRequest();
-    if (token === null) {
-      throw new Error("expected the route request to settle");
-    }
-    const opening = editing.openDocument(LINEAGE, token);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
     expect(lease.pending.map((claim) => claim.lineageId)).toEqual([LINEAGE]);
 
@@ -195,7 +192,7 @@ describe("the gate waits for the open claim", () => {
     const baseline = exam();
     fakeServer(api, baseline);
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: () => Promise.reject(leaseHeldError()),
           release: (_lineageId: string, tabId: string) => Promise.resolve(heldResponse(tabId)),
@@ -214,11 +211,7 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const token = await editing.noteRouteRequest();
-    if (token === null) {
-      throw new Error("expected the route request to settle");
-    }
-    const opening = editing.openDocument(LINEAGE, token);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
 
     resolveStepReads(pendingSteps);
@@ -236,7 +229,7 @@ describe("the gate waits for the open claim", () => {
     fakeServer(api, baseline);
     const lease = manualLeaseServer();
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, { server: lease.server, tabId: "tab-A" }),
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: lease.server, tabId: "tab-A" }),
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
@@ -258,11 +251,7 @@ describe("the gate waits for the open claim", () => {
     api.getExamWorkspaceDocument.mockClear();
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const token = await editing.noteRouteRequest();
-    if (token === null) {
-      throw new Error("expected the route request to settle");
-    }
-    const openingB = editing.openDocument(EXAM_B, token);
+    const openingB = editing.requestRoute(EXAM_B);
     await flushPromises();
     expect(lease.releases).toEqual([{ lineageId: LINEAGE, tabId: "tab-A" }]);
 

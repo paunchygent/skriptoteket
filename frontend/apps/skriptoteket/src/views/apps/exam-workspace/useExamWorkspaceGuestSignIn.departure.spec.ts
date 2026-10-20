@@ -33,6 +33,7 @@ import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftS
 import type { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
 import { createGuestExamWorkspaceStore as createStore } from "./examWorkspaceGuestStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import { useExamWorkspaceGuestSignIn } from "./useExamWorkspaceGuestSignIn";
 
 type Guest = ReturnType<typeof createGuestExamWorkspaceStore>;
@@ -57,7 +58,7 @@ function mountWorkspace(guest: Guest) {
   let signIn!: ReturnType<typeof useExamWorkspaceGuestSignIn>;
   const component = defineComponent({
     setup() {
-      editing = useExamWorkspaceEditing(guest.store);
+      editing = useExamWorkspaceEditing(guest.store, nullRouteProjection());
       signIn = useExamWorkspaceGuestSignIn({
         history: editing.history,
         store: guest.store,
@@ -98,11 +99,7 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      const token = await editing.noteRouteRequest();
-      if (token === null) {
-        throw new Error("expected the route request to settle");
-      }
-      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
+      expect(await editing.requestRoute(original.lineage_id)).toBe("installed");
       await flushPromises();
       editing.setTitle("snapshot A");
 
@@ -132,11 +129,7 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port: backing }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      const token = await editing.noteRouteRequest();
-      if (token === null) {
-        throw new Error("expected the route request to settle");
-      }
-      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
+      expect(await editing.requestRoute(original.lineage_id)).toBe("installed");
       await flushPromises();
       editing.setTitle("one");
       await editing.history.flush();
@@ -191,11 +184,7 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(port);
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      const token = await editing.noteRouteRequest();
-      if (token === null) {
-        throw new Error("expected the route request to settle");
-      }
-      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
+      expect(await editing.requestRoute(original.lineage_id)).toBe("installed");
       await flushPromises();
       editing.setTitle("unsaved A");
 
@@ -219,11 +208,7 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(port);
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      const token = await editing.noteRouteRequest();
-      if (token === null) {
-        throw new Error("expected the route request to settle");
-      }
-      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
+      expect(await editing.requestRoute(original.lineage_id)).toBe("installed");
       await flushPromises();
       editing.setTitle("unsaved A");
 

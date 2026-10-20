@@ -23,13 +23,14 @@
  *     by `ExamWorkspaceView`.
  */
 
-import { computed, onScopeDispose, ref, watch } from "vue";
+import { computed, onScopeDispose, ref } from "vue";
 
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useToast } from "../../../composables/useToast";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import { OPEN_FAILURE_COPY } from "./useExamWorkspaceDocumentOpen";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
   useExamWorkspaceEditLease,
@@ -38,10 +39,11 @@ import {
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import type { FenceToken } from "./examWorkspaceSyncFence";
+import type { ExamWorkspaceRouteProjection } from "./examWorkspaceRouteProjection";
 import { createSyncGateTimer } from "./examWorkspaceSyncGateTimer";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
-import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
+import { RELOAD_FAILURE_COPY, SAVE_AS_FAILURE_COPY } from "./useExamWorkspaceSave";
 
 /** The lease seams specs override; production uses the transport and the browser slot. */
 export type ExamWorkspaceEditingLeaseOverrides = Partial<
@@ -51,7 +53,11 @@ export type ExamWorkspaceEditingLeaseOverrides = Partial<
   >
 >;
 
-export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamWorkspaceEditingLeaseOverrides) {
+export function useExamWorkspaceEditing(
+  store: ExamWorkspaceStore,
+  projection: ExamWorkspaceRouteProjection,
+  lease?: ExamWorkspaceEditingLeaseOverrides,
+) {
   const toast = useToast();
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
   // The selection composable is built by the view after this session; it registers
@@ -81,17 +87,23 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   const document = useExamWorkspaceDocument({
     getFence: () => requireGate().fence,
     isReadOnly: () => requireGate().editingLocked.value,
+    noteInstallingCursor: (lineageId, cursor) => {
+      gateCursor = { cursor, lineage: lineageId };
+    },
     onEdit: (structural, before) => noteEdit(structural, before),
-    requestFreshLoad: () => requireGate().reloadFresh(),
     store,
+    submitRoute: (lineageId) => requireGate().submitRoute(lineageId),
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
 
   /**
    * A server command stored a new step: its response already installed the
-   * fresh document, so the gate reads only the step list. An initial open of
-   * another lineage leaves this to the lineage watcher, which opens the exam
-   * in the gate. A retired token installs nothing and reports nothing back.
+   * fresh document, so the gate reads only the step list. A response for
+   * another lineage adopts it explicitly like a selected opening: the gate
+   * opens the exam with a step-list load and the lease claims it, retiring
+   * the previous generation first. Coordinator selections never pass through
+   * here; they install through the fenced primitive instead. A retired token
+   * installs nothing and reports nothing back.
    */
   function applyCommandResponse(token: FenceToken, response: ExamWorkspaceDocumentResponse): void {
     const current = requireGate();
@@ -105,7 +117,11 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     document.applyCommandResponse(token, response);
     if (!changed) {
       current.foreignCursor(true);
+      return;
     }
+    gateCursor = null;
+    current.openExam(response.summary.lineage_id, true);
+    leaseHolder.session?.openLineage(response.summary.lineage_id);
   }
 
   const history = useExamWorkspaceHistory({
@@ -176,8 +192,29 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
 
   gate = useExamWorkspaceSyncGate({
     abandonAttempt: () => history.abandonAttempt(),
+    beginCopy: (sourceLineageId, name) => document.beginCopy(sourceLineageId, name),
+    claimSelectedLease: (nextLineageId) => {
+      leaseHolder.session?.openLineage(nextLineageId);
+    },
     confirmedCopy: () => history.confirmedCopy(),
     desiredCopy: () => history.desiredCopy(),
+    hasActiveStore: () => history.storing.value,
+    hasUnconfirmed: () => history.hasUnconfirmed.value,
+    installedSource: () => document.summary.value?.lineage_id ?? null,
+    installReplacementDocument: (token, response) => {
+      // The coordinator's selected install carries the gate's own cursor: the
+      // history watcher must consume it, not report it back as foreign (which
+      // would retire the selection's still-current generation).
+      gateCursor = { cursor: response.history_cursor, lineage: response.summary.lineage_id };
+      document.installReplacementDocument(token, response);
+    },
+    isVisibleDirty: () => document.isDirty.value,
+    notifyCopyFailed: () => toast.failure(SAVE_AS_FAILURE_COPY),
+    notifyRouteFailed: () => toast.failure(OPEN_FAILURE_COPY),
+    openRouteTarget: (nextLineageId, token) => document.openDocument(nextLineageId, token),
+    projectAddress: (nextLineageId) => projection.project(nextLineageId),
+    releaseCopyBusy: () => document.releaseCopyBusy(),
+    waitForRouterIdle: () => projection.waitForIdle(),
     isLeaseHeld: () => leaseHolder.session !== null && !leaseHolder.session.readOnly.value,
     isOpenClaimPending: () => leaseHolder.session?.isOpenClaimPending() ?? false,
     publishedPieces: () => history.publishedPieces(),
@@ -229,18 +266,6 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
   leaseHolder.session = leaseSession;
 
-  watch(lineageId, (next) => {
-    if (next === null) {
-      leaseHolder.session?.openLineage(null);
-      return;
-    }
-    // A lineage change retires the generation before the open claim begins,
-    // so the claim's token is current.
-    gateCursor = null;
-    requireGate().openExam(next, true);
-    leaseHolder.session?.openLineage(next);
-  }, { immediate: true });
-
   onScopeDispose(() => {
     requireGate().dispose();
   });
@@ -254,15 +279,11 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     return await history.flush(false);
   }
 
-  /** Spara som: store the pending edit, then copy the working exam under `name`. */
+  /** Spara som: register the copy intent with the coordinator before its first
+   * await, sharing the source barrier; the coordinator admits the copy result
+   * only while its intent is still desired and its token is current. */
   async function saveAs(name: string) {
-    const fence = requireGate().fence;
-    const token = fence.begin();
-    const stored = await history.flush(false);
-    if (!stored || !fence.isCurrent(token)) {
-      return "failed";
-    }
-    return await document.saveDocumentAs(name, token);
+    return requireGate().submitSaveAs(name);
   }
 
   /**
@@ -300,9 +321,11 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     registerSelectParent: (select: (parentId: string) => void) => {
       selectParent = select;
     },
-    /** A route request settles the latest edit and retires; the address opens under the returned token. */
-    noteRouteRequest: () => requireGate().openRequested(),
-    /** The route is back at the open exam while another open was pending: read it fresh. */
-    reloadOpenExam: () => requireGate().reloadFresh(),
+    /** Submit a route-open intent to the gate-owned replacement coordinator. */
+    requestRoute: (lineageId: string) => requireGate().submitRoute(lineageId),
+    /** The address the coordinator stands behind: its desired target, else its source. */
+    currentRouteAddress: () => requireGate().currentAddress(),
+    /** The shared router adapter: observed by the address, published only by the coordinator. */
+    routeProjection: projection,
   };
 }

@@ -19,6 +19,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -75,7 +76,7 @@ it("R9Intent row 8: the old store ack delivered after recovery changes nothing",
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),

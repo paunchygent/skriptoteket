@@ -30,6 +30,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -124,7 +125,7 @@ it("R9Intent row 4 (control): recovery with no owned piece installs fresh cohere
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),
@@ -163,7 +164,7 @@ it("R9Intent row 5: an owned patch equal to fresh still sends a confirmation sto
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),
@@ -224,7 +225,7 @@ it("R9Intent row 6 (control): an older snapshot ack keeps newer typing pending a
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),
@@ -284,7 +285,7 @@ it("R9Intent row 7 (control): TK2 normalisation plus a second refusal keeps remo
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),

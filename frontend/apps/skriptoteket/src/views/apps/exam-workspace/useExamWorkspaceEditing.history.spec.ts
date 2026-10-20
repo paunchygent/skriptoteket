@@ -170,11 +170,7 @@ describe("the edit lease on a 409 (K8)", () => {
           releaseOpen = resolve;
         }),
     );
-    const token = await editing.noteRouteRequest();
-    if (token === null) {
-      throw new Error("expected the route request to settle");
-    }
-    const opening = editing.openDocument(LINEAGE, token);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
@@ -188,7 +184,8 @@ describe("the edit lease on a 409 (K8)", () => {
     releaseOpen(response(exam("Opened"), "cursor-open"));
     await opening;
     await reloading;
-    // The stale reload hands over to the gate, whose fresh read installs after.
+    // The reload still owns its captured exam after the operation, so its own
+    // fresh read installs after.
     await flushPromises();
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");

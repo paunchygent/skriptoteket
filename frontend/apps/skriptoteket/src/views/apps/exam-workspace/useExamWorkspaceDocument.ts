@@ -49,6 +49,7 @@ import { useExamWorkspaceDocumentOpen } from "./useExamWorkspaceDocumentOpen";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
 import { RELOAD_FAILURE_COPY, useExamWorkspaceSave } from "./useExamWorkspaceSave";
@@ -80,11 +81,17 @@ export type ExamWorkspaceDocumentOptions = {
   /** The sync gate's generation owner; every install carries its token. */
   getFence?: () => SyncFence;
   /**
-   * The gate's fresh reload for a reload whose generation retired while it
-   * waited and whose exam is still the open one. Absent in specs without a
-   * gate, whose fence never retires mid-wait.
+   * Submit a route-open intent to the gate-owned replacement coordinator;
+   * reports the routed outcome. Drawer opens, imports and every other
+   * document-replacing entry share this entrance with the address.
    */
-  requestFreshLoad?: () => void;
+  submitRoute: (lineageId: string) => Promise<ExamWorkspaceRouteOpenOutcome>;
+  /**
+   * Record an installed cursor as the gate's own before the open primitive
+   * installs it, so the history watcher consumes it instead of retiring the
+   * selection's still-current generation as foreign.
+   */
+  noteInstallingCursor: (lineageId: string, cursor: string) => void;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
@@ -151,6 +158,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     invalidateCopy: () => keying.invalidateCopy(),
     isBlocked: () => isOtherOperationBusy.value,
     isCurrent,
+    noteInstallingCursor: (lineageId, cursor) => options.noteInstallingCursor(lineageId, cursor),
     selectedItemId,
     store,
   });
@@ -168,15 +176,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     isEditingConversion,
     isImporting,
     retryConversionStatus,
-    syncAfterConflict,
   } = useExamWorkspaceConversion(
     () => isBusy.value,
     {
       applyResponse,
       beginDocumentRead,
-      beforeFirstRevision: () => {
-        selectedItemId.value = null;
-      },
       getFence: () => resolveFence(),
       isCurrent,
       isDirty,
@@ -186,15 +190,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       workspaceDocument,
       store,
     },
-    (lineageId) => openDocument(lineageId, resolveFence().begin()).then((outcome) => outcome === "installed"),
+    (lineageId) => options.submitRoute(lineageId),
   );
   adoptConversionHolder = adoptConversion;
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
   /** A save, rename, retry, import or conversion holds the document; an open read is not one of them. */
+  const copyBusy = ref(false);
   const isOtherOperationBusy = computed(
-    () => operationBusy.value || isImporting.value || (isConverting.value && !isEditingConversion.value),
+    () =>
+      operationBusy.value ||
+      copyBusy.value ||
+      isImporting.value ||
+      (isConverting.value && !isEditingConversion.value),
   );
   const isOperationBusy = computed(() => isOtherOperationBusy.value || isOpenReading.value);
   /** An undo, redo or server command is reading the document that replaces the copy. */
@@ -223,7 +232,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /**
    * Read the exam again, also the conflict recovery of undo and the server
    * commands. A 409 during an operation waits for it to end; a retired
-   * answer installs nothing.
+   * answer installs nothing. The initiating context must still own the
+   * install: when another exam replaced the captured one while this reload
+   * waited or read, the reload drops instead of seizing the newer target.
    */
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
@@ -241,12 +252,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       });
     }
     if (!fence.isCurrent(token)) {
-      // The wait outlived the generation: when the captured exam is still
-      // the open one, its install may hold an older copy, so the gate reads
-      // it fresh. Another exam in front drops the reload.
-      if (summary.value?.lineage_id === lineageId) {
-        options.requestFreshLoad?.();
-      }
+      // The wait outlived the generation: no independent handoff may seize a
+      // newer target, so the retired reload drops without installing anything.
+      return;
+    }
+    if (summary.value?.lineage_id !== lineageId) {
       return;
     }
     operationBusy.value = true;
@@ -256,6 +266,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
         await store.shared.getExamWorkspaceDocument(lineageId),
       );
       if (!fence.isCurrent(token)) {
+        return;
+      }
+      if (summary.value?.lineage_id !== lineageId) {
         return;
       }
       applyResponse(token, response);
@@ -353,19 +366,29 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
   replayHeldHolder = () => replacingScope.replayHeld();
 
-  const { saveDocumentAs } = useExamWorkspaceSave({
-    applyResponse,
-    arrivals,
-    beginDocumentRead,
+  const { beginCopy } = useExamWorkspaceSave({
+    copyBusy,
     isBusy,
-    isCurrent,
-    keying,
-    operationBusy,
     summary,
-    syncAfterConflict,
-    workspaceDocument,
     store,
+    workspaceDocument,
   });
+
+  /**
+   * Install a replacement response for the selection's token: the selected
+   * question clears and the fresh copy lands with its keying dropped. The
+   * coordinator admits this only while its intent is still desired and its
+   * token is current; the read itself decides nothing about address or
+   * recovery.
+   */
+  function installReplacementDocument(
+    token: FenceToken,
+    response: ExamWorkspaceDocumentResponse,
+  ): void {
+    selectedItemId.value = null;
+    applyResponse(token, response);
+    keying.invalidateCopy();
+  }
 
   // Every teacher edit command, applied through the one patch path above.
   const itemEdits = useExamWorkspaceItemEdits(patchItem);
@@ -437,7 +460,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     renameFile,
     restoreItemSuggestion,
     retryItem,
-    saveDocumentAs,
+    beginCopy,
+    installReplacementDocument,
+    releaseCopyBusy: () => {
+      copyBusy.value = false;
+    },
     savedDocuments,
     savedRevision,
     serverDocument,

@@ -4,7 +4,7 @@ import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentResponse } from "../../../api/examWorkspace";
-import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
+import { buildResponse, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
@@ -40,7 +40,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       if (path === "reload") await state.reloadDocument();
@@ -54,7 +54,7 @@ describe("saved exam baseline", () => {
         ...response, document: copied, saved_document: copied,
         summary: { ...response.summary, lineage_id: "lineage-2", version: 1 },
       });
-      expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
+      expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
       expect(api.copyExamWorkspaceDocument).toHaveBeenCalledWith(
         "lineage-1",
         "Kopia",
@@ -73,7 +73,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(true);
@@ -90,7 +90,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue({ ...response, saved_document: response.document });
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(false);

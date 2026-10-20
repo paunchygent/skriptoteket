@@ -21,6 +21,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -90,7 +91,7 @@ describe("the save status with an unstored kept edit", () => {
     const server = fakeServer(api, baseline);
     const holder = { current: "tab-A" };
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: async () => {
             if (holder.current !== "tab-A") {

@@ -29,14 +29,17 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { FenceToken } from "./examWorkspaceSyncFence";
-import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceRouteRequest";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 
-const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
+export const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 
 export type ExamWorkspaceDocumentOpenDeps = {
   /** Install the fresh response; runs only while the token is current. */
   applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
+  /** Record the installed cursor as the gate's own before installing, so the
+   * history watcher consumes it instead of reporting it back as foreign. */
+  noteInstallingCursor: (lineageId: string, cursor: string) => void;
   /** Capture rename ordering before the GET; reconciled in the read continuation. */
   beginSummaryRead: () => (summary: ExamWorkspaceDocumentSummary) => ExamWorkspaceDocumentSummary;
   /** True while the token's generation is still current. */
@@ -93,6 +96,7 @@ export function useExamWorkspaceDocumentOpen(deps: ExamWorkspaceDocumentOpenDeps
       if (!deps.isCurrent(token)) {
         return "superseded";
       }
+      deps.noteInstallingCursor(lineageId, response.history_cursor);
       deps.selectedItemId.value = null;
       deps.applyResponse(token, response);
       deps.invalidateCopy();

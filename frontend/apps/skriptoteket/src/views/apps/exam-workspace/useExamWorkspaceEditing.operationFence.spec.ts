@@ -25,6 +25,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import type { ExamWorkspaceEditLeaseServer } from "./examWorkspaceEditLeaseDrivers";
 import {
   LINEAGE,
@@ -92,7 +93,7 @@ function session(
   server: ExamWorkspaceEditLeaseServer,
   tabId = "A",
 ): ReturnType<typeof useExamWorkspaceEditing> {
-  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server, tabId }));
+  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server, tabId }));
 }
 
 function driverWith(flags: { offline?: boolean } = {}): ExamWorkspaceEditLeaseServer {
@@ -230,11 +231,7 @@ describe("the operation fence fail-first ports", () => {
         ? opening.promise
         : Promise.resolve(reply(cloneJson(base), "step-0", LINEAGE)),
     );
-    const token = await editing.noteRouteRequest();
-    if (token === null) {
-      throw new Error("expected the route request to settle");
-    }
-    const openingB = editing.openDocument(EXAM_B, token);
+    const openingB = editing.requestRoute(EXAM_B);
     await flushPromises();
     const reloadingA = editing.reloadDocument();
     opening.resolve(reply({ ...base, document_id: EXAM_B, title: "Exam B" }, "step-0", EXAM_B));
@@ -278,10 +275,10 @@ describe("the operation fence fail-first ports", () => {
     await flushPromises();
     // The route request waits on the held store; failing it settles nothing,
     // so the switch opens nothing and the save-as files no copy.
-    const switching = editing.noteRouteRequest();
+    const switching = editing.requestRoute(EXAM_B);
     await flushPromises();
     old.reject(new Error("offline"));
-    expect(await switching).toBeNull();
+    expect(await switching).toBe("failed");
     expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(await copying).toBe("failed");
     expect(copiedIds).toEqual([]);

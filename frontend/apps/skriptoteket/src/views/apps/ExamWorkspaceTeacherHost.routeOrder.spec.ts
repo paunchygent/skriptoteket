@@ -87,12 +87,14 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
   );
   const { useExamWorkspaceAddress } = await import("./exam-workspace/useExamWorkspaceAddress");
   const { createSyncFence } = await import("./exam-workspace/examWorkspaceSyncFence");
+  const { createRouteProjection } = await import("./exam-workspace/examWorkspaceRouteProjection");
   const { serverExamWorkspaceStore } = await import("./exam-workspace/examWorkspaceStore");
   return {
     default: {
       name: "ProbeWorkspaceView",
       setup() {
         const fence = createSyncFence();
+        const projection = createRouteProjection();
         const doc = useExamWorkspaceDocument({
           getFence: () => fence,
           store: {
@@ -102,14 +104,19 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
               getExamWorkspaceDocument: probe.get,
             },
           },
+          // This probe owns no gate: the address submits straight into the
+          // document read, whose token comes from the probe fence, which
+          // never retires. Its paths never return to the open exam while
+          // another open is pending, so the return path stays unused.
+          submitRoute: (lineageId) => doc.openDocument(lineageId, fence.begin()),
+          noteInstallingCursor: () => undefined,
         });
         useExamWorkspaceAddress({
-          ...doc,
-          // This probe owns no gate: its paths never return to the open exam
-          // while another open is pending, so the return path stays unused.
-          // The token comes straight from the probe fence, which never retires.
-          noteRouteRequest: () => Promise.resolve(fence.begin()),
-          reloadOpen: () => undefined,
+          currentAddress: () => doc.summary.value?.lineage_id ?? null,
+          projection,
+          submitRoute: (lineageId) => {
+            void doc.openDocument(lineageId, fence.begin());
+          },
         });
         watch(doc.summary, (value) => {
           probe.opened = value?.lineage_id ?? null;

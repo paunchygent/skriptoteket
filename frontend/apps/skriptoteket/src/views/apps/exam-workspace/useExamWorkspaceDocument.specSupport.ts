@@ -24,6 +24,7 @@ import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence, type SyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
+import { isCopyNameTaken, type ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 export type DocumentState = ReturnType<typeof useExamWorkspaceDocument>;
 
@@ -91,7 +92,7 @@ export async function openMatchingDocumentWithFence(
   getDocument.mockResolvedValue(buildResponse(item));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
@@ -142,4 +143,34 @@ export function deferred<T>() {
     reject = pendingReject;
   });
   return { promise, reject, resolve };
+}
+
+/**
+ * Drive Spara som at document level the way the replacement coordinator
+ * does: start the copy candidate, settle it outside the fence, and install a
+ * current response. Returns the outcome the coordinator would report.
+ */
+export async function saveCopyAs(
+  state: DocumentState,
+  fence: SyncFence,
+  name: string,
+): Promise<ExamWorkspaceSaveAsOutcome> {
+  const lineageId = state.summary.value?.lineage_id;
+  if (lineageId === undefined || lineageId === null) {
+    throw new Error("expected an open exam");
+  }
+  const posting = state.beginCopy(lineageId, name);
+  if (posting === null) {
+    return "failed";
+  }
+  try {
+    const response = await posting;
+    state.installReplacementDocument(fence.begin(), response);
+    return "saved";
+  } catch (error) {
+    if (isCopyNameTaken(error)) {
+      return "name_taken";
+    }
+    return "failed";
+  }
 }

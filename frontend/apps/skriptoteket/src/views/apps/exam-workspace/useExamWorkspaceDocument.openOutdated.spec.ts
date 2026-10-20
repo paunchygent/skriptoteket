@@ -52,7 +52,7 @@ describe("openDocument with an older saved format", () => {
     );
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
@@ -75,7 +75,7 @@ describe("openDocument with an older saved format", () => {
     );
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
@@ -92,7 +92,7 @@ describe("openDocument with an older saved format", () => {
     api.getExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 

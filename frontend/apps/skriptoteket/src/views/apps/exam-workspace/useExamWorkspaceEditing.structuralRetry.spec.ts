@@ -15,6 +15,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../../../api/client";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -53,7 +54,7 @@ describe("the structural autosave retry fail-first port", () => {
     const base = exam();
     fakeServer(api, base);
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: async () => ({
             holder_tab_id: "A",

@@ -22,6 +22,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { ExamWorkspaceEditLeaseResponse } from "../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
+import { nullRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection.specSupport";
 import type { NativeExamDocument } from "../../api/examWorkspace";
 import {
   exam,
@@ -67,7 +68,7 @@ async function settle(): Promise<void> {
 
 function session(): EditingSession {
   return inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: () => Promise.resolve(held()),
         release: () => Promise.resolve(held()),
@@ -179,17 +180,14 @@ it("residual: a held save settles before a failed direct open leaves the confirm
   await settle();
   // The switch waits on the held acknowledgement; once it answers, the
   // settle stores the latest copy before any open begins. This exercises the
-  // public open entry directly, not the address owner's dirty guard.
-  const switching = editing.noteRouteRequest();
+  // coordinator's public route entry directly, not the address owner's dirty
+  // guard.
+  const switching = editing.requestRoute("00000000-0000-4000-8000-000000000002");
   await settle();
   ack.resolve(stored);
-  const token = await switching;
-  if (token === null) {
-    throw new Error("expected the settle to store");
-  }
   api.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("next exam offline"));
-  const outcome = await editing.openDocument("00000000-0000-4000-8000-000000000002", token);
   await saving;
+  const outcome = await switching;
   await settle();
   await vi.advanceTimersByTimeAsync(6000);
   await settle();

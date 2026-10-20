@@ -18,7 +18,7 @@ import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../..
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
-import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+import { buildSavedExamSummary, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
@@ -56,14 +56,14 @@ async function openParentDocument() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
   await state.openDocument("lineage-1", fence.begin());
   await flushPromises();
-  return state;
+  return { fence, state };
 }
 
 function expectParentsValid(document: NativeExamDocument): void {
@@ -91,7 +91,7 @@ beforeEach(() => {
 describe("parents in useExamWorkspaceDocument", () => {
   it("keeps parents and children valid through every child edit", async () => {
     const original = buildParentDocument();
-    const state = await openParentDocument();
+    const { fence, state } = await openParentDocument();
     apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse(original));
     const child = original.items[1]!;
     const gapId = child.gaps[0]!.gap_id;
@@ -101,7 +101,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemBody("item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Edited." }] }], false);
     state.markItemReviewed("item_002");
 
-    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
+    await expect(saveCopyAs(state, fence, "Kopia")).resolves.toBe("saved");
 
     const sent = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(sent.parents).toEqual(original.parents);
@@ -115,7 +115,7 @@ describe("parents in useExamWorkspaceDocument", () => {
   });
 
   it("changes only the edited child's points, so the parent total follows from its children", async () => {
-    const state = await openParentDocument();
+    const { state } = await openParentDocument();
 
     state.updateItemPoints("item_003", null);
 
@@ -130,7 +130,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
     const fence = createSyncFence();
     const state = effectScope().run(() =>
-      useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
+      useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
     )!;
     await state.openDocument("lineage-1", fence.begin());
     await flushPromises();

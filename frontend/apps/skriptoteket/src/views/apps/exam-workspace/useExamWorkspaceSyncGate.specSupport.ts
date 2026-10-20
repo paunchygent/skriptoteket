@@ -11,6 +11,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import type { FenceToken } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 import { exam, LINEAGE, response } from "./useExamWorkspaceEditing.history.specSupport";
@@ -130,6 +131,8 @@ export function createGate(): SyncGateHarness {
     abandonAttempt: () => {
       counts.abandonedAttempts += 1;
     },
+    beginCopy: () => null,
+    claimSelectedLease: () => undefined,
     confirmedCopy: () => flags.confirmedCopy,
     desiredCopy: () => flags.desiredCopy,
     dropOwedSnapshots: () => {
@@ -157,9 +160,20 @@ export function createGate(): SyncGateHarness {
       }
       return withPoints(newest, 7);
     },
+    hasActiveStore: () => false,
+    hasUnconfirmed: () => false,
+    isVisibleDirty: () => false,
+    installReplacementDocument: () => undefined,
+    installedSource: () => null,
+    notifyCopyFailed: () => undefined,
     notifyReloadFailed: () => {
       counts.reloadFailures += 1;
     },
+    notifyRouteFailed: () => undefined,
+    openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),
+    projectAddress: () => undefined,
+    releaseCopyBusy: () => undefined,
+    waitForRouterIdle: () => Promise.resolve(),
     publishedPieces: () => new Set(flags.publishedPieces),
     readDocument: (lineageId: string) => {
       void lineageId;

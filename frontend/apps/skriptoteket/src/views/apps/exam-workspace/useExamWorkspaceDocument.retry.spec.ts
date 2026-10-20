@@ -32,9 +32,9 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
-import { buildResponse, currentItem, deferred, openingOf } from "./useExamWorkspaceDocument.specSupport";
+import { buildResponse, currentItem, deferred, openingOf, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
-import { createSyncFence } from "./examWorkspaceSyncFence";
+import { createSyncFence, type SyncFence } from "./examWorkspaceSyncFence";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
@@ -156,18 +156,18 @@ function responseWith(
 async function openRetryDocument(
   items: NativeExamItem[] = [freeTextItem(), freeTextItem({ item_id: "item_002", sequence: 2 })],
   assets: NativeExamAsset[] = [],
-): Promise<DocumentState> {
+): Promise<{ fence: SyncFence; state: DocumentState }> {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(responseWith(items, assets));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
   await state.openDocument("lineage-1", fence.begin());
   await flushPromises();
-  return state;
+  return { fence, state };
 }
 
 function toastCount(message: string): number {
@@ -189,7 +189,7 @@ function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
 
 describe("retryItem", () => {
   it("sends the draft, question and type, then replaces only that item", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     const before = state.workspaceDocument.value;
     if (!before) {
       throw new Error("expected an open document");
@@ -223,7 +223,7 @@ describe("retryItem", () => {
   });
 
   it("ignores a reply that names another lineage", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     apiMocks.retryExamWorkspaceItem.mockResolvedValue({
       lineage_id: "lineage-2",
       item: convertedItem(),
@@ -237,7 +237,7 @@ describe("retryItem", () => {
   });
 
   it("keeps a change that lands while the reply is in flight", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     const pending = deferred<ExamWorkspaceItemRetryResponse>();
     apiMocks.retryExamWorkspaceItem.mockReturnValue(pending.promise);
 
@@ -253,7 +253,7 @@ describe("retryItem", () => {
   });
 
   it("sends one request while in flight and refuses the copy", async () => {
-    const state = await openRetryDocument();
+    const { fence, state } = await openRetryDocument();
     const pending = deferred<ExamWorkspaceItemRetryResponse>();
     apiMocks.retryExamWorkspaceItem.mockReturnValue(pending.promise);
 
@@ -261,7 +261,7 @@ describe("retryItem", () => {
     await state.retryItem("item_001", "free_text");
 
     expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
-    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("failed");
+    await expect(saveCopyAs(state, fence, "Kopia")).resolves.toBe("failed");
     expect(apiMocks.copyExamWorkspaceDocument).not.toHaveBeenCalled();
 
     pending.resolve({ lineage_id: "lineage-1", item: convertedItem() });
@@ -269,7 +269,7 @@ describe("retryItem", () => {
   });
 
   it("sends nothing for a question without a stored source or outside review", async () => {
-    const state = await openRetryDocument([
+    const { state } = await openRetryDocument([
       freeTextItem({ retry_source: null }),
       freeTextItem({
         item_id: "item_002",
@@ -291,7 +291,7 @@ describe("retryItem", () => {
   });
 
   it("shows the server's message when the retry fails", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     apiMocks.retryExamWorkspaceItem.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: CONFLICT_COPY, status: 409 }),
     );
@@ -304,7 +304,7 @@ describe("retryItem", () => {
   });
 
   it("shows the retry copy when a failure carries no server message", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     apiMocks.retryExamWorkspaceItem.mockRejectedValue(new Error("network down"));
 
     await state.retryItem("item_001", "matching");
@@ -326,7 +326,7 @@ describe("assetUrls", () => {
         `/protected/${lineageId}/${assetId}?revision=${revision}`,
     );
 
-    const state = await openRetryDocument([freeTextItem()], [asset]);
+    const { state } = await openRetryDocument([freeTextItem()], [asset]);
     const urls = state.assetUrls.value;
 
     expect(apiMocks.examWorkspaceAssetUrl).toHaveBeenCalledWith("lineage-1", "asset_001", 1);
@@ -340,7 +340,7 @@ describe("useExamWorkspaceItemRetry admin gate (TASK-SKRIPT-REP-0044 L3)", () =>
   it.each(["user", "contributor"] as const)(
     "sends no retry for role %s and leaves the draft untouched",
     async (role) => {
-      const state = await openRetryDocument();
+      const { state } = await openRetryDocument();
       signInAs(role);
 
       await state.retryItem("item_001", "matching");
@@ -352,7 +352,7 @@ describe("useExamWorkspaceItemRetry admin gate (TASK-SKRIPT-REP-0044 L3)", () =>
   );
 
   it("sends the retry for an admin", async () => {
-    const state = await openRetryDocument();
+    const { state } = await openRetryDocument();
     apiMocks.retryExamWorkspaceItem.mockResolvedValue({
       lineage_id: "lineage-1",
       item: convertedItem(),

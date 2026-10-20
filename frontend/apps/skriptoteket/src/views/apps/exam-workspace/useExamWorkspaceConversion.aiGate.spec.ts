@@ -17,6 +17,7 @@ import type {
 import { useAuthStore } from "../../../stores/auth";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import {
   useExamWorkspaceConversion,
   type ExamWorkspaceConversionBinding,
@@ -65,7 +66,6 @@ function binding(): ExamWorkspaceConversionBinding {
     workspaceDocument: ref<NativeExamDocument | null>(null),
     beginDocumentRead: () => (response) => response,
     applyResponse: vi.fn(),
-    beforeFirstRevision: vi.fn(),
     getFence: () => fence,
     isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
@@ -75,7 +75,7 @@ function binding(): ExamWorkspaceConversionBinding {
 
 const scopes: Array<{ stop: () => void }> = [];
 
-function conversionFor(role: Role, openImported: (lineageId: string) => Promise<boolean> = async () => true) {
+function conversionFor(role: Role, openImported: (lineageId: string) => Promise<ExamWorkspaceRouteOpenOutcome> = async () => "installed") {
   setActivePinia(createPinia());
   useAuthStore().user = {
     id: "teacher-1",
@@ -149,7 +149,7 @@ describe("exam workspace conversion AI gate", () => {
   });
 
   it("imports a QTI .zip without AI access", async () => {
-    const openImported = vi.fn(async () => true);
+    const openImported = vi.fn(async () => "installed" as const);
     const conversion = conversionFor("user", openImported);
 
     await conversion.importDocument(new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }), null);

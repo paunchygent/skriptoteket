@@ -11,10 +11,12 @@
  *
  * (a) A concluded failed settle opens nothing and keeps X with its edit and
  *     address. Control the design keeps (L12/R8): expected to PASS today.
- * (b) A stale older settle failure delivered after a newer intent was
- *     admitted does not clear or retire the newer intent: the newer request
- *     still settles and opens. Control the design keeps (a null result never
- *     performs cleanup): expected to PASS today.
+ * (b) A superseded older request performs no cleanup while the newer intent
+ *     still settles and opens (restated for the coordinator entrance: the
+ *     targetless double-settle it replaced cannot exist behind one shared
+ *     barrier, whose single failure ends the currently desired departure;
+ *     the surviving guarantee is that replacing the slot resolves the former
+ *     caller at once with no state-changing continuation).
  * (c) A store that never answers admits newer target requests but opens
  *     none; when it is later released successfully, only the latest target
  *     opens. Expected today: FAILS (the first request's settle retires first
@@ -30,7 +32,7 @@
 
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { defineComponent, watch } from "vue";
+import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import type {
@@ -41,6 +43,7 @@ import type {
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
+import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
 import {
   LINEAGE,
   exam,
@@ -122,7 +125,8 @@ async function mountRoutedSession(): Promise<{ editing: EditingSession; router: 
   let captured: EditingSession | null = null;
   const Host = defineComponent({
     setup() {
-      const editing = useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      const projection = createRouteProjection();
+      const editing = useExamWorkspaceEditing(serverExamWorkspaceStore, projection, {
         server: {
           claim: (lineageId: string, tabId: string) => {
             leaseKnobs.claims.push(lineageId);
@@ -134,17 +138,13 @@ async function mountRoutedSession(): Promise<{ editing: EditingSession; router: 
         },
         tabId: "A",
       });
-      const address = useExamWorkspaceAddress({
-        isDirty: editing.isDirty,
-        noteRouteRequest: editing.noteRouteRequest,
-        openDocument: editing.openDocument,
-        reloadOpen: editing.reloadOpenExam,
-        summary: editing.summary,
+      useExamWorkspaceAddress({
+        currentAddress: editing.currentRouteAddress,
+        projection,
+        submitRoute: (lineageId) => {
+          void editing.requestRoute(lineageId);
+        },
       });
-      watch(
-        () => editing.summary.value?.lineage_id,
-        (lineageId) => address.showDocument(lineageId ?? null),
-      );
       captured = editing;
       return () => null;
     },
@@ -203,12 +203,11 @@ it("R9 barrier (a): a concluded failed settle opens nothing and keeps X with its
   expect(await editing.save()).toBe(false);
   await settle();
   // The dirty guard restores the address at once; the settle itself is
-  // exercised through the gate's public route-request entry.
+  // exercised through the coordinator's public route-request entry.
   await router.push({ query: { document: Y } });
   await settle();
-  const token = await editing.noteRouteRequest();
+  expect(await editing.requestRoute(Y)).toBe("failed");
   await settle();
-  expect(token).toBeNull();
   expect(api.getExamWorkspaceDocument).not.toHaveBeenCalledWith(Y);
   expect(api.copyExamWorkspaceDocument).not.toHaveBeenCalled();
   // A failed store truthfully reports its automatic retry (the retained
@@ -221,31 +220,40 @@ it("R9 barrier (a): a concluded failed settle opens nothing and keeps X with its
   }).toEqual({ locked: false, lineage: LINEAGE, route: LINEAGE, visible: 7 });
 });
 
-it("R9 barrier (b): a stale older settle failure does not clear the newer intent", async () => {
+it("R9 barrier (b): a superseded older request performs no cleanup while the newer intent opens", async () => {
   fakeServer(api, exam());
   serveTargets();
-  // The older attempt's transport rejects without committing: the fake
-  // server must not advance, or the newer attempt would see a stale cursor.
+  // The shared barrier holds the first store; both intents settle through it.
+  const persist = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (persist === undefined) {
+    throw new Error("expected the step store double");
+  }
   const ack = deferred<unknown>();
-  api.storeExamWorkspaceUndoStep.mockImplementationOnce((_lineageId: string, _request: unknown) => ack.promise);
+  let stored: unknown = null;
+  api.storeExamWorkspaceUndoStep.mockImplementationOnce((lineageId: string, request: unknown) => {
+    const saving = persist(lineageId, request);
+    stored = saving;
+    return ack.promise;
+  });
   const { editing } = await mountRoutedSession();
   editing.updateItemPoints("item_001", 7);
-  // Two intents share the held write queue; the older settle fails first.
-  const older = editing.noteRouteRequest();
-  const newer = editing.noteRouteRequest();
+  const saving = editing.save();
   await settle();
-  ack.reject(new Error("offline"));
+  // Two route intents share the one held barrier; replacing the slot resolves
+  // the older caller as superseded at once, with no state-changing cleanup.
+  const older = editing.requestRoute(Y);
+  const newer = editing.requestRoute(Z);
+  await expect(older).resolves.toBe("superseded");
   await settle();
-  expect(await older).toBeNull();
-  const token = await newer;
-  if (token === null) {
-    throw new Error("expected the newer intent to survive the older failure");
-  }
-  // The newer intent still settles and opens under its own token; the
-  // older failure keeps only its truthful retry report, never a cleanup.
+  ack.resolve(stored);
+  expect(await saving).toBe(true);
+  // The newer intent still settles and opens; the older resolution retired
+  // nothing and restored nothing: Y is never read or claimed.
   // Z installs with its own fresh content; X's edit stays stored on X.
-  expect(await editing.openDocument(Z, token)).toBe("installed");
+  await expect(newer).resolves.toBe("installed");
   await settle();
+  expect(api.getExamWorkspaceDocument).not.toHaveBeenCalledWith(Y);
+  expect(leaseKnobs.claims).not.toContain(Y);
   expect({
     lineage: editing.summary.value?.lineage_id,
     visible: pointsOf(editing.workspaceDocument.value, "item_001"),

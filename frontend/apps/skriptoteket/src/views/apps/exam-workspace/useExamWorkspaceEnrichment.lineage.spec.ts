@@ -132,7 +132,7 @@ async function openExamA() {
   const scope = effectScope();
   const fence = createSyncFence();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore });
+    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,

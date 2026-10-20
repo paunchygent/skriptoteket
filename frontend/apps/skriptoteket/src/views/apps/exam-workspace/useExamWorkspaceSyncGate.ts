@@ -19,8 +19,10 @@
  *   only when a real current store confirms them. A lease lost during
  *   `loading` retires the running load and moves the gate to `readonly`, so
  *   the load can never become editable after a later reacquisition starts a
- *   fresh load. A route request first captures the kept pieces, then settles
- *   the latest edit and only then retires.
+ *   fresh load. Every document replacement runs through the gate-owned
+ *   replacement coordinator: one latest-intent slot behind one locked source
+ *   barrier, which alone settles, chooses, retires, opens or adopts, and
+ *   publishes the address.
  *
  * Relationships:
  *   - Calls `mergeRefusedEdit` with explicit ownership, which stays the merge
@@ -32,17 +34,21 @@
  *     the open-claim wait through `isOpenClaimPending`.
  *   - Owns the sync fence F2 and F3 settle and thread tokens through; the
  *     gate exposes it, but no other port is fenced here yet.
+ *   - Instantiates the replacement coordinator and stays its semantic owner:
+ *     the coordinator's barrier ports close over the gate's own state, and
+ *     its selection ports arrive as gate deps bound by the editing session.
  */
 
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import { diffPieces } from "./examWorkspaceEditPieces";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
-import { requestRouteRetire } from "./examWorkspaceRouteRequest";
+import { createReplacementCoordinator } from "./examWorkspaceReplacementCoordinator";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
+import { createSyncGateKept } from "./examWorkspaceSyncGateKept";
 import { createSyncGateFreshLoad } from "./examWorkspaceSyncGateFreshLoad";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 import {
@@ -53,19 +59,6 @@ import { createSyncGateQueue } from "./examWorkspaceSyncGateQueue";
 
 /** The confirmed sync state: no fresh copy and step list, lease held and fresh, or another tab's lease. */
 export type ExamWorkspaceSyncGatePhase = "loading" | "editing" | "readonly";
-
-/** The kept unconfirmed work: the exam it belongs to, an immutable snapshot
- * of the desired copy D, and the owned piece set P (`diffPieces` of the
- * confirmed copy against D, plus published, active and already-kept pieces).
- */
-export type ExamWorkspaceSyncGateKeptEdit = {
-  /** The exam lineage the desired snapshot belongs to. */
-  lineage: string;
-  /** The working copy in front of the teacher, kept until a store confirms it. */
-  desired: NativeExamDocument;
-  /** The owned pieces: desired wins each of them in the recovery commit. */
-  pieces: Set<string>;
-};
 
 /** Small ports G1b binds to the existing owners; the specs double them. */
 export type ExamWorkspaceSyncGateDeps = {
@@ -125,17 +118,36 @@ export type ExamWorkspaceSyncGateDeps = {
   notifyReloadFailed: () => void;
   /** The retry timer; production passes `createSyncGateTimer`. */
   timer: ExamWorkspaceSyncGateTimer;
+  /** True while a current-generation store is in flight. */
+  hasActiveStore: () => boolean;
+  /** The installed source: the exam lineage in front of the teacher, if any. */
+  installedSource: () => string | null;
+  /** The working copy visibly differs from the saved exam. */
+  isVisibleDirty: () => boolean;
+  /** The only definition of confirmation: no active, unresolved, kept or net intent. */
+  hasUnconfirmed: () => boolean;
+  /** Read and install the named document for the selection's token. */
+  openRouteTarget: (lineageId: string, token: FenceToken) => Promise<ExamWorkspaceRouteOpenOutcome>;
+  /** Install a replacement response (route read or copy) without deciding anything. */
+  installReplacementDocument: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
+  /** Claim the edit lease for the selected lineage. */
+  claimSelectedLease: (lineageId: string) => void;
+  /** Start the copy POST; null when its guards refuse. */
+  beginCopy: (
+    sourceLineageId: string,
+    name: string,
+  ) => Promise<ExamWorkspaceDocumentResponse> | null;
+  /** Report a current route-open failure (the existing open copy). */
+  notifyRouteFailed: () => void;
+  /** Report a current copy failure (the existing Spara som copy). */
+  notifyCopyFailed: () => void;
+  /** Release the retired copy selection's busy hold at once. */
+  releaseCopyBusy: () => void;
+  /** Publish the address; a repeated value is a no-op. */
+  projectAddress: (lineageId: string | null) => void;
+  /** Resolve once no router navigation is in flight. */
+  waitForRouterIdle: () => Promise<void>;
 };
-
-/**
- * An immutable snapshot of a document. The working copy is a deep reactive
- * value, which `structuredClone` rejects, so the snapshot goes through JSON;
- * documents are plain server JSON.
- */
-function snapshotDocument(document: NativeExamDocument): NativeExamDocument {
-  const snapshot: NativeExamDocument = JSON.parse(JSON.stringify(document));
-  return snapshot;
-}
 
 export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   const phase = ref<ExamWorkspaceSyncGatePhase>("loading");
@@ -149,7 +161,15 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   const fence: SyncFence = createSyncFence();
 
   let lineage: string | null = null;
-  const kept = shallowRef<ExamWorkspaceSyncGateKeptEdit | null>(null);
+  const kept = createSyncGateKept({
+    confirmedCopy: () => deps.confirmedCopy(),
+    desiredCopy: () => deps.desiredCopy(),
+    dropOwedSnapshots: () => deps.dropOwedSnapshots(),
+    fence,
+    isDisposed: () => disposed,
+    lineage: () => lineage,
+    publishedPieces: () => deps.publishedPieces(),
+  });
   /**
    * A fresh load that finished while the open claim was still in flight. The
    * claim's outcome moves the phase without another load; a retired token
@@ -192,7 +212,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     {
       fence,
       isDisposed: () => disposed,
-      kept: () => kept.value,
+      kept: () => kept.kept.value,
       lineage: () => lineage,
       loadDeferred: () => loadDeferred,
       setLoadDeferred: (token) => {
@@ -204,94 +224,81 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     },
   );
 
-  /**
-   * A route request starts its own generation: capture the kept pieces first,
-   * then settle the latest edit, and only when the store lands retire in the
-   * same continuation and hand back the request's token. A request that does
-   * not settle retires nothing and gets null, keeping the captured work.
-   * Outside `editing` there is nothing to settle: retire at once. An older
-   * open still reading settles stale, so its install and its claim never run.
-   */
-  function openRequested(): Promise<FenceToken | null> {
-    return (async () => {
-      if (disposed) {
-        return null;
-      }
-      if (phase.value === "editing") {
-        captureKeptEdit();
-      }
-      const token = await requestRouteRetire({
-        begin: () => fence.begin(),
-        isDisposed: () => disposed,
-        isEditing: () => phase.value === "editing",
-        replaceCopy: deps.replaceCopy,
-        retire,
-        settleEdit: () => deps.settleEdit(),
-      });
-      if (disposed) {
-        return null;
-      }
-      if (token === null) {
-        // The settle did not land: no generation retired, so recapture the
-        // post-settle state instead of retiring anything.
-        if (phase.value === "editing") {
-          captureKeptEdit();
-        }
-        return null;
-      }
-      // A generation retired inside the request: freeze attempt tracking into
-      // the unresolved pieces, then keep the captured work only while intent
-      // stays unconfirmed.
-      deps.abandonAttempt();
-      if (phase.value === "editing") {
-        captureKeptEdit();
-      }
-      return token;
-    })();
-  }
-
-  /**
-   * Capture the unconfirmed copy as the kept record before any retirement.
-   * P is the confirmed-against-desired diff plus published, active and
-   * already-kept pieces; with an empty P there is no kept work. The second
-   * loss recaptures from the latest D while retaining the kept keys, so a
-   * rebase never drops ownership a store has not confirmed.
-   */
-  function captureKeptEdit(): void {
-    const confirmed = deps.confirmedCopy();
-    const desired = deps.desiredCopy();
-    const lineageId = lineage;
-    if (confirmed === null || desired === null || lineageId === null) {
-      deps.dropOwedSnapshots();
-      return;
-    }
-    const pieces = new Set<string>([
-      ...diffPieces(confirmed, desired),
-      ...deps.publishedPieces(),
-      ...(kept.value !== null && kept.value.lineage === lineageId ? kept.value.pieces : []),
-    ]);
-    if (pieces.size === 0) {
-      kept.value = null;
-    } else {
-      kept.value = { desired: snapshotDocument(desired), lineage: lineageId, pieces };
-    }
-    deps.dropOwedSnapshots();
-  }
+  const coordinator = createReplacementCoordinator({
+    abandonAttempt: () => deps.abandonAttempt(),
+    adoptSelectedOpening: (nextLineageId) => adoptSelectedOpening(nextLineageId),
+    beginCopy: (sourceLineageId, name) => deps.beginCopy(sourceLineageId, name),
+    captureKept: () => kept.captureKeptEdit(),
+    claimSelectedLease: (nextLineageId) => deps.claimSelectedLease(nextLineageId),
+    fence,
+    hasActiveStore: () => deps.hasActiveStore(),
+    hasUnconfirmed: () => deps.hasUnconfirmed(),
+    installedSource: () => deps.installedSource(),
+    installReplacementDocument: (token, response) => deps.installReplacementDocument(token, response),
+    isDisposed: () => disposed,
+    isEditing: () => phase.value === "editing",
+    isVisibleDirty: () => deps.isVisibleDirty(),
+    notifyCopyFailed: () => deps.notifyCopyFailed(),
+    notifyRouteFailed: () => deps.notifyRouteFailed(),
+    openRouteTarget: (nextLineageId, token) => deps.openRouteTarget(nextLineageId, token),
+    projectAddress: (nextLineageId) => deps.projectAddress(nextLineageId),
+    recoverRetainedSource: () => recoverRetainedSource(),
+    releaseCopyBusy: () => deps.releaseCopyBusy(),
+    replaceCopy: deps.replaceCopy,
+    retireGeneration: () => retire(),
+    settleEdit: () => deps.settleEdit(),
+    waitForRouterIdle: () => deps.waitForRouterIdle(),
+  });
 
   /**
    * Open an exam: another lineage starts a fresh load. When the response
-   * already installed the document, only the step list is read.
+   * already installed the document, only the step list is read. The retire
+   * ends any coordinator departure the event supersedes.
    */
   function openExam(nextLineageId: string, documentFresh: boolean): void {
     if (disposed) {
       return;
     }
-    lineage = nextLineageId;
-    kept.value = null;
-    deps.resetUnconfirmed();
     retire();
+    adoptOpening(nextLineageId, documentFresh);
+    coordinator.notifySourceRetired();
+  }
+
+  /**
+   * Adopt the coordinator's selected lineage: another lineage starts a step-list
+   * load under the selection's still-current generation. Unlike `openExam`
+   * this retires nothing: the selection already retired the source and minted
+   * its token, and retiring here would kill it.
+   */
+  function adoptSelectedOpening(nextLineageId: string): void {
+    if (disposed) {
+      return;
+    }
+    adoptOpening(nextLineageId, true);
+  }
+
+  /** Share the lineage, kept-reset and load start between a retiring open and
+   * a selected adoption; only the retiring open retires the generation. */
+  function adoptOpening(nextLineageId: string, documentFresh: boolean): void {
+    lineage = nextLineageId;
+    kept.kept.value = null;
+    deps.resetUnconfirmed();
     phase.value = "loading";
     freshLoad.startFreshLoad(documentFresh);
+  }
+
+  /**
+   * Recover the coordinator's retained source after its selected target failed:
+   * the ordinary fresh-load path (document, then step list) in a new current
+   * context. The gate lineage still names the source, whose settled work is
+   * intact in front of the teacher.
+   */
+  function recoverRetainedSource(): void {
+    if (disposed) {
+      return;
+    }
+    phase.value = "loading";
+    freshLoad.startFreshLoad(false);
   }
 
   /**
@@ -315,6 +322,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     retire();
     phase.value = "loading";
     freshLoad.startFreshLoad(false);
+    coordinator.notifySourceRetired();
   }
 
   /**
@@ -348,16 +356,21 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       return;
     }
     if (phase.value === "editing") {
-      captureKeptEdit();
+      kept.captureKeptEdit();
       retire();
       deps.abandonAttempt();
       phase.value = "readonly";
+      // The event retired the source generation: a pending barrier or
+      // selection is stale, so fail the desired departure safely and keep the
+      // source with its address. Never open a different exam for this event.
+      coordinator.notifySourceRetired();
       return;
     }
     if (phase.value === "loading") {
       retire();
       deps.abandonAttempt();
       phase.value = "readonly";
+      coordinator.notifySourceRetired();
     }
   }
 
@@ -373,11 +386,13 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       return;
     }
     if (phase.value === "editing") {
-      captureKeptEdit();
+      kept.captureKeptEdit();
     }
     retire();
     deps.abandonAttempt();
     phase.value = "readonly";
+    // Late results publish nothing after this point.
+    coordinator.notifyPageHidden();
   }
 
   /**
@@ -390,14 +405,15 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     if (disposed || phase.value !== "editing") {
       return;
     }
-    const keptHere = kept.value !== null && kept.value.lineage === lineage;
+    const keptHere = kept.kept.value !== null && kept.kept.value.lineage === lineage;
     if (keptHere || deps.publishedPieces().size > 0) {
-      captureKeptEdit();
+      kept.captureKeptEdit();
     }
     retire();
     deps.abandonAttempt();
     phase.value = "loading";
     freshLoad.startFreshLoad(false);
+    coordinator.notifySourceRetired();
   }
 
   /** Another tab moved the history: reload, with the document read only when the cursor did not arrive with it. */
@@ -408,86 +424,42 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     retire();
     phase.value = "loading";
     freshLoad.startFreshLoad(documentFresh);
+    coordinator.notifySourceRetired();
   }
 
   /**
-   * A reload whose generation retired while it waited hands over: when its
-   * exam is still the open one, retire and read it fresh. The load always
-   * reads the document, because the install that retired the reload may hold
-   * an older copy. In `readonly` it does nothing: the next acquisition
-   * reloads anyway.
-   */
-  function reloadFresh(): void {
-    if (disposed || phase.value === "readonly") {
-      return;
-    }
-    retire();
-    phase.value = "loading";
-    freshLoad.startFreshLoad(false);
-  }
-
-  /**
-   * A store confirmed this document under the current token. Keep the kept
-   * pieces until a real current store confirms them: recompute the still
-   * outstanding pieces against the latest copies, and clear only when no
-   * kept piece differs and no published piece stays unresolved. A
-   * generation-only acknowledgement for an older snapshot never clears kept
-   * work that snapshot did not cover.
+   * A store confirmed this document under the current token. The kept record
+   * trims itself to the still-outstanding pieces.
    */
   function noteStored(token: FenceToken): void {
-    if (disposed || !fence.isCurrent(token)) {
-      return;
-    }
-    const pendingKept = kept.value;
-    if (pendingKept === null || pendingKept.lineage !== lineage) {
-      return;
-    }
-    const confirmed = deps.confirmedCopy();
-    const desired = deps.desiredCopy();
-    if (confirmed === null || desired === null) {
-      return;
-    }
-    const outstanding = [...pendingKept.pieces].filter(
-      (piece) =>
-        diffPieces(confirmed, desired).has(piece) || deps.publishedPieces().has(piece),
-    );
-    if (outstanding.length === 0) {
-      kept.value = null;
-    } else {
-      kept.value = {
-        desired: snapshotDocument(desired),
-        lineage: pendingKept.lineage,
-        pieces: new Set(outstanding),
-      };
-    }
+    kept.noteStoredBy(token);
   }
-
-  /** The gate holds unconfirmed work; the save status never reports `Sparat` while it does. */
-  const hasKeptEdit = computed(() => kept.value !== null);
 
   function dispose(): void {
     disposed = true;
     timer.cancel();
     retire();
+    coordinator.dispose();
   }
 
   return {
+    currentAddress: coordinator.currentAddress,
     dispose,
     editingLocked,
     enqueueWrite: queue.enqueueWrite,
     fence,
     foreignCursor,
-    hasKeptEdit,
+    hasKeptEdit: kept.hasKeptEdit,
     leaseAcquired,
     leaseLost,
     leaseReadOnly,
     leaseRefused,
     noteStored,
     openExam,
-    openRequested,
     pageHidden,
     phase,
-    reloadFresh,
     staleConflict,
+    submitRoute: coordinator.submitRoute,
+    submitSaveAs: coordinator.submitSaveAs,
   };
 }

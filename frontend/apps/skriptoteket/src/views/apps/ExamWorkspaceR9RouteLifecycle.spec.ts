@@ -30,7 +30,7 @@
 
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { defineComponent, watch } from "vue";
+import { defineComponent } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
 import { ApiError } from "../../api/client";
@@ -42,6 +42,7 @@ import type {
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
+import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
 import {
   LINEAGE,
   exam,
@@ -132,7 +133,8 @@ async function mountRoutedSession(): Promise<{ editing: EditingSession; router: 
   let captured: EditingSession | null = null;
   const Host = defineComponent({
     setup() {
-      const editing = useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      const projection = createRouteProjection();
+      const editing = useExamWorkspaceEditing(serverExamWorkspaceStore, projection, {
         server: {
           claim: (lineageId: string, tabId: string) => {
             leaseKnobs.claims.push(lineageId);
@@ -154,17 +156,13 @@ async function mountRoutedSession(): Promise<{ editing: EditingSession; router: 
         },
         tabId: "A",
       });
-      const address = useExamWorkspaceAddress({
-        isDirty: editing.isDirty,
-        noteRouteRequest: editing.noteRouteRequest,
-        openDocument: editing.openDocument,
-        reloadOpen: editing.reloadOpenExam,
-        summary: editing.summary,
+      useExamWorkspaceAddress({
+        currentAddress: editing.currentRouteAddress,
+        projection,
+        submitRoute: (lineageId) => {
+          void editing.requestRoute(lineageId);
+        },
       });
-      watch(
-        () => editing.summary.value?.lineage_id,
-        (lineageId) => address.showDocument(lineageId ?? null),
-      );
       captured = editing;
       return () => null;
     },

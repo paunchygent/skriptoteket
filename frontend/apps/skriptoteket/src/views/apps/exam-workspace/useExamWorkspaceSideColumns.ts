@@ -14,8 +14,9 @@
  *     wiring keep their assignments. The drawer ref is owned by
  *     `useExamWorkspaceDrawerState` and passed in; this seam only keeps it
  *     exclusive with the preview.
- *   - Calls back with the newly opened lineage so the view shows that
- *     document and dismisses the guest sign-in prompt it interrupted.
+ *   - Calls back with the newly opened lineage so the view dismisses the
+ *     guest sign-in prompt it interrupted; the address itself is published
+ *     only by the gate-owned replacement coordinator.
  */
 
 import { computed, ref, watch } from "vue";

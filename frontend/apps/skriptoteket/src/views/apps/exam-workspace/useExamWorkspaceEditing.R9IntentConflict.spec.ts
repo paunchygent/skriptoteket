@@ -22,6 +22,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -99,7 +100,7 @@ it("R9Intent row 3: an owned question wins whole over the other tab's field chan
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),

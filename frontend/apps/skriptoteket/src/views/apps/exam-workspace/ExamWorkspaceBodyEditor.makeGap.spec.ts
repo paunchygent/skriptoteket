@@ -47,6 +47,7 @@ import { plainBody } from "./examWorkspaceRichText";
 import { GAP_TOOL_AT_CAP_REASON } from "./useExamWorkspaceMakeGap";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   inScope,
@@ -356,7 +357,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     ]);
     question.unmount();
 
-    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection()));
     const created = vi.spyOn(editing, "createItemGap");
     const entry: ExamWorkspaceItemEntry = {
       kind: "item",

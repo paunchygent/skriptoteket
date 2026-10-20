@@ -14,6 +14,7 @@ import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceEditLeaseResponse, ExamWorkspaceHistory } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -84,7 +85,7 @@ function openSession(owner: { holder: string }, historyGate: { promise: Promise<
     api.getExamWorkspaceHistory.mockImplementation(() => historyGate.promise);
   }
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: async () => {
           if (owner.holder !== "A") throw heldError();

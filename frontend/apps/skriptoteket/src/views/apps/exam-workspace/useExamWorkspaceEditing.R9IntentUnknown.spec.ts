@@ -23,6 +23,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -102,7 +103,7 @@ it("R9Intent row 1: a rejected store plus remote edit retains the revert", async
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),
@@ -159,7 +160,7 @@ it("R9Intent row 2 (control): an edit-and-revert never sent claims nothing", asy
   const server = fakeServer(api, baseline);
   const state = intentLeaseState();
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: intentLeaseDouble(state),
       tabId: "A",
     }),

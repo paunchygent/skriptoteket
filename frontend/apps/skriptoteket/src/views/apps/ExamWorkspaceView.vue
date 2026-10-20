@@ -55,6 +55,7 @@ import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceVie
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
+import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 import { useExamWorkspaceGuestSignIn } from "./exam-workspace/useExamWorkspaceGuestSignIn";
@@ -69,22 +70,23 @@ const props = defineProps<{ store: ExamWorkspaceStore }>();
 provide(EXAM_WORKSPACE_STORE_KEY, props.store);
 
 const layout = useExamWorkspaceLayout();
-const editing = useExamWorkspaceEditing(props.store);
+const routeProjection = createRouteProjection();
+const editing = useExamWorkspaceEditing(props.store, routeProjection);
 const {
   history,
   structure,
   applyArrivingSuggestions,
+  currentRouteAddress,
   historyCursor,
   isBusy,
-  isDirty,
   isOpen,
   loadSavedDocuments,
-  openDocument,
   openExam,
   importDocument,
   importBlocked,
   leaseReadOnly,
   editingLocked,
+  requestRoute,
   requestTakeover,
   savedRevision,
   setTags,
@@ -113,6 +115,7 @@ const {
   isPhone,
   listOpen,
   listRailCollapsed,
+  openRoutedDocument,
   previewBlocked,
   previewLoading,
   previewMessage,
@@ -125,24 +128,24 @@ const {
   rootListState,
   setListWidth,
   setWidth,
-  showDocument,
   side,
   toggleDrawer,
   toggleListCollapsed,
   togglePreview,
 } = useExamWorkspaceViewPanels({
+  currentAddress: currentRouteAddress,
   dismissSignInPrompt,
   historyCursor,
   historyPosition: history.position,
-  isDirty,
   isExamOpen: () => Boolean(summary.value),
   layout,
-  noteRouteRequest: editing.noteRouteRequest,
-  openDocument,
-  reloadOpen: editing.reloadOpenExam,
+  projection: routeProjection,
   savedRevision,
   selectedItemId: editing.selectedItemId,
   store: props.store,
+  submitRoute: (lineageId) => {
+    void requestRoute(lineageId);
+  },
   summary,
   workspaceDocument,
 });
@@ -454,7 +457,7 @@ onMounted(() => void loadSavedDocuments());
         :import-pick-pending="importPickPending"
         @close="drawer = null"
         @import-pick-consumed="consumeImportPick"
-        @open="showDocument"
+        @open="openRoutedDocument"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

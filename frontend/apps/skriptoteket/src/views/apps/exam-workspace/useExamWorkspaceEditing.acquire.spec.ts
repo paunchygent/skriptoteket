@@ -24,6 +24,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   conflict,
   exam,
@@ -130,7 +131,7 @@ describe("acquiring the lease without a pending edit", () => {
     fakeServer(api, baseline);
     const holder = { current: "tab-B" };
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseServer(holder),
         tabId: "tab-A",
       }),
@@ -169,7 +170,7 @@ describe("a structural command's 409 after the takeover merge", () => {
     const server = fakeServer(api, baseline);
     const holder = { current: "tab-A" };
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseServer(holder),
         tabId: "tab-A",
       }),

@@ -39,7 +39,7 @@ describe("reloadDocument while an operation runs", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(first);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
 
@@ -70,7 +70,7 @@ describe("reloadDocument while an operation runs", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(first);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       const reloaded = { ...first, history_cursor: "reloaded-cursor" };
@@ -97,6 +97,7 @@ describe("read-only editing", () => {
         getFence: () => fence,
         isReadOnly: () => readOnly.value,
         store: serverExamWorkspaceStore,
+        submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined,
       }),
     )!;
     try {

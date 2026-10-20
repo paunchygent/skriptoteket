@@ -36,10 +36,10 @@ import {
   deferred,
   openMatchingDocument as openWith,
   openMatchingDocumentWithFence as openWithFence,
+  saveCopyAs,
   savedResponse,
 } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
-import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const AUTOMATIC_VALUES_FAILURE_COPY =
   "Det gick inte att skapa automatiska stavningar. Svaren finns kvar.";
@@ -193,7 +193,7 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
     const copy = currentDocument(state);
     apiMocks.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
 
-    expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
+    expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
 
     const payload = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(payload.items[0]!.gaps[0]!.excluded_automatic_values).toEqual(["Stockhom"]);

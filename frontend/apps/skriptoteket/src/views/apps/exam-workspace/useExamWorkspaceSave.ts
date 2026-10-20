@@ -8,14 +8,19 @@
  *   pending edit as a step through the history, and Spara som stores first
  *   through that same flush before it copies the working exam.
  *
+ *   The copy POST is a replacement candidate, never a direct install: this
+ *   module starts the transport and holds the copy busy while it runs, and
+ *   the gate-owned replacement coordinator admits the result only while its
+ *   intent is still desired and its token is current. A retired copy installs
+ *   nothing, projects nothing and is never deleted as cleanup.
+ *
  * Relationships:
  *   - Transport through the exam workspace store.
- *   - Installs the copy response through the document's `applyResponse`;
- *     reads go through its `beginDocumentRead` so renames stay reconciled.
- *   - AI suggestion and gap keying replays run through `arrivals` and
- *     `keying`: the response holds the payload, so arrivals that landed after
- *     the copy request run again on it.
- *   - Marks the shared operation busy flag while a request runs.
+ *   - The coordinator adopts a current copy response through the same opening
+ *     transition as a route target, once.
+ *   - Marks the copy busy flag while a request runs; the coordinator releases
+ *     it synchronously when it retires the copy selection, so a newer target
+ *     is never refused behind the retired copy.
  */
 
 import type { ComputedRef, Ref } from "vue";
@@ -26,15 +31,10 @@ import type {
   ExamWorkspaceDocumentSummary,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
-import type { FenceToken } from "./examWorkspaceSyncFence";
-import type { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
-import type { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
-import type { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 
 export const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
-const SAVE_AS_FAILURE_COPY = "Det gick inte att spara en kopia av provet. Försök igen.";
+export const SAVE_AS_FAILURE_COPY = "Det gick inte att spara en kopia av provet. Försök igen.";
 
 export type ExamWorkspaceSaveAsOutcome = "saved" | "name_taken" | "failed";
 
@@ -42,18 +42,14 @@ type SaveState = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   isBusy: ComputedRef<boolean>;
-  operationBusy: Ref<boolean>;
-  applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
-  beginDocumentRead: () => (response: ExamWorkspaceDocumentResponse) => ExamWorkspaceDocumentResponse;
-  isCurrent: (token: FenceToken) => boolean;
-  syncAfterConflict: ReturnType<typeof useExamWorkspaceConversion>["syncAfterConflict"];
-  arrivals: ReturnType<typeof useExamWorkspaceSaveArrivals>;
-  keying: ReturnType<typeof useExamWorkspaceGapKeying>;
+  /** The copy's own busy hold; set while its POST runs, cleared on settle or retire. */
+  copyBusy: Ref<boolean>;
   /** The store the save reads and writes run through. */
   store: ExamWorkspaceStore;
 };
 
-function nameInUse(error: unknown): boolean {
+/** True when the copy failure means the requested name is taken (silent, no toast). */
+export function isCopyNameTaken(error: unknown): boolean {
   if (!isApiError(error) || error.status !== 422) {
     return false;
   }
@@ -67,42 +63,40 @@ function nameInUse(error: unknown): boolean {
 }
 
 export function useExamWorkspaceSave(state: SaveState) {
-  const toast = useToast();
-  const { keying, operationBusy, summary, workspaceDocument } = state;
+  const { copyBusy, summary, workspaceDocument } = state;
 
   /**
-   * Spara som: the working copy becomes a new exam named `name` with its own
-   * history, and opens in place; the exam it came from keeps its last save.
-   * The caller stores any pending edit first and hands over the token its
-   * operation started with, so the copy and its install belong to that
-   * operation. A retired answer installs nothing.
+   * Spara som: start copying the working exam under `name` with its own
+   * history. The caller stored any pending edit first; the sent copy is read
+   * here, synchronously at dispatch. The returned POST promise is a candidate
+   * the owning coordinator settles through the fence. Null when the copy
+   * guards refuse (no exam, no teacher, or another operation holds the
+   * document).
    */
-  async function saveDocumentAs(name: string, token: FenceToken): Promise<ExamWorkspaceSaveAsOutcome> {
-    const current = workspaceDocument.value;
+  function beginCopy(
+    sourceLineageId: string,
+    name: string,
+  ): Promise<ExamWorkspaceDocumentResponse> | null {
+    const sent = workspaceDocument.value;
     const currentSummary = summary.value;
     const teacher = state.store.teacher;
-    if (!current || !currentSummary || !teacher || state.isBusy.value || !state.isCurrent(token)) {
-      return "failed";
+    if (!sent || !currentSummary || !teacher || state.isBusy.value) {
+      return null;
     }
-    operationBusy.value = true;
-    try {
-      const response = await teacher.copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
-      if (!state.isCurrent(token)) {
-        return "failed";
-      }
-      state.applyResponse(token, response);
-      keying.invalidateCopy();
-      return "saved";
-    } catch (error) {
-      if (nameInUse(error)) {
-        return "name_taken";
-      }
-      toast.failure(SAVE_AS_FAILURE_COPY);
-      return "failed";
-    } finally {
-      operationBusy.value = false;
-    }
+    copyBusy.value = true;
+    const posting = teacher.copyExamWorkspaceDocument(sourceLineageId, name, sent);
+    const owned = posting.then(
+      (response) => {
+        copyBusy.value = false;
+        return response;
+      },
+      (error: unknown) => {
+        copyBusy.value = false;
+        throw error;
+      },
+    );
+    return owned;
   }
 
-  return { saveDocumentAs };
+  return { beginCopy, copyBusy };
 }

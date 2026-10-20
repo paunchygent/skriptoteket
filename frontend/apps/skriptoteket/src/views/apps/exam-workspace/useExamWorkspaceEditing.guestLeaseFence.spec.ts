@@ -31,6 +31,7 @@ import {
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import type { ExamWorkspaceEditLeaseServer } from "./examWorkspaceEditLeaseDrivers";
 import {
   LINEAGE,
@@ -100,7 +101,7 @@ function guestSession(storage: GuestEditLeaseStoragePort): ReturnType<typeof use
     },
   };
   return inScope(() =>
-    useExamWorkspaceEditing(store, { guestStorage: storage, openGuestChannel: channel, tabId: "tab-a" }),
+    useExamWorkspaceEditing(store, nullRouteProjection(), { guestStorage: storage, openGuestChannel: channel, tabId: "tab-a" }),
   );
 }
 
@@ -109,11 +110,7 @@ async function openExamB(
   base: NativeExamDocument,
 ): Promise<void> {
   api.getExamWorkspaceDocument.mockResolvedValue(reply({ ...base, document_id: EXAM_B, title: "Exam B" }, "step-0", EXAM_B));
-  const token = await editing.noteRouteRequest();
-  if (token === null) {
-    throw new Error("expected the route request to settle");
-  }
-  expect(await editing.openDocument(EXAM_B, token)).toBe("installed");
+  expect(await editing.requestRoute(EXAM_B)).toBe("installed");
   await flushPromises();
   expect(editing.editingLocked.value).toBe(false);
 }
@@ -262,7 +259,7 @@ describe("the guest lease fence fail-first ports", () => {
       renew: () => Promise.resolve(held),
       requestTakeover: () => Promise.resolve(held),
     };
-    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server: driver, tabId: "A" }));
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: driver, tabId: "A" }));
     editing.applyCommandResponse(reply(base));
     await flushPromises();
     expect(editing.editingLocked.value).toBe(true);
@@ -302,7 +299,7 @@ describe("the guest lease fence fail-first ports", () => {
       renew: () => Promise.resolve(held),
       requestTakeover: () => Promise.resolve(held),
     };
-    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server: driver, tabId: "A" }));
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: driver, tabId: "A" }));
     editing.applyCommandResponse(reply(base));
     await flushPromises();
     expect(editing.editingLocked.value).toBe(true);
@@ -358,7 +355,7 @@ describe("the guest lease fence fail-first ports", () => {
       renew: () => Promise.resolve(held),
       requestTakeover: () => Promise.resolve(held),
     };
-    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server: driver, tabId: "A" }));
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: driver, tabId: "A" }));
     editing.applyCommandResponse(reply(base));
     await flushPromises();
     expect(editing.leaseReadOnly.value).toBe(true);

@@ -5,8 +5,10 @@
  *   Own the view's panel wiring that belongs together: the drawer state, the
  *   document address sync and the side columns (phone list, import box and
  *   print preview). The drawer and the preview stay exclusive, and a lineage
- *   change shows that document and dismisses the guest sign-in prompt it
- *   interrupted.
+ *   change dismisses the guest sign-in prompt it interrupted. The address is
+ *   an adapter over the gate-owned replacement coordinator: drawer opens
+ *   submit route intents through the same entrance as every other
+ *   document-replacing entry, and the coordinator alone publishes the address.
  *
  * Relationships:
  *   - Composes `useExamWorkspaceDrawerState`, `useExamWorkspaceAddress` and
@@ -22,16 +24,13 @@ import type { Ref } from "vue";
 import type { ExamWorkspaceDocumentSummary, NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
-import type { FenceToken } from "./examWorkspaceSyncFence";
-import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceRouteRequest";
 import { useExamWorkspaceAddress } from "./useExamWorkspaceAddress";
 import { useExamWorkspaceColumnLayout } from "./useExamWorkspaceColumnLayout";
 import { useExamWorkspaceDrawerState } from "./useExamWorkspaceDrawerState";
+import type { ExamWorkspaceRouteProjection } from "./examWorkspaceRouteProjection";
 import { useExamWorkspaceSideColumns } from "./useExamWorkspaceSideColumns";
 
 export type ExamWorkspaceViewPanelsDeps = {
-  /** The editing session's dirty flag; a dirty open exam keeps its address. */
-  isDirty: Readonly<Ref<boolean>>;
   /** True while an exam is open; the drawer starts on Öppna otherwise. */
   isExamOpen: () => boolean;
   /** The view layout; phone drives the list overlay, desktop the docked columns. */
@@ -40,12 +39,12 @@ export type ExamWorkspaceViewPanelsDeps = {
   historyCursor: Ref<string | null>;
   /** The editing session's history position; the preview follows redo and undo. */
   historyPosition: Ref<string | null>;
-  /** Settle the latest edit and retire the generation; null when the edit did not settle. */
-  noteRouteRequest: () => Promise<FenceToken | null>;
-  /** Open the named document for the request's token; reports the routed outcome. */
-  openDocument: (lineageId: string, token: FenceToken) => Promise<ExamWorkspaceRouteOpenOutcome>;
-  /** Read the open exam fresh when the route returns to it or its replacement fails. */
-  reloadOpen: () => void;
+  /** Submit a route-open intent synchronously to the replacement coordinator. */
+  submitRoute: (lineageId: string) => void;
+  /** The address the coordinator stands behind: its desired target, else its source. */
+  currentAddress: () => string | null;
+  /** The shared router adapter: observed by the address, published only by the coordinator. */
+  projection: ExamWorkspaceRouteProjection;
   /** The saved version the open copy stands on; the preview renders it. */
   savedRevision: Ref<number | null>;
   /** The selected question; the preview highlights it. */
@@ -61,12 +60,10 @@ export type ExamWorkspaceViewPanelsDeps = {
 };
 
 export function useExamWorkspaceViewPanels(deps: ExamWorkspaceViewPanelsDeps) {
-  const { showDocument } = useExamWorkspaceAddress({
-    isDirty: deps.isDirty,
-    noteRouteRequest: deps.noteRouteRequest,
-    openDocument: deps.openDocument,
-    reloadOpen: deps.reloadOpen,
-    summary: deps.summary,
+  useExamWorkspaceAddress({
+    currentAddress: deps.currentAddress,
+    projection: deps.projection,
+    submitRoute: deps.submitRoute,
   });
   const {
     closeAfterGoto,
@@ -97,8 +94,7 @@ export function useExamWorkspaceViewPanels(deps: ExamWorkspaceViewPanelsDeps) {
     savedRevision: deps.savedRevision,
     selectedItemId: deps.selectedItemId,
     store: deps.store,
-    onLineage: (next) => {
-      showDocument(next);
+    onLineage: () => {
       deps.dismissSignInPrompt();
     },
   });
@@ -136,6 +132,8 @@ export function useExamWorkspaceViewPanels(deps: ExamWorkspaceViewPanelsDeps) {
     isPhone,
     listOpen,
     listRailCollapsed,
+    /** Submit the drawer-opened lineage as a route intent through the coordinator. */
+    openRoutedDocument: (lineageId: string) => deps.submitRoute(lineageId),
     previewBlocked,
     previewLoading,
     previewMessage,
@@ -148,7 +146,6 @@ export function useExamWorkspaceViewPanels(deps: ExamWorkspaceViewPanelsDeps) {
     rootListState,
     setListWidth,
     setWidth,
-    showDocument,
     side,
     toggleDrawer,
     toggleListCollapsed,
