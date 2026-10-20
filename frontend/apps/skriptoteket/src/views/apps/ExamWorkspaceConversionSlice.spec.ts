@@ -4,10 +4,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
 import { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./exam-workspace/useExamWorkspaceDocument";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import { buildResponse, importFixtureDocument, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
@@ -34,6 +39,7 @@ let wrapper: Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"] | undefin
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
+  arrangeStepHistory(apiMocks);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(

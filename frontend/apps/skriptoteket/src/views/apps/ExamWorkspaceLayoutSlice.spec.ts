@@ -21,6 +21,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import {
   buildResponse,
   importFixtureDocument,
@@ -30,6 +31,10 @@ import {
 const apiMocks = vi.hoisted(() => ({
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
@@ -99,6 +104,7 @@ beforeEach(() => {
   for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

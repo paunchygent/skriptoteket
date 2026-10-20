@@ -17,6 +17,7 @@ import {
   resetEnrichmentApiMocks,
   status,
 } from "./ExamWorkspaceEnrichmentSlice.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import { buildResponse, importFixtureDocument, mountExamWorkspace, type ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -57,6 +58,7 @@ const wrappers: ViewWrapper[] = [];
 
 beforeEach(() => {
   resetEnrichmentApiMocks(apiMocks);
+  arrangeStepHistory(apiMocks);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     const response = buildResponse({ conversion: SUCCEEDED_CONVERSION, version: 1 });
     for (const document of [response.document, response.saved_document]) {

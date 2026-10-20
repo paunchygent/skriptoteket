@@ -25,6 +25,7 @@ import { createTestRouter, mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import {
   arrangeViewApis,
   buildResponse,
@@ -63,6 +64,7 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceQti: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
@@ -79,6 +81,7 @@ afterEach(unmountViews);
 
 beforeEach(() => {
   arrangeViewApis(apiMocks);
+  arrangeStepHistory(apiMocks);
 });
 
 type FrameRole = "admin" | "user" | "contributor";

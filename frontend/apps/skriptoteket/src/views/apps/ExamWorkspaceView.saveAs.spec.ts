@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "../../api/client";
 import { useToastStore } from "../../stores/toast";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import {
   arrangeViewApis,
   buildResponse,
@@ -32,6 +33,7 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
@@ -48,6 +50,7 @@ afterEach(unmountViews);
 
 beforeEach(() => {
   arrangeViewApis(apiMocks);
+  arrangeStepHistory(apiMocks);
 });
 
 describe("ExamWorkspaceView Spara som", () => {
