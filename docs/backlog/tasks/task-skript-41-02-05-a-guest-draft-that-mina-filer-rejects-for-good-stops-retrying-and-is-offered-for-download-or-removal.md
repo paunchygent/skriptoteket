@@ -45,8 +45,9 @@ backlog_document_profile: contract-derived
   draft read, `3b0be5f4`) and R8 (host routes before mount, `dd0b71cf`) repaired, admitted on
   focused proof: 15 files, 143 tests green; fe-type-check, fe-lint, fe-build green
   (`evidence/u9a/`).
-- Next: domain suite on the orchestrator's go, then the staging walk of the rejected-draft
-  notice.
+- Frontend suite at `1bc6cdb8` (orchestrator's slot): 563 files, 4068 passed, 2 todo, exit 0
+  (`evidence/suite/fe-test-1bc6cdb8.log`); backend unchanged since the full suite at `d16e1653`.
+- Next: the staging walk of the rejected-draft notice.
 - Follow-up D24: a server claim keyed on `draft_id` alone, so a lost answer cannot lead to a
   second teacher's import.
 - Work orders: `work/orders/` in the retained root. Explorer maps: `discovery/explorer/`.
