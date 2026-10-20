@@ -131,6 +131,17 @@ async function isCsrfRejection(response: Response): Promise<boolean> {
     "message" in error && error.message === "CSRF token required for browser session write";
 }
 
+/** The guard's rejection of a browser-session write that carries no CSRF token. */
+function csrfRequiredResponse(): Response {
+  const envelope = {
+    error: { code: "AUTHORIZATION_ERROR", message: "CSRF token required for browser session write" },
+  };
+  return new Response(JSON.stringify(envelope), {
+    status: 403,
+    headers: { "content-type": "application/json" },
+  });
+}
+
 /** Send factories must recreate headers and supply a replayable body on each call. */
 export async function requestWithCsrfRecovery(params: {
   requireCurrent: () => void;
@@ -148,6 +159,10 @@ export async function requestWithCsrfRecovery(params: {
     }
   };
   const token = await run(params.ensureToken);
+  // A write without a token is never dispatched: it is answered locally with
+  // the guard's own rejection, which the gateway would return for a missing
+  // header. Recovery keeps returning the original 403.
+  if (!token) return csrfRequiredResponse();
   const response = await run(() => params.send(token));
   if (!await run(() => isCsrfRejection(response))) return response;
   params.invalidateToken(token);

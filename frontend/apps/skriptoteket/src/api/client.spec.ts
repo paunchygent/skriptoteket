@@ -266,6 +266,7 @@ describe("client", () => {
     });
 
     it("serializes JSON body", async () => {
+      useAuthStore().csrfToken = "test-csrf-token";
       mockResponse({ result: "ok" });
 
       await apiFetch("/api/test", { method: "POST", body: { foo: "bar" } });
@@ -278,6 +279,7 @@ describe("client", () => {
     });
 
     it("passes FormData directly without JSON serialization", async () => {
+      useAuthStore().csrfToken = "test-csrf-token";
       mockResponse({ result: "ok" });
       const formData = new FormData();
       formData.append("file", "test");
@@ -399,6 +401,7 @@ describe("client", () => {
 
   describe("apiPost()", () => {
     it("calls apiFetch with POST method and body", async () => {
+      useAuthStore().csrfToken = "test-csrf-token";
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
         status: 200,
