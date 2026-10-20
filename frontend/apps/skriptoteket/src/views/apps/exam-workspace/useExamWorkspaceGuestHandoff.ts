@@ -118,7 +118,9 @@ function declaredAssets(
  * the record are re-read after admission, so a second tab observes the first
  * tab's permanent outcome instead of posting again. A failed attempt writes
  * its record only when the stored draft still has the posted cursor; success
- * and removal clear only their own cursor's record.
+ * and removal clear only their own cursor's record. Once the POST has
+ * resolved, a success always clears the posted snapshot's slot and its own
+ * record first, and only then defers when the owner has retired.
  */
 export async function runGuestHandoff(
   deps: GuestHandoffDeps,
@@ -206,9 +208,11 @@ export async function runGuestHandoff(
       }
       return { kind: "transient" };
     }
-    if (!deps.owner.isLive()) {
-      return { kind: "deferred" };
-    }
+    // The POST resolved: the posted snapshot is saved, so its slot and its
+    // own record are always cleared, even when the owner retired while the
+    // POST was in flight. Both are owned by the cursor that was just saved,
+    // so a newer draft (a new cursor) is never touched. Only then does a
+    // retired owner defer instead of handing off.
     try {
       await deps.storage.clearIf(snapshotCursor);
     } catch {
@@ -216,10 +220,10 @@ export async function runGuestHandoff(
       // the same snapshot a no-op. A newer draft (a new cursor) is kept by
       // clearIf itself, so it is never deleted here.
     }
+    deps.rejections.clearIf(snapshotCursor);
     if (!deps.owner.isLive()) {
       return { kind: "deferred" };
     }
-    deps.rejections.clearIf(snapshotCursor);
     return { kind: "handed_off", lineageId: response.summary.lineage_id };
   });
 }

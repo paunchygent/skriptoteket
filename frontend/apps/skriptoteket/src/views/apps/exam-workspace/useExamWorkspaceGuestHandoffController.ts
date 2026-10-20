@@ -10,7 +10,11 @@
  *   rejection stops retrying and leaves a notice with download, remove and
  *   (vault-full) manual retry actions. A 401 or superseded sign-in records
  *   nothing and shows nothing. A late success shows a toast and keeps the
- *   open exam; the host navigates only on the first attempt.
+ *   open exam; the host navigates only on the first attempt. Removal and
+ *   every attempt run inside the shared cross-tab lock and are owned by the
+ *   controller's auth lifetime: a retired owner posts, clears and records
+ *   nothing, a stale removal never touches another draft's record, and a
+ *   stale retry honours a newer draft's record instead of bypassing it.
  *
  * Relationships:
  *   - Runs `runGuestHandoff` from `useExamWorkspaceGuestHandoff` for every
@@ -190,17 +194,31 @@ export function useExamWorkspaceGuestHandoffController(
       return;
     }
     notice.value = { reason: current.reason, busy: true };
+    let completed = false;
     try {
-      // True or false both close the notice: false means a newer draft owns
-      // the slot now and is handed off on the next load.
-      await deps.storage.clearIf(draft.cursor);
+      completed = await deps.lock.run(async () => {
+        if (!owner.isLive()) {
+          return false;
+        }
+        await deps.storage.clearIf(draft.cursor);
+        if (!owner.isLive()) {
+          return false;
+        }
+        deps.rejections.clearIf(draft.cursor);
+        return true;
+      });
     } catch {
       if (!disposed) {
         notice.value = { reason: current.reason, busy: false };
       }
       return;
     }
-    deps.rejections.clearIf(draft.cursor);
+    if (!completed) {
+      if (!disposed) {
+        notice.value = { reason: current.reason, busy: false };
+      }
+      return;
+    }
     heldDraft = null;
     if (!disposed) {
       notice.value = null;
@@ -232,6 +250,11 @@ export function useExamWorkspaceGuestHandoffController(
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
       notice.value = { reason: outcome.reason, busy: false };
+      return;
+    }
+    if (outcome.kind === "none") {
+      heldDraft = null;
+      notice.value = null;
       return;
     }
     if (outcome.kind === "transient") {

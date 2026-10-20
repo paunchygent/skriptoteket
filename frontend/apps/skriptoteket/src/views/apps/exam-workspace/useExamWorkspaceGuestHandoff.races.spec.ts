@@ -12,6 +12,8 @@
  *   g) Two concurrent attempts over one lock and one shared localStorage make
  *      exactly one POST; the second sees the first permanent record.
  *   h) Removing stale A keeps B's record; the next B load makes no POST.
+ *   i) The owner retiring while the POST is pending still clears the saved
+ *      snapshot and its record, and the outcome is deferred.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -254,5 +256,25 @@ describe("runGuestHandoff races", () => {
     } finally {
       scope.stop();
     }
+  });
+
+  it("i) the owner retiring while the POST is pending still clears the saved snapshot", async () => {
+    const { draft, lock, owner, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const reply = deferred<ExamWorkspaceDocumentResponse>();
+    teacher.importExamWorkspaceGuestDraft.mockReturnValue(reply.promise);
+    let live = true;
+    const pending = runGuestHandoff({
+      lock,
+      owner: { isLive: () => live && owner.isLive(), session: owner.session },
+      rejections,
+      storage,
+      teacher,
+    });
+    await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1));
+    live = false;
+    reply.resolve(handoffResponse(draft, "lineage-a"));
+    await expect(pending).resolves.toEqual({ kind: "deferred" });
+    expect(await storage.load()).toBeNull();
+    expect(rejections.read()).toBeNull();
   });
 });
