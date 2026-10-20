@@ -17,6 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versio
     CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
     NATIVE_EXAM_DOCUMENT_UPGRADE_STEPS,
     OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
+    NativeExamDocumentUpgradeStep,
     is_readable_native_exam_document_version,
     native_exam_document_version,
     upgrade_native_exam_document_payload,
@@ -122,14 +123,14 @@ class TestUpgradeChain:
     def test_steps_run_in_order(self) -> None:
         calls: list[int] = []
 
-        def _step(version: int) -> object:
+        def _step(version: int) -> NativeExamDocumentUpgradeStep:
             def run(payload: dict[str, object]) -> dict[str, object]:
                 calls.append(version)
                 return {**payload, "schema_version": f"native_exam_document_v{version + 1}"}
 
             return run
 
-        payload = {"schema_version": "native_exam_document_v8"}
+        payload: dict[str, object] = {"schema_version": "native_exam_document_v8"}
         upgraded = upgrade_native_exam_document_payload(
             payload, version=8, steps={8: _step(8), 9: _step(9)}, current=10
         )
@@ -148,7 +149,7 @@ class TestUpgradeChain:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_version_at_current_returns_payload_unchanged(self) -> None:
-        payload = {"schema_version": "native_exam_document_v10"}
+        payload: dict[str, object] = {"schema_version": "native_exam_document_v10"}
         assert (
             upgrade_native_exam_document_payload(payload, version=10, steps={}, current=10)
             is payload
