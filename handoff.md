@@ -8,8 +8,9 @@
   Rereview 6 closed V1-V3; its lock findings R6-1..R6-3 are in repair (head
   `31fbd255`, 2026-10-20). Next: focused proof, suite slot, rereview 7 of R6-1,
   then the Mac merge and walk (lease paths, Kurs clear, ticks, drawer hints).
-- 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
-  D24 a server claim per draft_id.
+- 41-02-05 follow-ups: D10 pictures in the guest draft download is built by
+  TASK-SKRIPT-41-02-06 U3 (`a7edf784`, lead branch); D24 a server claim per draft_id is
+  unscheduled.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
