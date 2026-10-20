@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 39-05-15 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 32297fc0 (root 01a156ae evidence/reviews/32297fc0-8f6c-441a-9640-8d87e9771187.md) ended changes_requested with medium F1 only (kept gaps on retype), repaired in 2bcdf10d and admitted by the parent on focused proof (214 passed). Copy review be7c7069 approved. Suites at 3de35313: backend curated_apps domain, application and web 5744 passed, 59 skipped; frontend 3993 passed. Released on main e4d15c4a; Mac staging walk PASS at e4d15c4a on Fråga 3b (item_007) (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - Choosing any type on an unconverted question shows that type's fields and gap tools at once, export stays blocked on that question until the teacher marks it reviewed, and one Ångra restores the kind and the unconverted state
