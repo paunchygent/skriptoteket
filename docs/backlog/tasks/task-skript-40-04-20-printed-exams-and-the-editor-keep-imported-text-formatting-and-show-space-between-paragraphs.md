@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: proposed
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -26,8 +26,8 @@ Status 2026-10-20: U1-U4 integrated and committed on
 `codex/task-skript-print-formatting-remote`. Focused proof: 145 print/DOCX tests and 541
 neighbouring export tests pass; lint, typecheck, fe-type-check, fe-lint, fe-build pass;
 rendered proof page `evidence/print-proof/print-page-1.png` (synthetic sample, real
-WeasyPrint renderer). Domain suite at `5dc5b835` (orchestrator slot): 5730 backend unit passed (59 skipped by
-marker), 3 docker integration passed, 2095 frontend exam-workspace Vitest passed; logs in
+WeasyPrint renderer). Domain suite at `5dc5b835` (orchestrator slot): 5730 backend unit passed (59 skipped,
+pre-existing), 3 docker integration passed, 2095 frontend exam-workspace Vitest passed; logs in
 `evidence/domain-suite/`. Next: Pi ruthless review, then the Mac staging walk of the editor
 gap and the print. Evidence: retained root
 `01a15992-0dae-73a8-8965-6dd9ef7ad693`, user screenshot `user-staging-screenshot.webp`.

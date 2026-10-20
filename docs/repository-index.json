@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "482253a8766494bc9ae068b819bf211bf32b17f3f155717745f868e4d49a80ff",
+  "source_set_digest": "b5687ff46c19a38cf10bd541ab520a31faec35bb2905344cb461b6d326ec5725",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7063,7 +7063,7 @@
       "type": "task",
       "title": "Printed exams and the editor keep imported text formatting and show space between paragraphs",
       "path": "docs/backlog/tasks/task-skript-40-04-20-printed-exams-and-the-editor-keep-imported-text-formatting-and-show-space-between-paragraphs.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

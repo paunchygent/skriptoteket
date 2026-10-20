@@ -8,7 +8,7 @@
 - TASK-SKRIPT-40-04-20 print keeps imported formatting (user, 2026-10-20): lead
   `ca586f66`, branch `codex/task-skript-print-formatting-remote`, root `01a15992`.
   Marks, hard breaks and 4 mm paragraph space in print PDF, preview and DOCX; 1rem
-  paragraph gap in the editor. Committed; next: domain suite, Pi review, Mac staging walk.
+  paragraph gap in the editor. Domain suite green at `5dc5b835`; next: Pi review, Mac staging walk.
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
