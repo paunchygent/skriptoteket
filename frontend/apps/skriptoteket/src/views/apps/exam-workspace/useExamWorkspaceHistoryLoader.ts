@@ -1,52 +1,31 @@
 /**
- * Exam workspace history step-list loader (TASK-SKRIPT-40-04-14, G1b).
+ * Exam workspace history step-list reader (TASK-SKRIPT-40-04-14, F1).
  *
  * Domain purpose:
- *   Reload the server step list for the sync gate: the step the editor
- *   stands on becomes `base`, the fresh server copy the gate read, so a
- *   working copy that differs from it is a pending edit. The gate's
- *   generation replaces any join or token logic: an older load never runs,
- *   and a transport failure throws so the gate keeps `loading` and retries.
+ *   Reload the server step list as a pure read: it returns the parsed step
+ *   list and never writes state or calls reset. The sync gate settles the
+ *   read through the fence and only then applies or resets the history
+ *   through a fenced step, so an abandoned read changes nothing: no reset,
+ *   toast, retry timer or status.
  */
 
-import type { Ref } from "vue";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
-import type { ExamWorkspaceHistoryDeps } from "./useExamWorkspaceHistory";
-
-export type ExamWorkspaceHistoryLoaderState = {
-  baselineId: Ref<string | null>;
-  position: Ref<string | null>;
-  stepDocument: Ref<NativeExamDocument | null>;
-  stepIds: Ref<string[]>;
+/** The parsed step list: the baseline, the step ids in order, and the standing step. */
+export type ExamWorkspaceStepListRead = {
+  baselineId: string;
+  stepIds: string[];
+  position: string | null;
 };
 
-export function createHistoryLoader(
-  deps: Pick<ExamWorkspaceHistoryDeps, "lineageId" | "shared">,
-  state: ExamWorkspaceHistoryLoaderState,
-  reset: () => void,
-): { load: (lineageId: string, base: NativeExamDocument | null) => Promise<void> } {
-  /**
-   * Reload the step list, standing the editor on `base`. A lineage move
-   * meanwhile applies nothing; a read failure resets the list and throws so
-   * the gate retries the whole fresh load.
-   */
-  async function load(lineageId: string, base: NativeExamDocument | null): Promise<void> {
-    let history: Awaited<ReturnType<typeof deps.shared.getExamWorkspaceHistory>>;
-    try {
-      history = await deps.shared.getExamWorkspaceHistory(lineageId);
-    } catch (error) {
-      reset();
-      throw error;
-    }
-    if (deps.lineageId() !== lineageId) {
-      return;
-    }
-    state.baselineId.value = history.baseline_step_id;
-    state.stepIds.value = [...history.step_ids];
-    state.position.value = history.position_step_id;
-    state.stepDocument.value = base;
-  }
-
-  return { load };
+export async function readStepList(
+  shared: ExamWorkspaceSharedStore,
+  lineageId: string,
+): Promise<ExamWorkspaceStepListRead> {
+  const history = await shared.getExamWorkspaceHistory(lineageId);
+  return {
+    baselineId: history.baseline_step_id,
+    position: history.position_step_id,
+    stepIds: [...history.step_ids],
+  };
 }

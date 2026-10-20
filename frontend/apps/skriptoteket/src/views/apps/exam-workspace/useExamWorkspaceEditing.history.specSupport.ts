@@ -18,6 +18,7 @@ import { serverExamWorkspaceStore, type ExamWorkspaceSharedStore } from "./examW
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 
 export type EditingApiMocks = {
@@ -320,6 +321,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       },
       isBlocked: options.isBlocked ?? (() => false),
       enqueueWrite: (run, refused) => requireGate().enqueueWrite(run, refused),
+      isCurrent: (token) => requireGate().fence.isCurrent(token),
       noteGateStored: () => requireGate().noteStored(),
       noteInstalledCursor: (foreignLineageId, cursor) => {
         if (
@@ -363,7 +365,9 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       currentWorkingCopy: () => workspaceDocument.value,
       dropOwedSnapshots: () => history.dropOwedSnapshots(),
       readDocument: (readLineageId) => shared.getExamWorkspaceDocument(readLineageId),
-      readSteps: (readLineageId, base) => history.load(readLineageId, base ?? serverDocument.value),
+      readStepList: (readLineageId) => readStepList(shared, readLineageId),
+      applyStepList: (token, read, base) => history.applySteps(token, read, base ?? serverDocument.value),
+      resetStepList: (token) => history.resetSteps(token),
       installFresh: (fresh) => {
         gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
         serverDocument.value = fresh.document;

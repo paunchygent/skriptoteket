@@ -12,6 +12,7 @@ import {
   exam,
   LINEAGE,
   response,
+  stepListRead,
   succeedLoad,
   withPoints,
   type SyncGateHarness,
@@ -72,8 +73,8 @@ describe("the sync gate phases and events", () => {
     expect(harness.gate.phase.value).toBe("loading");
     expect(harness.documentReads.length).toBe(0);
     expect(harness.stepReads.length).toBe(1);
-    expect(harness.stepReads[0]?.base).toBe(null);
     await succeedLoad(harness, exam());
+    expect(harness.appliedSteps[0]?.base).toBe(null);
     expect(harness.gate.phase.value).toBe("editing");
   });
 
@@ -211,6 +212,42 @@ describe("the sync gate phases and events", () => {
     expect(harness.counts.owedDropped).toBe(0);
   });
 
+  it("retires the running load and goes readonly when the lease is lost during loading", async () => {
+    const harness = createGate();
+    harness.gate.openExam(LINEAGE, false);
+    harness.gate.leaseLost();
+    expect(harness.gate.phase.value).toBe("readonly");
+    expect(harness.counts.owedDropped).toBe(0);
+    const abandoned = harness.documentReads[0];
+    if (abandoned === undefined) {
+      throw new Error("expected the first document read");
+    }
+    abandoned.resolve(response(exam(), "step-0"));
+    await harness.settle();
+    expect(harness.freshInstalled.length).toBe(0);
+    expect(harness.gate.phase.value).toBe("readonly");
+    harness.flags.leaseHeld = true;
+    harness.gate.leaseAcquired();
+    expect(harness.gate.phase.value).toBe("loading");
+    expect(harness.documentReads.length).toBe(2);
+    await succeedLoad(harness, exam());
+    expect(harness.gate.phase.value).toBe("editing");
+  });
+
+  it("keeps a held kept edit when the lease is lost again during the takeover load", async () => {
+    const harness = createGate();
+    await takeKept(harness);
+    harness.gate.leaseAcquired();
+    harness.gate.leaseLost();
+    expect(harness.gate.phase.value).toBe("readonly");
+    expect(harness.counts.owedDropped).toBe(1);
+    expect(harness.mergeCalls.length).toBe(0);
+    harness.gate.leaseAcquired();
+    await succeedLoad(harness, exam());
+    expect(harness.mergeCalls.length).toBe(1);
+    expect(harness.gate.phase.value).toBe("editing");
+  });
+
   it("returns to loading for a fresh load on a stale-cursor 409", async () => {
     const harness = createGate();
     await openEditing(harness);
@@ -307,6 +344,7 @@ describe("the sync gate phases and events", () => {
     read.reject(new Error("network down"));
     await harness.settle();
     expect(harness.gate.phase.value).toBe("loading");
+    expect(harness.stepResets()).toBe(0);
     expect(harness.counts.reloadFailures).toBe(1);
     expect(harness.pendingTimers()).toBe(1);
     harness.fireTimer();
@@ -335,6 +373,7 @@ describe("the sync gate phases and events", () => {
     stepRead.read.reject(new Error("network down"));
     await harness.settle();
     expect(harness.gate.phase.value).toBe("loading");
+    expect(harness.stepResets()).toBe(1);
     expect(harness.counts.reloadFailures).toBe(1);
     harness.fireTimer();
     await succeedLoad(harness, exam());
@@ -358,7 +397,7 @@ describe("the sync gate phases and events", () => {
     if (stepRead === undefined) {
       throw new Error("expected a step-list read");
     }
-    stepRead.read.resolve(undefined);
+    stepRead.read.resolve(stepListRead());
     await harness.settle();
     expect(harness.gate.phase.value).toBe("editing");
   });

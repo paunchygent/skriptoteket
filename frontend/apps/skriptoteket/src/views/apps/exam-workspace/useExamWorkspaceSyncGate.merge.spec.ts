@@ -13,6 +13,7 @@ import {
   LINEAGE,
   pointsOf,
   response,
+  stepListRead,
   succeedLoad,
   withPoints,
   type SyncGateHarness,
@@ -73,7 +74,7 @@ describe("the sync gate merge point", () => {
     if (stepRead === undefined) {
       throw new Error("expected a step-list read");
     }
-    stepRead.read.resolve(undefined);
+    stepRead.read.resolve(stepListRead());
     await harness.settle();
     expect(harness.mergeCalls.length).toBe(1);
     expect(harness.mergedInstalled.length).toBe(1);

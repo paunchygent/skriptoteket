@@ -1,26 +1,27 @@
 /**
- * Exam workspace sync gate (TASK-SKRIPT-40-04-14, G1b wiring).
+ * Exam workspace sync gate (TASK-SKRIPT-40-04-14, G1b wiring, F1 fence).
  *
  * Domain purpose:
  *   One owner for the exam workspace sync state: the phase (`loading`,
- *   `editing`, `readonly`), a generation number that abandons stale reads and
- *   queued writes, the kept refused edit and the single write queue every
- *   save goes through. A write runs only in `editing` for the generation in
- *   which it was queued, one at a time in order; otherwise it resolves
- *   `refused` at once, without calling its run and without awaiting any read.
- *   Every fresh load (document GET, then step-list GET) runs under the deps'
- *   `replaceCopy` lock and checks the generation after each await, so an
- *   abandoned read's late answer installs, merges and changes nothing. With a
- *   kept edit the fresh document is held and only the merge is installed,
- *   after both reads succeed; without one the fresh document is installed at
- *   once and shown read-only until the step list arrives. A failed read keeps
- *   `loading`, reports through the reload-failure port, and retries after
- *   5 s. After a merge install the gate queues one ordinary store of the
- *   working copy through the write queue; the kept edit clears only when
- *   `noteStored` arrives in the generation of that merge install. A network
- *   failure of the merged store is retried by the history's own save retry;
- *   a stale-cursor 409 on that store arrives as `staleConflict` and merges
- *   again at the next merge point.
+ *   `editing`, `readonly`), the kept refused edit and the single write queue
+ *   every save goes through. A write runs only in `editing` for the
+ *   generation in which it was queued, one at a time in order; otherwise it
+ *   resolves `refused` at once, without calling its run and without awaiting
+ *   any read. Every fresh load (document GET, then step-list GET) settles
+ *   through the owned fence, so an abandoned read's late answer installs,
+ *   merges and changes nothing. With a kept edit the fresh document is held
+ *   and only the merge is installed, after both reads succeed; without one
+ *   the fresh document is installed at once and shown read-only until the
+ *   step list arrives. A failed read keeps `loading`, reports through the
+ *   reload-failure port, and retries after 5 s. After a merge install the
+ *   gate queues one ordinary store of the working copy through the write
+ *   queue; the kept edit clears only when `noteStored` arrives while the
+ *   merge token is still current. A network failure of the merged store is
+ *   retried by the history's own save retry; a stale-cursor 409 on that
+ *   store arrives as `staleConflict` and merges again at the next merge
+ *   point. A lease lost during `loading` retires the running load and moves
+ *   the gate to `readonly`, so the load can never become editable after a
+ *   later reacquisition starts a fresh load.
  *
  * Relationships:
  *   - Calls `mergeRefusedEdit`, which stays the merge owner; G1b passes the
@@ -28,6 +29,8 @@
  *   - G1b binds the ports to the existing owners (document, history, lease):
  *     reads install through the document owner, stores through the history,
  *     the lease through `leaseAcquired` and `leaseLost`.
+ *   - Owns the sync fence F2 and F3 settle and thread tokens through; the
+ *     gate exposes it, but no other port is fenced here yet.
  */
 
 import { computed, ref, shallowRef } from "vue";
@@ -36,6 +39,8 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
+import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 
 /** The confirmed sync state: no fresh copy and step list, lease held and fresh, or another tab's lease. */
 export type ExamWorkspaceSyncGatePhase = "loading" | "editing" | "readonly";
@@ -70,8 +75,16 @@ export type ExamWorkspaceSyncGateDeps = {
   dropOwedSnapshots: () => void;
   /** Read the fresh server response without installing it. */
   readDocument: (lineageId: string) => Promise<ExamWorkspaceDocumentResponse>;
-  /** Read the fresh step list; the owner applies it, standing on `base`. */
-  readSteps: (lineageId: string, base: NativeExamDocument | null) => Promise<void>;
+  /** Read the fresh step list without installing it; the gate settles it through the fence. */
+  readStepList: (lineageId: string) => Promise<ExamWorkspaceStepListRead>;
+  /** Install a settled step-list read for its own generation; stale tokens do nothing. */
+  applyStepList: (
+    token: FenceToken,
+    read: ExamWorkspaceStepListRead,
+    base: NativeExamDocument | null,
+  ) => void;
+  /** Clear the step list after a current-generation read failure; stale tokens do nothing. */
+  resetStepList: (token: FenceToken) => void;
   /** Install a fresh response with no kept edit waiting. */
   installFresh: (response: ExamWorkspaceDocumentResponse) => void;
   /** Apply the fresh response, then install the merged working copy. */
@@ -122,45 +135,43 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   const leaseReadOnly = computed(() => phase.value === "readonly");
 
   const timer = deps.timer;
+  /** The generation owner: every async result settles against its token before touching state. */
+  const fence: SyncFence = createSyncFence();
 
-  let generation = 0;
   let lineage: string | null = null;
   const kept = shallowRef<ExamWorkspaceSyncGateKeptEdit | null>(null);
-  /** The generation whose merge install the kept edit waits for; `noteStored` clears only in it. */
-  let mergeGeneration: number | null = null;
+  /** The merge install the kept edit waits for; `noteStored` clears only while it is current. */
+  let mergeToken: FenceToken | null = null;
   let disposed = false;
-  /** Serializes `enqueueWrite` entries so writes run one at a time in order. */
+  /** The current generation's tail, so writes run one at a time in order. */
   let tail: Promise<void> = Promise.resolve();
-  /**
-   * Resolves the abandonment race of the latest fresh load. Every generation
-   * bump resolves and clears it, so an abandoned load leaves its replacing
-   * scope at once instead of pinning the editing lock behind a hung read.
-   */
-  let abandonPendingLoad: (() => void) | null = null;
 
-  /** Move to the next generation, releasing the latest load's read race. */
-  function bumpGeneration(): void {
-    generation += 1;
-    const abandon = abandonPendingLoad;
-    abandonPendingLoad = null;
-    if (abandon !== null) {
-      abandon();
-    }
+  /** Retire the current generation: outstanding settles resolve `stale` and the next write starts a fresh tail. */
+  function retire(): void {
+    fence.retire();
+    tail = Promise.resolve();
   }
 
   /**
-   * The single write queue. An entry runs only in `editing` for the
-   * generation in which it was queued; otherwise it resolves `refused` at
-   * once, without calling `run` and without awaiting any read. A rejection
-   * from `run` reaches this entry's caller but never breaks later entries.
+   * The single write queue. Outside `editing` an entry resolves `refused`
+   * at once, without touching the tail. Otherwise the entry captures the
+   * current token and runs only when its turn comes while the token is
+   * still current and the phase is still `editing`; each generation has its
+   * own tail, so a current write never waits behind a retired one. A
+   * rejection from `run` reaches this entry's caller but never breaks later
+   * entries.
    */
-  function enqueueWrite<T>(run: () => Promise<T>, refused: T): Promise<T> {
-    const queuedGeneration = generation;
-    const task = tail.then(() => {
-      if (disposed || queuedGeneration !== generation || phase.value !== "editing") {
+  function enqueueWrite<T>(run: (token: FenceToken) => Promise<T>, refused: T): Promise<T> {
+    if (disposed || phase.value !== "editing") {
+      return Promise.resolve(refused);
+    }
+    const token = fence.begin();
+    const queue = tail;
+    const task = queue.then(() => {
+      if (disposed || !fence.isCurrent(token) || phase.value !== "editing") {
         return refused;
       }
-      return run();
+      return run(token);
     });
     tail = task.then(
       () => undefined,
@@ -171,21 +182,19 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
 
   function startFreshLoad(skipDocument: boolean): void {
     timer.cancel();
-    void freshLoad(generation, skipDocument);
+    void freshLoad(fence.begin(), skipDocument);
   }
 
   /**
    * Read the fresh document (unless the cursor arrived with this tab's own
    * fresh copy, and no kept edit needs a fresh merge base) and then the step
-   * list, both under the replacing lock. Every read races the generation:
-   * when another event moves on, the load leaves its scope at once, so an
-   * abandoned read's hung transport never pins the editing lock, and its
-   * late answer installs, merges and changes nothing. Every await is also
-   * generation-guarded. A failure of either read keeps `loading` with the
-   * kept edit untouched, reports through the reload-failure port, and
-   * retries after 5 s.
+   * list, both under the replacing lock. Every read settles through the
+   * fence: a retired load installs, merges, resets and changes nothing, and
+   * its failure is silent. A current failure resets the step list, reports
+   * through the reload-failure port, and retries after 5 s. Every install
+   * after an await runs only on a current token.
    */
-  async function freshLoad(loadGeneration: number, skipDocument: boolean): Promise<void> {
+  async function freshLoad(token: FenceToken, skipDocument: boolean): Promise<void> {
     const lineageId = lineage;
     if (lineageId === null || disposed) {
       return;
@@ -193,37 +202,19 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     // A kept edit always needs a fresh merge base, even when the cursor came
     // with this tab's own fresh document.
     const wantDocument = !skipDocument || kept.value !== null;
-    let resolveAbandoned: (() => void) | null = null;
-    const abandoned = new Promise<void>((resolve) => {
-      resolveAbandoned = resolve;
-    });
-    abandonPendingLoad = () => {
-      const resolve = resolveAbandoned;
-      resolveAbandoned = null;
-      if (resolve !== null) {
-        resolve();
-      }
-    };
-    const abandonedRace = (): Promise<string> => abandoned.then((): string => "abandoned");
-    let fresh: ExamWorkspaceDocumentResponse | null = null;
     try {
       await deps.replaceCopy(async () => {
+        let fresh: ExamWorkspaceDocumentResponse | null = null;
         if (wantDocument) {
-          const documentRead = deps.readDocument(lineageId);
-          const documentOutcome = await Promise.race([
-            documentRead.then(
-              (): string => "document",
-              (error: unknown): string => {
-                throw error;
-              },
-            ),
-            abandonedRace(),
-          ]);
-          if (documentOutcome === "abandoned" || disposed || loadGeneration !== generation) {
+          const documentSettled = await fence.settle(token, deps.readDocument(lineageId));
+          if (documentSettled.kind === "stale" || disposed) {
             return;
           }
-          fresh = await documentRead;
-          if (disposed || loadGeneration !== generation) {
+          if (documentSettled.kind === "failed") {
+            throw documentSettled.error;
+          }
+          fresh = documentSettled.value;
+          if (!fence.isCurrent(token) || disposed) {
             return;
           }
           if (kept.value === null) {
@@ -231,42 +222,48 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
           }
         }
         const base = fresh !== null ? fresh.document : null;
-        const stepsRead = deps.readSteps(lineageId, base);
-        const stepsOutcome = await Promise.race([
-          stepsRead.then(
-            (): string => "steps",
-            (error: unknown): string => {
-              throw error;
-            },
-          ),
-          abandonedRace(),
-        ]);
-        if (stepsOutcome === "abandoned" || disposed || loadGeneration !== generation) {
+        const stepsSettled = await fence.settle(token, deps.readStepList(lineageId));
+        if (stepsSettled.kind === "stale" || disposed) {
           return;
         }
-        await stepsRead;
+        if (stepsSettled.kind === "failed") {
+          deps.resetStepList(token);
+          throw stepsSettled.error;
+        }
+        const read = stepsSettled.value;
+        if (!fence.isCurrent(token) || disposed) {
+          return;
+        }
+        deps.applyStepList(token, read, base);
         // The only merge point: a kept edit merges onto the fresh document
         // after both reads succeed, and only the merge install is shown. The
-        // merged working copy then reaches the server through one ordinary
-        // store; the kept edit clears when that store reports back in this
-        // generation.
+        // phase flips to `editing` first, so the ordinary store the merge
+        // queues through the write queue is admitted; the kept edit clears
+        // when that store reports back while the merge token is still
+        // current.
         const pendingKept = kept.value;
         const freshResponse = fresh;
+        let merged: NativeExamDocument | null = null;
         if (pendingKept !== null && freshResponse !== null) {
-          const merged = deps.mergeRefusedEdit(pendingKept.base, pendingKept.edited, freshResponse.document);
+          merged = deps.mergeRefusedEdit(pendingKept.base, pendingKept.edited, freshResponse.document);
           if (merged === null) {
             kept.value = null;
-            mergeGeneration = null;
+            mergeToken = null;
           } else {
             deps.installMerged(freshResponse, merged);
-            mergeGeneration = loadGeneration;
-            deps.requestStore();
+            mergeToken = token;
           }
         }
+        if (!fence.isCurrent(token) || disposed) {
+          return;
+        }
         phase.value = deps.isLeaseHeld() ? "editing" : "readonly";
+        if (merged !== null) {
+          deps.requestStore();
+        }
       });
     } catch {
-      if (disposed || loadGeneration !== generation) {
+      if (!fence.isCurrent(token) || disposed) {
         return;
       }
       deps.notifyReloadFailed();
@@ -274,7 +271,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
         if (disposed) {
           return;
         }
-        void freshLoad(generation, false);
+        void freshLoad(fence.begin(), false);
       }, SYNC_GATE_RELOAD_RETRY_MS);
     }
   }
@@ -289,48 +286,60 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     }
     lineage = nextLineageId;
     kept.value = null;
-    mergeGeneration = null;
-    bumpGeneration();
+    mergeToken = null;
+    retire();
     phase.value = "loading";
     startFreshLoad(documentFresh);
   }
 
   /**
    * The lease is held now. A load in flight reads `isLeaseHeld` when it
-   * finishes, so in `loading` this is a no-op; in `readonly` it starts a
-   * fresh load. Opening an exam with a successful claim therefore reads the
-   * document once.
+   * finishes, so in `loading` this is a no-op: the phase is still `loading`
+   * only when the lease was never lost since this load started, because a
+   * loss during `loading` retires the load and moves the gate to `readonly`.
+   * In `readonly` this starts a fresh load.
    */
   function leaseAcquired(): void {
     if (disposed || phase.value !== "readonly") {
       return;
     }
-    bumpGeneration();
+    retire();
     phase.value = "loading";
     startFreshLoad(false);
   }
 
   /**
    * The lease is gone, or a write was refused with `EDIT_LEASE_HELD`: turn
-   * read-only. When a pending edit exists, always (re)capture the kept edit
-   * from the current step document and working copy, replacing any older
-   * one, and drop owed snapshots. After a merge install the working copy is
-   * the merge plus later typing, so the new capture carries both.
+   * read-only. In `editing`, when a pending edit exists, always (re)capture
+   * the kept edit from the current step document and working copy, replacing
+   * any older one, and drop owed snapshots. After a merge install the
+   * working copy is the merge plus later typing, so the new capture carries
+   * both. In `loading` there is no pending edit to capture (inputs are
+   * locked) and any kept edit stays; the bump retires the running load, so
+   * it can never become editable after a later reacquisition starts a fresh
+   * load.
    */
   function leaseLost(): void {
-    if (disposed || phase.value !== "editing") {
+    if (disposed) {
       return;
     }
-    if (deps.hasPendingEdit()) {
-      const base = deps.currentStepDocument();
-      const edited = deps.currentWorkingCopy();
-      if (base !== null && edited !== null) {
-        kept.value = { base, edited };
+    if (phase.value === "editing") {
+      if (deps.hasPendingEdit()) {
+        const base = deps.currentStepDocument();
+        const edited = deps.currentWorkingCopy();
+        if (base !== null && edited !== null) {
+          kept.value = { base, edited };
+        }
       }
+      deps.dropOwedSnapshots();
+      retire();
+      phase.value = "readonly";
+      return;
     }
-    deps.dropOwedSnapshots();
-    bumpGeneration();
-    phase.value = "readonly";
+    if (phase.value === "loading") {
+      retire();
+      phase.value = "readonly";
+    }
   }
 
   /**
@@ -343,7 +352,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     if (disposed || phase.value !== "editing") {
       return;
     }
-    bumpGeneration();
+    retire();
     phase.value = "loading";
     startFreshLoad(false);
   }
@@ -357,22 +366,23 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     if (disposed) {
       return;
     }
-    bumpGeneration();
+    retire();
     phase.value = "loading";
     startFreshLoad(documentFresh);
   }
 
   /**
-   * A store in the merge generation succeeded: the kept edit is recovered.
-   * Stores from any other generation leave it pending for the next merge.
+   * A store succeeded while the merge token is still current: the kept edit
+   * is recovered. Stores from any other generation leave it pending for the
+   * next merge.
    */
   function noteStored(): void {
     if (disposed) {
       return;
     }
-    if (kept.value !== null && mergeGeneration !== null && mergeGeneration === generation) {
+    if (kept.value !== null && mergeToken !== null && fence.isCurrent(mergeToken)) {
       kept.value = null;
-      mergeGeneration = null;
+      mergeToken = null;
     }
   }
 
@@ -386,13 +396,14 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   function dispose(): void {
     disposed = true;
     timer.cancel();
-    bumpGeneration();
+    retire();
   }
 
   return {
     dispose,
     editingLocked,
     enqueueWrite,
+    fence,
     foreignCursor,
     hasKeptEdit,
     leaseAcquired,

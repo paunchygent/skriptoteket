@@ -1,21 +1,20 @@
 /**
- * Exam workspace history step-list loader (TASK-SKRIPT-40-04-14, G1b).
+ * Exam workspace history step-list reader (TASK-SKRIPT-40-04-14, F1).
  *
  * Expected behavior:
- *   - A load applies the history payload to the state and stands the editor
- *     on the given base document.
- *   - A load that finishes after the lineage moved on applies nothing.
- *   - A failed read resets the state and throws, so the gate's generation
- *     logic retries the whole fresh load.
+ *   - A read returns the parsed step list (baseline id, step ids, position).
+ *   - A read never writes state: finishing after a lineage move still
+ *     resolves with the payload, because currency is the fence's job and
+ *     there is nothing to apply here.
+ *   - A failed read rejects and writes nothing, so the gate resets the step
+ *     list and retries the whole fresh load.
  */
 
-import { ref, shallowRef } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceHistory, NativeExamDocument } from "../../../api/examWorkspace";
-import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import type { ExamWorkspaceHistory } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { createHistoryLoader } from "./useExamWorkspaceHistoryLoader";
+import { readStepList } from "./useExamWorkspaceHistoryLoader";
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -63,76 +62,44 @@ function historyPayload(): ExamWorkspaceHistory {
   };
 }
 
-function setup() {
-  const source = buildParentDocument();
-  const holder = { lineage: LINEAGE };
-  const baselineId = ref<string | null>(null);
-  const position = ref<string | null>(null);
-  const stepDocument = shallowRef<NativeExamDocument | null>(null);
-  const stepIds = ref<string[]>([]);
-  const loader = createHistoryLoader(
-    {
-      lineageId: () => holder.lineage,
-      shared: serverExamWorkspaceStore.shared,
-    },
-    { baselineId, position, stepDocument, stepIds },
-    () => {
-      baselineId.value = null;
-      position.value = null;
-      stepDocument.value = null;
-      stepIds.value = [];
-    },
-  );
-  return { baselineId, holder, loader, position, source, stepDocument, stepIds };
-}
-
 beforeEach(() => {
   api.getExamWorkspaceHistory.mockReset();
 });
 
-describe("a step-list load", () => {
-  it("applies the history payload and stands the editor on the base document", async () => {
-    const { baselineId, loader, position, source, stepDocument, stepIds } = setup();
+describe("a step-list read", () => {
+  it("returns the parsed payload", async () => {
     api.getExamWorkspaceHistory.mockResolvedValue({
       ...historyPayload(),
       position_step_id: "step-2",
       step_ids: ["step-1", "step-2"],
     });
 
-    await loader.load(LINEAGE, source);
-
+    await expect(readStepList(serverExamWorkspaceStore.shared, LINEAGE)).resolves.toEqual({
+      baselineId: "step-0",
+      position: "step-2",
+      stepIds: ["step-1", "step-2"],
+    });
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(1);
-    expect(baselineId.value).toBe("step-0");
-    expect(position.value).toBe("step-2");
-    expect(stepIds.value).toEqual(["step-1", "step-2"]);
-    expect(stepDocument.value).toBe(source);
+    expect(api.getExamWorkspaceHistory).toHaveBeenCalledWith(LINEAGE);
   });
 
-  it("applies nothing when the lineage moved on meanwhile", async () => {
-    const { baselineId, holder, loader, position, source, stepDocument, stepIds } = setup();
+  it("resolves with the payload even when the lineage moved on meanwhile", async () => {
     const gate = deferred<ExamWorkspaceHistory>();
     api.getExamWorkspaceHistory.mockImplementation(() => gate.promise);
 
-    const loading = loader.load(LINEAGE, source);
-    holder.lineage = "00000000-0000-4000-8000-000000000002";
+    const reading = readStepList(serverExamWorkspaceStore.shared, LINEAGE);
     gate.resolve(historyPayload());
-    await loading;
 
-    expect(baselineId.value).toBeNull();
-    expect(position.value).toBeNull();
-    expect(stepDocument.value).toBeNull();
-    expect(stepIds.value).toEqual([]);
+    await expect(reading).resolves.toEqual({
+      baselineId: "step-0",
+      position: "step-0",
+      stepIds: [],
+    });
   });
 
-  it("resets the state and throws when the read fails", async () => {
-    const { baselineId, loader, position, source, stepDocument, stepIds } = setup();
+  it("rejects without side effects when the read fails", async () => {
     api.getExamWorkspaceHistory.mockRejectedValueOnce(new Error("offline"));
 
-    await expect(loader.load(LINEAGE, source)).rejects.toThrow("offline");
-
-    expect(baselineId.value).toBeNull();
-    expect(position.value).toBeNull();
-    expect(stepDocument.value).toBeNull();
-    expect(stepIds.value).toEqual([]);
+    await expect(readStepList(serverExamWorkspaceStore.shared, LINEAGE)).rejects.toThrow("offline");
   });
 });

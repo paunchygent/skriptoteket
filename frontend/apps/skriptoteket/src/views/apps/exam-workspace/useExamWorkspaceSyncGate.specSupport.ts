@@ -10,7 +10,9 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
+import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 import { exam, LINEAGE, response } from "./useExamWorkspaceEditing.history.specSupport";
 
 export { exam, LINEAGE, response };
@@ -62,9 +64,11 @@ export type SyncGateCounts = {
 export type SyncGateHarness = {
   gate: ReturnType<typeof useExamWorkspaceSyncGate>;
   documentReads: Deferred<ExamWorkspaceDocumentResponse>[];
-  stepReads: Array<{ base: NativeExamDocument | null; read: Deferred<void> }>;
+  stepReads: Array<{ read: Deferred<ExamWorkspaceStepListRead> }>;
   freshInstalled: ExamWorkspaceDocumentResponse[];
   mergedInstalled: NativeExamDocument[];
+  appliedSteps: Array<{ base: NativeExamDocument | null; read: ExamWorkspaceStepListRead }>;
+  stepResets: () => number;
   mergeCalls: Array<{ base: NativeExamDocument; edited: NativeExamDocument; newest: NativeExamDocument }>;
   counts: SyncGateCounts;
   flags: SyncGateFlags;
@@ -96,6 +100,8 @@ export function createGate(): SyncGateHarness {
   const freshInstalled: ExamWorkspaceDocumentResponse[] = [];
   const mergedInstalled: NativeExamDocument[] = [];
   const mergeCalls: SyncGateHarness["mergeCalls"] = [];
+  const appliedSteps: SyncGateHarness["appliedSteps"] = [];
+  let stepResets = 0;
   const counts: SyncGateCounts = { owedDropped: 0, reloadFailures: 0, replaceCalls: 0, storeRequests: 0 };
   const timers: Array<() => void> = [];
   const flags: SyncGateFlags = {
@@ -136,11 +142,19 @@ export function createGate(): SyncGateHarness {
       documentReads.push(read);
       return read.promise;
     },
-    readSteps: (lineageId: string, base: NativeExamDocument | null) => {
+    readStepList: (lineageId: string) => {
       void lineageId;
-      const read = deferred<void>();
-      stepReads.push({ base, read });
+      const read = deferred<ExamWorkspaceStepListRead>();
+      stepReads.push({ read });
       return read.promise;
+    },
+    applyStepList: (token: FenceToken, read: ExamWorkspaceStepListRead, base: NativeExamDocument | null) => {
+      void token;
+      appliedSteps.push({ base, read });
+    },
+    resetStepList: (token: FenceToken) => {
+      void token;
+      stepResets += 1;
     },
     replaceCopy: <T>(run: () => Promise<T>): Promise<T> => {
       counts.replaceCalls += 1;
@@ -159,6 +173,7 @@ export function createGate(): SyncGateHarness {
     },
   });
   return {
+    appliedSteps,
     counts,
     documentReads,
     fireTimer: () => {
@@ -178,6 +193,7 @@ export function createGate(): SyncGateHarness {
       await flushPromises();
     },
     stepReads,
+    stepResets: () => stepResets,
   };
 }
 
@@ -185,9 +201,14 @@ function latestDocumentRead(harness: SyncGateHarness): Deferred<ExamWorkspaceDoc
   return harness.documentReads[harness.documentReads.length - 1];
 }
 
-function latestStepRead(harness: SyncGateHarness): Deferred<void> | undefined {
+function latestStepRead(harness: SyncGateHarness): Deferred<ExamWorkspaceStepListRead> | undefined {
   const latest = harness.stepReads[harness.stepReads.length - 1];
   return latest === undefined ? undefined : latest.read;
+}
+
+/** A parsed step-list read standing on `position`. */
+export function stepListRead(position = "step-0", stepIds: string[] = []): ExamWorkspaceStepListRead {
+  return { baselineId: "step-0", position, stepIds: [...stepIds] };
 }
 
 /** Resolve the latest document and step-list reads with fresh copies. */
@@ -204,6 +225,6 @@ export async function succeedLoad(
   if (stepRead === undefined) {
     throw new Error("expected a step-list read");
   }
-  stepRead.resolve(undefined);
+  stepRead.resolve(stepListRead());
   await harness.settle();
 }

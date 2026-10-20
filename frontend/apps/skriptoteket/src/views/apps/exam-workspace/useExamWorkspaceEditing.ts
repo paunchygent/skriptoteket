@@ -33,6 +33,7 @@ import {
   type ExamWorkspaceEditLeaseDeps,
 } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import { createSyncGateTimer, useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
@@ -104,6 +105,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     enqueueWrite: (run, refused) => gate.enqueueWrite(run, refused),
+    isCurrent: (token) => gate.fence.isCurrent(token),
     shared: store.shared,
     tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
@@ -141,7 +143,9 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     currentWorkingCopy: () => document.workspaceDocument.value,
     dropOwedSnapshots: () => history.dropOwedSnapshots(),
     readDocument: (readLineageId) => store.shared.getExamWorkspaceDocument(readLineageId),
-    readSteps: (readLineageId, base) => history.load(readLineageId, base ?? document.serverDocument.value),
+    readStepList: (readLineageId) => readStepList(store.shared, readLineageId),
+    applyStepList: (token, read, base) => history.applySteps(token, read, base ?? document.serverDocument.value),
+    resetStepList: (token) => history.resetSteps(token),
     installFresh: (fresh) => {
       gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
       document.applyCommandResponse(fresh);

@@ -25,6 +25,7 @@ import { isApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import { refusalReason, type StoreOutcome } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceHistoryDeps } from "./useExamWorkspaceHistory";
 
@@ -51,7 +52,7 @@ export type ExamWorkspaceHistoryNavigationDeps = {
   /** Store the pending edit now, with its store outcome kept. Runs inside the undo or redo queue slot. */
   flushOutcome: (settle?: boolean) => Promise<StoreOutcome>;
   /** The sync gate's single write queue; undo and redo run inside one slot each. */
-  enqueueWrite: <T>(run: () => Promise<T>, refused: T) => Promise<T>;
+  enqueueWrite: <T>(run: (token: FenceToken) => Promise<T>, refused: T) => Promise<T>;
   /** The history's deps the navigation reads and writes run through. */
   history: Pick<
     ExamWorkspaceHistoryDeps,
