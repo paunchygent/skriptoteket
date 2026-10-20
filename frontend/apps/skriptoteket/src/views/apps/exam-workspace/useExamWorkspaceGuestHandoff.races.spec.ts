@@ -29,6 +29,10 @@ import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
 import {
   createLocalStorageGuestHandoffRejectionStorage,
 } from "./examWorkspaceGuestHandoffRejection";
+import {
+  GuestHandoffLockUnavailableError,
+  type GuestHandoffLockPort,
+} from "./examWorkspaceGuestHandoffLock";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import { runGuestHandoff } from "./useExamWorkspaceGuestHandoff";
 import { useExamWorkspaceGuestHandoffController } from "./useExamWorkspaceGuestHandoffController";
@@ -193,7 +197,7 @@ describe("runGuestHandoff races", () => {
     const b = await replaceSlotWithB(storage);
     rejections.write({ cursor: b.cursor, reason: "permanent" });
     await expect(
-      runGuestHandoff({ lock, owner, rejections, storage, teacher }, { retryVaultFullOf: draft.cursor }),
+      runGuestHandoff({ lock, owner, rejections, storage, teacher }, { retryVaultFullOf: draft.cursor, signal: new AbortController().signal }),
     ).resolves.toEqual({ draft: b, kind: "rejected", reason: "permanent" });
     expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
   });
@@ -205,7 +209,7 @@ describe("runGuestHandoff races", () => {
     );
     rejections.write({ cursor: draft.cursor, reason: "vault_full" });
     await expect(
-      runGuestHandoff({ lock, owner, rejections, storage, teacher }, { retryVaultFullOf: draft.cursor }),
+      runGuestHandoff({ lock, owner, rejections, storage, teacher }, { retryVaultFullOf: draft.cursor, signal: new AbortController().signal }),
     ).resolves.toEqual({ draft, kind: "rejected", reason: "vault_full" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
   });
@@ -352,5 +356,111 @@ describe("runGuestHandoff races", () => {
     expect((await storage.load())?.draft.cursor).toBe(draft.cursor);
     expect(rejections.read()).toBeNull();
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+  });
+
+  it("k) lock unavailable with a stored draft returns lock_unavailable with no POST and no record", async () => {
+    const { draft, owner, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const failingLock: GuestHandoffLockPort = {
+      run<T>(_work: () => Promise<T>, _signal: AbortSignal): Promise<T> {
+        return Promise.reject(
+          new GuestHandoffLockUnavailableError("Web Locks are unavailable."),
+        );
+      },
+    };
+    await expect(
+      runGuestHandoff(
+        { lock: failingLock, owner, rejections, storage, teacher },
+        { signal: new AbortController().signal },
+      ),
+    ).resolves.toEqual({ draft, kind: "lock_unavailable" });
+    expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
+    expect(rejections.read()).toBeNull();
+    expect((await storage.load())?.draft.cursor).toBe(draft.cursor);
+  });
+
+  it("l) lock unavailable with no stored draft returns none", async () => {
+    const { owner, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const stored = (await storage.load())!;
+    expect(await storage.clearIf(stored.draft.cursor)).toBe(true);
+    const failingLock: GuestHandoffLockPort = {
+      run<T>(_work: () => Promise<T>, _signal: AbortSignal): Promise<T> {
+        return Promise.reject(
+          new GuestHandoffLockUnavailableError("Web Locks are unavailable."),
+        );
+      },
+    };
+    await expect(
+      runGuestHandoff(
+        { lock: failingLock, owner, rejections, storage, teacher },
+        { signal: new AbortController().signal },
+      ),
+    ).resolves.toEqual({ kind: "none" });
+    expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
+    expect(rejections.read()).toBeNull();
+  });
+
+  it("m) P11 kept: a queued attempt whose signal aborts while another holds the lock defers without reading storage", async () => {
+    const { lock, owner, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const gate = deferred<void>();
+    const holding = lock.run(() => gate.promise, new AbortController().signal);
+    const load = vi.spyOn(storage, "load");
+    const attempt = new AbortController();
+    const pending = runGuestHandoff(
+      { lock, owner, rejections, storage, teacher },
+      { signal: attempt.signal },
+    );
+    attempt.abort();
+    gate.resolve();
+    await holding;
+    await expect(pending).resolves.toEqual({ kind: "deferred" });
+    expect(load).not.toHaveBeenCalled();
+    expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
+    expect(rejections.read()).toBeNull();
+  });
+
+  it("n) a held attempt whose signal aborts while its POST is pending defers and releases the lock", async () => {
+    const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
+    const auth = useAuthStore();
+    auth.$patch({
+      csrfToken: "csrf-a",
+      sharedSessionId: "session-a",
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
+    });
+    const session = auth.captureSession();
+    const owner = { isLive: () => auth.isCurrentSession(session), session };
+    vi.mocked(fetch).mockImplementationOnce(
+      (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted.", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    const attempt = new AbortController();
+    const pending = runGuestHandoff(
+      { lock, owner, rejections, storage, teacher: { importExamWorkspaceGuestDraft } },
+      { signal: attempt.signal },
+    );
+    await vi.waitFor(() => expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1));
+    attempt.abort();
+    await expect(pending).resolves.toEqual({ kind: "deferred" });
+    expect(rejections.read()).toBeNull();
+    expect((await storage.load())?.draft.cursor).toBe(draft.cursor);
+    vi.mocked(fetch).mockImplementationOnce(
+      async () =>
+        new Response(JSON.stringify(handoffResponse(draft, "lineage-new")), {
+          headers: { "Content-Type": "application/json" },
+          status: 200,
+        }),
+    );
+    await expect(
+      runGuestHandoff(
+        { lock, owner, rejections, storage, teacher: { importExamWorkspaceGuestDraft } },
+        { signal: new AbortController().signal },
+      ),
+    ).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-new" });
+    await expect(storage.load()).resolves.toBeNull();
   });
 });

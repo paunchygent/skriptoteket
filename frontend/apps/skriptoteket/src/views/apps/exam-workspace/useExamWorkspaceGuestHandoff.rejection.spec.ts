@@ -116,7 +116,7 @@ describe("runGuestHandoff rejections", () => {
     await expect(
       runGuestHandoff(
         { lock, owner, rejections, storage, teacher },
-        { retryVaultFullOf: draft.cursor },
+        { retryVaultFullOf: draft.cursor, signal: new AbortController().signal },
       ),
     ).resolves.toEqual({ draft, kind: "rejected", reason: "vault_full" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
@@ -279,7 +279,7 @@ describe("runGuestHandoff rejections", () => {
     await expect(
       runGuestHandoff(
         { lock, owner, rejections, storage, teacher },
-        { retryVaultFullOf: draft.cursor },
+        { retryVaultFullOf: draft.cursor, signal: new AbortController().signal },
       ),
     ).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-new" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);

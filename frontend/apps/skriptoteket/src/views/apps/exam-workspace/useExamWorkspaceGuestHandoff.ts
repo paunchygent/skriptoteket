@@ -20,8 +20,15 @@
  *   no record or draft mutation, except for one committed case. A 2xx that
  *   arrives after the owner retired is reported through the import's
  *   superseded-success signal and clears only the posted cursor's slot and
- *   record before deferring; any other retired outcome clears nothing. This
- *   module shows no toasts: a later
+ *   record before deferring; any other retired outcome clears nothing. A lock
+ *   that cannot be granted is a typed refusal, not a silent skip: the attempt
+ *   reads the draft without the lock and, when one exists, returns
+ *   `lock_unavailable` with no POST and no record or draft mutation, so a
+ *   later load in a browser with working locks tries again. Every attempt
+ *   also carries its own abort signal next to the owner's lifetime: a queued
+ *   attempt leaves the queue and a held POST settles when the signal aborts,
+ *   a failure after its own signal aborted defers without classifying, and
+ *   only disposal retires the owner. This module shows no toasts: a later
  *   controller unit owns all user messages.
  *
  * Relationships:
@@ -50,7 +57,10 @@ import type {
 import type { AuthSession } from "../../../stores/auth";
 import { classifyGuestHandoffFailure } from "./examWorkspaceGuestHandoffFailure";
 import type { GuestHandoffRejectionStoragePort } from "./examWorkspaceGuestHandoffRejection";
-import type { GuestHandoffLockPort } from "./examWorkspaceGuestHandoffLock";
+import {
+  GuestHandoffLockUnavailableError,
+  type GuestHandoffLockPort,
+} from "./examWorkspaceGuestHandoffLock";
 import { guestDocumentResponse, type ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import type {
   ExamWorkspaceGuestDraftStoragePort,
@@ -67,6 +77,7 @@ export type GuestHandoffOutcome =
   | { kind: "none" }
   | { kind: "handed_off"; lineageId: string }
   | { kind: "rejected"; reason: "permanent" | "vault_full"; draft: ExamWorkspaceGuestDraft }
+  | { kind: "lock_unavailable"; draft: ExamWorkspaceGuestDraft }
   | { kind: "transient" }
   | { kind: "deferred" };
 
@@ -91,6 +102,9 @@ export type GuestHandoffOwner = {
 };
 
 export type RunGuestHandoffOptions = {
+  /** Aborts the queued admission and the held POST; a failure after this
+   *  signal aborted defers without classifying. */
+  signal: AbortSignal;
   /**
    * A draft cursor holding a vault-full notice. The recorded rejection is
    * bypassed only when the record is `vault_full` for this same cursor and
@@ -120,134 +134,190 @@ function declaredAssets(
  *
  * The whole attempt runs inside the cross-tab handoff lock: the draft and
  * the record are re-read after admission, so a second tab observes the first
- * tab's permanent outcome instead of posting again. A failed attempt writes
- * its record only when the stored draft still has the posted cursor; success
- * and removal clear only their own cursor's record. Once the POST has
- * resolved, a success always clears the posted snapshot's slot and its own
- * record first, and only then defers when the owner has retired. A 2xx that
- * arrives after the owner retired takes the same cursor-owned cleanup
- * through the import's superseded-success signal and then defers; an
+ * tab's permanent outcome instead of posting again. The lock request and the
+ * POST both carry the attempt's abort signal: a queued attempt leaves the
+ * queue and a held POST settles when the signal aborts, and a failure after
+ * its own signal aborted defers without classifying. A lock that cannot be
+ * granted reads the draft without the lock instead and returns
+ * `lock_unavailable` with no POST and no record or draft mutation. A failed
+ * attempt writes its record only when the stored draft still has the posted
+ * cursor; success and removal clear only their own cursor's record. Once the
+ * POST has resolved, a success always clears the posted snapshot's slot and
+ * its own record first, and only then defers when the owner has retired. A
+ * 2xx that arrives after the owner retired takes the same cursor-owned
+ * cleanup through the import's superseded-success signal and then defers; an
  * unanswered or failed request clears nothing.
  */
 export async function runGuestHandoff(
   deps: GuestHandoffDeps,
-  options?: RunGuestHandoffOptions,
+  attempt: RunGuestHandoffOptions = { signal: new AbortController().signal },
 ): Promise<GuestHandoffOutcome> {
-  return await deps.lock.run(async () => {
-    if (!deps.owner.isLive()) {
-      return { kind: "deferred" };
-    }
-    let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
-    try {
-      stored = await deps.storage.load();
-    } catch {
-      return { kind: "none" };
-    }
-    if (!deps.owner.isLive()) {
-      return { kind: "deferred" };
-    }
-    if (stored === null || deps.teacher === null) {
-      return { kind: "none" };
-    }
-    const snapshotCursor = stored.draft.cursor;
-
-    const recorded = deps.rejections.read();
-    if (recorded !== null && recorded.cursor !== snapshotCursor) {
-      deps.rejections.clearIf(recorded.cursor);
-    } else if (
-      recorded !== null &&
-      recorded.cursor === snapshotCursor &&
-      (options?.retryVaultFullOf !== snapshotCursor || recorded.reason !== "vault_full")
-    ) {
-      return { kind: "rejected", draft: stored.draft, reason: recorded.reason };
-    }
-
-    let document: NativeExamDocument;
-    try {
-      document = guestDocumentResponse(stored.draft).document;
-    } catch {
-      const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
-      deps.rejections.write(rejection);
-      return { draft: stored.draft, kind: "rejected", reason: "permanent" };
-    }
-
-    const missingBytes = document.assets.some(
-      (asset) => stored.assets[asset.asset_id] === undefined,
+  const retired = (): boolean => attempt.signal.aborted || !deps.owner.isLive();
+  try {
+    return await deps.lock.run(
+      () => runGuestHandoffLocked(deps, attempt, retired),
+      attempt.signal,
     );
-    if (missingBytes) {
-      const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
-      deps.rejections.write(rejection);
-      return { draft: stored.draft, kind: "rejected", reason: "permanent" };
-    }
-
-    let response: ExamWorkspaceDocumentResponse;
-    let committed = false;
-    try {
-      response = await deps.teacher.importExamWorkspaceGuestDraft(
-        snapshotCursor,
-        document,
-        declaredAssets(document, stored.assets),
-        stored.draft.notes,
-        {
-          onSupersededSuccess: () => {
-            committed = true;
-          },
-          session: deps.owner.session,
-        },
-      );
-    } catch (error) {
-      if (committed) {
-        try {
-          await deps.storage.clearIf(snapshotCursor);
-        } catch {
-          // The exam is already saved; the server ledger makes a repeated
-          // post of the same snapshot a no-op. A newer draft (a new cursor)
-          // is kept by clearIf itself, so it is never deleted here.
-        }
-        deps.rejections.clearIf(snapshotCursor);
-        return { kind: "deferred" };
-      }
-      const kind = classifyGuestHandoffFailure(error);
-      if (kind === "permanent" || kind === "vault_full") {
-        if (!deps.owner.isLive()) {
-          return { kind: "deferred" };
-        }
-        let current: StoredGuestDraft | null;
-        try {
-          current = await deps.storage.load();
-        } catch {
-          return { kind: "none" };
-        }
-        if (!deps.owner.isLive()) {
-          return { kind: "deferred" };
-        }
-        if (current?.draft.cursor !== snapshotCursor) {
-          return { kind: "none" };
-        }
-        deps.rejections.write({ cursor: snapshotCursor, reason: kind });
-        return { draft: stored.draft, kind: "rejected", reason: kind };
-      }
-      if (kind === "deferred") {
-        return { kind: "deferred" };
-      }
-      return { kind: "transient" };
-    }
-    // The POST resolved: the posted snapshot is saved, so its slot and its
-    // own record are always cleared, even when the owner retired while the
-    // POST was in flight. Both are owned by the cursor that was just saved,
-    // so a newer draft (a new cursor) is never touched. Only then does a
-    // retired owner defer instead of handing off.
-    try {
-      await deps.storage.clearIf(snapshotCursor);
-    } catch {
-      // The exam is already saved; the server ledger makes a repeated post of
-      // the same snapshot a no-op. A newer draft (a new cursor) is kept by
-      // clearIf itself, so it is never deleted here.
-    }
-    deps.rejections.clearIf(snapshotCursor);
-    if (!deps.owner.isLive()) {
+  } catch (error: unknown) {
+    if (attempt.signal.aborted) {
       return { kind: "deferred" };
     }
-    return { kind: "handed_off", lineageId: response.summary.lineage_id };
-  });
+    if (error instanceof GuestHandoffLockUnavailableError) {
+      return await readDraftWithoutLock(deps);
+    }
+    throw error;
+  }
+}
+
+/**
+ * The lock-held half of `runGuestHandoff`: the draft and the record are
+ * re-read after admission, the POST carries the attempt's abort signal, and
+ * every liveness check treats an aborted attempt like a retired owner.
+ */
+async function runGuestHandoffLocked(
+  deps: GuestHandoffDeps,
+  attempt: RunGuestHandoffOptions,
+  retired: () => boolean,
+): Promise<GuestHandoffOutcome> {
+  if (retired()) {
+    return { kind: "deferred" };
+  }
+  let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
+  try {
+    stored = await deps.storage.load();
+  } catch {
+    return { kind: "none" };
+  }
+  if (retired()) {
+    return { kind: "deferred" };
+  }
+  if (stored === null || deps.teacher === null) {
+    return { kind: "none" };
+  }
+  const snapshotCursor = stored.draft.cursor;
+
+  const recorded = deps.rejections.read();
+  if (recorded !== null && recorded.cursor !== snapshotCursor) {
+    deps.rejections.clearIf(recorded.cursor);
+  } else if (
+    recorded !== null &&
+    recorded.cursor === snapshotCursor &&
+    (attempt.retryVaultFullOf !== snapshotCursor || recorded.reason !== "vault_full")
+  ) {
+    return { kind: "rejected", draft: stored.draft, reason: recorded.reason };
+  }
+
+  let document: NativeExamDocument;
+  try {
+    document = guestDocumentResponse(stored.draft).document;
+  } catch {
+    const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
+    deps.rejections.write(rejection);
+    return { draft: stored.draft, kind: "rejected", reason: "permanent" };
+  }
+
+  const missingBytes = document.assets.some(
+    (asset) => stored.assets[asset.asset_id] === undefined,
+  );
+  if (missingBytes) {
+    const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
+    deps.rejections.write(rejection);
+    return { draft: stored.draft, kind: "rejected", reason: "permanent" };
+  }
+
+  let response: ExamWorkspaceDocumentResponse;
+  let committed = false;
+  try {
+    response = await deps.teacher.importExamWorkspaceGuestDraft(
+      snapshotCursor,
+      document,
+      declaredAssets(document, stored.assets),
+      stored.draft.notes,
+      {
+        onSupersededSuccess: () => {
+          committed = true;
+        },
+        session: deps.owner.session,
+        signal: attempt.signal,
+      },
+    );
+  } catch (error) {
+    if (committed) {
+      try {
+        await deps.storage.clearIf(snapshotCursor);
+      } catch {
+        // The exam is already saved; the server ledger makes a repeated
+        // post of the same snapshot a no-op. A newer draft (a new cursor)
+        // is kept by clearIf itself, so it is never deleted here.
+      }
+      deps.rejections.clearIf(snapshotCursor);
+      return { kind: "deferred" };
+    }
+    if (attempt.signal.aborted) {
+      return { kind: "deferred" };
+    }
+    const kind = classifyGuestHandoffFailure(error);
+    if (kind === "permanent" || kind === "vault_full") {
+      if (retired()) {
+        return { kind: "deferred" };
+      }
+      let current: StoredGuestDraft | null;
+      try {
+        current = await deps.storage.load();
+      } catch {
+        return { kind: "none" };
+      }
+      if (retired()) {
+        return { kind: "deferred" };
+      }
+      if (current?.draft.cursor !== snapshotCursor) {
+        return { kind: "none" };
+      }
+      deps.rejections.write({ cursor: snapshotCursor, reason: kind });
+      return { draft: stored.draft, kind: "rejected", reason: kind };
+    }
+    if (kind === "deferred") {
+      return { kind: "deferred" };
+    }
+    return { kind: "transient" };
+  }
+  // The POST resolved: the posted snapshot is saved, so its slot and its
+  // own record are always cleared, even when the owner retired while the
+  // POST was in flight. Both are owned by the cursor that was just saved,
+  // so a newer draft (a new cursor) is never touched. Only then does a
+  // retired owner defer instead of handing off.
+  try {
+    await deps.storage.clearIf(snapshotCursor);
+  } catch {
+    // The exam is already saved; the server ledger makes a repeated post of
+    // the same snapshot a no-op. A newer draft (a new cursor) is kept by
+    // clearIf itself, so it is never deleted here.
+  }
+  deps.rejections.clearIf(snapshotCursor);
+  if (retired()) {
+    return { kind: "deferred" };
+  }
+  return { kind: "handed_off", lineageId: response.summary.lineage_id };
+}
+
+/**
+ * The no-lock fallback of `runGuestHandoff`: the draft is read without
+ * coordinating across tabs, so nothing is posted, recorded or cleared. A
+ * stored draft returns `lock_unavailable` so the caller can hold it and show
+ * the permanent notice; without a stored draft there is nothing to hand off.
+ */
+async function readDraftWithoutLock(deps: GuestHandoffDeps): Promise<GuestHandoffOutcome> {
+  let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
+  try {
+    stored = await deps.storage.load();
+  } catch {
+    return { kind: "none" };
+  }
+  if (!deps.owner.isLive()) {
+    return { kind: "deferred" };
+  }
+  if (stored === null) {
+    return { kind: "none" };
+  }
+  return { draft: stored.draft, kind: "lock_unavailable" };
 }

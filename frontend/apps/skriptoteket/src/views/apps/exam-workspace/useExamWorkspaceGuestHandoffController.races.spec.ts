@@ -22,7 +22,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope } from "vue";
 
 import { createLocalStorageGuestHandoffRejectionStorage } from "./examWorkspaceGuestHandoffRejection";
-import { createInMemoryGuestHandoffLock } from "./examWorkspaceGuestHandoffLock";
+import {
+  createInMemoryGuestHandoffLock,
+  createWebGuestHandoffLock,
+} from "./examWorkspaceGuestHandoffLock";
 import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
 import { runGuestHandoff } from "./useExamWorkspaceGuestHandoff";
 import { useExamWorkspaceGuestHandoffController } from "./useExamWorkspaceGuestHandoffController";
@@ -51,6 +54,24 @@ async function replaceSlotWithB(
   const b = { ...current.draft, cursor: B_CURSOR };
   expect(await storage.replaceIf(current.draft.cursor, { ...current, draft: b })).toBe(true);
   return b;
+}
+
+/** Point the Web adapter at a throwaway lock manager, restoring afterwards. */
+function setNavigatorLocks(value: unknown): () => void {
+  const descriptor = Object.getOwnPropertyDescriptor(navigator, "locks");
+  const originalValue: unknown = navigator.locks;
+  Object.defineProperty(navigator, "locks", { configurable: true, value, writable: true });
+  return () => {
+    if (descriptor === undefined) {
+      Object.defineProperty(navigator, "locks", {
+        configurable: true,
+        value: originalValue,
+        writable: true,
+      });
+    } else {
+      Object.defineProperty(navigator, "locks", descriptor);
+    }
+  };
 }
 
 beforeEach(() => {
@@ -270,7 +291,7 @@ describe("useExamWorkspaceGuestHandoffController races", () => {
       await controller.start();
       expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
       const gate = deferred<void>();
-      const holding = harness.lock.run(() => gate.promise);
+      const holding = harness.lock.run(() => gate.promise, new AbortController().signal);
       const removing = controller.remove();
       scope.stop();
       gate.resolve(undefined);
@@ -278,6 +299,143 @@ describe("useExamWorkspaceGuestHandoffController races", () => {
       await removing;
       expect((await harness.storage.load())?.draft.cursor).toBe(harness.draft.cursor);
       expect(rejections.read()).toEqual({ cursor: harness.draft.cursor, reason: "permanent" });
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it.each([["missing"], ["denied"]])(
+    "h) P10 port: %s Web Locks settle start with the permanent notice and remove clears without the lock",
+    async (kind) => {
+      const harness = await seedGuestHandoffHarness();
+      const restore = setNavigatorLocks(
+        kind === "missing"
+          ? undefined
+          : {
+              request: async (): Promise<never> => {
+                throw new DOMException("Storage access is denied.", "SecurityError");
+              },
+            },
+      );
+      const scope = effectScope();
+      try {
+        const controller = scope.run(() =>
+          useExamWorkspaceGuestHandoffController({
+            ...harness,
+            lock: createWebGuestHandoffLock(),
+          }),
+        )!;
+        await expect(controller.start()).resolves.toBeNull();
+        expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+        expect(harness.teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
+        expect(harness.rejections.read()).toBeNull();
+        expect((await harness.storage.load())?.draft.cursor).toBe(harness.draft.cursor);
+        await controller.remove();
+        await expect(harness.storage.load()).resolves.toBeNull();
+        expect(controller.notice.value).toBeNull();
+      } finally {
+        scope.stop();
+        restore();
+      }
+    },
+  );
+
+  it("i) P12 port: a held POST aborted by pagehide settles, and a later start proceeds and POSTs", async () => {
+    const harness = await seedGuestHandoffHarness();
+    const rejections = createLocalStorageGuestHandoffRejectionStorage();
+    harness.teacher.importExamWorkspaceGuestDraft.mockImplementationOnce(
+      (_key, _document, _assets, _notes, binding) =>
+        new Promise<never>((_resolve, reject) => {
+          binding.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted.", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    harness.teacher.importExamWorkspaceGuestDraft.mockRejectedValue(guestHandoffApiError(422));
+    const scope = effectScope();
+    const first = scope.run(() =>
+      useExamWorkspaceGuestHandoffController({ ...harness, rejections }),
+    )!;
+    const firstPending = first.start();
+    await vi.waitFor(() =>
+      expect(harness.teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1),
+    );
+    window.dispatchEvent(new Event("pagehide"));
+    await expect(firstPending).resolves.toBeNull();
+    expect(rejections.read()).toBeNull();
+    expect((await harness.storage.load())?.draft.cursor).toBe(harness.draft.cursor);
+    scope.stop();
+    const later = effectScope();
+    try {
+      const second = later.run(() =>
+        useExamWorkspaceGuestHandoffController({ ...harness, rejections }),
+      )!;
+      await expect(second.start()).resolves.toBeNull();
+      expect(second.notice.value).toEqual({ reason: "permanent", busy: false });
+    } finally {
+      later.stop();
+    }
+    expect(harness.teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
+  });
+
+  it("j) P12 port: a held POST aborted by disposal settles, and a later start proceeds and POSTs", async () => {
+    const harness = await seedGuestHandoffHarness();
+    const rejections = createLocalStorageGuestHandoffRejectionStorage();
+    harness.teacher.importExamWorkspaceGuestDraft.mockImplementationOnce(
+      (_key, _document, _assets, _notes, binding) =>
+        new Promise<never>((_resolve, reject) => {
+          binding.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted.", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    harness.teacher.importExamWorkspaceGuestDraft.mockRejectedValue(guestHandoffApiError(422));
+    const scope = effectScope();
+    const first = scope.run(() =>
+      useExamWorkspaceGuestHandoffController({ ...harness, rejections }),
+    )!;
+    const firstPending = first.start();
+    await vi.waitFor(() =>
+      expect(harness.teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1),
+    );
+    scope.stop();
+    await expect(firstPending).resolves.toBeNull();
+    expect(rejections.read()).toBeNull();
+    expect((await harness.storage.load())?.draft.cursor).toBe(harness.draft.cursor);
+    const later = effectScope();
+    try {
+      const second = later.run(() =>
+        useExamWorkspaceGuestHandoffController({ ...harness, rejections }),
+      )!;
+      await expect(second.start()).resolves.toBeNull();
+      expect(second.notice.value).toEqual({ reason: "permanent", busy: false });
+    } finally {
+      later.stop();
+    }
+    expect(harness.teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
+  });
+
+  it("k) after pagehide aborts an attempt, a vault-full notice retry still POSTs", async () => {
+    const harness = await seedGuestHandoffHarness();
+    const rejections = createLocalStorageGuestHandoffRejectionStorage();
+    harness.teacher.importExamWorkspaceGuestDraft.mockRejectedValue(
+      guestHandoffApiError(422, "VALIDATION_ERROR", { reason: "vault_full" }),
+    );
+    const scope = effectScope();
+    try {
+      const controller = scope.run(() =>
+        useExamWorkspaceGuestHandoffController({ ...harness, rejections }),
+      )!;
+      await controller.start();
+      expect(controller.notice.value).toEqual({ reason: "vault_full", busy: false });
+      window.dispatchEvent(new Event("pagehide"));
+      await controller.retry();
+      expect(harness.teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
+      expect(controller.notice.value).toEqual({ reason: "vault_full", busy: false });
     } finally {
       scope.stop();
     }

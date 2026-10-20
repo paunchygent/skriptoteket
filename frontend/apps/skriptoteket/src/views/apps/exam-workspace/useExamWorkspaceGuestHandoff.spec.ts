@@ -178,7 +178,7 @@ describe("runGuestHandoff", () => {
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(draft.cursor, position, {
       asset_a: blobA,
       asset_b: blobB,
-    }, [], { onSupersededSuccess: expect.any(Function), session: owner.session });
+    }, [], { onSupersededSuccess: expect.any(Function), session: owner.session, signal: expect.any(AbortSignal) });
     await expect(storage.load()).resolves.toBeNull();
     expect(failureToasts()).toEqual([]);
   });
@@ -205,7 +205,7 @@ describe("runGuestHandoff", () => {
       guestDocumentResponse(draft).document,
       { asset_a: blobA, asset_b: blobB },
       ["Fråga 3 hoppades över."],
-      { onSupersededSuccess: expect.any(Function), session: owner.session },
+      { onSupersededSuccess: expect.any(Function), session: owner.session, signal: expect.any(AbortSignal) },
     );
     await expect(storage.load()).resolves.toBeNull();
   });
@@ -306,7 +306,7 @@ describe("runGuestHandoff", () => {
       expect.anything(),
       expect.anything(),
       expect.anything(),
-      { onSupersededSuccess: expect.any(Function), session: owner.session },
+      { onSupersededSuccess: expect.any(Function), session: owner.session, signal: expect.any(AbortSignal) },
     );
 
     const newer = newGuestDraft(
@@ -383,7 +383,7 @@ describe("runGuestHandoff", () => {
       expect.anything(),
       expect.anything(),
       [],
-      { onSupersededSuccess: expect.any(Function), session: owner.session },
+      { onSupersededSuccess: expect.any(Function), session: owner.session, signal: expect.any(AbortSignal) },
     );
     expect(teacher.importExamWorkspaceGuestDraft.mock.calls[1]?.[0]).not.toBe(
       teacher.importExamWorkspaceGuestDraft.mock.calls[0]?.[0],

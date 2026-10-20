@@ -15,6 +15,13 @@
  *   controller's auth lifetime: a retired owner posts, clears and records
  *   nothing, a stale removal never touches another draft's record, and a
  *   stale retry honours a newer draft's record instead of bypassing it.
+ *   `lock_unavailable` outcome holds the draft and shows the permanent notice
+ *   with download and remove and no retry; remove then runs without the lock,
+ *   since that browser has no cross-tab lock to coordinate with. Every attempt
+ *   and every removal carries its own abort signal: `pagehide` and scope
+ *   disposal abort the current one, while only disposal retires the owner, so
+ *   a page restored from the back-forward cache stays live. Aborted attempts
+ *   settle without posting, recording or clearing.
  *
  * Relationships:
  *   - Runs `runGuestHandoff` from `useExamWorkspaceGuestHandoff` for every
@@ -34,6 +41,7 @@ import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
+import { GuestHandoffLockUnavailableError } from "./examWorkspaceGuestHandoffLock";
 import {
   runGuestHandoff,
   type GuestHandoffDeps,
@@ -75,6 +83,8 @@ export function useExamWorkspaceGuestHandoffController(
   let timer: ReturnType<typeof setTimeout> | null = null;
   let disposed = false;
   let inFlight = false;
+  let currentAttempt: AbortController | null = null;
+  let lockUnavailable = false;
 
   const auth = useAuthStore();
   const session = auth.captureSession();
@@ -82,6 +92,18 @@ export function useExamWorkspaceGuestHandoffController(
     isLive: () => !disposed && auth.isCurrentSession(session),
     session,
   };
+
+  function abortCurrentAttempt(): void {
+    currentAttempt?.abort();
+  }
+
+  function onPageHide(): void {
+    abortCurrentAttempt();
+  }
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("pagehide", onPageHide);
+  }
 
   function clearTimer(): void {
     if (timer !== null) {
@@ -104,6 +126,12 @@ export function useExamWorkspaceGuestHandoffController(
       notice.value = { reason: outcome.reason, busy: false };
       return;
     }
+    if (outcome.kind === "lock_unavailable") {
+      lockUnavailable = true;
+      heldDraft = outcome.draft;
+      notice.value = { reason: "permanent", busy: false };
+      return;
+    }
     if (outcome.kind === "transient") {
       if (delayIndex + 1 < delays.length) {
         scheduleBackgroundRetry(delayIndex + 1);
@@ -118,9 +146,13 @@ export function useExamWorkspaceGuestHandoffController(
       return;
     }
     inFlight = true;
+    const attempt = new AbortController();
+    currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff({ ...deps, owner });
+      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
+    } catch {
+      outcome = { kind: "transient" };
     } finally {
       inFlight = false;
     }
@@ -150,9 +182,13 @@ export function useExamWorkspaceGuestHandoffController(
       return null;
     }
     inFlight = true;
+    const attempt = new AbortController();
+    currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff({ ...deps, owner });
+      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
+    } catch {
+      outcome = { kind: "transient" };
     } finally {
       inFlight = false;
     }
@@ -165,6 +201,12 @@ export function useExamWorkspaceGuestHandoffController(
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
       notice.value = { reason: outcome.reason, busy: false };
+      return null;
+    }
+    if (outcome.kind === "lock_unavailable") {
+      lockUnavailable = true;
+      heldDraft = outcome.draft;
+      notice.value = { reason: "permanent", busy: false };
       return null;
     }
     if (outcome.kind === "transient") {
@@ -194,19 +236,35 @@ export function useExamWorkspaceGuestHandoffController(
       return;
     }
     notice.value = { reason: current.reason, busy: true };
+    const attempt = new AbortController();
+    currentAttempt = attempt;
+    const body = async (): Promise<boolean> => {
+      if (!owner.isLive()) {
+        return false;
+      }
+      await deps.storage.clearIf(draft.cursor);
+      if (!owner.isLive()) {
+        return false;
+      }
+      deps.rejections.clearIf(draft.cursor);
+      return true;
+    };
     let completed = false;
     try {
-      completed = await deps.lock.run(async () => {
-        if (!owner.isLive()) {
-          return false;
+      if (lockUnavailable) {
+        completed = await body();
+      } else {
+        try {
+          completed = await deps.lock.run(body, attempt.signal);
+        } catch (lockError: unknown) {
+          if (lockError instanceof GuestHandoffLockUnavailableError) {
+            lockUnavailable = true;
+            completed = await body();
+          } else {
+            throw lockError;
+          }
         }
-        await deps.storage.clearIf(draft.cursor);
-        if (!owner.isLive()) {
-          return false;
-        }
-        deps.rejections.clearIf(draft.cursor);
-        return true;
-      });
+      }
     } catch {
       if (!disposed) {
         notice.value = { reason: current.reason, busy: false };
@@ -232,9 +290,16 @@ export function useExamWorkspaceGuestHandoffController(
     }
     notice.value = { reason: current.reason, busy: true };
     inFlight = true;
+    const attempt = new AbortController();
+    currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff({ ...deps, owner }, { retryVaultFullOf: heldDraft?.cursor });
+      outcome = await runGuestHandoff(
+        { ...deps, owner },
+        { retryVaultFullOf: heldDraft?.cursor, signal: attempt.signal },
+      );
+    } catch {
+      outcome = { kind: "transient" };
     } finally {
       inFlight = false;
     }
@@ -252,6 +317,12 @@ export function useExamWorkspaceGuestHandoffController(
       notice.value = { reason: outcome.reason, busy: false };
       return;
     }
+    if (outcome.kind === "lock_unavailable") {
+      lockUnavailable = true;
+      heldDraft = outcome.draft;
+      notice.value = { reason: "permanent", busy: false };
+      return;
+    }
     if (outcome.kind === "none") {
       heldDraft = null;
       notice.value = null;
@@ -267,6 +338,10 @@ export function useExamWorkspaceGuestHandoffController(
 
   onScopeDispose(() => {
     disposed = true;
+    abortCurrentAttempt();
+    if (typeof window !== "undefined") {
+      window.removeEventListener("pagehide", onPageHide);
+    }
     clearTimer();
   });
 

@@ -44,11 +44,15 @@ const handoff = useExamWorkspaceGuestHandoffController({
 const handoffSettled = ref(false);
 
 onMounted(async () => {
-  const lineageId = await handoff.start();
+  let lineageId: string | null = null;
+  try {
+    lineageId = await handoff.start();
+  } finally {
+    handoffSettled.value = true;
+  }
   if (lineageId) {
     await router.replace({ query: { ...route.query, document: lineageId } });
   }
-  handoffSettled.value = true;
 });
 </script>
 
