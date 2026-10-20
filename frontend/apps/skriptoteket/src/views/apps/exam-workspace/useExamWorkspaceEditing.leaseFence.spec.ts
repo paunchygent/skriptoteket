@@ -302,7 +302,7 @@ describe("the lease fence fail-first ports", () => {
     api.getExamWorkspaceDocument.mockImplementation(async (lineageId: string) => {
       const served =
         lineageId === EXAM_B ? { ...base, document_id: EXAM_B, title: "Exam B" } : base;
-      return reply(JSON.parse(JSON.stringify(served)) as NativeExamDocument, "step-0", lineageId);
+      return reply(structuredClone(served), "step-0", lineageId);
     });
     const storage = createInMemoryGuestEditLeaseStorage();
     const hub = createGuestChannelHub();
