@@ -2,17 +2,15 @@
 
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
   `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Released
-  on main `4951dec2` (rereviews 1-7 by `23bc9c5a`); the Mac walk failed step 5
-  (a fast exam switch ends on the wrong exam; a lease claim got 403 CSRF).
-  Repairs W1/W2 at `5720e771`; rereview 8 found R8-1/R8-2 high (address ABA,
-  route retirement loses a store) and R8-3/R8-4 medium, now in repair. Next:
-  rereview 9, then the Mac re-walks step 5. Open: the 403 details from the Mac.
+  on main `4951dec2`; the Mac walk failed step 5 (route race, CSRF 403).
+  Rebuilt from the R9 design; rereview 12 approved head `d3a4b5dc`, merged to
+  main 2026-10-20. Next: the Mac re-walk of step 5 on staging.
 - TASK-SKRIPT-41-02-06 unreadable exam files (user, 2026-10-20; ADR-SKRIPT-0093):
   lead `2203a0c2`, branch `codex/task-skript-41-02-unreadable-exam-files-remote`,
-  root `01a1583c`. Built through U8 (D10 closed by U3); copy review `1cb9a1de`
-  approved, S2 reworded by the user. Next: the Pi code review; U5 (deep link)
-  waits for the gap repair on main.
+  root `01a1583c`. All review findings closed at `4623a344`. Next: U5 (deep link
+  and DOCUMENT_UNREADABLE mapping), its last unit.
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
+
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
@@ -80,7 +78,7 @@
   RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
 
   - 40-04-08 `done`: walk repair on main be979cd7, Mac re-walk PASS 2026-10-19. 40-04-04 `done`: Mac walk PASS at cf9547fa (jump, fix, QTI 200). 40-04-16 `done`: Mac walk PASS at cf9547fa.
-  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 builds them on that branch. 9cec90f5 is on main and was walked on the Mac at 6f1c5195 (2026-10-19). e13ea08e was released to main as 00f62f1a and walked on staging (2026-10-19). After it on the branch: R2 tests, R3, R4 (a yielded tab reclaims the lease) and L5 (empty dropdown focus). Next: the next batch head on the orchestrator's slot, then copy review, then independent code review of Part B. 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
+  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 builds them on that branch. 9cec90f5 is on main and was walked on the Mac at 6f1c5195 (2026-10-19). e13ea08e was released to main as 00f62f1a and walked on staging (2026-10-19). After it on the branch: R2 tests, R3, R4 (a yielded tab reclaims the lease) and L5 (empty dropdown focus). Rereview 9 (2026-10-20): R9-3 at 7d11ced2; the reviewer's R9 design built as R9-2 23e78826 and R9-1 7ce4aeaf (L13-L15); rereview 10 fixes R10-2 44c2c7fe and R10-1 4bdb4287; R10-2 repaired again as R11 c7a70c6a; next rereview 12 (see the task's Resume here). 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
   - Toolbar redesign: TASK-SKRIPT-40-04-17 `done` 2026-10-19 (user closure; main aac5bdfd, 32460f67; staging walks passed, 375 px coarse pointer not walkable in Edge; task doc "Outcome"). Follow-up TASK-SKRIPT-40-04-18 `done` 2026-10-20 (user closure; main 98cbab6c, staging walk passed).
   - 40-04-12 PDF keep-together on main 8d51a6ba; the K7 "/" check is for the Mac walk. 40-04-15 inline "(N p)" points `done`: main df87d633, Mac walk PASS 2026-10-19 (walk observations in its task doc).
   - 41-02-02 `done`: deployed to production at f7eeada5 on 2026-10-19 with the nginx-proxy /32 trust (task doc "Production Deploy").

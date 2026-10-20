@@ -95,10 +95,12 @@ describe("runGuestHandoff races", () => {
     const stored = await storage.load();
     const load = deferred<StoredGuestDraft | null>();
     const auth = useAuthStore();
+    // `user` first, as `applyState` admits it: a new user id clears the
+    // cached token and shared session id, so they are written after it.
     auth.$patch({
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
       csrfToken: "csrf-a",
       sharedSessionId: "session-a",
-      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
     });
     const sessionA = auth.captureSession();
     vi.mocked(fetch).mockImplementation(async () =>
@@ -115,9 +117,9 @@ describe("runGuestHandoff races", () => {
       teacher: { importExamWorkspaceGuestDraft },
     }, liveAttempt());
     auth.$patch({
+      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
       csrfToken: "csrf-b",
       sharedSessionId: "session-b",
-      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
     });
     expect(auth.isCurrentSession(sessionA)).toBe(false);
     load.resolve(stored);
@@ -268,9 +270,9 @@ describe("runGuestHandoff races", () => {
     const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
     const auth = useAuthStore();
     auth.$patch({
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
       csrfToken: "csrf-a",
       sharedSessionId: "session-a",
-      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
     });
     const sessionA = auth.captureSession();
     const sent = deferred<void>();
@@ -290,9 +292,9 @@ describe("runGuestHandoff races", () => {
     }, liveAttempt());
     await sent.promise;
     auth.$patch({
+      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
       csrfToken: "csrf-b",
       sharedSessionId: "session-b",
-      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
     });
     expect(auth.isCurrentSession(sessionA)).toBe(false);
     response.resolve(
@@ -322,9 +324,9 @@ describe("runGuestHandoff races", () => {
     const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
     const auth = useAuthStore();
     auth.$patch({
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
       csrfToken: "csrf-a",
       sharedSessionId: "session-a",
-      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
     });
     const sessionA = auth.captureSession();
     const sent = deferred<void>();
@@ -342,9 +344,9 @@ describe("runGuestHandoff races", () => {
     }, liveAttempt());
     await sent.promise;
     auth.$patch({
+      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
       csrfToken: "csrf-b",
       sharedSessionId: "session-b",
-      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
     });
     expect(auth.isCurrentSession(sessionA)).toBe(false);
     response.resolve(
@@ -423,9 +425,9 @@ describe("runGuestHandoff races", () => {
     const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
     const auth = useAuthStore();
     auth.$patch({
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
       csrfToken: "csrf-a",
       sharedSessionId: "session-a",
-      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
     });
     const session = auth.captureSession();
     const owner = { isLive: () => auth.isCurrentSession(session), session };

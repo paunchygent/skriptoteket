@@ -157,6 +157,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     },
   );
   const status = useExamWorkspaceSaveStatus({
+    hasUnconfirmed: () => storeHandler.hasUnconfirmed(),
     isCurrent: deps.isCurrent,
     isGuest: deps.isGuest,
     keptUnstored: deps.keptUnstored,
@@ -277,7 +278,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (!deps.isReadOnly()) {
         status.scheduleRetry(() => void flush());
       }
-    } else if (outcome === "stored") {
+    } else if (outcome === "stored" && !storeHandler.hasUnconfirmed()) {
       status.clear();
     }
     return outcome;
@@ -293,7 +294,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
 
   const departure = useExamWorkspaceHistoryDeparture({
     flush: (settle = false) => flush(settle),
-    pending: () => pending.value,
+    hasUnconfirmed: () => storeHandler.hasUnconfirmed(),
     isNavigating: () => navigating.value,
     isReplacing: deps.isReplacing,
     replaceCopy: deps.replaceCopy,
@@ -379,19 +380,30 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   });
 
   return {
+    abandonAttempt: () => storeHandler.abandonAttempt(),
     applySteps,
     canRedo,
     canUndo,
+    /** The confirmed copy C the write boundary stands on. */
+    confirmedCopy: () => stepDocument.value,
     depart: departure.depart,
+    /** The desired copy D in front of the teacher. */
+    desiredCopy: () => deps.workspaceDocument.value,
     dropOwedSnapshots,
     flush,
+    /** The only definition of confirmation: no active, unresolved, kept or net intent. */
+    hasUnconfirmed: computed(() => storeHandler.hasUnconfirmed()),
     navigating: computed(() => navigating.value),
     /** The snapshot the editor stands on; null until the step list is loaded. */
     position: computed(() => position.value),
     noteEdit,
     pending,
+    /** The unresolved published pieces: U plus the active attempt's pieces. */
+    publishedPieces: () => storeHandler.publishedPieces(),
     redo: navigation.redo,
     resetSteps,
+    /** Clear the active attempt and the unresolved pieces: a new exam owns new intent. */
+    resetUnconfirmed: () => storeHandler.resetUnconfirmed(),
     saveStatus: status.saveStatus,
     saveText: status.saveText,
     /** The step's document; a working copy that differs from it is a pending edit. */

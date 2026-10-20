@@ -25,6 +25,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import type { ExamWorkspaceEditLeaseServer } from "./examWorkspaceEditLeaseDrivers";
 import {
   LINEAGE,
@@ -92,7 +93,7 @@ function session(
   server: ExamWorkspaceEditLeaseServer,
   tabId = "A",
 ): ReturnType<typeof useExamWorkspaceEditing> {
-  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server, tabId }));
+  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server, tabId }));
 }
 
 function driverWith(flags: { offline?: boolean } = {}): ExamWorkspaceEditLeaseServer {
@@ -230,7 +231,7 @@ describe("the operation fence fail-first ports", () => {
         ? opening.promise
         : Promise.resolve(reply(cloneJson(base), "step-0", LINEAGE)),
     );
-    const openingB = editing.openDocument(EXAM_B);
+    const openingB = editing.requestRoute(EXAM_B);
     await flushPromises();
     const reloadingA = editing.reloadDocument();
     opening.resolve(reply({ ...base, document_id: EXAM_B, title: "Exam B" }, "step-0", EXAM_B));
@@ -251,14 +252,14 @@ describe("the operation fence fail-first ports", () => {
     });
   });
 
-  it("a save-as awaiting an old exam flush must not copy the newly opened exam", async () => {
+  it("a save-as awaiting an old exam flush files no copy when the switch cannot settle", async () => {
     const base = exam();
     fakeServer(api, base);
     const editing = session(driverWith());
     editing.applyCommandResponse(response(base, "step-0"));
     await flushPromises();
     const old = deferred<unknown>();
-    api.storeExamWorkspaceUndoStep.mockReturnValueOnce(old.promise);
+    api.storeExamWorkspaceUndoStep.mockReturnValue(old.promise);
     editing.updateItemPoints("item_001", 7);
     const copiedIds: string[] = [];
     api.copyExamWorkspaceDocument.mockImplementation(
@@ -272,13 +273,14 @@ describe("the operation fence fail-first ports", () => {
     );
     const copying = editing.saveAs("Copy");
     await flushPromises();
-    api.getExamWorkspaceDocument.mockResolvedValue(
-      reply({ ...base, document_id: EXAM_B, title: "Exam B" }, "step-0", EXAM_B),
-    );
-    await editing.openDocument(EXAM_B);
+    // The route request waits on the held store; failing it settles nothing,
+    // so the switch opens nothing and the save-as files no copy.
+    const switching = editing.requestRoute(EXAM_B);
     await flushPromises();
-    await copying;
-    await flushPromises();
+    old.reject(new Error("offline"));
+    expect(await switching).toBe("failed");
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(await copying).toBe("failed");
     expect(copiedIds).toEqual([]);
   });
 });

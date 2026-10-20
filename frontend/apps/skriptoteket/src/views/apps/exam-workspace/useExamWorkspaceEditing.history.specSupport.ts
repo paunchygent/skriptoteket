@@ -17,8 +17,10 @@ import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { serverExamWorkspaceStore, type ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import type { FenceToken } from "./examWorkspaceSyncFence";
 import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
@@ -161,7 +163,7 @@ export function inScope<T>(run: () => T): T {
 export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   const server = fakeServer(api, baseline);
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: () =>
           Promise.resolve({
@@ -387,14 +389,30 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       workspaceDocument,
     });
     const gate = useExamWorkspaceSyncGate({
+      abandonAttempt: () => history.abandonAttempt(),
+      beginCopy: () => null,
+      claimSelectedLease: () => undefined,
+      confirmedCopy: () => history.confirmedCopy(),
+      desiredCopy: () => history.desiredCopy(),
       isLeaseHeld: () => leaseHeld.value,
       isOpenClaimPending: () => false,
-      hasPendingEdit: () => history.pending.value,
-      currentStepDocument: () => history.stepDocument.value,
-      currentWorkingCopy: () => workspaceDocument.value,
+      publishedPieces: () => history.publishedPieces(),
+      resetUnconfirmed: () => history.resetUnconfirmed(),
+      settleEdit: () => history.flush(true),
       dropOwedSnapshots: () => history.dropOwedSnapshots(),
+      hasActiveStore: () => false,
+      hasUnconfirmed: () => history.hasUnconfirmed.value,
+      installReplacementDocument: () => undefined,
+    installedSource: () => null,
+      isVisibleDirty: () => false,
+      notifyCopyFailed: () => undefined,
+      notifyRouteFailed: () => undefined,
+      openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),
+      projectAddress: () => undefined,
       readDocument: (readLineageId) => shared.getExamWorkspaceDocument(readLineageId),
       readStepList: (readLineageId) => readStepList(shared, readLineageId),
+      releaseCopyBusy: () => undefined,
+    waitForRouterIdle: () => Promise.resolve(),
       applyStepList: (token, read, base) => history.applySteps(token, read, base ?? serverDocument.value),
       resetStepList: (token) => history.resetSteps(token),
       installFresh: (token: FenceToken, fresh) => {

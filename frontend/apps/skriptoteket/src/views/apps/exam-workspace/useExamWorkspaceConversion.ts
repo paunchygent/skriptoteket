@@ -38,6 +38,8 @@ import type {
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversionMerge";
+import { importQtiPackage, isDigiExamFile, isQtiPackageFile } from "./examWorkspaceConversionImport";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 
@@ -45,16 +47,6 @@ export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
 const STATUS_FAILURE_COPY = "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
-
-/** A DigiExam export (.dxe) is read by its own importer and stays open to every role. */
-function isDigiExamFile(file: File): boolean {
-  return file.name.toLowerCase().endsWith(".dxe");
-}
-
-/** A QTI package (.zip) is read without AI and stays open to every role. */
-function isQtiPackageFile(file: File): boolean {
-  return file.name.toLowerCase().endsWith(".zip");
-}
 
 /** The document owner's state that conversion revisions are applied to. */
 export type ExamWorkspaceConversionBinding = {
@@ -67,8 +59,6 @@ export type ExamWorkspaceConversionBinding = {
   beginDocumentRead: () => (response: ExamWorkspaceDocumentResponse) => ExamWorkspaceDocumentResponse;
   /** Replace the local copy with a server response; `local` keeps merged teacher edits. */
   applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse, local?: NativeExamDocument) => void;
-  /** Called once before the first revision of a new import is shown. */
-  beforeFirstRevision: () => void;
   /** The sync gate's generation owner; every install carries its token. */
   getFence: () => SyncFence;
   /** True while the token's generation is still current; stale installs do nothing. */
@@ -86,7 +76,7 @@ export function useExamWorkspaceConversion(
   isBusy: () => boolean,
   binding: ExamWorkspaceConversionBinding,
   /** Opens a saved document by its lineage id, as the Öppna list's open command does. */
-  openImported: (lineageId: string) => Promise<boolean>,
+  openImported: (lineageId: string) => Promise<ExamWorkspaceRouteOpenOutcome>,
 ) {
   const toast = useToast();
   const { canUseAi } = useAiAccess();
@@ -236,6 +226,16 @@ export function useExamWorkspaceConversion(
    * before finishing. A fetched revision without its conversion throws like a
    * failed fetch: the copy, its lock and the shown units stay as they are.
    */
+  /**
+   * The conversion result still belongs to the open exam: when another exam
+   * was adopted meanwhile, even under a still-current fence token, the result
+   * drops instead of seizing the newer target.
+   */
+  function isSelectedConversion(status: ExamWorkspaceConversionStatus): boolean {
+    const openLineageId = binding.summary.value?.lineage_id ?? null;
+    return openLineageId === null || openLineageId === status.lineage_id;
+  }
+
   async function applyRevision(
     status: ExamWorkspaceConversionStatus,
     pollGeneration: number,
@@ -244,6 +244,24 @@ export function useExamWorkspaceConversion(
     if (status.document_revision === null || holdsRevision(status)) return false;
     if (binding.isSaving() && !duringSave) return true;
     const first = binding.summary.value?.lineage_id !== status.lineage_id;
+    if (first) {
+      // The converted exam is not open: open it through the coordinator's
+      // entrance, which reads, installs, adopts, claims and publishes it.
+      // Later revisions merge below once it is open. The import holds the
+      // document like the QTI open does, so its busy clears first. A refused
+      // or failed open keeps polling (the readback retries); a superseded one
+      // ends following here, since the teacher's own navigation won.
+      isImporting.value = false;
+      isConverting.value = false;
+      const outcome = await openImported(status.lineage_id);
+      if (outcome === "superseded") {
+        finish(status);
+      } else if (outcome !== "installed") {
+        isImporting.value = true;
+        isConverting.value = true;
+      }
+      return false;
+    }
     const shown = shownUnits.value ?? [];
     const fence = binding.getFence();
     const token = fence.begin();
@@ -253,6 +271,7 @@ export function useExamWorkspaceConversion(
     );
     if (!binding.isCurrent(token)) return false;
     if (pollGeneration !== generation || !binding.isCurrent(token)) return false;
+    if (!isSelectedConversion(status)) return false;
     const conversion = response.conversion;
     if (conversion === null) {
       // Only the response's own conversion names the units of its head: reconcile like a failed fetch.
@@ -260,10 +279,7 @@ export function useExamWorkspaceConversion(
     }
     const local = binding.workspaceDocument.value;
     const base = binding.serverDocument.value;
-    if (first) {
-      binding.beforeFirstRevision();
-      binding.applyResponse(token, response);
-    } else if (!local || !base || sameDocument(local, base)) {
+    if (!local || !base || sameDocument(local, base)) {
       // Nothing edited since the base: take the head as is. An autosave
       // stores the copy without fetching, so the saved baseline can stand
       // ahead of this base; the merge still runs while the copy differs.
@@ -391,24 +407,6 @@ export function useExamWorkspaceConversion(
       : null;
   }
 
-  /**
-   * Read one QTI package at once: through the signed-in importer when a
-   * teacher side is present, through the guest store's browser draft
-   * otherwise. Returns the opened lineage, or null when neither side can
-   * import. This is one intake with two store halves; there is no second
-   * intake composable.
-   */
-  async function importQtiPackage(file: File, courseKey: string | null): Promise<string | null> {
-    const teacher = binding.store.teacher;
-    if (teacher) {
-      const summary = await teacher.importExamWorkspaceQti(file, courseKey);
-      return summary.lineage_id;
-    }
-    const guest = binding.store.guest;
-    if (!guest) return null;
-    return await guest.startFromQti(file, courseKey);
-  }
-
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
     // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
@@ -426,7 +424,7 @@ export function useExamWorkspaceConversion(
       // exam opens through the same `openDocument` path the Öppna list's
       // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
-        const lineageId = await importQtiPackage(file, courseKey);
+        const lineageId = await importQtiPackage(binding.store, file, courseKey);
         if (pollGeneration !== generation || lineageId === null) return;
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;

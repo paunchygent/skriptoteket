@@ -59,8 +59,8 @@ afterEach(() => {
 
 describe("an exam opening asks for its lost job", () => {
   it("C1: no job leaves the exam as opened and polls nothing", async () => {
-    const { document, enrichment } = composeWorkspace();
-    await open(document, "lineage-a", apiMocks);
+    const { document, enrichment, fence } = composeWorkspace();
+    await open({ document, fence }, "lineage-a", apiMocks);
     await flushPromises();
 
     expect(apiMocks.findExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledWith("lineage-a", 1);

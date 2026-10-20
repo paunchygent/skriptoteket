@@ -24,6 +24,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   LINEAGE,
   exam,
@@ -77,7 +78,7 @@ function leaseResponse(): ExamWorkspaceEditLeaseResponse {
 
 function session(flags: LeaseFlags = {}): ReturnType<typeof useExamWorkspaceEditing> {
   return inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: async () => leaseResponse(),
         release: async () => leaseResponse(),
@@ -179,7 +180,7 @@ describe("the generation fence fail-first ports", () => {
     server.state.cursor = "step-B";
     server.state.position = "step-B";
     api.getExamWorkspaceDocument.mockImplementation(async () => structuredClone(next));
-    expect(await editing.openDocument(other)).toBe(true);
+    expect(await editing.requestRoute(other)).toBe("installed");
     await flushPromises();
     await flushPromises();
     await flushPromises();
@@ -358,7 +359,7 @@ describe("the generation fence fail-first ports", () => {
     await vi.advanceTimersByTimeAsync(4000);
     await flushPromises();
     await flushPromises();
-    await editing.openDocument(LINEAGE);
+    await editing.requestRoute(LINEAGE);
     await flushPromises();
     expect(workspaceOf(editing).items.map((item) => item.points)).toEqual([5, 9]);
     reply.resolve(oldAck);

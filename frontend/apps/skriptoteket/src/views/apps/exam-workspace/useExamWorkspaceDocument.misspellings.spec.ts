@@ -35,10 +35,11 @@ import {
   currentItem,
   deferred,
   openMatchingDocument as openWith,
+  openMatchingDocumentWithFence as openWithFence,
+  saveCopyAs,
   savedResponse,
 } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
-import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const AUTOMATIC_VALUES_FAILURE_COPY =
   "Det gick inte att skapa automatiska stavningar. Svaren finns kvar.";
@@ -94,6 +95,10 @@ function retryableGapItem(): NativeExamItem {
 
 async function openKeyedDocument(item: NativeExamItem = keyedGapItem()): Promise<DocumentState> {
   return await openWith(apiMocks.getExamWorkspaceDocument, item);
+}
+
+async function openKeyedDocumentWithFence(item: NativeExamItem = keyedGapItem()) {
+  return await openWithFence(apiMocks.getExamWorkspaceDocument, item);
 }
 
 function gapOf(state: DocumentState, gapId = "gap_001"): NativeExamGap {
@@ -183,18 +188,18 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
   it("saves the suppression and keeps it when the saved document is reopened", async () => {
     const item = keyedGapItem();
     item.gaps[0]!.automatic_values = ["Stockhom"];
-    const state = await openKeyedDocument(item);
+    const { fence, state } = await openKeyedDocumentWithFence(item);
     state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
     const copy = currentDocument(state);
     apiMocks.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
 
-    expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
+    expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
 
     const payload = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(payload.items[0]!.gaps[0]!.excluded_automatic_values).toEqual(["Stockhom"]);
 
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(payload.items[0]!));
-    expect(await state.openDocument("lineage-1")).toBe(true);
+    expect(await state.openDocument("lineage-1", fence.begin())).toBe("installed");
     expect(gapOf(state).excluded_automatic_values).toEqual(["Stockhom"]);
     apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({
       automatic_values: ["Stockhom"],
@@ -274,7 +279,7 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
   it("drops a reply when another exam was opened meanwhile", async () => {
     const pending = pendingReply();
     apiMocks.requestExamWorkspaceAnswerMisspellings.mockReturnValue(pending.promise);
-    const state = await openKeyedDocument();
+    const { fence, state } = await openKeyedDocumentWithFence();
     state.updateItemGapValues("item_001", "gap_001", ["Stockholm", "Göteborg"]);
 
     const other = buildResponse(keyedGapItem());
@@ -282,7 +287,7 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
       ...other,
       summary: { ...other.summary, lineage_id: "lineage-2" },
     });
-    expect(await state.openDocument("lineage-2")).toBe(true);
+    expect(await state.openDocument("lineage-2", fence.begin())).toBe("installed");
     pending.resolve({ automatic_values: ["Götebprg"] });
     await flushPromises();
 

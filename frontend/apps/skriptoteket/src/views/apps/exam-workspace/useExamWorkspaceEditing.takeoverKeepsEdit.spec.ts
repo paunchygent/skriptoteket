@@ -26,6 +26,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -122,7 +123,7 @@ describe("a refused edit across the takeover", () => {
     const server = fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
@@ -193,7 +194,7 @@ describe("a refused edit across the takeover", () => {
     fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
@@ -230,7 +231,7 @@ describe("a refused edit across the takeover", () => {
     const server = fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
@@ -289,7 +290,7 @@ describe("a refused edit across the takeover", () => {
     const server = fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
@@ -335,7 +336,7 @@ describe("a refused edit across the takeover", () => {
     const server = fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
@@ -425,7 +426,7 @@ describe("a refused edit across the takeover", () => {
     fakeServer(api, baseline);
     let holder = "tab-A";
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),

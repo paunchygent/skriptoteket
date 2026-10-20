@@ -24,6 +24,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
@@ -121,8 +122,9 @@ export function teardownResumeEnv(): void {
 
 export function composeWorkspace() {
   const scope = effectScope();
+  const fence = createSyncFence();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument({ store: serverExamWorkspaceStore });
+    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,
@@ -136,16 +138,16 @@ export function composeWorkspace() {
   if (!composed) {
     throw new Error("expected the composed workspace state");
   }
-  return { ...composed, scope };
+  return { ...composed, fence, scope };
 }
 
 export async function open(
-  state: ReturnType<typeof useExamWorkspaceDocument>,
+  composed: Pick<ReturnType<typeof composeWorkspace>, "document" | "fence">,
   lineageId: string,
   api: ResumeApiMocks,
 ): Promise<void> {
   api.getExamWorkspaceDocument.mockResolvedValueOnce(examResponse(lineageId));
-  await state.openDocument(lineageId);
+  await composed.document.openDocument(lineageId, composed.fence.begin());
 }
 
 /** Open exam A while its lookup is held; returns the held lookup. */
@@ -153,7 +155,7 @@ export async function openAWithLookupHeld(api: ResumeApiMocks) {
   const composed = composeWorkspace();
   const lookup = deferred<ExamWorkspaceAnswerKeySuggestionsStatus | null>();
   api.findExamWorkspaceAnswerKeySuggestions.mockReturnValueOnce(lookup.promise);
-  await open(composed.document, "lineage-a", api);
+  await open(composed, "lineage-a", api);
   await flushPromises();
   return { ...composed, lookup };
 }

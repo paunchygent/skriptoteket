@@ -32,6 +32,7 @@ import {
 } from "./examWorkspaceGuestEditLease";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import type { ExamWorkspaceEditLeaseServer } from "./examWorkspaceEditLeaseDrivers";
 import {
   LINEAGE,
@@ -99,7 +100,7 @@ function session(
   server: ExamWorkspaceEditLeaseServer,
   tabId = "A",
 ): ReturnType<typeof useExamWorkspaceEditing> {
-  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server, tabId }));
+  return inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server, tabId }));
 }
 
 function driverWith(flags: { offline?: boolean } = {}): ExamWorkspaceEditLeaseServer {
@@ -234,7 +235,7 @@ describe("the lease fence fail-first ports", () => {
     await vi.advanceTimersByTimeAsync(5000);
     const second = { ...base, document_id: EXAM_B, title: "Exam B" };
     api.getExamWorkspaceDocument.mockResolvedValue(reply(second, "step-0", EXAM_B));
-    expect(await editing.openDocument(EXAM_B)).toBe(true);
+    expect(await editing.requestRoute(EXAM_B)).toBe("installed");
     await flushPromises();
     expect(editing.editingLocked.value).toBe(false);
     old.resolve(held("A", true));
@@ -314,7 +315,7 @@ describe("the lease fence fail-first ports", () => {
       },
     };
     const editing = inScope(() =>
-      useExamWorkspaceEditing(guestStore, {
+      useExamWorkspaceEditing(guestStore, nullRouteProjection(), {
         guestStorage: storage,
         openGuestChannel: () => hub.createChannel(),
         tabId: "tab-a",

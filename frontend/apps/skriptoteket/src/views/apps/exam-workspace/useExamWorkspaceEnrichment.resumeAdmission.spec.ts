@@ -63,8 +63,8 @@ afterEach(() => {
 
 describe("a failed lookup affects only the opening that asked", () => {
   it("F2-e: A's failure landing after B opened shows nothing on B", async () => {
-    const { document, enrichment, lookup } = await openAWithLookupHeld(apiMocks);
-    await open(document, "lineage-b", apiMocks);
+    const { document, enrichment, fence, lookup } = await openAWithLookupHeld(apiMocks);
+    await open({ document, fence }, "lineage-b", apiMocks);
     await flushPromises();
 
     lookup.reject(new Error("network"));
@@ -81,9 +81,9 @@ describe("a failed lookup affects only the opening that asked", () => {
   });
 
   it("F2-f: an earlier opening's failure does not reach a later opening of the same exam", async () => {
-    const { document, enrichment, lookup } = await openAWithLookupHeld(apiMocks);
-    await open(document, "lineage-b", apiMocks);
-    await open(document, "lineage-a", apiMocks);
+    const { document, enrichment, fence, lookup } = await openAWithLookupHeld(apiMocks);
+    await open({ document, fence }, "lineage-b", apiMocks);
+    await open({ document, fence }, "lineage-a", apiMocks);
     await flushPromises();
 
     lookup.reject(new Error("network"));
@@ -123,8 +123,8 @@ describe("the answer is admitted only when it lands on the opening that asked", 
   });
 
   it("C11: another exam was opened before the lookup landed", async () => {
-    const { document, enrichment, lookup } = await openAWithLookupHeld(apiMocks);
-    await open(document, "lineage-b", apiMocks);
+    const { document, enrichment, fence, lookup } = await openAWithLookupHeld(apiMocks);
+    await open({ document, fence }, "lineage-b", apiMocks);
     await flushPromises();
 
     lookup.resolve(jobStatus("succeeded", { withSuggestion: true }));
@@ -177,17 +177,17 @@ describe("the answer is admitted only when it lands on the opening that asked", 
 
 describe("which openings ask", () => {
   it("C15: switching back to an exam finds the job its earlier opening lost", async () => {
-    const { document, enrichment } = composeWorkspace();
-    await open(document, "lineage-a", apiMocks);
+    const { document, enrichment, fence } = composeWorkspace();
+    await open({ document, fence }, "lineage-a", apiMocks);
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(jobStatus("queued"));
     await enrichment.requestSuggestionsForAll();
-    await open(document, "lineage-b", apiMocks);
+    await open({ document, fence }, "lineage-b", apiMocks);
     await flushPromises();
 
     apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
       jobStatus("succeeded", { withSuggestion: true }),
     );
-    await open(document, "lineage-a", apiMocks);
+    await open({ document, fence }, "lineage-a", apiMocks);
     await flushPromises();
 
     expect(apiMocks.findExamWorkspaceAnswerKeySuggestions.mock.calls).toEqual([
@@ -200,8 +200,8 @@ describe("which openings ask", () => {
   });
 
   it("C13/C14: a same-exam reload keeps the opening and asks nothing", async () => {
-    const { document } = composeWorkspace();
-    await open(document, "lineage-a", apiMocks);
+    const { document, fence } = composeWorkspace();
+    await open({ document, fence }, "lineage-a", apiMocks);
     await flushPromises();
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(examResponse("lineage-a"));
 

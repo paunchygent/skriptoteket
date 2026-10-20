@@ -1,7 +1,7 @@
 /**
  * Shared doubles for the exam workspace sync-gate specs: a transport double
  * with deferred document and step-list reads, a merge spy, a manual retry
- * timer, and mutable lease and pending-edit ports.
+ * timer, and mutable lease and copy ports.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -10,8 +10,9 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import type { FenceToken } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 import { exam, LINEAGE, response } from "./useExamWorkspaceEditing.history.specSupport";
 
@@ -49,11 +50,14 @@ export type SyncGateFlags = {
   leaseHeld: boolean;
   /** An open claim is still in flight; a finished fresh load then keeps `loading`. */
   claimPending: boolean;
-  pendingEdit: boolean;
-  stepDocument: NativeExamDocument | null;
-  workingCopy: NativeExamDocument | null;
+  /** The confirmed copy C the write boundary stands on. */
+  confirmedCopy: NativeExamDocument | null;
+  /** The desired copy D in front of the teacher. */
+  desiredCopy: NativeExamDocument | null;
+  /** The unresolved published pieces: U plus the active attempt's pieces. */
+  publishedPieces: Set<string>;
   /** The merge spy's result; undefined falls back to the fresh copy with 7 points. */
-  mergeResult: NativeExamDocument | null | undefined;
+  mergeResult: NativeExamDocument | undefined;
 };
 
 export type SyncGateCounts = {
@@ -61,6 +65,8 @@ export type SyncGateCounts = {
   replaceCalls: number;
   owedDropped: number;
   storeRequests: number;
+  abandonedAttempts: number;
+  unconfirmedResets: number;
 };
 
 export type SyncGateHarness = {
@@ -71,7 +77,7 @@ export type SyncGateHarness = {
   mergedInstalled: NativeExamDocument[];
   appliedSteps: Array<{ base: NativeExamDocument | null; read: ExamWorkspaceStepListRead }>;
   stepResets: () => number;
-  mergeCalls: Array<{ base: NativeExamDocument; edited: NativeExamDocument; newest: NativeExamDocument }>;
+  mergeCalls: Array<{ desired: NativeExamDocument; owned: ReadonlySet<string>; newest: NativeExamDocument }>;
   counts: SyncGateCounts;
   flags: SyncGateFlags;
   fireTimer: () => void;
@@ -104,44 +110,71 @@ export function createGate(): SyncGateHarness {
   const mergeCalls: SyncGateHarness["mergeCalls"] = [];
   const appliedSteps: SyncGateHarness["appliedSteps"] = [];
   let stepResets = 0;
-  const counts: SyncGateCounts = { owedDropped: 0, reloadFailures: 0, replaceCalls: 0, storeRequests: 0 };
+  const counts: SyncGateCounts = {
+    abandonedAttempts: 0,
+    owedDropped: 0,
+    reloadFailures: 0,
+    replaceCalls: 0,
+    storeRequests: 0,
+    unconfirmedResets: 0,
+  };
   const timers: Array<() => void> = [];
   const flags: SyncGateFlags = {
     claimPending: false,
+    confirmedCopy: null,
+    desiredCopy: null,
     leaseHeld: true,
     mergeResult: undefined,
-    pendingEdit: false,
-    stepDocument: null,
-    workingCopy: null,
+    publishedPieces: new Set(),
   };
   const gate = useExamWorkspaceSyncGate({
-    currentStepDocument: () => flags.stepDocument,
-    currentWorkingCopy: () => flags.workingCopy,
+    abandonAttempt: () => {
+      counts.abandonedAttempts += 1;
+    },
+    beginCopy: () => null,
+    claimSelectedLease: () => undefined,
+    confirmedCopy: () => flags.confirmedCopy,
+    desiredCopy: () => flags.desiredCopy,
     dropOwedSnapshots: () => {
       counts.owedDropped += 1;
     },
-    hasPendingEdit: () => flags.pendingEdit,
     installFresh: (token: FenceToken, fresh: ExamWorkspaceDocumentResponse) => {
       void token;
+      flags.confirmedCopy = fresh.document;
+      flags.desiredCopy = fresh.document;
       freshInstalled.push(fresh);
     },
     installMerged: (token: FenceToken, fresh: ExamWorkspaceDocumentResponse, merged: NativeExamDocument) => {
       void fresh;
       void token;
+      flags.confirmedCopy = fresh.document;
+      flags.desiredCopy = merged;
       mergedInstalled.push(merged);
     },
     isLeaseHeld: () => flags.leaseHeld,
     isOpenClaimPending: () => flags.claimPending,
-    mergeRefusedEdit: (base, edited, newest) => {
-      mergeCalls.push({ base, edited, newest });
+    mergeRefusedEdit: (desired, owned, newest) => {
+      mergeCalls.push({ desired, newest, owned });
       if (flags.mergeResult !== undefined) {
         return flags.mergeResult;
       }
       return withPoints(newest, 7);
     },
+    hasActiveStore: () => false,
+    hasUnconfirmed: () => false,
+    isVisibleDirty: () => false,
+    installReplacementDocument: () => undefined,
+    installedSource: () => null,
+    notifyCopyFailed: () => undefined,
     notifyReloadFailed: () => {
       counts.reloadFailures += 1;
     },
+    notifyRouteFailed: () => undefined,
+    openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),
+    projectAddress: () => undefined,
+    releaseCopyBusy: () => undefined,
+    waitForRouterIdle: () => Promise.resolve(),
+    publishedPieces: () => new Set(flags.publishedPieces),
     readDocument: (lineageId: string) => {
       void lineageId;
       const read = deferred<ExamWorkspaceDocumentResponse>();
@@ -156,6 +189,9 @@ export function createGate(): SyncGateHarness {
     },
     applyStepList: (token: FenceToken, read: ExamWorkspaceStepListRead, base: NativeExamDocument | null) => {
       void token;
+      if (base !== null) {
+        flags.confirmedCopy = base;
+      }
       appliedSteps.push({ base, read });
     },
     resetStepList: (token: FenceToken) => {
@@ -169,6 +205,10 @@ export function createGate(): SyncGateHarness {
     requestStore: () => {
       counts.storeRequests += 1;
     },
+    resetUnconfirmed: () => {
+      counts.unconfirmedResets += 1;
+    },
+    settleEdit: () => Promise.resolve(true),
     timer: {
       cancel: () => {
         timers.length = 0;

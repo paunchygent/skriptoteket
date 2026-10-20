@@ -17,9 +17,9 @@ import {
   buildResponse,
   buildSavedExamSummary,
   currentItem,
-  openMatchingDocument as openWith,
+  openMatchingDocumentWithFence as openWithFence,
+  saveCopyAs,
 } from "./useExamWorkspaceDocument.specSupport";
-import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -77,12 +77,12 @@ beforeEach(() => {
 });
 
 function openMatchingDocument() {
-  return openWith(apiMocks.getExamWorkspaceDocument);
+  return openWithFence(apiMocks.getExamWorkspaceDocument);
 }
 
 describe("matching edits in useExamWorkspaceDocument", () => {
   it("changes only the named entry text on its own side", async () => {
-    const state = await openMatchingDocument();
+    const { state } = await openMatchingDocument();
 
     state.updateItemMatchEntryBody("item_001", "left", "left_002", plainBody("being locked up"), false);
     state.updateItemMatchEntryBody("item_001", "right", "right_003", plainBody("contempt"), false);
@@ -103,7 +103,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
   });
 
   it("keys the item as teacher authored when pairs are chosen", async () => {
-    const state = await openMatchingDocument();
+    const { state } = await openMatchingDocument();
 
     state.updateItemMatchPairs("item_001", [{ left_id: "left_001", right_id: "right_001" }]);
 
@@ -115,25 +115,25 @@ describe("matching edits in useExamWorkspaceDocument", () => {
   });
 
   it("makes the key absent when every pair is cleared, and the copy carries it", async () => {
-    const state = await openMatchingDocument();
+    const { fence, state } = await openMatchingDocument();
     apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse());
 
     state.updateItemMatchPairs("item_001", []);
 
     expect(currentItem(state).answer_key.origin).toBe("absent");
     expect(currentItem(state).answer_key.match_pairs).toEqual([]);
-    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
+    await expect(saveCopyAs(state, fence, "Kopia")).resolves.toBe("saved");
     expect(apiMocks.copyExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
 
   it("saves an emptied entry text as an empty body", async () => {
-    const state = await openMatchingDocument();
+    const { fence, state } = await openMatchingDocument();
     apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse());
 
     state.updateItemMatchEntryBody("item_001", "right", "right_001", [], false);
 
-    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
+    await expect(saveCopyAs(state, fence, "Kopia")).resolves.toBe("saved");
     const saved = apiMocks.copyExamWorkspaceDocument.mock.calls[0]?.[2];
     expect(saved?.items[0]?.match_right.find((entry: { right_id: string }) => entry.right_id === "right_001")?.body).toEqual([]);
   });

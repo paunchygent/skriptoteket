@@ -14,6 +14,7 @@ import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceEditLeaseResponse } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -89,7 +90,7 @@ async function refusedFixture(owner: { holder: string }) {
   const base = exam();
   const server = fakeServer(api, base);
   const editing = inScope(() =>
-    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
       server: {
         claim: async () => {
           if (owner.holder !== "A") throw heldError();
@@ -229,7 +230,7 @@ describe("the sync gate fail-first ports", () => {
         : Promise.resolve({ baseline_step_id: "step-0", cursor: "step-0", position_step_id: "step-0", step_ids: [] }),
     );
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: async () => leaseResponse("A"),
           release: async () => leaseResponse("A"),
@@ -253,7 +254,7 @@ describe("the sync gate fail-first ports", () => {
     const secondResponse = response(second, "step-0");
     secondResponse.summary = { ...secondResponse.summary, lineage_id: lineageB, vault_file_id: lineageB };
     api.getExamWorkspaceDocument.mockImplementation(async () => secondResponse);
-    expect(await editing.openDocument(lineageB)).toBe(true);
+    expect(await editing.requestRoute(lineageB)).toBe("installed");
     await flushPromises();
     expect(editing.history.position.value).toBe("step-0");
     // The lineage switch re-claims the lease asynchronously; the drawer

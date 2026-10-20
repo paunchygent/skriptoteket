@@ -26,6 +26,7 @@ import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceEditLeaseResponse } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   fakeServer,
@@ -154,7 +155,7 @@ describe("the gate waits for the open claim", () => {
     fakeServer(api, baseline);
     const lease = manualLeaseServer();
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, { server: lease.server, tabId: "tab-A" }),
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: lease.server, tabId: "tab-A" }),
     );
     const readonlySeen: boolean[] = [];
     watch(
@@ -165,7 +166,7 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const opening = editing.openDocument(LINEAGE);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
     expect(lease.pending.map((claim) => claim.lineageId)).toEqual([LINEAGE]);
 
@@ -179,7 +180,7 @@ describe("the gate waits for the open claim", () => {
     openClaim.resolve(heldResponse("tab-A"));
     await flushPromises();
 
-    expect(await opening).toBe(true);
+    expect(await opening).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).not.toContain(true);
     expect(editing.leaseReadOnly.value).toBe(false);
@@ -191,7 +192,7 @@ describe("the gate waits for the open claim", () => {
     const baseline = exam();
     fakeServer(api, baseline);
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
         server: {
           claim: () => Promise.reject(leaseHeldError()),
           release: (_lineageId: string, tabId: string) => Promise.resolve(heldResponse(tabId)),
@@ -210,13 +211,13 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const opening = editing.openDocument(LINEAGE);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
 
     resolveStepReads(pendingSteps);
     await flushPromises();
 
-    expect(await opening).toBe(true);
+    expect(await opening).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).toEqual([true]);
     expect(editing.leaseReadOnly.value).toBe(true);
@@ -228,7 +229,7 @@ describe("the gate waits for the open claim", () => {
     fakeServer(api, baseline);
     const lease = manualLeaseServer();
     const editing = inScope(() =>
-      useExamWorkspaceEditing(serverExamWorkspaceStore, { server: lease.server, tabId: "tab-A" }),
+      useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), { server: lease.server, tabId: "tab-A" }),
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
@@ -250,7 +251,7 @@ describe("the gate waits for the open claim", () => {
     api.getExamWorkspaceDocument.mockClear();
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const openingB = editing.openDocument(EXAM_B);
+    const openingB = editing.requestRoute(EXAM_B);
     await flushPromises();
     expect(lease.releases).toEqual([{ lineageId: LINEAGE, tabId: "tab-A" }]);
 
@@ -265,7 +266,7 @@ describe("the gate waits for the open claim", () => {
     claimB.resolve(heldResponse("tab-A"));
     await flushPromises();
 
-    expect(await openingB).toBe(true);
+    expect(await openingB).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).not.toContain(true);
     expect(editing.editingLocked.value).toBe(false);

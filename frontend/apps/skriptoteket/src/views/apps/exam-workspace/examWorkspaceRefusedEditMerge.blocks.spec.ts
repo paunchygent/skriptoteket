@@ -15,6 +15,7 @@ import type {
   NativeExamParent,
 } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { diffPieces } from "./examWorkspaceEditPieces";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 
 function documentWith(items: NativeExamItem[], overrides: Partial<NativeExamDocument> = {}): NativeExamDocument {
@@ -33,11 +34,13 @@ function documentWith(items: NativeExamItem[], overrides: Partial<NativeExamDocu
   };
 }
 
-function requireMerged(merged: NativeExamDocument | null): NativeExamDocument {
-  if (merged === null) {
-    throw new Error("expected a merged document");
-  }
-  return merged;
+/** The production call with the spec's owned pieces derived from the edit. */
+function mergeKept(
+  base: NativeExamDocument,
+  edited: NativeExamDocument,
+  newest: NativeExamDocument,
+): NativeExamDocument {
+  return mergeRefusedEdit(edited, diffPieces(base, edited), newest);
 }
 
 function textInstruction(text: string): NativeExamBodyParagraph[] {
@@ -77,7 +80,7 @@ describe("mergeRefusedEdit childless block order", () => {
       parents: [base.parents[1], base.parents[0]],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
       "parent_002",
@@ -93,7 +96,7 @@ describe("mergeRefusedEdit childless block order", () => {
     };
     const newest: NativeExamDocument = { ...base, title: "Remote title" };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
       "parent_002",

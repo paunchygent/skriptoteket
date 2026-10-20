@@ -27,9 +27,8 @@ async function openEditing(harness: SyncGateHarness): Promise<void> {
 
 async function takeKept(harness: SyncGateHarness): Promise<void> {
   await openEditing(harness);
-  harness.flags.pendingEdit = true;
-  harness.flags.stepDocument = exam();
-  harness.flags.workingCopy = withPoints(exam(), 7);
+  harness.flags.confirmedCopy = exam();
+  harness.flags.desiredCopy = withPoints(exam(), 7);
   harness.gate.leaseLost();
   await harness.settle();
 }
@@ -114,31 +113,6 @@ describe("the sync gate phases and events", () => {
     expect(harness.freshInstalled.length).toBe(1);
   });
 
-  it("reloads the document fresh on a handed-over stale reload, and stays put in readonly", async () => {
-    const harness = createGate();
-    harness.gate.openExam(LINEAGE, false);
-    const abandoned = harness.documentReads[0];
-    if (abandoned === undefined) {
-      throw new Error("expected the first document read");
-    }
-    harness.gate.reloadFresh();
-    expect(harness.gate.phase.value).toBe("loading");
-    expect(harness.documentReads.length).toBe(2);
-    abandoned.resolve(response(withPoints(exam(), 9), "step-0"));
-    await harness.settle();
-    expect(harness.freshInstalled.length).toBe(0);
-    await succeedLoad(harness, exam());
-    expect(harness.gate.phase.value).toBe("editing");
-    expect(harness.freshInstalled.length).toBe(1);
-    harness.gate.leaseLost();
-    await harness.settle();
-    expect(harness.gate.phase.value).toBe("readonly");
-    const reads = harness.documentReads.length;
-    harness.gate.reloadFresh();
-    expect(harness.documentReads.length).toBe(reads);
-    expect(harness.gate.phase.value).toBe("readonly");
-  });
-
   it("starts a fresh load on a lease acquired from readonly", async () => {
     const harness = createGate();
     harness.flags.leaseHeld = false;
@@ -204,9 +178,8 @@ describe("the sync gate phases and events", () => {
   it("goes readonly when failed renewals arrive as lease lost", async () => {
     const harness = createGate();
     await openEditing(harness);
-    harness.flags.pendingEdit = true;
-    harness.flags.stepDocument = exam();
-    harness.flags.workingCopy = withPoints(exam(), 7);
+    harness.flags.confirmedCopy = exam();
+    harness.flags.desiredCopy = withPoints(exam(), 7);
     harness.gate.leaseLost();
     expect(harness.gate.phase.value).toBe("readonly");
     expect(harness.gate.leaseReadOnly.value).toBe(true);
@@ -216,7 +189,6 @@ describe("the sync gate phases and events", () => {
   it("goes readonly without a capture when the lease is lost with no pending edit", async () => {
     const harness = createGate();
     await openEditing(harness);
-    harness.flags.pendingEdit = false;
     harness.gate.leaseLost();
     expect(harness.gate.phase.value).toBe("readonly");
     expect(harness.counts.owedDropped).toBe(1);
@@ -347,7 +319,6 @@ describe("the sync gate phases and events", () => {
     const second = harness.gate.enqueueWrite(secondRun, "second refused");
     await harness.settle();
     expect(firstRun).toHaveBeenCalledTimes(1);
-    harness.flags.pendingEdit = false;
     harness.gate.leaseLost();
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
