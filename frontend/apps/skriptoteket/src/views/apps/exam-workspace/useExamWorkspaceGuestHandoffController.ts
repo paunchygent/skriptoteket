@@ -28,14 +28,16 @@
  *     attempt; reads no storage directly except `clearIf` on remove.
  *   - Owns every handoff toast through `useToast`; `runGuestHandoff` itself
  *     shows no toast.
- *   - Downloads the held rejected draft as JSON through
- *     `triggerBrowserDownload`.
+ *   - Downloads the stored draft record and its stored picture bytes as
+ *     one zip through `triggerBrowserDownload`; a missing or unreadable
+ *     stored record shows the download failure toast and downloads nothing.
  *   - Called from `ExamWorkspaceTeacherHost.vue` setup; the notice shape is
  *     rendered there by a later unit.
  */
 
 import { onScopeDispose, readonly, shallowRef } from "vue";
 import type { Ref } from "vue";
+import { strToU8, zipSync } from "fflate";
 
 import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
@@ -48,6 +50,7 @@ import {
   type GuestHandoffOutcome,
   type GuestHandoffOwner,
 } from "./useExamWorkspaceGuestHandoff";
+import { EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY } from "./examWorkspaceFileNoticeCopy";
 
 export const GUEST_HANDOFF_RETRY_DELAYS_MS: readonly number[] = [5_000, 10_000, 20_000];
 
@@ -64,7 +67,7 @@ export type GuestHandoffNotice = { reason: "permanent" | "vault_full"; busy: boo
 export type GuestHandoffController = {
   notice: Readonly<Ref<GuestHandoffNotice | null>>;
   start(): Promise<string | null>;
-  download(): void;
+  download(): Promise<void>;
   remove(): Promise<void>;
   retry(): Promise<void>;
 };
@@ -219,14 +222,42 @@ export function useExamWorkspaceGuestHandoffController(
     return null;
   }
 
-  function download(): void {
-    if (heldDraft === null) {
+  /**
+   * Save the stored draft record and its stored picture bytes as one zip
+   * `<titel>.zip` (`draft.json` plus `assets/<id>`), unchanged. A stored
+   * draft with another cursor, nothing stored, or any failure downloads
+   * nothing and shows the download failure toast. The notice stays busy
+   * while the zip is built, as remove does for its own work.
+   */
+  async function download(): Promise<void> {
+    const draft = heldDraft;
+    const current = notice.value;
+    if (draft === null || current === null) {
       return;
     }
-    const draft = heldDraft;
-    const title = draft.saved_document.title.trim();
-    const filename = `${title === "" ? "Prov" : title}.json`;
-    downloadFn(new Blob([JSON.stringify(draft, null, 2)], { type: "application/json" }), filename);
+    notice.value = { reason: current.reason, busy: true };
+    try {
+      const stored = await deps.storage.load();
+      if (stored?.draft.cursor !== draft.cursor) {
+        toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+        return;
+      }
+      const files: Record<string, Uint8Array> = {
+        "draft.json": strToU8(JSON.stringify(stored.draft, null, 2)),
+      };
+      for (const [id, blob] of Object.entries(stored.assets)) {
+        files[`assets/${id}`] = new Uint8Array(await blob.arrayBuffer());
+      }
+      const title = stored.draft.saved_document.title.trim();
+      const filename = `${title === "" ? "Prov" : title}.zip`;
+      downloadFn(new Blob([zipSync(files)], { type: "application/zip" }), filename);
+    } catch {
+      toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+    } finally {
+      if (!disposed && notice.value !== null) {
+        notice.value = { reason: current.reason, busy: false };
+      }
+    }
   }
 
   async function remove(): Promise<void> {

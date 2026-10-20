@@ -10,7 +10,7 @@
  *   the view renders only after the first attempt settles, and a successful
  *   first handoff points the route at the handed-off lineage before the view
  *   mounts, so the view opens the handed-off exam. A draft Mina filer
- *   refused for good leaves a notice above the view with glyph actions
+ *   refused for good leaves a file notice above the view with glyph actions
  *   (download, remove, and for a full Mina filer retry); transient failures
  *   toast and retry in the background.
  *
@@ -19,15 +19,16 @@
  *   - Renders `ExamWorkspaceView` with `serverExamWorkspaceStore`.
  *   - Runs the stored guest draft through `useExamWorkspaceGuestHandoffController`
  *     before the view opens the exam named by `?document=<lineage_id>`, and
- *     renders `ExamWorkspaceGuestHandoffNotice` above the view while the
- *     controller holds a rejection.
+ *     renders `ExamWorkspaceFileNotice` above the view while the
+ *     controller holds a rejection, mapping `permanent` to the
+ *     refused-draft reason and `vault_full` to the full-Mina-filer reason.
  */
 
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
-import ExamWorkspaceGuestHandoffNotice from "./exam-workspace/ExamWorkspaceGuestHandoffNotice.vue";
+import ExamWorkspaceFileNotice from "./exam-workspace/ExamWorkspaceFileNotice.vue";
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createWebGuestHandoffLock } from "./exam-workspace/examWorkspaceGuestHandoffLock";
 import { createLocalStorageGuestHandoffRejectionStorage } from "./exam-workspace/examWorkspaceGuestHandoffRejection";
@@ -62,9 +63,9 @@ onMounted(async () => {
     class="teacher-host"
     data-test="exam-workspace-teacher-host"
   >
-    <ExamWorkspaceGuestHandoffNotice
+    <ExamWorkspaceFileNotice
       v-if="handoff.notice.value"
-      :reason="handoff.notice.value.reason"
+      :reason="handoff.notice.value.reason === 'permanent' ? 'guest_permanent' : 'guest_vault_full'"
       :busy="handoff.notice.value.busy"
       @download="handoff.download()"
       @remove="handoff.remove()"

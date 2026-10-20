@@ -13,9 +13,14 @@
 import { createPinia, setActivePinia } from "pinia";
 import { effectScope } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { unzipSync } from "fflate";
 
 import { useToastStore } from "../../../stores/toast";
-import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
+import {
+  createInMemoryExamWorkspaceGuestDraftStorage,
+  type ExamWorkspaceGuestDraftStoragePort,
+  type StoredGuestDraft,
+} from "./examWorkspaceGuestDraftStorage";
 import { createInMemoryGuestHandoffRejectionStorage } from "./examWorkspaceGuestHandoffRejection";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import {
@@ -23,6 +28,7 @@ import {
   guestHandoffApiError as apiError,
   seedGuestHandoffHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
+import { EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY } from "./examWorkspaceFileNoticeCopy";
 import {
   GUEST_HANDOFF_LATE_SUCCESS_COPY,
   GUEST_HANDOFF_MANUAL_RETRY_FAILED_COPY,
@@ -71,21 +77,48 @@ function toastMessages(spy: { mock: { calls: Array<[string, ...unknown[]]> } }):
 }
 
 /**
- * jsdom's Blob has no `text` and its Response cannot consume a Blob; read the
- * download bytes through FileReader like the production fallback.
+ * jsdom's Blob has no `arrayBuffer`; equip the stored picture blobs with the
+ * production Web API through FileReader, following the per-blob
+ * `Object.defineProperty(file, "arrayBuffer", ...)` pattern in
+ * `client.csrfRecovery.spec.ts`. The in-memory storage keeps picture bytes
+ * by reference, so patching the loaded blobs patches the stored ones.
  */
-async function blobText(blob: Blob): Promise<string> {
-  return await new Promise<string>((resolve, reject) => {
+async function equipStoredPictureBytes(
+  storage: ExamWorkspaceGuestDraftStoragePort,
+): Promise<void> {
+  const stored = await storage.load();
+  if (stored === null) {
+    throw new Error("expected a stored draft to equip");
+  }
+  for (const blob of Object.values(stored.assets)) {
+    Object.defineProperty(blob, "arrayBuffer", {
+      configurable: true,
+      value: async (): Promise<ArrayBuffer> => {
+        const bytes = await blobBytes(blob);
+        const copy = new Uint8Array(bytes.length);
+        copy.set(bytes);
+        return copy.buffer;
+      },
+    });
+  }
+}
+
+/**
+ * Read a download Blob as raw bytes through FileReader: jsdom's Blob has no
+ * `arrayBuffer` the specs can rely on.
+ */
+async function blobBytes(blob: Blob): Promise<Uint8Array> {
+  return await new Promise<Uint8Array>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(new Uint8Array(reader.result));
         return;
       }
-      reject(new Error("The FileReader did not return text."));
+      reject(new Error("The FileReader did not return bytes."));
     };
-    reader.onerror = () => reject(reader.error ?? new Error("Could not read the blob text."));
-    reader.readAsText(blob);
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read the blob bytes."));
+    reader.readAsArrayBuffer(blob);
   });
 }
 
@@ -294,26 +327,49 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     }
   });
 
-  it("7) download saves the held draft under its title, Prov for a blank title", async () => {
+  it("7) download saves one zip with the stored record and its picture bytes", async () => {
     const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
     const download = vi.fn<(blob: Blob, filename: string) => void>();
     const { controller, scope } = startController({ lock, rejections, storage, teacher }, download);
+    const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
-      controller.download();
-      expect(download).toHaveBeenCalledTimes(1);
-      const [blob, filename] = download.mock.calls[0];
-      expect(filename).toBe(`${draft.saved_document.title}.json`);
+      await equipStoredPictureBytes(storage);
       // FileReader never fires under fake timers; no retry timer is pending here.
       vi.useRealTimers();
-      expect(JSON.parse(await blobText(blob))).toEqual(draft);
+      await controller.download();
+      expect(download).toHaveBeenCalledTimes(1);
+      const [blob, filename] = download.mock.calls[0];
+      expect(filename).toBe(`${draft.saved_document.title}.zip`);
+      expect(blob.type).toBe("application/zip");
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(spies.failure).not.toHaveBeenCalled();
+      const stored = await storage.load();
+      if (stored === null) {
+        throw new Error("expected the stored draft to survive the download");
+      }
+      const unzipped = unzipSync(await blobBytes(blob));
+      expect(Object.keys(unzipped).sort()).toEqual([
+        "assets/asset_a",
+        "assets/asset_b",
+        "draft.json",
+      ]);
+      const draftJson = unzipped["draft.json"];
+      const assetA = unzipped["assets/asset_a"];
+      const assetB = unzipped["assets/asset_b"];
+      if (draftJson === undefined || assetA === undefined || assetB === undefined) {
+        throw new Error("expected draft.json and both picture entries in the zip");
+      }
+      expect(JSON.parse(new TextDecoder().decode(draftJson))).toEqual(stored.draft);
+      expect(new TextDecoder().decode(assetA)).toBe("a");
+      expect(new TextDecoder().decode(assetB)).toBe("b");
     } finally {
       scope.stop();
     }
   });
 
-  it("7b) download falls back to Prov.json when the title is blank", async () => {
+  it("7b) download falls back to Prov.zip when the title is blank", async () => {
     const blankStorage = createInMemoryExamWorkspaceGuestDraftStorage();
     const blankRejections = createInMemoryGuestHandoffRejectionStorage();
     const { draft: base } = editedGuestDraft();
@@ -332,13 +388,119 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     try {
       await expect(controller.start()).resolves.toBeNull();
       expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
-      controller.download();
-      expect(download).toHaveBeenCalledTimes(1);
-      const [blob, filename] = download.mock.calls[0];
-      expect(filename).toBe("Prov.json");
       // FileReader never fires under fake timers; no retry timer is pending here.
       vi.useRealTimers();
-      expect(JSON.parse(await blobText(blob))).toEqual(blank);
+      await controller.download();
+      expect(download).toHaveBeenCalledTimes(1);
+      const [blob, filename] = download.mock.calls[0];
+      expect(filename).toBe("Prov.zip");
+      expect(blob.type).toBe("application/zip");
+      const unzipped = unzipSync(await blobBytes(blob));
+      const draftJson = unzipped["draft.json"];
+      if (draftJson === undefined) {
+        throw new Error("expected draft.json in the zip");
+      }
+      expect(JSON.parse(new TextDecoder().decode(draftJson))).toEqual(blank);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("7c) download with a newer stored cursor downloads nothing and shows S6", async () => {
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
+    const download = vi.fn<(blob: Blob, filename: string) => void>();
+    const { controller, scope } = startController({ lock, rejections, storage, teacher }, download);
+    const spies = toastSpies();
+    try {
+      await expect(controller.start()).resolves.toBeNull();
+      const newer = { ...draft, cursor: "cursor-newer" };
+      expect(await storage.replaceIf(draft.cursor, { assets: {}, draft: newer })).toBe(true);
+      vi.useRealTimers();
+      await controller.download();
+      expect(download).not.toHaveBeenCalled();
+      expect(toastMessages(spies.failure)).toEqual([
+        EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
+      ]);
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("7d) download with nothing stored downloads nothing and shows S6", async () => {
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
+    const download = vi.fn<(blob: Blob, filename: string) => void>();
+    const { controller, scope } = startController({ lock, rejections, storage, teacher }, download);
+    const spies = toastSpies();
+    try {
+      await expect(controller.start()).resolves.toBeNull();
+      expect(await storage.clearIf(draft.cursor)).toBe(true);
+      vi.useRealTimers();
+      await controller.download();
+      expect(download).not.toHaveBeenCalled();
+      expect(toastMessages(spies.failure)).toEqual([
+        EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
+      ]);
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("7e) download with an unreadable storage downloads nothing and shows S6", async () => {
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
+    const deps = { lock, rejections, storage, teacher };
+    const download = vi.fn<(blob: Blob, filename: string) => void>();
+    const { controller, scope } = startController(deps, download);
+    const spies = toastSpies();
+    try {
+      await expect(controller.start()).resolves.toBeNull();
+      deps.storage = {
+        ...storage,
+        load: async (): Promise<StoredGuestDraft | null> => {
+          throw new Error("lagringen är blockerad");
+        },
+      };
+      vi.useRealTimers();
+      await controller.download();
+      expect(download).not.toHaveBeenCalled();
+      expect(toastMessages(spies.failure)).toEqual([
+        EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
+      ]);
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("7f) download marks the notice busy while storage reads", async () => {
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
+    const download = vi.fn<(blob: Blob, filename: string) => void>();
+    const deps = { lock, rejections, storage, teacher };
+    const { controller, scope } = startController(deps, download);
+    try {
+      await expect(controller.start()).resolves.toBeNull();
+      await equipStoredPictureBytes(storage);
+      let release!: (stored: StoredGuestDraft | null) => void;
+      deps.storage = {
+        ...storage,
+        load: () =>
+          new Promise<StoredGuestDraft | null>((resolve) => {
+            release = resolve;
+          }),
+      };
+      const pending = controller.download();
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: true });
+      expect(download).not.toHaveBeenCalled();
+      vi.useRealTimers();
+      release(await storage.load());
+      await pending;
+      expect(download).toHaveBeenCalledTimes(1);
+      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
     } finally {
       scope.stop();
     }

@@ -20,9 +20,9 @@ import ExamWorkspaceTeacherHost from "./ExamWorkspaceTeacherHost.vue";
 import type { StoredGuestDraft } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { newGuestDraft } from "./exam-workspace/examWorkspaceGuestDraft";
 import {
-  EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
-  EXAM_WORKSPACE_GUEST_HANDOFF_VAULT_FULL_COPY,
-} from "./exam-workspace/examWorkspaceGuestHandoffCopy";
+  EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
+  EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY,
+} from "./exam-workspace/examWorkspaceFileNoticeCopy";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { buildParentDocument } from "./exam-workspace/examWorkspaceParentDocument.specSupport";
 import { buildResponse } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
@@ -232,19 +232,20 @@ describe("ExamWorkspaceTeacherHost", () => {
     await flushPromises();
 
     expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
-      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
     );
     expect(useToastStore().toasts).toEqual([]);
 
-    await wrapper.get('[data-test="exam-workspace-guest-handoff-download"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-file-notice-download"]').trigger("click");
+    await flushPromises();
     expect(triggerBrowserDownload).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(triggerBrowserDownload).mock.calls[0]?.[1]).toBe("English 1.json");
+    expect(vi.mocked(triggerBrowserDownload).mock.calls[0]?.[1]).toBe("English 1.zip");
 
-    await wrapper.get('[data-test="exam-workspace-guest-handoff-remove"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-file-notice-remove"]').trigger("click");
     await flushPromises();
     expect(storageMocks.stored).toBeNull();
-    expect(wrapper.find('[data-test="exam-workspace-guest-handoff-notice"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-file-notice"]').exists()).toBe(false);
 
     wrapper.unmount();
   });
@@ -264,12 +265,12 @@ describe("ExamWorkspaceTeacherHost", () => {
     const wrapper = mount(ExamWorkspaceTeacherHost);
     await flushPromises();
 
-    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
-      EXAM_WORKSPACE_GUEST_HANDOFF_VAULT_FULL_COPY,
+    expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY,
     );
-    expect(wrapper.find('[data-test="exam-workspace-guest-handoff-retry"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-file-notice-retry"]').exists()).toBe(true);
 
-    await wrapper.get('[data-test="exam-workspace-guest-handoff-retry"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-file-notice-retry"]').trigger("click");
     await flushPromises();
     expect(apiMocks.importGuestDraft).toHaveBeenCalledTimes(2);
 
@@ -284,8 +285,8 @@ describe("ExamWorkspaceTeacherHost", () => {
 
     expect(apiMocks.importGuestDraft).not.toHaveBeenCalled();
     expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
-      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
     );
 
     wrapper.unmount();
@@ -305,8 +306,8 @@ describe("ExamWorkspaceTeacherHost", () => {
     const second = mount(ExamWorkspaceTeacherHost);
     await flushPromises();
     expect(apiMocks.importGuestDraft).toHaveBeenCalledTimes(1);
-    expect(second.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
-      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    expect(second.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
     );
     second.unmount();
   });
@@ -320,10 +321,10 @@ describe("ExamWorkspaceTeacherHost", () => {
     try {
       expect(apiMocks.importGuestDraft).not.toHaveBeenCalled();
       expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
-      expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
-        EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+      expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+        EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
       );
-      expect(wrapper.find('[data-test="exam-workspace-guest-handoff-retry"]').exists()).toBe(
+      expect(wrapper.find('[data-test="exam-workspace-file-notice-retry"]').exists()).toBe(
         false,
       );
     } finally {
