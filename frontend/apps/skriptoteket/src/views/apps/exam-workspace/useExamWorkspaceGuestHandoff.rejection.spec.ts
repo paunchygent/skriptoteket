@@ -27,6 +27,7 @@ import {
   guestHandoffOwnerStub,
   guestHandoffTeacherMock as teacherMock,
   GUEST_HANDOFF_SPEC_NOW as NOW,
+  liveAttempt,
   seedGuestHandoffHarness as seedHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
@@ -43,14 +44,14 @@ describe("runGuestHandoff rejections", () => {
       apiError(422, "DOCUMENT_SCHEMA_OUTDATED"),
     );
 
-    const first = await runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    const first = await runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     expect(first).toEqual({ draft, kind: "rejected", reason: "permanent" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     expect(rejections.read()).toEqual({ cursor: draft.cursor, reason: "permanent" });
     const kept: StoredGuestDraft | null = await storage.load();
     expect(kept?.draft).toEqual(draft);
 
-    const second = await runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    const second = await runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     expect(second).toEqual({ draft, kind: "rejected", reason: "permanent" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     expect(failureToasts()).toEqual([]);
@@ -60,12 +61,12 @@ describe("runGuestHandoff rejections", () => {
     const { draft, lock, owner, rejections, storage, teacher } = await seedHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "VALIDATION_ERROR"));
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "permanent",
     });
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "permanent",
@@ -79,12 +80,12 @@ describe("runGuestHandoff rejections", () => {
     const { draft, lock, owner, rejections, storage, teacher } = await seedHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(413, "PAYLOAD_TOO_LARGE"));
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "permanent",
     });
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "permanent",
@@ -99,14 +100,14 @@ describe("runGuestHandoff rejections", () => {
       apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }),
     );
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "vault_full",
     });
     expect(rejections.read()).toEqual({ cursor: draft.cursor, reason: "vault_full" });
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "vault_full",
@@ -135,7 +136,7 @@ describe("runGuestHandoff rejections", () => {
     })).toBe(true);
     const teacher = teacherMock();
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft,
       kind: "rejected",
       reason: "permanent",
@@ -155,7 +156,7 @@ describe("runGuestHandoff rejections", () => {
     expect(await storage.replaceIf(null, { assets: {}, draft: broken })).toBe(true);
     const teacher = teacherMock();
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft: broken,
       kind: "rejected",
       reason: "permanent",
@@ -173,14 +174,14 @@ describe("runGuestHandoff rejections", () => {
     const { draft, lock, owner, rejections, storage, teacher } = await seedHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(error);
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "transient",
     });
     expect(rejections.read()).toBeNull();
     const kept = await storage.load();
     expect(kept?.draft).toEqual(draft);
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "transient",
     });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
@@ -191,7 +192,7 @@ describe("runGuestHandoff rejections", () => {
     const { draft, lock, owner, rejections, storage, teacher } = await seedHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(401, "UNAUTHORIZED"));
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "deferred",
     });
     expect(rejections.read()).toBeNull();
@@ -211,14 +212,14 @@ describe("runGuestHandoff rejections", () => {
       }),
     );
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "deferred",
     });
     expect(rejections.read()).toBeNull();
     const kept = await storage.load();
     expect(kept?.draft).toEqual(draft);
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "deferred",
     });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
@@ -246,7 +247,7 @@ describe("runGuestHandoff rejections", () => {
       },
     });
 
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       kind: "handed_off",
       lineageId: "lineage-new",
     });
@@ -294,8 +295,8 @@ describe("runGuestHandoff rejections", () => {
       apiError(422, "DOCUMENT_SCHEMA_OUTDATED"),
     );
 
-    await runGuestHandoff({ lock, owner, rejections, storage, teacher });
-    await runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    await runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
+    await runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     expect(failureToasts()).toEqual([]);
   });
 });

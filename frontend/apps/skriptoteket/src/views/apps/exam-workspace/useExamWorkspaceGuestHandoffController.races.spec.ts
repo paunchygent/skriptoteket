@@ -32,6 +32,7 @@ import { useExamWorkspaceGuestHandoffController } from "./useExamWorkspaceGuestH
 import {
   guestHandoffApiError,
   guestHandoffOwnerStub,
+  liveAttempt,
   seedGuestHandoffHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
 
@@ -157,7 +158,7 @@ describe("useExamWorkspaceGuestHandoffController races", () => {
         rejections,
         storage: harness.storage,
         teacher: harness.teacher,
-      });
+      }, liveAttempt());
       expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
       await controller.remove();
       expect((await harness.storage.load())?.draft.cursor).toBe(b.cursor);
@@ -203,7 +204,7 @@ describe("useExamWorkspaceGuestHandoffController races", () => {
         rejections,
         storage: harness.storage,
         teacher: harness.teacher,
-      });
+      }, liveAttempt());
       expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
       await controller.retry();
       expect(harness.teacher.importExamWorkspaceGuestDraft.mock.calls.map((call) => call[0])).toEqual([

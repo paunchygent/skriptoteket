@@ -39,6 +39,7 @@ import { useExamWorkspaceGuestHandoffController } from "./useExamWorkspaceGuestH
 import {
   guestHandoffApiError,
   guestHandoffOwnerStub,
+  liveAttempt,
   seedGuestHandoffHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
 
@@ -112,7 +113,7 @@ describe("runGuestHandoff races", () => {
       rejections,
       storage: { ...storage, load: () => load.promise },
       teacher: { importExamWorkspaceGuestDraft },
-    });
+    }, liveAttempt());
     auth.$patch({
       csrfToken: "csrf-b",
       sharedSessionId: "session-b",
@@ -136,7 +137,7 @@ describe("runGuestHandoff races", () => {
       rejections,
       storage: { ...storage, load: () => load.promise },
       teacher,
-    });
+    }, liveAttempt());
     live = false;
     load.resolve(stored);
     await expect(pending).resolves.toEqual({ kind: "deferred" });
@@ -150,15 +151,15 @@ describe("runGuestHandoff races", () => {
     teacher.importExamWorkspaceGuestDraft
       .mockReturnValueOnce(old.promise)
       .mockRejectedValue(guestHandoffApiError(422));
-    const pendingA = runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    const pendingA = runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1));
     const b = await replaceSlotWithB(storage);
-    const pendingB = runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    const pendingB = runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     old.reject(guestHandoffApiError(422));
     await expect(pendingA).resolves.toEqual({ kind: "none" });
     await expect(pendingB).resolves.toEqual({ draft: b, kind: "rejected", reason: "permanent" });
     expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft: b,
       kind: "rejected",
       reason: "permanent",
@@ -176,7 +177,7 @@ describe("runGuestHandoff races", () => {
       resolvePost = resolve;
     });
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
-    const pendingA = runGuestHandoff({ lock, owner, rejections, storage, teacher });
+    const pendingA = runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt());
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1));
     const b = await replaceSlotWithB(storage);
     rejections.write({ cursor: b.cursor, reason: "permanent" });
@@ -184,7 +185,7 @@ describe("runGuestHandoff races", () => {
     await expect(pendingA).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-a" });
     expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
-    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher })).resolves.toEqual({
+    await expect(runGuestHandoff({ lock, owner, rejections, storage, teacher }, liveAttempt())).resolves.toEqual({
       draft: b,
       kind: "rejected",
       reason: "permanent",
@@ -220,8 +221,8 @@ describe("runGuestHandoff races", () => {
     const two = createLocalStorageGuestHandoffRejectionStorage();
     const reply = deferred<never>();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(reply.promise);
-    const first = runGuestHandoff({ lock, owner, rejections: one, storage, teacher });
-    const second = runGuestHandoff({ lock, owner, rejections: two, storage, teacher });
+    const first = runGuestHandoff({ lock, owner, rejections: one, storage, teacher }, liveAttempt());
+    const second = runGuestHandoff({ lock, owner, rejections: two, storage, teacher }, liveAttempt());
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1));
     reply.reject(guestHandoffApiError(422));
     await expect(first).resolves.toEqual({ draft, kind: "rejected", reason: "permanent" });
@@ -246,13 +247,13 @@ describe("runGuestHandoff races", () => {
         rejections,
         storage,
         teacher,
-      });
+      }, liveAttempt());
       expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
       await controller.remove();
       expect((await storage.load())?.draft.cursor).toBe(b.cursor);
       expect(rejections.read()).toEqual({ cursor: b.cursor, reason: "permanent" });
       await expect(
-        runGuestHandoff({ lock, owner: guestHandoffOwnerStub(), rejections, storage, teacher }),
+        runGuestHandoff({ lock, owner: guestHandoffOwnerStub(), rejections, storage, teacher }, liveAttempt()),
       ).resolves.toEqual({ draft: b, kind: "rejected", reason: "permanent" });
       expect(teacher.importExamWorkspaceGuestDraft.mock.calls.map((call) => call[0])).toEqual([
         draft.cursor,
@@ -286,7 +287,7 @@ describe("runGuestHandoff races", () => {
       rejections,
       storage,
       teacher: { importExamWorkspaceGuestDraft },
-    });
+    }, liveAttempt());
     await sent.promise;
     auth.$patch({
       csrfToken: "csrf-b",
@@ -311,7 +312,7 @@ describe("runGuestHandoff races", () => {
         rejections,
         storage,
         teacher: { importExamWorkspaceGuestDraft },
-      }),
+      }, liveAttempt()),
     ).resolves.toEqual({ kind: "none" });
     expect(requests).toEqual(["10000000-0000-4000-8000-000000000001"]);
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
@@ -338,7 +339,7 @@ describe("runGuestHandoff races", () => {
       rejections,
       storage,
       teacher: { importExamWorkspaceGuestDraft },
-    });
+    }, liveAttempt());
     await sent.promise;
     auth.$patch({
       csrfToken: "csrf-b",

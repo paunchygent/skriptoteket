@@ -25,7 +25,7 @@ import {
   createInMemoryGuestHandoffLock,
   type GuestHandoffLockPort,
 } from "./examWorkspaceGuestHandoffLock";
-import type { GuestHandoffOwner } from "./useExamWorkspaceGuestHandoff";
+import type { GuestHandoffOwner, RunGuestHandoffOptions } from "./useExamWorkspaceGuestHandoff";
 import {
   newGuestDraft,
   storeGuestUndoStep,
@@ -106,6 +106,11 @@ export type GuestHandoffHarness = {
 /** A live owner for specs that do not retire the session mid-flight. */
 export function guestHandoffOwnerStub(): GuestHandoffOwner {
   return { isLive: () => true, session: Symbol("guest handoff test session") };
+}
+
+/** A fresh unaborted attempt: every `runGuestHandoff` caller names its signal. */
+export function liveAttempt(): RunGuestHandoffOptions {
+  return { signal: new AbortController().signal };
 }
 
 export async function seedGuestHandoffHarness(): Promise<GuestHandoffHarness> {

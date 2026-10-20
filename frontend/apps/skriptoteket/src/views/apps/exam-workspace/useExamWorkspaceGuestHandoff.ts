@@ -25,10 +25,11 @@
  *   reads the draft without the lock and, when one exists, returns
  *   `lock_unavailable` with no POST and no record or draft mutation, so a
  *   later load in a browser with working locks tries again. Every attempt
- *   also carries its own abort signal next to the owner's lifetime: a queued
- *   attempt leaves the queue and a held POST settles when the signal aborts,
- *   a failure after its own signal aborted defers without classifying, and
- *   only disposal retires the owner. This module shows no toasts: a later
+ *   also carries its own abort signal next to the owner's lifetime: a
+ *   queued attempt leaves the queue, a held draft read settles with
+ *   `deferred`, and a held POST settles when the signal aborts, a failure
+ *   after its own signal aborted defers without classifying, and only
+ *   disposal retires the owner. This module shows no toasts: a later
  *   controller unit owns all user messages.
  *
  * Relationships:
@@ -102,8 +103,10 @@ export type GuestHandoffOwner = {
 };
 
 export type RunGuestHandoffOptions = {
-  /** Aborts the queued admission and the held POST; a failure after this
-   *  signal aborted defers without classifying. */
+  /** Aborts the queued admission, the held draft reads and the held POST; a
+   *  failure after this signal aborted defers without classifying. A draft
+   *  read that loses to this signal settles at once: the attempt defers and
+   *  releases the lock, and the late read result is dropped. */
   signal: AbortSignal;
   /**
    * A draft cursor holding a vault-full notice. The recorded rejection is
@@ -128,17 +131,58 @@ function declaredAssets(
   return declared;
 }
 
+type SettledDraftRead =
+  | { readonly aborted: true }
+  | { readonly aborted: false; readonly value: StoredGuestDraft | null };
+
+/**
+ * Wait for one draft read or for the attempt's signal, whichever settles
+ * first. A late read result is dropped and never leads to a POST or a write;
+ * a late read rejection stays handled through this race and never surfaces
+ * as an unhandled rejection.
+ */
+function readDraftUnlessAborted(
+  storage: GuestHandoffDeps["storage"],
+  signal: AbortSignal,
+): Promise<SettledDraftRead> {
+  if (signal.aborted) {
+    return Promise.resolve({ aborted: true });
+  }
+  return new Promise<SettledDraftRead>((resolve, reject) => {
+    const cleanup = (): void => {
+      signal.removeEventListener("abort", onAbort);
+    };
+    const onAbort = (): void => {
+      cleanup();
+      resolve({ aborted: true });
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    storage.load().then(
+      (value) => {
+        cleanup();
+        resolve({ aborted: false, value });
+      },
+      (error: unknown) => {
+        cleanup();
+        reject(error);
+      },
+    );
+  });
+}
+
 /**
  * Hand the stored browser draft to Mina filer. Makes at most one POST and
  * returns the outcome; the browser draft is kept in every failure case.
  *
  * The whole attempt runs inside the cross-tab handoff lock: the draft and
  * the record are re-read after admission, so a second tab observes the first
- * tab's permanent outcome instead of posting again. The lock request and the
- * POST both carry the attempt's abort signal: a queued attempt leaves the
- * queue and a held POST settles when the signal aborts, and a failure after
- * its own signal aborted defers without classifying. A lock that cannot be
- * granted reads the draft without the lock instead and returns
+ * tab's permanent outcome instead of posting again. The lock request, every
+ * draft read and the POST all carry the attempt's abort signal: a queued
+ * attempt leaves the queue, a held draft read settles with `deferred` and
+ * releases the lock, and a held POST settles when the signal aborts; a
+ * failure after its own signal aborted defers without classifying. A lock
+ * that cannot be granted reads the draft without the lock instead — that
+ * unlocked read settles on abort the same way — and returns
  * `lock_unavailable` with no POST and no record or draft mutation. A failed
  * attempt writes its record only when the stored draft still has the posted
  * cursor; success and removal clear only their own cursor's record. Once the
@@ -150,7 +194,7 @@ function declaredAssets(
  */
 export async function runGuestHandoff(
   deps: GuestHandoffDeps,
-  attempt: RunGuestHandoffOptions = { signal: new AbortController().signal },
+  attempt: RunGuestHandoffOptions,
 ): Promise<GuestHandoffOutcome> {
   const retired = (): boolean => attempt.signal.aborted || !deps.owner.isLive();
   try {
@@ -163,7 +207,7 @@ export async function runGuestHandoff(
       return { kind: "deferred" };
     }
     if (error instanceof GuestHandoffLockUnavailableError) {
-      return await readDraftWithoutLock(deps);
+      return await readDraftWithoutLock(deps, attempt);
     }
     throw error;
   }
@@ -171,8 +215,9 @@ export async function runGuestHandoff(
 
 /**
  * The lock-held half of `runGuestHandoff`: the draft and the record are
- * re-read after admission, the POST carries the attempt's abort signal, and
- * every liveness check treats an aborted attempt like a retired owner.
+ * re-read after admission, every draft read and the POST carry the attempt's
+ * abort signal, and every liveness check treats an aborted attempt like a
+ * retired owner.
  */
 async function runGuestHandoffLocked(
   deps: GuestHandoffDeps,
@@ -182,9 +227,13 @@ async function runGuestHandoffLocked(
   if (retired()) {
     return { kind: "deferred" };
   }
-  let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
+  let stored: StoredGuestDraft | null;
   try {
-    stored = await deps.storage.load();
+    const read = await readDraftUnlessAborted(deps.storage, attempt.signal);
+    if (read.aborted) {
+      return { kind: "deferred" };
+    }
+    stored = read.value;
   } catch {
     return { kind: "none" };
   }
@@ -263,7 +312,11 @@ async function runGuestHandoffLocked(
       }
       let current: StoredGuestDraft | null;
       try {
-        current = await deps.storage.load();
+        const reread = await readDraftUnlessAborted(deps.storage, attempt.signal);
+        if (reread.aborted) {
+          return { kind: "deferred" };
+        }
+        current = reread.value;
       } catch {
         return { kind: "none" };
       }
@@ -302,14 +355,23 @@ async function runGuestHandoffLocked(
 
 /**
  * The no-lock fallback of `runGuestHandoff`: the draft is read without
- * coordinating across tabs, so nothing is posted, recorded or cleared. A
- * stored draft returns `lock_unavailable` so the caller can hold it and show
+ * coordinating across tabs, so nothing is posted, recorded or cleared. That
+ * read settles on abort like the locked reads: an aborted signal returns
+ * `deferred` at once and drops the late result. A stored draft returns
+ * `lock_unavailable` so the caller can hold it and show
  * the permanent notice; without a stored draft there is nothing to hand off.
  */
-async function readDraftWithoutLock(deps: GuestHandoffDeps): Promise<GuestHandoffOutcome> {
-  let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
+async function readDraftWithoutLock(
+  deps: GuestHandoffDeps,
+  attempt: RunGuestHandoffOptions,
+): Promise<GuestHandoffOutcome> {
+  let stored: StoredGuestDraft | null;
   try {
-    stored = await deps.storage.load();
+    const read = await readDraftUnlessAborted(deps.storage, attempt.signal);
+    if (read.aborted) {
+      return { kind: "deferred" };
+    }
+    stored = read.value;
   } catch {
     return { kind: "none" };
   }
