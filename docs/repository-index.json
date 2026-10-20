@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b81eee0a531caee9d74317e6ea37b6781bed05459e9ca1371f053719595791f8",
+  "source_set_digest": "adcd1ce010c1176a95f7155b5cf6859ab1600baaa12701ae4b5399638b18c301",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7155,7 +7155,7 @@
       "type": "task",
       "title": "A guest draft that Mina filer rejects for good stops retrying and is offered for download or removal",
       "path": "docs/backlog/tasks/task-skript-41-02-05-a-guest-draft-that-mina-filer-rejects-for-good-stops-retrying-and-is-offered-for-download-or-removal.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7166,7 +7166,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 41-02-05 on 2026-10-20 in the Hemma orchestrator session, with D10 (pictures in the download) and D24 (a server claim per draft_id) left as follow-ups. Pi ruthless-reviewer ba74ef97 review and rereviews 1-2 (root 01a1567f evidence/reviews/): R1-R6 closed; rereview 2 ended changes_requested with mediums R7/R8 only, repaired in 3b0be5f4 and dd0b71cf and admitted by the parent on focused proof (143 passed). Copy review 917b4838 approved. Frontend suite at merge head c2aac72b: 4097 passed; backend full suite at d16e1653: 7900 passed, 59 skipped. Released on main 8be9aefa; Mac staging walk PASS on all five steps at 8be9aefa (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, second section). The observed rejection was 422 DOCUMENT_SCHEMA_OUTDATED for a native_exam_document_v9 guest draft."
       }
     },
     {
