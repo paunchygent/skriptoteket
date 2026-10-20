@@ -449,6 +449,8 @@ defineExpose({
 </template>
 
 <style>
+/* Full exam editor paragraph space (TASK-SKRIPT-40-04-20 D4): consecutive blocks sit 1rem apart. */
+.xw-richtext:not(.xw-richtext--compact) .xw-richtext__surface > * + * { margin-top: 1rem; }
 /* A word that keeps hidden gap answers, while the gap tool is on: the gap
    chip's navy tone as a faint dotted underline. */
 .xw-kept-gap {

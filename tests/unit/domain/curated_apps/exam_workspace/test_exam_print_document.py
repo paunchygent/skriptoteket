@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+    NativeParagraph,
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
@@ -35,12 +36,19 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
+    NativeMatchLeft,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeChoice,
+)
 from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
     all_texts,
     entry_blocks,
     free_text_item,
     has_answer_key,
+    inline_choice_item,
     lone_gap_item,
     question,
     question_blocks,
@@ -70,7 +78,10 @@ class TestHeader:
         assert isinstance(header, PrintInstruction)
         assert header.blocks[0] == PrintHeading(level=1, text="Omprov: grammatik")
         assert (
-            PrintParagraph(runs=(PrintText("Totalt: 4 poäng"),), style=PrintParagraphStyle.DETAIL)
+            PrintParagraph(
+                runs=(PrintText("Totalt: 4 poäng", marks=()),),
+                style=PrintParagraphStyle.DETAIL,
+            )
             in header.blocks
         )
         assert isinstance(student.entries[1], PrintQuestion)
@@ -119,7 +130,10 @@ class TestFreeText:
 
         stem_index = question_blocks(question_entry).index(
             PrintParagraph(
-                runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+                runs=(
+                    PrintText("Resonera om renässansen.", marks=()),
+                    PrintText(" (4 p)", marks=()),
+                ),
                 style=PrintParagraphStyle.BODY,
             )
         )
@@ -158,7 +172,7 @@ class TestPointsFormatting:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
         assert PrintParagraph(
-            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (2,5 p)")),
+            runs=(PrintText("Vilket är huvudordet?", marks=()), PrintText(" (2,5 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         ) in question_blocks(question(student, "item_001"))
 
@@ -188,7 +202,7 @@ class TestParents:
         instructions = [entry for entry in student.entries if isinstance(entry, PrintInstruction)]
         assert len(instructions) == 2  # the exam header and the one parent
         assert instructions[1].blocks == (
-            PrintParagraph(runs=(PrintText("Del 1"),), style=PrintParagraphStyle.BODY),
+            PrintParagraph(runs=(PrintText("Del 1", marks=()),), style=PrintParagraphStyle.BODY),
         )
         assert isinstance(student.entries[2], PrintQuestion)
         assert student.entries[2].item_id == "item_001"
@@ -325,7 +339,10 @@ class TestOutlineWalk:
         instruction = student.entries[2]
         assert isinstance(instruction, PrintInstruction)
         assert instruction.blocks == (
-            PrintParagraph(runs=(PrintText("Mellanrubrik"),), style=PrintParagraphStyle.BODY),
+            PrintParagraph(
+                runs=(PrintText("Mellanrubrik", marks=()),),
+                style=PrintParagraphStyle.BODY,
+            ),
         )
 
     def test_childless_part_with_empty_instruction_prints_nothing(self) -> None:
@@ -362,7 +379,7 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            runs=(PrintText("Resonera om renässansen.", marks=()), PrintText(" (4 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (PrintRuledLines(count=5),)
@@ -376,13 +393,13 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (1 p)")),
+            runs=(PrintText("Vilket är huvudordet?", marks=()), PrintText(" (1 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert not any(isinstance(block, PrintOption) for block in entry.text)
         assert entry.answer == (
-            PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
-            PrintOption(box=PrintBox.TICK, label="B)", text="eleverna"),
+            PrintOption(box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", marks=()),)),
+            PrintOption(box=PrintBox.TICK, label="B)", runs=(PrintText("eleverna", marks=()),)),
         )
 
     def test_ordering_answer_holds_the_steps_in_print_order(self) -> None:
@@ -394,16 +411,16 @@ class TestQuestionGroups:
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
             runs=(
-                PrintText("Sätt stegen i en argumenterande text i rätt ordning."),
-                PrintText(" (1 p)"),
+                PrintText("Sätt stegen i en argumenterande text i rätt ordning.", marks=()),
+                PrintText(" (1 p)", marks=()),
             ),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
-            PrintOption(box=PrintBox.NUMBER, label="", text="Avslutning"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Motargument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Argument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Avslutning", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Motargument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Argument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Tes", marks=()),)),
         )
 
     def test_matching_answer_holds_the_grid(self) -> None:
@@ -414,11 +431,25 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Kategorisera orden i rätt ordklass."), PrintText(" (3 p)")),
+            runs=(
+                PrintText("Kategorisera orden i rätt ordklass.", marks=()),
+                PrintText(" (3 p)", marks=()),
+            ),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
-            PrintGrid(rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")),
+            PrintGrid(
+                rows=(
+                    (PrintText("hund", marks=()),),
+                    (PrintText("katt", marks=()),),
+                    (PrintText("fågel", marks=()),),
+                ),
+                columns=(
+                    (PrintText("däggdjur", marks=()),),
+                    (PrintText("fåglar", marks=()),),
+                    (PrintText("fiskar", marks=()),),
+                ),
+            ),
         )
 
     def test_facit_answer_key_is_the_last_answer_block(self) -> None:
@@ -429,7 +460,7 @@ class TestQuestionGroups:
         entry = question(facit, "item_001")
 
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            runs=(PrintText("Resonera om renässansen.", marks=()), PrintText(" (4 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer[-1] == PrintAnswerKey(
@@ -437,3 +468,197 @@ class TestQuestionGroups:
         )
         assert entry.answer[-2] == PrintRuledLines(count=5)
         assert not any(isinstance(block, PrintAnswerKey) for block in entry.text)
+
+
+class TestTextMarks:
+    """Printed runs keep the native body's stored marks (TASK-SKRIPT-40-04-20 D1, D6, D7)."""
+
+    def test_shared_instruction_keeps_bold_words_in_both_paragraphs(self) -> None:
+        instructions = (
+            NativeParagraph(
+                heading_level=None,
+                segments=(
+                    NativeTextSegment(text="Diskutera", marks=("bold",)),
+                    NativeTextSegment(text=" hur Kims ", marks=()),
+                    NativeTextSegment(text="beteende och rädsla", marks=("bold",)),
+                ),
+            ),
+            segments_paragraph(NativeTextSegment(text="Andra stycket.", marks=())),
+        )
+        document = NativeExamDocument(
+            document_id=uuid4(),
+            revision=1,
+            title="Omprov: grammatik",
+            instructions=instructions,
+            items=(free_text_item(),),
+            origin=NativeExamDocumentOrigin(kind="created"),
+        )
+
+        student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
+
+        header = student.entries[0]
+        assert isinstance(header, PrintInstruction)
+        bodies = [
+            block
+            for block in header.blocks
+            if isinstance(block, PrintParagraph) and block.style is PrintParagraphStyle.BODY
+        ]
+        assert bodies == [
+            PrintParagraph(
+                runs=(
+                    PrintText("Diskutera", marks=("bold",)),
+                    PrintText(" hur Kims ", marks=()),
+                    PrintText("beteende och rädsla", marks=("bold",)),
+                ),
+                style=PrintParagraphStyle.BODY,
+            ),
+            PrintParagraph(
+                runs=(PrintText("Andra stycket.", marks=()),),
+                style=PrintParagraphStyle.BODY,
+            ),
+        ]
+
+    def test_question_body_keeps_mark_order_and_points_run_has_no_marks(self) -> None:
+        item = free_text_item().model_copy(
+            update={
+                "body": (
+                    NativeParagraph(
+                        heading_level=None,
+                        segments=(
+                            NativeTextSegment(
+                                text="Förklara ",
+                                marks=("bold", "italic", "underline"),
+                            ),
+                            NativeTextSegment(text="x", marks=("superscript",)),
+                        ),
+                    ),
+                )
+            }
+        )
+
+        student = build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT)
+
+        assert question(student, "item_001").text[-1] == PrintParagraph(
+            runs=(
+                PrintText("Förklara ", marks=("bold", "italic", "underline")),
+                PrintText("x", marks=("superscript",)),
+                PrintText(" (4 p)", marks=()),
+            ),
+            style=PrintParagraphStyle.BODY,
+        )
+
+    def test_body_heading_paragraph_prints_its_runs_bold_without_duplicates(self) -> None:
+        item = free_text_item().model_copy(
+            update={
+                "body": (
+                    NativeParagraph(
+                        heading_level=2,
+                        segments=(NativeTextSegment(text="Bakgrund", marks=("italic",)),),
+                    ),
+                    NativeParagraph(
+                        heading_level=2,
+                        segments=(NativeTextSegment(text="Syfte", marks=("bold",)),),
+                    ),
+                )
+            }
+        )
+
+        student = build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT)
+
+        bodies = [
+            block
+            for block in question(student, "item_001").text
+            if isinstance(block, PrintParagraph)
+        ]
+        assert bodies[0] == PrintParagraph(
+            runs=(PrintText("Bakgrund", marks=("bold", "italic")),),
+            style=PrintParagraphStyle.BODY,
+        )
+        assert bodies[1] == PrintParagraph(
+            runs=(
+                PrintText("Syfte", marks=("bold",)),
+                PrintText(" (4 p)", marks=()),
+            ),
+            style=PrintParagraphStyle.BODY,
+        )
+
+    def test_single_choice_option_runs_keep_marks_and_join_paragraphs_with_a_break(
+        self,
+    ) -> None:
+        item = make_single_choice_item().model_copy(
+            update={
+                "choices": (
+                    NativeChoice(
+                        choice_id="choice_001",
+                        body=(
+                            NativeParagraph(
+                                heading_level=None,
+                                segments=(
+                                    NativeTextSegment(text="vä", marks=()),
+                                    NativeTextSegment(text="gen", marks=("bold",)),
+                                ),
+                            ),
+                            segments_paragraph(NativeTextSegment(text="fortsättning", marks=())),
+                        ),
+                    ),
+                    NativeChoice(choice_id="choice_002", body=(make_paragraph("eleverna"),)),
+                )
+            }
+        )
+
+        student = build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT)
+
+        options = [
+            block
+            for block in question(student, "item_001").answer
+            if isinstance(block, PrintOption)
+        ]
+        assert options[0] == PrintOption(
+            box=PrintBox.TICK,
+            label="A)",
+            runs=(
+                PrintText("vä", marks=()),
+                PrintText("gen", marks=("bold",)),
+                PrintText("\n", marks=()),
+                PrintText("fortsättning", marks=()),
+            ),
+        )
+
+    def test_matching_grid_cell_keeps_its_marks(self) -> None:
+        item = matching_item()
+        underlined = NativeParagraph(
+            heading_level=None,
+            segments=(NativeTextSegment(text="hund", marks=("underline",)),),
+        )
+        item = item.model_copy(
+            update={
+                "match_left": (
+                    NativeMatchLeft(left_id=item.match_left[0].left_id, body=(underlined,)),
+                    *item.match_left[1:],
+                )
+            }
+        )
+
+        student = build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT)
+
+        grid = question(student, "item_001").answer[0]
+        assert isinstance(grid, PrintGrid)
+        assert grid.rows[0] == (PrintText("hund", marks=("underline",)),)
+
+    def test_inline_choice_bracket_run_carries_no_marks(self) -> None:
+        student = build_print_document(
+            make_document(inline_choice_item()), variant=ExamPrintVariant.STUDENT
+        )
+
+        runs = [
+            run
+            for block in question(student, "item_001").text
+            if isinstance(block, PrintParagraph)
+            for run in block.runs
+            if isinstance(run, PrintText)
+        ]
+
+        assert runs[0] == PrintText("Vattnets formel är ", marks=())
+        assert next(run for run in runs if run.text.startswith("[")) == PrintText(
+            "[H2O / CO2]", marks=()
+        )

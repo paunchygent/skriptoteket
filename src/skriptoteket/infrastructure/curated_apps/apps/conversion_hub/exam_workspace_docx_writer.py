@@ -36,6 +36,7 @@ from docx.text.paragraph import Paragraph
 from docx.text.parfmt import ParagraphFormat
 
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    BODY_PARAGRAPH_SPACING,
     BOX_BORDER_PT,
     BOX_GAP_MM,
     GRID_CELL_PADDING_MM,
@@ -212,7 +213,7 @@ class _PrintDocxRenderer:
         has_picture = False
         for run in block.runs:
             if isinstance(run, PrintText):
-                paragraph.add_run(run.text)
+                _add_text_run(paragraph, run)
             elif isinstance(run, PrintBlank):
                 _add_blank(paragraph, run.width_mm)
             elif isinstance(run, PrintImage):
@@ -220,7 +221,13 @@ class _PrintDocxRenderer:
                 self._picture(paragraph, run.asset_id)
             else:
                 raise AssertionError(f"unhandled print run: {type(run).__name__}")
-        _set_block_spacing(paragraph, IMAGE_SPACING if has_picture else PARAGRAPH_SPACING)
+        if has_picture:
+            spacing = IMAGE_SPACING
+        elif block.style in (PrintParagraphStyle.BODY, PrintParagraphStyle.GAP_LINE):
+            spacing = BODY_PARAGRAPH_SPACING
+        else:
+            spacing = PARAGRAPH_SPACING
+        _set_block_spacing(paragraph, spacing)
 
     def _ruled_lines(self, block: PrintRuledLines) -> None:
         for index in range(block.count):
@@ -237,13 +244,16 @@ class _PrintDocxRenderer:
         if option.box is PrintBox.TICK:
             paragraph.add_run(TICK_BOX_GLYPH)
             label = f" {option.label}" if option.label else ""
-            paragraph.add_run(f"{label} {option.text}")
+            paragraph.add_run(f"{label} ")
+            for run in option.runs:
+                _add_text_run(paragraph, run)
             return
         if option.box is not PrintBox.NUMBER:
             raise AssertionError(f"unhandled print box: {option.box}")
         _add_number_box(paragraph)
         _add_box_gap(paragraph)
-        paragraph.add_run(option.text)
+        for run in option.runs:
+            _add_text_run(paragraph, run)
 
     def _grid(self, grid: PrintGrid) -> None:
         if self._last_paragraph is not None:
@@ -254,10 +264,10 @@ class _PrintDocxRenderer:
         header = table.rows[0].cells
         _set_cell_text(header[0], "")
         for index, column in enumerate(grid.columns, start=1):
-            _set_cell_text(header[index], column)
+            _set_cell_runs(header[index], column)
         for row_index, row in enumerate(grid.rows, start=1):
             cells = table.rows[row_index].cells
-            _set_cell_text(cells[0], row)
+            _set_cell_runs(cells[0], row)
             for cell in cells[1:]:
                 _set_cell_text(cell, TICK_BOX_GLYPH)
         self._after_grid = True
@@ -422,9 +432,37 @@ def _set_cell_margins(table: Table) -> None:
     tblPr.insert_element_before(margins, "w:tblLook", "w:tblCaption", "w:tblDescription")
 
 
+def _add_text_run(paragraph: Paragraph, run: PrintText) -> None:
+    """One printed text run as a Word run with its stored marks.
+
+    python-docx turns "\\n" inside the text into a ``w:br``; marks that are
+    absent stay unset so the run inherits the house style.
+    """
+    word = paragraph.add_run(run.text)
+    if "bold" in run.marks:
+        word.bold = True
+    if "italic" in run.marks:
+        word.italic = True
+    if "underline" in run.marks:
+        word.underline = True
+    if "superscript" in run.marks:
+        word.font.superscript = True
+    if "subscript" in run.marks:
+        word.font.subscript = True
+
+
 def _set_cell_text(cell: _Cell, text: str) -> None:
     """One grid cell's text with no paragraph spacing of its own."""
     cell.text = text
+    for paragraph in cell.paragraphs:
+        _set_block_spacing(paragraph, BlockSpacing(0, 0))
+
+
+def _set_cell_runs(cell: _Cell, runs: tuple[PrintText, ...]) -> None:
+    """One grid cell's marked runs in its first paragraph, with no spacing of its own."""
+    first = cell.paragraphs[0]
+    for run in runs:
+        _add_text_run(first, run)
     for paragraph in cell.paragraphs:
         _set_block_spacing(paragraph, BlockSpacing(0, 0))
 

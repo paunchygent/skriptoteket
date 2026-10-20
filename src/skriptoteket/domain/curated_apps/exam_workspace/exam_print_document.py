@@ -15,6 +15,9 @@ Purpose:
     never names a font, a page or a file format. The DOCX renderer and the
     print-PDF HTML renderer (other units) render only this.
 
+    Printed runs keep their stored marks, and body heading paragraphs print bold
+    (TASK-SKRIPT-40-04-20 D1, D7).
+
 Relationships:
     Reads the item print layout (``exam_print_layout``), the house template's blank
     minimum (``exam_conversion.exam_print_house_template``), the Swedish export
@@ -49,9 +52,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_layout import (
     paragraph_print_role,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NATIVE_TEXT_MARK_ORDER,
     NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
+    NativeTextMark,
     NativeTextSegment,
     is_empty_body,
 )
@@ -85,9 +90,10 @@ _CHOICE_KINDS = (
 
 @dataclass(frozen=True)
 class PrintText:
-    """A run of printed text."""
+    """A run of printed text; ``marks`` holds the run's stored marks in canonical order."""
 
     text: str
+    marks: tuple[NativeTextMark, ...]
 
 
 @dataclass(frozen=True)
@@ -151,15 +157,15 @@ class PrintOption:
 
     box: PrintBox
     label: str
-    text: str
+    runs: tuple[PrintText, ...]
 
 
 @dataclass(frozen=True)
 class PrintGrid:
     """A matching item's two lists; the renderer prints one tick box per cell (W8)."""
 
-    rows: tuple[str, ...]
-    columns: tuple[str, ...]
+    rows: tuple[tuple[PrintText, ...], ...]
+    columns: tuple[tuple[PrintText, ...], ...]
 
 
 @dataclass(frozen=True)
@@ -215,7 +221,7 @@ def build_print_document(
     title, *details = exam_export_header_lines(document)
     header_blocks: list[PrintBlock] = [PrintHeading(level=1, text=title)]
     header_blocks.extend(
-        PrintParagraph(runs=(PrintText(text),), style=PrintParagraphStyle.DETAIL)
+        PrintParagraph(runs=(PrintText(text, ()),), style=PrintParagraphStyle.DETAIL)
         for text in details
     )
     header_blocks.extend(_instruction_blocks(document.printed_instructions()))
@@ -287,11 +293,42 @@ def _instruction_runs(paragraph: NativeParagraph) -> tuple[PrintRun, ...]:
     runs: list[PrintRun] = []
     for segment in paragraph.segments:
         if isinstance(segment, NativeTextSegment):
-            runs.append(PrintText(segment.text))
+            runs.append(_text_run(segment, paragraph))
         elif isinstance(segment, NativeAssetSegment):
             runs.append(PrintImage(asset_id=segment.asset_id))
         else:
             runs.append(PrintBlank(width_mm=BLANK_MIN_WIDTH_MM))
+    return tuple(runs)
+
+
+def _text_run(segment: NativeTextSegment, paragraph: NativeParagraph) -> PrintText:
+    """One native text segment as a printed run (TASK-SKRIPT-40-04-20 D1, D7).
+
+    A body heading paragraph prints bold at body size: ``bold`` joins the
+    segment's marks in canonical ``NATIVE_TEXT_MARK_ORDER``, never duplicated.
+    """
+    if paragraph.heading_level is None or "bold" in segment.marks:
+        return PrintText(segment.text, segment.marks)
+    return PrintText(
+        segment.text,
+        tuple(mark for mark in NATIVE_TEXT_MARK_ORDER if mark == "bold" or mark in segment.marks),
+    )
+
+
+def _entry_runs(body: tuple[NativeParagraph, ...]) -> tuple[PrintText, ...]:
+    """One entry body's text as printed runs, one hard break between paragraphs (D6).
+
+    Choice, ordering-step and matching entries hold text paragraphs only; the
+    join mirrors ``body_plain_text``'s line-per-paragraph join, so the answer
+    form and the facit key read the same words.
+    """
+    runs: list[PrintText] = []
+    for index, paragraph in enumerate(body):
+        if index:
+            runs.append(PrintText("\n", ()))
+        for segment in paragraph.segments:
+            if isinstance(segment, NativeTextSegment):
+                runs.append(_text_run(segment, paragraph))
     return tuple(runs)
 
 
@@ -342,19 +379,17 @@ def _question_blocks(
                 PrintOption(
                     box=PrintBox.TICK,
                     label=f"{_choice_letter(index)})",
-                    text=body_plain_text(choice.body),
+                    runs=_entry_runs(choice.body),
                 )
             )
     elif item.kind is NativeExamItemKind.ORDERING:
         for choice in _ordering_steps_in_print_order(item):
-            answer.append(
-                PrintOption(box=PrintBox.NUMBER, label="", text=body_plain_text(choice.body))
-            )
+            answer.append(PrintOption(box=PrintBox.NUMBER, label="", runs=_entry_runs(choice.body)))
     elif item.kind is NativeExamItemKind.MATCHING:
         answer.append(
             PrintGrid(
-                rows=tuple(body_plain_text(entry.body) for entry in item.match_left),
-                columns=tuple(body_plain_text(entry.body) for entry in item.match_right),
+                rows=tuple(_entry_runs(entry.body) for entry in item.match_left),
+                columns=tuple(_entry_runs(entry.body) for entry in item.match_right),
             )
         )
 
@@ -378,13 +413,13 @@ def _text_paragraph_runs(
     runs: list[PrintRun] = []
     for segment in paragraph.segments:
         if isinstance(segment, NativeTextSegment):
-            runs.append(PrintText(segment.text))
+            runs.append(_text_run(segment, paragraph))
         elif isinstance(segment, NativeAssetSegment):
             runs.append(PrintImage(asset_id=segment.asset_id))
         elif isinstance(segment, NativeGapSegment):
             gap = gaps_by_id[segment.gap_id]
             options = " / ".join(body_plain_text(option.body) for option in gap.options)
-            runs.append(PrintText(f"[{options}]"))
+            runs.append(PrintText(f"[{options}]", ()))
     return tuple(runs)
 
 
@@ -393,7 +428,7 @@ def _gap_line_runs(paragraph: NativeParagraph, layout: ItemPrintLayout) -> tuple
     runs: list[PrintRun] = []
     for segment in paragraph.segments:
         if isinstance(segment, NativeTextSegment):
-            runs.append(PrintText(segment.text))
+            runs.append(_text_run(segment, paragraph))
         elif isinstance(segment, NativeAssetSegment):
             runs.append(PrintImage(asset_id=segment.asset_id))
         elif isinstance(segment, NativeGapSegment):
@@ -413,7 +448,7 @@ def _with_inline_points(
     """
     if item.points is None:
         return (heading, *body)
-    inline = PrintText(" " + labels.points_inline(_format_points(item.points)))
+    inline = PrintText(" " + labels.points_inline(_format_points(item.points)), ())
     for index in range(len(body) - 1, -1, -1):
         block = body[index]
         if isinstance(block, PrintParagraph) and block.style in (

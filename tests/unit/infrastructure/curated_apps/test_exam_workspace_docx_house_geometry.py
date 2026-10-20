@@ -184,7 +184,7 @@ class TestAnswerBoxes:
             list(parsed.paragraphs), f"{house_template.TICK_BOX_GLYPH} A) vägen"
         )
 
-        assert run_shape(paragraph) == [house_template.TICK_BOX_GLYPH, " A) vägen"]
+        assert run_shape(paragraph) == [house_template.TICK_BOX_GLYPH, " A) ", "vägen"]
         assert run_border(paragraph.runs[0]) is None
 
     def test_tick_and_number_options_differ_in_their_first_run(self) -> None:
@@ -245,9 +245,13 @@ class TestGrid:
 
         before_table = parsed.paragraphs[-2]
         assert before_table.text == "Kategorisera orden i rätt ordklass. (3 p)"
+        # The question text keeps its body spacing when it is wider than the grid's.
         _assert_mm(
             before_table.paragraph_format.space_after.mm,
-            house_template.GRID_SPACING.space_before_mm,
+            max(
+                house_template.BODY_PARAGRAPH_SPACING.space_after_mm,
+                house_template.GRID_SPACING.space_before_mm,
+            ),
         )
 
 

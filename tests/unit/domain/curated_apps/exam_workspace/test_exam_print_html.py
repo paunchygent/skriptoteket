@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_document,
+    make_free_text_item,
     make_gap_fill_item,
     make_single_choice_item,
 )
@@ -184,7 +185,7 @@ class TestBlocks:
             item_id="item_001",
             text=(
                 PrintParagraph(
-                    runs=(PrintText("Svar: "), PrintBlank(width_mm=width)),
+                    runs=(PrintText("Svar: ", ()), PrintBlank(width_mm=width)),
                     style=PrintParagraphStyle.GAP_LINE,
                 ),
             ),
@@ -202,7 +203,7 @@ class TestBlocks:
             item_id="item_001",
             text=(
                 PrintParagraph(
-                    runs=(PrintText('<b>& "x"'),),
+                    runs=(PrintText('<b>& "x"', ()),),
                     style=PrintParagraphStyle.BODY,
                 ),
             ),
@@ -219,8 +220,8 @@ class TestBlocks:
             item_id="item_001",
             text=(),
             answer=(
-                PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
-                PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
+                PrintOption(box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", ()),)),
+                PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Tes", ()),)),
             ),
         )
 
@@ -234,7 +235,16 @@ class TestBlocks:
         question = PrintQuestion(
             item_id="item_001",
             text=(),
-            answer=(PrintGrid(rows=("hund", "katt"), columns=("däggdjur", "fåglar", "fiskar")),),
+            answer=(
+                PrintGrid(
+                    rows=((PrintText("hund", ()),), (PrintText("katt", ()),)),
+                    columns=(
+                        (PrintText("däggdjur", ()),),
+                        (PrintText("fåglar", ()),),
+                        (PrintText("fiskar", ()),),
+                    ),
+                ),
+            ),
         )
 
         html = _render(_document(question))
@@ -259,6 +269,130 @@ class TestBlocks:
         )
 
 
+class TestMarkedRuns:
+    def _body_question(self, *runs: PrintText) -> PrintQuestion:
+        return PrintQuestion(
+            item_id="item_001",
+            text=(PrintParagraph(runs=tuple(runs), style=PrintParagraphStyle.BODY),),
+            answer=(),
+        )
+
+    def test_body_paragraph_renders_bold_and_combined_marks(self) -> None:
+        question = self._body_question(
+            PrintText("Diskutera", ("bold",)),
+            PrintText(" hur ", ()),
+            PrintText("x", ("bold", "italic", "underline")),
+        )
+
+        html = _render(_document(question))
+
+        assert (
+            '<p class="print-body"><strong>Diskutera</strong>'
+            " hur <strong><em><u>x</u></em></strong></p>" in html
+        )
+
+    def test_superscript_and_subscript_runs_render(self) -> None:
+        question = self._body_question(
+            PrintText("x", ("superscript",)),
+            PrintText("y", ("subscript",)),
+        )
+
+        html = _render(_document(question))
+
+        assert "<sup>x</sup><sub>y</sub>" in html
+
+    def test_hard_break_renders_br_and_stays_inside_marks(self) -> None:
+        plain = _render(_document(self._body_question(PrintText("rad ett\nrad två", ()))))
+
+        assert "rad ett<br>rad två" in plain
+
+        marked = _render(_document(self._body_question(PrintText("rad ett\nrad två", ("bold",)))))
+
+        assert "<strong>rad ett<br>rad två</strong>" in marked
+
+    def test_escaping_holds_inside_marks(self) -> None:
+        question = self._body_question(PrintText('<b>& "x"', ("bold",)))
+
+        html = _render(_document(question))
+
+        assert "<strong>&lt;b&gt;&amp; &quot;x&quot;</strong>" in html
+
+    def test_option_runs_print_their_marks(self) -> None:
+        question = PrintQuestion(
+            item_id="item_001",
+            text=(),
+            answer=(
+                PrintOption(
+                    box=PrintBox.TICK,
+                    label="A)",
+                    runs=(PrintText("vägen", ("bold",)),),
+                ),
+            ),
+        )
+
+        html = _render(_document(question))
+
+        assert f"{house_template.TICK_BOX_GLYPH} A) <strong>vägen</strong>" in html
+
+    def test_grid_cell_runs_print_their_marks(self) -> None:
+        question = PrintQuestion(
+            item_id="item_001",
+            text=(),
+            answer=(
+                PrintGrid(
+                    rows=((PrintText("hund", ("italic",)),),),
+                    columns=((PrintText("däggdjur", ("bold",)),),),
+                ),
+            ),
+        )
+
+        html = _render(_document(question))
+
+        assert '<th scope="col"><strong>däggdjur</strong></th>' in html
+        assert '<th scope="row"><em>hund</em></th>' in html
+
+    def test_body_and_gap_line_paragraphs_use_body_spacing(self) -> None:
+        css = _style_text(_render(_document()))
+
+        assert "p.print-body, p.print-gap_line { margin: 0mm 0 4mm }" in css
+        assert (
+            f"p {{ margin: {house_template.PARAGRAPH_SPACING.space_before_mm}mm 0 "
+            f"{house_template.PARAGRAPH_SPACING.space_after_mm}mm;"
+            " break-inside: avoid }" in css
+        )
+
+    def test_end_to_end_bold_word_and_two_paragraphs(self) -> None:
+        from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+            NativeParagraph,
+            NativeTextSegment,
+        )
+
+        item = make_single_choice_item()
+        first = NativeParagraph(
+            heading_level=None,
+            segments=(
+                NativeTextSegment(text="Läs ", marks=()),
+                NativeTextSegment(text="noga", marks=("bold",)),
+            ),
+        )
+        second = NativeParagraph(
+            heading_level=None,
+            segments=(NativeTextSegment(text="Andra stycket.", marks=()),),
+        )
+        bold_item = make_free_text_item().model_copy(update={"body": (first, second)})
+        document = make_document(bold_item)
+
+        html = _render(
+            build_print_document(document, variant=ExamPrintVariant.STUDENT),
+            assets=(),
+            assets_by_id={},
+        )
+
+        assert "<strong>noga</strong>" in html
+        assert html.count('<p class="print-body">') == 2
+        assert item.item_id  # the choice builder still shapes options elsewhere
+
+
 class TestKeepTogetherGroups:
     def _question(self) -> PrintQuestion:
         return PrintQuestion(
@@ -266,14 +400,14 @@ class TestKeepTogetherGroups:
             text=(
                 PrintHeading(level=3, text="Fråga 1"),
                 PrintParagraph(
-                    runs=(PrintText("Brödtext."), PrintText(" (2 p)")),
+                    runs=(PrintText("Brödtext.", ()), PrintText(" (2 p)", ())),
                     style=PrintParagraphStyle.BODY,
                 ),
             ),
             answer=(
                 PrintRuledLines(count=2),
-                PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
-                PrintOption(box=PrintBox.TICK, label="B)", text="skolan"),
+                PrintOption(box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", ()),)),
+                PrintOption(box=PrintBox.TICK, label="B)", runs=(PrintText("skolan", ()),)),
             ),
         )
 
@@ -331,7 +465,7 @@ class TestPictures:
             item_id="item_001",
             text=(
                 PrintParagraph(
-                    runs=(PrintText("Se "), PrintImage(asset_id=ASSET_ID)),
+                    runs=(PrintText("Se ", ()), PrintImage(asset_id=ASSET_ID)),
                     style=PrintParagraphStyle.BODY,
                 ),
             ),

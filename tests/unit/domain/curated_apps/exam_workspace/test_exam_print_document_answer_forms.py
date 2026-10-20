@@ -78,7 +78,11 @@ class TestGapFill:
 
         assert blank_width_mm(10) == 48.0
         assert PrintParagraph(
-            runs=(PrintText("Svar: "), PrintBlank(width_mm=48.0), PrintText(" (2 p)")),
+            runs=(
+                PrintText("Svar: ", marks=()),
+                PrintBlank(width_mm=48.0),
+                PrintText(" (2 p)", marks=()),
+            ),
             style=PrintParagraphStyle.GAP_LINE,
         ) in question_blocks(question(student, "item_001"))
         assert "fotosyntes" not in all_texts(student)
@@ -109,9 +113,9 @@ class TestInlineChoice:
 
         assert PrintParagraph(
             runs=(
-                PrintText("Vattnets formel är "),
-                PrintText("[H2O / CO2]"),
-                PrintText(" (2 p)"),
+                PrintText("Vattnets formel är ", marks=()),
+                PrintText("[H2O / CO2]", marks=()),
+                PrintText(" (2 p)", marks=()),
             ),
             style=PrintParagraphStyle.BODY,
         ) in question_blocks(question(student, "item_001"))
@@ -133,12 +137,12 @@ class TestChoice:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
         question_entry = question(student, "item_001")
 
-        assert PrintOption(box=PrintBox.TICK, label="A)", text="vägen") in question_blocks(
-            question_entry
-        )
-        assert PrintOption(box=PrintBox.TICK, label="B)", text="eleverna") in question_blocks(
-            question_entry
-        )
+        assert PrintOption(
+            box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", marks=()),)
+        ) in question_blocks(question_entry)
+        assert PrintOption(
+            box=PrintBox.TICK, label="B)", runs=(PrintText("eleverna", marks=()),)
+        ) in question_blocks(question_entry)
         assert not has_answer_key(student)
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
@@ -153,9 +157,9 @@ class TestChoice:
 
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
-        assert PrintOption(box=PrintBox.TICK, label="A)", text="vägen") in question_blocks(
-            question(student, "item_001")
-        )
+        assert PrintOption(
+            box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", marks=()),)
+        ) in question_blocks(question(student, "item_001"))
 
 
 class TestOrdering:
@@ -170,10 +174,10 @@ class TestOrdering:
             if isinstance(block, PrintOption)
         ]
         assert options == [
-            PrintOption(box=PrintBox.NUMBER, label="", text="Avslutning"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Motargument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Argument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Avslutning", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Motargument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Argument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Tes", marks=()),)),
         ]
 
     def test_ordering_facit_lists_the_numbered_order(self) -> None:
@@ -193,7 +197,16 @@ class TestMatching:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
         assert PrintGrid(
-            rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")
+            rows=(
+                (PrintText("hund", marks=()),),
+                (PrintText("katt", marks=()),),
+                (PrintText("fågel", marks=()),),
+            ),
+            columns=(
+                (PrintText("däggdjur", marks=()),),
+                (PrintText("fåglar", marks=()),),
+                (PrintText("fiskar", marks=()),),
+            ),
         ) in question_blocks(question(student, "item_001"))
 
     def test_matching_facit_lists_the_pairs(self) -> None:
