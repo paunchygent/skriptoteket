@@ -77,7 +77,27 @@ def test_every_kind_pair_keeps_text_points_identity_and_parent(
     assert actual.item_id == item.item_id
     assert actual.sequence == item.sequence
     assert actual.points == item.points
-    assert _text_segments(actual) == _text_segments(item)
+    before_text = _text_segments(item)
+    after_text = _text_segments(actual)
+    if target is NativeExamItemKind.GAP_FILL and source not in GAP_KINDS:
+        # D9: the new gap sits at the end of the last question paragraph, so one
+        # unmarked " " separator may follow the otherwise preserved wording.
+        assert after_text[: len(before_text)] == before_text
+        added = after_text[len(before_text) :]
+        assert len(added) <= 1
+        if added:
+            (heading, separator) = added[0]
+            assert heading == item.body[-1].heading_level
+            assert (
+                isinstance(separator, NativeTextSegment)
+                and separator.text == " "
+                and separator.marks == ()
+            )
+        last = actual.body[-1]
+        assert isinstance(last.segments[-1], NativeGapSegment)
+        assert len(last.segments) > 1
+    else:
+        assert after_text == before_text
     assert changed.items[1] == sibling
     assert changed.parents == document.parents
     assert changed.document_id == document.document_id

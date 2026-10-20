@@ -61,6 +61,7 @@ class NativeExportBlocker(BaseModel):
     reason: Literal[
         "title_without_text",
         "unbuilt_question",
+        "unreviewed_retyped_question",
         "machine_proposed_key_unreviewed",
         "missing_points",
         "missing_answer_key",
@@ -87,8 +88,9 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     """S4 gate: export needs every value the export carries, never a parsing doubt (D1).
 
     An unbuilt question, printed from source because the import could not convert it, blocks
-    until the teacher marks it reviewed (D2). A named source-picture loss also blocks;
-    other converted items that need review do not block.
+    until the teacher marks it reviewed (D2). A named source-picture loss also blocks. A
+    question retyped from an unbuilt one keeps blocking as ``unreviewed_retyped_question``
+    until it is marked reviewed. Other converted items that need review do not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
     A title without a letter or digit blocks too: every export file is named after the title.
@@ -133,6 +135,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             )
         if is_unbuilt_question(item):
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="unbuilt_question"))
+        if is_unreviewed_retyped_question(item):
+            blockers.append(
+                NativeExportBlocker(item_id=item.item_id, reason="unreviewed_retyped_question")
+            )
         if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
             blockers.append(
                 NativeExportBlocker(
@@ -197,6 +203,13 @@ def is_unbuilt_question(item: NativeExamItem) -> bool:
     missing_picture = item.retry_source is not None and item.retry_source.has_missing_pictures()
     return item.review.state is NativeItemReviewState.REVIEW_REQUIRED and (
         item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK or missing_picture
+    )
+
+
+def is_unreviewed_retyped_question(item: NativeExamItem) -> bool:
+    """A question retyped from an unbuilt one, pending the teacher's review mark."""
+    return item.review.state is NativeItemReviewState.REVIEW_REQUIRED and (
+        item.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
     )
 
 
