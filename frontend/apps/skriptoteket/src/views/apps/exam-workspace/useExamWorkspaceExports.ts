@@ -64,6 +64,8 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
+    unreviewed_retyped_question:
+      "Frågan har fått en ny typ men är inte granskad. Kontrollera den och markera den som granskad.",
   };
 
 /** The refusal names what blocks: the title, the questions, or both. */

@@ -121,6 +121,15 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   ) {
     reasons.push("unbuilt_question");
   }
+  // A type chosen on an unconverted question keeps review_required with a
+  // teacher_created origin (TASK-SKRIPT-39-05-15 D3); the unbuilt rule above
+  // no longer fires, so this reason keeps the export blocked until review.
+  if (
+    item.review.state === "review_required" &&
+    item.review.parse_origin === "teacher_created"
+  ) {
+    reasons.push("unreviewed_retyped_question");
+  }
   if (isEmptyBody(item.body)) {
     reasons.push("empty_question_text");
   }

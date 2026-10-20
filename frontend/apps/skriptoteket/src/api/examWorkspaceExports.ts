@@ -27,6 +27,7 @@ export type SavedExamExport = Schemas["VaultFile"];
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceItemExportBlockerReason =
   | "unbuilt_question"
+  | "unreviewed_retyped_question"
   | "machine_proposed_key_unreviewed"
   | "missing_points"
   | "missing_answer_key"
