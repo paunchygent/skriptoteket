@@ -13,6 +13,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Plugin } from "vue";
 
 import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspaceUnreadableFiles";
 import {
@@ -26,6 +27,10 @@ import {
   EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY,
 } from "./examWorkspaceFileNoticeCopy";
 import { examWorkspaceDocumentLabel } from "./examWorkspaceRows";
+import {
+  EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
+  useExamWorkspaceUnreadableFiles,
+} from "./useExamWorkspaceUnreadableFiles";
 import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 
 vi.mock("../../../api/examWorkspaceUnreadableFiles", () => ({
@@ -60,7 +65,15 @@ function rowTestId(lineageId: string): string {
 async function mountRows(documents: ExamWorkspaceUnreadableDocument[]) {
   setActivePinia(createPinia());
   listMock.mockResolvedValue({ documents });
-  const wrapper = mount(ExamWorkspaceUnreadableFiles);
+  const unreadable = useExamWorkspaceUnreadableFiles();
+  const provideUnreadable: Plugin = {
+    install(app) {
+      app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+    },
+  };
+  const wrapper = mount(ExamWorkspaceUnreadableFiles, {
+    global: { plugins: [provideUnreadable] },
+  });
   await flushPromises();
   return wrapper;
 }
@@ -148,7 +161,15 @@ describe("ExamWorkspaceUnreadableFiles", () => {
       name: "Prov.provdokument.zip",
       ref: "vault-file-ref",
     });
-    const wrapper = mount(ExamWorkspaceUnreadableFiles);
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
+    const wrapper = mount(ExamWorkspaceUnreadableFiles, {
+      global: { plugins: [provideUnreadable] },
+    });
     await flushPromises();
     expect(wrapper.emitted("count")).toEqual([[2]]);
 

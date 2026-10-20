@@ -14,6 +14,7 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Plugin } from "vue";
 
 import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspaceUnreadableFiles";
 import { listUnreadableExamWorkspaceDocuments } from "../../../api/examWorkspaceUnreadableFiles";
@@ -22,6 +23,10 @@ import ExamWorkspaceOpenDrawer from "./ExamWorkspaceOpenDrawer.vue";
 import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import {
+  EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
+  useExamWorkspaceUnreadableFiles,
+} from "./useExamWorkspaceUnreadableFiles";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
 const unreadableApiMocks = vi.hoisted(() => ({
@@ -53,6 +58,12 @@ function mountDrawer(options: {
   saveDetail: string | null;
 }) {
   setActivePinia(createPinia());
+  const unreadable = useExamWorkspaceUnreadableFiles();
+  const provideUnreadable: Plugin = {
+    install(app) {
+      app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+    },
+  };
   return mount(ExamWorkspaceOpenDrawer, {
     props: {
       conversionError: null,
@@ -72,7 +83,7 @@ function mountDrawer(options: {
       sourceFileError: null,
     },
     global: {
-      plugins: [createPinia(), examWorkspaceProvidersPlugin()],
+      plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
     },
   });
 }
@@ -242,6 +253,12 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
   it("hides the empty hint when only an unreadable exam exists", async () => {
     listUnreadableMock.mockResolvedValue({ documents: [buildUnreadable()] });
     setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
     const wrapper = mount(ExamWorkspaceOpenDrawer, {
       props: {
         conversionError: null,
@@ -261,7 +278,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         sourceFileError: null,
       },
       global: {
-        plugins: [createPinia(), examWorkspaceProvidersPlugin()],
+        plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
       },
     });
     await flushPromises();
@@ -272,6 +289,12 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
 
   it("shows the empty hint when no readable or unreadable exam exists", async () => {
     setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
     const wrapper = mount(ExamWorkspaceOpenDrawer, {
       props: {
         conversionError: null,
@@ -291,7 +314,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         sourceFileError: null,
       },
       global: {
-        plugins: [createPinia(), examWorkspaceProvidersPlugin()],
+        plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
       },
     });
     await flushPromises();
@@ -301,6 +324,12 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
 
   it("renders no unreadable rows and fetches none in guest mode", async () => {
     setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
     const wrapper = mount(ExamWorkspaceOpenDrawer, {
       props: {
         conversionError: null,
@@ -323,6 +352,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         plugins: [
           createPinia(),
           examWorkspaceProvidersPlugin({ store: { ...serverExamWorkspaceStore, teacher: null } }),
+          provideUnreadable,
         ],
       },
     });

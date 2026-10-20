@@ -51,12 +51,18 @@ export const EXAM_WORKSPACE_UNREADABLE_FILES_KEY: InjectionKey<UnreadableFilesSt
 
 /**
  * The shared unreadable-files state the surrounding `ExamWorkspaceView`
- * provided, so the Öppna drawer's rows and the saved-unreadable notice read
- * and change the same list. A standalone mount without that ancestor owns
- * its own state, as before.
+ * provides through `ExamWorkspaceDrawers`, so the Öppna drawer's rows and
+ * the saved-unreadable notice read and change the same list. Required: a
+ * missing provider throws instead of building a second, private state.
  */
 export function useExamWorkspaceUnreadableFilesState(): UnreadableFilesState {
-  return inject(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, null) ?? useExamWorkspaceUnreadableFiles();
+  const state = inject(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, null);
+  if (state === null) {
+    throw new Error(
+      "ExamWorkspaceUnreadableFiles state was not provided by an ExamWorkspaceDrawers ancestor.",
+    );
+  }
+  return state;
 }
 
 export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {

@@ -73,20 +73,14 @@ const noticeReason = computed(() => {
  * notice in the same slot above the view. The template ref is empty until
  * the view mounts after the handoff settles.
  */
-type SavedUnreadableNotice = {
-  unreadableTarget?: string | null;
-  unreadableTargetBusy?: boolean;
-  downloadUnreadableTarget?: () => Promise<void>;
-  removeUnreadableTarget?: () => Promise<void>;
-};
-const viewRef = ref<SavedUnreadableNotice | null>(null);
+const viewRef = ref<InstanceType<typeof ExamWorkspaceView> | null>(null);
 const savedUnreadableTarget = computed(() => viewRef.value?.unreadableTarget ?? null);
 const savedUnreadableBusy = computed(() => viewRef.value?.unreadableTargetBusy ?? false);
 function downloadSavedUnreadable(): void {
-  void viewRef.value?.downloadUnreadableTarget?.();
+  void viewRef.value?.downloadUnreadableTarget();
 }
 function removeSavedUnreadable(): void {
-  void viewRef.value?.removeUnreadableTarget?.();
+  void viewRef.value?.removeUnreadableTarget();
 }
 
 onMounted(async () => {

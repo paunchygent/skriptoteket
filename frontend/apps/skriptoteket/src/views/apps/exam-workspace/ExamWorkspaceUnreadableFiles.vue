@@ -13,10 +13,10 @@
  *   - Rendered at the end of the saved section in `ExamWorkspaceOpenDrawer`,
  *     only for a signed-in teacher; the drawer owns the empty hint.
  *   - Rows come from the shared unreadable-files state the surrounding
- *     `ExamWorkspaceView` provides (a standalone mount owns its own), so a
- *     remove from the saved-unreadable notice reloads these rows too;
- *     presentation reuses `ExamWorkspaceFileNotice` with reason
- *     `saved_unreadable` and the row labels in `examWorkspaceRows`.
+ *     `ExamWorkspaceDrawers` provides, so a remove from the
+ *     saved-unreadable notice reloads these rows too; presentation reuses
+ *     `ExamWorkspaceFileNotice` with reason `saved_unreadable` and the row
+ *     labels in `examWorkspaceRows`.
  */
 
 import { onMounted } from "vue";
