@@ -22,11 +22,15 @@ backlog_document_profile: contract-derived
 
 ### Resume here
 
-- 2026-10-20: contract closed (user request via the Hemma orchestrator
-  944b5a5a). One junior unit (U1, scope `u1-delete-readiness-copy`) deletes the
-  code; the lead runs the reference search and the focused proof. Evidence root:
-  Skriptoteket session `01a156ae-7f31-7338-be23-b8b32352aa02`, work order
-  `evidence/work-orders/39-05-16-u1-delete-readiness-copy.md`.
+- 2026-10-20: U1 committed be310d5f. The long map, READINESS_COPY,
+  examWorkspaceReadinessCopy, examWorkspaceReadinessByItemId and
+  GAP_WITHOUT_CORRECT_OPTION_GUIDANCE are deleted; server reasons are checked
+  against an exhaustive typed record; the title row keeps its text as one
+  constant. The reference search is empty (`evidence/proof/39-05-16-search.txt`;
+  remaining sentence hits are separate shown strings). Focused proof: 22 spec
+  files, 267 passed; fe-type-check and fe-lint rc 0. Next: the Pi review routed
+  by the orchestrator. Evidence root: Skriptoteket session
+  `01a156ae-7f31-7338-be23-b8b32352aa02`.
 
 ### Problem
 
