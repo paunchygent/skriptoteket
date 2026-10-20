@@ -6,7 +6,7 @@
  *   ("Fråga 3: facit saknas"), shown before the teacher clicks a format
  *   (user rule 2026-10-17). Each row names the first problem, the field
  *   that holds it, and the one-click fix where the workspace can make it:
- *   Markera som granskad for an unbuilt question, Godkänn for an AI key
+ *   Markera som granskad for an unbuilt or retyped question, Godkänn for an AI key
  *   nobody approved, Föreslå facit for a missing key, Ta bort tomma for
  *   empty options nobody keyed, and Ta bort rubrikformat for a heading in a
  *   dropdown option. The fixes are pure item transitions. A title the
@@ -101,6 +101,7 @@ export function withoutOptionHeadings(item: NativeExamItem): NativeExamItem {
 function blockerFix(item: NativeExamItem, reason: ExamWorkspaceReadinessReason): ExamWorkspaceBlockerFix | null {
   switch (reason) {
     case "unbuilt_question":
+    case "unreviewed_retyped_question":
       return "review";
     case "machine_proposed_key_unreviewed":
       return "approve";
@@ -140,6 +141,7 @@ function keyFocus(item: NativeExamItem): string | null {
 function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason): string | null {
   switch (reason) {
     case "unbuilt_question":
+    case "unreviewed_retyped_question":
     case "machine_proposed_key_unreviewed":
       return testId("exam-workspace-review");
     case "missing_answer_key":

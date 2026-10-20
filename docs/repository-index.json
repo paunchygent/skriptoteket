@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "661054ef1f771ea8a830b3cfe8aa7ba34425ca2f83cf31fb991a8c195524597b",
+  "source_set_digest": "43efd1b6c7e5aae8fcb9166d125cba0b5016614e11ae46821302233b76e69722",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5635,6 +5635,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-05-15",
+      "type": "task",
+      "title": "Choosing a type on an unconverted question shows that type's fields and keeps the question in review",
+      "path": "docs/backlog/tasks/task-skript-39-05-15-choosing-a-type-on-an-unconverted-question-shows-that-type-s-fields-and-keeps-the-question-in-review.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-06-01",
       "type": "task",
       "title": "Walking skeleton: a parent with two Lucktext children built through the API, exported to QTI and imported into Exam.net",
@@ -6946,7 +6965,7 @@
       "type": "task",
       "title": "The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block",
       "path": "docs/backlog/tasks/task-skript-40-04-18-the-exam-workspace-header-opens-provets-uppgifter-from-an-uppgifter-command-and-free-text-questions-set-their-writing-area-and-criteria-in-one-boxless-answer-block.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6957,7 +6976,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md)."
       }
     },
     {

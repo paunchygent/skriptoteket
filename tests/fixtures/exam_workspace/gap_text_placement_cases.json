@@ -1,0 +1,191 @@
+{
+  "gap_id": "gap_001",
+  "cases": [
+    {
+      "name": "single_text_paragraph_gets_separator",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
+          ],
+          "heading_level": null
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    },
+    {
+      "name": "trailing_space_needs_no_separator",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ ", "marks": []}
+          ],
+          "heading_level": null
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    },
+    {
+      "name": "only_last_paragraph_gets_gap",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Första meningen.", "marks": []}
+          ],
+          "heading_level": null
+        },
+        {
+          "segments": [
+            {"kind": "text", "text": "Andra meningen.", "marks": []}
+          ],
+          "heading_level": null
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Första meningen.", "marks": []}
+          ],
+          "heading_level": null
+        },
+        {
+          "segments": [
+            {"kind": "text", "text": "Andra meningen.", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    },
+    {
+      "name": "trailing_empty_paragraphs_drop",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
+          ],
+          "heading_level": null
+        },
+        {"segments": [], "heading_level": null},
+        {"segments": [], "heading_level": null}
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    },
+    {
+      "name": "empty_question_gives_gap_then_empty",
+      "question": [],
+      "expected": [
+        {
+          "segments": [{"kind": "gap", "gap_id": "gap_001"}],
+          "heading_level": null
+        },
+        {"segments": [], "heading_level": null}
+      ]
+    },
+    {
+      "name": "only_empty_paragraphs_give_gap_then_empty",
+      "question": [
+        {"segments": [], "heading_level": null},
+        {"segments": [], "heading_level": null}
+      ],
+      "expected": [
+        {
+          "segments": [{"kind": "gap", "gap_id": "gap_001"}],
+          "heading_level": null
+        },
+        {"segments": [], "heading_level": null}
+      ]
+    },
+    {
+      "name": "marked_text_separator_has_no_marks",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange typ", "marks": ["bold"]}
+          ],
+          "heading_level": null
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange typ", "marks": ["bold"]},
+            {"kind": "text", "text": " ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    },
+    {
+      "name": "heading_level_kept",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
+          ],
+          "heading_level": 1
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": 1
+        }
+      ]
+    },
+    {
+      "name": "non_text_last_segment_needs_no_separator",
+      "question": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Se bilden", "marks": []},
+            {"kind": "asset", "asset_id": "asset_0123456789abcdef"}
+          ],
+          "heading_level": null
+        }
+      ],
+      "expected": [
+        {
+          "segments": [
+            {"kind": "text", "text": "Se bilden", "marks": []},
+            {"kind": "asset", "asset_id": "asset_0123456789abcdef"},
+            {"kind": "gap", "gap_id": "gap_001"}
+          ],
+          "heading_level": null
+        }
+      ]
+    }
+  ]
+}

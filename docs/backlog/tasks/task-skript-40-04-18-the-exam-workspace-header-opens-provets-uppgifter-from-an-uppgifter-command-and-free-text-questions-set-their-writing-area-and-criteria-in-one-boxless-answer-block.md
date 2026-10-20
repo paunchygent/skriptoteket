@@ -9,10 +9,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md).'
 task_kind: story
 acceptance_criteria:
 - The exam workspace header shows an Uppgifter command (info glyph and the word) first in the toolbar, before a separator and Öppna; it opens and closes the Provets uppgifter drawer, shows aria-expanded, and the course and points line under the title is plain text
@@ -52,7 +56,7 @@ Non-goals: no change to the document format, the stepper bounds (1-40), the crit
 
 ### Resume here
 
-2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Review db7cc9e8 (Pi) on 25b7352e..0f3eaa4e: `changes_requested`, three medium findings (F1 narrow editor grid, F2 popover bounds, F3 close paths and focus), all admitted for repair on focused proof (record: root `evidence/reviews/task-skript-40-04-18-review-0f3eaa4e.md`). Repaired by R1-R3 (junior): a container query on the answer block stacks the rows below 36rem, the popover is bounded by that container, and the close paths follow L2; admitted on focused proof without rereview (exam-workspace vitest 244 files passed, fe-type-check, fe-lint and fe-build rc 0). Next: merge to main, then the staging walk, including a 400 px editor.
+2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Review db7cc9e8 (Pi) on 25b7352e..0f3eaa4e: `changes_requested`, three medium findings (F1 narrow editor grid, F2 popover bounds, F3 close paths and focus), all admitted for repair on focused proof (record: root `evidence/reviews/task-skript-40-04-18-review-0f3eaa4e.md`). Repaired by R1-R3 (junior): a container query on the answer block stacks the rows below 36rem, the popover is bounded by that container, and the close paths follow L2; admitted on focused proof without rereview (exam-workspace vitest 244 files passed, fe-type-check, fe-lint and fe-build rc 0). Merged to main as 98cbab6c (Hemma pre-push suite: 552 files, 3964 passed). Staging walk at 98cbab6c passed every check: the Uppgifter command and drawer toggle, the plain meta line, the answer block against the mockup, both popover states, Escape and outside-click focus return, unchanged control positions, and at a 400 px editor the stacked rows, the bounded popover and a 170 px criterion field with no horizontal scroll (record: retained root `evidence/staging-walk-98cbab6c/walk-record.md`). Not walked: 375 px coarse pointer (Edge cannot emulate it) and the Använd click on the shared document (covered by the field specs). Closed by the user on 2026-10-20 (`agent-planning:user-closure-gate`).
 
 ### Map
 
