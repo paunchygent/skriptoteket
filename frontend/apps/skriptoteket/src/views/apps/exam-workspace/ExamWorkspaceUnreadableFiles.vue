@@ -6,7 +6,8 @@
  *   The Öppna drawer's rows for saved exams the app cannot read: one row
  *   per exam that is not a button, with the title, the saved date and the
  *   shared file notice for downloading the stored file or moving it to the
- *   papperskorg. A row click opens nothing. The row count is reported after
+ *   papperskorg; the notice stacks its text above its glyph actions in the
+ *   narrow drawer. A row click opens nothing. The row count is reported after
  *   every load and remove so the drawer can hide its empty hint.
  *
  * Relationships:
@@ -68,12 +69,12 @@ async function handleRemove(file: ExamWorkspaceUnreadableDocument): Promise<void
           </span>
           <ExamWorkspaceFileNotice
             reason="saved_unreadable"
+            class="xw-notice--stack"
             :busy="busyIds.has(file.lineage_id)"
             @download="download(file)"
             @remove="handleRemove(file)"
           />
         </span>
-        <span />
       </div>
     </div>
   </div>
@@ -83,7 +84,7 @@ async function handleRemove(file: ExamWorkspaceUnreadableDocument): Promise<void
 .unreadable { margin-top: var(--huleedu-space-4); }
 .files { overflow: hidden; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content); }
 .file {
-  display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: start; gap: var(--huleedu-space-3);
+  display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: var(--huleedu-space-3);
   padding: var(--huleedu-space-2-5) var(--huleedu-space-3); border-top: 1px solid var(--huleedu-surface-divider);
   cursor: default;
 }

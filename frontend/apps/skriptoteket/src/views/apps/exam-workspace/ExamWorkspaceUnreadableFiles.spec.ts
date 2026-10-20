@@ -223,4 +223,18 @@ describe("ExamWorkspaceUnreadableFiles", () => {
     }
     wrapper.unmount();
   });
+
+  it("stacks each row notice above its glyph actions in the narrow drawer", async () => {
+    const rowB = buildRow({ lineage_id: "lineage-2", vault_file_id: "vault-2" });
+    const wrapper = await mountRows([buildRow(), rowB]);
+
+    for (const lineageId of ["lineage-1", "lineage-2"]) {
+      const row = wrapper.get(rowTestId(lineageId));
+      expect(row.element.children).toHaveLength(2);
+      expect(row.get('[data-test="exam-workspace-file-notice"]').classes()).toContain(
+        "xw-notice--stack",
+      );
+    }
+    wrapper.unmount();
+  });
 });
