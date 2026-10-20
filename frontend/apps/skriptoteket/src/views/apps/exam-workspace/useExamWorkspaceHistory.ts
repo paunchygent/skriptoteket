@@ -388,10 +388,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * is stored first as its own step, from `before`, the copy just before the
    * structural edit; undo then takes back only the structural edit. Both
    * snapshots stay owed until stored; a store of `before` that already
-   * matches writes nothing. Once a store failed, the backlog is
-   * dropped and the next edit flushes the newest working copy at once instead
-   * of waiting out the pause; undo steps made during an outage then collapse
-   * into one step, which is accepted.
+   * matches writes nothing. The structural autosave runs through the flush
+   * body, so a first failed store arms the 5 s retry. Once a store failed,
+   * the backlog is dropped and the next edit flushes the newest working copy
+   * at once instead of waiting out the pause; undo steps made during an
+   * outage then collapse into one step, which is accepted.
    */
   function noteEdit(structural = false, before: NativeExamDocument | null = null): void {
     if (status.hasFailed()) {
@@ -406,7 +407,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (after !== null) {
         owed.push(after);
       }
-      void deps.enqueueWrite(() => storeOwed(), false);
+      void deps.enqueueWrite(() => flushOutcomeInner(), "failed");
     } else {
       schedule();
     }
