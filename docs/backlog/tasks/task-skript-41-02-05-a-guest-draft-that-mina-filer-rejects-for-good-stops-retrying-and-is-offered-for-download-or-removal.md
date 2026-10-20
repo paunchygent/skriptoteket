@@ -47,6 +47,9 @@ backlog_document_profile: contract-derived
   (`evidence/u9a/`).
 - Frontend suite at `1bc6cdb8` (orchestrator's slot): 563 files, 4068 passed, 2 todo, exit 0
   (`evidence/suite/fe-test-1bc6cdb8.log`); backend unchanged since the full suite at `d16e1653`.
+- Merged origin/main `e4d15c4a` as `c2aac72b` (generated index regenerated). There: fe-test 571
+  files, 4097 passed, 2 todo; fe-type-check and fe-lint green
+  (`evidence/suite/*-c2aac72b.log`).
 - Next: the staging walk of the rejected-draft notice.
 - Follow-up D24: a server claim keyed on `draft_id` alone, so a lost answer cannot lead to a
   second teacher's import.
