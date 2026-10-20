@@ -50,12 +50,22 @@ export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
   const toast = useToast();
   const files = ref<ExamWorkspaceUnreadableDocument[]>([]);
   const busyIds = ref<ReadonlySet<string>>(new Set());
+  /** Bumped by every load, so an older list response cannot overwrite a newer one. */
+  let loadRequestId = 0;
 
   async function load(): Promise<void> {
+    loadRequestId += 1;
+    const requestId = loadRequestId;
     try {
       const response = await listUnreadableExamWorkspaceDocuments();
+      if (requestId !== loadRequestId) {
+        return;
+      }
       files.value = response.documents;
     } catch {
+      if (requestId !== loadRequestId) {
+        return;
+      }
       toast.failure(LIST_FAILURE_COPY);
     }
   }

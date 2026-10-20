@@ -331,4 +331,82 @@ describe("useExamWorkspaceUnreadableFiles", () => {
       scope.stop();
     }
   });
+
+  it("drops an older reload that arrives after both removes", async () => {
+    const rowA = buildRow();
+    const rowB = buildRow({ lineage_id: "lineage-2", vault_file_id: "vault-2" });
+    listMock.mockResolvedValueOnce({ documents: [rowA, rowB] });
+    let releaseOld!: (response: { documents: ExamWorkspaceUnreadableDocument[] }) => void;
+    listMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        releaseOld = resolve;
+      }),
+    );
+    listMock.mockResolvedValueOnce({ documents: [] });
+    removeMock.mockResolvedValue({
+      bytes: 4,
+      created_at: "2026-10-11T08:00:00Z",
+      id: "vault-1",
+      is_missing_on_disk: false,
+      name: "Prov.provdokument.zip",
+      ref: "vault-file-ref",
+    });
+    const { state, scope } = mountState();
+    try {
+      await state.load();
+      const pendingA = state.remove(rowA);
+      await flushPromises();
+      await state.remove(rowB);
+      await flushPromises();
+
+      expect(state.files.value).toEqual([]);
+
+      releaseOld({ documents: [rowB] });
+      await pendingA;
+      await flushPromises();
+
+      expect(state.files.value).toEqual([]);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("keeps a removed row out of a reload that started before the removal", async () => {
+    const rowA = buildRow();
+    const rowB = buildRow({ lineage_id: "lineage-2", vault_file_id: "vault-2" });
+    listMock.mockResolvedValueOnce({ documents: [rowA, rowB] });
+    let releaseStale!: (response: { documents: ExamWorkspaceUnreadableDocument[] }) => void;
+    listMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        releaseStale = resolve;
+      }),
+    );
+    listMock.mockResolvedValueOnce({ documents: [rowB] });
+    removeMock.mockResolvedValueOnce({
+      bytes: 4,
+      created_at: "2026-10-11T08:00:00Z",
+      id: "vault-1",
+      is_missing_on_disk: false,
+      name: "Prov.provdokument.zip",
+      ref: "vault-file-ref",
+    });
+    const { state, scope } = mountState();
+    try {
+      await state.load();
+      const staleLoad = state.load();
+      await flushPromises();
+      await state.remove(rowA);
+      await flushPromises();
+
+      expect(state.files.value).toEqual([rowB]);
+
+      releaseStale({ documents: [rowA, rowB] });
+      await staleLoad;
+      await flushPromises();
+
+      expect(state.files.value).toEqual([rowB]);
+    } finally {
+      scope.stop();
+    }
+  });
 });
