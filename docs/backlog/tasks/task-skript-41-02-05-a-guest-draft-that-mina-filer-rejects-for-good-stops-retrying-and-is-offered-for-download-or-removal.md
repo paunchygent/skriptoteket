@@ -31,8 +31,12 @@ backlog_document_profile: contract-derived
   and rejection record (`5ea99521`); U2b host controller (`4cd29ddc`). 56 focused tests green.
 - Fail-first: a disposable probe on the pre-fix commit `2338b1af` failed 11 of 11 cases
   (`evidence/fail-first/` in the retained root).
-- Running: U3 (notice component and host wiring). Next: U4 component-rendered screenshots and
-  string inventory for copy review, `fe-build`, then the domain suite slot.
+- U3 notice and host wiring (`fdc5758a`); U4 component-rendered screenshots and string inventory
+  (`evidence/copy/`). Merged origin/main `98cbab6c` as `d16e1653`; domain suite there green
+  (backend 7900 passed, frontend 4015 passed; `evidence/suite/pdm-test-d16e1653.log`).
+- Copy review 917b4838: C6, C7 and C9 replaced as proposed; C1-C5, C8 and C10 approved.
+- Next: C6 recheck by 917b4838, then the Pi code review routed by the orchestrator, then the
+  staging walk of the rejected-draft notice.
 - Work orders: `work/orders/` in the retained root. Explorer maps: `discovery/explorer/`.
 
 ## Implementation Contract

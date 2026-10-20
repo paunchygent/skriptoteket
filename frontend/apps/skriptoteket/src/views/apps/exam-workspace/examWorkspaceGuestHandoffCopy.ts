@@ -13,7 +13,7 @@
 export const EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY =
   "Provet från webbläsaren kunde inte flyttas till Mina filer. Ladda ner det som en fil eller ta bort det från webbläsaren.";
 export const EXAM_WORKSPACE_GUEST_HANDOFF_VAULT_FULL_COPY =
-  "Mina filer är fullt, så provet från webbläsaren kunde inte flyttas dit. Ta bort filer i Mina filer och försök igen, eller ladda ner provet eller ta bort det från webbläsaren.";
+  "Det finns inte plats för provet i Mina filer. Ta bort filer där och försök igen. Du kan också ladda ner provet som fil eller ta bort det från webbläsaren.";
 export const EXAM_WORKSPACE_GUEST_HANDOFF_RETRY_NAME = "Försök flytta provet igen";
 export const EXAM_WORKSPACE_GUEST_HANDOFF_DOWNLOAD_NAME = "Ladda ner provet som fil";
 export const EXAM_WORKSPACE_GUEST_HANDOFF_REMOVE_NAME = "Ta bort provet från webbläsaren";

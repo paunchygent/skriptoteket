@@ -41,9 +41,9 @@ export const GUEST_HANDOFF_TRANSIENT_COPY =
   "Provet från webbläsaren kunde inte flyttas till Mina filer just nu. Det finns kvar i webbläsaren och vi försöker igen om en stund.";
 export const GUEST_HANDOFF_LATE_SUCCESS_COPY = "Provet från webbläsaren finns nu i Mina filer.";
 export const GUEST_HANDOFF_RETRIES_EXHAUSTED_COPY =
-  "Provet från webbläsaren kunde inte flyttas till Mina filer. Det finns kvar i webbläsaren och flyttas nästa gång du öppnar provverktyget.";
+  "Provet kunde inte flyttas till Mina filer. Det finns kvar i webbläsaren. Vi försöker igen nästa gång du öppnar provverktyget.";
 export const GUEST_HANDOFF_MANUAL_RETRY_FAILED_COPY =
-  "Det gick inte att nå Mina filer just nu. Försök igen om en stund.";
+  "Provet kunde inte flyttas till Mina filer just nu. Försök igen om en stund.";
 
 export type GuestHandoffNotice = { reason: "permanent" | "vault_full"; busy: boolean };
 
