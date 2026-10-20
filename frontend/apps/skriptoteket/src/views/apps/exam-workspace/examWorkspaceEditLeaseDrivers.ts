@@ -46,7 +46,13 @@ export type ExamWorkspaceEditLeaseServer = {
 export type ExamWorkspaceEditLeaseDriver = {
   readonly tabId: string;
   claim(lineageId: string): Promise<"held" | "readonly" | "failed">;
-  renew(lineageId: string): Promise<"held" | "lost" | "failed">;
+  /**
+   * Report what the renew saw without acting on it: `takeover` means another
+   * tab asked to take over. The composable yields only after the fence admits
+   * that answer as current, so an obsolete renew never flushes, releases or
+   * changes holding before fencing.
+   */
+  renew(lineageId: string): Promise<"held" | "lost" | "takeover" | "failed">;
   requestTakeover(lineageId: string): Promise<"claimed" | "requested" | "own">;
   release(lineageId: string, options?: { keepalive?: boolean }): Promise<boolean>;
   dispose(): void;
@@ -55,7 +61,6 @@ export type ExamWorkspaceEditLeaseDriver = {
 export function createServerDriver(
   server: ExamWorkspaceEditLeaseServer,
   tabId: string,
-  yieldLease: (lineageId: string) => Promise<void>,
 ): ExamWorkspaceEditLeaseDriver {
   const driver: ExamWorkspaceEditLeaseDriver = {
     tabId,
@@ -73,9 +78,10 @@ export function createServerDriver(
     async renew(lineageId) {
       try {
         const response = await server.renew(lineageId, tabId);
+        // Report the ask without yielding: the composable runs the yield
+        // after the fence admits this answer as current.
         if (response.takeover_requested) {
-          await yieldLease(lineageId);
-          return "lost";
+          return "takeover";
         }
         return "held";
       } catch (error) {
@@ -157,21 +163,37 @@ export function createGuestDriver(
     dispose: () => controller.dispose(),
     release: () => controller.release(),
     renew: async () => {
-      // The controller's own heartbeat calls this too, so a lost lease turns
-      // read-only even when this tab's heartbeat is the one that finds it.
-      // A transient storage failure is reported distinctly, like the server
-      // driver's, so the composable keeps the hold only until the lease TTL.
+      // A pure query against the slot: the atomic renew decision renews the
+      // record, but answering another tab's ask (flush, release, restart)
+      // waits for the composable, which yields only after the fence admits
+      // this answer as current. The controller's own heartbeat and channel
+      // signal still answer live takeovers immediately, as before.
+      const at = now === undefined ? Date.now() : now();
       let held: boolean;
+      let asker: string | null;
       try {
-        held = await controller.renew();
+        const decided = await guestStorage.renew(tabId, at);
+        held = decided.held;
+        asker =
+          decided.record === null || decided.record.tabId !== tabId
+            ? null
+            : decided.record.takeoverRequestedBy;
       } catch {
         return "failed";
       }
-      if (!held) {
-        noteLostLease();
-        return "lost";
+      if (held) {
+        return "held";
       }
-      return "held";
+      if (asker !== null && asker !== tabId) {
+        return "takeover";
+      }
+      // The controller's own heartbeat calls the controller renew too, so a
+      // lost lease turns read-only even when this tab's heartbeat is the one
+      // that finds it. A transient storage failure is reported distinctly,
+      // like the server driver's, so the composable keeps the hold only
+      // until the lease TTL.
+      noteLostLease();
+      return "lost";
     },
     requestTakeover: () => controller.requestTakeover(),
   };

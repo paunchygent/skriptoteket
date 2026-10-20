@@ -45,7 +45,9 @@
  *   route while holding stays false, so a gate load deferred on it resolves.
  *   A claim that won on the server but settles `stale` is released
  *   server-side instead of granting editability, and a stale renew updates
- *   neither holding nor the last-success time. Cancelling wakes a sleeping
+ *   neither holding nor the last-success time. A renew that sees another
+ *   tab's takeover ask reports it without acting; the yield runs only after
+ *   the fence admits the answer as current. Cancelling wakes a sleeping
  *   poll.
  *
  * Relationships:
@@ -85,7 +87,7 @@ import {
 import {
   createLeaseAcquisition,
 } from "./examWorkspaceEditLeaseAcquisition";
-import type { SyncFence } from "./examWorkspaceSyncFence";
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 import {
   createGuestEditLeaseChannel,
   type GuestEditLeaseChannel,
@@ -235,11 +237,27 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   }
 
   /** Store the pending edit, release and turn read-only for the waiting tab. */
-  async function yieldLease(lineageId: string): Promise<void> {
+  async function yieldLease(lineageId: string, token: FenceToken): Promise<void> {
+    // The renew answer already passed the fence; the awaited continuation
+    // below rechecks the same token, so an answer retired mid-yield flushes
+    // nothing, releases nothing and changes no holding.
+    if (!deps.fence.isCurrent(token)) {
+      return;
+    }
     try {
       await deps.onTakeoverRequested();
     } finally {
-      await tryRelease(lineageId);
+      await releaseIfCurrent(lineageId, token);
+    }
+  }
+
+  /** Release and yield only while the renew token is still current. */
+  async function releaseIfCurrent(lineageId: string, token: FenceToken): Promise<void> {
+    if (!deps.fence.isCurrent(token)) {
+      return;
+    }
+    await tryRelease(lineageId);
+    if (deps.fence.isCurrent(token)) {
       noteYielded();
     }
   }
@@ -259,7 +277,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
             noteLostLease,
             noteYielded,
           )
-        : createServerDriver(deps.server ?? defaultServer, tabId, yieldLease);
+        : createServerDriver(deps.server ?? defaultServer, tabId);
     } catch {
       driver = null;
     }
@@ -345,7 +363,13 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       return;
     }
     const renewed = settled.kind === "failed" ? "failed" : settled.value;
-    if (renewed === "held") {
+    if (renewed === "takeover") {
+      // The driver reported another tab's `Ta över` ask without acting on
+      // it; yield only now that the fence admitted this generation. A
+      // genuine current-generation takeover still flushes, releases, turns
+      // read-only and restarts the heartbeat through `yieldLease`.
+      await yieldLease(lineageId, token);
+    } else if (renewed === "held") {
       // A late success never revives a lease that was lost or expired while
       // it was in flight, and it extends the deadline only from the time its
       // request was sent, never from the receipt time.
@@ -421,6 +445,12 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       // tab until the 15 s TTL dies.
       void tryRelease(lineageId, true);
     }
+    // Retire through the existing route so late installs and confirmations
+    // drop: `leaseLost` retires the generation (late answers settle stale),
+    // captures a pending edit as the kept edit and goes `readonly`. On a
+    // back-forward-cache restore the read-only heartbeat reclaims and the
+    // gate's fresh load merges the kept edit.
+    setHolding(false);
   }
 
   const hasWindow = typeof window !== "undefined";

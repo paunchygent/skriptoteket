@@ -113,10 +113,13 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
   it("a late claim for an earlier visit to the same exam never releases the current visit lease", async () => {
     const stale = createStaleServer();
     const lineage = ref<string | null>(EXAM_ONE);
+    // The editing session retires the fence through `gate.openExam` before
+    // the open claim begins, so retire here before each switch the same way.
+    const fence = createSyncFence();
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
-        fence: createSyncFence(),
+        fence,
         isGuest: () => false,
         lineageId: () => lineage.value,
         onLeaseAcquired: () => undefined,
@@ -142,9 +145,11 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       expect(stale.holders.get(EXAM_ONE)).toBe("tab-a");
 
       lineage.value = EXAM_TWO;
+      fence.retire();
       current.openLineage(EXAM_TWO);
       await flushPromises();
       lineage.value = EXAM_ONE;
+      fence.retire();
       current.openLineage(EXAM_ONE);
       await flushPromises();
       expect(current.readOnly.value).toBe(false);
@@ -189,10 +194,13 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
   it("a late claim for an exam that is no longer open is still released", async () => {
     const stale = createStaleServer();
     const lineage = ref<string | null>(EXAM_ONE);
+    // Retire before the switch, as the editing session does through
+    // `gate.openExam`, so the late answer settles stale and is challenged.
+    const fence = createSyncFence();
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
-        fence: createSyncFence(),
+        fence,
         isGuest: () => false,
         lineageId: () => lineage.value,
         onLeaseAcquired: () => undefined,
@@ -218,6 +226,7 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       expect(stale.holders.get(EXAM_ONE)).toBe("tab-a");
 
       lineage.value = EXAM_TWO;
+      fence.retire();
       current.openLineage(EXAM_TWO);
       await flushPromises();
       expect(current.readOnly.value).toBe(false);

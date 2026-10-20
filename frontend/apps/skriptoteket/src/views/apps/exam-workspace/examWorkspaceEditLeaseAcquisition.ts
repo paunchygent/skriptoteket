@@ -73,9 +73,23 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
   }
 
   /**
+   * Release a stale win only when its lineage is abandoned: the server lease
+   * is keyed by lineage and this tab's id, so a stale grant for the lineage
+   * this tab currently claims or holds is the same server lease as the
+   * current visit and must never be released. Only a grant for a lineage the
+   * composable no longer claims or holds (or a disposed composable) is
+   * genuinely abandoned. First-claim-wins stays: the live lease is untouched.
+   */
+  function releaseStaleGrant(staleLineage: string): void {
+    if (deps.isAbandonedLineage(staleLineage)) {
+      void deps.tryRelease(staleLineage);
+    }
+  }
+
+  /**
    * Settle one claim answer through the fence. A win that settles stale was
    * granted on the server after its generation retired, so it is released
-   * server-side and never touches `holding`.
+   * server-side when its lineage is abandoned, and never touches `holding`.
    */
   function settleClaimAnswer(
     token: FenceToken,
@@ -85,7 +99,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
     void answer.then(
       (outcome) => {
         if (outcome === "held" && !deps.fence.isCurrent(token)) {
-          void deps.tryRelease(lineageId);
+          releaseStaleGrant(lineageId);
         }
       },
       () => undefined,
@@ -163,7 +177,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
     deps.startHeartbeat();
   }
 
-  /** Settle one takeover-request answer; a stale grant is released, a stale wait stays waiting. */
+  /** Settle one takeover-request answer; a stale grant for an abandoned lineage is released. */
   function settlePollRequest(
     active: ExamWorkspaceEditLeaseDriver,
     token: FenceToken,
@@ -173,7 +187,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
     void answer.then(
       (outcome) => {
         if ((outcome === "claimed" || outcome === "own") && !deps.fence.isCurrent(token)) {
-          void deps.tryRelease(lineageId);
+          releaseStaleGrant(lineageId);
         }
       },
       () => undefined,
@@ -186,7 +200,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
     });
   }
 
-  /** Settle one poll-claim answer; a stale win is released, a failure keeps waiting read-only. */
+  /** Settle one poll-claim answer; a stale win for an abandoned lineage is released. */
   function settlePollClaim(
     active: ExamWorkspaceEditLeaseDriver,
     token: FenceToken,
@@ -196,7 +210,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
     void answer.then(
       (outcome) => {
         if (outcome === "held" && !deps.fence.isCurrent(token)) {
-          void deps.tryRelease(lineageId);
+          releaseStaleGrant(lineageId);
         }
       },
       () => undefined,

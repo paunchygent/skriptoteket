@@ -231,10 +231,11 @@ describe("useExamWorkspaceEditLease open claim", () => {
     try {
       await flushPromises();
       expect(second.lease.readOnly.value).toBe(true);
-      // The only tab reloads: its pagehide release frees the lease at once,
-      // and the reloaded tab reclaims it on its next retry, not on Ta över.
+      // The only tab reloads, so its scope dies with the page: stop it after
+      // its pagehide handler ran, or the retired ex-holder reclaims first.
       window.dispatchEvent(new Event("pagehide"));
       await flushPromises();
+      first.stop();
       await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
       expect(fake.state().holder).toBe("tab-b");
       expect(second.lease.readOnly.value).toBe(false);
