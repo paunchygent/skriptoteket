@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "834d3e1470261a20f074248fc6d01709c9595bce01437d3a6c52f872a8bd7eef",
+  "source_set_digest": "46db0b70484bd8e4abfa4f0cdbf472b8166b965037804b035fbc5281a560e0ab",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5654,6 +5654,25 @@
         "decided_at": "2026-10-20",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User closed 39-05-15 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 32297fc0 (root 01a156ae evidence/reviews/32297fc0-8f6c-441a-9640-8d87e9771187.md) ended changes_requested with medium F1 only (kept gaps on retype), repaired in 2bcdf10d and admitted by the parent on focused proof (214 passed). Copy review be7c7069 approved. Suites at 3de35313: backend curated_apps domain, application and web 5744 passed, 59 skipped; frontend 3993 passed. Released on main e4d15c4a; Mac staging walk PASS at e4d15c4a on Fråga 3b (item_007) (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-16",
+      "type": "task",
+      "title": "Each exam export blocker keeps one wording: the unused long readiness copy is deleted",
+      "path": "docs/backlog/tasks/task-skript-39-05-16-each-exam-export-blocker-keeps-one-wording-the-unused-long-readiness-copy-is-deleted.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
