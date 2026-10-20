@@ -43,8 +43,14 @@ backlog_document_profile: contract-derived
 - U8 component-rendered screenshots and string inventory (root `evidence/copy-review/`). Copy
   review `1cb9a1de` approved S1-S6 (root `evidence/reviews/1cb9a1de-copy-832d637a.md`); user
   decision 2026-10-20 changed S2 to "Flytta provet till papperskorgen" (U9), no new copy review.
-- Next: Pi code review routed by the orchestrator; U5 deep link waits until the orchestrator
-  reports the 40-04 address and open repair on main; the full frontend suite runs after U5.
+- Code review `f5bfc8fe` of `374a7882` requested changes (root
+  `evidence/reviews/f5bfc8fe-code-374a7882.md`): F1-F3 high, F4-F7 medium. Repairs committed: U10 and
+  U10b (`8e020bd2`, F2, F3, F5, F6), U11 (`661894a0`, F4), U13a (`7ac4539b`) and U13b (`1045430c`,
+  F7), U14 (`1cc4a765`, F1; D17-D19) and U16 (`17eff6fe`, banner hidden while unreadable). Copy
+  recheck `1cb9a1de` approved S7 and the hidden banner.
+- Next: backend suite slot on the orchestrator's go, then rereview of F1-F3 by `f5bfc8fe`; U5 deep
+  link waits until the orchestrator reports the 40-04 address and open repair on main; the full
+  frontend suite runs after U5.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
