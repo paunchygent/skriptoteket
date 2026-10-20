@@ -79,6 +79,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   }
   const fenced = createFencedTransport(() => requireGate().fence, store.shared);
   const document = useExamWorkspaceDocument({
+    beginOpenGeneration: () => requireGate().openRequested(),
     getFence: () => requireGate().fence,
     isReadOnly: () => requireGate().editingLocked.value,
     onEdit: (structural, before) => noteEdit(structural, before),
@@ -296,5 +297,9 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     registerSelectParent: (select: (parentId: string) => void) => {
       selectParent = select;
     },
+    /** A route request starts its own generation; the address calls this before asking. */
+    noteRouteRequest: () => requireGate().openRequested(),
+    /** The route is back at the open exam while another open was pending: read it fresh. */
+    reloadOpenExam: () => requireGate().reloadFresh(),
   };
 }

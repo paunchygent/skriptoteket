@@ -46,6 +46,7 @@ import {
   SYNC_GATE_RELOAD_RETRY_MS,
   type ExamWorkspaceSyncGateTimer,
 } from "./examWorkspaceSyncGateTimer";
+import { createSyncGateQueue } from "./examWorkspaceSyncGateQueue";
 
 /** The confirmed sync state: no fresh copy and step list, lease held and fresh, or another tab's lease. */
 export type ExamWorkspaceSyncGatePhase = "loading" | "editing" | "readonly";
@@ -134,44 +135,32 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
    */
   let loadDeferred: FenceToken | null = null;
   let disposed = false;
-  /** The current generation's tail, so writes run one at a time in order. */
-  let tail: Promise<void> = Promise.resolve();
+  const queue = createSyncGateQueue({
+    fence,
+    isDisposed: () => disposed,
+    isEditing: () => phase.value === "editing",
+  });
 
   /** Retire the current generation: outstanding settles resolve `stale` and the next write starts a fresh tail. */
   function retire(): void {
     fence.retire();
-    tail = Promise.resolve();
+    queue.discard();
     // A deferred load belongs to the retired generation; its claim settled
     // stale and can no longer decide without a fresh load.
     loadDeferred = null;
   }
 
   /**
-   * The single write queue. Outside `editing` an entry resolves `refused`
-   * at once, without touching the tail. Otherwise the entry captures the
-   * current token and runs only when its turn comes while the token is
-   * still current and the phase is still `editing`; each generation has its
-   * own tail, so a current write never waits behind a retired one. A
-   * rejection from `run` reaches this entry's caller but never breaks later
-   * entries.
+   * A route request starts its own generation: an older open still reading
+   * settles stale, so its install and its claim never run. The phase stays,
+   * so the open exam keeps its state until the new open installs or the
+   * return path reads it fresh.
    */
-  function enqueueWrite<T>(run: (token: FenceToken) => Promise<T>, refused: T): Promise<T> {
-    if (disposed || phase.value !== "editing") {
-      return Promise.resolve(refused);
+  function openRequested(): void {
+    if (disposed) {
+      return;
     }
-    const token = fence.begin();
-    const queue = tail;
-    const task = queue.then(() => {
-      if (disposed || !fence.isCurrent(token) || phase.value !== "editing") {
-        return refused;
-      }
-      return run(token);
-    });
-    tail = task.then(
-      () => undefined,
-      () => undefined,
-    );
-    return task;
+    retire();
   }
 
   function startFreshLoad(skipDocument: boolean): void {
@@ -480,7 +469,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   return {
     dispose,
     editingLocked,
-    enqueueWrite,
+    enqueueWrite: queue.enqueueWrite,
     fence,
     foreignCursor,
     hasKeptEdit,
@@ -490,6 +479,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     leaseRefused,
     noteStored,
     openExam,
+    openRequested,
     pageHidden,
     phase,
     reloadFresh,

@@ -39,7 +39,7 @@ describe("saved exam baseline", () => {
     const response = commandResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       if (path === "reload") await state.reloadDocument();
@@ -71,7 +71,7 @@ describe("saved exam baseline", () => {
     const response = { ...base, document: { ...base.document, title: "Arbetskopia" } };
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(true);
@@ -87,7 +87,7 @@ describe("saved exam baseline", () => {
     const response = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue({ ...response, saved_document: response.document });
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(false);

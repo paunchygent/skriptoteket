@@ -89,7 +89,7 @@ export async function openMatchingDocument(
 ): Promise<DocumentState> {
   getDocument.mockResolvedValue(buildResponse(item));
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");

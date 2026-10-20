@@ -46,7 +46,7 @@ describe("teacher actions in guest mode", () => {
   it("does nothing for Spara som and never copies the exam", async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: guestStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: guestStore }))!;
     try {
       await state.openDocument("lineage-1");
       await flushPromises();

@@ -37,7 +37,7 @@ describe("reloadDocument while an operation runs", () => {
     const first = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(first);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
 
@@ -67,7 +67,7 @@ describe("reloadDocument while an operation runs", () => {
     const first = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(first);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       const reloaded = { ...first, history_cursor: "reloaded-cursor" };
@@ -90,6 +90,7 @@ describe("read-only editing", () => {
     const scope = effectScope();
     const state = scope.run(() =>
       useExamWorkspaceDocument({
+        beginOpenGeneration: () => undefined,
         isReadOnly: () => readOnly.value,
         store: serverExamWorkspaceStore,
       }),

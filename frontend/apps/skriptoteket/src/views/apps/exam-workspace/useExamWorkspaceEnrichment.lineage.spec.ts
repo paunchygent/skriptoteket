@@ -130,7 +130,7 @@ async function openExamA() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(examResponse("lineage-a"));
   const scope = effectScope();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument({ store: serverExamWorkspaceStore });
+    const document = useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,

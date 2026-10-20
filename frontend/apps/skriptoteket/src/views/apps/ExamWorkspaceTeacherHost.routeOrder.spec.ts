@@ -92,6 +92,7 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
       name: "ProbeWorkspaceView",
       setup() {
         const doc = useExamWorkspaceDocument({
+          beginOpenGeneration: () => undefined,
           store: {
             ...serverExamWorkspaceStore,
             shared: {
@@ -100,7 +101,13 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
             },
           },
         });
-        useExamWorkspaceAddress(doc);
+        useExamWorkspaceAddress({
+          ...doc,
+          // This probe owns no gate: its paths never return to the open exam
+          // while another open is pending, so both hooks stay unused.
+          noteRouteRequest: () => undefined,
+          reloadOpen: () => undefined,
+        });
         watch(doc.summary, (value) => {
           probe.opened = value?.lineage_id ?? null;
         });

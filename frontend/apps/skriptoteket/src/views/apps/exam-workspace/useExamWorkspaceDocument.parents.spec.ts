@@ -55,7 +55,7 @@ function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentRespo
 async function openParentDocument() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
@@ -128,7 +128,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     estimated.items = estimated.items.map((item) => ({ ...item, points_estimated: true }));
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
     const state = effectScope().run(() =>
-      useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+      useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
     )!;
     await state.openDocument("lineage-1");
     await flushPromises();

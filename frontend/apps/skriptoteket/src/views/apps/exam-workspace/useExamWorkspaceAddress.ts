@@ -15,7 +15,7 @@
  *   - Opens documents through `useExamWorkspaceDocument.openDocument`.
  */
 
-import { onMounted, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -24,12 +24,18 @@ import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 export type ExamWorkspaceAddressParams = {
   isDirty: Readonly<Ref<boolean>>;
   openDocument: (lineageId: string) => Promise<boolean>;
+  /** Retire the superseded open when the route returns to the open exam. */
+  noteRouteRequest: () => void;
+  /** Read the open exam fresh when the route returns to it. */
+  reloadOpen: () => void;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
 };
 
 export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
   const route = useRoute();
   const router = useRouter();
+  /** The lineage the route last asked for while another exam is still open. */
+  const pendingTarget = ref<string | null>(null);
 
   function routeDocumentId(): string | null {
     const value = route.query.document;
@@ -55,14 +61,32 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
     () => routeDocumentId(),
     async (lineageId) => {
       const openLineageId = params.summary.value?.lineage_id ?? null;
-      if (!lineageId || lineageId === openLineageId) {
+      if (!lineageId) {
+        return;
+      }
+      if (lineageId === openLineageId) {
+        // The route is back at the open exam while another open was pending:
+        // retire the superseded open and read the open exam fresh. A dirty
+        // open exam is never read over: retire only, and keep its edits.
+        if (pendingTarget.value === null) {
+          return;
+        }
+        pendingTarget.value = null;
+        params.noteRouteRequest();
+        if (!params.isDirty.value) {
+          params.reloadOpen();
+        }
         return;
       }
       if (params.isDirty.value && openLineageId) {
         restoreDocumentAddress();
         return;
       }
+      pendingTarget.value = lineageId;
       const opened = await params.openDocument(lineageId);
+      if (pendingTarget.value === lineageId) {
+        pendingTarget.value = null;
+      }
       if (!opened && routeDocumentId() === lineageId) {
         restoreDocumentAddress();
       }
@@ -72,7 +96,12 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
   onMounted(() => {
     const lineageId = routeDocumentId();
     if (lineageId) {
-      void params.openDocument(lineageId);
+      pendingTarget.value = lineageId;
+      void params.openDocument(lineageId).then(() => {
+        if (pendingTarget.value === lineageId) {
+          pendingTarget.value = null;
+        }
+      });
     }
   });
 

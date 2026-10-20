@@ -106,7 +106,7 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
-const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const { showDocument } = useExamWorkspaceAddress({ isDirty, noteRouteRequest: editing.noteRouteRequest, openDocument, reloadOpen: editing.reloadOpenExam, summary });
 const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
   useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {

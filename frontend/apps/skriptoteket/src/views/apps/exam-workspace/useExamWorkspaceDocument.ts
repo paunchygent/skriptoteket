@@ -75,6 +75,8 @@ export type ExamWorkspaceDocumentOptions = {
    * stored as its own step first; null when no such copy applies.
    */
   onEdit?: (structural: boolean, before: NativeExamDocument | null) => void;
+  /** Starts this route request's own generation before it awaits anything. */
+  beginOpenGeneration: () => void;
   /** The store every server call the document owns runs through. */
   store: ExamWorkspaceStore;
   /** True while another tab holds the edit lease: every edit entry refuses. */
@@ -123,6 +125,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /** The saved version the open copy stands on. */
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
+  /** Opens reading now; a newer route request never waits for an older open. */
+  const openingDocument = ref(0);
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
@@ -187,6 +191,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const isOperationBusy = computed(
     () =>
       operationBusy.value ||
+      openingDocument.value > 0 ||
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
   );
@@ -227,13 +232,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   async function openDocument(lineageId: string): Promise<boolean> {
-    if (isOperationBusy.value) {
+    // A save, rename or retry in flight refuses an open; another open never does.
+    if (isOperationBusy.value && openingDocument.value === 0) {
       return false;
     }
-    operationBusy.value = true;
+    openingDocument.value += 1;
+    options.beginOpenGeneration();
+    const fence = resolveFence();
+    const token = fence.begin();
     try {
-      const fence = resolveFence();
-      const token = fence.begin();
       const reconcile = beginDocumentRead();
       const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
       if (!fence.isCurrent(token)) {
@@ -244,14 +251,17 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       keying.invalidateCopy();
       return true;
     } catch (error) {
-      toast.failure(
-        isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
-          ? OPEN_OUTDATED_COPY
-          : OPEN_FAILURE_COPY,
-      );
+      // A superseded open settles without a toast.
+      if (fence.isCurrent(token)) {
+        toast.failure(
+          isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
+            ? OPEN_OUTDATED_COPY
+            : OPEN_FAILURE_COPY,
+        );
+      }
       return false;
     } finally {
-      operationBusy.value = false;
+      openingDocument.value -= 1;
     }
   }
 

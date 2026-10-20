@@ -50,7 +50,7 @@ describe("openDocument with an older saved format", () => {
       }),
     );
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       const opened = await state.openDocument("lineage-1");
 
@@ -72,7 +72,7 @@ describe("openDocument with an older saved format", () => {
       }),
     );
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       const opened = await state.openDocument("lineage-1");
 
@@ -88,7 +88,7 @@ describe("openDocument with an older saved format", () => {
   it("keeps the generic copy when the open request never reaches the server", async () => {
     api.getExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }))!;
     try {
       const opened = await state.openDocument("lineage-1");
 
