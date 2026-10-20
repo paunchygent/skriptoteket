@@ -47,6 +47,8 @@ export type ExamWorkspaceEditLeaseAcquisitionDeps = {
   tryRelease: (lineageId: string, keepalive?: boolean) => Promise<void>;
   /** The single route from lease state to the gate. */
   setHolding: (held: boolean) => void;
+  /** The open claim ended without holding: the gate reports `leaseRefused`. */
+  onClaimRefused: () => void;
   startHeartbeat: () => void;
   /** How long a waiting `Ta över` sleeps between poll claims. */
   takeoverPollMs: number;
@@ -55,6 +57,13 @@ export type ExamWorkspaceEditLeaseAcquisitionDeps = {
 export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDeps) {
   const waiting = ref(false);
   const takeoverPoll = createTakeoverPoll(deps.takeoverPollMs);
+  /**
+   * The lineage whose open claim is still in flight, if any. Heartbeat retry
+   * claims never set it: only the open claim decides a deferred gate load.
+   * Compared by lineage, so a stale open claim settling after a lineage
+   * switch never clears the new exam's wait.
+   */
+  let pendingClaimLineage: string | null = null;
 
   function stopWaiting(): void {
     waiting.value = false;
@@ -85,33 +94,53 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
   }
 
   async function claimCurrent(lineageId: string): Promise<void> {
-    const active = deps.ensureDriver();
-    if (active === null) {
-      deps.setHolding(true);
-      return;
-    }
-    const token = deps.fence.begin();
-    const settled = await settleClaimAnswer(token, active.claim(lineageId), lineageId);
-    if (settled.kind === "stale") {
-      return;
-    }
-    // Only the claim on open stays editable on a failure that is not a
-    // live foreign lease; every retry claim maps `failed` to read-only.
-    const outcome: "held" | "readonly" =
-      settled.kind === "failed" || settled.value === "failed" ? "held" : settled.value;
-    if (deps.isDisposed() || deps.lineageId() !== lineageId) {
-      if (outcome === "held" && deps.isAbandonedLineage(lineageId)) {
-        await deps.tryRelease(lineageId);
+    // Synchronous with the `openLineage` call, so the gate's synchronous
+    // claim-in-flight read sees the open claim from its first microtask.
+    pendingClaimLineage = lineageId;
+    try {
+      const active = deps.ensureDriver();
+      if (active === null) {
+        deps.setHolding(true);
+        return;
       }
-      return;
+      const token = deps.fence.begin();
+      const settled = await settleClaimAnswer(token, active.claim(lineageId), lineageId);
+      if (settled.kind === "stale") {
+        return;
+      }
+      // Only the claim on open stays editable on a failure that is not a
+      // live foreign lease; every retry claim keeps read-only and retries.
+      const outcome: "held" | "readonly" =
+        settled.kind === "failed" || settled.value === "failed" ? "held" : settled.value;
+      if (deps.isDisposed() || deps.lineageId() !== lineageId) {
+        if (outcome === "held" && deps.isAbandonedLineage(lineageId)) {
+          await deps.tryRelease(lineageId);
+        } else if (outcome === "readonly" && deps.lineageId() === null) {
+          // The drawer closed mid-open with no newer lineage: the gate still
+          // waits on this claim, so report the refusal instead of leaving it
+          // deferred. A switch to another lineage stays silent; its own claim
+          // decides the gate.
+          deps.onClaimRefused();
+        }
+        return;
+      }
+      if (outcome === "held") {
+        deps.lastSuccess.value = deps.clock();
+        deps.setHolding(true);
+      } else {
+        // Holding is already false after the `openLineage` reset, so this
+        // reports nothing through `setHolding`. Tell the gate through the
+        // refusal route so a load deferred on this claim resolves read-only.
+        deps.onClaimRefused();
+      }
+      // The heartbeat both renews a held lease and retries a refused claim, so
+      // a reloaded tab takes the lease as soon as it is free, with no `Ta över`.
+      deps.startHeartbeat();
+    } finally {
+      if (pendingClaimLineage === lineageId) {
+        pendingClaimLineage = null;
+      }
     }
-    if (outcome === "held") {
-      deps.lastSuccess.value = deps.clock();
-    }
-    deps.setHolding(outcome === "held");
-    // The heartbeat both renews a held lease and retries a refused claim, so
-    // a reloaded tab takes the lease as soon as it is free, with no `Ta över`.
-    deps.startHeartbeat();
   }
 
   async function noteAcquired(lineageId: string): Promise<void> {
@@ -228,6 +257,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
 
   return {
     claimCurrent,
+    isClaimPending: () => pendingClaimLineage !== null,
     noteAcquired,
     requestTakeover,
     settleClaimAnswer,

@@ -47,6 +47,8 @@ export function deferred<T>(): Deferred<T> {
 
 export type SyncGateFlags = {
   leaseHeld: boolean;
+  /** An open claim is still in flight; a finished fresh load then keeps `loading`. */
+  claimPending: boolean;
   pendingEdit: boolean;
   stepDocument: NativeExamDocument | null;
   workingCopy: NativeExamDocument | null;
@@ -105,6 +107,7 @@ export function createGate(): SyncGateHarness {
   const counts: SyncGateCounts = { owedDropped: 0, reloadFailures: 0, replaceCalls: 0, storeRequests: 0 };
   const timers: Array<() => void> = [];
   const flags: SyncGateFlags = {
+    claimPending: false,
     leaseHeld: true,
     mergeResult: undefined,
     pendingEdit: false,
@@ -128,6 +131,7 @@ export function createGate(): SyncGateHarness {
       mergedInstalled.push(merged);
     },
     isLeaseHeld: () => flags.leaseHeld,
+    isOpenClaimPending: () => flags.claimPending,
     mergeRefusedEdit: (base, edited, newest) => {
       mergeCalls.push({ base, edited, newest });
       if (flags.mergeResult !== undefined) {

@@ -308,6 +308,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
           acquired += 1;
         },
         onLeaseLost: () => undefined,
+        onLeaseRefused: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server,
         tabId: "tab-a",
@@ -387,6 +388,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
           lineageId: () => lineage.value,
           onLeaseAcquired: () => undefined,
           onLeaseLost: () => undefined,
+        onLeaseRefused: () => undefined,
           onTakeoverRequested: () => Promise.resolve(),
           server: fake.server,
           tabId: "tab-a",

@@ -26,9 +26,10 @@
  * Relationships:
  *   - Calls `mergeRefusedEdit`, which stays the merge owner; G1b passes the
  *     production merge and a production 5 s timer explicitly.
- *   - G1b binds the ports to the existing owners (document, history, lease):
+ *   *   - G1b binds the ports to the existing owners (document, history, lease):
  *     reads install through the document owner, stores through the history,
- *     the lease through `leaseAcquired` and `leaseLost`.
+ *     the lease through `leaseAcquired`, `leaseLost` and `leaseRefused`, and
+ *     the open-claim wait through `isOpenClaimPending`.
  *   - Owns the sync fence F2 and F3 settle and thread tokens through; the
  *     gate exposes it, but no other port is fenced here yet.
  */
@@ -65,6 +66,12 @@ export type ExamWorkspaceSyncGateTimer = {
 export type ExamWorkspaceSyncGateDeps = {
   /** Whether this tab holds the edit lease now. */
   isLeaseHeld: () => boolean;
+  /**
+   * Whether the open claim for the current exam is still in flight. The gate
+   * reads this once when a fresh load finishes: while the claim is in flight
+   * the load keeps `loading` and lets the claim's outcome decide.
+   */
+  isOpenClaimPending: () => boolean;
   /** Whether the working copy differs from the step document. */
   hasPendingEdit: () => boolean;
   /** The step document the editor stands on, if any. */
@@ -146,6 +153,12 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   const kept = shallowRef<ExamWorkspaceSyncGateKeptEdit | null>(null);
   /** The merge install the kept edit waits for; `noteStored` clears only while it is current. */
   let mergeToken: FenceToken | null = null;
+  /**
+   * A fresh load that finished while the open claim was still in flight. The
+   * claim's outcome moves the phase without another load; a retired token
+   * means the generation moved on and the outcome path ignores it.
+   */
+  let loadDeferred: FenceToken | null = null;
   let disposed = false;
   /** The current generation's tail, so writes run one at a time in order. */
   let tail: Promise<void> = Promise.resolve();
@@ -154,6 +167,9 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   function retire(): void {
     fence.retire();
     tail = Promise.resolve();
+    // A deferred load belongs to the retired generation; its claim settled
+    // stale and can no longer decide without a fresh load.
+    loadDeferred = null;
   }
 
   /**
@@ -261,6 +277,17 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
         if (!fence.isCurrent(token) || disposed) {
           return;
         }
+        // The open claim for this exam may still be in flight: the lease was
+        // not held when this load started, but a first-try claim means no
+        // other tab held the exam. An open claim always follows a fresh
+        // lineage, whose open cleared any kept edit, so there is no merge to
+        // run here. Keep `loading` and let the claim's outcome decide without
+        // another load; a load that finishes after the claim concluded behaves
+        // as today.
+        if (deps.isOpenClaimPending()) {
+          loadDeferred = token;
+          return;
+        }
         phase.value = deps.isLeaseHeld() ? "editing" : "readonly";
         if (merged !== null) {
           deps.requestStore();
@@ -297,19 +324,47 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
-   * The lease is held now. A load in flight reads `isLeaseHeld` when it
-   * finishes, so in `loading` this is a no-op: the phase is still `loading`
-   * only when the lease was never lost since this load started, because a
-   * loss during `loading` retires the load and moves the gate to `readonly`.
-   * In `readonly` this starts a fresh load.
+   * The lease is held now. A fresh load that deferred on the open claim just
+   * read in this generation, and a first-try claim means no other tab held
+   * the exam, so move to `editing` without another load. Otherwise a load in
+   * flight reads `isLeaseHeld` when it finishes, so in `loading` this is a
+   * no-op: the phase is still `loading` only when the lease was never lost
+   * since this load started, because a loss during `loading` retires the load
+   * and moves the gate to `readonly`. In `readonly` this starts a fresh load.
    */
   function leaseAcquired(): void {
-    if (disposed || phase.value !== "readonly") {
+    if (disposed) {
+      return;
+    }
+    const deferred = loadDeferred;
+    loadDeferred = null;
+    if (deferred !== null && fence.isCurrent(deferred) && phase.value === "loading") {
+      phase.value = "editing";
+      return;
+    }
+    if (phase.value !== "readonly") {
       return;
     }
     retire();
     phase.value = "loading";
     startFreshLoad(false);
+  }
+
+  /**
+   * The open claim ended without holding (a live foreign lease holds the
+   * exam). A fresh load that deferred on that claim already read in this
+   * generation, so move to `readonly` without another load. A load still in
+   * flight concludes as today and reads the unheld lease.
+   */
+  function leaseRefused(): void {
+    if (disposed) {
+      return;
+    }
+    const deferred = loadDeferred;
+    loadDeferred = null;
+    if (deferred !== null && fence.isCurrent(deferred) && phase.value === "loading") {
+      phase.value = "readonly";
+    }
   }
 
   /**
@@ -413,6 +468,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     leaseAcquired,
     leaseLost,
     leaseReadOnly,
+    leaseRefused,
     noteStored,
     openExam,
     phase,

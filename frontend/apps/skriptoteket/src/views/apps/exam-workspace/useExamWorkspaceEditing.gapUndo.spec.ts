@@ -246,7 +246,7 @@ describe("a 409 conflict during undo's flush", () => {
     await editing.history.undo();
     await flushPromises();
 
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
     expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
     expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([]);

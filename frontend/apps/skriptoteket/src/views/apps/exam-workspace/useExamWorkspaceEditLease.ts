@@ -41,7 +41,9 @@
  *   work is tied to an identity (the lineage plus the gate's generation):
  *   the generation is retired before a new lineage claims, every answer
  *   settles through the fence, and only a `current` answer touches lease
- *   state. A claim that won on the server but settles `stale` is released
+ *   state. An open claim that ends without holding reports through the refusal
+ *   route while holding stays false, so a gate load deferred on it resolves.
+ *   A claim that won on the server but settles `stale` is released
  *   server-side instead of granting editability, and a stale renew updates
  *   neither holding nor the last-success time. Cancelling wakes a sleeping
  *   poll.
@@ -134,6 +136,8 @@ export type ExamWorkspaceEditLeaseDeps = {
   onLeaseAcquired: () => void;
   /** Held became false: the gate reports `leaseLost`. Exactly one call per transition. */
   onLeaseLost: () => void;
+  /** The open claim ended without holding: the gate reports `leaseRefused`. */
+  onLeaseRefused: () => void;
 };
 
 export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
@@ -162,10 +166,12 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   }
 
   /**
-   * The single route from lease state to the gate: every `holding` change
+   * The two routes from lease state to the gate: every `holding` change
    * synchronously reports held-became-true as `leaseAcquired` and
-   * held-became-false as `leaseLost`. Transitions that change nothing
-   * report nothing, so the gate sees exactly one callback per transition.
+   * held-became-false as `leaseLost`, and an open claim that ends without
+   * holding reports `leaseRefused` while holding stays false. Transitions
+   * that change nothing report nothing, so the gate sees exactly one callback
+   * per outcome.
    */
   function setHolding(next: boolean): void {
     if (holding.value === next) {
@@ -373,6 +379,11 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     isAbandonedLineage,
     tryRelease,
     setHolding,
+    onClaimRefused: () => {
+      if (!disposed) {
+        deps.onLeaseRefused();
+      }
+    },
     startHeartbeat,
     takeoverPollMs: EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS,
   });
@@ -390,7 +401,11 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     if (previous !== null && previous !== next && holding.value) {
       void tryRelease(previous);
     }
-    setHolding(false);
+    // The gate already moved through `openExam`, so this reset clears the
+    // previous exam's hold without reporting a loss: reporting one would
+    // retire the new exam's fresh load. Every other `holding` change still
+    // reports through `setHolding`.
+    holding.value = false;
     stopHeartbeat();
     if (next !== null && !disposed) {
       void acquisition.claimCurrent(next);
@@ -431,6 +446,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   });
 
   return {
+    isOpenClaimPending: () => acquisition.isClaimPending(),
     noteLostLease,
     openLineage,
     readOnly,

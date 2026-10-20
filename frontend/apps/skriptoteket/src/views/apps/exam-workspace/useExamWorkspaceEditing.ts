@@ -10,8 +10,10 @@
  *   reads `gate.editingLocked`, every write runs through
  *   `gate.enqueueWrite`, and every cursor the gate did not install is
  *   reported back to it. An `EDIT_LEASE_HELD` refusal or a lost lease reaches
- *   the gate as `leaseLost`, a stale-cursor 409 as `staleConflict`, and a
- *   held lease as `leaseAcquired`. It owns `selectedParentId` (the part
+ *   the gate as `leaseLost`, a refused open claim as `leaseRefused`, a
+ *   stale-cursor 409 as `staleConflict`, and a held lease as `leaseAcquired`.
+ *   A load that finishes while the open claim is still in flight keeps
+ *   `loading` until the claim decides. It owns `selectedParentId` (the part
  *   entry the teacher selected) so structural inserts land after the
  *   selected part; the selection composable drives it.
  *
@@ -172,6 +174,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
 
   gate = useExamWorkspaceSyncGate({
     isLeaseHeld: () => leaseHolder.session !== null && !leaseHolder.session.readOnly.value,
+    isOpenClaimPending: () => leaseHolder.session?.isOpenClaimPending() ?? false,
     hasPendingEdit: () => history.pending.value,
     currentStepDocument: () => history.stepDocument.value,
     currentWorkingCopy: () => document.workspaceDocument.value,
@@ -212,6 +215,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     now: lease?.now,
     onLeaseAcquired: () => requireGate().leaseAcquired(),
     onLeaseLost: () => requireGate().leaseLost(),
+    onLeaseRefused: () => requireGate().leaseRefused(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,

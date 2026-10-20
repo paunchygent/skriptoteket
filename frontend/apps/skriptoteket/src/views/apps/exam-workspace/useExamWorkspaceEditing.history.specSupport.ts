@@ -110,9 +110,8 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
     if (current === undefined) {
       throw new Error("expected the served document");
     }
-    // The open claim can win after the gate's first load concluded
-    // read-only, so the gate reads the document again: serve the newest
-    // stored copy under the requested lineage, like the follow-up loads do.
+    // Follow-up loads (takeover reclaim, conflict reload) read the document
+    // again: serve the newest stored copy under the requested lineage.
     const payload = response(JSON.parse(JSON.stringify(current)), state.cursor);
     return {
       ...payload,
@@ -389,6 +388,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
     });
     const gate = useExamWorkspaceSyncGate({
       isLeaseHeld: () => leaseHeld.value,
+      isOpenClaimPending: () => false,
       hasPendingEdit: () => history.pending.value,
       currentStepDocument: () => history.stepDocument.value,
       currentWorkingCopy: () => workspaceDocument.value,

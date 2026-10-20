@@ -67,6 +67,7 @@ describe("useExamWorkspaceEditLease lifecycle", () => {
         lineageId: () => lineage.value,
         onLeaseAcquired: () => undefined,
         onLeaseLost: () => undefined,
+        onLeaseRefused: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server: fake.server,
         tabId: "tab-a",

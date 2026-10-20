@@ -112,6 +112,7 @@ export function setupLease(
         acquired.push("reloaded");
       }),
       onLeaseLost: () => undefined,
+      onLeaseRefused: () => undefined,
       onTakeoverRequested: options.onTakeoverRequested ?? (async () => {
         flushed.push("stored");
       }),

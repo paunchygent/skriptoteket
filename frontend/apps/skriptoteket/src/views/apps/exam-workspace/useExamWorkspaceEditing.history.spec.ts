@@ -90,7 +90,7 @@ describe("conflict recovery under the replacing lock", () => {
 
     await editing.structure.changeType("item_001", "single_choice");
 
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
   });
 
@@ -105,7 +105,7 @@ describe("conflict recovery under the replacing lock", () => {
     await editing.history.undo();
     await flushPromises();
 
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
     expect(api.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
     // The decided 409 policy: the reload replaces the pending edit.
@@ -172,19 +172,19 @@ describe("the edit lease on a 409 (K8)", () => {
     );
     const opening = editing.openDocument(LINEAGE);
     await flushPromises();
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
     api.getExamWorkspaceDocument.mockImplementationOnce(async () =>
       response(exam("Från en annan flik"), "other-tab"),
     );
     const reloading = editing.reloadDocument();
     await flushPromises();
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
     releaseOpen(response(exam("Opened"), "cursor-open"));
     await opening;
     await reloading;
-    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(3);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
   });
 });
