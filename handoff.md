@@ -5,7 +5,9 @@
   generation fence for every async result (user, 2026-10-20): FF `0090a024`,
   U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`, F3 `303bc263`, F4 `6202fe16`.
   R1 closed (user): an old-format kept edit is upgraded before the merge.
-  Next: merge main, suite slot, rereview 5 by `23bc9c5a`, then the Mac.
+  Rereview 6 closed V1-V3; its lock findings R6-1..R6-3 are in repair (head
+  `31fbd255`, 2026-10-20). Next: focused proof, suite slot, rereview 7 of R6-1,
+  then the Mac merge and walk (lease paths, Kurs clear, ticks, drawer hints).
 - 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
   D24 a server claim per draft_id.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
