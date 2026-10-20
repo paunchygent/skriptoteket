@@ -94,6 +94,7 @@ const {
   isBusy,
   isConverting,
   isDirty,
+  isOpenBlockedByOtherOperation,
   listOrdering,
   notes,
   renameFailure,
@@ -145,6 +146,7 @@ const openSaveDetail = computed(() =>
       :ordering="listOrdering"
       :import-blocked="importBlocked"
       :is-busy="isBusy"
+      :is-open-blocked-by-other-operation="isOpenBlockedByOtherOperation"
       :is-dirty="isDirty"
       :save-state="openSaveState"
       :save-detail="openSaveDetail"

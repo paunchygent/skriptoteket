@@ -41,6 +41,11 @@ const props = defineProps<{
   /** No import now: busy, or the open exam has unsaved changes (one rule, also gating drops). */
   importBlocked: boolean;
   isBusy: boolean;
+  /**
+   * True while an operation other than the drawer's own import or conversion
+   * blocks opening; the busy hint names only this, never the drawer's own work.
+   */
+  isOpenBlockedByOtherOperation: boolean;
   isDirty: boolean;
   /** The one save status: `saving` while an edit is not yet stored, `unsaved` with the reason when it reads Inte sparat. */
   saveState: "saving" | "saved" | "unsaved";
@@ -99,7 +104,7 @@ const blockedReason = computed<string | null>(() => {
   if (props.saveState === "saving" || props.isDirty) {
     return PENDING_SAVE_COPY;
   }
-  if (props.isBusy) {
+  if (props.isOpenBlockedByOtherOperation) {
     return OPEN_BUSY_COPY;
   }
   return null;
@@ -171,7 +176,9 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     return;
   }
   if (openBlocked.value) {
-    toast.failure(blockedReason.value ?? OPEN_BUSY_COPY);
+    if (blockedReason.value !== null) {
+      toast.failure(blockedReason.value);
+    }
     return;
   }
   emit("open", entry.lineage_id);

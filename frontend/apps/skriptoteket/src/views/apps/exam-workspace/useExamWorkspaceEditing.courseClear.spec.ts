@@ -354,6 +354,7 @@ describe("a save outage collapses the backlog into one store of the newest copy"
         isBusy: false,
         isConverting: false,
         isDirty: true,
+        isOpenBlockedByOtherOperation: false,
         notes: [],
         ordering: "newest",
         saveDetail: status.detail,

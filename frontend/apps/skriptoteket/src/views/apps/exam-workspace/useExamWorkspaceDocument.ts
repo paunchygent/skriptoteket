@@ -205,6 +205,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
   );
+  /**
+   * True while an operation other than the drawer's own import or conversion
+   * blocks opening: a save, rename, retry or Spara som copy, or an open read.
+   * Unlike `isOtherOperationBusy` this never counts `isImporting` or
+   * `isConverting`; the drawer's own progress shows those instead.
+   */
+  const isOpenBlockedByOtherOperation = computed(
+    () => operationBusy.value || copyBusy.value || isOpenReading.value,
+  );
   const isOperationBusy = computed(() => isOtherOperationBusy.value || isOpenReading.value);
   /** An undo, redo or server command is reading the document that replaces the copy. */
   const replacing = ref(false);
@@ -446,6 +455,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     importDocument,
     isBusy,
     isDirty,
+    isOpenBlockedByOtherOperation,
     isOperationBusy,
     isReplacing: computed(() => replacing.value),
     replaceCopy: replacingScope.replaceCopy,

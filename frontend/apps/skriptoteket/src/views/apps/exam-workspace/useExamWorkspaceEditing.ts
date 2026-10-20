@@ -327,6 +327,18 @@ export function useExamWorkspaceEditing(
   const isBusy = computed(
     () => document.isOperationBusy.value || (document.isReplacing.value && (gateForBusy()?.phase.value ?? "loading") !== "loading"),
   );
+  /**
+   * The Öppna drawer's busy hint: true while an operation other than the
+   * drawer's own import or conversion blocks opening, plus the replacing lock
+   * on the same loading rule `isBusy` uses. Unlike `isBusy` this never counts
+   * the drawer's own `isImporting` or `isConverting`; the drawer shows those
+   * through its conversion progress instead.
+   */
+  const isOpenBlockedByOtherOperation = computed(
+    () =>
+      document.isOpenBlockedByOtherOperation.value ||
+      (document.isReplacing.value && (gateForBusy()?.phase.value ?? "loading") !== "loading"),
+  );
 
   return {
     ...document,
@@ -337,6 +349,7 @@ export function useExamWorkspaceEditing(
     },
     history,
     isBusy,
+    isOpenBlockedByOtherOperation,
     save,
     saveAs,
     selectedParentId,
