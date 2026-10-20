@@ -41,7 +41,6 @@ import { useToast } from "../../../composables/useToast";
 import { nextItemId } from "./examWorkspaceConversionMerge";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
-import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import {
   examWorkspaceChangeTypeNotice,
@@ -346,15 +345,13 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   }
 
   /**
-   * Change one question's type. Choosing the stored kind is a no-op, except
-   * on an unconverted question, where it is the retype that flips only the
-   * review origin (TASK-SKRIPT-39-05-15 D2).
+   * Change one question's type. changeType returns early when
+   * `current.kind === kind` unless `current.review.parse_origin === "source_fallback"`
+   * (TASK-SKRIPT-39-05-15 D2).
    */
   async function changeType(itemId: string, kind: NativeExamItemKind): Promise<void> {
     const current = deps.workspaceDocument.value?.items.find((item) => item.item_id === itemId);
-    const unbuilt =
-      current !== undefined && examWorkspaceItemReadiness(current).includes("unbuilt_question");
-    if (!current || (current.kind === kind && !unbuilt)) {
+    if (!current || (current.kind === kind && current.review.parse_origin !== "source_fallback")) {
       return;
     }
     let dropped: string[] = [];

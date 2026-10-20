@@ -52,6 +52,43 @@ function unbuiltDocument(): NativeExamDocument {
   };
 }
 
+/** A question unbuilt only because of a missing picture: review_required with an
+ * llm_parsed origin and a retry_source chunk with missing_images. */
+function missingPictureDocument(): NativeExamDocument {
+  const document = buildParentDocument();
+  return {
+    ...document,
+    items: document.items.map((item) =>
+      item.item_id === "item_001"
+        ? {
+            ...item,
+            retry_source: {
+              chunks: [
+                {
+                  anchor: "body:0001",
+                  images: [],
+                  kind: "drawing",
+                  marked_text: "",
+                  missing_images: [
+                    { media_type: "image/x-emf", marked_offset: 0, offset: 0, reference: "image3.emf" },
+                  ],
+                  paragraphs: [],
+                  runs: [],
+                  text: "",
+                },
+              ],
+              context_chunks: [],
+              key_chunks: [],
+              label_kind: item.kind,
+              owned_context_anchors: [],
+            },
+            review: { ...item.review, confidence: 0.95, parse_origin: "llm_parsed", state: "review_required" },
+          }
+        : item,
+    ),
+  };
+}
+
 function setup(document: NativeExamDocument) {
   const workspaceDocument = ref<NativeExamDocument | null>(document);
   const structure = effectScope().run(() =>
@@ -102,6 +139,14 @@ describe("changeType on an unconverted question", () => {
       tab_id: "tab-1",
       target_kind: "gap_fill",
     });
+  });
+
+  it("sends nothing for the stored kind on a missing-picture unbuilt question", async () => {
+    const structure = setup(missingPictureDocument());
+
+    await structure.changeType("item_001", "gap_fill");
+
+    expect(apiMocks.changeExamWorkspaceItemType).not.toHaveBeenCalled();
   });
 
   it("sends nothing for the stored kind on a built question", async () => {
