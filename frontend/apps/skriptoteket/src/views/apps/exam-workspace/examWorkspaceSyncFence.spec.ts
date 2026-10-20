@@ -124,4 +124,16 @@ describe("the sync fence", () => {
     expect(fence.isCurrent(second)).toBe(false);
     expect(fence.isCurrent(third)).toBe(true);
   });
+
+  it("exposes the current generation, kept in step by retire", () => {
+    const fence = createSyncFence();
+    expect(fence.generation.value).toBe(0);
+    fence.begin();
+    expect(fence.generation.value).toBe(0);
+    fence.retire();
+    expect(fence.generation.value).toBe(1);
+    expect(fence.isCurrent(fence.begin())).toBe(true);
+    fence.retire();
+    expect(fence.generation.value).toBe(2);
+  });
 });

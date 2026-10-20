@@ -40,6 +40,7 @@ import { withNewGap } from "./examWorkspaceGapEdits";
 import { exam, openEditing, stopScopes } from "./useExamWorkspaceEditing.history.specSupport";
 
 const api = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),

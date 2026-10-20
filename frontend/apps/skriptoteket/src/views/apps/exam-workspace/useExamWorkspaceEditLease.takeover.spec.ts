@@ -24,6 +24,7 @@ import {
   useExamWorkspaceEditLease,
   type ExamWorkspaceEditLeaseServer,
 } from "./useExamWorkspaceEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import {
   createFakeLeaseServer,
   LINEAGE,
@@ -98,7 +99,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
       expect(claim.mock.calls.length).toBeGreaterThan(claimsAfterYield);
       expect(fake.state().holder).toBe("tab-a");
       expect(first.lease.readOnly.value).toBe(false);
-      expect(first.acquired).toEqual(["reloaded"]);
+      expect(first.acquired).toEqual(["reloaded", "reloaded"]);
     } finally {
       first.stop();
       second.stop();
@@ -125,7 +126,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
       await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
       expect(claim.mock.calls.length).toBeGreaterThan(claimsAfterYield);
       expect(first.lease.readOnly.value).toBe(true);
-      expect(first.acquired).toEqual([]);
+      expect(first.acquired).toEqual(["reloaded"]);
       expect(fake.state().holder).toBe("tab-b");
     } finally {
       first.stop();
@@ -240,7 +241,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
       );
       expect(fake.state().holder).toBe("tab-b");
       expect(first.lease.readOnly.value).toBe(true);
-      expect(first.acquired).toEqual([]);
+      expect(first.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
       second.stop();
@@ -300,17 +301,19 @@ describe("useExamWorkspaceEditLease takeover", () => {
     let acquired = 0;
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => lineage.value,
-        onAcquired: () => {
+        onLeaseAcquired: () => {
           acquired += 1;
-          return Promise.resolve();
         },
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server,
         tabId: "tab-a",
       }),
     )!;
+    lease.openLineage(LINEAGE);
     try {
       await flushPromises();
       expect(lease.readOnly.value).toBe(true);
@@ -322,6 +325,7 @@ describe("useExamWorkspaceEditLease takeover", () => {
       expect(resolveLateClaim).not.toBeNull();
       // The teacher opens exam Y, whose claim is refused.
       lineage.value = OTHER_LINEAGE;
+      lease.openLineage(OTHER_LINEAGE);
       await flushPromises();
       expect(lease.readOnly.value).toBe(true);
       // X's old claim then succeeds: it must change nothing.
@@ -378,9 +382,11 @@ describe("useExamWorkspaceEditLease takeover", () => {
       const lineage = ref<string | null>(LINEAGE);
       const lease = scope.run(() =>
         useExamWorkspaceEditLease({
+          fence: createSyncFence(),
           isGuest: () => false,
           lineageId: () => lineage.value,
-          onAcquired: () => Promise.resolve(),
+          onLeaseAcquired: () => undefined,
+          onLeaseLost: () => undefined,
           onTakeoverRequested: () => Promise.resolve(),
           server: fake.server,
           tabId: "tab-a",

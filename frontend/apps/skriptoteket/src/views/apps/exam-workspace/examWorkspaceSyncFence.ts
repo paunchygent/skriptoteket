@@ -12,6 +12,9 @@
  *   unhandled rejection.
  */
 
+import { readonly, ref } from "vue";
+import type { Ref } from "vue";
+
 const fenceBrand: unique symbol = Symbol("examWorkspaceSyncFence");
 
 /** The generation an async result started in; only the fence mints it. */
@@ -31,22 +34,24 @@ export type SyncFence = {
   isCurrent: (token: FenceToken) => boolean;
   /** Retire the current generation: every outstanding settle resolves `stale` at once. */
   retire: () => void;
+  /** The current generation; retire bumps it so computeds can track staleness. */
+  generation: Readonly<Ref<number>>;
 };
 
 export function createSyncFence(): SyncFence {
-  let generation = 0;
+  const generation = ref(0);
   const waiting = new Set<() => void>();
 
   function begin(): FenceToken {
-    return { [fenceBrand]: generation };
+    return { [fenceBrand]: generation.value };
   }
 
   function isCurrent(token: FenceToken): boolean {
-    return token[fenceBrand] === generation;
+    return token[fenceBrand] === generation.value;
   }
 
   function retire(): void {
-    generation += 1;
+    generation.value += 1;
     const stale = [...waiting];
     waiting.clear();
     for (const resolveStale of stale) {
@@ -78,5 +83,5 @@ export function createSyncFence(): SyncFence {
     });
   }
 
-  return { begin, isCurrent, retire, settle };
+  return { begin, generation: readonly(generation), isCurrent, retire, settle };
 }

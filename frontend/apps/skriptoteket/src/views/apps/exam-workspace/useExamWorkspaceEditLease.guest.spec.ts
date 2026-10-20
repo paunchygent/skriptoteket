@@ -25,6 +25,7 @@ import {
   EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS,
   useExamWorkspaceEditLease,
 } from "./useExamWorkspaceEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const LINEAGE = "00000000-0000-4000-8000-000000000001";
 
@@ -85,17 +86,20 @@ function setupGuestLeases() {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         guestStorage: overrides?.guestStorage ?? storage,
         isGuest: () => true,
         lineageId: () => LINEAGE,
         now,
-        onAcquired: () => void events.acquired.push("reloaded"),
+        onLeaseAcquired: () => void events.acquired.push("reloaded"),
+        onLeaseLost: () => undefined,
         onTakeoverRequested:
           overrides?.onTakeoverRequested ?? (() => void events.flushed.push("stored")),
         openGuestChannel: () => hub.createChannel(),
         tabId,
       }),
     )!;
+    lease.openLineage(LINEAGE);
     return { lease, stop: () => scope.stop() };
   };
   return { advance, open, storage };
@@ -200,7 +204,7 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
       expect(await context.storage.load()).toMatchObject({ tabId: "tab-a" });
       expect(first.lease.readOnly.value).toBe(false);
-      expect(firstEvents.acquired).toEqual(["reloaded"]);
+      expect(firstEvents.acquired).toEqual(["reloaded", "reloaded"]);
     } finally {
       first.stop();
       second.stop();
@@ -267,7 +271,7 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       expect(firstCounter.claims).toBe(claimsAfterYield + 1);
       expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
       expect(first.lease.readOnly.value).toBe(true);
-      expect(firstEvents.acquired).toEqual([]);
+      expect(firstEvents.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
       second.stop();

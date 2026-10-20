@@ -13,6 +13,7 @@ import { effectScope } from "vue";
 
 import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceEditLeaseResponse } from "../../../api/examWorkspace";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import {
   EXAM_WORKSPACE_EDIT_LEASE_TTL_MS,
   useExamWorkspaceEditLease,
@@ -93,7 +94,7 @@ export type LeaseSetup = {
 export function setupLease(
   fake: ReturnType<typeof createFakeLeaseServer>,
   options: { tabId: string; lineage?: string | null } & Partial<
-    Pick<Parameters<typeof useExamWorkspaceEditLease>[0], "onAcquired" | "onTakeoverRequested">
+    Pick<Parameters<typeof useExamWorkspaceEditLease>[0], "onLeaseAcquired" | "onTakeoverRequested">
   >,
 ): LeaseSetup {
   const scope = effectScope();
@@ -102,18 +103,21 @@ export function setupLease(
   const acquired: string[] = [];
   const lease = scope.run(() =>
     useExamWorkspaceEditLease({
+      fence: createSyncFence(),
       lineageId: () => holder.lineage,
       isGuest: () => false,
       server: fake.server,
       tabId: options.tabId,
-      onAcquired: options.onAcquired ?? (async () => {
+      onLeaseAcquired: options.onLeaseAcquired ?? (() => {
         acquired.push("reloaded");
       }),
+      onLeaseLost: () => undefined,
       onTakeoverRequested: options.onTakeoverRequested ?? (async () => {
         flushed.push("stored");
       }),
     }),
   )!;
+  lease.openLineage(holder.lineage);
   return {
     acquired,
     flushed,

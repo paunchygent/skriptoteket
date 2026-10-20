@@ -7,14 +7,14 @@
  *   state. The wait claims at once when the lease is already free and polls
  *   the claim otherwise, staying read-only while waiting; a poll claim that
  *   fails stays waiting like a refused one. The wait is tied to the
- *   composable's acquisition identity (lineage plus acquisition epoch): the
- *   caller rechecks it after every await, a late success for a stale
+ *   composable's acquisition identity (lineage plus the sync fence's
+ *   generation): the caller rechecks it after every await, a late success for a stale
  *   identity is released and changes nothing, and cancelling wakes a
  *   sleeping poll so the wait always settles.
  *
  * Relationships:
  *   - Owned by `useExamWorkspaceEditLease`, which keeps the read-only state,
- *     the acquisition epoch, the waiting flag and the heartbeat, and passes
+ *     the fence token, the waiting flag and the heartbeat, and passes
  *     them in as hooks; this module owns only the request, the poll sleeps
  *     and their cancellation.
  *   - Runs one attempt per poll through the drivers in
@@ -25,7 +25,7 @@
 import type { ExamWorkspaceEditLeaseDriver } from "./examWorkspaceEditLeaseDrivers";
 
 export type EditLeaseTakeoverHooks = {
-  /** The wait's identity (lineage, epoch, scope) is still current. */
+  /** The wait's identity (lineage, fence token, scope) is still current. */
   isCurrent: () => boolean;
   /** The tab still waits: the waiting flag is set and it holds nothing. */
   shouldWait: () => boolean;

@@ -24,6 +24,7 @@ import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 
 export type EditingApiMocks = {
+  getExamWorkspaceDocument: Mock;
   getExamWorkspaceHistory: Mock;
   getExamWorkspaceHistoryStep: Mock;
   moveExamWorkspaceHistoryPosition: Mock;
@@ -104,6 +105,20 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
     return stepId;
   };
   api.getExamWorkspaceHistory.mockImplementation(async () => history());
+  api.getExamWorkspaceDocument.mockImplementation(async (lineageId: string) => {
+    const current = documents.get(state.cursor);
+    if (current === undefined) {
+      throw new Error("expected the served document");
+    }
+    // The open claim can win after the gate's first load concluded
+    // read-only, so the gate reads the document again: serve the newest
+    // stored copy under the requested lineage, like the follow-up loads do.
+    const payload = response(JSON.parse(JSON.stringify(current)), state.cursor);
+    return {
+      ...payload,
+      summary: { ...payload.summary, lineage_id: lineageId, vault_file_id: lineageId },
+    };
+  });
   api.getExamWorkspaceHistoryStep.mockImplementation(async (_lineage: string, stepId: string) => ({
     document: documents.get(stepId)!,
     step_id: stepId,

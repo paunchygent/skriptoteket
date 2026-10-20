@@ -15,6 +15,7 @@ import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useExamWorkspaceEditLease } from "./useExamWorkspaceEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import {
   createFakeLeaseServer,
   LINEAGE,
@@ -61,24 +62,29 @@ describe("useExamWorkspaceEditLease lifecycle", () => {
     const lineage = ref<string | null>(LINEAGE);
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => lineage.value,
-        onAcquired: () => Promise.resolve(),
+        onLeaseAcquired: () => undefined,
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server: fake.server,
         tabId: "tab-a",
       }),
     )!;
+    lease.openLineage(LINEAGE);
     try {
       await flushPromises();
       expect(lease.readOnly.value).toBe(false);
       lineage.value = OTHER_LINEAGE;
+      lease.openLineage(OTHER_LINEAGE);
       await flushPromises();
       expect(release).toHaveBeenCalledWith(LINEAGE, "tab-a");
       expect(claim).toHaveBeenCalledWith(OTHER_LINEAGE, "tab-a");
       expect(lease.readOnly.value).toBe(false);
 
       lineage.value = null;
+      lease.openLineage(null);
       await flushPromises();
       expect(release).toHaveBeenCalledWith(OTHER_LINEAGE, "tab-a");
       expect(lease.readOnly.value).toBe(true);
@@ -96,7 +102,7 @@ describe("useExamWorkspaceEditLease lifecycle", () => {
       first.lease.noteLostLease();
       expect(first.lease.readOnly.value).toBe(true);
       expect(first.flushed).toEqual([]);
-      expect(first.acquired).toEqual([]);
+      expect(first.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
     }

@@ -21,6 +21,7 @@ import {
   useExamWorkspaceEditLease,
   type ExamWorkspaceEditLeaseServer,
 } from "./useExamWorkspaceEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const EXAM_ONE = "stale-exam-one";
 const EXAM_TWO = "stale-exam-two";
@@ -115,9 +116,11 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => lineage.value,
-        onAcquired: () => Promise.resolve(),
+        onLeaseAcquired: () => undefined,
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server: stale.driver,
         tabId: "tab-a",
@@ -127,6 +130,7 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       throw new Error("lease missing");
     }
     const current = lease;
+    current.openLineage(EXAM_ONE);
     try {
       await flushPromises();
       expect(current.readOnly.value).toBe(true);
@@ -137,8 +141,10 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       expect(stale.holders.get(EXAM_ONE)).toBe("tab-a");
 
       lineage.value = EXAM_TWO;
+      current.openLineage(EXAM_TWO);
       await flushPromises();
       lineage.value = EXAM_ONE;
+      current.openLineage(EXAM_ONE);
       await flushPromises();
       expect(current.readOnly.value).toBe(false);
 
@@ -148,9 +154,11 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       const otherScope = effectScope();
       const other = otherScope.run(() =>
         useExamWorkspaceEditLease({
+          fence: createSyncFence(),
           isGuest: () => false,
           lineageId: () => EXAM_ONE,
-          onAcquired: () => Promise.resolve(),
+          onLeaseAcquired: () => undefined,
+          onLeaseLost: () => undefined,
           onTakeoverRequested: () => Promise.resolve(),
           server: stale.driver,
           tabId: "tab-b",
@@ -159,6 +167,7 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       if (other === undefined) {
         throw new Error("other lease missing");
       }
+      other.openLineage(EXAM_ONE);
       try {
         await flushPromises();
         expect({
@@ -181,9 +190,11 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => lineage.value,
-        onAcquired: () => Promise.resolve(),
+        onLeaseAcquired: () => undefined,
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server: stale.driver,
         tabId: "tab-a",
@@ -193,6 +204,7 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       throw new Error("lease missing");
     }
     const current = lease;
+    current.openLineage(EXAM_ONE);
     try {
       await flushPromises();
       expect(current.readOnly.value).toBe(true);
@@ -203,6 +215,7 @@ describe("useExamWorkspaceEditLease stale claim answers", () => {
       expect(stale.holders.get(EXAM_ONE)).toBe("tab-a");
 
       lineage.value = EXAM_TWO;
+      current.openLineage(EXAM_TWO);
       await flushPromises();
       expect(current.readOnly.value).toBe(false);
 

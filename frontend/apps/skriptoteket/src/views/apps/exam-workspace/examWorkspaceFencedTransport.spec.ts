@@ -6,6 +6,7 @@
  * as they were, with no confirmed, failed, refused or stored report.
  */
 
+import { flushPromises } from "@vue/test-utils";
 import { computed, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
@@ -122,6 +123,91 @@ describe("the fenced transport", () => {
     expect(noteStored).not.toHaveBeenCalled();
     expect(noteExportBlockers).not.toHaveBeenCalled();
     expect(onConflict).not.toHaveBeenCalled();
+    expect(store.storing.value).toBe(false);
+  });
+
+  it("a store left hanging across a retire no longer reads as storing", async () => {
+    const fence = createSyncFence();
+    const baseline = exam();
+    const pending: NativeExamDocument = { ...baseline, title: "Pending" };
+    let resolveAnswer: (value: {
+      document: NativeExamDocument;
+      export_blockers: [];
+      history: {
+        baseline_step_id: string;
+        cursor: string;
+        position_step_id: string;
+        step_ids: string[];
+      };
+    }) => void = () => undefined;
+    const answer = new Promise<{
+      document: NativeExamDocument;
+      export_blockers: [];
+      history: {
+        baseline_step_id: string;
+        cursor: string;
+        position_step_id: string;
+        step_ids: string[];
+      };
+    }>((resolve) => {
+      resolveAnswer = resolve;
+    });
+    const storeDouble = vi.fn(() => answer);
+    const shared = { ...serverExamWorkspaceStore.shared, storeExamWorkspaceUndoStep: storeDouble };
+    const transport = createFencedTransport(() => fence, shared);
+    const baselineId = ref<string | null>("step-0");
+    const stepIds = ref<string[]>([]);
+    const position = ref<string | null>("step-0");
+    const stepDocument = ref<NativeExamDocument | null>(baseline);
+    const ownCursor = ref<string | null>(null);
+    const historyCursor = ref<string | null>("step-0");
+    const workspaceDocument = ref<NativeExamDocument | null>(pending);
+    const newestId = computed(() => "step-0");
+    const store = createHistoryStore(
+      {
+        historyCursor,
+        isBlocked: () => false,
+        isCurrent: (token) => fence.isCurrent(token),
+        lineageId: () => "lineage-1",
+        noteExportBlockers: () => undefined,
+        noteGateStored: () => undefined,
+        noteLeaseLost: () => undefined,
+        noteStored: () => undefined,
+        onConflict: () => Promise.resolve(),
+        tabId: () => "tab-1",
+        transport,
+        workspaceDocument,
+      },
+      { baselineId, newestId, ownCursor, position, stepDocument, stepIds },
+      {
+        confirmed: () => undefined,
+        noteFailed: () => undefined,
+        noteLeaseLost: () => undefined,
+        noteRefused: () => undefined,
+      },
+      {
+        flushNewer: () => undefined,
+        scheduleTyping: () => undefined,
+      },
+    );
+    const token = fence.begin();
+    const storing = store.store(token, false, pending);
+    expect(store.storing.value).toBe(true);
+    fence.retire();
+    // The store never settles, yet nothing reads as storing anymore.
+    await flushPromises();
+    expect(store.storing.value).toBe(false);
+    resolveAnswer({
+      document: pending,
+      export_blockers: [],
+      history: {
+        baseline_step_id: "step-0",
+        cursor: "step-1",
+        position_step_id: "step-1",
+        step_ids: ["step-1"],
+      },
+    });
+    await expect(storing).resolves.toBe("failed");
     expect(store.storing.value).toBe(false);
   });
 });

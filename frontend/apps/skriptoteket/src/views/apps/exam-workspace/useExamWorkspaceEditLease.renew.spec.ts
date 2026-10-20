@@ -23,6 +23,9 @@ import {
   useExamWorkspaceEditLease,
   type ExamWorkspaceEditLeaseServer,
 } from "./useExamWorkspaceEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
+import { exam } from "./useExamWorkspaceEditing.history.specSupport";
+import { createGate, succeedLoad } from "./useExamWorkspaceSyncGate.specSupport";
 import {
   createFakeLeaseServer,
   LINEAGE,
@@ -66,7 +69,7 @@ describe("useExamWorkspaceEditLease renewal", () => {
       await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
       expect(first.lease.readOnly.value).toBe(true);
       expect(first.flushed).toEqual([]);
-      expect(first.acquired).toEqual([]);
+      expect(first.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
     }
@@ -110,13 +113,13 @@ describe("useExamWorkspaceEditLease renewal", () => {
         expect(first.lease.readOnly.value).toBe(false);
         await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
         expect(first.lease.readOnly.value).toBe(true);
-        expect(first.acquired).toEqual([]);
+        expect(first.acquired).toEqual(["reloaded"]);
 
         // Renew and claim succeed again: the next retry takes the lease back.
         renewSpy.mockRestore();
         await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
         expect(first.lease.readOnly.value).toBe(false);
-        expect(first.acquired).toEqual(["reloaded"]);
+        expect(first.acquired).toEqual(["reloaded", "reloaded"]);
       } finally {
         renewSpy.mockRestore();
       }
@@ -147,7 +150,7 @@ describe("useExamWorkspaceEditLease renewal", () => {
         expect(first.lease.readOnly.value).toBe(false);
         await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
         expect(first.lease.readOnly.value).toBe(false);
-        expect(first.acquired).toEqual([]);
+        expect(first.acquired).toEqual(["reloaded"]);
       } finally {
         renewSpy.mockRestore();
       }
@@ -191,14 +194,17 @@ describe("useExamWorkspaceEditLease renewal", () => {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => LINEAGE,
-        onAcquired: () => Promise.resolve(),
+        onLeaseAcquired: () => undefined,
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server,
         tabId: "tab-a",
       }),
     )!;
+    lease.openLineage(LINEAGE);
     try {
       await flushPromises();
       expect(lease.readOnly.value).toBe(false);
@@ -240,14 +246,17 @@ describe("useExamWorkspaceEditLease renewal", () => {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
+        fence: createSyncFence(),
         isGuest: () => false,
         lineageId: () => LINEAGE,
-        onAcquired: () => Promise.resolve(),
+        onLeaseAcquired: () => undefined,
+        onLeaseLost: () => undefined,
         onTakeoverRequested: () => Promise.resolve(),
         server,
         tabId: "tab-a",
       }),
     )!;
+    lease.openLineage(LINEAGE);
     try {
       await flushPromises();
       expect(lease.readOnly.value).toBe(false);
@@ -261,6 +270,81 @@ describe("useExamWorkspaceEditLease renewal", () => {
       expect(lease.readOnly.value).toBe(true);
     } finally {
       scope.stop();
+    }
+  });
+
+  it("a renew answer that settles after the gate retired the generation changes neither holding nor the gate's phase", async () => {
+    const harness = createGate();
+    const held: ExamWorkspaceEditLeaseResponse = {
+      holder_tab_id: "tab-a",
+      renewed_at: new Date(1_000_000).toISOString(),
+      takeover_requested: false,
+      takeover_requested_by: null,
+    };
+    let resolveRenew: ((response: ExamWorkspaceEditLeaseResponse) => void) | null = null;
+    const takeRenew = (): ((response: ExamWorkspaceEditLeaseResponse) => void) | null => resolveRenew;
+    const renewAnswer = new Promise<ExamWorkspaceEditLeaseResponse>((resolve) => {
+      resolveRenew = resolve;
+    });
+    let renewCalls = 0;
+    const server: ExamWorkspaceEditLeaseServer = {
+      claim: () => Promise.resolve(held),
+      release: () => Promise.resolve(held),
+      renew: () => {
+        renewCalls += 1;
+        if (renewCalls === 1) {
+          return renewAnswer;
+        }
+        return Promise.reject(new ApiError({ code: "INTERNAL", message: "boom", status: 500 }));
+      },
+      requestTakeover: () => Promise.resolve(held),
+    };
+    const scope = effectScope();
+    const lease = scope.run(() =>
+      useExamWorkspaceEditLease({
+        fence: harness.gate.fence,
+        isGuest: () => false,
+        lineageId: () => LINEAGE,
+        onLeaseAcquired: () => harness.gate.leaseAcquired(),
+        onLeaseLost: () => harness.gate.leaseLost(),
+        onTakeoverRequested: () => Promise.resolve(),
+        server,
+        tabId: "tab-a",
+      }),
+    )!;
+    try {
+      lease.openLineage(LINEAGE);
+      await flushPromises();
+      expect(lease.readOnly.value).toBe(false);
+      harness.gate.openExam(LINEAGE, false);
+      await succeedLoad(harness, exam());
+      expect(harness.gate.phase.value).toBe("editing");
+
+      // The first renew is in flight when a foreign cursor retires its
+      // generation; the late held answer settles stale.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(renewCalls).toBe(1);
+      harness.gate.foreignCursor(false);
+      expect(harness.gate.phase.value).toBe("loading");
+      const wake = takeRenew();
+      if (wake === null) {
+        throw new Error("expected the renew to be in flight");
+      }
+      wake(held);
+      await flushPromises();
+      expect(lease.readOnly.value).toBe(false);
+      expect(harness.gate.phase.value).toBe("loading");
+
+      // The stale answer updated neither holding nor the last-success time:
+      // failing renews still drop the hold 15 s after the open claim.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(lease.readOnly.value).toBe(false);
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(lease.readOnly.value).toBe(true);
+      expect(harness.gate.phase.value).toBe("readonly");
+    } finally {
+      scope.stop();
+      harness.gate.dispose();
     }
   });
 });

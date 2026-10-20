@@ -205,11 +205,13 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
 
   leaseHolder.session = useExamWorkspaceEditLease({
+    fence: requireGate().fence,
     guestStorage: lease?.guestStorage,
     isGuest: () => store.guest !== null,
     lineageId,
     now: lease?.now,
-    onAcquired: () => requireGate().leaseAcquired(),
+    onLeaseAcquired: () => requireGate().leaseAcquired(),
+    onLeaseLost: () => requireGate().leaseLost(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,
@@ -218,26 +220,15 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
 
   watch(lineageId, (next) => {
     if (next === null) {
+      leaseHolder.session?.openLineage(null);
       return;
     }
-    // The open response already installed the document; the gate reads the step list.
+    // A lineage change retires the generation before the open claim begins,
+    // so the claim's token is current.
     gateCursor = null;
     requireGate().openExam(next, true);
-  });
-
-  watch(
-    () => leaseHolder.session?.readOnly.value,
-    (readOnly) => {
-      if (readOnly === undefined) {
-        return;
-      }
-      if (readOnly) {
-        requireGate().leaseLost();
-      } else {
-        requireGate().leaseAcquired();
-      }
-    },
-  );
+    leaseHolder.session?.openLineage(next);
+  }, { immediate: true });
 
   onScopeDispose(() => {
     requireGate().dispose();

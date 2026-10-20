@@ -19,11 +19,13 @@
  *
  *   Structural-edit snapshots stay owed until stored, oldest first, and a
  *   failed store never merges them. The `storing` flag records the token it
- *   was set under and reads true only while that token is current, so a
- *   retired completion cannot clear it under a current store.
+ *   was set under and reads true only while that token is still current
+ *   (a computed over the fence's reactive generation), so a store left
+ *   hanging across a retire no longer reads as storing and a retired
+ *   completion cannot clear it under a current store.
  */
 
-import { ref, shallowRef } from "vue";
+import { computed, shallowRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
@@ -111,12 +113,19 @@ export function createHistoryStore(
   pushOwed: (snapshot: NativeExamDocument) => void;
   /** Drop structural snapshots owed from a copy the lease loss retired. */
   dropOwedSnapshots: () => void;
-  /** True while a current-generation store is in flight. */
-  storing: Ref<boolean>;
+  /** True while the last store's token is still current: reads false after a retire. */
+  storing: ComputedRef<boolean>;
 } {
   const toast = useToast();
   const storingToken = shallowRef<FenceToken | null>(null);
-  const storing = ref(false);
+  /**
+   * True while a current-generation store is in flight. `isCurrent` reads
+   * the fence's reactive generation, so a retire flips this at once, even
+   * while the store's answer never settles.
+   */
+  const storing = computed(
+    () => storingToken.value !== null && deps.isCurrent(storingToken.value),
+  );
   /**
    * Structural-edit snapshots not stored yet, oldest first: the copy just
    * before the edit, then the copy right after it. Each must be a step before
@@ -135,7 +144,6 @@ export function createHistoryStore(
   function clearStoring(token: FenceToken): void {
     if (storingToken.value === token) {
       storingToken.value = null;
-      storing.value = false;
     }
   }
 
@@ -170,7 +178,6 @@ export function createHistoryStore(
       return "failed";
     }
     storingToken.value = token;
-    storing.value = true;
     try {
       const settled = await deps.transport.storeUndoStep(token, lineageId, {
         afterStepId: after,
