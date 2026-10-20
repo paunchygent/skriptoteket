@@ -26,12 +26,18 @@
 import { computed, onScopeDispose, ref } from "vue";
 
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspaceUnreadableFiles";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useToast } from "../../../composables/useToast";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { createFencedTransport } from "./examWorkspaceFencedTransport";
 import { OPEN_FAILURE_COPY } from "./useExamWorkspaceDocumentOpen";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import {
+  useExamWorkspaceUnreadableFiles,
+  type UnreadableFilesState,
+} from "./useExamWorkspaceUnreadableFiles";
 import {
   useExamWorkspaceEditLease,
   type ExamWorkspaceEditLeaseDeps,
@@ -95,6 +101,116 @@ export function useExamWorkspaceEditing(
     submitRoute: (lineageId) => requireGate().submitRoute(lineageId),
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
+
+  /**
+   * A saved exam the app could not open: the failed route target's lineage
+   * while the shared file notice owns it. Any installed open clears it; a
+   * successful remove clears it too. The view renders the notice from this
+   * state, with download and remove through the shared unreadable files
+   * below, so the Öppna drawer's rows reload with the same list.
+   */
+  const unreadableTarget = ref<string | null>(null);
+  const unreadableFiles: UnreadableFilesState = useExamWorkspaceUnreadableFiles();
+  /** True while the unreadable target's own download or remove runs. */
+  const unreadableTargetBusy = computed(
+    () => unreadableTarget.value !== null && unreadableFiles.busyIds.value.has(unreadableTarget.value),
+  );
+
+  /**
+   * Find the failed target's record for download or remove: the unreadable
+   * list first, then the saved list (its summaries carry the same fields).
+   */
+  function resolveUnreadableRecord(lineage: string): ExamWorkspaceUnreadableDocument | null {
+    const unreadable = unreadableFiles.files.value.find((entry) => entry.lineage_id === lineage);
+    if (unreadable !== undefined) {
+      return unreadable;
+    }
+    const saved = document.savedDocuments.value.find((entry) => entry.lineage_id === lineage);
+    if (saved === undefined) {
+      return null;
+    }
+    return {
+      lineage_id: saved.lineage_id,
+      name: saved.name,
+      saved_at: saved.saved_at,
+      title: saved.title,
+      vault_file_id: saved.vault_file_id,
+    };
+  }
+
+  /**
+   * The coordinator's unreadable report: show the download-or-remove notice
+   * for the target when either list holds it. A guest has no such lists, so
+   * it keeps the ordinary open-failure toast, as does a lineage neither
+   * list holds. No toast fires on the way to the notice.
+   */
+  async function noteRouteUnreadable(lineage: string): Promise<void> {
+    if (store.teacher === null) {
+      toast.failure(OPEN_FAILURE_COPY);
+      return;
+    }
+    await unreadableFiles.load();
+    if (unreadableFiles.files.value.some((entry) => entry.lineage_id === lineage)) {
+      unreadableTarget.value = lineage;
+      return;
+    }
+    await document.loadSavedDocuments();
+    if (document.savedDocuments.value.some((entry) => entry.lineage_id === lineage)) {
+      unreadableTarget.value = lineage;
+      return;
+    }
+    toast.failure(OPEN_FAILURE_COPY);
+  }
+
+  /** Download the notice's stored file unchanged through the shared path. */
+  async function downloadUnreadableTarget(): Promise<void> {
+    const lineage = unreadableTarget.value;
+    if (lineage === null) {
+      return;
+    }
+    const record = resolveUnreadableRecord(lineage);
+    if (record === null) {
+      return;
+    }
+    await unreadableFiles.download(record);
+  }
+
+  /**
+   * Move the notice's stored file to the papperskorg through the shared
+   * path. A successful remove clears the target and reloads the lists the
+   * Öppna drawer reads; the record staying in either list keeps the notice.
+   */
+  async function removeUnreadableTarget(): Promise<void> {
+    const lineage = unreadableTarget.value;
+    if (lineage === null) {
+      return;
+    }
+    const record = resolveUnreadableRecord(lineage);
+    if (record === null) {
+      return;
+    }
+    await unreadableFiles.remove(record);
+    await document.loadSavedDocuments();
+    const removed =
+      !unreadableFiles.files.value.some((entry) => entry.lineage_id === lineage) &&
+      !document.savedDocuments.value.some((entry) => entry.lineage_id === lineage);
+    if (removed) {
+      unreadableTarget.value = null;
+    }
+  }
+
+  /**
+   * Read and install the named document for the selection's token: the only
+   * open path. An installed open clears the unreadable notice, whatever it
+   * reported before.
+   */
+  async function openRouteTarget(lineage: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
+    const outcome = await document.openDocument(lineage, token);
+    if (outcome === "installed") {
+      unreadableTarget.value = null;
+    }
+    return outcome;
+  }
 
   /**
    * A server command stored a new step: its response already installed the
@@ -211,7 +327,10 @@ export function useExamWorkspaceEditing(
     isVisibleDirty: () => document.isDirty.value,
     notifyCopyFailed: () => toast.failure(SAVE_AS_FAILURE_COPY),
     notifyRouteFailed: () => toast.failure(OPEN_FAILURE_COPY),
-    openRouteTarget: (nextLineageId, token) => document.openDocument(nextLineageId, token),
+    notifyRouteUnreadable: (lineage) => {
+      void noteRouteUnreadable(lineage);
+    },
+    openRouteTarget: (nextLineageId, token) => openRouteTarget(nextLineageId, token),
     projectAddress: (nextLineageId) => projection.project(nextLineageId),
     releaseCopyBusy: () => document.releaseCopyBusy(),
     waitForRouterIdle: () => projection.waitForIdle(),
@@ -327,5 +446,16 @@ export function useExamWorkspaceEditing(
     currentRouteAddress: () => requireGate().currentAddress(),
     /** The shared router adapter: observed by the address, published only by the coordinator. */
     routeProjection: projection,
+    /** A saved exam the app could not open: the notice owns this lineage until
+     * an installed open or a successful remove clears it. */
+    unreadableTarget,
+    /** The shared unreadable-files list the Öppna drawer rows render too. */
+    unreadableFiles,
+    /** True while the unreadable target's own download or remove runs. */
+    unreadableTargetBusy,
+    /** Download the notice's stored file unchanged through the shared path. */
+    downloadUnreadableTarget,
+    /** Move the notice's stored file to the papperskorg and reload the lists. */
+    removeUnreadableTarget,
   };
 }

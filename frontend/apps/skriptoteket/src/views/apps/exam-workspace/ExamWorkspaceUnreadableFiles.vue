@@ -12,9 +12,11 @@
  * Relationships:
  *   - Rendered at the end of the saved section in `ExamWorkspaceOpenDrawer`,
  *     only for a signed-in teacher; the drawer owns the empty hint.
- *   - Rows come from `useExamWorkspaceUnreadableFiles`; presentation reuses
- *     `ExamWorkspaceFileNotice` with reason `saved_unreadable` and the row
- *     labels in `examWorkspaceRows`.
+ *   - Rows come from the shared unreadable-files state the surrounding
+ *     `ExamWorkspaceView` provides (a standalone mount owns its own), so a
+ *     remove from the saved-unreadable notice reloads these rows too;
+ *     presentation reuses `ExamWorkspaceFileNotice` with reason
+ *     `saved_unreadable` and the row labels in `examWorkspaceRows`.
  */
 
 import { onMounted } from "vue";
@@ -23,13 +25,13 @@ import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspace
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceFileNotice from "./ExamWorkspaceFileNotice.vue";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
-import { useExamWorkspaceUnreadableFiles } from "./useExamWorkspaceUnreadableFiles";
+import { useExamWorkspaceUnreadableFilesState } from "./useExamWorkspaceUnreadableFiles";
 
 const emit = defineEmits<{
   count: [count: number];
 }>();
 
-const { busyIds, download, files, load, remove } = useExamWorkspaceUnreadableFiles();
+const { busyIds, download, files, load, remove } = useExamWorkspaceUnreadableFilesState();
 
 /** Load the rows on mount, then report the count; every remove reports it again. */
 onMounted(async () => {

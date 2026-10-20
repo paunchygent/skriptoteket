@@ -64,6 +64,10 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
   const { useExamWorkspaceAddress } = await import(
     "./exam-workspace/useExamWorkspaceAddress"
   );
+  const { createSyncFence } = await import("./exam-workspace/examWorkspaceSyncFence");
+  const { createRouteProjection } = await import(
+    "./exam-workspace/examWorkspaceRouteProjection"
+  );
   return {
     default: defineComponent({
       name: "ExamWorkspaceViewStub",
@@ -72,11 +76,20 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
         if (!isWorkspaceStore(props.store)) {
           throw new Error("expected the host guest store");
         }
-        const document = useExamWorkspaceDocument({ store: props.store });
+        const fence = createSyncFence();
+        const projection = createRouteProjection();
+        const document = useExamWorkspaceDocument({
+          getFence: () => fence,
+          noteInstallingCursor: () => undefined,
+          store: props.store,
+          submitRoute: (lineageId) => document.openDocument(lineageId, fence.begin()),
+        });
         useExamWorkspaceAddress({
-          isDirty: document.isDirty,
-          openDocument: document.openDocument,
-          summary: document.summary,
+          currentAddress: () => document.summary.value?.lineage_id ?? null,
+          projection,
+          submitRoute: (lineageId) => {
+            void document.openDocument(lineageId, fence.begin());
+          },
         });
         return () => h("main", { "data-test": "minimal-view" });
       },

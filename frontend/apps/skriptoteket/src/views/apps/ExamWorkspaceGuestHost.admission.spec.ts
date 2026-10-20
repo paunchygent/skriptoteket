@@ -24,7 +24,6 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia } from "pinia";
 import { setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { reactive } from "vue";
 
 import Host from "./ExamWorkspaceGuestHost.vue";
 import { useToastStore } from "../../stores/toast";
@@ -38,28 +37,13 @@ import {
   exam,
   pictureExam,
 } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
+import type { Router } from "vue-router";
+import { createMemoryHistory, createRouter } from "vue-router";
 
 const CURRENT_TOKEN = "native_exam_document_v10";
 const OLD_TOKEN = "native_exam_document_v9";
 
 const slot = vi.hoisted((): { stored: StoredGuestDraft | null } => ({ stored: null }));
-const routeBinding = vi.hoisted((): {
-  value: { query: Record<string, string | undefined> } | null;
-} => ({ value: null }));
-const replacements = vi.hoisted((): Array<Record<string, string | undefined>> => []);
-
-vi.mock("vue-router", () => ({
-  useRoute: () => routeBinding.value,
-  useRouter: () => ({
-    replace: async (next: { query: Record<string, string | undefined> }) => {
-      if (!routeBinding.value) {
-        throw new Error("route missing");
-      }
-      replacements.push(next.query);
-      routeBinding.value.query = next.query;
-    },
-  }),
-}));
 
 vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal) => ({
   ...(await importOriginal()),
@@ -85,6 +69,10 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
   const { useExamWorkspaceAddress } = await import(
     "./exam-workspace/useExamWorkspaceAddress"
   );
+  const { createSyncFence } = await import("./exam-workspace/examWorkspaceSyncFence");
+  const { createRouteProjection } = await import(
+    "./exam-workspace/examWorkspaceRouteProjection"
+  );
   return {
     default: defineComponent({
       name: "ExamWorkspaceViewStub",
@@ -93,11 +81,20 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
         if (!isWorkspaceStore(props.store)) {
           throw new Error("expected the host guest store");
         }
-        const document = useExamWorkspaceDocument({ store: props.store });
+        const fence = createSyncFence();
+        const projection = createRouteProjection();
+        const document = useExamWorkspaceDocument({
+          getFence: () => fence,
+          noteInstallingCursor: () => undefined,
+          store: props.store,
+          submitRoute: (lineageId) => document.openDocument(lineageId, fence.begin()),
+        });
         useExamWorkspaceAddress({
-          isDirty: document.isDirty,
-          openDocument: document.openDocument,
-          summary: document.summary,
+          currentAddress: () => document.summary.value?.lineage_id ?? null,
+          projection,
+          submitRoute: (lineageId) => {
+            void document.openDocument(lineageId, fence.begin());
+          },
         });
         return () => h("main", { "data-test": "minimal-view" });
       },
@@ -139,22 +136,32 @@ function seatReadableDraft(): StoredGuestDraft {
   return slot.stored;
 }
 
-function mountHost() {
+async function mountHost() {
   const pinia = createPinia();
   setActivePinia(pinia);
-  return mount(Host, { global: { plugins: [pinia] } });
+  const router = createRouter({
+    history: createMemoryHistory(),
+    routes: [{ component: { template: "<div />" }, path: "/guest" }],
+  });
+  await router.push({ path: "/guest", query: {} });
+  await router.isReady();
+  const wrapper = mount(Host, { global: { plugins: [pinia, router] } });
+  return { router, wrapper };
 }
 
 describe("ExamWorkspaceGuestHost admission", () => {
   beforeEach(() => {
     slot.stored = null;
-    routeBinding.value = reactive({ query: {} });
-    replacements.length = 0;
   });
+
+  function currentDocument(router: Router): string | undefined {
+    const document = router.currentRoute.value.query.document;
+    return typeof document === "string" ? document : undefined;
+  }
 
   it("startup with an unreadable stored draft never mounts the editor, never writes the route, and shows the notice with no outdated-open toast", async () => {
     const seated = seatUnreadableDraft();
-    const wrapper = mountHost();
+    const { router, wrapper } = await mountHost();
     try {
       expect(wrapper.find('[data-test="minimal-view"]').exists()).toBe(false);
       await flushPromises();
@@ -164,10 +171,7 @@ describe("ExamWorkspaceGuestHost admission", () => {
       );
       expect(wrapper.find('[data-test="minimal-view"]').exists()).toBe(false);
       expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([]);
-      expect(
-        replacements.some((query) => query.document === seated.draft.lineage_id),
-      ).toBe(false);
-      expect(routeBinding.value?.query.document).not.toBe(seated.draft.lineage_id);
+      expect(currentDocument(router)).not.toBe(seated.draft.lineage_id);
     } finally {
       wrapper.unmount();
     }
@@ -175,12 +179,12 @@ describe("ExamWorkspaceGuestHost admission", () => {
 
   it("startup with a readable stored draft mounts the editor and carries the lineage in the route", async () => {
     const seated = seatReadableDraft();
-    const wrapper = mountHost();
+    const { router, wrapper } = await mountHost();
     try {
       await flushPromises();
       expect(wrapper.find('[data-test="exam-workspace-file-notice"]').exists()).toBe(false);
       expect(wrapper.find('[data-test="minimal-view"]').exists()).toBe(true);
-      expect(routeBinding.value?.query.document).toBe(seated.draft.lineage_id);
+      expect(currentDocument(router)).toBe(seated.draft.lineage_id);
     } finally {
       wrapper.unmount();
     }
@@ -188,7 +192,7 @@ describe("ExamWorkspaceGuestHost admission", () => {
 
   it("remove with a stale cursor keeps a newer unreadable draft stored with its assets and its notice", async () => {
     seatUnreadableDraft();
-    const wrapper = mountHost();
+    const { wrapper } = await mountHost();
     try {
       await flushPromises();
       if (slot.stored === null) {
@@ -223,7 +227,7 @@ describe("ExamWorkspaceGuestHost admission", () => {
 
   it("remove with a stale cursor and a newer readable draft opens that draft", async () => {
     seatUnreadableDraft();
-    const wrapper = mountHost();
+    const { router, wrapper } = await mountHost();
     try {
       await flushPromises();
       const newer = seatReadableDraft();
@@ -233,7 +237,7 @@ describe("ExamWorkspaceGuestHost admission", () => {
       await flushPromises();
       expect(wrapper.find('[data-test="exam-workspace-file-notice"]').exists()).toBe(false);
       expect(wrapper.find('[data-test="minimal-view"]').exists()).toBe(true);
-      expect(routeBinding.value?.query.document).toBe(newer.draft.lineage_id);
+      expect(currentDocument(router)).toBe(newer.draft.lineage_id);
       expect(slot.stored).not.toBeNull();
     } finally {
       wrapper.unmount();
@@ -242,7 +246,7 @@ describe("ExamWorkspaceGuestHost admission", () => {
 
   it("remove with a matching cursor shows the empty guest start with the banner back", async () => {
     seatUnreadableDraft();
-    const wrapper = mountHost();
+    const { wrapper } = await mountHost();
     try {
       await flushPromises();
       await wrapper.get('[data-test="exam-workspace-file-notice-remove"]').trigger("click");

@@ -19,7 +19,7 @@
  *     assumptions so a later deep link can reuse it.
  */
 
-import { ref } from "vue";
+import { inject, ref, type InjectionKey } from "vue";
 import type { Ref } from "vue";
 
 import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspaceUnreadableFiles";
@@ -45,6 +45,19 @@ export type UnreadableFilesState = {
   download: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
   remove: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
 };
+
+export const EXAM_WORKSPACE_UNREADABLE_FILES_KEY: InjectionKey<UnreadableFilesState> =
+  Symbol("exam-workspace-unreadable-files");
+
+/**
+ * The shared unreadable-files state the surrounding `ExamWorkspaceView`
+ * provided, so the Öppna drawer's rows and the saved-unreadable notice read
+ * and change the same list. A standalone mount without that ancestor owns
+ * its own state, as before.
+ */
+export function useExamWorkspaceUnreadableFilesState(): UnreadableFilesState {
+  return inject(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, null) ?? useExamWorkspaceUnreadableFiles();
+}
 
 export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
   const toast = useToast();

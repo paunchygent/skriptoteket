@@ -11,10 +11,12 @@
  *   - Reads the exam from the `editing` composable result and the export,
  *     source-file and content state from theirs; commands that need the
  *     view's save flow or selection leave as events.
+ *   - Provides the shared unreadable-files list the Öppna drawer's rows and
+ *     the teacher host's saved-unreadable notice read and change together.
  *   - Rendered by `ExamWorkspaceView` while a drawer is open.
  */
 
-import { computed } from "vue";
+import { computed, provide } from "vue";
 
 import type { ExamListOrdering } from "../../../api/examWorkspace";
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
@@ -30,6 +32,7 @@ import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { useExamWorkspaceExports } from "./useExamWorkspaceExports";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import type { useExamWorkspaceSourceFile } from "./useExamWorkspaceSourceFile";
+import { EXAM_WORKSPACE_UNREADABLE_FILES_KEY } from "./useExamWorkspaceUnreadableFiles";
 
 type DrawerName = "open" | "export" | "details";
 
@@ -104,6 +107,10 @@ const {
   workspaceDocument,
 } = props.editing;
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } = props.sourceFile;
+
+/** The Öppna drawer's unreadable rows share the editing session's list, so a
+ * remove from the teacher host's notice reloads them too. */
+provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, props.editing.unreadableFiles);
 
 const currentExports = computed(() =>
   EXAM_WORKSPACE_EXPORT_FORMATS.filter(

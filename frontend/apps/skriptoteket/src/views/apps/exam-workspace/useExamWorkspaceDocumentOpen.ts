@@ -4,10 +4,12 @@
  * Domain purpose:
  *   Open the exam for a route request's token: hold the token while reading
  *   so a retired open stops blocking at once, install while current,
- *   supersede while retired without touching state or toasting, and fail on a
- *   current failure after toasting as today. A save, rename or retry in flight
- *   refuses an open; another open never does. The rename ordering is captured
- *   before the GET so a completed rename stays reconciled in the response.
+ *   supersede while retired without touching state or toasting, report an
+ *   unreadable stored file while current without toasting, and fail on any
+ *   other current failure after toasting as today. A save, rename or retry
+ *   in flight refuses an open; another open never does. The rename ordering
+ *   is captured before the GET so a completed rename stays reconciled in the
+ *   response.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which hands over its store, fence
@@ -32,7 +34,15 @@ import type { FenceToken } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 
 export const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
-const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
+
+/** A current open failure the stored file causes: an outdated format or a
+ * corrupt current-version file. Both show the download-or-remove notice. */
+function isUnreadableError(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    (error.code === "DOCUMENT_SCHEMA_OUTDATED" || error.code === "DOCUMENT_UNREADABLE")
+  );
+}
 
 export type ExamWorkspaceDocumentOpenDeps = {
   /** Install the fresh response; runs only while the token is current. */
@@ -76,8 +86,9 @@ export function useExamWorkspaceDocumentOpen(deps: ExamWorkspaceDocumentOpenDeps
 
   /**
    * Open the exam for the request's token: install while current, supersede
-   * while retired without touching state or toasting, fail on a current
-   * failure after toasting as today. A save, rename or retry in flight
+   * while retired without touching state or toasting, report an unreadable
+   * stored file while current without toasting, and fail on any other
+   * current failure after toasting as today. A save, rename or retry in flight
    * refuses an open; another open never does. The open holds its token while
    * reading, so a retired open stops blocking and a completion clears only
    * its own token.
@@ -103,12 +114,11 @@ export function useExamWorkspaceDocumentOpen(deps: ExamWorkspaceDocumentOpenDeps
       return "installed";
     } catch (error) {
       const current = deps.isCurrent(token);
+      if (current && isUnreadableError(error)) {
+        return "unreadable";
+      }
       if (current) {
-        toast.failure(
-          isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
-            ? OPEN_OUTDATED_COPY
-            : OPEN_FAILURE_COPY,
-        );
+        toast.failure(OPEN_FAILURE_COPY);
       }
       return current ? "failed" : "superseded";
     } finally {

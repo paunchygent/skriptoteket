@@ -322,12 +322,19 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     }
     // The selected target failed while current: recover the retained source
     // through the ordinary fresh-load path in a new current context. A newer
-    // intent supersedes that recovery like any other replacement.
+    // intent supersedes that recovery like any other replacement. An
+    // unreadable stored file reports through its own port so the teacher
+    // sees the download-or-remove notice instead of a toast.
     selected = null;
     const retained = deps.installedSource();
     desired = { intent: { kind: "recover", source: retained }, kind: "recover" };
     deps.projectAddress(retained);
     deps.recoverRetainedSource();
+    if (outcome === "unreadable") {
+      deps.notifyRouteUnreadable(intent.lineage);
+      entry.resolve("unreadable");
+      return;
+    }
     deps.notifyRouteFailed();
     entry.resolve("failed");
   }

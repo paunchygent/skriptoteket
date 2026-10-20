@@ -407,6 +407,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       isVisibleDirty: () => false,
       notifyCopyFailed: () => undefined,
       notifyRouteFailed: () => undefined,
+      notifyRouteUnreadable: () => undefined,
       openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),
       projectAddress: () => undefined,
       readDocument: (readLineageId) => shared.getExamWorkspaceDocument(readLineageId),

@@ -223,7 +223,13 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
 
   it("opens the readable row but not the unreadable row", async () => {
     listUnreadableMock.mockResolvedValue({ documents: [buildUnreadable()] });
-    const wrapper = mountDrawer({ currentLineageId: null, isBusy: false, isDirty: false });
+    const wrapper = mountDrawer({
+      currentLineageId: null,
+      isBusy: false,
+      isDirty: false,
+      saveDetail: null,
+      saveState: "saved",
+    });
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-open-lineage-a"]').trigger("click");
@@ -250,6 +256,8 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         isDirty: false,
         notes: [],
         ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
         sourceFileError: null,
       },
       global: {
@@ -278,6 +286,8 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         isDirty: false,
         notes: [],
         ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
         sourceFileError: null,
       },
       global: {
@@ -305,6 +315,8 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
         isDirty: false,
         notes: [],
         ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
         sourceFileError: null,
       },
       global: {
