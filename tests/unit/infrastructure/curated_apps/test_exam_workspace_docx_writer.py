@@ -11,22 +11,39 @@ from pathlib import Path
 
 import pytest
 from docx import Document
+from docx.oxml.ns import qn
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    BODY_PARAGRAPH_SPACING,
+    PARAGRAPH_SPACING,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
+)
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    make_document,
+    make_free_text_item,
 )
 from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_support import (
     STEP_BOX,
     all_kinds_document,
     document_text,
     heading_texts,
+    only_paragraph,
 )
 
 ExamWorkspaceDocxWriter = exam_workspace_docx_writer.ExamWorkspaceDocxWriter
@@ -127,3 +144,102 @@ class TestValidationFailsClosed:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
         assert exc_info.value.details["found_item_headings"] == 4
+
+
+def _marked_body_item() -> NativeExamItem:
+    body = (
+        NativeParagraph(
+            heading_level=None,
+            segments=(
+                NativeTextSegment(text="Diskutera", marks=("bold",)),
+                NativeTextSegment(text=" hur ", marks=()),
+            ),
+        ),
+        NativeParagraph(
+            heading_level=None,
+            segments=(NativeTextSegment(text="Andra stycket.", marks=()),),
+        ),
+    )
+    return make_free_text_item().model_copy(update={"body": body})
+
+
+class TestPrintedMarksAndBodySpacing:
+    def test_bold_run_keeps_bold_and_plain_run_keeps_none(self) -> None:
+        document = make_document(_marked_body_item())
+        parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
+        paragraph = only_paragraph(list(parsed.paragraphs), "Diskutera hur ")
+        by_text = {run.text: run for run in paragraph.runs}
+
+        assert by_text["Diskutera"].bold is True
+        assert by_text[" hur "].bold is None
+
+    def test_two_body_paragraphs_carry_the_body_spacing(self) -> None:
+        document = make_document(_marked_body_item())
+        parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
+
+        for text in ("Diskutera hur ", "Andra stycket. (4 p)"):
+            paragraph = only_paragraph(list(parsed.paragraphs), text)
+            assert paragraph.paragraph_format.space_after is not None
+            assert paragraph.paragraph_format.space_after.mm == pytest.approx(
+                BODY_PARAGRAPH_SPACING.space_after_mm, abs=0.02
+            )
+
+    def test_each_mark_sets_only_its_word_property(self) -> None:
+        body = (
+            NativeParagraph(
+                heading_level=None,
+                segments=(
+                    NativeTextSegment(text="kursiv", marks=("italic",)),
+                    NativeTextSegment(text="under", marks=("underline",)),
+                    NativeTextSegment(text="upp", marks=("superscript",)),
+                    NativeTextSegment(text="ner", marks=("subscript",)),
+                    NativeTextSegment(text="vanlig", marks=()),
+                ),
+            ),
+        )
+        item = make_free_text_item().model_copy(update={"body": body, "points": None})
+        parsed = Document(
+            io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(make_document(item)))
+        )
+        paragraph = only_paragraph(list(parsed.paragraphs), "kursivunderuppnervanlig")
+        by_text = {run.text: run for run in paragraph.runs}
+
+        assert by_text["kursiv"].italic is True
+        assert by_text["kursiv"].bold is None
+        assert by_text["under"].underline is True
+        assert by_text["under"].bold is None
+        assert by_text["upp"].font.superscript is True
+        assert by_text["upp"].font.subscript is False
+        assert by_text["ner"].font.subscript is True
+        assert by_text["ner"].font.superscript is False
+        plain = by_text["vanlig"]
+        assert plain.bold is None
+        assert plain.italic is None
+        assert plain.underline is None
+        assert plain.font.superscript is None
+        assert plain.font.subscript is None
+
+    def test_hard_break_inside_a_run_writes_a_word_line_break(self) -> None:
+        body = (
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text="a\nb", marks=()),),
+            ),
+        )
+        item = make_free_text_item().model_copy(update={"body": body, "points": None})
+        parsed = Document(
+            io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(make_document(item)))
+        )
+        paragraph = only_paragraph(list(parsed.paragraphs), "a\nb")
+
+        breaks = [element for run in paragraph.runs for element in run._element.iter(qn("w:br"))]
+        assert len(breaks) == 1
+
+    def test_header_detail_line_keeps_the_plain_paragraph_spacing(self, docx_bytes: bytes) -> None:
+        parsed = Document(io.BytesIO(docx_bytes))
+        detail = only_paragraph(list(parsed.paragraphs), "Totalt: 9,5 poäng")
+
+        assert detail.paragraph_format.space_after is not None
+        assert detail.paragraph_format.space_after.mm == pytest.approx(
+            PARAGRAPH_SPACING.space_after_mm, abs=0.02
+        )

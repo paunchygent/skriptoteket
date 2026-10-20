@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "12baa04f1f3fcf1a58f688fb99cff56c004641cc14fbadfc45fd5cf13f6492cd",
+  "source_set_digest": "ffa33d84034c7b20061d9c9526e571724b2d7018243dda1e4cb3a1bd7af2e499",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7045,6 +7045,25 @@
       "title": "Two tabs that each hold an exam lock stop invalidating each other's CSRF token on every renew",
       "path": "docs/backlog/tasks/task-skript-40-04-19-two-tabs-that-each-hold-an-exam-lock-stop-invalidating-each-other-s-csrf-token-on-every-renew.md",
       "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-20",
+      "type": "task",
+      "title": "Printed exams and the editor keep imported text formatting and show space between paragraphs",
+      "path": "docs/backlog/tasks/task-skript-40-04-20-printed-exams-and-the-editor-keep-imported-text-formatting-and-show-space-between-paragraphs.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

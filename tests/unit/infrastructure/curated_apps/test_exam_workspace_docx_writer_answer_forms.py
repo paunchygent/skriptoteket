@@ -11,6 +11,10 @@ import pytest
 from docx import Document
 from docx.enum.text import WD_LINE_SPACING
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
 )
@@ -160,6 +164,59 @@ class TestForms:
             STEP_BOX,
             STEP_BOX,
         ]
+
+
+class TestMarkedAnswerForms:
+    def test_single_choice_option_keeps_a_bold_word(self) -> None:
+        item = make_single_choice_item()
+        marked = item.choices[0].model_copy(
+            update={
+                "body": (
+                    NativeParagraph(
+                        heading_level=None,
+                        segments=(
+                            NativeTextSegment(text="stark", marks=("bold",)),
+                            NativeTextSegment(text=" vind", marks=()),
+                        ),
+                    ),
+                )
+            }
+        )
+        item = item.model_copy(update={"choices": (marked, item.choices[1])})
+        parsed = Document(
+            io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(make_document(item)))
+        )
+        paragraph = only_paragraph(list(parsed.paragraphs), f"{STEP_BOX} A) stark vind")
+        by_text = {run.text: run for run in paragraph.runs}
+
+        assert by_text["stark"].bold is True
+        assert by_text[" vind"].bold is None
+
+    def test_matching_grid_cell_keeps_an_underlined_word(self) -> None:
+        item = matching_item()
+        marked = item.match_right[0].model_copy(
+            update={
+                "body": (
+                    NativeParagraph(
+                        heading_level=None,
+                        segments=(
+                            NativeTextSegment(text="dägg", marks=("underline",)),
+                            NativeTextSegment(text="djur", marks=()),
+                        ),
+                    ),
+                )
+            }
+        )
+        item = item.model_copy(update={"match_right": (marked, *item.match_right[1:])})
+        parsed = Document(
+            io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(make_document(item)))
+        )
+        cell = parsed.tables[0].rows[0].cells[1]
+        assert cell.text == "däggdjur"
+        by_text = {run.text: run for paragraph in cell.paragraphs for run in paragraph.runs}
+
+        assert by_text["dägg"].underline is True
+        assert by_text["djur"].underline is None
 
 
 class TestParents:

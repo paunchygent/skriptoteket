@@ -145,13 +145,15 @@ def all_blocks(document: PrintDocument) -> tuple[PrintBlock, ...]:
 def all_texts(document: PrintDocument) -> tuple[str, ...]:
     texts: list[str] = []
     for block in all_blocks(document):
-        if isinstance(block, (PrintHeading, PrintOption)):
+        if isinstance(block, PrintHeading):
             texts.append(block.text)
+        elif isinstance(block, PrintOption):
+            texts.extend(run.text for run in block.runs)
         elif isinstance(block, PrintParagraph):
             texts.extend(run.text for run in block.runs if isinstance(run, PrintText))
         elif isinstance(block, PrintGrid):
-            texts.extend(block.rows)
-            texts.extend(block.columns)
+            for cell in (*block.rows, *block.columns):
+                texts.extend(run.text for run in cell)
         elif isinstance(block, PrintAnswerKey):
             texts.extend(block.lines)
     return tuple(texts)

@@ -1,6 +1,11 @@
 ## Current
 
+- TASK-SKRIPT-40-04-20 print keeps imported formatting (user, 2026-10-20): lead
+  `ca586f66`, branch `codex/task-skript-print-formatting-remote`, root `01a15992`.
+  Reviewed head `00f540c1` merged to main 2026-10-20. Next: the Mac staging walk.
+
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
+
 - TASK-SKRIPT-40-04-19 `proposed` (user, 2026-10-20): two tabs holding exam
   locks invalidate each other's CSRF token on every renew. Not started.
 

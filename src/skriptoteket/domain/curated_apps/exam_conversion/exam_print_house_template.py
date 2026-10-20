@@ -66,6 +66,8 @@ HEADING_GEOMETRY: Mapping[int, HeadingGeometry] = MappingProxyType(
 )
 
 PARAGRAPH_SPACING = BlockSpacing(0, 2)  # an ordinary body paragraph.
+# An exam text paragraph (body or gap line): 4 mm after (TASK-SKRIPT-40-04-20 D5).
+BODY_PARAGRAPH_SPACING = BlockSpacing(0, 4)
 QUESTION_SPACE_AFTER_MM = 8.0  # space after a whole question block.
 INSTRUCTION_SPACE_AFTER_MM = 6.0  # space after a whole shared instruction block.
 OPTION_SPACING = BlockSpacing(0, 3)  # one answer option paragraph.

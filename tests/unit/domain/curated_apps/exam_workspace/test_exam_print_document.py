@@ -70,7 +70,10 @@ class TestHeader:
         assert isinstance(header, PrintInstruction)
         assert header.blocks[0] == PrintHeading(level=1, text="Omprov: grammatik")
         assert (
-            PrintParagraph(runs=(PrintText("Totalt: 4 poäng"),), style=PrintParagraphStyle.DETAIL)
+            PrintParagraph(
+                runs=(PrintText("Totalt: 4 poäng", marks=()),),
+                style=PrintParagraphStyle.DETAIL,
+            )
             in header.blocks
         )
         assert isinstance(student.entries[1], PrintQuestion)
@@ -119,7 +122,10 @@ class TestFreeText:
 
         stem_index = question_blocks(question_entry).index(
             PrintParagraph(
-                runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+                runs=(
+                    PrintText("Resonera om renässansen.", marks=()),
+                    PrintText(" (4 p)", marks=()),
+                ),
                 style=PrintParagraphStyle.BODY,
             )
         )
@@ -158,7 +164,7 @@ class TestPointsFormatting:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
         assert PrintParagraph(
-            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (2,5 p)")),
+            runs=(PrintText("Vilket är huvudordet?", marks=()), PrintText(" (2,5 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         ) in question_blocks(question(student, "item_001"))
 
@@ -188,7 +194,7 @@ class TestParents:
         instructions = [entry for entry in student.entries if isinstance(entry, PrintInstruction)]
         assert len(instructions) == 2  # the exam header and the one parent
         assert instructions[1].blocks == (
-            PrintParagraph(runs=(PrintText("Del 1"),), style=PrintParagraphStyle.BODY),
+            PrintParagraph(runs=(PrintText("Del 1", marks=()),), style=PrintParagraphStyle.BODY),
         )
         assert isinstance(student.entries[2], PrintQuestion)
         assert student.entries[2].item_id == "item_001"
@@ -325,7 +331,10 @@ class TestOutlineWalk:
         instruction = student.entries[2]
         assert isinstance(instruction, PrintInstruction)
         assert instruction.blocks == (
-            PrintParagraph(runs=(PrintText("Mellanrubrik"),), style=PrintParagraphStyle.BODY),
+            PrintParagraph(
+                runs=(PrintText("Mellanrubrik", marks=()),),
+                style=PrintParagraphStyle.BODY,
+            ),
         )
 
     def test_childless_part_with_empty_instruction_prints_nothing(self) -> None:
@@ -362,7 +371,7 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            runs=(PrintText("Resonera om renässansen.", marks=()), PrintText(" (4 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (PrintRuledLines(count=5),)
@@ -376,13 +385,13 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (1 p)")),
+            runs=(PrintText("Vilket är huvudordet?", marks=()), PrintText(" (1 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert not any(isinstance(block, PrintOption) for block in entry.text)
         assert entry.answer == (
-            PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
-            PrintOption(box=PrintBox.TICK, label="B)", text="eleverna"),
+            PrintOption(box=PrintBox.TICK, label="A)", runs=(PrintText("vägen", marks=()),)),
+            PrintOption(box=PrintBox.TICK, label="B)", runs=(PrintText("eleverna", marks=()),)),
         )
 
     def test_ordering_answer_holds_the_steps_in_print_order(self) -> None:
@@ -394,16 +403,16 @@ class TestQuestionGroups:
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
             runs=(
-                PrintText("Sätt stegen i en argumenterande text i rätt ordning."),
-                PrintText(" (1 p)"),
+                PrintText("Sätt stegen i en argumenterande text i rätt ordning.", marks=()),
+                PrintText(" (1 p)", marks=()),
             ),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
-            PrintOption(box=PrintBox.NUMBER, label="", text="Avslutning"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Motargument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Argument"),
-            PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Avslutning", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Motargument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Argument", marks=()),)),
+            PrintOption(box=PrintBox.NUMBER, label="", runs=(PrintText("Tes", marks=()),)),
         )
 
     def test_matching_answer_holds_the_grid(self) -> None:
@@ -414,11 +423,25 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Kategorisera orden i rätt ordklass."), PrintText(" (3 p)")),
+            runs=(
+                PrintText("Kategorisera orden i rätt ordklass.", marks=()),
+                PrintText(" (3 p)", marks=()),
+            ),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
-            PrintGrid(rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")),
+            PrintGrid(
+                rows=(
+                    (PrintText("hund", marks=()),),
+                    (PrintText("katt", marks=()),),
+                    (PrintText("fågel", marks=()),),
+                ),
+                columns=(
+                    (PrintText("däggdjur", marks=()),),
+                    (PrintText("fåglar", marks=()),),
+                    (PrintText("fiskar", marks=()),),
+                ),
+            ),
         )
 
     def test_facit_answer_key_is_the_last_answer_block(self) -> None:
@@ -429,7 +452,7 @@ class TestQuestionGroups:
         entry = question(facit, "item_001")
 
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            runs=(PrintText("Resonera om renässansen.", marks=()), PrintText(" (4 p)", marks=())),
             style=PrintParagraphStyle.BODY,
         )
         assert entry.answer[-1] == PrintAnswerKey(

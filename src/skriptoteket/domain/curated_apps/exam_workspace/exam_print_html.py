@@ -24,6 +24,10 @@ from itertools import groupby
 from skriptoteket.domain.curated_apps.exam_conversion import (
     exam_print_house_template as house_template,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_rich_text import (
+    MARK_ELEMENT_NAMES,
+    MARK_RENDER_ORDER,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
     PrintAnswerKey,
     PrintBlock,
@@ -92,6 +96,7 @@ body {{
 }}
 {_heading_rules()}
 p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)}; break-inside: avoid }}
+p.print-body, p.print-gap_line {{ margin: {_block_margin_css(template.BODY_PARAGRAPH_SPACING)} }}
 .print-question {{ margin: 0 0 {template.QUESTION_SPACE_AFTER_MM}mm }}
 .print-question-text {{ break-inside: avoid }}
 .print-options {{ break-inside: avoid }}
@@ -137,6 +142,7 @@ p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
 }}
 .print-grid td {{ text-align: center }}
 .print-grid th[scope="row"] {{ text-align: left }}
+.print-grid th {{ font-weight: normal }}
 .print-answer-key {{
   border-left: {template.ANSWER_KEY_RULE_PT}pt solid #{template.TEXT_COLOR_HEX};
   padding-left: {template.ANSWER_KEY_INDENT_MM}mm;
@@ -150,6 +156,20 @@ p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
   margin: {_block_margin_css(template.IMAGE_SPACING)};
 }}
 """
+
+
+def _render_text_run(run: PrintText) -> str:
+    """One printed text run: escaped text, hard breaks as ``<br>``, marks as elements.
+
+    Marks wrap outermost first in ``MARK_RENDER_ORDER`` canonical order, so
+    ``("bold", "italic")`` renders ``<strong><em>x</em></strong>``. Plain runs
+    stay bare escaped text.
+    """
+    content = "<br>".join(escape(run.text).split("\n"))
+    for mark in reversed([mark for mark in MARK_RENDER_ORDER if mark in run.marks]):
+        element = MARK_ELEMENT_NAMES[mark]
+        content = f"<{element}>{content}</{element}>"
+    return content
 
 
 def render_print_html(
@@ -242,7 +262,7 @@ class _PrintHtmlRenderer:
         if isinstance(run, PrintImage):
             return f'<img class="print-image" src="{self._data_uri(run.asset_id)}" alt="Bild">'
         if isinstance(run, PrintText):
-            return escape(run.text)
+            return _render_text_run(run)
         return f'<span class="gap-blank" style="width:{run.width_mm:.1f}mm"></span>'
 
     def _option(self, option: PrintOption) -> str:
@@ -251,14 +271,14 @@ class _PrintHtmlRenderer:
         else:
             box, label = '<span class="number-box"></span>', ""
         prefix = f"{escape(label)} " if label else ""
-        return f'<p class="print-option">{box} {prefix}{escape(option.text)}</p>'
+        return f'<p class="print-option">{box} {prefix}{self._runs(option.runs)}</p>'
 
     def _grid(self, grid: PrintGrid) -> str:
-        columns = "".join(f'<th scope="col">{escape(column)}</th>' for column in grid.columns)
+        columns = "".join(f'<th scope="col">{self._runs(column)}</th>' for column in grid.columns)
         head = f"<tr><td></td>{columns}</tr>"
         cell = f"<td>{house_template.TICK_BOX_GLYPH}</td>"
         rows = "".join(
-            f'<tr><th scope="row">{escape(row)}</th>{cell * len(grid.columns)}</tr>'
+            f'<tr><th scope="row">{self._runs(row)}</th>{cell * len(grid.columns)}</tr>'
             for row in grid.rows
         )
         return f'<table class="print-grid"><thead>{head}</thead><tbody>{rows}</tbody></table>'
