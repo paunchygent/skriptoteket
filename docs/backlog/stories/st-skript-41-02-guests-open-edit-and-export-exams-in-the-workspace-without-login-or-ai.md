@@ -38,10 +38,12 @@ The public guest converter today converts DigiExam files through its own jobs ta
 | TASK-SKRIPT-41-02-02 | The public workspace: entry, browser storage, public exports, limits, sign-in handoff                                               | TASK-SKRIPT-41-02-01 for the QTI start |
 | TASK-SKRIPT-41-02-03 | Removal of the guest DigiExam line and closure of superseded docs                                                                   | TASK-SKRIPT-41-02-02                   |
 | TASK-SKRIPT-41-02-04 | The workspace fills the desktop window; the editor column is the widest; resizable, collapsible panels with one shared drawer width | TASK-SKRIPT-41-02-02                   |
+| TASK-SKRIPT-41-02-05 | A guest draft Mina filer rejects for good stops retrying and is offered for download or removal                                     | TASK-SKRIPT-41-02-02                   |
 
 ## Progress
 
 - 2026-10-19: TASK-SKRIPT-41-02-01, 41-02-02 and 41-02-04 are `done`; TASK-SKRIPT-41-02-03 is `ready`.
+- 2026-10-20: TASK-SKRIPT-41-02-05 is `in_progress` at `e4e13592` (suite green, copy reviewed; code review and walk next).
 - TASK-SKRIPT-41-02-04 merged to main as `ffab920a` and its walk repair as `67861ab3`. Both
   staging walks passed. The guest workspace fills the desktop window, is held to the window
   height, and the editor is the widest column at default widths. Panels have drag handles, a

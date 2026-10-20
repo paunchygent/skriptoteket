@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7376ac3a3436fb023d153df9f82c18322411ef65f8c60f01d3a3581d5f936689",
+  "source_set_digest": "e454faebd8e6d86efcd9ea00a0abb2028ab0fe69faf0f37dbff24d5c55ecdf18",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7126,6 +7126,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-05",
+      "type": "task",
+      "title": "A guest draft that Mina filer rejects for good stops retrying and is offered for download or removal",
+      "path": "docs/backlog/tasks/task-skript-41-02-05-a-guest-draft-that-mina-filer-rejects-for-good-stops-retrying-and-is-offered-for-download-or-removal.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

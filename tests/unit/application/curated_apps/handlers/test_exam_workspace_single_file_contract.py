@@ -265,6 +265,45 @@ async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
             preserve_editor_position=True,
         )
     assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert error.value.details == {"reason": "vault_full"}
     assert await store.load(actor=actor, vault_file=saved) == current
     assert env.vault_usage.usage.bytes_total == len(current)
     assert env.vault_files.files[saved.id].document_version == 1
+
+
+@pytest.mark.asyncio
+async def test_first_save_past_quota_marks_vault_full_and_writes_nothing() -> None:
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    content = _payload(env, lineage, 1, "First")
+    store = _store(env, total_limit=len(content) - 1)
+    with pytest.raises(DomainError) as error:
+        await store.save(
+            actor=actor,
+            file_id=uuid4(),
+            name="Prov.provdokument.zip",
+            content=content,
+            lineage_id=lineage,
+            version=1,
+        )
+    assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert error.value.details == {"reason": "vault_full"}
+    assert await env.vault_files.list_active_for_user(user_id=actor.id) == []
+    assert env.vault_usage.usage.bytes_total == 0
+
+
+@pytest.mark.asyncio
+async def test_oversized_file_is_not_marked_vault_full() -> None:
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    store = _store(env, total_limit=50_000)
+    oversized = b"x" * (5_000_000 + 1)
+    with pytest.raises(DomainError) as error:
+        await store.save(
+            actor=actor,
+            file_id=uuid4(),
+            name="Prov.provdokument.zip",
+            content=oversized,
+            lineage_id=lineage,
+            version=1,
+        )
+    assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert error.value.details.get("reason") != "vault_full"

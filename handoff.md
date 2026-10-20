@@ -10,7 +10,9 @@
 - TASK-SKRIPT-41-02-05 (guest draft handover to Mina filer): lead `489a15c8`,
   branch `codex/task-skript-41-02-guest-handover-rejection-remote`, root
   `01a1567f`. A permanent rejection stops retrying and offers download or remove
-  (user, 2026-10-19). Next: implementation, copy review, review, the Mac.
+  (user, 2026-10-19). Built at `e4e13592` (suite green at `d16e1653`; copy review
+  917b4838 applied). Open: the CSRF 403 decision (orchestrator), C6 recheck, Pi
+  review, then the Mac walk of the rejected-draft notice.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)

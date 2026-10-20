@@ -12,7 +12,7 @@
  *   - Public `/api/v1/public/...` app APIs remain app-hosted.
  */
 
-import { type AuthSession, useAuthStore } from "../stores/auth";
+import { type AuthSession, SupersededAuthSessionError, useAuthStore } from "../stores/auth";
 import { resolveProtectedApiUrl } from "./protectedApiBase";
 export {
   DEFAULT_PROTECTED_API_BASE_URL,
@@ -60,6 +60,12 @@ type ApiRequestOptions = Omit<RequestInit, "body" | "headers" | "credentials" | 
   headers?: HeadersInit;
   /** Bind a larger operation to the session that constructed its payload. */
   session?: AuthSession;
+  /**
+   * Called once when the server answered 2xx but this request's session
+   * retired before the response was admitted. The
+   * `SupersededAuthSessionError` still throws and the body is not read.
+   */
+  onSupersededSuccess?: () => void;
 };
 
 export type ApiBlobResponse = {
@@ -161,7 +167,7 @@ async function protectedRequest<T>(
   readResponse: (response: Response) => Promise<T>,
 ): Promise<T> {
   const auth = useAuthStore();
-  const { session = auth.captureSession(), ...requestOptions } = options;
+  const { session = auth.captureSession(), onSupersededSuccess, ...requestOptions } = options;
   const binding = bindProtectedSession(session);
   binding.requireCurrent();
   const method = (requestOptions.method ?? "GET").toUpperCase();
@@ -178,17 +184,30 @@ async function protectedRequest<T>(
       ...requestOptions, method, headers: attemptHeaders, body, credentials: "include",
     });
   };
+  const last: { response: Response | null } = { response: null };
+  const trackedSend = (csrfToken: string | null): Promise<Response> =>
+    send(csrfToken).then((response) => {
+      last.response = response;
+      return response;
+    });
   // JSON strings, FormData, Blob and ArrayBuffer bodies are reusable, not consumed streams.
-  const response = method !== "GET" && method !== "HEAD"
-    ? await binding.requestWithCsrf(send)
-    : await binding.run(() => send(null));
+  try {
+    const response = method !== "GET" && method !== "HEAD"
+      ? await binding.requestWithCsrf(trackedSend)
+      : await binding.run(() => trackedSend(null));
 
-  if (!response.ok) {
-    const error = await binding.run(() => toApiError(response));
-    if (response.status === 401) auth.clear(session);
+    if (!response.ok) {
+      const error = await binding.run(() => toApiError(response));
+      if (response.status === 401) auth.clear(session);
+      throw error;
+    }
+    return await binding.run(() => readResponse(response));
+  } catch (error: unknown) {
+    if (error instanceof SupersededAuthSessionError && last.response?.ok === true) {
+      onSupersededSuccess?.();
+    }
     throw error;
   }
-  return binding.run(() => readResponse(response));
 }
 
 export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
