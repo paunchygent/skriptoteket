@@ -11,6 +11,8 @@
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { ApiError } from "../../../api/client";
+
 import {
   createInMemoryExamWorkspaceGuestDraftStorage,
   type StoredGuestDraft,
@@ -186,6 +188,30 @@ describe("runGuestHandoff rejections", () => {
     const kept = await storage.load();
     expect(kept?.draft).toEqual(draft);
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
+    expect(failureToasts()).toEqual([]);
+  });
+
+  it("h2) 403 AUTHORIZATION_ERROR returns deferred, records nothing, and posts again", async () => {
+    const { draft, rejections, storage, teacher } = await seedHarness();
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(
+      new ApiError({
+        code: "AUTHORIZATION_ERROR",
+        message: "CSRF token required for browser session write",
+        status: 403,
+      }),
+    );
+
+    await expect(runGuestHandoff({ rejections, storage, teacher })).resolves.toEqual({
+      kind: "deferred",
+    });
+    expect(rejections.read()).toBeNull();
+    const kept = await storage.load();
+    expect(kept?.draft).toEqual(draft);
+
+    await expect(runGuestHandoff({ rejections, storage, teacher })).resolves.toEqual({
+      kind: "deferred",
+    });
+    expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
     expect(failureToasts()).toEqual([]);
   });
 

@@ -9,7 +9,9 @@
  *   retrying and offers download or removal. `transient` means a later try
  *   can succeed, so the caller retries later with backoff. `deferred` means
  *   the sign-in ended, so the handoff waits and the next signed-in load tries
- *   again.
+ *   again. A failed CSRF token refresh (403 AUTHORIZATION_ERROR) defers like
+ *   401; every other 403, including a role refusal (FORBIDDEN), stays
+ *   permanent.
  *
  * Relationships:
  *   - Consumed by `useExamWorkspaceGuestHandoff`.
@@ -35,8 +37,10 @@ function isVaultFullDetails(details: unknown): boolean {
 }
 
 /**
- * Classify the error a guest-draft handoff POST threw. Classification is by
- * status and the server's vault_full detail only, never by message or code text.
+ * Classify the error a guest-draft handoff POST threw. Classification uses
+ * the status, the error code AUTHORIZATION_ERROR and the server's vault_full
+ * detail only, never message text. A failed CSRF token refresh (403
+ * AUTHORIZATION_ERROR) defers like 401.
  */
 export function classifyGuestHandoffFailure(error: unknown): GuestHandoffFailureKind {
   if (error instanceof SupersededAuthSessionError) {
@@ -47,6 +51,9 @@ export function classifyGuestHandoffFailure(error: unknown): GuestHandoffFailure
       return "vault_full";
     }
     if (error.status === 401) {
+      return "deferred";
+    }
+    if (error.status === 403 && error.code === "AUTHORIZATION_ERROR") {
       return "deferred";
     }
     if (error.status === 408 || error.status === 429) {

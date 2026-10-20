@@ -1,13 +1,15 @@
 /**
- * Guest draft handoff failure classification (TASK-SKRIPT-41-02-05, U1).
+ * Guest draft handoff failure classification (TASK-SKRIPT-41-02-05, U6).
  *
  * Expected behavior:
  *   A 422 carrying the server's vault_full marker reports vault_full; every
- *   other 4xx reports permanent; 401 and a superseded session report
- *   deferred; 5xx, 408, 429, sub-400 statuses, and anything that is not an
- *   API error report transient. Classification is by status and the server's
- *   vault_full detail only, never by code or message text, and lookalike
- *   details never escape their status.
+ *   other 4xx reports permanent, except a 403 carrying code
+ *   AUTHORIZATION_ERROR (a failed CSRF token refresh) which reports
+ *   deferred like 401; 401 and a superseded session report deferred; 5xx,
+ *   408, 429, sub-400 statuses, and anything that is not an API error report
+ *   transient. Classification is by status, the error code
+ *   AUTHORIZATION_ERROR and the server's vault_full detail only, never by
+ *   message text, and lookalike details never escape their status.
  */
 
 import { describe, expect, it } from "vitest";
@@ -49,6 +51,8 @@ describe("classifyGuestHandoffFailure", () => {
 
   it("defers when the sign-in ended", () => {
     expect(classifyGuestHandoffFailure(apiError(401, "UNAUTHORIZED"))).toBe("deferred");
+    expect(classifyGuestHandoffFailure(apiError(403, "AUTHORIZATION_ERROR"))).toBe("deferred");
+    expect(classifyGuestHandoffFailure(apiError(401, "AUTHORIZATION_ERROR"))).toBe("deferred");
     expect(classifyGuestHandoffFailure(new SupersededAuthSessionError())).toBe("deferred");
   });
 
@@ -74,5 +78,7 @@ describe("classifyGuestHandoffFailure", () => {
   it("classifies by status even when the code text suggests another kind", () => {
     expect(classifyGuestHandoffFailure(apiError(422, "TRANSIENT_TRY_AGAIN"))).toBe("permanent");
     expect(classifyGuestHandoffFailure(apiError(503, "VALIDATION_ERROR"))).toBe("transient");
+    expect(classifyGuestHandoffFailure(apiError(422, "AUTHORIZATION_ERROR"))).toBe("permanent");
+    expect(classifyGuestHandoffFailure(apiError(403, "authorization_error"))).toBe("permanent");
   });
 });
