@@ -151,9 +151,16 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
   /** Terminate the currently desired departure: keep the source and its work. */
   function terminateDesired(publishSource: boolean): void {
     const entry = desired;
+    const running = selected;
     desired = null;
     selected = null;
     stage = "idle";
+    if (
+      (entry !== null && entry.kind === "saveAs") ||
+      (running !== null && running.entry.kind === "saveAs")
+    ) {
+      deps.releaseCopyBusy();
+    }
     if (entry !== null) {
       switch (entry.kind) {
         case "route":

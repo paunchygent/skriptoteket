@@ -32,6 +32,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 
 export const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
 export const SAVE_AS_FAILURE_COPY = "Det gick inte att spara en kopia av provet. Försök igen.";
@@ -42,8 +43,10 @@ type SaveState = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   isBusy: ComputedRef<boolean>;
-  /** The copy's own busy hold; set while its POST runs, cleared on settle or retire. */
+  /** The copy's own busy hold; set while its POST runs, cleared by its own settle or its retire. */
   copyBusy: Ref<boolean>;
+  /** The generation owner; the hold belongs to the token minted at dispatch. */
+  getFence: () => SyncFence;
   /** The store the save reads and writes run through. */
   store: ExamWorkspaceStore;
 };
@@ -71,7 +74,8 @@ export function useExamWorkspaceSave(state: SaveState) {
    * here, synchronously at dispatch. The returned POST promise is a candidate
    * the owning coordinator settles through the fence. Null when the copy
    * guards refuse (no exam, no teacher, or another operation holds the
-   * document).
+   * document). The hold belongs to this copy's own fence token, so a retired
+   * copy's late settle never clears a newer copy's hold.
    */
   function beginCopy(
     sourceLineageId: string,
@@ -83,15 +87,21 @@ export function useExamWorkspaceSave(state: SaveState) {
     if (!sent || !currentSummary || !teacher || state.isBusy.value) {
       return null;
     }
+    const fence = state.getFence();
+    const token: FenceToken = fence.begin();
     copyBusy.value = true;
     const posting = teacher.copyExamWorkspaceDocument(sourceLineageId, name, sent);
     const owned = posting.then(
       (response) => {
-        copyBusy.value = false;
+        if (fence.isCurrent(token)) {
+          copyBusy.value = false;
+        }
         return response;
       },
       (error: unknown) => {
-        copyBusy.value = false;
+        if (fence.isCurrent(token)) {
+          copyBusy.value = false;
+        }
         throw error;
       },
     );

@@ -368,6 +368,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
 
   const { beginCopy } = useExamWorkspaceSave({
     copyBusy,
+    getFence: () => resolveFence(),
     isBusy,
     summary,
     store,
