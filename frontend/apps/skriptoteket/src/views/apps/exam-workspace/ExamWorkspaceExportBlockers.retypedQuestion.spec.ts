@@ -34,7 +34,7 @@ function retypedItem(itemId: string, sequence: number): NativeExamItem {
     ...gapItem("teacher_authored", [["gap_001", ["Paris"]]], null),
     item_id: itemId,
     sequence,
-    review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_required" },
+    review: { confidence: null, parse_origin: "teacher_retyped", reasons: [], state: "review_required" },
   };
 }
 
@@ -92,5 +92,15 @@ describe("examWorkspaceBlockerEntries for a retyped unconverted question", () =>
 
     expect(examWorkspaceItemReadiness(reviewed)).toEqual([]);
     expect(rows([reviewed])).toEqual([]);
+  });
+
+  it("adds no retyped blocker for a review_required teacher-made question", () => {
+    const item: NativeExamItem = {
+      ...retypedItem("item_001", 1),
+      review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_required" },
+    };
+
+    expect(examWorkspaceItemReadiness(item)).not.toContain("unreviewed_retyped_question");
+    expect(rows([item]).some((row) => row.reason === "unreviewed_retyped_question")).toBe(false);
   });
 });

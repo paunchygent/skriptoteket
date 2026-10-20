@@ -2,12 +2,12 @@
  * Exam workspace readiness for a retyped unconverted question (TASK-SKRIPT-39-05-15 D3).
  *
  * Expected behavior:
- *   A review_required item with parse_origin teacher_created (a type chosen
+ *   A review_required item with parse_origin teacher_retyped (a type chosen
  *   on an unconverted question) reports the new reason
  *   "unreviewed_retyped_question" and no longer reports "unbuilt_question".
- *   A reviewed teacher_created item reports nothing; review_required with any
- *   other origin (llm_parsed, deterministic, source_fallback) never reports
- *   the new reason.
+ *   A reviewed teacher_retyped item reports nothing; review_required with any
+ *   other origin (teacher_created, llm_parsed, deterministic,
+ *   source_fallback) never reports the new reason.
  */
 
 import { describe, expect, it } from "vitest";
@@ -20,7 +20,7 @@ import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
 function retyped(overrides: Partial<NativeExamItem["review"]> = {}): NativeExamItem {
   return {
     ...gapItem("teacher_authored", [["gap_001", ["Paris"]]], null),
-    review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_required", ...overrides },
+    review: { confidence: null, parse_origin: "teacher_retyped", reasons: [], state: "review_required", ...overrides },
   };
 }
 
@@ -34,7 +34,7 @@ describe("examWorkspaceItemReadiness for a retyped unconverted question", () => 
   });
 
   it("never lists the new reason for review_required with another origin", () => {
-    for (const parse_origin of ["llm_parsed", "deterministic", "source_fallback"] as const) {
+    for (const parse_origin of ["teacher_created", "llm_parsed", "deterministic", "source_fallback"] as const) {
       const item = buildChoiceItem({
         review: { confidence: null, parse_origin, reasons: [], state: "review_required" },
       });

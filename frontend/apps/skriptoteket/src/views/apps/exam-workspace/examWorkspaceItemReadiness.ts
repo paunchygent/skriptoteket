@@ -122,11 +122,14 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     reasons.push("unbuilt_question");
   }
   // A type chosen on an unconverted question keeps review_required with a
-  // teacher_created origin (TASK-SKRIPT-39-05-15 D3); the unbuilt rule above
-  // no longer fires, so this reason keeps the export blocked until review.
+  // teacher_retyped origin (TASK-SKRIPT-39-05-15 D1/D3); the unbuilt rule
+  // above no longer fires, so this reason keeps the export blocked until
+  // review. teacher_created is excluded: review_required with teacher_created
+  // already means an unapproved AI key or an unmarked review on a
+  // teacher-made question, never a retype.
   if (
     item.review.state === "review_required" &&
-    item.review.parse_origin === "teacher_created"
+    item.review.parse_origin === "teacher_retyped"
   ) {
     reasons.push("unreviewed_retyped_question");
   }

@@ -6,7 +6,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
           ],
           "heading_level": null
         }
@@ -14,8 +14,8 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null},
-            {"kind": "text", "text": " ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": null
@@ -27,7 +27,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ ", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Ange bisatsens typ ", "marks": []}
           ],
           "heading_level": null
         }
@@ -35,7 +35,7 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Ange bisatsens typ ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": null
@@ -47,13 +47,13 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Första meningen.", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Första meningen.", "marks": []}
           ],
           "heading_level": null
         },
         {
           "segments": [
-            {"kind": "text", "text": "Andra meningen.", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Andra meningen.", "marks": []}
           ],
           "heading_level": null
         }
@@ -61,14 +61,14 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Första meningen.", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Första meningen.", "marks": []}
           ],
           "heading_level": null
         },
         {
           "segments": [
-            {"kind": "text", "text": "Andra meningen.", "marks": [], "kept_gap_id": null},
-            {"kind": "text", "text": " ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Andra meningen.", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": null
@@ -80,7 +80,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
           ],
           "heading_level": null
         },
@@ -90,8 +90,8 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null},
-            {"kind": "text", "text": " ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": null
@@ -128,7 +128,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange typ", "marks": ["bold"], "kept_gap_id": null}
+            {"kind": "text", "text": "Ange typ", "marks": ["bold"]}
           ],
           "heading_level": null
         }
@@ -136,8 +136,8 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange typ", "marks": ["bold"], "kept_gap_id": null},
-            {"kind": "text", "text": " ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Ange typ", "marks": ["bold"]},
+            {"kind": "text", "text": " ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": null
@@ -149,7 +149,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null}
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []}
           ],
           "heading_level": 1
         }
@@ -157,8 +157,8 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Ange bisatsens typ", "marks": [], "kept_gap_id": null},
-            {"kind": "text", "text": " ", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Ange bisatsens typ", "marks": []},
+            {"kind": "text", "text": " ", "marks": []},
             {"kind": "gap", "gap_id": "gap_001"}
           ],
           "heading_level": 1
@@ -170,7 +170,7 @@
       "question": [
         {
           "segments": [
-            {"kind": "text", "text": "Se bilden", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Se bilden", "marks": []},
             {"kind": "asset", "asset_id": "asset_0123456789abcdef"}
           ],
           "heading_level": null
@@ -179,7 +179,7 @@
       "expected": [
         {
           "segments": [
-            {"kind": "text", "text": "Se bilden", "marks": [], "kept_gap_id": null},
+            {"kind": "text", "text": "Se bilden", "marks": []},
             {"kind": "asset", "asset_id": "asset_0123456789abcdef"},
             {"kind": "gap", "gap_id": "gap_001"}
           ],

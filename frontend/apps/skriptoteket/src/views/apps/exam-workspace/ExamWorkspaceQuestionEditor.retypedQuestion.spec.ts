@@ -2,11 +2,13 @@
  * Question editor after choosing a type on an unconverted question (TASK-SKRIPT-39-05-15).
  *
  * Expected behavior:
- *   A gap_fill item with review {review_required, teacher_created} shows the
+ *   A gap_fill item with review {review_required, teacher_retyped} shows the
  *   question fields and the gap tools (Luckverktyg, Tom lucka), reads
  *   "Lucktext", and shows no "Ej konverterad" and no unbuilt error line.
  *   The same item with source_fallback stays unconverted: it reads
  *   "Ej konverterad" with the unbuilt error line and hides the gap tools.
+ *   A review_required teacher_created item (a teacher-made question) never
+ *   reports the retyped reason.
  */
 
 import { mount } from "@vue/test-utils";
@@ -60,9 +62,12 @@ afterEach(() => {
 });
 
 describe("ExamWorkspaceQuestionEditor retyped unconverted question", () => {
-  it("shows the fields and gap tools for a review_required teacher_created gap_fill item", async () => {
-    const item = itemWithOrigin("teacher_created");
+  it("shows the fields and gap tools for a review_required teacher_retyped gap_fill item", async () => {
+    const item = itemWithOrigin("teacher_retyped");
     expect(examWorkspaceItemReadiness(item)).toContain("unreviewed_retyped_question");
+    expect(examWorkspaceItemReadiness(itemWithOrigin("teacher_created"))).not.toContain(
+      "unreviewed_retyped_question",
+    );
 
     const wrapper = (mounted = await mountEditor(item));
 

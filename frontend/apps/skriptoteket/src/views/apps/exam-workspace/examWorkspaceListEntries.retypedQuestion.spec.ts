@@ -2,8 +2,10 @@
  * Question list row for a retyped unconverted question (TASK-SKRIPT-39-05-15 D6).
  *
  * Expected behavior:
- *   A review_required teacher_created question takes the short problem label
- *   "inte granskad" on its list row; a reviewed one names no problem.
+ *   A review_required teacher_retyped question takes the short problem label
+ *   "inte granskad" on its list row; a reviewed one names no problem. A
+ *   review_required teacher_created question (a teacher-made question) names
+ *   no problem from the retyped reason.
  */
 
 import { describe, expect, it } from "vitest";
@@ -19,7 +21,7 @@ function retypedItem(state: NativeExamItem["review"]["state"]): NativeExamItem {
     ...gapItem("teacher_authored", [["gap_001", ["Paris"]]], null),
     item_id: "item_001",
     sequence: 1,
-    review: { confidence: null, parse_origin: "teacher_created", reasons: [], state },
+    review: { confidence: null, parse_origin: "teacher_retyped", reasons: [], state },
   };
 }
 
@@ -58,6 +60,23 @@ describe("examWorkspaceListEntries for a retyped unconverted question", () => {
       [item.item_id]: examWorkspaceItemReadiness(item),
     };
 
+    const entries = examWorkspaceListEntries(document, readiness, new Set());
+
+    expect(entries).toMatchObject([{ id: "item_001", kind: "item", problem: null }]);
+  });
+
+  it("names no retyped problem for a review_required teacher-made question", () => {
+    const item: NativeExamItem = {
+      ...retypedItem("review_required"),
+      review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_required" },
+    };
+    const document = documentWith(item);
+
+    expect(examWorkspaceItemReadiness(item)).not.toContain("unreviewed_retyped_question");
+
+    const readiness: Record<string, ExamWorkspaceReadinessReason[]> = {
+      [item.item_id]: examWorkspaceItemReadiness(item),
+    };
     const entries = examWorkspaceListEntries(document, readiness, new Set());
 
     expect(entries).toMatchObject([{ id: "item_001", kind: "item", problem: null }]);
