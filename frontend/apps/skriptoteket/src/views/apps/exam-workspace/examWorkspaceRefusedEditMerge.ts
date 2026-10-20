@@ -155,6 +155,27 @@ export function mergeRefusedEdit(
     }
   }
   const instructionParents = new Map<string, NativeExamParent>();
+  // A part gone from the newest copy comes back only for its own owner or
+  // as the container a surviving owned question resolves into below, so a
+  // part the other tab deleted while this tab owned nothing in it stays
+  // deleted.
+  const neededContainers = new Set<string>();
+  for (const item of mergedContent.values()) {
+    if (!owned.has(questionPiece(item.item_id)) || item.kind === "ordering") {
+      continue;
+    }
+    const desiredOwner = desiredItems.has(item.item_id)
+      ? parentIdIn(desired, item.item_id)
+      : undefined;
+    const newestOwner = newestItems.has(item.item_id)
+      ? parentIdIn(newest, item.item_id)
+      : undefined;
+    const resolved = owned.has(membershipPiece(item.item_id)) ? desiredOwner : newestOwner;
+    const container = resolved ?? desiredOwner ?? newestOwner ?? null;
+    if (container !== null) {
+      neededContainers.add(container);
+    }
+  }
   for (const parentId of allParentIds) {
     const desiredParent = desiredParents.get(parentId);
     const newestParent = newestParents.get(parentId);
@@ -165,7 +186,9 @@ export function mergeRefusedEdit(
       }
     } else if (newestParent !== undefined) {
       instructionParents.set(parentId, newestParent);
-    } else if (desiredParent !== undefined) {
+    } else if (desiredParent !== undefined && neededContainers.has(parentId)) {
+      // The other tab deleted this part, but a surviving owned question
+      // still resolves into it: keep the container for the placement below.
       instructionParents.set(parentId, desiredParent);
     }
   }
