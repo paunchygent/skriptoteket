@@ -1,7 +1,6 @@
 """Print PDF HTML in the house template, student and facit (TASK-SKRIPT-40-04-07 W1-W9)."""
 
 import base64
-import hashlib
 
 import pytest
 
@@ -16,7 +15,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
     PrintAnswerKey,
     PrintBlank,
     PrintBox,
-    PrintDocument,
     PrintGrid,
     PrintHeading,
     PrintImage,
@@ -29,82 +27,42 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
     PrintText,
     build_print_document,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.exam_print_html import (
-    render_print_html,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamAsset,
-)
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_html_test_support import (
+    ASSET_ID,
+    PNG_PAYLOAD,
+    asset,
+    document,
+    render,
+    style_text,
+)
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_document,
-    make_free_text_item,
     make_gap_fill_item,
     make_single_choice_item,
 )
 
-ASSET_ID = "asset_0123456789abcdef"
-PNG_PAYLOAD = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR"
-
-
-def _asset(
-    payload: bytes,
-    *,
-    media_type: str = "image/png",
-    sha256: str | None = None,
-    byte_length: int | None = None,
-) -> NativeExamAsset:
-    return NativeExamAsset(
-        asset_id=ASSET_ID,
-        sha256=sha256 if sha256 is not None else hashlib.sha256(payload).hexdigest(),
-        media_type=media_type,
-        byte_length=byte_length if byte_length is not None else len(payload),
-    )
-
-
-def _document(
-    *entries: PrintInstruction | PrintQuestion,
-    variant: ExamPrintVariant = ExamPrintVariant.STUDENT,
-    title: str = "Omprov: grammatik",
-) -> PrintDocument:
-    return PrintDocument(variant=variant, title=title, entries=tuple(entries))
-
-
-def _render(
-    document: PrintDocument,
-    *,
-    assets: tuple[NativeExamAsset, ...] = (),
-    assets_by_id: dict[str, bytes] | None = None,
-) -> str:
-    return render_print_html(document, assets=assets, assets_by_id=assets_by_id or {})
-
-
-def _style_text(html: str) -> str:
-    """The rendered document's stylesheet text, for asserting the generated house CSS."""
-    start = html.index("<style>") + len("<style>")
-    return html[start : html.index("</style>")]
-
 
 class TestDocumentShell:
     def test_student_title_carries_the_variant_suffix(self) -> None:
-        html = _render(_document())
+        html = render(document())
 
         assert "<title>Omprov: grammatik – Elevexemplar</title>" in html
         assert '<html lang="sv">' in html
         assert '<meta charset="utf-8">' in html
 
     def test_facit_title_carries_its_variant_suffix(self) -> None:
-        html = _render(_document(variant=ExamPrintVariant.FACIT))
+        html = render(document(variant=ExamPrintVariant.FACIT))
 
         assert "<title>Omprov: grammatik – Facit</title>" in html
 
     def test_the_title_is_escaped(self) -> None:
-        html = _render(_document(title='A <B> & "C"'))
+        html = render(document(title='A <B> & "C"'))
 
         assert "<title>A &lt;B&gt; &amp;" in html
 
     def test_house_css_carries_the_template_page_and_body_measures(self) -> None:
-        css = _style_text(_render(_document()))
+        css = style_text(render(document()))
 
         assert f"size: {house_template.PAGE_WIDTH_MM}mm {house_template.PAGE_HEIGHT_MM}mm" in css
         assert (
@@ -115,7 +73,7 @@ class TestDocumentShell:
         assert "Liberation Sans" in css
 
     def test_house_css_carries_every_declared_heading_from_the_template(self) -> None:
-        css = _style_text(_render(_document()))
+        css = style_text(render(document()))
 
         assert house_template.HEADING_GEOMETRY
         for level, geometry in house_template.HEADING_GEOMETRY.items():
@@ -127,7 +85,7 @@ class TestDocumentShell:
             )
 
     def test_house_css_carries_the_number_box_width(self) -> None:
-        css = _style_text(_render(_document()))
+        css = style_text(render(document()))
 
         assert f"width: {house_template.NUMBER_BOX_WIDTH_MM}mm" in css
 
@@ -136,7 +94,7 @@ class TestDocumentShell:
     ) -> None:
         monkeypatch.setattr(house_template, "QUESTION_SPACE_AFTER_MM", 12.5)
 
-        css = _style_text(_render(_document()))
+        css = style_text(render(document()))
 
         assert ".print-question { margin: 0 0 12.5mm }" in css
 
@@ -150,7 +108,7 @@ class TestEntries:
             answer=(),
         )
 
-        html = _render(_document(instruction, question))
+        html = render(document(instruction, question))
 
         assert '<div class="print-instruction">' in html
         assert '<section class="print-question" id="exam-item-item_001">' in html
@@ -164,7 +122,7 @@ class TestEntries:
             answer=(),
         )
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert 'id="exam-item-item_001&quot;&gt;&lt;script&gt;"' in html
         assert "<script>" not in html
@@ -174,7 +132,7 @@ class TestBlocks:
     def test_five_ruled_lines_render_five_writing_lines(self) -> None:
         question = PrintQuestion(item_id="item_001", text=(), answer=(PrintRuledLines(count=5),))
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert html.count('class="writing-line"') == 5
         assert '<div class="writing-area"><div class="writing-line"></div>' in html
@@ -192,7 +150,7 @@ class TestBlocks:
             answer=(),
         )
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert width == 44.0
         assert 'class="print-gap_line"' in html
@@ -210,7 +168,7 @@ class TestBlocks:
             answer=(),
         )
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert "&lt;b&gt;&amp; &quot;x&quot;" in html
         assert "<b>&" not in html
@@ -225,7 +183,7 @@ class TestBlocks:
             ),
         )
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert f'<p class="print-option">{house_template.TICK_BOX_GLYPH} A) vägen</p>' in html
         assert '<p class="print-option"><span class="number-box"></span> Tes</p>' in html
@@ -247,7 +205,7 @@ class TestBlocks:
             ),
         )
 
-        html = _render(_document(question))
+        html = render(document(question))
 
         assert '<th scope="col">däggdjur</th>' in html
         assert '<th scope="row">hund</th>' in html
@@ -262,135 +220,11 @@ class TestBlocks:
             answer=(PrintAnswerKey(lines=("Rätt svar: eleverna", "Poäng: 1")),),
         )
 
-        html = _render(_document(question, variant=ExamPrintVariant.FACIT))
+        html = render(document(question, variant=ExamPrintVariant.FACIT))
 
         assert (
             '<div class="print-answer-key"><p>Rätt svar: eleverna</p><p>Poäng: 1</p></div>' in html
         )
-
-
-class TestMarkedRuns:
-    def _body_question(self, *runs: PrintText) -> PrintQuestion:
-        return PrintQuestion(
-            item_id="item_001",
-            text=(PrintParagraph(runs=tuple(runs), style=PrintParagraphStyle.BODY),),
-            answer=(),
-        )
-
-    def test_body_paragraph_renders_bold_and_combined_marks(self) -> None:
-        question = self._body_question(
-            PrintText("Diskutera", ("bold",)),
-            PrintText(" hur ", ()),
-            PrintText("x", ("bold", "italic", "underline")),
-        )
-
-        html = _render(_document(question))
-
-        assert (
-            '<p class="print-body"><strong>Diskutera</strong>'
-            " hur <strong><em><u>x</u></em></strong></p>" in html
-        )
-
-    def test_superscript_and_subscript_runs_render(self) -> None:
-        question = self._body_question(
-            PrintText("x", ("superscript",)),
-            PrintText("y", ("subscript",)),
-        )
-
-        html = _render(_document(question))
-
-        assert "<sup>x</sup><sub>y</sub>" in html
-
-    def test_hard_break_renders_br_and_stays_inside_marks(self) -> None:
-        plain = _render(_document(self._body_question(PrintText("rad ett\nrad två", ()))))
-
-        assert "rad ett<br>rad två" in plain
-
-        marked = _render(_document(self._body_question(PrintText("rad ett\nrad två", ("bold",)))))
-
-        assert "<strong>rad ett<br>rad två</strong>" in marked
-
-    def test_escaping_holds_inside_marks(self) -> None:
-        question = self._body_question(PrintText('<b>& "x"', ("bold",)))
-
-        html = _render(_document(question))
-
-        assert "<strong>&lt;b&gt;&amp; &quot;x&quot;</strong>" in html
-
-    def test_option_runs_print_their_marks(self) -> None:
-        question = PrintQuestion(
-            item_id="item_001",
-            text=(),
-            answer=(
-                PrintOption(
-                    box=PrintBox.TICK,
-                    label="A)",
-                    runs=(PrintText("vägen", ("bold",)),),
-                ),
-            ),
-        )
-
-        html = _render(_document(question))
-
-        assert f"{house_template.TICK_BOX_GLYPH} A) <strong>vägen</strong>" in html
-
-    def test_grid_cell_runs_print_their_marks(self) -> None:
-        question = PrintQuestion(
-            item_id="item_001",
-            text=(),
-            answer=(
-                PrintGrid(
-                    rows=((PrintText("hund", ("italic",)),),),
-                    columns=((PrintText("däggdjur", ("bold",)),),),
-                ),
-            ),
-        )
-
-        html = _render(_document(question))
-
-        assert '<th scope="col"><strong>däggdjur</strong></th>' in html
-        assert '<th scope="row"><em>hund</em></th>' in html
-
-    def test_body_and_gap_line_paragraphs_use_body_spacing(self) -> None:
-        css = _style_text(_render(_document()))
-
-        assert "p.print-body, p.print-gap_line { margin: 0mm 0 4mm }" in css
-        assert (
-            f"p {{ margin: {house_template.PARAGRAPH_SPACING.space_before_mm}mm 0 "
-            f"{house_template.PARAGRAPH_SPACING.space_after_mm}mm;"
-            " break-inside: avoid }" in css
-        )
-
-    def test_end_to_end_bold_word_and_two_paragraphs(self) -> None:
-        from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-            NativeParagraph,
-            NativeTextSegment,
-        )
-
-        item = make_single_choice_item()
-        first = NativeParagraph(
-            heading_level=None,
-            segments=(
-                NativeTextSegment(text="Läs ", marks=()),
-                NativeTextSegment(text="noga", marks=("bold",)),
-            ),
-        )
-        second = NativeParagraph(
-            heading_level=None,
-            segments=(NativeTextSegment(text="Andra stycket.", marks=()),),
-        )
-        bold_item = make_free_text_item().model_copy(update={"body": (first, second)})
-        document = make_document(bold_item)
-
-        html = _render(
-            build_print_document(document, variant=ExamPrintVariant.STUDENT),
-            assets=(),
-            assets_by_id={},
-        )
-
-        assert "<strong>noga</strong>" in html
-        assert html.count('<p class="print-body">') == 2
-        assert item.item_id  # the choice builder still shapes options elsewhere
 
 
 class TestKeepTogetherGroups:
@@ -412,7 +246,7 @@ class TestKeepTogetherGroups:
         )
 
     def test_text_group_contains_heading_body_and_points(self) -> None:
-        html = _render(_document(self._question()))
+        html = render(document(self._question()))
         text_start = html.index('<div class="print-question-text">')
         options_start = html.index('<div class="print-options">')
         text_slice = html[text_start:options_start]
@@ -421,7 +255,7 @@ class TestKeepTogetherGroups:
         assert "Brödtext. (2 p)" in text_slice
 
     def test_consecutive_options_share_one_wrapper(self) -> None:
-        html = _render(_document(self._question()))
+        html = render(document(self._question()))
 
         assert html.count('<div class="print-options">') == 1
         options_start = html.index('<div class="print-options">')
@@ -430,7 +264,7 @@ class TestKeepTogetherGroups:
         assert "B) skolan" in options_slice
 
     def test_writing_area_renders_outside_the_text_group(self) -> None:
-        html = _render(_document(self._question()))
+        html = render(document(self._question()))
         text_start = html.index('<div class="print-question-text">')
         text_end = html.index("</div>", text_start)
 
@@ -438,7 +272,7 @@ class TestKeepTogetherGroups:
         assert html.count('class="writing-line"') == 2
 
     def test_house_css_keeps_groups_together_and_instruction_with_question(self) -> None:
-        css = _style_text(_render(_document(self._question())))
+        css = style_text(render(document(self._question())))
 
         assert ".print-question-text { break-inside: avoid }" in css
         assert ".print-options { break-inside: avoid }" in css
@@ -453,7 +287,7 @@ class TestKeepTogetherGroups:
         assert "break-after: avoid;" in css
 
     def test_writing_area_may_split_while_single_lines_do_not(self) -> None:
-        css = _style_text(_render(_document(self._question())))
+        css = style_text(render(document(self._question())))
 
         assert ".writing-area { break-inside" not in css
         assert ".writing-line {" in css
@@ -473,10 +307,10 @@ class TestPictures:
         )
 
     def test_a_valid_payload_is_inlined_as_a_data_uri(self) -> None:
-        asset = _asset(PNG_PAYLOAD)
-        html = _render(
-            _document(self._image_question()),
-            assets=(asset,),
+        image_asset = asset(PNG_PAYLOAD)
+        html = render(
+            document(self._image_question()),
+            assets=(image_asset,),
             assets_by_id={ASSET_ID: PNG_PAYLOAD},
         )
 
@@ -484,22 +318,22 @@ class TestPictures:
         assert f'<img class="print-image" src="{expected}" alt="Bild">' in html
 
     def test_a_missing_payload_raises(self) -> None:
-        asset = _asset(PNG_PAYLOAD)
+        image_asset = asset(PNG_PAYLOAD)
 
         with pytest.raises(DomainError) as exc_info:
-            _render(_document(self._image_question()), assets=(asset,), assets_by_id={})
+            render(document(self._image_question()), assets=(image_asset,), assets_by_id={})
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
         assert exc_info.value.details == {"asset_ids": [ASSET_ID]}
 
     def test_a_sha256_mismatch_raises(self) -> None:
         other = bytes(byte ^ 0xFF for byte in PNG_PAYLOAD)
-        asset = _asset(PNG_PAYLOAD)
+        image_asset = asset(PNG_PAYLOAD)
 
         with pytest.raises(DomainError) as exc_info:
-            _render(
-                _document(self._image_question()),
-                assets=(asset,),
+            render(
+                document(self._image_question()),
+                assets=(image_asset,),
                 assets_by_id={ASSET_ID: other},
             )
 
@@ -507,12 +341,12 @@ class TestPictures:
         assert exc_info.value.details == {"asset_ids": [ASSET_ID]}
 
     def test_a_byte_length_mismatch_raises(self) -> None:
-        asset = _asset(PNG_PAYLOAD, byte_length=len(PNG_PAYLOAD) + 1)
+        image_asset = asset(PNG_PAYLOAD, byte_length=len(PNG_PAYLOAD) + 1)
 
         with pytest.raises(DomainError) as exc_info:
-            _render(
-                _document(self._image_question()),
-                assets=(asset,),
+            render(
+                document(self._image_question()),
+                assets=(image_asset,),
                 assets_by_id={ASSET_ID: PNG_PAYLOAD},
             )
 
@@ -523,8 +357,8 @@ class TestBuiltDocuments:
     def test_student_and_facit_variants_of_one_choice_document(self) -> None:
         document = make_document(make_single_choice_item())
 
-        student_html = _render(build_print_document(document, variant=ExamPrintVariant.STUDENT))
-        facit_html = _render(build_print_document(document, variant=ExamPrintVariant.FACIT))
+        student_html = render(build_print_document(document, variant=ExamPrintVariant.STUDENT))
+        facit_html = render(build_print_document(document, variant=ExamPrintVariant.FACIT))
 
         assert "<title>Omprov: grammatik – Elevexemplar</title>" in student_html
         assert '<div class="print-answer-key">' not in student_html
@@ -539,7 +373,7 @@ class TestBuiltDocuments:
         item = make_gap_fill_item(accepted=("ABCDEFGHI",))
         expected_width = blank_width_mm(9)
 
-        html = _render(build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT))
+        html = render(build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT))
 
         assert 'class="print-gap_line"' in html
         assert f'style="width:{expected_width:.1f}mm"' in html
@@ -552,7 +386,7 @@ class TestRenderedPage:
         document = build_print_document(
             make_document(make_single_choice_item()), variant=ExamPrintVariant.STUDENT
         )
-        rendered = HTML(string=_render(document)).render()
+        rendered = HTML(string=render(document)).render()
 
         assert rendered.write_pdf().startswith(b"%PDF")
         page = rendered.pages[0]

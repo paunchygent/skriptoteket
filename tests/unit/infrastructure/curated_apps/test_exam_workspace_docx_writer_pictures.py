@@ -15,6 +15,7 @@ from docx import Document
 from docx.shared import Mm
 
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    BODY_PARAGRAPH_SPACING,
     IMAGE_SPACING,
     TEXT_WIDTH_MM,
 )
@@ -170,7 +171,7 @@ class TestPictures:
         assert len(parsed.inline_shapes) == 1
         assert parsed.inline_shapes[0].width == Mm(TEXT_WIDTH_MM)
 
-    def test_a_body_picture_paragraph_takes_the_template_image_spacing(
+    def test_a_body_text_and_picture_paragraph_keeps_image_before_and_body_after(
         self, shared_picture_document: SharedPictureDocument
     ) -> None:
         fixture = shared_picture_document
@@ -182,7 +183,64 @@ class TestPictures:
         spacing = body_paragraph.paragraph_format
 
         assert spacing.space_before.mm == pytest.approx(IMAGE_SPACING.space_before_mm, abs=0.02)
-        assert spacing.space_after.mm == pytest.approx(IMAGE_SPACING.space_after_mm, abs=0.02)
+        assert spacing.space_after.mm == pytest.approx(
+            BODY_PARAGRAPH_SPACING.space_after_mm, abs=0.02
+        )
+
+    def test_body_paragraph_with_text_and_picture_keeps_body_after_spacing(self) -> None:
+        payload = png((10, 90, 10, 255), (12, 6))
+        asset_id, asset = shared_asset(payload)
+        item = make_free_text_item()
+        item = NativeExamItem.model_validate(
+            {
+                **item.model_dump(),
+                "body": [
+                    {
+                        "heading_level": None,
+                        "segments": [
+                            {"kind": "text", "text": "Se bilden", "marks": []},
+                            {"kind": "asset", "asset_id": asset_id},
+                        ],
+                    },
+                    {
+                        "heading_level": None,
+                        "segments": [
+                            {"kind": "text", "text": "Fortsättning.", "marks": []},
+                        ],
+                    },
+                ],
+            }
+        )
+        document = NativeExamDocument(
+            document_id=uuid4(),
+            revision=1,
+            title="Bildprov",
+            items=(item,),
+            assets=(asset,),
+            origin=NativeExamDocumentOrigin(kind="created"),
+        )
+
+        content = ExamWorkspaceDocxWriter().build_docx_bytes(
+            document, assets_by_id={asset_id: payload}
+        )
+        parsed = Document(io.BytesIO(content))
+        mixed = only_paragraph(list(parsed.paragraphs), "Se bilden")
+        following = next(
+            paragraph
+            for paragraph in parsed.paragraphs
+            if paragraph.text.startswith("Fortsättning.")
+        )
+
+        assert run_shape(mixed) == ["Se bilden", "image"]
+        assert mixed.paragraph_format.space_before.mm == pytest.approx(
+            IMAGE_SPACING.space_before_mm, abs=0.02
+        )
+        assert mixed.paragraph_format.space_after.mm == pytest.approx(
+            BODY_PARAGRAPH_SPACING.space_after_mm, abs=0.02
+        )
+        assert following.paragraph_format.space_after.mm == pytest.approx(
+            BODY_PARAGRAPH_SPACING.space_after_mm, abs=0.02
+        )
 
     def test_picture_without_payload_fails_closed(
         self, shared_picture_document: SharedPictureDocument

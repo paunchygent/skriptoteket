@@ -8,11 +8,11 @@
  *   class `xw-richtext--compact`) stays tight: it keeps no such gap rule.
  *
  * The gap itself is one CSS rule in `ExamWorkspaceRichTextEditor.vue`, so
- * this spec stays structural: the full variant renders two paragraphs as
- * sibling block elements directly under `.xw-richtext__surface` inside a
- * wrapper with class `xw-richtext` (and without `xw-richtext--compact`),
- * while the compact variant's wrapper carries `xw-richtext--compact`.
- * The visual proof is the staging walk.
+ * this spec stays behavioural: the full variant shows two paragraphs as two
+ * separate paragraph elements inside the labelled textbox, found by their
+ * visible text; the compact variant's textbox sits inside the compact
+ * wrapper the CSS rule excludes, while the full one does not. The visual
+ * proof is the staging walk.
  */
 
 import { mount } from "@vue/test-utils";
@@ -21,32 +21,49 @@ import { nextTick } from "vue";
 
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
 import { paragraph, text } from "./ExamWorkspaceRichTextEditor.specSupport";
-// The SFC source: `?raw` bypasses the Vue transform and returns the file
-// text, so the spec can assert on the component's own style block.
-import editorSource from "./ExamWorkspaceRichTextEditor.vue?raw";
 
-const PARAGRAPH_SPACE_RULE =
-  ".xw-richtext:not(.xw-richtext--compact) .xw-richtext__surface > * + *";
+const LABEL = "Frågetext";
 
 async function mountVariant(variant: "field" | "compact") {
-  const testId = variant === "compact" ? "paragraph-space-compact" : "paragraph-space-full";
   const wrapper = mount(ExamWorkspaceRichTextEditor, {
     attachTo: document.body,
     props: {
       body: [paragraph(text("first")), paragraph(text("second"))],
-      label: "Frågetext",
-      testId,
+      label: LABEL,
+      testId: variant === "compact" ? "paragraph-space-compact" : "paragraph-space-full",
       variant,
     },
   });
   await nextTick();
   await nextTick();
-  const surface = wrapper.get(`[data-test='${testId}']`).element as HTMLElement;
-  const richtext = surface.closest(".xw-richtext") as HTMLElement | null;
-  if (!richtext) {
+  return wrapper;
+}
+
+type EditorWrapper = Awaited<ReturnType<typeof mountVariant>>;
+
+/** The editing surface, found by its accessible role and label. */
+function textbox(wrapper: EditorWrapper): HTMLElement {
+  const surface = wrapper.get(`[role="textbox"][aria-label="${LABEL}"]`).element;
+  if (!(surface instanceof HTMLElement)) {
+    throw new Error("the editing surface is not an element");
+  }
+  return surface;
+}
+
+/** The `.xw-richtext` wrapper around the editing surface. */
+function richtextWrapper(surface: HTMLElement): HTMLElement {
+  const richtext = surface.closest(".xw-richtext");
+  if (!(richtext instanceof HTMLElement)) {
     throw new Error("the surface has no .xw-richtext wrapper");
   }
-  return { wrapper, surface, richtext };
+  return richtext;
+}
+
+/** The paragraph inside the surface holding the given visible text. */
+function paragraphWithText(surface: HTMLElement, value: string): HTMLElement | undefined {
+  return Array.from(surface.querySelectorAll("p")).find(
+    (block) => block.textContent?.includes(value) ?? false,
+  );
 }
 
 describe("ExamWorkspaceRichTextEditor paragraph space", () => {
@@ -54,37 +71,42 @@ describe("ExamWorkspaceRichTextEditor paragraph space", () => {
     document.body.innerHTML = "";
   });
 
-  it("renders two paragraphs as siblings under the surface in the full variant", async () => {
-    const { wrapper, surface, richtext } = await mountVariant("field");
+  it("shows two paragraphs as separate paragraph elements inside the labelled textbox", async () => {
+    const wrapper = await mountVariant("field");
     try {
-      expect(richtext.classList.contains("xw-richtext")).toBe(true);
-      expect(richtext.classList.contains("xw-richtext--compact")).toBe(false);
-      const blocks = Array.from(surface.children);
-      expect(blocks).toHaveLength(2);
-      for (const block of blocks) {
-        expect(block.tagName).toBe("P");
-        expect(block.parentElement).toBe(surface);
+      const surface = textbox(wrapper);
+      expect(surface.querySelectorAll("p").length).toBe(2);
+      const first = paragraphWithText(surface, "first");
+      const second = paragraphWithText(surface, "second");
+      if (first === undefined || second === undefined) {
+        throw new Error("expected paragraphs holding first and second");
       }
-      expect(blocks[0]?.textContent).toContain("first");
-      expect(blocks[1]?.textContent).toContain("second");
+      expect(first.tagName).toBe("P");
+      expect(second.tagName).toBe("P");
+      expect(first).not.toBe(second);
+      expect(surface.contains(first)).toBe(true);
+      expect(surface.contains(second)).toBe(true);
     } finally {
       wrapper.unmount();
     }
   });
 
-  it("marks the compact variant wrapper so the gap rule stays away", async () => {
-    const { wrapper, richtext } = await mountVariant("compact");
+  it("keeps the compact textbox inside the compact wrapper and the full one outside it", async () => {
+    const full = await mountVariant("field");
     try {
-      expect(richtext.classList.contains("xw-richtext")).toBe(true);
-      expect(richtext.classList.contains("xw-richtext--compact")).toBe(true);
+      const wrapper = richtextWrapper(textbox(full));
+      expect(wrapper.classList.contains("xw-richtext")).toBe(true);
+      expect(wrapper.classList.contains("xw-richtext--compact")).toBe(false);
     } finally {
-      wrapper.unmount();
+      full.unmount();
     }
-  });
-
-  it("keeps the full-variant paragraph gap rule in the component styles", () => {
-    // The test setup does not inject SFC styles into jsdom, so the spec reads
-    // the component source.
-    expect(editorSource).toContain(`${PARAGRAPH_SPACE_RULE} { margin-top: 1rem; }`);
+    const compact = await mountVariant("compact");
+    try {
+      const wrapper = richtextWrapper(textbox(compact));
+      expect(wrapper.classList.contains("xw-richtext")).toBe(true);
+      expect(wrapper.classList.contains("xw-richtext--compact")).toBe(true);
+    } finally {
+      compact.unmount();
+    }
   });
 });

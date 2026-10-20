@@ -221,9 +221,15 @@ class _PrintDocxRenderer:
                 self._picture(paragraph, run.asset_id)
             else:
                 raise AssertionError(f"unhandled print run: {type(run).__name__}")
-        if has_picture:
+        is_body = block.style in (PrintParagraphStyle.BODY, PrintParagraphStyle.GAP_LINE)
+        if has_picture and is_body:
+            spacing = BlockSpacing(
+                IMAGE_SPACING.space_before_mm,
+                max(IMAGE_SPACING.space_after_mm, BODY_PARAGRAPH_SPACING.space_after_mm),
+            )
+        elif has_picture:
             spacing = IMAGE_SPACING
-        elif block.style in (PrintParagraphStyle.BODY, PrintParagraphStyle.GAP_LINE):
+        elif is_body:
             spacing = BODY_PARAGRAPH_SPACING
         else:
             spacing = PARAGRAPH_SPACING

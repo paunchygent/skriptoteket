@@ -142,6 +142,7 @@ p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
 }}
 .print-grid td {{ text-align: center }}
 .print-grid th[scope="row"] {{ text-align: left }}
+.print-grid th {{ font-weight: normal }}
 .print-answer-key {{
   border-left: {template.ANSWER_KEY_RULE_PT}pt solid #{template.TEXT_COLOR_HEX};
   padding-left: {template.ANSWER_KEY_INDENT_MM}mm;

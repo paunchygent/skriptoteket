@@ -28,8 +28,12 @@ neighbouring export tests pass; lint, typecheck, fe-type-check, fe-lint, fe-buil
 rendered proof page `evidence/print-proof/print-page-1.png` (synthetic sample, real
 WeasyPrint renderer). Domain suite at `5dc5b835` (orchestrator slot): 5730 backend unit passed (59 skipped,
 pre-existing), 3 docker integration passed, 2095 frontend exam-workspace Vitest passed; logs in
-`evidence/domain-suite/`. Next: Pi ruthless review, then the Mac staging walk of the editor
-gap and the print. Evidence: retained root
+`evidence/domain-suite/`. Pi review of `717a8628` (`evidence/reviews/task-skript-40-04-20-717a8628-review.md`):
+changes requested on four mediums, admitted on focused proof with no rereview. F1 grid labels
+print at normal weight so bold marks show; F2 a DOCX body paragraph with a picture keeps 4 mm
+after; F3 `exam_print_answers.py` owns choice letters, ordering print order and facit lines, and
+the marks tests sit in their own files (all files at most 500 lines); F4 the editor spec is
+behavioural with no casts. Next: the Mac staging walk of the editor gap and the print. Evidence: retained root
 `01a15992-0dae-73a8-8965-6dd9ef7ad693`, user screenshot `user-staging-screenshot.webp`.
 
 ## Implementation Contract
