@@ -5,10 +5,13 @@
   on main `4951dec2`; the Mac walk failed step 5 (route race, CSRF 403).
   Rebuilt from the R9 design; rereview 12 approved head `d3a4b5dc`, merged to
   main 2026-10-20 (`f84eb85d`); the Mac re-walk of step 5 passed on staging.
+
 - TASK-SKRIPT-41-02-06 unreadable exam files (user, 2026-10-20; ADR-SKRIPT-0093):
   lead `2203a0c2`, branch `codex/task-skript-41-02-unreadable-exam-files-remote`,
-  root `01a1583c`. All review findings closed at `4623a344`; `f84eb85d` merged in. U5 in
-  progress: deep link and DOCUMENT_UNREADABLE mapping, its last unit.
+  root `01a1583c`. All units built and reviewed; head `5a508b88` (U5, U22, U23 on top of
+  the `f84eb85d` merge). Frontend suite green at `ee28cb7e`. Next: orchestrator closeout
+  and the merge to main.
+
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
