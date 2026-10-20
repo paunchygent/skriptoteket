@@ -30,15 +30,13 @@ async function startBlankSetup(title = "Original"): Promise<GuestStoreSetup> {
   return context;
 }
 
-function liveForeignLease() {
-  return { renewedAt: Date.now(), tabId: "other-tab", takeoverRequestedBy: null as string | null };
-}
+const FOREIGN_TAB_ID = "other-tab";
 
 describe("examWorkspaceGuestStore edit lease", () => {
   it("refuses a store from a tab that does not hold the live lease", async () => {
     const context = await startBlankSetup();
     const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    await context.leaseStorage.save(liveForeignLease());
+    await context.leaseStorage.claim(FOREIGN_TAB_ID, Date.now());
 
     const error = await context.store.store.shared
       .storeExamWorkspaceUndoStep(DOCUMENT_ID, {
@@ -58,11 +56,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
   it("stores when the tab holds the lease", async () => {
     const context = await startBlankSetup();
     const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    await context.leaseStorage.save({
-      renewedAt: Date.now(),
-      tabId: LEASE_TAB_ID,
-      takeoverRequestedBy: null,
-    });
+    await context.leaseStorage.claim(LEASE_TAB_ID, Date.now());
 
     const step = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
@@ -87,11 +81,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
 
     const expired = await startBlankSetup();
     const reopened = await expired.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    await expired.leaseStorage.save({
-      renewedAt: Date.now() - 16_000,
-      tabId: "other-tab",
-      takeoverRequestedBy: null,
-    });
+    await expired.leaseStorage.claim(FOREIGN_TAB_ID, Date.now() - 16_000);
     const restep = await expired.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
       document: exam("Efter"),
@@ -110,7 +100,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
     });
-    await context.leaseStorage.save(liveForeignLease());
+    await context.leaseStorage.claim(FOREIGN_TAB_ID, Date.now());
 
     const error = await context.store.store.shared
       .storeExamWorkspaceUndoStep(DOCUMENT_ID, {
@@ -134,7 +124,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
     });
-    await context.leaseStorage.save(liveForeignLease());
+    await context.leaseStorage.claim(FOREIGN_TAB_ID, Date.now());
 
     const moveError = await context.store.store.shared
       .moveExamWorkspaceHistoryPosition(DOCUMENT_ID, {

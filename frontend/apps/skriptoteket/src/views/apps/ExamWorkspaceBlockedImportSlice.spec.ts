@@ -4,7 +4,7 @@
  * Expected behavior:
  *   While the open exam has unsaved changes, the file picker is disabled and
  *   a dropped .docx is ignored, by the one `importBlocked` rule both paths
- *   read; the Öppna drawer line "Spara det öppna provet innan du importerar eller öppnar ett annat."
+ *   read; the Öppna drawer line "Vänta tills ändringarna har sparats."
  *   explains why and the teacher's edits stay. Once the copy is clean again
  *   (saved, or edited back), the picker and drops import as before.
  */
@@ -17,11 +17,10 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   saveDocument,
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -44,7 +43,7 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 
-const SAVE_FIRST_COPY = "Spara det öppna provet innan du importerar eller öppnar ett annat.";
+const PENDING_COPY = "Vänta tills ändringarna har sparats.";
 
 const succeededConversion: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
@@ -52,10 +51,10 @@ const succeededConversion: ExamWorkspaceConversionStatus = {
 };
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
-  arrangeStepHistory(apiMocks);
   apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValue(null);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
@@ -100,7 +99,7 @@ describe("import while the open exam has unsaved changes", () => {
 
     expect(picker(wrapper).element.disabled).toBe(true);
     expect(wrapper.get('[data-test="exam-workspace-open-dirty-hint"]').text()).toContain(
-      SAVE_FIRST_COPY,
+      PENDING_COPY,
     );
     expect(wrapper.get('[data-test="exam-workspace-pick-file"]').attributes("disabled")).toBeDefined();
   });

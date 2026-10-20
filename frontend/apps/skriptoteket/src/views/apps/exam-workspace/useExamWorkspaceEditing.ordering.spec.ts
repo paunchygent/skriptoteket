@@ -107,8 +107,10 @@ describe("ordering edits through the editing session", () => {
     expect(redone.choices[0]!.body).toEqual(typed);
   });
 
-  it("a failed store of the typing before Blanda om keeps both as separate steps once writes work", async () => {
-    // Review-2 F1: the shuffle used to be stored on its own after the typing failed, merging the two.
+  it("a failed store of the typing before Blanda om keeps both in one step once writes work", async () => {
+    // TK2: after a failed store the owed backlog is dropped, so the next
+    // store sends the newest working copy: the typing and the shuffle arrive
+    // as one step, and neither is lost.
     const { editing, server } = await openEditing(api, orderingExam());
     const before = [...editing.workspaceDocument.value!.items[0]!.print_order];
     const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
@@ -123,20 +125,34 @@ describe("ordering edits through the editing session", () => {
     // The shuffle waits behind the failed typing store instead of being stored past it.
     expect(server.state.steps).toHaveLength(0);
     expect(await editing.history.flush()).toBe(true);
-    expect(server.state.steps).toHaveLength(2);
+    expect(server.state.steps).toHaveLength(1);
+
+    // The single step carries both the text and the shuffle.
+    const stored = server.documents.get(server.state.cursor);
+    if (stored === undefined) {
+      throw new Error("expected the stored step");
+    }
+    expect(stored.items[0]!.print_order).toEqual(shuffled);
+    expect(stored.items[0]!.choices[0]!.body).toEqual(typed);
 
     await editing.history.undo();
     const undone = editing.workspaceDocument.value!.items[0]!;
     expect(undone.print_order).toEqual(before);
-    expect(undone.choices[0]!.body).toEqual(typed);
+    expect(undone.choices[0]!.body).not.toEqual(typed);
 
     await editing.history.redo();
-    expect(editing.workspaceDocument.value!.items[0]!.print_order).toEqual(shuffled);
+    const redone = editing.workspaceDocument.value!.items[0]!;
+    expect(redone.print_order).toEqual(shuffled);
+    expect(redone.choices[0]!.body).toEqual(typed);
   });
 
-  it("undo while the typing before Blanda om cannot be stored keeps the text and the shuffle", async () => {
+  it("undo while the typing before Blanda om cannot be stored keeps the text and the shuffle in one step", async () => {
+    // TK2: the failed flush drops the owed backlog; the next undo stores the
+    // newest copy as one step and then takes it back, so nothing is lost.
     const { editing, server } = await openEditing(api, orderingExam());
     const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
+    // The shuffle's own background store meets the first failure and drops
+    // the backlog; undo's flush meets the second and stops.
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline")).mockRejectedValueOnce(new Error("offline"));
 
     editing.updateItemChoiceBody("item_001", "choice_001", typed, false);
@@ -145,17 +161,29 @@ describe("ordering edits through the editing session", () => {
     random.mockRestore();
     const shuffled = [...editing.workspaceDocument.value!.items[0]!.print_order];
 
-    // The second failure hits undo's own flush; undo stops instead of storing the shuffle alone.
+    // The failure hits undo's own flush; undo stops instead of storing anything.
     await editing.history.undo();
     expect(server.state.steps).toHaveLength(0);
     const kept = editing.workspaceDocument.value!.items[0]!;
     expect(kept.print_order).toEqual(shuffled);
     expect(kept.choices[0]!.body).toEqual(typed);
 
-    // Writes work again: the next undo stores both steps first and takes back only the shuffle.
+    // Writes work again: the next undo stores the newest copy as one step,
+    // then takes it back.
     await editing.history.undo();
-    expect(server.state.steps).toHaveLength(2);
-    expect(editing.workspaceDocument.value!.items[0]!.choices[0]!.body).toEqual(typed);
+    expect(server.state.steps).toHaveLength(1);
+    const lastStore = api.storeExamWorkspaceUndoStep.mock.calls.at(-1);
+    if (lastStore === undefined) {
+      throw new Error("expected a stored step");
+    }
+    expect(lastStore[1].document.items[0]!.print_order).toEqual(shuffled);
+    expect(lastStore[1].document.items[0]!.choices[0]!.body).toEqual(typed);
+
+    // Nothing is lost: redo restores the text and the shuffle together.
+    await editing.history.redo();
+    const redone = editing.workspaceDocument.value!.items[0]!;
+    expect(redone.print_order).toEqual(shuffled);
+    expect(redone.choices[0]!.body).toEqual(typed);
   });
 
   it("a structural edit with nothing pending stores exactly one step", async () => {

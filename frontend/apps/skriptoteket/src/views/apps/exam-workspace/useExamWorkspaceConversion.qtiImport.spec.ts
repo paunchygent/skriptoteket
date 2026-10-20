@@ -22,6 +22,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { serverExamWorkspaceStore, type ExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceConversionBinding } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 
@@ -46,6 +47,7 @@ const QTI_SUMMARY = {
 };
 
 function binding(): ExamWorkspaceConversionBinding {
+  const fence = createSyncFence();
   return {
     isDirty: ref(false),
     serverDocument: ref<NativeExamDocument | null>(null),
@@ -54,6 +56,8 @@ function binding(): ExamWorkspaceConversionBinding {
     beginDocumentRead: () => (response) => response,
     applyResponse: vi.fn(),
     beforeFirstRevision: vi.fn(),
+    getFence: () => fence,
+    isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
     store: serverExamWorkspaceStore,
   };

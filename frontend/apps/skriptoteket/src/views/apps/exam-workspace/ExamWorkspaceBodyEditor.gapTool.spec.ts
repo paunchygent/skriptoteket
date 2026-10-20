@@ -40,13 +40,14 @@ import {
   stubLinearGapPointerGeometry,
 } from "./examWorkspaceGapToolPointer.specSupport";
 import { withBody, newTeacherItem } from "./examWorkspaceItemEdits";
+import { GAP_TOOL_AT_CAP_REASON } from "./useExamWorkspaceMakeGap";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { withNewGap } from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
 
 const TOOLBAR_GAP_TOOL = '[data-test="exam-workspace-toolbar-gap-tool"]';
 const FLOATING_GAP = '[data-test="exam-workspace-make-gap"]';
-const TOOL_AT_CAP = "Luckverktyg – högst 999 luckor";
+const TOOL_AT_CAP = GAP_TOOL_AT_CAP_REASON;
 
 /** Mount the body editor inside a small owner that applies each edit like the real store. */
 function mountHarness(item: NativeExamItem) {

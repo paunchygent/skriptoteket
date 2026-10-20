@@ -6,7 +6,7 @@
  * visible until a later poll merges the revision.
  */
 import { flushPromises } from "@vue/test-utils";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { NativeExamItem } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
@@ -25,8 +25,6 @@ import {
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 import { saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -49,9 +47,6 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 installProgressiveConversionLifecycle(apiMocks);
-beforeEach(() => {
-  arrangeStepHistory(apiMocks);
-});
 
 describe("Exam workspace progressive conversion completion", () => {
   it("merges a batch that arrives during a store without losing the pending edit", async () => {

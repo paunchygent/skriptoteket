@@ -7,6 +7,7 @@ import type { ExamWorkspaceDocumentResponse } from "../../../api/examWorkspace";
 import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 const api = vi.hoisted(() => ({
@@ -52,7 +53,7 @@ describe("saved exam baseline", () => {
         ...response, document: copied, saved_document: copied,
         summary: { ...response.summary, lineage_id: "lineage-2", version: 1 },
       });
-      expect(await state.saveDocumentAs("Kopia")).toBe("saved");
+      expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
       expect(api.copyExamWorkspaceDocument).toHaveBeenCalledWith(
         "lineage-1",
         "Kopia",
@@ -74,7 +75,7 @@ describe("saved exam baseline", () => {
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(true);
-      state.noteStored({ ...response.document });
+      state.noteStored(createSyncFence().begin(), { ...response.document });
       expect(state.isDirty.value).toBe(false);
       expect(state.savedRevision.value).toBe(1);
     } finally {

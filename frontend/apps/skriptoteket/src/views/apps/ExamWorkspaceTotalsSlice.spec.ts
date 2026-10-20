@@ -22,10 +22,11 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
-import { HISTORY_BASELINE_STEP_ID, arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+import { HISTORY_BASELINE_STEP_ID } from "./ExamWorkspaceHistory.specSupport";
 import { examWorkspaceFormatPoints, examWorkspacePrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 
@@ -57,7 +58,7 @@ const succeeded: ExamWorkspaceConversionStatus = {
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 const mounted: ViewWrapper[] = [];
-let history: ReturnType<typeof arrangeStepHistory>;
+let history: ReturnType<typeof resetSliceApiMocks>;
 const LINE = '[data-test="exam-workspace-printed-total-line"]';
 const CHANGE = '[data-test="exam-workspace-printed-total-change"]';
 const SHOW = '[data-test="exam-workspace-printed-total-show"]';
@@ -143,13 +144,13 @@ async function undo(wrapper: ViewWrapper) {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
+  history = resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) mock.mockReset();
   downloadMocks.triggerBrowserDownload.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });
   exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
-  history = arrangeStepHistory(apiMocks);
 });
 afterEach(() => {
   for (const wrapper of mounted.splice(0)) wrapper.unmount();

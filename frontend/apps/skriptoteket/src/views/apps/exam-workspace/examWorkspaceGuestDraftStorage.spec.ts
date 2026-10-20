@@ -75,7 +75,10 @@ describe("examWorkspaceGuestDraftStorage", () => {
     const storage = createIndexedDbGuestEditLeaseStorage();
 
     expect(typeof storage.load).toBe("function");
-    expect(typeof storage.save).toBe("function");
+    expect(typeof storage.claim).toBe("function");
+    expect(typeof storage.renew).toBe("function");
+    expect(typeof storage.release).toBe("function");
+    expect(typeof storage.requestTakeover).toBe("function");
   });
 
   it("round-trips the draft and its picture blobs through replaceIf on an empty slot", async () => {

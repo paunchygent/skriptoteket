@@ -4,7 +4,8 @@
  * Expected behavior (unit D1o):
  *   Opening a document whose stored schema is older than the current native
  *   exam document fails with `DOCUMENT_SCHEMA_OUTDATED`, and the failure
- *   toast reads `Provet är sparat i ett äldre format och kan inte öppnas.`
+ *   toast reads `Provet är sparat i ett äldre format och kan inte öppnas.
+ *   Importera originalfilen på nytt.`
  *   Every other open failure keeps `Det gick inte att öppna provet. Försök
  *   igen.` Both outcomes return false, so the deep link watcher restores the
  *   address exactly as it does for any other failed open.
@@ -19,7 +20,7 @@ import { useToastStore } from "../../../stores/toast";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
-const OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas.";
+const OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 
 const api = vi.hoisted(() => ({

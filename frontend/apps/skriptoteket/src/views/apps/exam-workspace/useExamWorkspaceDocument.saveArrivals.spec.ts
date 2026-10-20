@@ -27,6 +27,7 @@ import {
   openMatchingDocument as openWith,
   savedResponse,
 } from "./useExamWorkspaceDocument.specSupport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -96,7 +97,7 @@ describe("arriving suggestions during Spara som", () => {
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = state.saveDocumentAs("Kopia", createSyncFence().begin());
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new Error("network down"));
     await copying;
@@ -113,7 +114,7 @@ describe("arriving suggestions during Spara som", () => {
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = state.saveDocumentAs("Kopia", createSyncFence().begin());
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     const sent = sentDocument();
     pendingSave.resolve(
@@ -158,7 +159,7 @@ describe("a newly promoted key survives a revision that stores an equal older su
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = state.saveDocumentAs("Kopia", createSyncFence().begin());
     state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SOURCE_PAIRS) },
     ]);

@@ -6,8 +6,8 @@
  *   a selection's end without deleting text, as one change that emits a single
  *   `createGap(body, gapId, "")` event and never `update`. It works with the
  *   gap tool on or off. The caret ends collapsed directly after the new chip.
- *   `gapDisabledReason` names why the command is unavailable: not a gap
- *   question, or no next gap id. An empty gap is a Lucktext gap with no
+ *   `gapDisabledReason` names why the command is unavailable: no next gap
+ *   id. An empty gap is a Lucktext gap with no
  *   accepted answer in a question that has an answer key, or a dropdown gap
  *   with no correct option (`emptyGapIds`, reusing `gapHasAnswer`); a question
  *   without an answer key has none. `bodyWithoutEmptyGaps` removes every
@@ -234,18 +234,14 @@ describe("ExamWorkspaceRichTextEditor Tom lucka", () => {
 });
 
 describe("gapDisabledReason", () => {
-  it("is null for a gap question with a next gap id", () => {
-    expect(gapDisabledReason("gap_fill", "gap_002")).toBeNull();
-    expect(gapDisabledReason("inline_choice", "gap_001")).toBeNull();
-  });
-
-  it("names the reason for a question that is not a gap question", () => {
-    expect(gapDisabledReason("free_text", "gap_001")).toBe("Tom lucka – endast luckfrågor");
-    expect(gapDisabledReason("single_choice", "gap_001")).toBe("Tom lucka – endast luckfrågor");
+  it("is null with a next gap id", () => {
+    expect(gapDisabledReason("gap_002")).toBeNull();
+    expect(gapDisabledReason("gap_001")).toBeNull();
   });
 
   it("names the reason at the gap cap", () => {
-    expect(gapDisabledReason("gap_fill", null)).toBe("Tom lucka – högst 999 luckor");
+    expect(gapDisabledReason(null)).toBe("Tom lucka – inga fler luckor kan läggas till i frågan");
+    expect(gapDisabledReason(undefined)).toBe("Tom lucka – inga fler luckor kan läggas till i frågan");
   });
 });
 

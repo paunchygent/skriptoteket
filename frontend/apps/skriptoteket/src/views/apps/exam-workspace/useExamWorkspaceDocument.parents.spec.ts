@@ -19,6 +19,7 @@ import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -99,7 +100,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemBody("item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Edited." }] }], false);
     state.markItemReviewed("item_002");
 
-    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
+    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
 
     const sent = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(sent.parents).toEqual(original.parents);

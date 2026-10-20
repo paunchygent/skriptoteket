@@ -18,7 +18,7 @@
  *     `useExamWorkspaceMyCourses`; content through `getExamCourseContent`.
  */
 
-import { computed, ref, useId, watch } from "vue";
+import { computed, nextTick, ref, useId, watch } from "vue";
 
 import type {
   ExamCourseChoice,
@@ -35,6 +35,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
+import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
@@ -141,7 +142,7 @@ watch(
 
 const tagsById = computed(() => new Map(props.document.header.tags.map((tag) => [tag.id, tag])));
 const suggestBlocked = computed(() =>
-  !props.summary.course_key ? "Spara provet med en kurs först." : props.dirty ? "Spara provet först. Förslagen görs från det sparade provet." : null,
+  !courseKey.value ? "Välj en kurs först." : props.dirty ? PENDING_SAVE_COPY : null,
 );
 
 function toggleTag(entryId: string, text: string): void {
@@ -152,6 +153,21 @@ function toggleTag(entryId: string, text: string): void {
       ? tags.filter((tag) => tag.id !== entryId)
       : [...tags, { id: entryId, origin: "teacher", question_ids: [], text }],
   );
+}
+
+/**
+ * A refused edit leaves the native checkbox flipped while the bound document
+ * state is unchanged, so Vue never patches it back. Reset the input to the
+ * document state once the parent has had its turn; an accepted edit re-renders
+ * from the updated document and this is a no-op.
+ */
+async function handleToggleTag(event: Event, entryId: string, text: string): Promise<void> {
+  toggleTag(entryId, text);
+  await nextTick();
+  const target = event.target;
+  if (target instanceof HTMLInputElement) {
+    target.checked = tagsById.value.has(entryId);
+  }
 }
 
 function handleSuggestContent(): void {
@@ -382,7 +398,7 @@ function cites(entryId: string): string | null {
             :checked="tagsById.has(entry.id)"
             :disabled="disabled || contentBusy"
             :data-test="`exam-workspace-content-${entry.id}`"
-            @change="toggleTag(entry.id, entry.text)"
+            @change="handleToggleTag($event, entry.id, entry.text)"
           >
           <span>
             {{ entry.text }}

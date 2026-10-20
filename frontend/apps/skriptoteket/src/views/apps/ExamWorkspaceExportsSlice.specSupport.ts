@@ -24,8 +24,10 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
+import { type HistoryApiMocks } from "./ExamWorkspaceHistory.specSupport";
 
 export const ZERO_POINTS_NOTE =
   "Exam.net ger frågor med 0 poäng 1 poäng. Ändra poängen i Exam.net efter importen.";
@@ -100,7 +102,7 @@ export const wrappers: ViewWrapper[] = [];
 
 /** The mocks `arrangeExportApis` resets and primes before every test. */
 export interface ExportApiMocks {
-  api: Record<string, Mock> & {
+  api: HistoryApiMocks & {
     getExamWorkspaceConversionStatus: Mock;
     getExamWorkspaceDocument: Mock;
     importExamWorkspaceDocument: Mock;
@@ -115,7 +117,8 @@ export interface ExportApiMocks {
 
 /** Reset every mock and prime the finished import of the exportable fixture exam. */
 export function arrangeExportApis({ api, exportApi, download }: ExportApiMocks): void {
-  for (const mock of [...Object.values(api), ...Object.values(exportApi)]) {
+  resetSliceApiMocks(api);
+  for (const mock of Object.values(exportApi)) {
     mock.mockReset();
   }
   api.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);

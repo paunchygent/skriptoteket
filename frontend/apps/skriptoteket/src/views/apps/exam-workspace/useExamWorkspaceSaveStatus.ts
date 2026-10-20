@@ -6,9 +6,10 @@
  *   item 6): `Sparar …` while an edit is pending or being stored, `Sparat
  *   HH:MM` once the confirmed snapshot equals the copy in front of the
  *   teacher, and `Inte sparat` with the reason when a store failed, was
- *   refused, or met the edit lease held by the other tab while the edit was
- *   still unconfirmed. A store response never replaces edits made after its snapshot:
- *   the status reads `Sparat` only when the confirmed snapshot equals the
+ *   refused, met the edit lease held by the other tab while the edit was
+ *   still unconfirmed, or left a refused edit the sync gate still holds. A
+ *   store response never replaces edits made after its snapshot: the status
+ *   reads `Sparat` only when the confirmed snapshot equals the
  *   current copy. After a network or server failure the pending edit stays
  *   and the store is retried every 5 s and on the next edit; after a lease
  *   loss the tab is read-only, so no retry is scheduled and none is promised.
@@ -28,12 +29,16 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceGuestSaveStatus } from "./examWorkspaceGuestDraft";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 
 export const AUTOSAVE_FAILURE_COPY = "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.";
 
 /** A tab that lost the lease with an edit not stored: no retry is promised. */
 export const LEASE_LOST_COPY =
   "Ändringen sparades inte eftersom provet redigeras i den andra fliken.";
+
+/** The pending-save hint the Öppna drawer and the details drawer share. */
+export const PENDING_SAVE_COPY = "Vänta tills ändringarna har sparats.";
 
 /** A failed store is retried this often until it succeeds. */
 export const EXAM_WORKSPACE_SAVE_RETRY_MS = 5000;
@@ -50,8 +55,12 @@ export type ExamWorkspaceSaveStatus =
 export type ExamWorkspaceSaveStatusDeps = {
   /** True for a guest exam, whose saved status names the browser instead of Mina filer. */
   isGuest: () => boolean;
+  /** The sync gate holds a refused edit no store has confirmed. */
+  keptUnstored: () => boolean;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
   /** A store or a position move confirmed this document; the file holds it now. */
-  noteStored: (document: NativeExamDocument) => void;
+  noteStored: (token: FenceToken, document: NativeExamDocument) => void;
   /** True while the working copy differs from the confirmed snapshot. */
   pending: () => boolean;
   /** True while a store or a position move is in flight. */
@@ -100,13 +109,19 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
   /**
    * One computed save status: `Sparar …` while an edit is pending or being
    * stored, `Inte sparat` with the reason once a store concluded refused,
-   * failed or lost the lease with the edit still unconfirmed, else
-   * `Sparat HH:MM`. A concluded refusal, failure or lease loss pins
-   * `Inte sparat` until a store succeeds, even while newer edits are pending.
+   * failed or lost the lease with the edit still unconfirmed, or while the
+   * sync gate still holds a refused edit, else `Sparat HH:MM`. A concluded
+   * refusal, failure or lease loss pins `Inte sparat` until a store succeeds, even while newer edits are pending.
    * The lease loss is the operative reason while the tab is read-only, so it
    * reads before a refusal or failure pinned earlier.
    */
   const saveStatus = computed<ExamWorkspaceSaveStatus>(() => {
+    if (deps.keptUnstored()) {
+      // The gate's refused edit is stored by no confirmed snapshot yet: the
+      // status keeps `Inte sparat` with the lease reason, even while its
+      // merged store is in flight.
+      return { state: "unsaved", detail: LEASE_LOST_COPY };
+    }
     if (deps.storing.value) {
       return { state: "saving", detail: null };
     }
@@ -154,17 +169,23 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
     }
   }
 
-  function confirmed(document: NativeExamDocument): void {
+  function confirmed(token: FenceToken, document: NativeExamDocument): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     lastSavedAt.value = new Date().toISOString();
     lastRefusal.value = null;
     lastFailure.value = false;
     leaseLostWithPendingEdit.value = false;
     clearRetryTimer();
-    deps.noteStored(document);
+    deps.noteStored(token, document);
   }
 
   /** A store failed; the pending edit stays, toasts once per outage, and retries. */
-  function noteFailed(): void {
+  function noteFailed(token: FenceToken): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     if (!lastFailure.value) {
       // One toast per outage: the retry below keeps storing without repeating it.
       toast.failure(AUTOSAVE_FAILURE_COPY);
@@ -174,7 +195,10 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
   }
 
   /** A store was refused; the reason shows until a store succeeds. */
-  function noteRefused(reason: string): void {
+  function noteRefused(token: FenceToken, reason: string): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     lastRefusal.value = reason;
     leaseLostWithPendingEdit.value = false;
   }

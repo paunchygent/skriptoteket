@@ -110,6 +110,12 @@ const currentExports = computed(() =>
     (format) => props.exports.savedExports.value[format.target] !== undefined,
   ).map((format) => format.name),
 );
+/** The one save status for the Öppna drawer: its state and, while unsaved, its own reason. */
+const openSaveStatus = computed(() => props.editing.history.saveStatus.value);
+const openSaveState = computed(() => openSaveStatus.value.state);
+const openSaveDetail = computed(() =>
+  openSaveStatus.value.state === "unsaved" ? openSaveStatus.value.detail : null,
+);
 </script>
 
 <template>
@@ -133,6 +139,8 @@ const currentExports = computed(() =>
       :import-blocked="importBlocked"
       :is-busy="isBusy"
       :is-dirty="isDirty"
+      :save-state="openSaveState"
+      :save-detail="openSaveDetail"
       :source-file-error="sourceFileError"
       :conversion-message="conversionMessage"
       :conversion-error="conversionError"

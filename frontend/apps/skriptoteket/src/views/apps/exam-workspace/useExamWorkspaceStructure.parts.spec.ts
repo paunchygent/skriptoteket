@@ -22,6 +22,8 @@ import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 const apiMocks = vi.hoisted(() => ({
@@ -91,9 +93,12 @@ function setup(selected: string | null = null) {
     selectedItemId.value = itemId;
   });
   let busy = false;
+  const fence = createSyncFence();
+  const transport = createFencedTransport(() => fence, serverExamWorkspaceStore.shared);
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: (next) => {
+      applyCommandResponse: (token, next) => {
+        void token;
         applied.push(next);
         workspaceDocument.value = next.document;
       },
@@ -102,9 +107,14 @@ function setup(selected: string | null = null) {
         if (selectId !== null) selectedItemId.value = selectId;
         return true;
       },
+      enqueueWrite: (run, refused) => {
+        void refused;
+        return run(fence.begin());
+      },
       flush,
       historyCursor,
       isBusy: () => busy,
+      isCurrent: (token) => fence.isCurrent(token),
       isReadOnly: () => false,
       lineageId: () => "lineage-1",
       noteLeaseLost,
@@ -112,7 +122,7 @@ function setup(selected: string | null = null) {
       replaceCopy: (run) => run(),
       savedRevision: () => 7,
       selectItem,
-      shared: serverExamWorkspaceStore.shared,
+      transport,
       selectParent,
       selectedItemId,
       selectedParentId,

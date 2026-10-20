@@ -20,6 +20,7 @@
  *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
  *     conversion merges and one-question retries through their own composables.
+ *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
  *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
  */
 
@@ -29,7 +30,6 @@ import { isApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
-  ExamCourseChoice,
   NativeExamDocument,
   NativeExamItem,
   NativeExamItemKind,
@@ -41,8 +41,11 @@ import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
+import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
+import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -56,7 +59,7 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
-const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas.";
+const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 
 /**
  * One opening of an exam: created when a document of another lineage is
@@ -76,13 +79,35 @@ export type ExamWorkspaceDocumentOptions = {
   store: ExamWorkspaceStore;
   /** True while another tab holds the edit lease: every edit entry refuses. */
   isReadOnly?: () => boolean;
+  /** The sync gate's generation owner; every install carries its token. */
+  getFence?: () => SyncFence;
+  /**
+   * The gate's fresh reload for a reload whose generation retired while it
+   * waited and whose exam is still the open one. Absent in specs without a
+   * gate, whose fence never retires mid-wait.
+   */
+  requestFreshLoad?: () => void;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
+  const fallbackFence = createSyncFence();
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
   const isReadOnly = options.isReadOnly ?? (() => false);
   const store = options.store;
+  const getFence = options.getFence;
+
+  function resolveFence(): SyncFence {
+    const fence = getFence?.();
+    if (fence) {
+      return fence;
+    }
+    return fallbackFence;
+  }
+
+  function isCurrent(token: FenceToken): boolean {
+    return resolveFence().isCurrent(token);
+  }
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
@@ -101,6 +126,27 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
+  let adoptConversionHolder: (response: ExamWorkspaceDocumentResponse) => void = () => undefined;
+  let replayHeldHolder: () => void = () => undefined;
+  const {
+    applyCommandResponse,
+    applyResponse,
+    noteStored,
+  } = createDocumentInstalls({
+    adoptConversion: (response) => adoptConversionHolder(response),
+    historyCursor,
+    isCurrent,
+    noteExportBlockers,
+    notes,
+    openExam,
+    recordSummary,
+    replayHeld: () => replayHeldHolder(),
+    savedDocument,
+    selectedItemId,
+    serverDocument,
+    summary,
+    workspaceDocument,
+  });
   const {
     adoptConversion,
     conversionError,
@@ -123,6 +169,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       beforeFirstRevision: () => {
         selectedItemId.value = null;
       },
+      getFence: () => resolveFence(),
+      isCurrent,
       isDirty,
       isSaving: () => operationBusy.value,
       serverDocument,
@@ -132,6 +180,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     },
     (lineageId) => openDocument(lineageId),
   );
+  adoptConversionHolder = adoptConversion;
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
@@ -143,8 +192,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   );
   /** An undo, redo or server command is reading the document that replaces the copy. */
   const replacing = ref(false);
-  /** The arrival marks a replacing read was started at; null while none runs. */
-  let held: { arrivals: number; keying: number } | null = null;
   /** No edit, save or reload may start: an operation runs or the copy is about to be replaced. */
   const isBusy = computed(() => isOperationBusy.value || replacing.value);
 
@@ -166,28 +213,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     return openExam.value === opening;
   }
 
-  function applyResponse(
-    response: ExamWorkspaceDocumentResponse,
-    local: NativeExamDocument = response.document,
-  ): void {
-    if (openExam.value?.lineageId !== response.summary.lineage_id) {
-      openExam.value = { lineageId: response.summary.lineage_id };
-    }
-    workspaceDocument.value = local;
-    noteExportBlockers(response.document.title, response.export_blockers);
-    serverDocument.value = response.document;
-    savedDocument.value = response.saved_document;
-    summary.value = response.summary;
-    historyCursor.value = response.history_cursor;
-    recordSummary(response.summary);
-    notes.value = response.notes;
-    adoptConversion(response);
-    const items = local.items;
-    selectedItemId.value = items.some((item) => item.item_id === selectedItemId.value)
-      ? selectedItemId.value
-      : (items[0]?.item_id ?? null);
-  }
-
   /**
    * Capture rename ordering before the GET and reconcile in its caller's continuation.
    * Installing an opening must not wait an extra microtask: other completions
@@ -202,15 +227,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   async function openDocument(lineageId: string): Promise<boolean> {
-    if (isBusy.value) {
+    if (isOperationBusy.value) {
       return false;
     }
     operationBusy.value = true;
     try {
+      const fence = resolveFence();
+      const token = fence.begin();
       const reconcile = beginDocumentRead();
       const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
+      if (!fence.isCurrent(token)) {
+        return false;
+      }
       selectedItemId.value = null;
-      applyResponse(response);
+      applyResponse(token, response);
       keying.invalidateCopy();
       return true;
     } catch (error) {
@@ -228,11 +258,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /**
    * Read the exam again. Also the conflict recovery of undo and the server
    * commands. A 409 that arrives while an operation runs no longer skips the
-   * reload: it waits for the running operation to end instead.
+   * reload: it waits for the running operation to end instead. A retired
+   * answer installs nothing.
    */
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
     if (!currentSummary) return;
+    const lineageId = currentSummary.lineage_id;
+    const fence = resolveFence();
+    const token = fence.begin();
     if (isOperationBusy.value) {
       // A busy-time 409 waits for the operation instead of skipping the
       // reload; the watch resolves when the operation clears without a timer.
@@ -242,16 +276,27 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
         }, { immediate: true });
       });
     }
+    if (!fence.isCurrent(token)) {
+      // The wait outlived the generation: when the captured exam is still
+      // the open one, its install may hold an older copy, so the gate reads
+      // it fresh. Another exam in front drops the reload.
+      if (summary.value?.lineage_id === lineageId) {
+        options.requestFreshLoad?.();
+      }
+      return;
+    }
     operationBusy.value = true;
     try {
       const reconcile = beginDocumentRead();
-      const response = reconcile(await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id));
-      applyResponse(response);
-      keying.invalidateCopy();
-      if (held) {
-        // A conflict inside a replacing read: its suggestions run again on the reloaded exam.
-        arrivals.replayAfterResponse(held.arrivals);
+      const response = reconcile(
+        await store.shared.getExamWorkspaceDocument(lineageId),
+      );
+      if (!fence.isCurrent(token)) {
+        return;
       }
+      applyResponse(token, response);
+      keying.invalidateCopy();
+      replacingScope.replayArrivalsAfterReload();
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
@@ -270,13 +315,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     noteEdit(false, current);
   }
 
-  function setCourse(course: ExamCourseChoice | null): void {
-    const current = workspaceDocument.value;
-    if (!current || isBusy.value || isReadOnly()) return;
-    workspaceDocument.value = { ...current, header: { ...current.header, course } };
-    noteEdit(true, current);
-  }
-
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
     isBusy: () => isBusy.value,
     operationBusy,
@@ -286,7 +324,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
 
   const { retryItem: requestItemRetry } = useExamWorkspaceItemRetry({
+    getFence: () => resolveFence(),
     isBusy: () => isBusy.value,
+    isCurrent,
     openExam,
     operationBusy,
     serverDocument,
@@ -299,10 +339,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
     if (isReadOnly()) return;
     const prior = workspaceDocument.value;
-    const before = prior?.items.find((item) => item.item_id === itemId);
-    await requestItemRetry(itemId, kind);
-    const after = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
-    if (after !== before) {
+    const applied = await requestItemRetry(itemId, kind);
+    if (applied) {
       keying.invalidateItem(itemId);
       noteEdit(true, prior);
     }
@@ -340,11 +378,23 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   // Every gap keying edit and its asynchronous misspelling reply.
   const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
 
+  // Reads that replace the open copy (undo, redo, server commands).
+  const replacingScope = useExamWorkspaceDocumentReplacing({
+    workspaceDocument,
+    selectedItemId,
+    replacing,
+    arrivals,
+    keying,
+    isCurrent,
+  });
+  replayHeldHolder = () => replacingScope.replayHeld();
+
   const { saveDocumentAs } = useExamWorkspaceSave({
     applyResponse,
     arrivals,
     beginDocumentRead,
     isBusy,
+    isCurrent,
     keying,
     operationBusy,
     summary,
@@ -382,71 +432,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   // The whole-document field commands, each one `editDocument` call.
-  const fieldCommands = useExamWorkspaceDocumentFields({ editDocument });
-
-  function keepSelection(document: NativeExamDocument): void {
-    if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
-      selectedItemId.value = document.items[0]?.item_id ?? null;
-    }
-  }
-
-  /**
-   * Run an undo, redo or server command that replaces the copy. Editing is
-   * locked meanwhile, and AI suggestions and spelling replies that arrive
-   * during its read run again on the document it installs, so a delivered
-   * result is never overwritten. Replies whose question or gap the document
-   * no longer holds do not apply, as everywhere else.
-   */
-  async function replaceCopy<T>(run: () => Promise<T>): Promise<T> {
-    replacing.value = true;
-    const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
-    const openedArrivals = arrivals.beginHold();
-    const openedKeying = keying.beginHold();
-    held = marks;
-    try {
-      return await run();
-    } finally {
-      held = null;
-      arrivals.endHold(openedArrivals);
-      keying.endHold(openedKeying);
-      replacing.value = false;
-    }
-  }
-
-  function replayHeld(): void {
-    if (held) {
-      arrivals.replayAfterResponse(held.arrivals);
-      keying.replayAfterResponse(held.keying);
-    }
-  }
-
-  /** Put an undo step's document in front of the teacher; not an edit. */
-  function installDocument(document: NativeExamDocument): void {
-    workspaceDocument.value = document;
-    keepSelection(document);
-    replayHeld();
-  }
-
-  /**
-   * A store or a position move confirmed this document; the exam file holds
-   * it now. The saved baseline becomes the confirmed snapshot, and the open
-   * copy's revision follows the file: the working copy keeps its content
-   * (later edits stay), only its revision tracks the confirmed file version,
-   * so dirty still means the content differs from the file.
-   */
-  function noteStored(document: NativeExamDocument): void {
-    savedDocument.value = document;
-    const current = workspaceDocument.value;
-    if (current !== null && current.revision !== document.revision) {
-      workspaceDocument.value = { ...current, revision: document.revision };
-    }
-  }
-
-  /** A server command (parent, change type) stored a new step; show its document. */
-  function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
-    applyResponse(response);
-    replayHeld();
-  }
+  const fieldCommands = useExamWorkspaceDocumentFields({
+    courseKey: () => workspaceDocument.value?.header.course?.key ?? null,
+    editDocument,
+  });
 
   return {
     ...itemEdits,
@@ -454,7 +443,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     applyCommandResponse,
     editDocument,
     historyCursor,
-    installDocument,
+    installDocument: replacingScope.installDocument,
     listOrdering,
     applyArrivingSuggestions,
     assetUrls,
@@ -471,7 +460,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     isDirty,
     isOperationBusy,
     isReplacing: computed(() => replacing.value),
-    replaceCopy,
+    replaceCopy: replacingScope.replaceCopy,
     isOpen,
     loadSavedDocuments,
     noteExportBlockers,
@@ -490,7 +479,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     serverDocument,
     selectItem,
     setTitle,
-    setCourse,
     selectedItem,
     selectedItemId,
     summary,

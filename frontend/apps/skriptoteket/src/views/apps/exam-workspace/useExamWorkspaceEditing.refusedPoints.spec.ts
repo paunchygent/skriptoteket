@@ -79,11 +79,14 @@ describe("typing negative points", () => {
         tabId: "tab-cp1",
       }),
     );
+    // The lease reclaim after the open reads the newest document before the
+    // gate reaches editing.
+    api.getExamWorkspaceDocument.mockImplementation(async () => response(baseline, "step-0"));
     editing.applyCommandResponse(response(baseline, "step-0"));
-    for (let attempt = 0; attempt < 10 && editing.readOnly.value; attempt += 1) {
+    for (let attempt = 0; attempt < 50 && editing.editingLocked.value; attempt += 1) {
       await flushPromises();
     }
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.editingLocked.value).toBe(false);
 
     editing.updateItemPoints("item_001", -1);
     expect(editing.workspaceDocument.value!.items[0]!.points).toBe(-1);

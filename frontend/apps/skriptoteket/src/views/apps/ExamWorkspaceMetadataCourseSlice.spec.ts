@@ -1,13 +1,12 @@
 /** Teacher course choices travel through the real drawer, dirty state and toolbar save. */
 import { createTestingPinia } from "@pinia/testing";
+import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamCourse, ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
 import {
-  buildResponse, mountExamWorkspace, saveDocument, type ViewWrapper,
+  buildResponse, mountExamWorkspace, resetSliceApiMocks, saveDocument, type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -61,8 +60,8 @@ async function choose(wrapper: ViewWrapper, query: string) {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
-  arrangeStepHistory(api);
+  resetSliceApiMocks(api);
+  for (const mock of Object.values(exportApiMocks)) mock.mockReset();
   rename.mockReset();
   original = buildResponse({ version: 1 });
   original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] };
@@ -84,7 +83,9 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
     expect(saveState(wrapper)).toBe("Sparat");
     await choose(wrapper, "SVESVE02");
     expect(drawer.get('[data-test="exam-workspace-metadata-subject"]').text()).toContain("Svenska");
-    // A course pick is structural, so it is stored at once.
+    // A course pick is structural, so it is stored at once; the fenced store
+    // answer settles one tick later.
+    await flushPromises();
     expect(saveState(wrapper)).toMatch(/^Sparat /);
     const stores = api.storeExamWorkspaceUndoStep.mock.calls;
     expect(stores).toHaveLength(1);

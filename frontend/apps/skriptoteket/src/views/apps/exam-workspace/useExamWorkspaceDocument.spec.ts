@@ -19,6 +19,7 @@ import {
   currentItem,
   openMatchingDocument as openWith,
 } from "./useExamWorkspaceDocument.specSupport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -121,7 +122,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
 
     expect(currentItem(state).answer_key.origin).toBe("absent");
     expect(currentItem(state).answer_key.match_pairs).toEqual([]);
-    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
+    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
     expect(apiMocks.copyExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
@@ -132,7 +133,7 @@ describe("matching edits in useExamWorkspaceDocument", () => {
 
     state.updateItemMatchEntryBody("item_001", "right", "right_001", [], false);
 
-    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
+    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("saved");
     const saved = apiMocks.copyExamWorkspaceDocument.mock.calls[0]?.[2];
     expect(saved?.items[0]?.match_right.find((entry: { right_id: string }) => entry.right_id === "right_001")?.body).toEqual([]);
   });

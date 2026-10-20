@@ -86,7 +86,8 @@ const {
   openExam,
   importDocument,
   importBlocked,
-  readOnly,
+  leaseReadOnly,
+  editingLocked,
   requestTakeover,
   savedRevision,
   setTags,
@@ -175,7 +176,7 @@ const {
 } = selection;
 editing.registerSelectParent(selectEntry);
 
-const disabled = computed(() => isBusy.value || structure.running.value || readOnly.value);
+const disabled = computed(() => isBusy.value || structure.running.value || editingLocked.value);
 const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
@@ -320,7 +321,7 @@ onMounted(() => void loadSavedDocuments());
       @dismiss="dismissSignInPrompt"
     />
     <ExamWorkspaceEditLeaseNotice
-      v-if="readOnly && workspaceDocument"
+      v-if="leaseReadOnly && workspaceDocument"
       :waiting="takeoverWaiting"
       @takeover="requestTakeover"
     />

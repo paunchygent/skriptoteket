@@ -16,8 +16,10 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
@@ -91,15 +93,20 @@ function missingPictureDocument(): NativeExamDocument {
 
 function setup(document: NativeExamDocument) {
   const workspaceDocument = ref<NativeExamDocument | null>(document);
+  const fence = createSyncFence();
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: (next) => {
-        workspaceDocument.value = next.document;
+      applyCommandResponse: (token, next) => {
+        if (fence.isCurrent(token)) {
+          workspaceDocument.value = next.document;
+        }
       },
       editDocument: () => true,
+      enqueueWrite: (run) => run(fence.begin()),
       flush: async () => true,
       historyCursor: ref("cursor-before-flush"),
       isBusy: () => false,
+      isCurrent: (token) => fence.isCurrent(token),
       isReadOnly: () => false,
       lineageId: () => "lineage-1",
       noteLeaseLost: () => undefined,
@@ -110,8 +117,8 @@ function setup(document: NativeExamDocument) {
       selectParent: () => undefined,
       selectedItemId: ref<string | null>(null),
       selectedParentId: ref<string | null>(null),
-      shared: serverExamWorkspaceStore.shared,
       tabId: () => "tab-1",
+      transport: createFencedTransport(() => fence, serverExamWorkspaceStore.shared),
       workspaceDocument,
     }),
   );
@@ -132,7 +139,7 @@ describe("changeType on an unconverted question", () => {
     await structure.changeType("item_001", "gap_fill");
 
     expect(apiMocks.changeExamWorkspaceItemType).toHaveBeenCalledOnce();
-    expect(apiMocks.changeExamWorkspaceItemType.mock.calls[0]![1]).toEqual({
+    expect(apiMocks.changeExamWorkspaceItemType.mock.calls.at(0)?.at(1)).toEqual({
       expected_cursor: "cursor-before-flush",
       expected_revision: 7,
       item_id: "item_001",

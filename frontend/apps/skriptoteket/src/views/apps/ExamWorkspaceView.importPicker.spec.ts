@@ -21,7 +21,6 @@ import {
   type ViewWrapper,
 } from "./ExamWorkspaceView.specSupport";
 
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   copyExamWorkspaceDocument: vi.fn(),
@@ -59,7 +58,6 @@ afterEach(() => {
 
 beforeEach(() => {
   arrangeViewApis(apiMocks);
-  arrangeStepHistory(apiMocks);
   inputClick = vi.spyOn(HTMLInputElement.prototype, "click").mockImplementation(() => undefined);
 });
 

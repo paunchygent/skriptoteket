@@ -78,7 +78,7 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
 
   it("disables the toggle with its own cap reason", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: { showGap: true, gapToolDisabledReason: "Luckverktyg – högst 999 luckor" },
+      props: { showGap: true, gapToolDisabledReason: "Luckverktyg – inga fler luckor kan läggas till i frågan" },
     });
     const toggle = wrapper.get(GAP_TOOL);
     const element = toggle.element;
@@ -86,7 +86,7 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
       throw new Error("the gap tool toggle is not a button");
     }
     expect(element.disabled).toBe(true);
-    expect(toggle.attributes("title")).toBe("Luckverktyg – högst 999 luckor");
+    expect(toggle.attributes("title")).toBe("Luckverktyg – inga fler luckor kan läggas till i frågan");
   });
 
   it("disables the toggle with disabled", () => {
