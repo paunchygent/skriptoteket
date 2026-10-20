@@ -113,6 +113,7 @@ export function setupLease(
       }),
       onLeaseLost: () => undefined,
       onLeaseRefused: () => undefined,
+      onPageHidden: () => undefined,
       onTakeoverRequested: options.onTakeoverRequested ?? (async () => {
         flushed.push("stored");
       }),

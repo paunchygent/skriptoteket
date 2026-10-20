@@ -38,7 +38,8 @@ import {
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import type { FenceToken } from "./examWorkspaceSyncFence";
-import { createSyncGateTimer, useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
+import { createSyncGateTimer } from "./examWorkspaceSyncGateTimer";
+import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
 
@@ -217,6 +218,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     onLeaseAcquired: () => requireGate().leaseAcquired(),
     onLeaseLost: () => requireGate().leaseLost(),
     onLeaseRefused: () => requireGate().leaseRefused(),
+    onPageHidden: () => requireGate().pageHidden(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,

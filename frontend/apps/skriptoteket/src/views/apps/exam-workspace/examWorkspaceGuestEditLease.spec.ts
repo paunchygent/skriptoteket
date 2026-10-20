@@ -290,4 +290,49 @@ describe("examWorkspaceGuestEditLease", () => {
       takeoverRequestedBy: null,
     });
   });
+
+  it("keeps the heartbeat when a retired takeover completion settles", async () => {
+    const storage = createInMemoryGuestEditLeaseStorage();
+    const fence = createSyncFence();
+    const hub = createChannelHub();
+    let flushCalls = 0;
+    let releaseFlush: (() => void) | undefined;
+    const controller = createGuestEditLeaseController({
+      fence,
+      now: () => 1_000_000,
+      onTakeoverRequested: () => {
+        flushCalls += 1;
+        return new Promise<void>((resolve) => {
+          releaseFlush = resolve;
+        });
+      },
+      openChannel: () => hub.createChannel(),
+      storage,
+      tabId: "tab-a",
+    });
+    try {
+      expect(await controller.claim()).toBe("held");
+      // Another tab asks to take over, so the next renew takes the flush path.
+      await storage.requestTakeover("tab-b", 1_000_000);
+      const renewed = controller.renew();
+      // Let the renew reach the takeover flush, then retire the generation as
+      // an exam switch would before the flush completes.
+      for (let attempt = 0; attempt < 20 && flushCalls === 0; attempt += 1) {
+        await Promise.resolve();
+      }
+      const flush = releaseFlush;
+      if (flush === undefined) {
+        throw new Error("expected the takeover flush to start");
+      }
+      fence.retire();
+      flush();
+      // The retired continuation must not stop the new visit's poller: it
+      // reports held, so the interval cleanup keeps the heartbeat. Nothing
+      // is released either, since the answer is no longer current.
+      await expect(renewed).resolves.toBe(true);
+      expect(await storage.load()).toMatchObject({ tabId: "tab-a" });
+    } finally {
+      controller.dispose();
+    }
+  });
 });

@@ -271,14 +271,6 @@ export function createGuestEditLeaseChannel(
   };
 }
 
-/** A random tab id per page load, mirroring the toast id fallback. */
-export function createGuestEditLeaseTabId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 export type GuestEditLeaseClaimOutcome = "held" | "readonly";
 export type GuestEditLeaseTakeoverOutcome = "claimed" | "requested" | "own";
 
@@ -424,6 +416,12 @@ export function createGuestEditLeaseController(
         record.takeoverRequestedBy !== deps.tabId
       ) {
         await answerTakeover(token);
+        if (!deps.fence.isCurrent(token)) {
+          // The answer settled after the generation retired, so a new visit
+          // already owns the heartbeat: report held so the retired
+          // continuation never stops the new interval.
+          return true;
+        }
       }
       return false;
     }

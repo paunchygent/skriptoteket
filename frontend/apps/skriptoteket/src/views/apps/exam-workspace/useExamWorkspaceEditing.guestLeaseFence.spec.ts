@@ -16,6 +16,7 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceEditLeaseResponse,
@@ -325,5 +326,57 @@ describe("the guest lease fence fail-first ports", () => {
       position: editing.history.position.value,
       title: workspace.title,
     }).toEqual({ locked: false, position: "step-0", title: "Original" });
+  });
+
+  it("pagehide must retire a pending heartbeat claim while the gate was already readonly", async () => {
+    vi.useFakeTimers();
+    const events = new EventTarget();
+    vi.stubGlobal("window", events);
+    const base = exam();
+    fakeServer(api, base);
+    const claim = deferred<ExamWorkspaceEditLeaseResponse>();
+    let claims = 0;
+    const held: ExamWorkspaceEditLeaseResponse = {
+      holder_tab_id: "A",
+      renewed_at: "2026-10-20T07:00:00Z",
+      takeover_requested: false,
+      takeover_requested_by: null,
+    };
+    const driver: ExamWorkspaceEditLeaseServer = {
+      claim: () => {
+        claims += 1;
+        if (claims === 1) {
+          return Promise.reject(new ApiError({ code: "EDIT_LEASE_HELD", message: "held", status: 409 }));
+        }
+        return claim.promise;
+      },
+      release: () => Promise.resolve({ ...held, holder_tab_id: null }),
+      renew: () => Promise.resolve(held),
+      requestTakeover: () => Promise.resolve(held),
+    };
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server: driver, tabId: "A" }));
+    editing.applyCommandResponse(reply(base));
+    await flushPromises();
+    expect(editing.leaseReadOnly.value).toBe(true);
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(claims).toBe(2);
+    api.getExamWorkspaceDocument.mockResolvedValue(
+      reply({
+        ...base,
+        items: base.items.map((item) => (item.item_id === "item_002" ? { ...item, points: 9 } : item)),
+      }),
+    );
+    events.dispatchEvent(new Event("pagehide"));
+    claim.resolve(held);
+    await flushPromises();
+    await flushPromises();
+    const workspace = editing.workspaceDocument.value;
+    if (workspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect({ locked: editing.editingLocked.value, points: workspace.items[1]?.points }).toEqual({
+      locked: true,
+      points: 2,
+    });
   });
 });

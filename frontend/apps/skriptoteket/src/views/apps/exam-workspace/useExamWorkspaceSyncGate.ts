@@ -42,6 +42,10 @@ import type {
 } from "../../../api/examWorkspace";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
+import {
+  SYNC_GATE_RELOAD_RETRY_MS,
+  type ExamWorkspaceSyncGateTimer,
+} from "./examWorkspaceSyncGateTimer";
 
 /** The confirmed sync state: no fresh copy and step list, lease held and fresh, or another tab's lease. */
 export type ExamWorkspaceSyncGatePhase = "loading" | "editing" | "readonly";
@@ -52,14 +56,6 @@ export type ExamWorkspaceSyncGateKeptEdit = {
   base: NativeExamDocument;
   /** The refused working copy, kept until a store in the merge generation succeeds. */
   edited: NativeExamDocument;
-};
-
-/** The 5 s reload-retry timer; production passes `createSyncGateTimer`. */
-export type ExamWorkspaceSyncGateTimer = {
-  /** Run `run` after `delayMs`; replaces a pending retry. */
-  schedule: (run: () => void, delayMs: number) => void;
-  /** Drop a pending retry. */
-  cancel: () => void;
 };
 
 /** Small ports G1b binds to the existing owners; the specs double them. */
@@ -115,28 +111,6 @@ export type ExamWorkspaceSyncGateDeps = {
   /** The retry timer; production passes `createSyncGateTimer`. */
   timer: ExamWorkspaceSyncGateTimer;
 };
-
-/** Delay before a failed fresh load retries. */
-export const SYNC_GATE_RELOAD_RETRY_MS = 5000;
-
-/** The production retry timer: one pending retry at a time. */
-export function createSyncGateTimer(): ExamWorkspaceSyncGateTimer {
-  let handle: ReturnType<typeof setTimeout> | null = null;
-  function cancel(): void {
-    if (handle !== null) {
-      clearTimeout(handle);
-      handle = null;
-    }
-  }
-  function schedule(run: () => void, delayMs: number): void {
-    cancel();
-    handle = setTimeout(() => {
-      handle = null;
-      run();
-    }, delayMs);
-  }
-  return { cancel, schedule };
-}
 
 export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   const phase = ref<ExamWorkspaceSyncGatePhase>("loading");
@@ -384,6 +358,22 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
+   * Capture the pending edit as the kept edit and drop owed snapshots. The
+   * `editing` branches of `leaseLost` and `pageHidden` share this, so a
+   * retired holder keeps the same recovery either way.
+   */
+  function captureKeptEdit(): void {
+    if (deps.hasPendingEdit()) {
+      const base = deps.currentStepDocument();
+      const edited = deps.currentWorkingCopy();
+      if (base !== null && edited !== null) {
+        kept.value = { base, edited };
+      }
+    }
+    deps.dropOwedSnapshots();
+  }
+
+  /**
    * The lease is gone, or a write was refused with `EDIT_LEASE_HELD`: turn
    * read-only. In `editing`, when a pending edit exists, always (re)capture
    * the kept edit from the current step document and working copy, replacing
@@ -399,14 +389,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       return;
     }
     if (phase.value === "editing") {
-      if (deps.hasPendingEdit()) {
-        const base = deps.currentStepDocument();
-        const edited = deps.currentWorkingCopy();
-        if (base !== null && edited !== null) {
-          kept.value = { base, edited };
-        }
-      }
-      deps.dropOwedSnapshots();
+      captureKeptEdit();
       retire();
       phase.value = "readonly";
       return;
@@ -415,6 +398,26 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       retire();
       phase.value = "readonly";
     }
+  }
+
+  /**
+   * The page is going away (`pagehide`): retire the current generation in
+   * every live phase, so a pending claim or load settles stale and never
+   * unlocks the retired page. In `editing` the pending edit is captured as
+   * the kept edit exactly like `leaseLost`; in `loading` the running load is
+   * retired and the gate goes `readonly`; in `readonly` the pending retry
+   * claim is retired and the gate stays `readonly`. A later genuine
+   * heartbeat claim still reacquires and loads fresh.
+   */
+  function pageHidden(): void {
+    if (disposed) {
+      return;
+    }
+    if (phase.value === "editing") {
+      captureKeptEdit();
+    }
+    retire();
+    phase.value = "readonly";
   }
 
   /**
@@ -487,6 +490,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     leaseRefused,
     noteStored,
     openExam,
+    pageHidden,
     phase,
     reloadFresh,
     staleConflict,

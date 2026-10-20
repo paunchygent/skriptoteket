@@ -16,9 +16,10 @@
  *   the lease and claims it once the holder has released or its lease has
  *   expired, then reads the newest state. A closed tab releases its lease on
  *   `pagehide` with `keepalive`, so the release reaches the server after the
- *   page is gone. A `pagehide` with nothing held still retires the generation
- *   through the gate, so a pending claim and load settle stale while the
- *   heartbeat keeps running and reclaims on return. A claim refused with `EDIT_LEASE_HELD` opens read-only and
+ *   page is gone. A `pagehide` clears the hold silently and retires the
+ *   generation in every live gate phase through the page-hidden port, so a
+ *   pending claim and load settle stale while the heartbeat keeps running
+ *   and reclaims on return. A claim refused with `EDIT_LEASE_HELD` opens read-only and
  *   retries at the heartbeat cadence, taking the lease as soon as it is free
  *   (expired or released) with no `Ta över`. Only the claim on open stays
  *   editable on any other claim failure, since the write guard is
@@ -143,6 +144,8 @@ export type ExamWorkspaceEditLeaseDeps = {
   onLeaseAcquired: () => void;
   /** Held became false: the gate reports `leaseLost`. Exactly one call per transition. */
   onLeaseLost: () => void;
+  /** The page hid: the gate retires the generation. Exactly one call per pagehide. */
+  onPageHidden: () => void;
   /** The open claim ended without holding: the gate reports `leaseRefused`. */
   onLeaseRefused: () => void;
 };
@@ -339,19 +342,15 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       // release POST after the unload, or the old lease blocks the reloaded
       // tab until the 15 s TTL dies.
       void tryRelease(lineageId, true);
-      setHolding(false);
-      return;
     }
-    // Holding never became true, so `setHolding(false)` would early-return
-    // without telling the gate: report the loss directly, because in
-    // `loading` the gate retires the running load and goes `readonly`
-    // (in `readonly` it does nothing). A pending claim and load then settle
-    // stale instead of unlocking against the retired page. The heartbeat
-    // keeps running, so on a back-forward-cache restore the stale initial
-    // claim drops, the next heartbeat claim takes the lease and the gate's
-    // fresh load merges the kept edit.
+    // Clear the hold without reporting a lease loss, like the lineage switch
+    // in `openLineage`: the page-hidden callback below is the single gate
+    // report for this event, so the gate retires the generation exactly once
+    // instead of seeing both a loss and a page event. The heartbeat keeps
+    // running, so a later genuine claim reacquires and loads fresh.
+    holding.value = false;
     if (!disposed && lineageId !== null) {
-      deps.onLeaseLost();
+      deps.onPageHidden();
       heartbeat.start();
     }
   }

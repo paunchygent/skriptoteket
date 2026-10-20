@@ -94,6 +94,7 @@ function setupGuestLeases() {
         onLeaseAcquired: () => void events.acquired.push("reloaded"),
         onLeaseLost: () => undefined,
         onLeaseRefused: () => undefined,
+        onPageHidden: () => undefined,
         onTakeoverRequested:
           overrides?.onTakeoverRequested ?? (() => void events.flushed.push("stored")),
         openGuestChannel: () => hub.createChannel(),
