@@ -45,28 +45,25 @@ import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 const EXPORT_STALE_COPY =
   "Provet hade sparats någon annanstans. Den senaste versionen är inläst. Exportera igen.";
 
-export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlockerReason, string> =
-  {
-    machine_proposed_key_unreviewed: "Facitförslaget är inte godkänt.",
-    missing_answer_key: "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.",
-    missing_points: "Poäng saknas.",
-    no_gaps: "Frågan saknar luckor.",
-    empty_choice: "Ett svarsalternativ saknar text.",
-    empty_gap_option: "Ett alternativ i en lucka saknar text.",
-    empty_match_entry: "En del i matchningen saknar text.",
-    empty_question_text: "Frågetexten är tom.",
-    ordering_too_few_steps: "Ordningsfrågan behöver minst två steg.",
-    empty_ordering_step: "Ett steg i ordningsfrågan saknar text.",
-    inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
-  partial_gap_key: "Fyll i godkända svar i varje lucka.",
-  gap_without_correct_option: "Markera rätt alternativ i varje rullista.",
-    title_without_text: "Ge provet en titel med bokstäver eller siffror.",
-    too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
-    unbuilt_question:
-      "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
-    unreviewed_retyped_question:
-      "Frågan har fått en ny typ men är inte granskad. Kontrollera den och markera den som granskad.",
-  };
+const EXPORT_BLOCKER_REASONS: Record<ExamWorkspaceExportBlockerReason, true> = {
+  empty_choice: true,
+  empty_gap_option: true,
+  empty_match_entry: true,
+  empty_ordering_step: true,
+  empty_question_text: true,
+  gap_without_correct_option: true,
+  inline_choice_option_heading: true,
+  machine_proposed_key_unreviewed: true,
+  missing_answer_key: true,
+  missing_points: true,
+  no_gaps: true,
+  ordering_too_few_steps: true,
+  partial_gap_key: true,
+  title_without_text: true,
+  too_few_gap_options: true,
+  unbuilt_question: true,
+  unreviewed_retyped_question: true,
+};
 
 /** The refusal names what blocks: the title, the questions, or both. */
 export function examWorkspaceExportBlockedCopy(blockers: readonly ExamWorkspaceExportBlocker[]): string {
@@ -99,8 +96,6 @@ const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
 
 export type ExportDestination = "download" | "files";
 
-const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
-
 function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBlocker {
   return (
     typeof candidate === "object" &&
@@ -108,7 +103,8 @@ function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBl
     "item_id" in candidate &&
     (typeof candidate.item_id === "string" || candidate.item_id === null) &&
     "reason" in candidate &&
-    BLOCKER_REASONS.has(String(candidate.reason))
+    typeof candidate.reason === "string" &&
+    Object.hasOwn(EXPORT_BLOCKER_REASONS, candidate.reason)
   );
 }
 

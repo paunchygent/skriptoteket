@@ -27,7 +27,8 @@ import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness"
 import { examWorkspaceShortProblem } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
 import { bodyText } from "./examWorkspaceRichText";
-import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
+
+const TITLE_WITHOUT_TEXT_PROBLEM = "Ge provet en titel med bokstäver eller siffror";
 
 export type ExamWorkspaceBlockerFix = "review" | "approve" | "suggest_key" | "remove_empty" | "strip_headings";
 
@@ -245,7 +246,7 @@ export function examWorkspaceTitleBlockerEntries(titleWithoutText: boolean): Exa
     focus: EXAM_WORKSPACE_TITLE_FIELD,
     itemId: null,
     label: null,
-    problem: EXAM_WORKSPACE_EXPORT_BLOCKER_COPY.title_without_text.replace(/\.$/, ""),
+    problem: TITLE_WITHOUT_TEXT_PROBLEM,
     reason: "title_without_text",
   }];
 }

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
-import {
-  examWorkspaceItemReadiness,
-  examWorkspaceReadinessByItemId,
-} from "./examWorkspaceItemReadiness";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import {
   buildMatchingItem,
   buildMatchingItemWithDistractor,
@@ -69,11 +65,9 @@ describe("examWorkspaceItemReadiness for matching items", () => {
     ).toEqual(["empty_match_entry"]);
   });
 
-  it("maps the incomplete key to its Swedish guidance by item id", () => {
+  it("reports the incomplete key as a reason", () => {
     const item = buildMatchingItemWithPairs([[1, 2]]);
 
-    expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      [item.item_id]: [INCOMPLETE_MATCH_KEY_GUIDANCE],
-    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["incomplete_match_key"]);
   });
 });
