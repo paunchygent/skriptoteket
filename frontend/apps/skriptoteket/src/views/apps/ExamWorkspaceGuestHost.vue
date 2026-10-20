@@ -54,6 +54,16 @@ const toast = useToast();
 const limitReached = ref(false);
 /** The stored draft the app cannot open, held for download or explicit removal. */
 const unreadableStored = shallowRef<StoredGuestDraft | null>(null);
+/**
+ * Signed-out admission: pending until the stored draft is loaded and
+ * classified, readable once the editor may mount (or no draft is stored),
+ * unreadable while the recovery notice owns the slot instead of the editor.
+ * The editor mounts only from readable, and an unreadable lineage never
+ * reaches the route, so the view's address watcher never runs the ordinary
+ * outdated-open error path for it.
+ */
+type GuestAdmission = "pending" | "readable" | "unreadable";
+const admission = ref<GuestAdmission>("pending");
 /** True while the unreadable draft's zip is built or its record is removed. */
 const recoveryBusy = ref(false);
 const guestStorage = createExamWorkspaceGuestDraftStorage();
@@ -128,14 +138,16 @@ onMounted(async () => {
     await leaveForWorkspace();
     return;
   }
-  const lineageId = await guestStore.currentLineageId();
-  if (lineageId) {
-    await router.replace({ query: { ...route.query, document: lineageId } });
-    const stored = await guestStorage.load();
-    if (stored && stored.draft.lineage_id === lineageId && !isGuestDraftReadable(stored.draft)) {
-      unreadableStored.value = stored;
-    }
+  const stored = await guestStorage.load();
+  if (stored && !isGuestDraftReadable(stored.draft)) {
+    unreadableStored.value = stored;
+    admission.value = "unreadable";
+    return;
   }
+  if (stored) {
+    await router.replace({ query: { ...route.query, document: stored.draft.lineage_id } });
+  }
+  admission.value = "readable";
 });
 
 /**
@@ -167,6 +179,10 @@ async function downloadUnreadableDraft(): Promise<void> {
  * Delete the unreadable draft and its pictures from IndexedDB on the
  * explicit click, then show the normal empty guest start: the notice
  * clears, the document address clears, and the view mounts with no draft.
+ * A refused clear means another tab owns the slot now, so the held draft
+ * stays untouched and the current slot decides: a newer unreadable draft
+ * keeps its notice, a readable one opens through the readable path, and
+ * an empty slot shows the empty guest start.
  */
 async function removeUnreadableDraft(): Promise<void> {
   const held = unreadableStored.value;
@@ -175,14 +191,33 @@ async function removeUnreadableDraft(): Promise<void> {
   }
   recoveryBusy.value = true;
   try {
-    await guestStorage.clearIf(held.draft.cursor);
+    const removed = await guestStorage.clearIf(held.draft.cursor);
+    if (!removed) {
+      const current = await guestStorage.load();
+      if (current && !isGuestDraftReadable(current.draft)) {
+        unreadableStored.value = current;
+        admission.value = "unreadable";
+        return;
+      }
+      if (current) {
+        await router.replace({
+          query: { ...route.query, document: current.draft.lineage_id },
+        });
+      } else {
+        await router.replace({ query: { ...route.query, document: undefined } });
+      }
+      unreadableStored.value = null;
+      admission.value = "readable";
+      return;
+    }
+    unreadableStored.value = null;
+    admission.value = "readable";
+    await router.replace({ query: { ...route.query, document: undefined } });
   } catch {
-    recoveryBusy.value = false;
     return;
+  } finally {
+    recoveryBusy.value = false;
   }
-  recoveryBusy.value = false;
-  unreadableStored.value = null;
-  await router.replace({ query: { ...route.query, document: undefined } });
 }
 </script>
 
@@ -192,7 +227,7 @@ async function removeUnreadableDraft(): Promise<void> {
     data-test="exam-workspace-guest-host"
   >
     <div
-      v-if="unreadableStored === null"
+      v-if="admission !== 'unreadable'"
       class="xw-notice notice xw-notice--info"
       role="status"
       data-test="exam-workspace-guest-browser-notice"
@@ -213,14 +248,14 @@ async function removeUnreadableDraft(): Promise<void> {
       {{ EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY }}
     </p>
     <ExamWorkspaceFileNotice
-      v-if="unreadableStored !== null"
+      v-if="admission === 'unreadable'"
       reason="guest_unreadable"
       :busy="recoveryBusy"
       @download="downloadUnreadableDraft()"
       @remove="removeUnreadableDraft()"
     />
     <ExamWorkspaceView
-      v-if="!leaving && unreadableStored === null"
+      v-if="!leaving && admission === 'readable'"
       ref="viewRef"
       :store="guestStore.store"
     />

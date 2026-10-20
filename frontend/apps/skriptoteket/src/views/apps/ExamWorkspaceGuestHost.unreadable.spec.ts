@@ -182,9 +182,8 @@ describe("ExamWorkspaceGuestHost unreadable drafts", () => {
     expect(remove.attributes("title")).toBe(EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME);
     expect(remove.attributes("aria-label")).toBe(EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME);
     expect(wrapper.find("[data-test='exam-workspace-view-stub']").exists()).toBe(false);
-    expect(routeMocks.replace).toHaveBeenCalledWith({
-      query: { document: seated.draft.lineage_id },
-    });
+    expect(routeMocks.replace).not.toHaveBeenCalled();
+    expect(seated.draft.lineage_id).toBeDefined();
     expect(storageMocks.stored).not.toBeNull();
     expect(vi.mocked(triggerBrowserDownload)).not.toHaveBeenCalled();
 
