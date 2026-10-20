@@ -64,7 +64,7 @@ async def test_one_undo_after_fallback_retype_restores_kind_and_source_fallback(
         ),
     )
     assert changed.document.items[0].kind is NativeExamItemKind.GAP_FILL
-    assert changed.document.items[0].review.parse_origin is NativeParseOrigin.TEACHER_CREATED
+    assert changed.document.items[0].review.parse_origin is NativeParseOrigin.TEACHER_RETYPED
 
     history = await _handler(env).history(actor=actor, lineage_id=lineage)
     assert len(history.step_ids) == 1

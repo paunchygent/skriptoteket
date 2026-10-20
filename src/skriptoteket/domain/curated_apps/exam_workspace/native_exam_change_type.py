@@ -135,7 +135,7 @@ def change_item_type(
         changed_item = item.model_copy(
             update={
                 "review": item.review.model_copy(
-                    update={"parse_origin": NativeParseOrigin.TEACHER_CREATED}
+                    update={"parse_origin": NativeParseOrigin.TEACHER_RETYPED}
                 )
             }
         )
@@ -154,7 +154,7 @@ def change_item_type(
     if fallback:
         data["review"] = {
             **data["review"],
-            "parse_origin": NativeParseOrigin.TEACHER_CREATED,
+            "parse_origin": NativeParseOrigin.TEACHER_RETYPED,
         }
     dropped: list[str] = []
 

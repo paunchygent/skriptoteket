@@ -209,7 +209,7 @@ def is_unbuilt_question(item: NativeExamItem) -> bool:
 def is_unreviewed_retyped_question(item: NativeExamItem) -> bool:
     """A question retyped from an unbuilt one, pending the teacher's review mark."""
     return item.review.state is NativeItemReviewState.REVIEW_REQUIRED and (
-        item.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
+        item.review.parse_origin is NativeParseOrigin.TEACHER_RETYPED
     )
 
 

@@ -140,7 +140,7 @@ def test_gap_fill_retype_places_gap_by_shared_rule(case: dict[str, object]) -> N
     assert changed.body == expected
     assert [gap.gap_id for gap in changed.gaps] == ["gap_001"]
     assert changed.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert changed.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
+    assert changed.review.parse_origin is NativeParseOrigin.TEACHER_RETYPED
     # The gap must not stand alone in the last paragraph: the editor shows the
     # Lucktext gap tools instead of the Kort svar field. An empty question also
     # avoids the shape, since its gap paragraph is followed by an empty one.
@@ -210,4 +210,4 @@ def test_inline_choice_retype_keeps_own_gap_paragraph() -> None:
     assert len(last.segments) == 1
     assert isinstance(last.segments[0], NativeGapSegment)
     assert last.segments[0].gap_id == "gap_001"
-    assert changed.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
+    assert changed.review.parse_origin is NativeParseOrigin.TEACHER_RETYPED
