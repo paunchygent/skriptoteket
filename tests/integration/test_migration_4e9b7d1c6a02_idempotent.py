@@ -136,6 +136,7 @@ def test_exam_migration_drops_old_files_releases_active_bytes_and_enforces_one_f
 ) -> None:
     monkeypatch.setenv("DATABASE_URL", database_url)
     monkeypatch.setenv("VAULT_ROOT", str(tmp_path))
+    command.downgrade(alembic_config, "base")
     command.upgrade(alembic_config, "b7e4d2a9c610")
     owner, lineage = uuid4(), uuid4()
     file_ids = (uuid4(), uuid4(), uuid4())
