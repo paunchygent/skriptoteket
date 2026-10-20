@@ -31,3 +31,4 @@ criteria, and implementation doctrine in governed docs.
 | 2026-10-13   | `entries/session-2026-10-13-st-39-04-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-04-01, -02 and -04 closures from handoff Recent                        |
 | 2026-10-15   | `entries/session-2026-10-15-st-39-05-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-05-04 and -09 closures from handoff Current                            |
 | 2026-10-18   | `entries/session-2026-10-18-st-39-04-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-04-11 to -14 narratives from handoff Current                           |
+| 2026-10-20   | `entries/session-2026-10-20-recent-2026-10-17-compaction.md`                       | 2026-10-17 Recent outcomes (wave 2, 40-03-10, hooks, REP-0042, ST-39-08)          |

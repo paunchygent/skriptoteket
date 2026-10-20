@@ -1,15 +1,22 @@
 ## Current
 
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
-  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. One
-  generation fence for every async result (user, 2026-10-20): FF `0090a024`,
-  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`, F3 `303bc263`, F4 `6202fe16`.
-  R1 closed (user): an old-format kept edit is upgraded before the merge.
-  Rereview 6 closed V1-V3; its lock findings R6-1..R6-3 are in repair (head
-  `31fbd255`, 2026-10-20). Next: focused proof, suite slot, rereview 7 of R6-1,
-  then the Mac merge and walk (lease paths, Kurs clear, ticks, drawer hints).
-- 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
-  D24 a server claim per draft_id.
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Released
+  on main `4951dec2` (rereviews 1-7 by `23bc9c5a`); the Mac walk failed step 5
+  (a fast exam switch ends on the wrong exam; a lease claim got 403 CSRF).
+  Repairs W1/W2 at `5720e771`; rereview 8 found R8-1/R8-2 high (address ABA,
+  route retirement loses a store) and R8-3/R8-4 medium, now in repair. Next:
+  rereview 9, then the Mac re-walks step 5. Open: the 403 details from the Mac.
+- TASK-SKRIPT-41-02-06 unreadable exam files (user, 2026-10-20; ADR-SKRIPT-0093):
+  lead `2203a0c2`, branch `codex/task-skript-41-02-unreadable-exam-files-remote`,
+  root `01a1583c`. Built through U8 (D10 closed by U3); copy review `1cb9a1de`
+  approved, S2 reworded by the user. Next: the Pi code review; U5 (deep link)
+  waits for the gap repair on main.
+- TASK-SKRIPT-06-17-02 migration test drift: lead `a239b10a`, branch
+  `codex/task-skript-migration-test-drift-remote`, root `01a1586c`. 13 docker
+  migration tests fail on main; repair plus a pre-push stage for migration
+  changes (user, 2026-10-20).
+- 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
@@ -145,33 +152,6 @@
 - 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
 
 - 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
-
-- Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
-  39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,
-  39-07-02, 40-04-02 (`baf1e2e7`) and 39-06-06 on tests by user ruling (`69c0610b`).
-  Staging and Exam.net proof at main `1f9e4367` (exam 5345261):
-  `01a149c9.../evidence/staging-proof-1f9e4367/proof.md`.
-
-- [TASK-SKRIPT-40-03-10](docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
-  `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
-  edit controls glyph-only and frameless (0.1.31), roomier school forms; main `e5ab32c6`.
-
-- 2026-10-17 hooks: `precommit-install` now runs the package installer
-  `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
-  so an install from a task worktree keeps the shared hook on the primary
-  `.venv`; repository-governance pin 0.11.134 (`70bbfefd`, binding `6363b36e`).
-
-- [TASK-SKRIPT-REP-0042](docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md)
-  `done` 2026-10-17 (approved review): the docker DOCX job proof asserts the
-  formatting diagnostics contract; one live recording answers the bf26 typed
-  type-conflict resend; replays require a recording per build request; main
-  `ef8cd6ea`, docker suite 9/9; review `01a148db.../evidence/review-rep0042.md`.
-
-- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
-  `done` 2026-10-17 (user closure gate), tasks 1-5 `done`; epic summary
-  updated. Story check: list grouping and sort preference on staging
-  `d31e939a` (`01a14b79.../evidence/staging-list-check/CHECK.md`); tags from
-  the wave-2 walk; task evidence in each task's closeout. Worktree retired.
 
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
