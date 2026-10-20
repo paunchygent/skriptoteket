@@ -1,5 +1,6 @@
 /** Teacher course choices travel through the real drawer, dirty state and toolbar save. */
 import { createTestingPinia } from "@pinia/testing";
+import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamCourse, ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
@@ -82,7 +83,9 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
     expect(saveState(wrapper)).toBe("Sparat");
     await choose(wrapper, "SVESVE02");
     expect(drawer.get('[data-test="exam-workspace-metadata-subject"]').text()).toContain("Svenska");
-    // A course pick is structural, so it is stored at once.
+    // A course pick is structural, so it is stored at once; the fenced store
+    // answer settles one tick later.
+    await flushPromises();
     expect(saveState(wrapper)).toMatch(/^Sparat /);
     const stores = api.storeExamWorkspaceUndoStep.mock.calls;
     expect(stores).toHaveLength(1);
