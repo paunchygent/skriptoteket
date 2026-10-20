@@ -101,4 +101,68 @@ describe("mergeRefusedEdit owned parents", () => {
 
     expect(instructionOf(merged, "parent_001")).toEqual(instructionOf(desired, "parent_001"));
   });
+
+  it("a surviving owned question explicitly standalone in newest does not need its deleted old container", () => {
+    const base = baseWithParent();
+    const desired: NativeExamDocument = {
+      ...base,
+      items: base.items.map((item) =>
+        item.item_id === "item_001" ? { ...item, points: 7 } : item,
+      ),
+    };
+    const newest: NativeExamDocument = { ...base, parents: [], revision: 2 };
+    const owned = diffPieces(base, desired);
+
+    expect([...owned]).toEqual(["question:item_001"]);
+    const merged = mergeRefusedEdit(desired, owned, newest);
+
+    expect({
+      parents: merged.parents,
+      points: merged.items.map((item) => item.points),
+    }).toEqual({ parents: [], points: [7, 2] });
+  });
+
+  it("control: a remotely removed owned question really needs its restored original container", () => {
+    const base = baseWithParent();
+    const desired: NativeExamDocument = {
+      ...base,
+      items: base.items.map((item) =>
+        item.item_id === "item_001" ? { ...item, points: 7 } : item,
+      ),
+    };
+    const newest: NativeExamDocument = {
+      ...base,
+      items: base.items.filter((item) => item.item_id !== "item_001"),
+      parents: [],
+      revision: 2,
+    };
+
+    const merged = mergeRefusedEdit(desired, diffPieces(base, desired), newest);
+
+    expect(merged.items.find((item) => item.item_id === "item_001")?.points).toBe(7);
+    expect(
+      merged.parents.map((parent) => ({ id: parent.parent_id, items: parent.item_ids })),
+    ).toEqual([{ id: "parent_001", items: ["item_001"] }]);
+  });
+
+  it("a locally owned move into an existing part retains the required container even without content ownership", () => {
+    const grouped = baseWithParent();
+    const base: NativeExamDocument = {
+      ...grouped,
+      parents: grouped.parents.map((parent) => ({ ...parent, item_ids: [] })),
+    };
+    const desired: NativeExamDocument = {
+      ...base,
+      parents: base.parents.map((parent) => ({ ...parent, item_ids: ["item_001"] })),
+    };
+    const newest: NativeExamDocument = { ...base, parents: [], revision: 2 };
+    const owned = diffPieces(base, desired);
+
+    expect([...owned]).toEqual(["membership:item_001"]);
+    const merged = mergeRefusedEdit(desired, owned, newest);
+
+    expect(
+      merged.parents.map((parent) => ({ id: parent.parent_id, items: parent.item_ids })),
+    ).toEqual([{ id: "parent_001", items: ["item_001"] }]);
+  });
 });

@@ -155,56 +155,20 @@ export function mergeRefusedEdit(
     }
   }
   const instructionParents = new Map<string, NativeExamParent>();
-  // A part gone from the newest copy comes back only for its own owner or
-  // as the container a surviving owned question resolves into below, so a
-  // part the other tab deleted while this tab owned nothing in it stays
-  // deleted.
-  const neededContainers = new Set<string>();
-  for (const item of mergedContent.values()) {
-    if (!owned.has(questionPiece(item.item_id)) || item.kind === "ordering") {
-      continue;
-    }
-    const desiredOwner = desiredItems.has(item.item_id)
-      ? parentIdIn(desired, item.item_id)
-      : undefined;
-    const newestOwner = newestItems.has(item.item_id)
-      ? parentIdIn(newest, item.item_id)
-      : undefined;
-    const resolved = owned.has(membershipPiece(item.item_id)) ? desiredOwner : newestOwner;
-    const container = resolved ?? desiredOwner ?? newestOwner ?? null;
-    if (container !== null) {
-      neededContainers.add(container);
-    }
-  }
-  for (const parentId of allParentIds) {
-    const desiredParent = desiredParents.get(parentId);
-    const newestParent = newestParents.get(parentId);
-    if (owned.has(parentPiece(parentId))) {
-      // The desired copy owns this part: its value wins, including absence.
-      if (desiredParent !== undefined) {
-        instructionParents.set(parentId, desiredParent);
-      }
-    } else if (newestParent !== undefined) {
-      instructionParents.set(parentId, newestParent);
-    } else if (desiredParent !== undefined && neededContainers.has(parentId)) {
-      // The other tab deleted this part, but a surviving owned question
-      // still resolves into it: keep the container for the placement below.
-      instructionParents.set(parentId, desiredParent);
-    }
-  }
-
   // Complementary deletions on both sides can leave no question at all, which
   // the server rejects. The desired copy wins whole then: the merged result is
   // the desired document carried onto the newest identity fields, with
   // positions and assets through the existing owners as for any merge.
   const keptWhole = orderedItems.length === 0;
   const activeItems = keptWhole ? [...desired.items] : orderedItems;
-  const activeTitle = keptWhole ? desired.title : mergedTitle;
-  const activeHeader = keptWhole ? desired.header : mergedHeader;
-  const activeInstructions = keptWhole ? desired.instructions : mergedInstructions;
-  const activeInstructionParents = keptWhole ? parentsById(desired.parents) : instructionParents;
 
-  const mergedParentOf = new Map<string, string | null>();
+  // One authoritative placement decision per surviving question: the desired
+  // membership wins where owned, otherwise the newest membership wins, and a
+  // question missing from one copy falls back to the other copy only then, so
+  // an explicit standalone (null) never reads as missing. Membership ownership
+  // counts on its own, ordering questions stay standalone, and this same
+  // decision feeds both container retention below and the final placement.
+  const selectedParentOf = new Map<string, string | null>();
   for (const item of activeItems) {
     const desiredOwner = desiredItems.has(item.item_id)
       ? parentIdIn(desired, item.item_id)
@@ -219,14 +183,52 @@ export function mergeRefusedEdit(
     if (owner === undefined) {
       owner = desiredOwner ?? newestOwner ?? null;
     }
+    if (item.kind === "ordering") {
+      owner = null;
+    }
+    selectedParentOf.set(item.item_id, owner ?? null);
+  }
+  const neededContainers = new Set<string>();
+  for (const owner of selectedParentOf.values()) {
+    if (owner !== null) {
+      neededContainers.add(owner);
+    }
+  }
+  // A part gone from the newest copy comes back only for its own owner or as
+  // the container a surviving question's selected placement needs, so a part
+  // the other tab deleted while this tab owned nothing in it stays deleted.
+  for (const parentId of allParentIds) {
+    const desiredParent = desiredParents.get(parentId);
+    const newestParent = newestParents.get(parentId);
+    if (owned.has(parentPiece(parentId))) {
+      // The desired copy owns this part: its value wins, including absence.
+      if (desiredParent !== undefined) {
+        instructionParents.set(parentId, desiredParent);
+      }
+    } else if (newestParent !== undefined) {
+      instructionParents.set(parentId, newestParent);
+    } else if (desiredParent !== undefined && neededContainers.has(parentId)) {
+      // The other tab deleted this part, but a surviving question's selected
+      // placement needs it as its container: keep it for the placement below.
+      instructionParents.set(parentId, desiredParent);
+    }
+  }
+
+  const activeTitle = keptWhole ? desired.title : mergedTitle;
+  const activeHeader = keptWhole ? desired.header : mergedHeader;
+  const activeInstructions = keptWhole ? desired.instructions : mergedInstructions;
+  const activeInstructionParents = keptWhole ? parentsById(desired.parents) : instructionParents;
+
+  const mergedParentOf = new Map<string, string | null>();
+  for (const item of activeItems) {
+    // The single placement decision above already resolved ownership and
+    // absence; a selected container that did not survive retention degrades to
+    // standalone here.
+    let owner: string | null = selectedParentOf.get(item.item_id) ?? null;
     if (owner !== null && !activeInstructionParents.has(owner)) {
       owner = null;
     }
-    if (item.kind === "ordering") {
-      // Ordering questions are standalone only; never leave one inside a part.
-      owner = null;
-    }
-    mergedParentOf.set(item.item_id, owner ?? null);
+    mergedParentOf.set(item.item_id, owner);
   }
 
   const members: ExamWorkspaceMember[] = activeItems.map((item) => ({

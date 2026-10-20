@@ -157,3 +157,75 @@ it("recovery must persist the local title without restoring the other tabs delet
     afterReload: [],
   });
 });
+
+it("recovery must persist the local question without restoring the other tabs deleted instructions", async () => {
+  const base = baseWithParent();
+  const server = fakeServer(api, base);
+  const state = intentLeaseState();
+  const editing = inScope(() =>
+    useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection(), {
+      server: intentLeaseDouble(state),
+      tabId: "A",
+    }),
+  );
+  editing.applyCommandResponse(response(base, "step-0"));
+  await settleIntent();
+
+  const persist = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (persist === undefined) {
+    throw new Error("expected the step store double");
+  }
+  const ack = deferred<unknown>();
+  let stored: unknown = null;
+  api.storeExamWorkspaceUndoStep.mockImplementationOnce(
+    (lineageId: string, request: unknown) => {
+      const saving = persist(lineageId, request);
+      stored = saving;
+      return ack.promise;
+    },
+  );
+  editing.updateItemPoints("item_001", 7);
+  const saving = editing.save();
+  await settleIntent();
+
+  await loseIntentLease(editing, state);
+  state.holder = "B";
+  remoteIntentWrite(server, "step-B", (document) => ({ ...document, parents: [] }));
+  expect(currentDocument(server).parents).toEqual([]);
+
+  ack.resolve(stored);
+  await saving;
+  await settleIntent();
+  await reacquireIntentLease(editing, state);
+
+  await editing.save();
+  await settleIntent();
+  const visible = editing.workspaceDocument.value;
+  if (visible === null) {
+    throw new Error("expected an open document");
+  }
+  const first = {
+    visible: visible.parents,
+    persisted: currentDocument(server).parents,
+    title: currentDocument(server).title,
+    points: currentDocument(server).items.map((item) => item.points),
+    status: editing.history.saveStatus.value.state,
+  };
+  await editing.reloadDocument();
+  await settleIntent();
+
+  const afterReload = editing.workspaceDocument.value;
+  if (afterReload === null) {
+    throw new Error("expected an open document");
+  }
+  expect({ first, afterReload: afterReload.parents }).toEqual({
+    first: {
+      visible: [],
+      persisted: [],
+      title: "Original",
+      points: [7, 2],
+      status: "saved",
+    },
+    afterReload: [],
+  });
+});
