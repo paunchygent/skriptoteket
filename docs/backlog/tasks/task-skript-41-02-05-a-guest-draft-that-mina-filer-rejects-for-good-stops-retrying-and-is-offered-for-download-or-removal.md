@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 41-02-05 on 2026-10-20 in the Hemma orchestrator session, with D10 (pictures in the download) and D24 (a server claim per draft_id) left as follow-ups. Pi ruthless-reviewer ba74ef97 review and rereviews 1-2 (root 01a1567f evidence/reviews/): R1-R6 closed; rereview 2 ended changes_requested with mediums R7/R8 only, repaired in 3b0be5f4 and dd0b71cf and admitted by the parent on focused proof (143 passed). Copy review 917b4838 approved. Frontend suite at merge head c2aac72b: 4097 passed; backend full suite at d16e1653: 7900 passed, 59 skipped. Released on main 8be9aefa; Mac staging walk PASS on all five steps at 8be9aefa (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, second section). The observed rejection was 422 DOCUMENT_SCHEMA_OUTDATED for a native_exam_document_v9 guest draft.'
 task_kind: story
 acceptance_criteria:
   - A guest draft the server rejects for good (any 4xx except 401, 408 and 429, a declared picture without bytes, or a draft without its position snapshot) is posted at most once per draft cursor; later page loads make no POST and show one notice
