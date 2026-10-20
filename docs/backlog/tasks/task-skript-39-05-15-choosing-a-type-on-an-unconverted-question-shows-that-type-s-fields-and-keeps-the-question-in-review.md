@@ -32,8 +32,11 @@ backlog_document_profile: contract-derived
   `evidence/screenshots/`. Review 32297fc0 at 511a5227: changes_requested, one medium F1 (kept gaps
   break a type change); repaired by U11 (see head), admitted on focused proof
   without rereview: 214 passed, the reviewer's probe passes for all three
-  targets, lint and typecheck rc 0 (`evidence/proof/f1-*.log`). Next: copy
-  review, then the Mac walk.
+  targets, lint and typecheck rc 0 (`evidence/proof/f1-*.log`). Domain suite at
+  3de35313: backend curated_apps domain, application and web 5744 passed, 59
+  skipped; frontend full 560 files, 3993 passed, 2 todo, 0 failed
+  (`evidence/proof/domain-*-3de35313.log`). Next: copy review, then the Mac
+  walk.
 - Walk precondition: the stored staging item_006 is already `gap_fill` with
   `source_fallback` and its gap in its own last paragraph (written by the old
   retype). Choosing Lucktext there takes the same-kind path, flips only the
