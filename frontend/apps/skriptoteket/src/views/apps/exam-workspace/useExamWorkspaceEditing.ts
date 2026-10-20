@@ -35,7 +35,6 @@ import {
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { createSyncGateTimer, useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
-import { LEASE_LOST_COPY, type ExamWorkspaceSaveStatus } from "./useExamWorkspaceSaveStatus";
 import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
 
 /** The lease seams specs override; production uses the transport and the browser slot. */
@@ -94,6 +93,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
       return false;
     },
     noteGateStored: () => gate.noteStored(),
+    keptUnstored: () => gate.hasKeptEdit.value,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
@@ -159,28 +159,6 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     notifyReloadFailed: () => toast.failure(RELOAD_FAILURE_COPY),
     timer: createSyncGateTimer(),
   });
-
-  /**
-   * The header's save status through the gate's kept edit: while the gate
-   * holds an unstored kept edit, the status keeps `Inte sparat` with the
-   * lease reason instead of following the history's cleared step list to
-   * `Sparat`. The kept edit clears only when its merged store succeeds, so
-   * the status reads `Sparat` again exactly then. No second kept-edit store:
-   * this only reads the gate.
-   */
-  const keptSaveStatus = computed<ExamWorkspaceSaveStatus>(() => {
-    if (gate.hasKeptEdit.value) {
-      return { state: "unsaved", detail: LEASE_LOST_COPY };
-    }
-    return history.saveStatus.value;
-  });
-  const keptSaveText = computed(() => {
-    if (keptSaveStatus.value.state === "unsaved") {
-      return "Inte sparat";
-    }
-    return history.saveText.value;
-  });
-  const historyWithKeptStatus = { ...history, saveStatus: keptSaveStatus, saveText: keptSaveText };
 
   /**
    * A server command stored a new step: its response already installed the
@@ -265,7 +243,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   return {
     ...document,
     applyCommandResponse,
-    history: historyWithKeptStatus,
+    history,
     isBusy,
     save,
     saveAs,

@@ -6,8 +6,8 @@
  *   `Sparar …` for `Inte sparat` with the lease reason, toasts nothing,
  *   promises no retry and schedules none while the tab is read-only. After
  *   `Ta över` the status follows the edit's real outcome: a stored edit reads
- *   `Sparat HH:MM`, and a takeover reload that replaces the unstored edit
- *   reads `Sparat` again. A read-only tab with no pending edit keeps today's
+ *   `Sparat HH:MM`, and opening another exam drops the kept edit so the
+ *   status follows the new exam. A read-only tab with no pending edit keeps today's
  *   status. A guest tab whose store meets the guest lease's 409 shows the
  *   same state through the same branch.
  */
@@ -199,16 +199,21 @@ describe("a tab that loses the lease with a pending edit", () => {
     expect(history.saveText.value).toMatch(/^Sparat \d{2}:\d{2}$/);
   });
 
-  it("follows the dropped edit after the takeover reload replaces the copy", async () => {
-    const { baseline, history, workspaceDocument } = await loseLeaseWithPendingEdit();
-    expect(history.saveStatus.value.state).toBe("unsaved");
+  it("drops the kept edit when another exam opens and follows the new exam", async () => {
+    const { baseline, gate, history, workspaceDocument } = await loseLeaseWithPendingEdit();
+    expect(history.saveStatus.value).toEqual({ state: "unsaved", detail: LEASE_LOST_COPY });
 
-    // Ta över reads the newest state, which replaces the unstored edit.
-    workspaceDocument.value = baseline;
+    // The teacher opens another exam: the gate drops the kept edit, the
+    // fresh load installs the new exam, and the status stops pinning
+    // `Inte sparat` and follows the new exam instead.
+    gate.openExam("lineage-2", false);
     await flushPromises();
 
+    expect(gate.hasKeptEdit.value).toBe(false);
+    expect(workspaceDocument.value).toEqual(baseline);
     expect(history.pending.value).toBe(false);
     expect(history.saveStatus.value.state).toBe("saved");
+    expect(history.saveText.value).toMatch(/^Sparat/);
   });
 
   it("shows the same state when a guest tab loses the lease with a pending edit", async () => {

@@ -45,7 +45,7 @@
  *     clears a merged kept edit in the merge generation.
  */
 
-import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
+import { computed, onScopeDispose, ref, shallowRef } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
@@ -55,6 +55,7 @@ import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
+import { watchHistoryCursor } from "./useExamWorkspaceHistoryCursor";
 import { useExamWorkspaceHistoryDeparture } from "./useExamWorkspaceHistoryDeparture";
 import { useExamWorkspaceHistoryNavigation } from "./useExamWorkspaceHistoryNavigation";
 import { createHistoryLoader } from "./useExamWorkspaceHistoryLoader";
@@ -97,6 +98,8 @@ export type ExamWorkspaceHistoryDeps = {
   isReplacing: () => boolean;
   /** True for a guest exam, whose saved status names the browser instead of Mina filer. */
   isGuest: () => boolean;
+  /** The sync gate holds a refused edit no store has confirmed. */
+  keptUnstored: () => boolean;
   /** Run a read that replaces the copy: locks editing and keeps arrivals that land meanwhile. */
   replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Put a stored step's document in front of the teacher. */
@@ -156,6 +159,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
 
   const status = useExamWorkspaceSaveStatus({
     isGuest: deps.isGuest,
+    keptUnstored: deps.keptUnstored,
     noteStored: deps.noteStored,
     pending: () => pending.value,
     storing: computed(() => storing.value),
@@ -189,37 +193,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     reset,
   );
 
-  watch(
-    [() => deps.lineageId(), deps.historyCursor],
-    ([lineageId, cursor], previous) => {
-      const [previousLineage] = previous ?? [null, null];
-      if (lineageId !== previousLineage) {
-        // Another exam: drop the old list. The editing session starts the
-        // gate's fresh load for the new lineage.
-        reset();
-        return;
-      }
-      if (!lineageId || !cursor) {
-        return;
-      }
-      if (cursor === ownCursor.value) {
-        return;
-      }
-      if (deps.noteInstalledCursor(lineageId, cursor)) {
-        // The gate's own install: consume the event and change nothing. This
-        // runs before the echo guard below, because the step list the gate
-        // just read already contains the fresh cursor.
-        return;
-      }
-      if (ownCursor.value !== null && ids.value.includes(cursor)) {
-        // A read that started before this tab's last step write echoes an older cursor.
-        deps.historyCursor.value = ownCursor.value;
-        return;
-      }
-      // The server replaced the copy, so snapshots owed from the old copy no longer apply.
-      owed = [];
-    },
-    { immediate: true },
+  watchHistoryCursor(
+    deps,
+    { ids, ownCursor },
+    reset,
+    dropOwedSnapshots,
   );
 
   /**

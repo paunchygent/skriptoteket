@@ -334,6 +334,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
         return false;
       },
       isGuest: () => options.isGuest ?? false,
+      keptUnstored: () => requireGate().hasKeptEdit.value,
       isReadOnly: () => gateHolder.gate?.editingLocked.value ?? true,
       isReplacing: options.isReplacing ?? (() => false),
       replaceCopy: options.replaceCopy ?? ((run) => run()),
