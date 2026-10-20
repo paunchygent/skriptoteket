@@ -22,10 +22,15 @@ backlog_document_profile: contract-derived
 
 - 2026-10-20, lead a239b10a (implementation-specialist) in worktree `skriptoteket-migration-tests-remote`, branch `codex/task-skript-migration-test-drift-remote`, base `4951dec2`. Retained root `01a1586c-edd0-77d4-a64f-fe236646aa05`: work orders in `evidence/work-orders/`, proof in `evidence/proof/`.
 - Root cause named and sent to the orchestrator (mechanisms M1-M3 below). Orchestrator answers (2026-10-20): Q1, both tranches in this task, with 67c02402930c and c8a1f7e42d90 first in tranche 2; Q2, raw SQL at e7b3 replaces the resolver check; Q3, re-pin e6a9 to its revision; D3 accepted; 06-17-01 folds in here. The user approved the pre-push stage (D6); U13 and its repair U14 are integrated, with proof in `evidence/proof/lead-pre-push/`.
-- Integrated and lead-reviewed (2026-10-20): U1-U5 (the 13), U6-U9 (tranche 2 head-copy and head tests), U13+U14 (pre-push stage). Lead findings `evidence/lead-review/findings.md` go to repair unit U15 (e6a9, 67c0, c8a1, e7b3, support module). Adversarial breaks run under `migration-break.lock` in the retained root, because a live break poisons every other run's upgrade chain.
+- Integrated and lead-reviewed (2026-10-20, commit `613fb45e`): U1-U5 (the 13), U6-U9 (tranche 2 head-copy and head tests), U13+U14 (pre-push stage). Lead findings `evidence/lead-review/findings.md` go to repair unit U15 (e6a9, 67c0, c8a1, e7b3, support module). Adversarial breaks run under `migration-break.lock` in the retained root, because a live break poisons every other run's upgrade chain.
 - U10-U12, U15 and U16 integrated. The orchestrator accepted the 0016 and 0020 nullable corrections and D7 (2026-10-20).
 - Domain suite (2026-10-20, orchestrator slot): `pdm run test-migrations`: 117 passed, 1 failed (`evidence/proof/domain-suite-test-migrations.log`). The failure is 4e9b7d1c6a02, out of scope here; its fix `ed269299` lives on the 41-02-06 branch. Pre-push unit tests: 8 passed.
-- Next: commit, then the Pi ruthless review that the orchestrator routes.
+- Review 749a17aa of `613fb45e` (changes requested, three mediums, admitted on focused proof by the orchestrator):
+  - R1 (rename skips the stage) is repaired with `git diff --no-renames`.
+  - R2 (a first push in pre-commit all-files mode aborted) is repaired: the hook takes the pushed local ref and runs the stage.
+  - R3 is repaired by U18, which pins 4e9b7d1c6a02 on this branch.
+  - Unit tests drive the real pre-commit adapter: 12 passed, red first. `pdm run test-migrations`: 118 passed (`evidence/proof/domain-suite-test-migrations-r2.log`).
+- Next: the orchestrator hands the branch to the Mac.
 
 ## Implementation Contract
 

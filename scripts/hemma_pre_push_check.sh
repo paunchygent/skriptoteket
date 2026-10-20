@@ -7,12 +7,17 @@
 set -euo pipefail
 
 [[ "${PRE_COMMIT_REMOTE_BRANCH:-}" == "refs/heads/main" ]] || exit 0
-sha="${PRE_COMMIT_TO_REF:?pre-commit did not supply PRE_COMMIT_TO_REF}"
-sha="$(git rev-parse "$sha^{commit}")"
+if [[ -n "${PRE_COMMIT_TO_REF:-}" ]]; then
+  sha="$(git rev-parse "$PRE_COMMIT_TO_REF^{commit}")"
+  decision="$(scripts/pre_push_touches_migrations.sh "${PRE_COMMIT_FROM_REF:?pre-commit supplied TO without FROM}" "$sha")"
+else
+  # Pre-commit all-files mode: the push includes the repository root commit,
+  # so the whole tree is new and the migration stage must run.
+  sha="$(git rev-parse "${PRE_COMMIT_LOCAL_BRANCH:?pre-commit did not supply PRE_COMMIT_LOCAL_BRANCH}^{commit}")"
+  decision=run
+fi
 
 run_migrations=0
-from="${PRE_COMMIT_FROM_REF:?pre-commit did not supply PRE_COMMIT_FROM_REF}"
-decision="$(scripts/pre_push_touches_migrations.sh "$from" "$sha")"
 if [[ $decision == run ]]; then
   run_migrations=1
   echo "hemma-check: pushed range changes migrations; docker migration tests will run."

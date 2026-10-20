@@ -45,8 +45,8 @@
   (retained `01a1586c-edd0-77d4-a64f-fe236646aa05`). Every docker migration test
   is pinned to its own revision from an empty database; absorbs TASK-SKRIPT-06-17-01
   (merge revision). The Hemma pre-push check runs `pdm run test-migrations` when the
-  pushed range touches migrations (user decision 2026-10-20). Next: domain suite,
-  commit, Pi ruthless review.
+  pushed range touches migrations (user decision 2026-10-20). Review 749a17aa R1-R3 repaired;
+  118/118 migration tests pass. Next: Mac merge.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
