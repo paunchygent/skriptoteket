@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ad9f54c878ecd79263264d2048257f61668b1aa0c8a755760d9b4e86a5742014",
+  "source_set_digest": "5a39b9324bd472cb0cf50b5356a02a27f09b1111ad292f2d521832ceebecec23",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2612,7 +2612,7 @@
       "type": "task",
       "title": "Resolve merge-revision parents in the migration idempotency support",
       "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
       "owners": [
@@ -2623,7 +2623,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-20 (AskUserQuestion, Hemma orchestrator session) to close this task as superseded by TASK-SKRIPT-06-17-02 (on main 3d3f867a), whose U5 resolves merge parents in the migration idempotency support. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-06-17-02 named as its successor."
       }
     },
     {
@@ -2631,7 +2634,7 @@
       "type": "task",
       "title": "Pin docker migration tests to their own revision",
       "path": "docs/backlog/tasks/task-skript-06-17-02-pin-docker-migration-tests-to-their-own-revision.md",
-      "status": "proposed",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
       "owners": [
@@ -2642,7 +2645,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 06-17-02 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 749a17aa (root 01a1586c evidence/reviews/TASK-SKRIPT-06-17-02-613fb45e-review.md) ended changes_requested with mediums R1-R3 only, repaired at c5c69bbb and admitted by the parent on focused proof. test-migrations 118 of 118 passed; pre-push tests 12 of 12. Merged to main as 3d3f867a; the new pre-push stage ran on that first real push and passed 118 in 50.89 s (Mac report)."
       }
     },
     {

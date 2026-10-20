@@ -12,10 +12,6 @@
   root `01a1583c`. Built through U8 (D10 closed by U3); copy review `1cb9a1de`
   approved, S2 reworded by the user. Next: the Pi code review; U5 (deep link)
   waits for the gap repair on main.
-- TASK-SKRIPT-06-17-02 migration test drift: lead `a239b10a`, branch
-  `codex/task-skript-migration-test-drift-remote`, root `01a1586c`. 13 docker
-  migration tests fail on main; repair plus a pre-push stage for migration
-  changes (user, 2026-10-20).
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
@@ -46,14 +42,6 @@
   package retained at `evidence/talmanus-review-package-2026-10-15/` (sent 2026-10-15).
   Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
   parses Skola24; correction and `generate-planner-help` regen still pending.
-
-- [TASK-SKRIPT-06-17-02](docs/backlog/tasks/task-skript-06-17-02-pin-docker-migration-tests-to-their-own-revision.md)
-  `proposed`, lead a239b10a on `codex/task-skript-migration-test-drift-remote`
-  (retained `01a1586c-edd0-77d4-a64f-fe236646aa05`). Every docker migration test
-  is pinned to its own revision from an empty database; absorbs TASK-SKRIPT-06-17-01
-  (merge revision). The Hemma pre-push check runs `pdm run test-migrations` when the
-  pushed range touches migrations (user decision 2026-10-20). Review 749a17aa R1-R3 repaired;
-  118/118 migration tests pass. Next: Mac merge.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
@@ -144,6 +132,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-20 `done` on main: TASK-SKRIPT-06-17-02 migration tests pinned to their own revision, plus the pre-push migration stage (`3d3f867a`, user closure; the stage ran on its first push, 118 passed). TASK-SKRIPT-06-17-01 canceled as superseded by it.
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-39-05-16 unused long-form readiness copy deleted (`5611f0c8`, user closure).
 
