@@ -6,23 +6,37 @@
  *   server's newest step now holds it (or nothing needed storing), "refused"
  *   when the save rules reject it so it can never be a step, and "failed"
  *   otherwise. Every call carries the queue token it runs under; a retired
- *   answer installs, confirms and clears nothing. A network failure keeps the
- *   pending edit; a stale-cursor 409 is reported through `onConflict` to the
- *   sync gate, while an `EDIT_LEASE_HELD` 409 turns the tab read-only and
- *   keeps the edit visible with no reload, toast or retry. Refusals are
- *   decided from the snapshot, with the server's 422 as the backstop. Storing
- *   the working copy ends its pause; storing an owed snapshot leaves typing's
- *   pause running. A current response never replaces later typing: when the
- *   working copy still equals the sent snapshot, the server's stored copy is
- *   installed instead, so nothing re-stores; when it differs, a store of the
- *   newer copy follows.
+ *   answer installs, confirms and clears nothing. The write boundary records
+ *   per-piece intent: the confirmed copy C (the step document), the desired
+ *   copy D (the working copy), at most one active attempt A (its sent copy,
+ *   token and attempt identity, registered synchronously before the transport
+ *   runs), and the unresolved published pieces U. A current success installs
+ *   C and its history coherently, adopts the server's normalised value per
+ *   piece where D still equals the sent copy and preserves D where it differs
+ *   (through the refused-edit merger), then discharges A, U and the kept keys
+ *   the acknowledgement covers; newer pieces stay pending and are stored
+ *   next. A definite non-commit (the save-rule refusal, the 422, a
+ *   stale-cursor 409, EDIT_LEASE_HELD) clears A before reporting; an unknown
+ *   outcome (a network failure, another error, a rejected promise) moves A's
+ *   pieces into U. A late acknowledgement or rejection after retirement has
+ *   no authority over C, D, intent or status.
+ *
+ *   `hasUnconfirmed` is the only definition of confirmation: an active A, a
+ *   nonempty U, kept-owned keys, or pieces where D differs from C. D equal to
+ *   an old C is not confirmed while A, U or kept keys exist. A network
+ *   failure keeps the pending edit; a stale-cursor 409 is reported through
+ *   `onConflict` to the sync gate, while an `EDIT_LEASE_HELD` 409 turns the
+ *   tab read-only and keeps the edit visible with no reload, toast or retry.
+ *   Refusals are decided from the snapshot, with the server's 422 as the
+ *   backstop. Storing the working copy ends its pause; storing an owed
+ *   snapshot leaves typing's pause running.
  *
  *   Structural-edit snapshots stay owed until stored, oldest first, and a
- *   failed store never merges them. The `storing` flag records the token it
- *   was set under and reads true only while that token is still current
- *   (a computed over the fence's reactive generation), so a store left
- *   hanging across a retire no longer reads as storing and a retired
- *   completion cannot clear it under a current store.
+ *   failed store never merges them. The `storing` flag reads true only while
+ *   the active attempt's token is still current (a computed over the fence's
+ *   reactive generation), so a store left hanging across a retire no longer
+ *   reads as storing and a retired completion cannot clear it under a current
+ *   store.
  */
 
 import { computed, shallowRef } from "vue";
@@ -32,7 +46,9 @@ import { isApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
+import { diffPieces } from "./examWorkspaceEditPieces";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import type { FenceToken } from "./examWorkspaceSyncFence";
 import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
 import type { ExamWorkspaceHistoryDeps } from "./useExamWorkspaceHistory";
@@ -47,6 +63,7 @@ export type ExamWorkspaceHistoryStoreDeps = Pick<
   | "historyCursor"
   | "isBlocked"
   | "isCurrent"
+  | "keptUnstored"
   | "lineageId"
   | "noteExportBlockers"
   | "noteGateStored"
@@ -64,7 +81,7 @@ export type ExamWorkspaceHistoryStoreState = {
   stepIds: Ref<string[]>;
   /** The stored snapshot the editor stands on; null until the step list is loaded. */
   position: Ref<string | null>;
-  /** That step's document; a working copy that differs from it is a pending edit. */
+  /** That step's document; the confirmed copy C. */
   stepDocument: Ref<NativeExamDocument | null>;
   /** The cursor this tab last wrote. */
   ownCursor: Ref<string | null>;
@@ -85,6 +102,17 @@ export type ExamWorkspaceHistoryStoreHooks = {
   scheduleTyping: () => void;
   /** Store the newer working copy that arrived while a store was in flight. */
   flushNewer: (token: FenceToken) => void;
+};
+
+/** One in-flight store: its immutable sent copy, token, identity and owned pieces. */
+type ActiveAttempt = {
+  /** The attempt identity; a late answer carrying another identity changes nothing. */
+  id: number;
+  token: FenceToken;
+  /** What the transport was asked to store. */
+  sent: NativeExamDocument;
+  /** The pieces where the sent copy differs from the confirmed copy. */
+  pieces: Set<string>;
 };
 
 /** Steps compare without the revision: a step stored before a Spara carries the older one. */
@@ -113,23 +141,23 @@ export function createHistoryStore(
   pushOwed: (snapshot: NativeExamDocument) => void;
   /** Drop structural snapshots owed from a copy the lease loss retired. */
   dropOwedSnapshots: () => void;
-  /** True while the last store's token is still current: reads false after a retire. */
+  /** True while a current-generation store is in flight: reads false after a retire. */
   storing: ComputedRef<boolean>;
-  /** What the in-flight store sent while its answer is unknown; null once it settles or retires. */
-  inflightDocument: ComputedRef<NativeExamDocument | null>;
+  /** The only definition of confirmation: an active attempt, unresolved pieces, kept keys or net edits. */
+  hasUnconfirmed: () => boolean;
+  /** The unresolved published pieces: U plus the active attempt's pieces. */
+  publishedPieces: () => Set<string>;
+  /** Move the active attempt into U and clear it: the generation retired. */
+  abandonAttempt: () => void;
+  /** Clear the active attempt and the unresolved pieces: a new exam starts with no intent. */
+  resetUnconfirmed: () => void;
 } {
   const toast = useToast();
-  const storingToken = shallowRef<FenceToken | null>(null);
-  /** What the in-flight store sent; cleared with the storing token, so the gate reads it only while unknown. */
-  const inflight = shallowRef<NativeExamDocument | null>(null);
-  /**
-   * True while a current-generation store is in flight. `isCurrent` reads
-   * the fence's reactive generation, so a retire flips this at once, even
-   * while the store's answer never settles.
-   */
-  const storing = computed(
-    () => storingToken.value !== null && deps.isCurrent(storingToken.value),
-  );
+  /** The one active store attempt; null once it settles, is refused or is abandoned. */
+  const active = shallowRef<ActiveAttempt | null>(null);
+  /** Pieces an earlier store may have changed remotely without confirmation. */
+  const unresolved = shallowRef<Set<string>>(new Set());
+  let attemptSeq = 0;
   /**
    * Structural-edit snapshots not stored yet, oldest first: the copy just
    * before the edit, then the copy right after it. Each must be a step before
@@ -145,10 +173,85 @@ export function createHistoryStore(
     owed.push(snapshot);
   }
 
-  function clearStoring(token: FenceToken): void {
-    if (storingToken.value === token) {
-      storingToken.value = null;
-      inflight.value = null;
+  /**
+   * Fold a retired attempt into the unresolved pieces. Attempts only retire
+   * through the gate's fence, so a non-current attempt found here belongs to
+   * an older generation whose answer has no authority left.
+   */
+  function settleAttemptRecord(): void {
+    const current = active.value;
+    if (current !== null && !deps.isCurrent(current.token)) {
+      const next = new Set(unresolved.value);
+      for (const piece of current.pieces) {
+        next.add(piece);
+      }
+      unresolved.value = next;
+      active.value = null;
+    }
+  }
+
+  function publishedPieces(): Set<string> {
+    settleAttemptRecord();
+    const pieces = new Set(unresolved.value);
+    const current = active.value;
+    if (current !== null && deps.isCurrent(current.token)) {
+      for (const piece of current.pieces) {
+        pieces.add(piece);
+      }
+    }
+    return pieces;
+  }
+
+  function hasUnconfirmed(): boolean {
+    settleAttemptRecord();
+    const current = active.value;
+    if (current !== null && deps.isCurrent(current.token)) {
+      return true;
+    }
+    if (unresolved.value.size > 0) {
+      return true;
+    }
+    if (deps.keptUnstored()) {
+      return true;
+    }
+    return diffPieces(state.stepDocument.value, deps.workspaceDocument.value).size > 0;
+  }
+
+  function abandonAttempt(): void {
+    settleAttemptRecord();
+    const current = active.value;
+    if (current !== null) {
+      const next = new Set(unresolved.value);
+      for (const piece of current.pieces) {
+        next.add(piece);
+      }
+      unresolved.value = next;
+      active.value = null;
+    }
+  }
+
+  function resetUnconfirmed(): void {
+    active.value = null;
+    unresolved.value = new Set();
+  }
+
+  /** A definite non-commit: the attempt proves nothing and owns nothing. */
+  function clearAttempt(attemptId: number): void {
+    if (active.value?.id === attemptId) {
+      active.value = null;
+    }
+  }
+
+  /** An unknown outcome: the attempt may have committed, so its pieces stay owned. */
+  function suspendAttempt(attemptId: number): void {
+    const current = active.value;
+    if (current !== null && current.id === attemptId) {
+      const next = new Set(unresolved.value);
+      for (const piece of current.pieces) {
+        next.add(piece);
+      }
+      unresolved.value = next;
+      active.value = null;
     }
   }
 
@@ -160,6 +263,7 @@ export function createHistoryStore(
     if (!deps.isCurrent(token)) {
       return "failed";
     }
+    settleAttemptRecord();
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
     const document = snapshot ?? deps.workspaceDocument.value;
@@ -168,8 +272,14 @@ export function createHistoryStore(
       return "failed";
     }
     const undone = after !== state.newestId.value;
-    if (sameContent(document, state.stepDocument.value) && !(settle && undone)) {
-      deps.noteGateStored(token);
+    // A snapshot equal to the step document carries nothing new, unless
+    // unresolved pieces or kept keys wait for a real cursor-checked store to
+    // confirm them. It confirms nothing while any intent is outstanding.
+    const awaitsConfirmation = unresolved.value.size > 0 || deps.keptUnstored();
+    if (sameContent(document, state.stepDocument.value) && !(settle && undone) && !awaitsConfirmation) {
+      if (!hasUnconfirmed()) {
+        deps.noteGateStored(token);
+      }
       return "stored";
     }
     const refusal = examWorkspaceSaveRefusalCopy(document);
@@ -182,70 +292,100 @@ export function createHistoryStore(
       hooks.scheduleTyping();
       return "failed";
     }
-    storingToken.value = token;
-    inflight.value = document;
+    const attemptId = attemptSeq + 1;
+    attemptSeq = attemptId;
+    active.value = {
+      id: attemptId,
+      pieces: diffPieces(state.stepDocument.value, document),
+      sent: document,
+      token,
+    };
+    let settled: Awaited<ReturnType<typeof deps.transport.storeUndoStep>>;
     try {
-      const settled = await deps.transport.storeUndoStep(token, lineageId, {
+      settled = await deps.transport.storeUndoStep(token, lineageId, {
         afterStepId: after,
         document,
         expectedCursor: cursor,
         tabId: deps.tabId(),
       });
-      if (settled.kind === "stale" || !deps.isCurrent(token)) {
-        return "failed";
-      }
-      if (settled.kind === "failed") {
-        const error = settled.error;
-        if (isEditLeaseHeldError(error)) {
-          // Another tab holds the lease: turn read-only and keep the pending
-          // edit visible, with no reload, no toast and no retry scheduled. The
-          // status leaves `Sparar …` for `Inte sparat` with the lease reason
-          // while that edit stays unconfirmed.
-          status.noteLeaseLost();
-          deps.noteLeaseLost();
-        } else if (isApiError(error) && error.status === 409) {
-          await deps.onConflict();
-        } else if (isApiError(error) && error.status === 422) {
-          // Only the server sees this refusal, so it always toasts.
-          status.noteRefused(token, refusalReason(document, error));
-          toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
-          return "refused";
-        } else {
-          // The next store sends the newest working copy, not old snapshots.
-          owed = [];
-          status.noteFailed(token);
-        }
-        return "failed";
-      }
-      const response = settled.value;
-      if (!deps.isCurrent(token)) {
-        return "failed";
-      }
-      deps.noteExportBlockers(response.document.title, response.export_blockers);
-      state.ownCursor.value = response.history.cursor;
-      deps.historyCursor.value = response.history.cursor;
-      state.baselineId.value = response.history.baseline_step_id;
-      state.stepIds.value = [...response.history.step_ids];
-      state.position.value = response.history.position_step_id;
-      state.stepDocument.value = response.document;
-      status.confirmed(token, response.document);
-      deps.noteGateStored(token);
-      if (!deps.isCurrent(token)) {
-        return "stored";
-      }
-      if (!sameContent(deps.workspaceDocument.value, document)) {
-        // Keystrokes typed while the store was in flight stay in the copy;
-        // the newer copy is stored next, so the status reads `Sparar …`.
-        hooks.flushNewer(token);
-      } else {
-        // The server normalised the stored copy: install it, so the copies
-        // agree and nothing re-stores.
-        deps.workspaceDocument.value = response.document;
-      }
-      return "stored";
-    } finally {
-      clearStoring(token);
+    } catch {
+      // A rejected promise proves nothing about the commit: keep the pieces.
+      suspendAttempt(attemptId);
+      owed = [];
+      status.noteFailed(token);
+      return "failed";
     }
+    if (settled.kind === "stale" || !deps.isCurrent(token)) {
+      return "failed";
+    }
+    if (settled.kind === "failed") {
+      const error = settled.error;
+      if (isEditLeaseHeldError(error)) {
+        // Another tab holds the lease: turn read-only and keep the pending
+        // edit visible, with no reload, no toast and no retry scheduled. The
+        // status leaves `Sparar …` for `Inte sparat` with the lease reason
+        // while that edit stays unconfirmed.
+        clearAttempt(attemptId);
+        status.noteLeaseLost();
+        deps.noteLeaseLost();
+      } else if (isApiError(error) && error.status === 409) {
+        clearAttempt(attemptId);
+        await deps.onConflict();
+      } else if (isApiError(error) && error.status === 422) {
+        // Only the server sees this refusal, so it always toasts.
+        clearAttempt(attemptId);
+        status.noteRefused(token, refusalReason(document, error));
+        toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
+        return "refused";
+      } else {
+        // The next store sends the newest working copy, not old snapshots.
+        suspendAttempt(attemptId);
+        owed = [];
+        status.noteFailed(token);
+      }
+      return "failed";
+    }
+    const current = active.value;
+    if (current === null || current.id !== attemptId || !deps.isCurrent(token)) {
+      return "failed";
+    }
+    const sent = current.sent;
+    const response = settled.value;
+    if (!deps.isCurrent(token)) {
+      return "failed";
+    }
+    // The cursor-checked write committed: prior uncertainty is resolved.
+    active.value = null;
+    unresolved.value = new Set();
+    deps.noteExportBlockers(response.document.title, response.export_blockers);
+    state.ownCursor.value = response.history.cursor;
+    deps.historyCursor.value = response.history.cursor;
+    state.baselineId.value = response.history.baseline_step_id;
+    state.stepIds.value = [...response.history.step_ids];
+    state.position.value = response.history.position_step_id;
+    state.stepDocument.value = response.document;
+    status.confirmed(token, response.document);
+    deps.noteStored(token, response.document);
+    deps.noteGateStored(token);
+    if (!deps.isCurrent(token)) {
+      return "stored";
+    }
+    const workingCopy = deps.workspaceDocument.value;
+    if (workingCopy !== null && !sameContent(workingCopy, sent)) {
+      // Keystrokes typed while the store was in flight stay in the copy: keep
+      // the newer pieces over the server's normalised response and store next.
+      deps.workspaceDocument.value = mergeRefusedEdit(
+        workingCopy,
+        diffPieces(sent, workingCopy),
+        response.document,
+      );
+      hooks.flushNewer(token);
+    } else {
+      // The server normalised the stored copy: install it, so the copies
+      // agree and nothing re-stores.
+      deps.workspaceDocument.value = response.document;
+    }
+    return "stored";
   }
 
   /**
@@ -281,11 +421,14 @@ export function createHistoryStore(
   }
 
   return {
+    abandonAttempt,
     dropOwedSnapshots,
-    inflightDocument: computed(() => inflight.value),
+    hasUnconfirmed,
+    publishedPieces,
     pushOwed,
+    resetUnconfirmed,
     store,
     storeOwed,
-    storing,
+    storing: computed(() => active.value !== null && deps.isCurrent(active.value.token)),
   };
 }

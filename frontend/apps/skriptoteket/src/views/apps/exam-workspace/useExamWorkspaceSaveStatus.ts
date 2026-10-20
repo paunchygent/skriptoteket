@@ -3,9 +3,9 @@
  *
  * Domain purpose:
  *   One computed save status for the one save model (TASK-SKRIPT-40-04-14,
- *   item 6): `Sparar …` while an edit is pending or being stored, `Sparat
- *   HH:MM` once the confirmed snapshot equals the copy in front of the
- *   teacher, and `Inte sparat` with the reason when a store failed, was
+ *   item 6): `Sparar …` while an edit is pending, being stored or otherwise
+ *   unconfirmed, `Sparat HH:MM` once no attempt, unresolved piece, kept key
+ *   or net edit stays unconfirmed, and `Inte sparat` with the reason when a store failed, was
  *   refused, met the edit lease held by the other tab while the edit was
  *   still unconfirmed, or left a refused edit the sync gate still holds. A
  *   store response never replaces edits made after its snapshot: the status
@@ -63,6 +63,8 @@ export type ExamWorkspaceSaveStatusDeps = {
   noteStored: (token: FenceToken, document: NativeExamDocument) => void;
   /** True while the working copy differs from the confirmed snapshot. */
   pending: () => boolean;
+  /** True while an attempt, unresolved pieces, kept keys or net edits stay unconfirmed. */
+  hasUnconfirmed: () => boolean;
   /** True while a store or a position move is in flight. */
   storing: ComputedRef<boolean>;
 };
@@ -107,11 +109,12 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
   let disposed = false;
 
   /**
-   * One computed save status: `Sparar …` while an edit is pending or being
-   * stored, `Inte sparat` with the reason once a store concluded refused,
-   * failed or lost the lease with the edit still unconfirmed, or while the
-   * sync gate still holds a refused edit, else `Sparat HH:MM`. A concluded
-   * refusal, failure or lease loss pins `Inte sparat` until a store succeeds, even while newer edits are pending.
+   * One computed save status: `Sparar …` while an edit is pending, stored or
+   * otherwise unconfirmed, `Inte sparat` with the reason once a store
+   * concluded refused, failed or lost the lease with the edit still
+   * unconfirmed, or while the sync gate still holds a refused edit, else
+   * `Sparat HH:MM`. A concluded refusal, failure or lease loss pins `Inte
+   * sparat` until a store succeeds, even while newer edits are pending.
    * The lease loss is the operative reason while the tab is read-only, so it
    * reads before a refusal or failure pinned earlier.
    */
@@ -134,7 +137,7 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
     if (lastFailure.value) {
       return { state: "unsaved", detail: AUTOSAVE_FAILURE_COPY };
     }
-    if (deps.pending()) {
+    if (deps.hasUnconfirmed()) {
       return { state: "saving", detail: null };
     }
     return {

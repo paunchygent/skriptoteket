@@ -175,13 +175,14 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
 
   gate = useExamWorkspaceSyncGate({
+    abandonAttempt: () => history.abandonAttempt(),
+    confirmedCopy: () => history.confirmedCopy(),
+    desiredCopy: () => history.desiredCopy(),
     isLeaseHeld: () => leaseHolder.session !== null && !leaseHolder.session.readOnly.value,
     isOpenClaimPending: () => leaseHolder.session?.isOpenClaimPending() ?? false,
-    hasPendingEdit: () => history.pending.value,
-    currentInflightDocument: () => history.inflightDocument.value,
+    publishedPieces: () => history.publishedPieces(),
+    resetUnconfirmed: () => history.resetUnconfirmed(),
     settleEdit: () => history.flush(true),
-    currentStepDocument: () => history.stepDocument.value,
-    currentWorkingCopy: () => document.workspaceDocument.value,
     dropOwedSnapshots: () => history.dropOwedSnapshots(),
     readDocument: (readLineageId) => store.shared.getExamWorkspaceDocument(readLineageId),
     readStepList: (readLineageId) => readStepList(store.shared, readLineageId),
@@ -211,7 +212,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     timer: createSyncGateTimer(),
   });
 
-  leaseHolder.session = useExamWorkspaceEditLease({
+  const leaseSession = useExamWorkspaceEditLease({
     fence: requireGate().fence,
     guestStorage: lease?.guestStorage,
     isGuest: () => store.guest !== null,
@@ -226,6 +227,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     server: lease?.server,
     tabId: lease?.tabId,
   });
+  leaseHolder.session = leaseSession;
 
   watch(lineageId, (next) => {
     if (next === null) {
@@ -291,9 +293,9 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     /** Every input locks while this holds, in `loading` and in `readonly`. */
     editingLocked: requireGate().editingLocked,
     /** True while `Ta över` waits for the holder to release. */
-    takeoverWaiting: leaseHolder.session!.waiting,
+    takeoverWaiting: leaseSession.waiting,
     /** Ask for the lease, claim it once free and read the newest state. */
-    requestTakeover: () => leaseHolder.session!.requestTakeover(),
+    requestTakeover: () => leaseSession.requestTakeover(),
     /** The view wires its part-entry selection once the selection composable exists. */
     registerSelectParent: (select: (parentId: string) => void) => {
       selectParent = select;

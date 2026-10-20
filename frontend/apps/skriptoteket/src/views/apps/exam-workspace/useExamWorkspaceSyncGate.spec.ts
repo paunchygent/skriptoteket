@@ -27,9 +27,8 @@ async function openEditing(harness: SyncGateHarness): Promise<void> {
 
 async function takeKept(harness: SyncGateHarness): Promise<void> {
   await openEditing(harness);
-  harness.flags.pendingEdit = true;
-  harness.flags.stepDocument = exam();
-  harness.flags.workingCopy = withPoints(exam(), 7);
+  harness.flags.confirmedCopy = exam();
+  harness.flags.desiredCopy = withPoints(exam(), 7);
   harness.gate.leaseLost();
   await harness.settle();
 }
@@ -204,9 +203,8 @@ describe("the sync gate phases and events", () => {
   it("goes readonly when failed renewals arrive as lease lost", async () => {
     const harness = createGate();
     await openEditing(harness);
-    harness.flags.pendingEdit = true;
-    harness.flags.stepDocument = exam();
-    harness.flags.workingCopy = withPoints(exam(), 7);
+    harness.flags.confirmedCopy = exam();
+    harness.flags.desiredCopy = withPoints(exam(), 7);
     harness.gate.leaseLost();
     expect(harness.gate.phase.value).toBe("readonly");
     expect(harness.gate.leaseReadOnly.value).toBe(true);
@@ -216,7 +214,6 @@ describe("the sync gate phases and events", () => {
   it("goes readonly without a capture when the lease is lost with no pending edit", async () => {
     const harness = createGate();
     await openEditing(harness);
-    harness.flags.pendingEdit = false;
     harness.gate.leaseLost();
     expect(harness.gate.phase.value).toBe("readonly");
     expect(harness.counts.owedDropped).toBe(1);
@@ -347,7 +344,6 @@ describe("the sync gate phases and events", () => {
     const second = harness.gate.enqueueWrite(secondRun, "second refused");
     await harness.settle();
     expect(firstRun).toHaveBeenCalledTimes(1);
-    harness.flags.pendingEdit = false;
     harness.gate.leaseLost();
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());

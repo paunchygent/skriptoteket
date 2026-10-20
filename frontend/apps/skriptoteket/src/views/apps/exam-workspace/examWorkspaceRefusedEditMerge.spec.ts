@@ -3,10 +3,11 @@
  * (TASK-SKRIPT-40-04-14, USER decision 2026-10-19 "Ta över keeps the edit").
  *
  * Expected behavior:
- *   mergeRefusedEdit(base, edited, newest) returns the document to install
- *   after the tab gets the lease back. Every piece the edit changed from the
- *   base keeps the edited version (the kept edit wins); every untouched piece
- *   keeps the newest version. Items merge by item_id; order follows the edit
+ *   mergeRefusedEdit(desired, owned, newest) returns the document to install
+ *   after the tab gets the lease back. Every owned piece keeps the desired
+ *   version (the kept edit wins); every other piece keeps the newest
+ *   version. The specs derive the owned set with diffPieces(base, edited);
+ *   that derivation never runs in production. Items merge by item_id; order follows the edit
  *   only when the edit reordered, otherwise the newest order. Revision,
  *   document_id, origin and schema_version come from newest. No change in the
  *   edit returns null.
@@ -22,6 +23,7 @@ import type {
   NativeExamParent,
 } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { diffPieces } from "./examWorkspaceEditPieces";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 
 function documentWith(items: NativeExamItem[], overrides: Partial<NativeExamDocument> = {}): NativeExamDocument {
@@ -47,11 +49,13 @@ function baseDocument(): NativeExamDocument {
   ]);
 }
 
-function requireMerged(merged: NativeExamDocument | null): NativeExamDocument {
-  if (merged === null) {
-    throw new Error("expected a merged document");
-  }
-  return merged;
+/** The production call with the spec's owned pieces derived from the edit. */
+function mergeKept(
+  base: NativeExamDocument,
+  edited: NativeExamDocument,
+  newest: NativeExamDocument,
+): NativeExamDocument {
+  return mergeRefusedEdit(edited, diffPieces(base, edited), newest);
 }
 
 function itemById(document: NativeExamDocument, itemId: string): NativeExamItem {
@@ -154,12 +158,12 @@ function assertValidDocument(document: NativeExamDocument): void {
 }
 
 describe("mergeRefusedEdit", () => {
-  it("returns null when the edit changed nothing", () => {
+  it("returns the newest copy when the edit changed nothing", () => {
     const base = baseDocument();
     const edited: NativeExamDocument = { ...base, revision: base.revision };
     const newest = withPoints(base, "item_001", 9);
 
-    expect(mergeRefusedEdit(base, edited, newest)).toBeNull();
+    expect(mergeKept(base, edited, newest)).toBe(newest);
   });
 
   it("lets the edit win on a question both tabs changed, and keeps newest elsewhere", () => {
@@ -167,7 +171,7 @@ describe("mergeRefusedEdit", () => {
     const edited = withPoints(base, "item_001", 7);
     const newest = withPoints(withPoints(base, "item_001", 5), "item_002", 9);
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemById(merged, "item_001").points).toBe(7);
     expect(itemById(merged, "item_002").points).toBe(9);
@@ -180,7 +184,7 @@ describe("mergeRefusedEdit", () => {
     const edited: NativeExamDocument = { ...base, items: [...base.items, added] };
     const newest = withPoints(base, "item_002", 9);
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemById(merged, "item_003").points).toBe(4);
     expect(itemById(merged, "item_002").points).toBe(9);
@@ -195,7 +199,7 @@ describe("mergeRefusedEdit", () => {
     };
     const newest = withPoints(base, "item_002", 9);
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_001"]);
     assertValidDocument(merged);
@@ -209,7 +213,7 @@ describe("mergeRefusedEdit", () => {
       items: base.items.filter((item) => item.item_id !== "item_002"),
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemById(merged, "item_002").points).toBe(7);
     assertValidDocument(merged);
@@ -227,7 +231,7 @@ describe("mergeRefusedEdit", () => {
     const added: NativeExamItem = { ...newTeacherItem("item_003", 3, "free_text"), points: 4 };
     const newest: NativeExamDocument = { ...base, items: [...base.items, added] };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_002", "item_001", "item_003"]);
     assertValidDocument(merged);
@@ -244,7 +248,7 @@ describe("mergeRefusedEdit", () => {
       ],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_002", "item_001"]);
     expect(itemById(merged, "item_001").points).toBe(7);
@@ -261,7 +265,7 @@ describe("mergeRefusedEdit", () => {
       revision: 5,
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.title).toBe("Min titel");
     expect(merged.header.course_hint).toBe("Matematik 1");
@@ -280,7 +284,7 @@ describe("mergeRefusedEdit", () => {
       items: [{ ...itemById(base, "item_002"), sequence: 1 }],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_002"]);
     expect(merged.items.map((item) => item.sequence)).toEqual([1]);
@@ -304,7 +308,7 @@ describe("mergeRefusedEdit", () => {
       items: [itemById(base, "item_001")],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemById(merged, "item_002").points).toBe(7);
     expect(merged.assets.map((entry) => entry.asset_id)).toEqual(["asset_001"]);
@@ -327,7 +331,7 @@ describe("mergeRefusedEdit", () => {
     };
     const newest = withPoints(base, "item_002", 9);
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.assets).toEqual([]);
     expect(itemById(merged, "item_001").body).toEqual([]);
@@ -352,7 +356,7 @@ describe("mergeRefusedEdit", () => {
       parents: [parentOf("parent_001", ["item_001"], 0, "Del A")],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_001"]);
     expect(merged.parents.map((parent) => parent.item_ids)).toEqual([["item_001"]]);
@@ -371,7 +375,7 @@ describe("mergeRefusedEdit", () => {
       items: [{ ...itemById(base, "item_001"), sequence: 1 }],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(itemIds(merged)).toEqual(["item_002"]);
     expect(itemById(merged, "item_002").points).toBe(
@@ -399,7 +403,7 @@ describe("mergeRefusedEdit", () => {
     const edited: NativeExamDocument = { ...base, title: "Kept title" };
     const newest: NativeExamDocument = { ...base, title: "Remote title" };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
       "parent_001",
@@ -424,7 +428,7 @@ describe("mergeRefusedEdit", () => {
     const edited: NativeExamDocument = { ...base, title: "Kept title" };
     const newest: NativeExamDocument = { ...base, title: "Remote title" };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
       "parent_001",
@@ -454,7 +458,7 @@ describe("mergeRefusedEdit", () => {
       items: [{ ...itemById(base, "item_001"), sequence: 1 }],
     };
 
-    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+    const merged = mergeKept(base, edited, newest);
 
     expect(merged.header.tags.map((tag) => tag.question_ids)).toEqual([["item_001"]]);
     assertValidDocument(merged);

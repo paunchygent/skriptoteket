@@ -387,13 +387,14 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       workspaceDocument,
     });
     const gate = useExamWorkspaceSyncGate({
+      abandonAttempt: () => history.abandonAttempt(),
+      confirmedCopy: () => history.confirmedCopy(),
+      desiredCopy: () => history.desiredCopy(),
       isLeaseHeld: () => leaseHeld.value,
       isOpenClaimPending: () => false,
-      hasPendingEdit: () => history.pending.value,
-      currentInflightDocument: () => history.inflightDocument.value,
+      publishedPieces: () => history.publishedPieces(),
+      resetUnconfirmed: () => history.resetUnconfirmed(),
       settleEdit: () => history.flush(true),
-      currentStepDocument: () => history.stepDocument.value,
-      currentWorkingCopy: () => workspaceDocument.value,
       dropOwedSnapshots: () => history.dropOwedSnapshots(),
       readDocument: (readLineageId) => shared.getExamWorkspaceDocument(readLineageId),
       readStepList: (readLineageId) => readStepList(shared, readLineageId),

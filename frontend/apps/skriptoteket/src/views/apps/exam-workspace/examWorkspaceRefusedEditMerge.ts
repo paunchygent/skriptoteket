@@ -4,26 +4,31 @@
  * Domain purpose:
  *   A refused edit survives the takeover (TASK-SKRIPT-40-04-14, USER decision
  *   2026-10-19 "Ta över keeps the edit"): after the tab gets the edit lease
- *   back, the edit refused with `EDIT_LEASE_HELD` is merged onto the newest
- *   server document and stored through the normal save path, so nothing is
- *   lost. The kept edit wins: every piece where the edited working copy
- *   differs from the history's step document replaces the newest version,
- *   because the teacher chose to keep it; every piece the edit did not change
- *   keeps the newest version, so the other tab's changes stay. A question the
- *   edit changed but the other tab deleted comes back.
+ *   back, the kept edit is merged onto the newest server document and stored
+ *   through the normal save path, so nothing is lost. The merge takes
+ *   explicit ownership: `mergeRefusedEdit(desired, owned, newest)` returns
+ *   the document to install. For a piece in `owned` the desired value wins,
+ *   including absence (a deletion); everything else stays the newest
+ *   version. A question in `owned` wins whole, even when the other tab
+ *   changed it later; untouched questions and fields stay newest.
  *
  *   Item content merges separately from derived positions: the selected
  *   ordered items go through the structure owner (`withMembers`, which
  *   renumbers items 1..n through `withUnits`), so positions never come from a
- *   snapshot. Asset declarations are the union of both tabs' declarations run
- *   through the asset owner (`withReferencedAssetsOnly`), so restored content
- *   keeps its pictures and unreferenced declarations drop. Parents are
- *   reconciled per part against the merged outline through the same structure
- *   owner, and header question tags are filtered to surviving items.
+ *   snapshot. Parents are reconciled per part against the merged outline
+ *   through the same structure owner, the local order wins only when the
+ *   order piece is owned, and header question tags are filtered to
+ *   surviving items. Asset declarations are the union of both tabs' declarations
+ *   run through the asset owner (`withReferencedAssetsOnly`), so restored
+ *   content keeps its pictures and unreferenced declarations drop.
+ *   Complementary deletions that would leave no question keep the whole
+ *   desired document (L9).
  *
  * Relationships:
- *   - Pure function consumed by `useExamWorkspaceEditing` on lease acquire;
- *     comparisons use `sameValue` from `examWorkspaceConversionMerge`.
+ *   - Pure function consumed by `useExamWorkspaceEditing` and the sync
+ *     gate's recovery commit; comparisons use `sameValue` from
+ *     `examWorkspaceConversionMerge`, piece keys from
+ *     `examWorkspaceEditPieces`.
  *   - Reads shapes from `api/examWorkspace.ts`.
  *   - Ordering, places and sequences are owned by `examWorkspaceStructure`;
  *     asset references are owned by its `withReferencedAssetsOnly`.
@@ -35,17 +40,22 @@ import type {
   NativeExamItem,
   NativeExamParent,
 } from "../../../api/examWorkspace";
-import { sameValue } from "./examWorkspaceConversionMerge";
+import {
+  EDIT_PIECE_HEADER,
+  EDIT_PIECE_INSTRUCTIONS,
+  EDIT_PIECE_OUTLINE,
+  EDIT_PIECE_QUESTION_ORDER,
+  EDIT_PIECE_TITLE,
+  membershipPiece,
+  parentIdIn,
+  parentPiece,
+  questionPiece,
+} from "./examWorkspaceEditPieces";
 import {
   withMembers,
   withReferencedAssetsOnly,
   type ExamWorkspaceMember,
 } from "./examWorkspaceStructure";
-
-/** Whether the edit left the document's content untouched; then there is nothing to keep. */
-function sameContent(a: NativeExamDocument, b: NativeExamDocument): boolean {
-  return sameValue({ ...a, revision: 1 }, { ...b, revision: 1 });
-}
 
 function byId(items: NativeExamItem[]): Map<string, NativeExamItem> {
   return new Map(items.map((item) => [item.item_id, item]));
@@ -59,75 +69,42 @@ function orderOf(document: NativeExamDocument): string[] {
   return document.items.map((item) => item.item_id);
 }
 
-/** Item content without the derived position, so renumbering never reads as an edit. */
-function sameItemContent(a: NativeExamItem, b: NativeExamItem): boolean {
-  return sameValue({ ...a, sequence: 1 }, { ...b, sequence: 1 });
-}
-
-/** A part's own content without its derived place; membership is reconciled separately. */
-function sameParentInstruction(a: NativeExamParent, b: NativeExamParent): boolean {
-  return sameValue(
-    { instruction: a.instruction, printed_total: a.printed_total ?? null },
-    { instruction: b.instruction, printed_total: b.printed_total ?? null },
-  );
-}
-
-/** The part holding the item in this document, or null when it stands alone. */
-function parentIdIn(document: NativeExamDocument, itemId: string): string | null {
-  for (const parent of document.parents) {
-    if (parent.item_ids.includes(itemId)) {
-      return parent.parent_id;
-    }
-  }
-  return null;
-}
-
 /**
- * Merge a refused edit onto the newest server document. `base` is the step
- * the edit started from, `edited` the refused working copy, `newest` the
- * reloaded server document. Returns the document to install, or null when
- * the edit changed nothing.
+ * Merge owned pieces of the desired copy onto the newest server document.
+ * `owned` holds piece keys from `examWorkspaceEditPieces`; an empty set
+ * returns the newest copy. Always returns a document to install.
  */
 export function mergeRefusedEdit(
-  base: NativeExamDocument,
-  edited: NativeExamDocument,
+  desired: NativeExamDocument,
+  owned: ReadonlySet<string>,
   newest: NativeExamDocument,
-): NativeExamDocument | null {
-  if (sameContent(edited, base)) {
-    return null;
+): NativeExamDocument {
+  if (owned.size === 0) {
+    return newest;
   }
-  const baseItems = byId(base.items);
-  const editedItems = byId(edited.items);
+  const desiredItems = byId(desired.items);
   const newestItems = byId(newest.items);
 
   const mergedContent = new Map<string, NativeExamItem>();
   for (const item of newest.items) {
-    const baseItem = baseItems.get(item.item_id);
-    const editedItem = editedItems.get(item.item_id);
-    if (baseItem !== undefined && editedItem !== undefined) {
-      // Changed on either side: the kept edit wins when it changed the content.
-      mergedContent.set(
-        item.item_id,
-        sameItemContent(editedItem, baseItem) ? item : editedItem,
-      );
-    } else if (baseItem !== undefined && editedItem === undefined) {
-      // The edit removed the item: it stays removed.
+    if (owned.has(questionPiece(item.item_id))) {
+      // The desired copy owns this question: its value wins, including absence.
+      const ownedItem = desiredItems.get(item.item_id);
+      if (ownedItem !== undefined) {
+        mergedContent.set(item.item_id, ownedItem);
+      }
     } else {
       mergedContent.set(item.item_id, item);
     }
   }
-  for (const item of edited.items) {
-    const baseItem = baseItems.get(item.item_id);
-    if (baseItem === undefined) {
-      // The edit added the item; on an id collision the kept edit wins.
-      mergedContent.set(item.item_id, item);
-    } else if (!sameItemContent(item, baseItem) && !newestItems.has(item.item_id)) {
-      // The edit changed the item but the other tab deleted it: add it back.
+  for (const item of desired.items) {
+    if (!newestItems.has(item.item_id) && owned.has(questionPiece(item.item_id))) {
+      // The desired copy added or restored the question: it comes back only owned.
       mergedContent.set(item.item_id, item);
     }
   }
 
-  const editedIds = new Set(orderOf(edited));
+  const desiredIds = new Set(orderOf(desired));
   const orderedIds: string[] = [];
   const orderedSeen = new Set<string>();
   const pushId = (itemId: string) => {
@@ -136,21 +113,21 @@ export function mergeRefusedEdit(
       orderedIds.push(itemId);
     }
   };
-  if (sameValue(orderOf(edited), orderOf(base))) {
-    for (const itemId of orderOf(newest)) {
+  if (owned.has(EDIT_PIECE_QUESTION_ORDER)) {
+    for (const itemId of orderOf(desired)) {
       pushId(itemId);
     }
-    for (const itemId of orderOf(edited)) {
-      if (!newestItems.has(itemId)) {
+    for (const itemId of orderOf(newest)) {
+      if (!desiredIds.has(itemId)) {
         pushId(itemId);
       }
     }
   } else {
-    for (const itemId of orderOf(edited)) {
+    for (const itemId of orderOf(newest)) {
       pushId(itemId);
     }
-    for (const itemId of orderOf(newest)) {
-      if (!editedIds.has(itemId)) {
+    for (const itemId of orderOf(desired)) {
+      if (!newestItems.has(itemId)) {
         pushId(itemId);
       }
     }
@@ -163,79 +140,61 @@ export function mergeRefusedEdit(
     }
   }
 
-  const mergedTitle = sameValue(edited.title, base.title) ? newest.title : edited.title;
-  const mergedHeader = sameValue(edited.header, base.header) ? newest.header : edited.header;
-  const mergedInstructions = sameValue(edited.instructions, base.instructions)
-    ? newest.instructions
-    : edited.instructions;
+  const mergedTitle = owned.has(EDIT_PIECE_TITLE) ? desired.title : newest.title;
+  const mergedHeader = owned.has(EDIT_PIECE_HEADER) ? desired.header : newest.header;
+  const mergedInstructions = owned.has(EDIT_PIECE_INSTRUCTIONS)
+    ? desired.instructions
+    : newest.instructions;
 
-  const baseParents = parentsById(base.parents);
-  const editedParents = parentsById(edited.parents);
+  const desiredParents = parentsById(desired.parents);
   const newestParents = parentsById(newest.parents);
   const allParentIds: string[] = [];
-  for (const parent of [...base.parents, ...edited.parents, ...newest.parents]) {
+  for (const parent of [...desired.parents, ...newest.parents]) {
     if (!allParentIds.includes(parent.parent_id)) {
       allParentIds.push(parent.parent_id);
     }
   }
   const instructionParents = new Map<string, NativeExamParent>();
   for (const parentId of allParentIds) {
-    const baseParent = baseParents.get(parentId);
-    const editedParent = editedParents.get(parentId);
+    const desiredParent = desiredParents.get(parentId);
     const newestParent = newestParents.get(parentId);
-    if (baseParent !== undefined) {
-      if (editedParent !== undefined && newestParent !== undefined) {
-        instructionParents.set(
-          parentId,
-          sameParentInstruction(editedParent, baseParent) ? newestParent : editedParent,
-        );
-      } else if (editedParent !== undefined && newestParent === undefined) {
-        // The other tab deleted the part: it comes back only when the edit touched it.
-        const touched = !sameValue(
-          { ...editedParent, place: 0 },
-          { ...baseParent, place: 0 },
-        );
-        if (touched) {
-          instructionParents.set(parentId, editedParent);
-        }
-      } else if (editedParent === undefined) {
-        // The edit deleted the part: it stays deleted.
+    if (owned.has(parentPiece(parentId))) {
+      // The desired copy owns this part: its value wins, including absence.
+      if (desiredParent !== undefined) {
+        instructionParents.set(parentId, desiredParent);
       }
-    } else if (editedParent !== undefined) {
-      instructionParents.set(parentId, editedParent);
     } else if (newestParent !== undefined) {
       instructionParents.set(parentId, newestParent);
+    } else if (desiredParent !== undefined) {
+      instructionParents.set(parentId, desiredParent);
     }
   }
 
   // Complementary deletions on both sides can leave no question at all, which
-  // the server rejects. The kept edit wins whole then: the merged result is
-  // the kept edit's own document carried onto the newest identity fields,
-  // with positions and assets through the existing owners as for any merge.
+  // the server rejects. The desired copy wins whole then: the merged result is
+  // the desired document carried onto the newest identity fields, with
+  // positions and assets through the existing owners as for any merge.
   const keptWhole = orderedItems.length === 0;
-  const activeItems = keptWhole ? [...edited.items] : orderedItems;
-  const activeTitle = keptWhole ? edited.title : mergedTitle;
-  const activeHeader = keptWhole ? edited.header : mergedHeader;
-  const activeInstructions = keptWhole ? edited.instructions : mergedInstructions;
-  const activeInstructionParents = keptWhole ? parentsById(edited.parents) : instructionParents;
+  const activeItems = keptWhole ? [...desired.items] : orderedItems;
+  const activeTitle = keptWhole ? desired.title : mergedTitle;
+  const activeHeader = keptWhole ? desired.header : mergedHeader;
+  const activeInstructions = keptWhole ? desired.instructions : mergedInstructions;
+  const activeInstructionParents = keptWhole ? parentsById(desired.parents) : instructionParents;
 
   const mergedParentOf = new Map<string, string | null>();
   for (const item of activeItems) {
-    const baseOwner = baseItems.has(item.item_id) ? parentIdIn(base, item.item_id) : undefined;
-    const editedOwner = editedItems.has(item.item_id)
-      ? parentIdIn(edited, item.item_id)
+    const desiredOwner = desiredItems.has(item.item_id)
+      ? parentIdIn(desired, item.item_id)
       : undefined;
-    const newestOwner = newestItems.has(item.item_id)
-      ? parentIdIn(newest, item.item_id)
-      : undefined;
+    const newestOwner = newestItems.has(item.item_id) ? parentIdIn(newest, item.item_id) : undefined;
     let owner: string | null | undefined;
-    if (editedOwner !== baseOwner) {
-      owner = editedOwner;
+    if (owned.has(membershipPiece(item.item_id))) {
+      owner = desiredOwner;
     } else {
       owner = newestOwner;
     }
     if (owner === undefined) {
-      owner = editedOwner ?? newestOwner ?? null;
+      owner = desiredOwner ?? newestOwner ?? null;
     }
     if (owner !== null && !activeInstructionParents.has(owner)) {
       owner = null;
@@ -258,17 +217,12 @@ export function mergeRefusedEdit(
       assigned.add(owner);
     }
   }
-  // The kept edit wins where it changed the block outline (order or
+  // The desired copy wins where it owned the block outline (order or
   // placement); otherwise the newest outline wins. Base-first map order is
   // never the outline order: the blocks below enter in the selected
   // document's order, and the stable place sort only breaks ties.
-  const blockOutline = (
-    document: NativeExamDocument,
-  ): Array<{ parent_id: string; place: number }> =>
-    document.parents.map((parent) => ({ parent_id: parent.parent_id, place: parent.place }));
-  const editMovedBlocks = !sameValue(blockOutline(edited), blockOutline(base));
-  const outlineSource = keptWhole || editMovedBlocks ? edited : newest;
-  const outlineFallback = outlineSource === edited ? newest : edited;
+  const outlineSource = keptWhole || owned.has(EDIT_PIECE_OUTLINE) ? desired : newest;
+  const outlineFallback = outlineSource === desired ? newest : desired;
   const blockIds = new Set<string>();
   for (const parent of activeInstructionParents.values()) {
     if (!assigned.has(parent.parent_id)) {
@@ -338,11 +292,11 @@ export function mergeRefusedEdit(
     }
     union.set(entry.asset_id, entry);
   }
-  for (const entry of edited.assets) {
+  for (const entry of desired.assets) {
     if (!union.has(entry.asset_id)) {
       unionOrder.push(entry.asset_id);
     }
-    // The kept edit wins when both tabs declare the same asset.
+    // The desired copy wins when both tabs declare the same asset.
     union.set(entry.asset_id, entry);
   }
   const unionAssets: NativeExamAsset[] = [];

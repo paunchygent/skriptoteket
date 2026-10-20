@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
+import { questionPiece } from "./examWorkspaceEditPieces";
 import {
   createGate,
   exam,
@@ -26,9 +27,8 @@ async function openEditing(harness: SyncGateHarness): Promise<void> {
 
 async function takeKept(harness: SyncGateHarness): Promise<void> {
   await openEditing(harness);
-  harness.flags.pendingEdit = true;
-  harness.flags.stepDocument = exam();
-  harness.flags.workingCopy = withPoints(exam(), 7);
+  harness.flags.confirmedCopy = exam();
+  harness.flags.desiredCopy = withPoints(exam(), 7);
   harness.gate.leaseLost();
   await harness.settle();
 }
@@ -124,6 +124,12 @@ describe("the sync gate merge point", () => {
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
+    // The merged copy is still unconfirmed: a generation-only acknowledgement
+    // for it must not clear the kept work.
+    harness.gate.noteStored(harness.gate.fence.begin());
+    await harness.settle();
+    // The merge generation's store confirmed the merged copy: the kept work clears.
+    harness.flags.confirmedCopy = mergedAt(harness, 1);
     harness.gate.noteStored(harness.gate.fence.begin());
     await harness.settle();
     harness.gate.staleConflict();
@@ -138,6 +144,8 @@ describe("the sync gate merge point", () => {
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
     expect(harness.counts.storeRequests).toBe(1);
+    // The recovery store confirmed the merged copy through the write queue.
+    harness.flags.confirmedCopy = mergedAt(harness, 0);
     harness.gate.noteStored(harness.gate.fence.begin());
     await harness.settle();
     harness.gate.staleConflict();
@@ -166,9 +174,8 @@ describe("the sync gate merge point", () => {
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
     const merged = mergedAt(harness, 0);
-    harness.flags.pendingEdit = true;
-    harness.flags.stepDocument = merged;
-    harness.flags.workingCopy = withPoints(merged, 8);
+    harness.flags.confirmedCopy = merged;
+    harness.flags.desiredCopy = withPoints(merged, 8);
     harness.gate.leaseLost();
     expect(harness.gate.phase.value).toBe("readonly");
     harness.gate.leaseAcquired();
@@ -178,18 +185,18 @@ describe("the sync gate merge point", () => {
     if (second === undefined) {
       throw new Error("expected the second merge");
     }
-    expect(second.base).toBe(merged);
-    expect(pointsOf(second.edited, "item_001")).toBe(8);
+    expect(pointsOf(second.desired, "item_001")).toBe(8);
+    expect(second.owned.has(questionPiece("item_001"))).toBe(true);
   });
 
-  it("runs no merged store when the merge leaves no question", async () => {
+  it("installs the fresh copy and completes recovery when no piece is owned", async () => {
     const harness = createGate();
-    await takeKept(harness);
-    harness.flags.mergeResult = null;
+    await openEditing(harness);
+    harness.gate.leaseLost();
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
-    expect(harness.mergeCalls.length).toBe(1);
-    expect(harness.mergedInstalled.length).toBe(0);
+    expect(harness.mergeCalls.length).toBe(0);
+    expect(harness.freshInstalled.length).toBe(2);
     expect(harness.counts.storeRequests).toBe(0);
     expect(harness.gate.phase.value).toBe("editing");
   });

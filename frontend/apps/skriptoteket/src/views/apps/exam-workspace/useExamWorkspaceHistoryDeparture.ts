@@ -18,9 +18,9 @@
  *
  * Relationships:
  *   - Built by `useExamWorkspaceHistory`, which stays the only history
- *     authority; the history passes explicit deps (`flush`, `pending`,
- *     `isNavigating`, `isReplacing`, `replaceCopy`, `isDisposed`) and
- *     re-exports `depart`, so no caller changes.
+ *     authority; the history passes explicit deps (`flush`,
+ *     `hasUnconfirmed`, `isNavigating`, `isReplacing`, `replaceCopy` and
+ *     `isDisposed`) and re-exports `depart`, so no caller changes.
  *   - The history's `onScopeDispose` marks disposed, clears the typing timer
  *     and then calls this module's `dispose()`, which releases a held
  *     departure lock; that order matches the previous inline disposal.
@@ -29,8 +29,8 @@
 export type ExamWorkspaceHistoryDepartureDeps = {
   /** Store the pending edit now; `depart` always settles before leaving. */
   flush: (settle?: boolean) => Promise<boolean>;
-  /** True while the working copy differs from the standing step. */
-  pending: () => boolean;
+  /** True while an attempt, unresolved pieces, kept keys or net edits stay unconfirmed. */
+  hasUnconfirmed: () => boolean;
   /** True while an undo or redo holds the replacing lock. */
   isNavigating: () => boolean;
   /** Another undo, redo or server command is replacing the copy; departure waits by refusing. */
@@ -80,7 +80,7 @@ export function useExamWorkspaceHistoryDeparture(deps: ExamWorkspaceHistoryDepar
         resolveDeparted(false);
         return;
       }
-      if (!(settled && !deps.pending())) {
+      if (!(settled && !deps.hasUnconfirmed())) {
         resolveDeparted(false);
         return;
       }
