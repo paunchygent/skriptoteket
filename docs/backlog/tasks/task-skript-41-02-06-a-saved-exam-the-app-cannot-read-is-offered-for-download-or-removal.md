@@ -48,9 +48,15 @@ backlog_document_profile: contract-derived
   U10b (`8e020bd2`, F2, F3, F5, F6), U11 (`661894a0`, F4), U13a (`7ac4539b`) and U13b (`1045430c`,
   F7), U14 (`1cc4a765`, F1; D17-D19) and U16 (`17eff6fe`, banner hidden while unreadable). Copy
   recheck `1cb9a1de` approved S7 and the hidden banner.
-- Next: backend suite slot on the orchestrator's go, then rereview of F1-F3 by `f5bfc8fe`; U5 deep
-  link waits until the orchestrator reports the 40-04 address and open repair on main; the full
-  frontend suite runs after U5.
+- Rereview `f5bfc8fe` of `f3a8eb17` (root `evidence/reviews/f5bfc8fe-rereview-f3a8eb17.md`):
+  R1 high, R2 and R3 medium. R2 and R3 are repaired by U18 (`7644fc64`, host admission first,
+  clearIf honoured) and U18b (`e6124392`, one admission state). R1 is repaired by U19 and U20
+  (`fd9883d5`). They follow the reviewer's design advice
+  (`evidence/reviews/f5bfc8fe-r1-design-advice.md`) without its worker process: D19 reconciled,
+  D20 added (`DOCUMENT_UNREADABLE`).
+- Next: R1 returns to `f5bfc8fe` for rereview. U5 waits until the orchestrator reports the 40-04
+  address and open repair on main. U5 then also maps `DOCUMENT_UNREADABLE` to the notice (D20) and
+  runs the full frontend suite.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
