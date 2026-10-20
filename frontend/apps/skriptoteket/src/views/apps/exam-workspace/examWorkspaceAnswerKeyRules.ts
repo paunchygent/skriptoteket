@@ -25,8 +25,6 @@ import { examWorkspaceQuestionLabels } from "./examWorkspaceListEntries";
 export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar i varje lucka.";
 
-export const GAP_WITHOUT_CORRECT_OPTION_GUIDANCE = "Markera rätt alternativ i varje rullista.";
-
 export const INCOMPLETE_MATCH_KEY_GUIDANCE =
   "Kryssa minst en kategori för varje rad, eller lämna alla rader utan kryss om frågan ska sakna facit.";
 

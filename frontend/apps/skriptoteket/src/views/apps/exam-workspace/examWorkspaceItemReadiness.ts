@@ -25,7 +25,7 @@
  *   - Reads the save rules from `examWorkspaceItemSaveRules` and
  *     `examWorkspaceAnswerKeyRules`.
  *   - Consumed by `ExamWorkspaceView`, the question list, and the Filer
- *     readiness summary; reuses the export blocker copy.
+ *     readiness summary.
  */
 
 import type {
@@ -39,27 +39,18 @@ import type {
 } from "../../../api/examWorkspaceExports";
 import {
   dropdownGapsWithoutCorrectOption,
-  GAP_WITHOUT_CORRECT_OPTION_GUIDANCE,
-  INCOMPLETE_MATCH_KEY_GUIDANCE,
   isIncompleteMatchingItem,
   isPartiallyKeyedGapItem,
-  PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import {
-  CRITERIA_ON_WRONG_KIND_GUIDANCE,
-  CRITERIA_POINTS_MISMATCH_GUIDANCE,
-  EMPTY_CRITERION_TEXT_GUIDANCE,
   hasCriteriaOnWrongKind,
   hasCriteriaPointsMismatch,
   hasEmptyCriterionText,
   hasInvalidCriterionPoints,
   hasNegativePoints,
-  INVALID_CRITERION_POINTS_GUIDANCE,
-  NEGATIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { bodyText } from "./examWorkspaceRichText";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
-import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
 
 const KEYED_KINDS = new Set<NativeExamItemKind>([
   "gap_fill",
@@ -94,18 +85,6 @@ export type ExamWorkspaceReadinessReason =
   | "invalid_criterion_points"
   | "negative_points"
   | "partial_gap_key";
-
-const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
-  ...EXAM_WORKSPACE_EXPORT_BLOCKER_COPY,
-  criteria_on_wrong_kind: CRITERIA_ON_WRONG_KIND_GUIDANCE,
-  criteria_points_mismatch: CRITERIA_POINTS_MISMATCH_GUIDANCE,
-  empty_criterion_text: EMPTY_CRITERION_TEXT_GUIDANCE,
-  gap_without_correct_option: GAP_WITHOUT_CORRECT_OPTION_GUIDANCE,
-  incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
-  invalid_criterion_points: INVALID_CRITERION_POINTS_GUIDANCE,
-  negative_points: NEGATIVE_POINTS_GUIDANCE,
-  partial_gap_key: PARTIAL_GAP_KEY_GUIDANCE,
-};
 
 export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceReadinessReason[] {
   const reasons: ExamWorkspaceReadinessReason[] = [];
@@ -200,22 +179,4 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     reasons.push("criteria_on_wrong_kind");
   }
   return reasons;
-}
-
-export function examWorkspaceReadinessCopy(reason: ExamWorkspaceReadinessReason): string {
-  return READINESS_COPY[reason];
-}
-
-/** Swedish readiness copy per item id, only for items that would stop an export. */
-export function examWorkspaceReadinessByItemId(
-  items: NativeExamItem[],
-): Record<string, string[]> {
-  const byItemId: Record<string, string[]> = {};
-  for (const item of items) {
-    const reasons = examWorkspaceItemReadiness(item);
-    if (reasons.length > 0) {
-      byItemId[item.item_id] = reasons.map(examWorkspaceReadinessCopy);
-    }
-  }
-  return byItemId;
 }

@@ -1,15 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import {
-  examWorkspaceItemReadiness,
-  examWorkspaceReadinessByItemId,
-} from "./examWorkspaceItemReadiness";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildChoiceItem } from "./examWorkspaceItemReadiness.specSupport";
-import {
-  CRITERIA_POINTS_MISMATCH_GUIDANCE,
-  INVALID_CRITERION_POINTS_GUIDANCE,
-} from "./examWorkspaceItemSaveRules";
 
 function buildCriteriaItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
@@ -61,15 +54,13 @@ describe("examWorkspaceItemReadiness for free-text criteria", () => {
     expect(examWorkspaceItemReadiness(item)).toEqual(["criteria_on_wrong_kind"]);
   });
 
-  it("maps the criteria reasons to their Swedish copy by item id", () => {
+  it("reports a criteria sum that is not the item's points", () => {
     const item = buildCriteriaItem({ points: 2 });
 
-    expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      item_001: [CRITERIA_POINTS_MISMATCH_GUIDANCE],
-    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["criteria_points_mismatch"]);
   });
 
-  it("maps invalid criterion points to their Swedish copy by item id", () => {
+  it("reports invalid criterion points", () => {
     const item = buildCriteriaItem({
       criteria: [
         { points: 1.5, text: "Definition" },
@@ -77,8 +68,6 @@ describe("examWorkspaceItemReadiness for free-text criteria", () => {
       ],
     });
 
-    expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      item_001: [INVALID_CRITERION_POINTS_GUIDANCE],
-    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["invalid_criterion_points"]);
   });
 });

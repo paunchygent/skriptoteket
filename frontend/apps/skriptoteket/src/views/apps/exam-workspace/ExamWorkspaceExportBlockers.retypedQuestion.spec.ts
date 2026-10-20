@@ -25,9 +25,6 @@ import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness"
 import { examWorkspaceListEntries } from "./examWorkspaceListEntries";
 import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
-import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
-
-const COPY = "Frågan har fått en ny typ men är inte granskad. Kontrollera den och markera den som granskad.";
 
 function retypedItem(itemId: string, sequence: number): NativeExamItem {
   return {
@@ -54,9 +51,7 @@ beforeEach(() => {
 });
 
 describe("examWorkspaceBlockerEntries for a retyped unconverted question", () => {
-  it("names the exact copy line with the review fix on the review button", () => {
-    expect(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY.unreviewed_retyped_question).toBe(COPY);
-
+  it("names the retyped reason with the review fix on the review button", () => {
     expect(rows([retypedItem("item_001", 1)])).toEqual([
       {
         fix: "review",
