@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bcacf83a5a90a94ebff128050172061fbb9aaf93f169c8f484375b5b87deb411",
+  "source_set_digest": "b88f8dfcad401cbc30aad2da7b5fc6d7ccb92f916d31540f6544a0a7fecc7f04",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6946,7 +6946,7 @@
       "type": "task",
       "title": "The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block",
       "path": "docs/backlog/tasks/task-skript-40-04-18-the-exam-workspace-header-opens-provets-uppgifter-from-an-uppgifter-command-and-free-text-questions-set-their-writing-area-and-criteria-in-one-boxless-answer-block.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6957,7 +6957,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md)."
       }
     },
     {
