@@ -7,14 +7,18 @@ from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import PooledDatabase
-from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+from tests.integration.migration_idempotency_support import (
+    assert_revision_is_idempotent,
+)
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
+
+_REVISION = "e6a9c2f4b8d1"
+_PARENT = "d4f8b2c6a9e1"
 
 
 async def _assert_docx_queue_schema(engine: AsyncEngine) -> None:
@@ -110,17 +114,18 @@ async def _assert_downgrade_state(database_url: str) -> None:
         await engine.dispose()
 
 
-def test_fresh_head_rerun_and_downgrade_delete_only_import_rows(
-    alembic_config: Config, database_url: str, monkeypatch: pytest.MonkeyPatch
+def test_rerun_and_downgrade_delete_only_import_rows(
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.downgrade(alembic_config, "base")
-    command.upgrade(alembic_config, "head")
-    command.upgrade(alembic_config, "head")
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_seed_coexisting_jobs(database_url))
-    command.downgrade(alembic_config, "d4f8b2c6a9e1")
+    command.downgrade(config, _PARENT)
     asyncio.run(_assert_downgrade_state(database_url))
-    command.upgrade(alembic_config, "head")
+    command.upgrade(config, _REVISION)
 
     async def assert_restored_schema() -> None:
         engine = create_async_engine(database_url)

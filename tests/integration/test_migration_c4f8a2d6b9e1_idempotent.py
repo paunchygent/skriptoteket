@@ -7,15 +7,15 @@ from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import PooledDatabase
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
 
+_REVISION = "c4f8a2d6b9e1"
 _PREVIOUS_REVISION = "e3b7a1c5d9f2"
 
 
@@ -98,16 +98,17 @@ async def _assert_downgrade_state(database_url: str) -> None:
 
 
 def test_existing_job_gets_null_progress_and_downgrade_preserves_row(
-    alembic_config: Config, database_url: str, monkeypatch: pytest.MonkeyPatch
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.downgrade(alembic_config, "base")
-    command.upgrade(alembic_config, _PREVIOUS_REVISION)
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _PREVIOUS_REVISION)
     asyncio.run(_seed_existing_job(database_url))
-    command.upgrade(alembic_config, "c4f8a2d6b9e1")
-    command.upgrade(alembic_config, "c4f8a2d6b9e1")
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_null_progress(database_url))
-    command.downgrade(alembic_config, _PREVIOUS_REVISION)
+    command.downgrade(config, _PREVIOUS_REVISION)
     asyncio.run(_assert_downgrade_state(database_url))
-    command.upgrade(alembic_config, "c4f8a2d6b9e1")
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_null_progress(database_url))

@@ -6,12 +6,16 @@ from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine
 
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
+
+_PARENT = "b7e4d2a9c610"
+_REVISION = "4e9b7d1c6a02"
 
 
 async def _seed_old_files(
@@ -132,11 +136,13 @@ async def _assert_retirement_and_unique_exam(
 
 
 def test_exam_migration_drops_old_files_releases_active_bytes_and_enforces_one_file(
-    database_url: str, alembic_config: Config, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    database_url = fresh_database.url
+    alembic_config = alembic_config_for(database_url=database_url)
     monkeypatch.setenv("DATABASE_URL", database_url)
     monkeypatch.setenv("VAULT_ROOT", str(tmp_path))
-    command.upgrade(alembic_config, "b7e4d2a9c610")
+    command.upgrade(alembic_config, _PARENT)
     owner, lineage = uuid4(), uuid4()
     file_ids = (uuid4(), uuid4(), uuid4())
     asyncio.run(_seed_old_files(database_url, owner=owner, lineage=lineage, file_ids=file_ids))
@@ -145,8 +151,8 @@ def test_exam_migration_drops_old_files_releases_active_bytes_and_enforces_one_f
     for file_id, size in zip(file_ids, (11, 13, 17), strict=True):
         (owner_directory / str(file_id)).write_bytes(b"x" * size)
 
-    command.upgrade(alembic_config, "4e9b7d1c6a02")
-    command.upgrade(alembic_config, "4e9b7d1c6a02")
+    command.upgrade(alembic_config, _REVISION)
+    command.upgrade(alembic_config, _REVISION)
     assert not (owner_directory / str(file_ids[0])).exists()
     assert not (owner_directory / str(file_ids[1])).exists()
     assert (owner_directory / str(file_ids[2])).read_bytes() == b"x" * 17

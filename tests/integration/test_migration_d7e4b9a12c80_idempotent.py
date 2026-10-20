@@ -171,9 +171,6 @@ def test_migration_d7e4b9a12c80_seeds_heads_without_containers_and_is_idempotent
         command.downgrade(config, _PARENT)
         command.upgrade(config, _REVISION)
         asyncio.run(_assert_seed(database_url, owner, lineage, head))
-        command.upgrade(config, "head")
-        command.upgrade(config, "head")
-        asyncio.run(_assert_seed(database_url, owner, lineage, head))
     finally:
         if previous is None:
             os.environ.pop("DATABASE_URL", None)

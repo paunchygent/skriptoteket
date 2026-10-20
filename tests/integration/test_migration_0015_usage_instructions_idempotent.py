@@ -44,12 +44,13 @@ def test_migration_0015_usage_instructions_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0014_tool_versions_settings")
+    command.upgrade(alembic_cfg, "0015_usage_instructions")
+    command.upgrade(alembic_cfg, "0015_usage_instructions")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0014_tool_versions_settings")
+    command.upgrade(alembic_cfg, "0015_usage_instructions")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

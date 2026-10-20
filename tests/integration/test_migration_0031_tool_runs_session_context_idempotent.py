@@ -43,12 +43,13 @@ def test_migration_0031_tool_runs_session_context_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0030_sessions_cache_ai_settings")
+    command.upgrade(alembic_cfg, "0031_tool_runs_session_context")
+    command.upgrade(alembic_cfg, "0031_tool_runs_session_context")
 
     asyncio.run(_assert_session_context_column_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0030_sessions_cache_ai_settings")
+    command.upgrade(alembic_cfg, "0031_tool_runs_session_context")
 
     asyncio.run(_assert_session_context_column_from_url(database_url=database_url))

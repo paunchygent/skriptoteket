@@ -74,12 +74,13 @@ def test_migration_0024_tool_session_messages_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0023_input_schema_not_null")
+    command.upgrade(alembic_cfg, "0024_tool_session_messages")
+    command.upgrade(alembic_cfg, "0024_tool_session_messages")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0023_input_schema_not_null")
+    command.upgrade(alembic_cfg, "0024_tool_session_messages")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

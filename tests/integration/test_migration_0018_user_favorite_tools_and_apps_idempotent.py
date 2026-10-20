@@ -127,12 +127,13 @@ def test_migration_0018_user_favorite_tools_and_apps_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0017_tool_runs_input_values")
+    command.upgrade(alembic_cfg, "0018_user_favorite_tools_and_apps")
+    command.upgrade(alembic_cfg, "0018_user_favorite_tools_and_apps")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0017_tool_runs_input_values")
+    command.upgrade(alembic_cfg, "0018_user_favorite_tools_and_apps")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

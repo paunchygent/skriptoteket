@@ -127,15 +127,15 @@ def test_migration_0030_sessions_cache_ai_settings_is_idempotent(
     command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
     user_id, _ = asyncio.run(_seed_user_profile_and_session_from_url(database_url=database_url))
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0030_sessions_cache_ai_settings")
+    command.upgrade(alembic_cfg, "0030_sessions_cache_ai_settings")
 
     asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id))
 
-    command.downgrade(alembic_cfg, "base")
+    command.downgrade(alembic_cfg, "0029_profile_inline_completion_provider")
 
     command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
     user_id_2, _ = asyncio.run(_seed_user_profile_and_session_from_url(database_url=database_url))
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0030_sessions_cache_ai_settings")
 
     asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id_2))

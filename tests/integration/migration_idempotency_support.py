@@ -24,19 +24,29 @@ from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 SchemaAssertion = Callable[[AsyncEngine], Awaitable[None]]
 
 
-def _parent_revision(revision_id: str) -> str:
+def _parent_revisions(revision_id: str) -> tuple[str, ...]:
+    """Return the parent revision ids of ``revision_id`` (empty tuple for base)."""
     script = ScriptDirectory.from_config(Config(str(Path("alembic.ini"))))
     revision = script.get_revision(revision_id)
     if revision is None:
         raise ValueError(f"Unknown Alembic revision: {revision_id}")
     down_revision = revision.down_revision
     if down_revision is None:
-        return "base"
+        return ()
     if isinstance(down_revision, str):
-        return down_revision
-    if isinstance(down_revision, tuple):
-        raise ValueError(f"Expected a linear migration graph for {revision_id}")
-    raise ValueError(f"Expected a single parent revision for {revision_id}")
+        return (down_revision,)
+    return tuple(down_revision)
+
+
+def _downgrade_targets(parent_revisions: tuple[str, ...]) -> tuple[str, ...]:
+    """Return the Alembic targets that restore exactly ``parent_revisions``.
+
+    A merge revision downgrades to each parent in turn, because the relative
+    ``<rev>-1`` target raises "Ambiguous walk".
+    """
+    if parent_revisions:
+        return parent_revisions
+    return ("base",)
 
 
 async def _reset_public_schema(*, database_url: str) -> None:
@@ -46,6 +56,21 @@ async def _reset_public_schema(*, database_url: str) -> None:
             await conn.exec_driver_sql("DROP SCHEMA IF EXISTS public CASCADE")
             await conn.exec_driver_sql("CREATE SCHEMA public")
             await conn.exec_driver_sql("GRANT ALL ON SCHEMA public TO PUBLIC")
+    finally:
+        await engine.dispose()
+
+
+async def _assert_version_rows(
+    *,
+    database_url: str,
+    expected: tuple[str, ...],
+) -> None:
+    engine = create_async_engine(database_url, pool_pre_ping=True)
+    try:
+        async with engine.connect() as conn:
+            result = await conn.execute(text("SELECT version_num FROM alembic_version"))
+            rows = sorted(row[0] for row in result.fetchall())
+        assert rows == sorted(expected)
     finally:
         await engine.dispose()
 
@@ -74,7 +99,7 @@ def assert_revision_is_idempotent(
 ) -> None:
     """Verify a revision upgrade, no-op rerun, downgrade, and re-upgrade cycle."""
     database_url = empty_module_database.url
-    previous_revision = _parent_revision(revision_id)
+    parent_revisions = _parent_revisions(revision_id)
     previous_database_url = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
 
@@ -82,8 +107,8 @@ def assert_revision_is_idempotent(
         asyncio.run(_reset_public_schema(database_url=database_url))
 
         alembic_cfg = alembic_config_for(database_url=database_url)
-        if previous_revision != "base":
-            command.upgrade(alembic_cfg, previous_revision)
+        for parent_revision in parent_revisions:
+            command.upgrade(alembic_cfg, parent_revision)
 
         command.upgrade(alembic_cfg, revision_id)
         command.upgrade(alembic_cfg, revision_id)
@@ -95,7 +120,14 @@ def assert_revision_is_idempotent(
             )
         )
 
-        command.downgrade(alembic_cfg, previous_revision)
+        for downgrade_target in _downgrade_targets(parent_revisions):
+            command.downgrade(alembic_cfg, downgrade_target)
+        asyncio.run(
+            _assert_version_rows(
+                database_url=database_url,
+                expected=parent_revisions,
+            )
+        )
         command.upgrade(alembic_cfg, revision_id)
         asyncio.run(
             _assert_revision_state(

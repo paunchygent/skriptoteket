@@ -5,9 +5,10 @@ from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
 
@@ -81,17 +82,19 @@ async def _assert_edit_lease(database_url: str, *, owner, lineage, cursor) -> No
 
 
 def test_exam_edit_lease_columns_land_nullable_and_keep_the_head(
-    database_url: str, alembic_config: Config, monkeypatch: pytest.MonkeyPatch
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.upgrade(alembic_config, _PARENT)
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _PARENT)
     owner, lineage, cursor = uuid4(), uuid4(), uuid4()
     asyncio.run(_seed_head(database_url, owner=owner, lineage=lineage, cursor=cursor))
 
-    command.upgrade(alembic_config, _REVISION)
-    command.upgrade(alembic_config, _REVISION)
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_edit_lease(database_url, owner=owner, lineage=lineage, cursor=cursor))
 
-    command.downgrade(alembic_config, _PARENT)
-    command.upgrade(alembic_config, _REVISION)
+    command.downgrade(config, _PARENT)
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_edit_lease(database_url, owner=owner, lineage=lineage, cursor=cursor))

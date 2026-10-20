@@ -15,14 +15,15 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
+from typing import TypeVar
+from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import PooledDatabase
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 from tests.integration.migration_schema_helpers import (
     column_map,
@@ -36,7 +37,7 @@ _REVISION = "c8e4f2a6d9b3"
 _PARENT = "a1c2e3f4b5d6"
 _TABLE = "exam_guest_draft_handoffs"
 
-_SchemaAssertion = Callable[[AsyncEngine], Awaitable[None]]
+_T = TypeVar("_T")
 
 
 async def _primary_key_columns(engine: AsyncEngine) -> list[str]:
@@ -104,10 +105,42 @@ async def _assert_exam_guest_draft_handoffs_absent(engine: AsyncEngine) -> None:
     assert await index_names(engine, _TABLE) == set()
 
 
-async def _with_engine(database_url: str, assertion: _SchemaAssertion) -> None:
+async def _seed_owner_user(engine: AsyncEngine) -> UUID:
+    owner_id = uuid4()
+    async with engine.begin() as connection:
+        await connection.execute(
+            text(
+                "INSERT INTO users (id, email, role, auth_provider) "
+                "VALUES (:id, 'guest-owner@example.com', 'guest', 'local')"
+            ),
+            {"id": owner_id},
+        )
+    return owner_id
+
+
+async def _seed_handoff(engine: AsyncEngine, owner_id: UUID) -> None:
+    async with engine.begin() as connection:
+        await connection.execute(
+            text(
+                "INSERT INTO exam_guest_draft_handoffs "
+                "(owner_user_id, draft_id, lineage_id, created_at) "
+                "VALUES (:owner, :draft, :lineage, now())"
+            ),
+            {"owner": owner_id, "draft": uuid4(), "lineage": uuid4()},
+        )
+
+
+async def _handoff_count(engine: AsyncEngine) -> int:
+    async with engine.connect() as connection:
+        count = await connection.scalar(text("SELECT count(*) FROM exam_guest_draft_handoffs"))
+        assert isinstance(count, int)
+        return count
+
+
+async def _with_engine(database_url: str, action: Callable[[AsyncEngine], Awaitable[_T]]) -> _T:
     engine = create_async_engine(database_url, pool_pre_ping=True)
     try:
-        await assertion(engine)
+        return await action(engine)
     finally:
         await engine.dispose()
 
@@ -123,18 +156,29 @@ def test_migration_c8e4f2a6d9b3_is_idempotent(
 
 
 def test_downgrade_drops_exam_guest_draft_handoffs_and_reupgrade_restores(
-    alembic_config: Config, database_url: str, monkeypatch: pytest.MonkeyPatch
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.downgrade(alembic_config, "base")
-    command.upgrade(alembic_config, _PARENT)
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _PARENT)
+    asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_absent))
+    owner_id = asyncio.run(_with_engine(database_url, _seed_owner_user))
+
+    async def _seed_owner_handoff(engine: AsyncEngine) -> None:
+        await _seed_handoff(engine, owner_id)
+
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
+    asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_schema))
+    asyncio.run(_with_engine(database_url, _seed_owner_handoff))
+    assert asyncio.run(_with_engine(database_url, _handoff_count)) == 1
+
+    command.downgrade(config, _PARENT)
     asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_absent))
 
-    command.upgrade(alembic_config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_schema))
-
-    command.downgrade(alembic_config, _PARENT)
-    asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_absent))
-
-    command.upgrade(alembic_config, "head")
-    asyncio.run(_with_engine(database_url, _assert_exam_guest_draft_handoffs_schema))
+    assert asyncio.run(_with_engine(database_url, _handoff_count)) == 0
+    asyncio.run(_with_engine(database_url, _seed_owner_handoff))
+    assert asyncio.run(_with_engine(database_url, _handoff_count)) == 1

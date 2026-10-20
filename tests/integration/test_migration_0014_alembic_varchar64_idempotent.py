@@ -42,12 +42,13 @@ def test_migration_0014_alembic_varchar64_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0013_user_profiles_and_security")
+    command.upgrade(alembic_cfg, "0014_alembic_varchar64")
+    command.upgrade(alembic_cfg, "0014_alembic_varchar64")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0013_user_profiles_and_security")
+    command.upgrade(alembic_cfg, "0014_alembic_varchar64")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

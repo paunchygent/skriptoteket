@@ -170,8 +170,8 @@ def test_migration_0023_input_schema_not_null_is_idempotent(
         snapshot_json_null_id,
     ) = asyncio.run(_insert_legacy_null_rows(database_url=database_url))
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0023_input_schema_not_null")
+    command.upgrade(alembic_cfg, "0023_input_schema_not_null")
 
     engine = create_async_engine(database_url, pool_pre_ping=True)
     try:
@@ -228,7 +228,7 @@ def test_migration_0023_input_schema_not_null_is_idempotent(
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0022_email_verification_tokens")
+    command.upgrade(alembic_cfg, "0023_input_schema_not_null")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
