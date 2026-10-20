@@ -192,6 +192,7 @@ async function removeUnreadableDraft(): Promise<void> {
     data-test="exam-workspace-guest-host"
   >
     <div
+      v-if="unreadableStored === null"
       class="xw-notice notice xw-notice--info"
       role="status"
       data-test="exam-workspace-guest-browser-notice"

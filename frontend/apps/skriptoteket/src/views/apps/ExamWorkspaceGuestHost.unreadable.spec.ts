@@ -27,6 +27,7 @@ import {
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY,
 } from "./exam-workspace/examWorkspaceFileNoticeCopy";
 import { newGuestDraft, type ExamWorkspaceGuestDraft } from "./exam-workspace/examWorkspaceGuestDraft";
+import { GUEST_BROWSER_ONLY_NOTICE } from "./exam-workspace/examWorkspaceGuestCopy";
 import { pictureExam } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 
 const CURRENT_TOKEN = '"native_exam_document_v10"';
@@ -274,6 +275,55 @@ describe("ExamWorkspaceGuestHost unreadable drafts", () => {
       EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY,
     );
     expect(wrapper.find("[data-test='exam-workspace-view-stub']").exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  it("hides the browser-only banner while the unreadable notice is shown", async () => {
+    seatUnreadableDraft();
+    const wrapper = mount(ExamWorkspaceGuestHost, {
+      global: { plugins: [createPinia()] },
+    });
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-file-notice"]').exists()).toBe(true);
+    expect(
+      wrapper.find("[data-test='exam-workspace-guest-browser-notice']").exists(),
+    ).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  it("shows the browser-only banner again after remove with the empty guest start", async () => {
+    seatUnreadableDraft();
+    const wrapper = mount(ExamWorkspaceGuestHost, {
+      global: { plugins: [createPinia()] },
+    });
+    await flushPromises();
+
+    await wrapper.get('[data-test="exam-workspace-file-notice-remove"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-file-notice"]').exists()).toBe(false);
+    expect(wrapper.find("[data-test='exam-workspace-guest-browser-notice']").text()).toBe(
+      GUEST_BROWSER_ONLY_NOTICE,
+    );
+    expect(wrapper.find("[data-test='exam-workspace-view-stub']").exists()).toBe(true);
+
+    wrapper.unmount();
+  });
+
+  it("still shows the browser-only banner with a readable draft", async () => {
+    seatCurrentDraft();
+    const wrapper = mount(ExamWorkspaceGuestHost, {
+      global: { plugins: [createPinia()] },
+    });
+    await flushPromises();
+
+    expect(wrapper.find("[data-test='exam-workspace-guest-browser-notice']").text()).toBe(
+      GUEST_BROWSER_ONLY_NOTICE,
+    );
+    expect(wrapper.find("[data-test='exam-workspace-view-stub']").exists()).toBe(true);
 
     wrapper.unmount();
   });
