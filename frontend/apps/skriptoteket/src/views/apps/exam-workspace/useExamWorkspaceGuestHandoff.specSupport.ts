@@ -22,6 +22,11 @@ import {
   type GuestHandoffRejectionStoragePort,
 } from "./examWorkspaceGuestHandoffRejection";
 import {
+  createInMemoryGuestHandoffLock,
+  type GuestHandoffLockPort,
+} from "./examWorkspaceGuestHandoffLock";
+import type { GuestHandoffOwner } from "./useExamWorkspaceGuestHandoff";
+import {
   newGuestDraft,
   storeGuestUndoStep,
   type ExamWorkspaceGuestDraft,
@@ -94,7 +99,14 @@ export type GuestHandoffHarness = {
   rejections: GuestHandoffRejectionStoragePort;
   teacher: { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]> };
   draft: ExamWorkspaceGuestDraft;
+  lock: GuestHandoffLockPort;
+  owner: GuestHandoffOwner;
 };
+
+/** A live owner for specs that do not retire the session mid-flight. */
+export function guestHandoffOwnerStub(): GuestHandoffOwner {
+  return { isLive: () => true, session: Symbol("guest handoff test session") };
+}
 
 export async function seedGuestHandoffHarness(): Promise<GuestHandoffHarness> {
   const storage = createInMemoryExamWorkspaceGuestDraftStorage();
@@ -107,7 +119,14 @@ export async function seedGuestHandoffHarness(): Promise<GuestHandoffHarness> {
   if (!seeded) {
     throw new Error("expected the harness draft to seed");
   }
-  return { draft, rejections, storage, teacher: guestHandoffTeacherMock() };
+  return {
+    draft,
+    lock: createInMemoryGuestHandoffLock(),
+    owner: guestHandoffOwnerStub(),
+    rejections,
+    storage,
+    teacher: guestHandoffTeacherMock(),
+  };
 }
 
 export function guestHandoffFailureToasts(): string[] {

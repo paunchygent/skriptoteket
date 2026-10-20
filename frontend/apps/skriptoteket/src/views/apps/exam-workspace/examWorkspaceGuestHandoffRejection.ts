@@ -7,11 +7,15 @@
  *   will never accept this draft snapshot, so the handoff reads the record
  *   before posting and returns the recorded rejection instead of posting the
  *   same cursor again. A newer draft (a new cursor) makes the record stale
- *   and the caller clears it before posting. Transient and deferred failures
- *   are never recorded here.
+ *   and the caller clears that cursor before posting. Removal and success
+ *   clear only the record naming their own cursor, so a stale tab never
+ *   deletes or overwrites a newer draft's record. Transient and deferred
+ *   failures are never recorded here.
  *
  * Relationships:
- *   - Read and written by `useExamWorkspaceGuestHandoff`; no other reader.
+ *   - Read and written by `useExamWorkspaceGuestHandoff`; removal also runs
+ *     at the handoff boundary, so the check and the mutation stay
+ *     cursor-owned.
  *   - Guarded like `examWorkspaceColumnSizesStorage`: every localStorage
  *     call is wrapped in try/catch, so invalid JSON, a schema mismatch or a
  *     throwing store reads as null and never throws out.
@@ -32,7 +36,8 @@ export type GuestHandoffRejection = z.infer<typeof guestHandoffRejectionSchema>;
 export type GuestHandoffRejectionStoragePort = {
   read(): GuestHandoffRejection | null;
   write(value: GuestHandoffRejection): void;
-  clear(): void;
+  /** Remove the record only when it names this cursor. */
+  clearIf(cursor: string): void;
 };
 
 /** Parse the stored value; invalid JSON, a schema mismatch or a throw reads as null. */
@@ -71,9 +76,14 @@ export function createLocalStorageGuestHandoffRejectionStorage(): GuestHandoffRe
         // returns the rejection for this visit.
       }
     },
-    clear() {
+    clearIf(cursor: string) {
       try {
-        localStorage.removeItem(EXAM_WORKSPACE_GUEST_HANDOFF_REJECTION_STORAGE_KEY);
+        const current = parseStoredGuestHandoffRejection(
+          localStorage.getItem(EXAM_WORKSPACE_GUEST_HANDOFF_REJECTION_STORAGE_KEY),
+        );
+        if (current !== null && current.cursor === cursor) {
+          localStorage.removeItem(EXAM_WORKSPACE_GUEST_HANDOFF_REJECTION_STORAGE_KEY);
+        }
       } catch {
         // Storage can be blocked; the stale record simply stays until the
         // next load reads it as the cursor it names.
@@ -92,8 +102,10 @@ export function createInMemoryGuestHandoffRejectionStorage(): GuestHandoffReject
     write(value) {
       stored = { ...value };
     },
-    clear() {
-      stored = null;
+    clearIf(cursor: string) {
+      if (stored !== null && stored.cursor === cursor) {
+        stored = null;
+      }
     },
   };
 }

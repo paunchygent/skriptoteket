@@ -30,6 +30,7 @@ import {
   createInMemoryGuestHandoffRejectionStorage,
   type GuestHandoffRejectionStoragePort,
 } from "./examWorkspaceGuestHandoffRejection";
+import { createInMemoryGuestHandoffLock } from "./examWorkspaceGuestHandoffLock";
 import {
   guestDocumentResponse,
   newGuestDraft,
@@ -41,8 +42,10 @@ import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
   runGuestHandoff,
   type GuestHandoffDeps,
+  type GuestHandoffOwner,
   type GuestHandoffTeacher,
 } from "./useExamWorkspaceGuestHandoff";
+import { guestHandoffOwnerStub } from "./useExamWorkspaceGuestHandoff.specSupport";
 
 const NOW = "2026-10-18T10:00:00.000Z";
 
@@ -121,8 +124,9 @@ function depsOf(
   storage: ExamWorkspaceGuestDraftStoragePort,
   teacher: { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]> },
   rejections: GuestHandoffRejectionStoragePort = createInMemoryGuestHandoffRejectionStorage(),
+  owner: GuestHandoffOwner = guestHandoffOwnerStub(),
 ): GuestHandoffDeps {
-  return { rejections, storage, teacher };
+  return { lock: createInMemoryGuestHandoffLock(), owner, rejections, storage, teacher };
 }
 
 function failureToasts(): string[] {
@@ -163,8 +167,9 @@ describe("runGuestHandoff", () => {
     });
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
+    const owner = guestHandoffOwnerStub();
 
-    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+    await expect(runGuestHandoff(depsOf(storage, teacher, undefined, owner))).resolves.toEqual({
       kind: "handed_off",
       lineageId: "lineage-new",
     });
@@ -173,7 +178,7 @@ describe("runGuestHandoff", () => {
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(draft.cursor, position, {
       asset_a: blobA,
       asset_b: blobB,
-    }, []);
+    }, [], owner.session);
     await expect(storage.load()).resolves.toBeNull();
     expect(failureToasts()).toEqual([]);
   });
@@ -187,8 +192,9 @@ describe("runGuestHandoff", () => {
     await seed(storage, { assets: { asset_a: blobA, asset_b: blobB }, draft });
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
+    const owner = guestHandoffOwnerStub();
 
-    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+    await expect(runGuestHandoff(depsOf(storage, teacher, undefined, owner))).resolves.toEqual({
       kind: "handed_off",
       lineageId: "lineage-new",
     });
@@ -199,6 +205,7 @@ describe("runGuestHandoff", () => {
       guestDocumentResponse(draft).document,
       { asset_a: blobA, asset_b: blobB },
       ["Fråga 3 hoppades över."],
+      owner.session,
     );
     await expect(storage.load()).resolves.toBeNull();
   });
@@ -290,14 +297,16 @@ describe("runGuestHandoff", () => {
     });
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
+    const owner = guestHandoffOwnerStub();
 
-    const handoff = runGuestHandoff(depsOf(storage, teacher));
+    const handoff = runGuestHandoff(depsOf(storage, teacher, undefined, owner));
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledOnce());
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(
       old.cursor,
       expect.anything(),
       expect.anything(),
       expect.anything(),
+      owner.session,
     );
 
     const newer = newGuestDraft(
@@ -332,8 +341,9 @@ describe("runGuestHandoff", () => {
     });
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
+    const owner = guestHandoffOwnerStub();
 
-    const first = runGuestHandoff(depsOf(storage, teacher));
+    const first = runGuestHandoff(depsOf(storage, teacher, undefined, owner));
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledOnce());
 
     const edited = storeGuestUndoStep(
@@ -362,7 +372,7 @@ describe("runGuestHandoff", () => {
     expect(kept?.draft.cursor).toBe(edited.draft.cursor);
 
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
-    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+    await expect(runGuestHandoff(depsOf(storage, teacher, undefined, owner))).resolves.toEqual({
       kind: "handed_off",
       lineageId: "lineage-new",
     });
@@ -373,6 +383,7 @@ describe("runGuestHandoff", () => {
       expect.anything(),
       expect.anything(),
       [],
+      owner.session,
     );
     expect(teacher.importExamWorkspaceGuestDraft.mock.calls[1]?.[0]).not.toBe(
       teacher.importExamWorkspaceGuestDraft.mock.calls[0]?.[0],

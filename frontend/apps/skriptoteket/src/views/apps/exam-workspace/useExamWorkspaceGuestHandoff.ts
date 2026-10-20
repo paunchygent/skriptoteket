@@ -14,9 +14,11 @@
  *   A permanent or vault-full rejection is recorded per draft cursor. While
  *   the record matches the stored draft's cursor, later calls return the
  *   rejection without posting, so a rejected draft is never posted again.
- *   A newer draft (a new cursor) makes the record stale and clears it before
- *   posting. This module shows no toasts: a later controller unit owns all
- *   user messages.
+ *   A newer draft (a new cursor) makes the record stale and clears that
+ *   cursor before posting. Every attempt runs inside one cross-tab lock and
+ *   carries the controller's owner: a retired owner defers with no POST and
+ *   no record or draft mutation. This module shows no toasts: a later
+ *   controller unit owns all user messages.
  *
  * Relationships:
  *   - Reads the draft through `examWorkspaceGuestDraftStorage`, the
@@ -41,10 +43,15 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import type { AuthSession } from "../../../stores/auth";
 import { classifyGuestHandoffFailure } from "./examWorkspaceGuestHandoffFailure";
 import type { GuestHandoffRejectionStoragePort } from "./examWorkspaceGuestHandoffRejection";
+import type { GuestHandoffLockPort } from "./examWorkspaceGuestHandoffLock";
 import { guestDocumentResponse, type ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
-import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
+import type {
+  ExamWorkspaceGuestDraftStoragePort,
+  StoredGuestDraft,
+} from "./examWorkspaceGuestDraftStorage";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 
 export type GuestHandoffTeacher = Pick<
@@ -63,11 +70,29 @@ export type GuestHandoffDeps = {
   storage: ExamWorkspaceGuestDraftStoragePort;
   teacher: GuestHandoffTeacher | null;
   rejections: GuestHandoffRejectionStoragePort;
+  lock: GuestHandoffLockPort;
+  owner: GuestHandoffOwner;
+};
+
+/**
+ * The handoff owner's auth lifetime: the session captured when the
+ * controller is created, plus whether that owner is still live (not disposed
+ * and still the current session). Every attempt re-checks it after each
+ * await and returns `deferred` once it is retired, with no POST and no
+ * record or draft mutation.
+ */
+export type GuestHandoffOwner = {
+  session: AuthSession;
+  isLive(): boolean;
 };
 
 export type RunGuestHandoffOptions = {
-  /** Post even when the record already rejects this cursor. */
-  ignoreRecordedRejection?: boolean;
+  /**
+   * A draft cursor holding a vault-full notice. The recorded rejection is
+   * bypassed only when the record is `vault_full` for this same cursor and
+   * the stored draft still has it; any other record is honoured.
+   */
+  retryVaultFullOf?: string;
 };
 
 /** Only the pictures the handed-off document declares travel with it. */
@@ -88,77 +113,113 @@ function declaredAssets(
 /**
  * Hand the stored browser draft to Mina filer. Makes at most one POST and
  * returns the outcome; the browser draft is kept in every failure case.
+ *
+ * The whole attempt runs inside the cross-tab handoff lock: the draft and
+ * the record are re-read after admission, so a second tab observes the first
+ * tab's permanent outcome instead of posting again. A failed attempt writes
+ * its record only when the stored draft still has the posted cursor; success
+ * and removal clear only their own cursor's record.
  */
 export async function runGuestHandoff(
   deps: GuestHandoffDeps,
   options?: RunGuestHandoffOptions,
 ): Promise<GuestHandoffOutcome> {
-  let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
-  try {
-    stored = await deps.storage.load();
-  } catch {
-    return { kind: "none" };
-  }
-  if (stored === null || deps.teacher === null) {
-    return { kind: "none" };
-  }
-  const snapshotCursor = stored.draft.cursor;
-
-  const recorded = deps.rejections.read();
-  if (recorded !== null && recorded.cursor !== snapshotCursor) {
-    deps.rejections.clear();
-  } else if (
-    recorded !== null &&
-    recorded.cursor === snapshotCursor &&
-    options?.ignoreRecordedRejection !== true
-  ) {
-    return { kind: "rejected", draft: stored.draft, reason: recorded.reason };
-  }
-
-  let document: NativeExamDocument;
-  try {
-    document = guestDocumentResponse(stored.draft).document;
-  } catch {
-    const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
-    deps.rejections.write(rejection);
-    return { draft: stored.draft, kind: "rejected", reason: "permanent" };
-  }
-
-  const missingBytes = document.assets.some(
-    (asset) => stored.assets[asset.asset_id] === undefined,
-  );
-  if (missingBytes) {
-    const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
-    deps.rejections.write(rejection);
-    return { draft: stored.draft, kind: "rejected", reason: "permanent" };
-  }
-
-  let response: ExamWorkspaceDocumentResponse;
-  try {
-    response = await deps.teacher.importExamWorkspaceGuestDraft(
-      snapshotCursor,
-      document,
-      declaredAssets(document, stored.assets),
-      stored.draft.notes,
-    );
-  } catch (error) {
-    const kind = classifyGuestHandoffFailure(error);
-    if (kind === "permanent" || kind === "vault_full") {
-      deps.rejections.write({ cursor: snapshotCursor, reason: kind });
-      return { draft: stored.draft, kind: "rejected", reason: kind };
-    }
-    if (kind === "deferred") {
+  return await deps.lock.run(async () => {
+    if (!deps.owner.isLive()) {
       return { kind: "deferred" };
     }
-    return { kind: "transient" };
-  }
-  try {
-    await deps.storage.clearIf(snapshotCursor);
-  } catch {
-    // The exam is already saved; the server ledger makes a repeated post of
-    // the same snapshot a no-op. A newer draft (a new cursor) is kept by
-    // clearIf itself, so it is never deleted here.
-  }
-  deps.rejections.clear();
-  return { kind: "handed_off", lineageId: response.summary.lineage_id };
+    let stored: Awaited<ReturnType<GuestHandoffDeps["storage"]["load"]>>;
+    try {
+      stored = await deps.storage.load();
+    } catch {
+      return { kind: "none" };
+    }
+    if (!deps.owner.isLive()) {
+      return { kind: "deferred" };
+    }
+    if (stored === null || deps.teacher === null) {
+      return { kind: "none" };
+    }
+    const snapshotCursor = stored.draft.cursor;
+
+    const recorded = deps.rejections.read();
+    if (recorded !== null && recorded.cursor !== snapshotCursor) {
+      deps.rejections.clearIf(recorded.cursor);
+    } else if (
+      recorded !== null &&
+      recorded.cursor === snapshotCursor &&
+      (options?.retryVaultFullOf !== snapshotCursor || recorded.reason !== "vault_full")
+    ) {
+      return { kind: "rejected", draft: stored.draft, reason: recorded.reason };
+    }
+
+    let document: NativeExamDocument;
+    try {
+      document = guestDocumentResponse(stored.draft).document;
+    } catch {
+      const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
+      deps.rejections.write(rejection);
+      return { draft: stored.draft, kind: "rejected", reason: "permanent" };
+    }
+
+    const missingBytes = document.assets.some(
+      (asset) => stored.assets[asset.asset_id] === undefined,
+    );
+    if (missingBytes) {
+      const rejection = { cursor: snapshotCursor, reason: "permanent" as const };
+      deps.rejections.write(rejection);
+      return { draft: stored.draft, kind: "rejected", reason: "permanent" };
+    }
+
+    let response: ExamWorkspaceDocumentResponse;
+    try {
+      response = await deps.teacher.importExamWorkspaceGuestDraft(
+        snapshotCursor,
+        document,
+        declaredAssets(document, stored.assets),
+        stored.draft.notes,
+        deps.owner.session,
+      );
+    } catch (error) {
+      const kind = classifyGuestHandoffFailure(error);
+      if (kind === "permanent" || kind === "vault_full") {
+        if (!deps.owner.isLive()) {
+          return { kind: "deferred" };
+        }
+        let current: StoredGuestDraft | null;
+        try {
+          current = await deps.storage.load();
+        } catch {
+          return { kind: "none" };
+        }
+        if (!deps.owner.isLive()) {
+          return { kind: "deferred" };
+        }
+        if (current?.draft.cursor !== snapshotCursor) {
+          return { kind: "none" };
+        }
+        deps.rejections.write({ cursor: snapshotCursor, reason: kind });
+        return { draft: stored.draft, kind: "rejected", reason: kind };
+      }
+      if (kind === "deferred") {
+        return { kind: "deferred" };
+      }
+      return { kind: "transient" };
+    }
+    if (!deps.owner.isLive()) {
+      return { kind: "deferred" };
+    }
+    try {
+      await deps.storage.clearIf(snapshotCursor);
+    } catch {
+      // The exam is already saved; the server ledger makes a repeated post of
+      // the same snapshot a no-op. A newer draft (a new cursor) is kept by
+      // clearIf itself, so it is never deleted here.
+    }
+    if (!deps.owner.isLive()) {
+      return { kind: "deferred" };
+    }
+    deps.rejections.clearIf(snapshotCursor);
+    return { kind: "handed_off", lineageId: response.summary.lineage_id };
+  });
 }

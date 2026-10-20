@@ -27,12 +27,14 @@ import { onScopeDispose, readonly, shallowRef } from "vue";
 import type { Ref } from "vue";
 
 import { useToast } from "../../../composables/useToast";
+import { useAuthStore } from "../../../stores/auth";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import {
   runGuestHandoff,
   type GuestHandoffDeps,
   type GuestHandoffOutcome,
+  type GuestHandoffOwner,
 } from "./useExamWorkspaceGuestHandoff";
 
 export const GUEST_HANDOFF_RETRY_DELAYS_MS: readonly number[] = [5_000, 10_000, 20_000];
@@ -56,7 +58,7 @@ export type GuestHandoffController = {
 };
 
 export function useExamWorkspaceGuestHandoffController(
-  deps: GuestHandoffDeps,
+  deps: Omit<GuestHandoffDeps, "owner">,
   options?: { retryDelaysMs?: readonly number[]; download?: (blob: Blob, filename: string) => void },
 ): GuestHandoffController {
   const toast = useToast();
@@ -69,6 +71,13 @@ export function useExamWorkspaceGuestHandoffController(
   let timer: ReturnType<typeof setTimeout> | null = null;
   let disposed = false;
   let inFlight = false;
+
+  const auth = useAuthStore();
+  const session = auth.captureSession();
+  const owner: GuestHandoffOwner = {
+    isLive: () => !disposed && auth.isCurrentSession(session),
+    session,
+  };
 
   function clearTimer(): void {
     if (timer !== null) {
@@ -107,7 +116,7 @@ export function useExamWorkspaceGuestHandoffController(
     inFlight = true;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff(deps);
+      outcome = await runGuestHandoff({ ...deps, owner });
     } finally {
       inFlight = false;
     }
@@ -139,7 +148,7 @@ export function useExamWorkspaceGuestHandoffController(
     inFlight = true;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff(deps);
+      outcome = await runGuestHandoff({ ...deps, owner });
     } finally {
       inFlight = false;
     }
@@ -191,7 +200,7 @@ export function useExamWorkspaceGuestHandoffController(
       }
       return;
     }
-    deps.rejections.clear();
+    deps.rejections.clearIf(draft.cursor);
     heldDraft = null;
     if (!disposed) {
       notice.value = null;
@@ -207,7 +216,7 @@ export function useExamWorkspaceGuestHandoffController(
     inFlight = true;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff(deps, { ignoreRecordedRejection: true });
+      outcome = await runGuestHandoff({ ...deps, owner }, { retryVaultFullOf: heldDraft?.cursor });
     } finally {
       inFlight = false;
     }

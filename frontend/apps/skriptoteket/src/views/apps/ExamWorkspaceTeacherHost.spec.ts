@@ -81,6 +81,11 @@ vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
   }),
 }));
 
+vi.mock("./exam-workspace/examWorkspaceGuestHandoffLock", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./exam-workspace/examWorkspaceGuestHandoffLock")>();
+  return { ...actual, createWebGuestHandoffLock: () => actual.createInMemoryGuestHandoffLock() };
+});
+
 const apiMocks = vi.hoisted(() => ({
   importGuestDraft: vi.fn(),
 }));

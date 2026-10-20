@@ -20,17 +20,15 @@ beforeEach(() => {
 });
 
 describe("in-memory guest handoff rejection storage", () => {
-  it("round-trips a rejection", () => {
+  it("round-trips a rejection and clears only its own cursor", () => {
     const storage = createInMemoryGuestHandoffRejectionStorage();
     expect(storage.read()).toBeNull();
 
     storage.write({ cursor: "cursor-1", reason: "permanent" });
+    storage.clearIf("cursor-2");
     expect(storage.read()).toEqual({ cursor: "cursor-1", reason: "permanent" });
 
-    storage.write({ cursor: "cursor-2", reason: "vault_full" });
-    expect(storage.read()).toEqual({ cursor: "cursor-2", reason: "vault_full" });
-
-    storage.clear();
+    storage.clearIf("cursor-1");
     expect(storage.read()).toBeNull();
   });
 });
@@ -47,7 +45,10 @@ describe("localStorage guest handoff rejection storage", () => {
       JSON.stringify({ cursor: "cursor-1", reason: "vault_full" }),
     );
 
-    storage.clear();
+    storage.clearIf("cursor-2");
+    expect(storage.read()).toEqual({ cursor: "cursor-1", reason: "vault_full" });
+
+    storage.clearIf("cursor-1");
     expect(storage.read()).toBeNull();
     expect(
       localStorage.getItem(EXAM_WORKSPACE_GUEST_HANDOFF_REJECTION_STORAGE_KEY),
@@ -114,7 +115,7 @@ describe("localStorage guest handoff rejection storage", () => {
     vi.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
       throw new Error("lagringen är blockerad");
     });
-    expect(() => storage.clear()).not.toThrow();
+    expect(() => storage.clearIf("cursor-1")).not.toThrow();
     vi.restoreAllMocks();
   });
 });

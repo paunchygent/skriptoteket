@@ -89,7 +89,7 @@ async function blobText(blob: Blob): Promise<string> {
   });
 }
 
-function startController(deps: GuestHandoffDeps, download?: (blob: Blob, filename: string) => void) {
+function startController(deps: Omit<GuestHandoffDeps, "owner">, download?: (blob: Blob, filename: string) => void) {
   const scope = effectScope();
   const controller = scope.run(() =>
     useExamWorkspaceGuestHandoffController(deps, download === undefined ? undefined : { download }),
@@ -112,9 +112,9 @@ afterEach(() => {
 
 describe("useExamWorkspaceGuestHandoffController", () => {
   it("1) transient at start retries three times with doubling delay, then stops", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(503, "SERVICE_UNAVAILABLE"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -148,12 +148,12 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("2) a late success on retry #2 toasts, clears the draft and stops", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(503, "SERVICE_UNAVAILABLE"))
       .mockRejectedValueOnce(apiError(503, "SERVICE_UNAVAILABLE"))
       .mockResolvedValue(successResult(draft));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -174,9 +174,9 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("3) permanent at start leaves a notice, no toast and no retry", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -196,9 +196,9 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     ["429", apiError(429, "RATE_LIMITED")],
     ["fetch TypeError", new TypeError("Failed to fetch")],
   ])("4) %s follows the transient path with a retry at 5s", async (_label, error) => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(error);
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -214,9 +214,9 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("5) 401 shows nothing and never retries", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(401, "UNAUTHORIZED"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -233,11 +233,11 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("6a) vault_full retry posts again ignoring the record; success closes the notice", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
       .mockResolvedValue(successResult(draft));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -255,11 +255,11 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("6b) vault_full retry can turn permanent with a new draft", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
       .mockRejectedValueOnce(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -275,11 +275,11 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("6c) vault_full retry failing transiently keeps the notice, toasts failure, no schedule", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
       .mockRejectedValue(apiError(503, "SERVICE_UNAVAILABLE"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -295,10 +295,10 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("7) download saves the held draft under its title, Prov for a blank title", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
     const download = vi.fn<(blob: Blob, filename: string) => void>();
-    const { controller, scope } = startController({ rejections, storage, teacher }, download);
+    const { controller, scope } = startController({ lock, rejections, storage, teacher }, download);
     try {
       await expect(controller.start()).resolves.toBeNull();
       controller.download();
@@ -322,11 +322,11 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       saved_document: { ...base.saved_document, title: "   " },
     };
     expect(await blankStorage.replaceIf(null, { assets: {}, draft: blank })).toBe(true);
-    const { teacher } = await seedGuestHandoffHarness();
+    const { lock, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
     const download = vi.fn<(blob: Blob, filename: string) => void>();
     const { controller, scope } = startController(
-      { rejections: blankRejections, storage: blankStorage, teacher },
+      { lock, rejections: blankRejections, storage: blankStorage, teacher },
       download,
     );
     try {
@@ -345,9 +345,9 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("8a) remove clears the draft, the record and the notice", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
@@ -364,13 +364,14 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("8b) remove keeps the notice and the record when clearIf throws", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
     const failingStorage = {
       ...storage,
       clearIf: vi.fn<() => Promise<boolean>>().mockRejectedValue(new Error("locked")),
     };
     const { controller, scope } = startController({
+      lock,
       rejections,
       storage: failingStorage,
       teacher,
@@ -387,9 +388,9 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("9a) stopping the scope while a retry is pending makes no second POST", async () => {
-    const { rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(503, "SERVICE_UNAVAILABLE"));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     await expect(controller.start()).resolves.toBeNull();
     scope.stop();
@@ -400,7 +401,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("9b) an attempt resolving after dispose shows no toast", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     const pendingPost: { resolve: ((value: ImportResult) => void) | null } = { resolve: null };
     teacher.importExamWorkspaceGuestDraft.mockImplementationOnce(
       () =>
@@ -408,7 +409,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
           pendingPost.resolve = resolve;
         }),
     );
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     const pending = controller.start();
     // Let the first attempt reach the teacher POST so it is in flight.
@@ -424,11 +425,11 @@ describe("useExamWorkspaceGuestHandoffController", () => {
   });
 
   it("10) retry while busy is ignored to one POST", async () => {
-    const { draft, rejections, storage, teacher } = await seedGuestHandoffHarness();
+    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
       .mockResolvedValue(successResult(draft));
-    const { controller, scope } = startController({ rejections, storage, teacher });
+    const { controller, scope } = startController({ lock, rejections, storage, teacher });
     try {
       await expect(controller.start()).resolves.toBeNull();
       const first = controller.retry();

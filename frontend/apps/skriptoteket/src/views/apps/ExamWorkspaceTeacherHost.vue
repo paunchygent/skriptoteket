@@ -27,6 +27,7 @@ import { useRoute, useRouter } from "vue-router";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import ExamWorkspaceGuestHandoffNotice from "./exam-workspace/ExamWorkspaceGuestHandoffNotice.vue";
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
+import { createWebGuestHandoffLock } from "./exam-workspace/examWorkspaceGuestHandoffLock";
 import { createLocalStorageGuestHandoffRejectionStorage } from "./exam-workspace/examWorkspaceGuestHandoffRejection";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceGuestHandoffController } from "./exam-workspace/useExamWorkspaceGuestHandoffController";
@@ -35,6 +36,7 @@ const route = useRoute();
 const router = useRouter();
 
 const handoff = useExamWorkspaceGuestHandoffController({
+  lock: createWebGuestHandoffLock(),
   rejections: createLocalStorageGuestHandoffRejectionStorage(),
   storage: createExamWorkspaceGuestDraftStorage(),
   teacher: serverExamWorkspaceStore.teacher,
