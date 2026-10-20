@@ -28,8 +28,11 @@ backlog_document_profile: contract-derived
   against an exhaustive typed record; the title row keeps its text as one
   constant. The reference search is empty (`evidence/proof/39-05-16-search.txt`;
   remaining sentence hits are separate shown strings). Focused proof: 22 spec
-  files, 267 passed; fe-type-check and fe-lint rc 0. Next: the Pi review routed
-  by the orchestrator. Evidence root: Skriptoteket session
+  files, 267 passed; fe-type-check and fe-lint rc 0. Review f9c21b59 at 687f2ec0:
+  approved, no findings. Merged origin/main 0005e4bb in a0e6ca5c (the
+  generated repository index was regenerated from the merged sources); on the
+  merge head 22 spec files, 267 passed; fe-type-check and docs-validate rc 0.
+  Next: the Mac. Evidence root: Skriptoteket session
   `01a156ae-7f31-7338-be23-b8b32352aa02`.
 
 ### Problem
