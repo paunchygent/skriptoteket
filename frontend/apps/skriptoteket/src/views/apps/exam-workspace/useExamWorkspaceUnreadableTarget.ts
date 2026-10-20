@@ -12,9 +12,9 @@
  *   - Composed by `useExamWorkspaceEditing`, which keeps returning the same
  *     fields so consumers do not change; consumed by `ExamWorkspaceView`
  *     through that session.
- *   - Reads the saved list through the document's `savedDocuments` and
- *     `loadSavedDocuments`; download, remove and the unreadable list through
- *     `useExamWorkspaceUnreadableFiles`.
+ *   - Reads the saved list through the document's `savedDocuments`,
+ *     `loadSavedDocuments` and `forgetSavedDocument`; download, remove and
+ *     the unreadable list through `useExamWorkspaceUnreadableFiles`.
  */
 
 import { computed, ref, type Ref } from "vue";
@@ -34,6 +34,8 @@ export type ExamWorkspaceUnreadableTargetDeps = {
   store: ExamWorkspaceStore;
   /** The document's saved list, whose summaries carry the same record fields. */
   savedDocuments: Ref<ExamWorkspaceDocumentSummary[]>;
+  /** Forget a lineage in the saved list after a confirmed remove. */
+  forgetSavedDocument: (lineageId: string) => void;
   /** Reload the document's saved list. */
   loadSavedDocuments: () => Promise<void>;
 };
@@ -121,8 +123,11 @@ export function useExamWorkspaceUnreadableTarget(deps: ExamWorkspaceUnreadableTa
 
   /**
    * Move the notice's stored file to the papperskorg through the shared
-   * path. A successful remove clears the target and reloads the lists the
-   * Öppna drawer reads; the record staying in either list keeps the notice.
+   * path. A confirmed remove forgets the lineage in the saved list, clears
+   * the target, then reloads the saved list the Öppna drawer reads; the
+   * merge keeps protecting concurrent imports and saves because the
+   * forgotten lineage is gone before it runs. A failed or skipped remove
+   * keeps the target and the notice.
    */
   async function removeUnreadableTarget(): Promise<void> {
     const lineage = unreadableTarget.value;
@@ -133,14 +138,13 @@ export function useExamWorkspaceUnreadableTarget(deps: ExamWorkspaceUnreadableTa
     if (record === null) {
       return;
     }
-    await unreadableFiles.remove(record);
-    await deps.loadSavedDocuments();
-    const removed =
-      !unreadableFiles.files.value.some((entry) => entry.lineage_id === lineage) &&
-      !deps.savedDocuments.value.some((entry) => entry.lineage_id === lineage);
-    if (removed) {
-      unreadableTarget.value = null;
+    const removed = await unreadableFiles.remove(record);
+    if (!removed) {
+      return;
     }
+    deps.forgetSavedDocument(lineage);
+    unreadableTarget.value = null;
+    await deps.loadSavedDocuments();
   }
 
   return {

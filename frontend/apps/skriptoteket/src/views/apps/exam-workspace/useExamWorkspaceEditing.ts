@@ -107,6 +107,7 @@ export function useExamWorkspaceEditing(
     downloadUnreadableTarget,
     removeUnreadableTarget,
   } = useExamWorkspaceUnreadableTarget({
+    forgetSavedDocument: (lineageId) => document.forgetSavedDocument(lineageId),
     loadSavedDocuments: () => document.loadSavedDocuments(),
     savedDocuments: document.savedDocuments,
     store,

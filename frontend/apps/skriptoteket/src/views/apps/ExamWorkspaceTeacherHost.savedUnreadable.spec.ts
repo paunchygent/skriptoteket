@@ -10,7 +10,9 @@
  *   only in the saved (readable) list: the record resolves from the saved
  *   list. Download calls `downloadSavedExamFile` with that vault file id;
  *   remove calls `removeSavedExamFile`, then the notice clears and the lists
- *   reload. An ordinary failure (500) still shows `OPEN_FAILURE_COPY` and no
+ *   reload. A corrupt current-version file that lives only in the saved list
+ *   clears the same way once the server confirms the delete; a failed delete
+ *   keeps the notice and the row with the remove-failure toast. An ordinary failure (500) still shows `OPEN_FAILURE_COPY` and no
  *   notice. Opening another readable exam afterwards installs it and clears
  *   the notice. When neither list holds the lineage, the ordinary
  *   open-failure toast shows and no notice appears.
@@ -29,7 +31,10 @@ import type {
 import type { ExamWorkspaceUnreadableDocument } from "../../api/examWorkspaceUnreadableFiles";
 import { useToastStore } from "../../stores/toast";
 import ExamWorkspaceTeacherHost from "./ExamWorkspaceTeacherHost.vue";
-import { EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY } from "./exam-workspace/examWorkspaceFileNoticeCopy";
+import {
+  EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY,
+  EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY,
+} from "./exam-workspace/examWorkspaceFileNoticeCopy";
 import type { StoredGuestDraft } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import {
   exam,
@@ -280,6 +285,64 @@ describe("ExamWorkspaceTeacherHost saved-unreadable notice", () => {
       expect(wrapper.find(`[data-test="exam-workspace-unreadable-${OUTDATED_LINEAGE}"]`).exists()).toBe(false);
       expect(unreadableApi.listUnreadableExamWorkspaceDocuments.mock.calls.length).toBeGreaterThan(unreadableCalls);
       expect(api.listExamWorkspaceDocuments.mock.calls.length).toBeGreaterThan(savedCalls);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it("remove clears a corrupt current-version file from the notice and the saved rows", async () => {
+    api.getExamWorkspaceDocument.mockRejectedValue(
+      new ApiError({
+        code: "DOCUMENT_UNREADABLE",
+        message: "Stored exam file cannot be read.",
+        status: 422,
+      }),
+    );
+    const saved = reply(CORRUPT_LINEAGE, "Korrupt prov");
+    let savedRows = [saved.summary];
+    api.listExamWorkspaceDocuments.mockImplementation(async () => ({
+      documents: [...savedRows],
+      ordering: "newest",
+    }));
+    unreadableApi.removeSavedExamFile.mockImplementation(async () => {
+      savedRows = [];
+      return { file_id: VAULT_FILE_ID };
+    });
+    const { wrapper } = await mountAtDocument(CORRUPT_LINEAGE);
+    try {
+      expect(viewNotice(wrapper).exists()).toBe(true);
+      expect(wrapper.find(`[data-test="exam-workspace-open-${CORRUPT_LINEAGE}"]`).exists()).toBe(true);
+      await viewNotice(wrapper).get('[data-test="exam-workspace-file-notice-remove"]').trigger("click");
+      await settle();
+      expect(unreadableApi.removeSavedExamFile).toHaveBeenCalledWith(VAULT_FILE_ID);
+      expect(savedRows).toEqual([]);
+      expect(viewNotice(wrapper).exists()).toBe(false);
+      expect(wrapper.find(`[data-test="exam-workspace-open-${CORRUPT_LINEAGE}"]`).exists()).toBe(false);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it("a failed remove keeps the corrupt file's notice and saved row", async () => {
+    api.getExamWorkspaceDocument.mockRejectedValue(
+      new ApiError({
+        code: "DOCUMENT_UNREADABLE",
+        message: "Stored exam file cannot be read.",
+        status: 422,
+      }),
+    );
+    const saved = reply(CORRUPT_LINEAGE, "Korrupt prov");
+    api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [saved.summary], ordering: "newest" });
+    unreadableApi.removeSavedExamFile.mockRejectedValueOnce(new Error("nätet är nere"));
+    const { wrapper } = await mountAtDocument(CORRUPT_LINEAGE);
+    try {
+      expect(viewNotice(wrapper).exists()).toBe(true);
+      await viewNotice(wrapper).get('[data-test="exam-workspace-file-notice-remove"]').trigger("click");
+      await settle();
+      expect(unreadableApi.removeSavedExamFile).toHaveBeenCalledWith(VAULT_FILE_ID);
+      expect(viewNotice(wrapper).exists()).toBe(true);
+      expect(wrapper.find(`[data-test="exam-workspace-open-${CORRUPT_LINEAGE}"]`).exists()).toBe(true);
+      expect(toastMessages()).toContain(EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY);
     } finally {
       wrapper.unmount();
     }

@@ -6,8 +6,10 @@
  *   saved-list failure toast once. Download saves the stored file unchanged
  *   under the server's file name, falling back to the row's name, and a
  *   failed download shows S6 without downloading anything. Remove posts once
- *   to the vault delete, drops the row, shows S4 and reloads the list; a
- *   failed remove keeps the row and shows S5. Nothing is ever retried.
+ *   to the vault delete, drops the row, shows S4 and reloads the list, then
+ *   reports true; a failed remove keeps the row, shows S5 and reports false,
+ *   as does a second click on the busy row without posting. Nothing is ever
+ *   retried.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -186,9 +188,10 @@ describe("useExamWorkspaceUnreadableFiles", () => {
     const { state, scope } = mountState();
     try {
       await state.load();
-      await state.remove(buildRow());
+      const removed = await state.remove(buildRow());
       await flushPromises();
 
+      expect(removed).toBe(true);
       expect(removeMock).toHaveBeenCalledTimes(1);
       expect(removeMock).toHaveBeenCalledWith("vault-1");
       expect(state.files.value).toEqual([remaining]);
@@ -209,9 +212,10 @@ describe("useExamWorkspaceUnreadableFiles", () => {
     const { state, scope } = mountState();
     try {
       await state.load();
-      await state.remove(rows[0]);
+      const removed = await state.remove(rows[0]);
       await flushPromises();
 
+      expect(removed).toBe(false);
       expect(removeMock).toHaveBeenCalledTimes(1);
       expect(state.files.value).toEqual(rows);
       expect(toastMessages()).toEqual([
@@ -278,6 +282,44 @@ describe("useExamWorkspaceUnreadableFiles", () => {
 
       finishA({ blob: new Blob(["provdokument"]), contentType: "application/zip", filename: "Prov.provdokument.zip" });
       await pendingA;
+      await flushPromises();
+      expect(state.busyIds.value.size).toBe(0);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("a second remove click on the busy row skips without posting", async () => {
+    const row = buildRow();
+    listMock.mockResolvedValue({ documents: [row] });
+    let finish!: (response: { bytes: number; created_at: string; id: string; is_missing_on_disk: boolean; name: string; ref: string }) => void;
+    removeMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const { state, scope } = mountState();
+    try {
+      await state.load();
+      const pending = state.remove(row);
+      await flushPromises();
+      expect(removeMock).toHaveBeenCalledTimes(1);
+
+      const skipped = await state.remove(row);
+      await flushPromises();
+
+      expect(skipped).toBe(false);
+      expect(removeMock).toHaveBeenCalledTimes(1);
+
+      finish({
+        bytes: 4,
+        created_at: "2026-10-11T08:00:00Z",
+        id: "vault-1",
+        is_missing_on_disk: false,
+        name: "Prov.provdokument.zip",
+        ref: "vault-file-ref",
+      });
+      await expect(pending).resolves.toBe(true);
       await flushPromises();
       expect(state.busyIds.value.size).toBe(0);
     } finally {

@@ -43,7 +43,8 @@ export type UnreadableFilesState = {
   busyIds: Ref<ReadonlySet<string>>;
   load: () => Promise<void>;
   download: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
-  remove: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
+  /** True when the vault delete resolved; false when it failed or the row was busy. */
+  remove: (file: ExamWorkspaceUnreadableDocument) => Promise<boolean>;
 };
 
 export const EXAM_WORKSPACE_UNREADABLE_FILES_KEY: InjectionKey<UnreadableFilesState> =
@@ -104,16 +105,21 @@ export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
     }
   }
 
-  async function remove(file: ExamWorkspaceUnreadableDocument): Promise<void> {
-    if (busyIds.value.has(file.lineage_id)) return;
+  /** Move one to the papperskorg: true once the vault delete resolves. A
+   * failed delete keeps the row; a busy row skips without posting. Either
+   * way the toasts are unchanged. */
+  async function remove(file: ExamWorkspaceUnreadableDocument): Promise<boolean> {
+    if (busyIds.value.has(file.lineage_id)) return false;
     busyIds.value = new Set([...busyIds.value, file.lineage_id]);
     try {
       await removeSavedExamFile(file.vault_file_id);
       files.value = files.value.filter((entry) => entry.lineage_id !== file.lineage_id);
       toast.success(EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVED_COPY);
       await load();
+      return true;
     } catch {
       toast.failure(EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY);
+      return false;
     } finally {
       const next = new Set(busyIds.value);
       next.delete(file.lineage_id);

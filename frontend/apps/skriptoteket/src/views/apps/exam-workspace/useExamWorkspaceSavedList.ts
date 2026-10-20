@@ -44,6 +44,14 @@ export function useExamWorkspaceSavedList(state: SavedListState) {
       : [summary, ...savedDocuments.value];
   }
 
+  /** Drop the lineage's entry from the saved list, the counterpart of
+   * recordSummary. A confirmed remove calls this before the reload, so a
+   * deleted file leaves the Öppna drawer even though the merge below keeps
+   * local entries the fetch no longer lists. */
+  function forgetSavedDocument(lineageId: string): void {
+    savedDocuments.value = savedDocuments.value.filter((entry) => entry.lineage_id !== lineageId);
+  }
+
   async function loadSavedDocuments(): Promise<void> {
     const teacher = state.teacher;
     if (!teacher) return;
@@ -57,5 +65,5 @@ export function useExamWorkspaceSavedList(state: SavedListState) {
     }
   }
 
-  return { listOrdering, loadSavedDocuments, recordSummary, savedDocuments };
+  return { forgetSavedDocument, listOrdering, loadSavedDocuments, recordSummary, savedDocuments };
 }

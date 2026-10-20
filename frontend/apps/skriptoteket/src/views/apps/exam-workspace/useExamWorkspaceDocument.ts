@@ -129,7 +129,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
   const selectedItemId = ref<string | null>(null);
-  const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
+  const { forgetSavedDocument, listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
   let adoptConversionHolder: (response: ExamWorkspaceDocumentResponse) => void = () => undefined;
   let replayHeldHolder: () => void = () => undefined;
@@ -439,6 +439,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     ...fieldCommands,
     applyCommandResponse,
     editDocument,
+    forgetSavedDocument,
     historyCursor,
     installDocument: replacingScope.installDocument,
     listOrdering,
