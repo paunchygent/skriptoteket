@@ -54,7 +54,10 @@ backlog_document_profile: contract-derived
   (`fd9883d5`). They follow the reviewer's design advice
   (`evidence/reviews/f5bfc8fe-r1-design-advice.md`) without its worker process: D19 reconciled,
   D20 added (`DOCUMENT_UNREADABLE`).
-- Next: R1 returns to `f5bfc8fe` for rereview. U5 waits until the orchestrator reports the 40-04
+- Rereview `f5bfc8fe` of `ee7a6201` closed R1 and found R4 (medium): after a successful guest
+  removal the editor mounted before the old address cleared. U21 (`1ced79d2`) repairs it, with a
+  real-router spec; admitted on focused proof.
+- Next: U5 waits until the orchestrator reports the 40-04
   address and open repair on main. U5 then also maps `DOCUMENT_UNREADABLE` to the notice (D20) and
   runs the full frontend suite.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
