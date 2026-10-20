@@ -355,16 +355,16 @@ export function createGuestEditLeaseController(
     return true;
   }
 
-  async function answerTakeover(): Promise<void> {
+  async function answerTakeover(token: FenceToken): Promise<void> {
     if (answering) {
       return;
     }
     answering = true;
-    // The token dates the answer: a switch retires its generation, so each
-    // step after an await runs only while the token is current. A stale
-    // answer releases nothing and changes no holding; the genuine current
-    // takeover still flushes, releases and yields.
-    const token: FenceToken = deps.fence.begin();
+    // The token dates the answer: the heartbeat or the channel signal begins
+    // it before the wait, and each step after an await runs only while that
+    // token is current. A stale answer releases nothing and changes no
+    // holding; the genuine current takeover still flushes, releases and
+    // yields.
     try {
       await deps.onTakeoverRequested?.();
       if (!deps.fence.isCurrent(token)) {
@@ -383,7 +383,9 @@ export function createGuestEditLeaseController(
     const message = event.data;
     if (message.kind === "takeover-requested" && message.toTabId === deps.tabId) {
       notify({ fromTabId: message.fromTabId, kind: "takeover-requested" });
-      void answerTakeover();
+      // Begin the token when the message arrives, so a switch that retires
+      // the generation before the flush answers nothing.
+      void answerTakeover(deps.fence.begin());
     } else if (message.kind === "lease-released" && message.byTabId !== deps.tabId) {
       notify({ byTabId: message.byTabId, kind: "lease-released" });
     }
@@ -400,7 +402,16 @@ export function createGuestEditLeaseController(
   }
 
   async function renew(): Promise<boolean> {
+    // Begin the token before the storage await, so a switch that retires the
+    // generation while the decision is in flight stays visible afterwards.
+    const token: FenceToken = deps.fence.begin();
     const decided = await deps.storage.renew(deps.tabId, now());
+    if (!deps.fence.isCurrent(token)) {
+      // An obsolete decision answers no takeover, releases nothing and stops
+      // no heartbeat: report held so the interval keeps the heartbeat that
+      // now belongs to the current visit.
+      return true;
+    }
     if (!decided.held) {
       stopHeartbeat();
       // The takeover poll fallback: the holder answers at its next heartbeat
@@ -412,7 +423,7 @@ export function createGuestEditLeaseController(
         record.takeoverRequestedBy !== null &&
         record.takeoverRequestedBy !== deps.tabId
       ) {
-        await answerTakeover();
+        await answerTakeover(token);
       }
       return false;
     }

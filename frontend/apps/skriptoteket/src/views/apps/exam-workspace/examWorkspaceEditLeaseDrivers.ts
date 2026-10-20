@@ -46,6 +46,13 @@ export type ExamWorkspaceEditLeaseServer = {
 
 export type ExamWorkspaceEditLeaseDriver = {
   readonly tabId: string;
+  /**
+   * Map a lineage to the lease that owns it: the server lease is keyed by
+   * lineage, the guest lease is this tab's single global slot. Stale-answer
+   * cleanup compares these identities, so a stale guest win for another
+   * lineage never releases the slot this tab now visits.
+   */
+  leaseIdentity(lineageId: string): string;
   claim(lineageId: string): Promise<"held" | "readonly" | "failed">;
   /**
    * Report what the renew saw without acting on it: `takeover` means another
@@ -65,6 +72,9 @@ export function createServerDriver(
 ): ExamWorkspaceEditLeaseDriver {
   const driver: ExamWorkspaceEditLeaseDriver = {
     tabId,
+    // The server lease is keyed by lineage and tab id: each lineage is a
+    // different lease.
+    leaseIdentity: (lineageId) => lineageId,
     async claim(lineageId) {
       try {
         await server.claim(lineageId, tabId);
@@ -130,14 +140,15 @@ export function createServerDriver(
   return driver;
 }
 
+/** The guest driver owns one global slot per tab, whatever lineage it visits. */
+const GUEST_EDIT_LEASE_SLOT_IDENTITY = "guest-slot";
+
 export function createGuestDriver(
   tabId: string,
   guestStorage: GuestEditLeaseStoragePort,
   openChannel: () => GuestEditLeaseChannel,
   now: (() => number) | undefined,
   onTakeoverRequested: () => Promise<void> | void,
-  /** Keeps the heartbeat phase; a refused or expired lease retries on it. */
-  noteLostLease: () => void,
   /**
    * Runs after this tab answers a takeover: the composable's yield restart
    * (read-only plus a fresh heartbeat phase), so the first retry claim
@@ -158,6 +169,10 @@ export function createGuestDriver(
   });
   return {
     tabId,
+    // The guest lease is this tab's single global slot: every lineage maps
+    // to the same identity, so a stale win for another lineage is never
+    // abandoned while this tab still visits an exam.
+    leaseIdentity: () => GUEST_EDIT_LEASE_SLOT_IDENTITY,
     claim: () => controller.claim(),
     dispose: () => controller.dispose(),
     release: () => controller.release(),
@@ -186,12 +201,10 @@ export function createGuestDriver(
       if (asker !== null && asker !== tabId) {
         return "takeover";
       }
-      // The controller's own heartbeat calls the controller renew too, so a
-      // lost lease turns read-only even when this tab's heartbeat is the one
-      // that finds it. A transient storage failure is reported distinctly,
-      // like the server driver's, so the composable keeps the hold only
-      // until the lease TTL.
-      noteLostLease();
+      // A lost guest lease reports through the settled answer, never through
+      // a callback: the composable's heartbeat turns holding false for a
+      // current "lost", exactly like the server driver's, so an obsolete
+      // answer changes nothing before the fence admits it.
       return "lost";
     },
     requestTakeover: () => controller.requestTakeover(),

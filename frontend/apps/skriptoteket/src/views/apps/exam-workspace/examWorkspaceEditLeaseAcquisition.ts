@@ -42,8 +42,8 @@ export type ExamWorkspaceEditLeaseAcquisitionDeps = {
   /** The gate's fence: every claim and takeover answer settles through it. */
   fence: SyncFence;
   ensureDriver: () => ExamWorkspaceEditLeaseDriver | null;
-  /** A stale answer frees only an abandoned lineage, never the live lease. */
-  isAbandonedLineage: (lineageId: string) => boolean;
+  /** A stale answer frees only an abandoned grant, never the live lease. */
+  isAbandonedGrant: (lineageId: string) => boolean;
   tryRelease: (lineageId: string, keepalive?: boolean) => Promise<void>;
   /** The single route from lease state to the gate. */
   setHolding: (held: boolean) => void;
@@ -73,15 +73,16 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
   }
 
   /**
-   * Release a stale win only when its lineage is abandoned: the server lease
-   * is keyed by lineage and this tab's id, so a stale grant for the lineage
-   * this tab currently claims or holds is the same server lease as the
-   * current visit and must never be released. Only a grant for a lineage the
-   * composable no longer claims or holds (or a disposed composable) is
-   * genuinely abandoned. First-claim-wins stays: the live lease is untouched.
+   * Release a stale win only when its grant is abandoned: the grant is
+   * judged by the selected driver's ownership identity, so a stale server
+   * win for another lineage frees that lineage's lease while a stale guest
+   * win never frees the single global slot this tab still visits. Only a
+   * grant for a lineage the composable no longer visits (or a disposed
+   * composable) is genuinely abandoned. First-claim-wins stays: the live
+   * lease is untouched.
    */
   function releaseStaleGrant(staleLineage: string): void {
-    if (deps.isAbandonedLineage(staleLineage)) {
+    if (deps.isAbandonedGrant(staleLineage)) {
       void deps.tryRelease(staleLineage);
     }
   }
@@ -127,7 +128,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
       const outcome: "held" | "readonly" =
         settled.kind === "failed" || settled.value === "failed" ? "held" : settled.value;
       if (deps.isDisposed() || deps.lineageId() !== lineageId) {
-        if (outcome === "held" && deps.isAbandonedLineage(lineageId)) {
+        if (outcome === "held" && deps.isAbandonedGrant(lineageId)) {
           await deps.tryRelease(lineageId);
         } else if (outcome === "readonly" && deps.lineageId() === null) {
           // The drawer closed mid-open with no newer lineage: the gate still
@@ -158,10 +159,10 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
   }
 
   async function noteAcquired(lineageId: string): Promise<void> {
-    // A late success for an abandoned lineage is released instead of
+    // A late success for an abandoned grant is released instead of
     // granting editability; the current live lease is never revoked.
     if (deps.isDisposed() || deps.lineageId() !== lineageId) {
-      if (deps.isAbandonedLineage(lineageId)) {
+      if (deps.isAbandonedGrant(lineageId)) {
         await deps.tryRelease(lineageId);
       }
       return;
@@ -255,7 +256,7 @@ export function createLeaseAcquisition(deps: ExamWorkspaceEditLeaseAcquisitionDe
           deps.startHeartbeat();
         },
         release: (staleLineage: string) => {
-          if (deps.isAbandonedLineage(staleLineage)) {
+          if (deps.isAbandonedGrant(staleLineage)) {
             return deps.tryRelease(staleLineage);
           }
           return Promise.resolve();

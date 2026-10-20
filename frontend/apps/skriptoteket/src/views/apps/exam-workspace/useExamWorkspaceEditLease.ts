@@ -16,7 +16,9 @@
  *   the lease and claims it once the holder has released or its lease has
  *   expired, then reads the newest state. A closed tab releases its lease on
  *   `pagehide` with `keepalive`, so the release reaches the server after the
- *   page is gone. A claim refused with `EDIT_LEASE_HELD` opens read-only and
+ *   page is gone. A `pagehide` with nothing held still retires the generation
+ *   through the gate, so a pending claim and load settle stale while the
+ *   heartbeat keeps running and reclaims on return. A claim refused with `EDIT_LEASE_HELD` opens read-only and
  *   retries at the heartbeat cadence, taking the lease as soon as it is free
  *   (expired or released) with no `Ta över`. Only the claim on open stays
  *   editable on any other claim failure, since the write guard is
@@ -57,10 +59,12 @@
  *     `createGuestEditLeaseController` against the IndexedDB-bound lease slot
  *     (`createIndexedDbGuestEditLeaseStorage`), whose own heartbeat, channel
  *     signal and `pagehide` release answer takeovers. The composable owns the
- *     read-only state, its own heartbeat (which both renews the held lease
- *     and retries a refused claim), the takeover wait and `pagehide`
- *     release in both modes; the guest controller's heartbeat stays as a
- *     redundant poller.
+ *     read-only state, the driver and the release paths; the heartbeat in
+ *     `examWorkspaceEditLeaseHeartbeat.ts` renews the held lease and retries
+ *     a refused claim, and the acquisition in
+ *     `examWorkspaceEditLeaseAcquisition.ts` owns the open claim and the
+ *     takeover wait. The guest controller's heartbeat stays as a redundant
+ *     poller.
  *   - Owned by `useExamWorkspaceEditing`, which feeds the tab id into the
  *     history and structure writes, stores the pending edit on a takeover
  *     request and reloads the newest state on acquiring the lease; the view
@@ -87,7 +91,8 @@ import {
 import {
   createLeaseAcquisition,
 } from "./examWorkspaceEditLeaseAcquisition";
-import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
+import { createLeaseHeartbeat } from "./examWorkspaceEditLeaseHeartbeat";
+import type { SyncFence } from "./examWorkspaceSyncFence";
 import {
   createGuestEditLeaseChannel,
   type GuestEditLeaseChannel,
@@ -149,23 +154,11 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   const readOnly = computed(() => !holding.value);
   let disposed = false;
   let driver: ExamWorkspaceEditLeaseDriver | null = null;
-  let heartbeat: ReturnType<typeof setInterval> | null = null;
   const clock = deps.now ?? (() => Date.now());
   const lastSuccess = { value: clock() };
   // The lineage the last open claim started for; the editing session calls
   // `openLineage` after `gate.openExam`, so the previous lease releases here.
   let claimedLineage: string | null = null;
-  // In-flight renew ordering: every request takes a sequence number, and a
-  // result older than one already applied is ignored.
-  let renewSeq = 0;
-  let appliedRenewSeq = 0;
-
-  function stopHeartbeat(): void {
-    if (heartbeat !== null) {
-      clearInterval(heartbeat);
-      heartbeat = null;
-    }
-  }
 
   /**
    * The two routes from lease state to the gate: every `holding` change
@@ -198,12 +191,25 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     setHolding(false);
   }
 
-  /** A stale answer frees only an abandoned lineage, never the live lease. */
-  function isAbandonedLineage(lineageId: string): boolean {
+  /** A stale answer frees only an abandoned grant, never the live lease. */
+  function isAbandonedGrant(lineageId: string): boolean {
     if (disposed) {
       return true;
     }
-    return deps.lineageId() !== lineageId;
+    const current = deps.lineageId();
+    if (current === null) {
+      return true;
+    }
+    // A grant came from the driver that claimed it; with no driver there is
+    // nothing to release.
+    if (driver === null) {
+      return false;
+    }
+    // Judge by the selected driver's ownership identity, not by lineage:
+    // the server lease is keyed by lineage, but the guest lease is this
+    // tab's single global slot. A stale guest win for another lineage still
+    // owns the slot visited now, so it is never abandoned.
+    return driver.leaseIdentity(current) !== driver.leaseIdentity(lineageId);
   }
 
   async function tryRelease(lineageId: string, keepalive = false): Promise<void> {
@@ -232,34 +238,8 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     // heartbeat after the release, not on the old phase: otherwise this
     // tab could reclaim the freed lease before the waiting tab's `Ta över`
     // poll. A refused write keeps its phase through `noteLostLease`.
-    stopHeartbeat();
-    startHeartbeat();
-  }
-
-  /** Store the pending edit, release and turn read-only for the waiting tab. */
-  async function yieldLease(lineageId: string, token: FenceToken): Promise<void> {
-    // The renew answer already passed the fence; the awaited continuation
-    // below rechecks the same token, so an answer retired mid-yield flushes
-    // nothing, releases nothing and changes no holding.
-    if (!deps.fence.isCurrent(token)) {
-      return;
-    }
-    try {
-      await deps.onTakeoverRequested();
-    } finally {
-      await releaseIfCurrent(lineageId, token);
-    }
-  }
-
-  /** Release and yield only while the renew token is still current. */
-  async function releaseIfCurrent(lineageId: string, token: FenceToken): Promise<void> {
-    if (!deps.fence.isCurrent(token)) {
-      return;
-    }
-    await tryRelease(lineageId);
-    if (deps.fence.isCurrent(token)) {
-      noteYielded();
-    }
+    heartbeat.stop();
+    heartbeat.start();
   }
 
   function ensureDriver(): ExamWorkspaceEditLeaseDriver | null {
@@ -274,7 +254,6 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
             deps.openGuestChannel ?? createGuestEditLeaseChannel,
             deps.now,
             () => deps.onTakeoverRequested(),
-            noteLostLease,
             noteYielded,
             deps.fence,
           )
@@ -285,114 +264,6 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     return driver;
   }
 
-  function startHeartbeat(): void {
-    // The guest controller renews on its own heartbeat too; this second
-    // heartbeat is what surfaces a lost guest lease in the read-only state,
-    // which the controller's silent stop would otherwise hide.
-    if (heartbeat !== null || disposed) {
-      return;
-    }
-    heartbeat = setInterval(() => {
-      void heartbeatTick();
-    }, EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
-  }
-
-  async function heartbeatTick(): Promise<void> {
-    if (disposed) {
-      return;
-    }
-    const lineageId = deps.lineageId();
-    const active = ensureDriver();
-    if (lineageId === null || active === null) {
-      return;
-    }
-    // A read-only tab retries its refused claim at the heartbeat cadence and
-    // takes the lease as soon as it is free, with no `Ta över`. A waiting
-    // takeover claims on its own faster poll instead. A `failed` retry claim
-    // stays read-only; only the claim on open stays editable on such a
-    // failure.
-    if (!holding.value) {
-      if (acquisition.waiting.value) {
-        return;
-      }
-      const token = deps.fence.begin();
-      const settled = await acquisition.settleClaimAnswer(token, active.claim(lineageId), lineageId);
-      if (settled.kind === "stale" || settled.kind === "failed") {
-        return;
-      }
-      if (disposed || deps.lineageId() !== lineageId) {
-        if (settled.value === "held" && isAbandonedLineage(lineageId)) {
-          await tryRelease(lineageId);
-        }
-        return;
-      }
-      if (holding.value) {
-        // A duplicate success for the still-current owner: another in-flight
-        // claim already established holding. No-op, never release.
-        return;
-      }
-      if (settled.value === "held") {
-        await acquisition.noteAcquired(lineageId);
-      }
-      return;
-    }
-    // The local deadline is enforced before awaiting: a holder whose last
-    // success is past the TTL turns read-only even while a renew is still
-    // pending. The next ticks then retry the claim at the heartbeat cadence.
-    if (clock() - lastSuccess.value >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
-      noteLostLease();
-      return;
-    }
-    const seq = renewSeq + 1;
-    renewSeq = seq;
-    const sentAt = clock();
-    const token = deps.fence.begin();
-    const settled = await deps.fence.settle(token, active.renew(lineageId));
-    if (settled.kind === "stale") {
-      // A renew answer that settles stale updates neither `holding` nor the
-      // last-success time. The M2 window below runs only on current answers.
-      return;
-    }
-    // In-flight renews settle in order: a result older than one already
-    // applied is ignored, so an earlier success cannot overwrite a later
-    // loss.
-    if (seq <= appliedRenewSeq) {
-      return;
-    }
-    appliedRenewSeq = seq;
-    if (disposed || deps.lineageId() !== lineageId) {
-      return;
-    }
-    const renewed = settled.kind === "failed" ? "failed" : settled.value;
-    if (renewed === "takeover") {
-      // The driver reported another tab's `Ta över` ask without acting on
-      // it; yield only now that the fence admitted this generation. A
-      // genuine current-generation takeover still flushes, releases, turns
-      // read-only and restarts the heartbeat through `yieldLease`.
-      await yieldLease(lineageId, token);
-    } else if (renewed === "held") {
-      // A late success never revives a lease that was lost or expired while
-      // it was in flight, and it extends the deadline only from the time its
-      // request was sent, never from the receipt time.
-      if (!holding.value || clock() - sentAt >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
-        noteLostLease();
-        return;
-      }
-      lastSuccess.value = sentAt;
-      setHolding(true);
-    } else if (renewed === "lost") {
-      setHolding(false);
-    } else if (clock() - lastSuccess.value >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
-      // Renewals kept failing past the lease TTL, so the server lease is
-      // dead: turn read-only. The next ticks retry the claim and take the
-      // lease back as soon as it is free.
-      noteLostLease();
-    }
-    // A lost lease keeps the heartbeat: the next tick retries the claim and
-    // takes the lease back as soon as it is free.
-  }
-
-
   const acquisition = createLeaseAcquisition({
     lineageId: deps.lineageId,
     isDisposed: () => disposed,
@@ -401,7 +272,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     clock,
     fence: deps.fence,
     ensureDriver,
-    isAbandonedLineage,
+    isAbandonedGrant,
     tryRelease,
     setHolding,
     onClaimRefused: () => {
@@ -409,8 +280,31 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
         deps.onLeaseRefused();
       }
     },
-    startHeartbeat,
+    // Runs only after both modules exist below: claim and takeover paths
+    // call it at runtime, never during construction.
+    startHeartbeat: () => heartbeat.start(),
     takeoverPollMs: EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS,
+  });
+
+  const heartbeat = createLeaseHeartbeat({
+    lineageId: deps.lineageId,
+    isDisposed: () => disposed,
+    holding,
+    lastSuccess,
+    clock,
+    heartbeatMs: EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS,
+    ttlMs: EXAM_WORKSPACE_EDIT_LEASE_TTL_MS,
+    fence: deps.fence,
+    ensureDriver,
+    isAbandonedGrant,
+    tryRelease,
+    setHolding,
+    noteLostLease,
+    noteYielded,
+    onTakeoverRequested: () => deps.onTakeoverRequested(),
+    settleClaimAnswer: acquisition.settleClaimAnswer,
+    isTakeoverWaiting: () => acquisition.waiting.value,
+    noteAcquired: acquisition.noteAcquired,
   });
 
   /**
@@ -431,7 +325,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     // retire the new exam's fresh load. Every other `holding` change still
     // reports through `setHolding`.
     holding.value = false;
-    stopHeartbeat();
+    heartbeat.stop();
     if (next !== null && !disposed) {
       void acquisition.claimCurrent(next);
     }
@@ -445,13 +339,21 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       // release POST after the unload, or the old lease blocks the reloaded
       // tab until the 15 s TTL dies.
       void tryRelease(lineageId, true);
+      setHolding(false);
+      return;
     }
-    // Retire through the existing route so late installs and confirmations
-    // drop: `leaseLost` retires the generation (late answers settle stale),
-    // captures a pending edit as the kept edit and goes `readonly`. On a
-    // back-forward-cache restore the read-only heartbeat reclaims and the
-    // gate's fresh load merges the kept edit.
-    setHolding(false);
+    // Holding never became true, so `setHolding(false)` would early-return
+    // without telling the gate: report the loss directly, because in
+    // `loading` the gate retires the running load and goes `readonly`
+    // (in `readonly` it does nothing). A pending claim and load then settle
+    // stale instead of unlocking against the retired page. The heartbeat
+    // keeps running, so on a back-forward-cache restore the stale initial
+    // claim drops, the next heartbeat claim takes the lease and the gate's
+    // fresh load merges the kept edit.
+    if (!disposed && lineageId !== null) {
+      deps.onLeaseLost();
+      heartbeat.start();
+    }
   }
 
   const hasWindow = typeof window !== "undefined";
@@ -462,7 +364,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   onScopeDispose(() => {
     disposed = true;
     acquisition.stopWaiting();
-    stopHeartbeat();
+    heartbeat.stop();
     const lineageId = deps.lineageId();
     if (driver !== null) {
       if (lineageId !== null && holding.value) {

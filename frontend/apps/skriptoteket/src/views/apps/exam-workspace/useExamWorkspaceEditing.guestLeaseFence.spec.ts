@@ -271,4 +271,59 @@ describe("the guest lease fence fail-first ports", () => {
       position: null,
     });
   });
+
+  it("pagehide while the initial claim is pending stays recoverable through the next heartbeat", async () => {
+    const events = new EventTarget();
+    vi.stubGlobal("window", events);
+    vi.useFakeTimers();
+    const base = exam();
+    fakeServer(api, base);
+    const readHistory = api.getExamWorkspaceHistory.getMockImplementation();
+    if (readHistory === undefined) {
+      throw new Error("expected the history double");
+    }
+    const claim = deferred<ExamWorkspaceEditLeaseResponse>();
+    const history = deferred<unknown>();
+    api.getExamWorkspaceHistory.mockReturnValue(history.promise);
+    const held: ExamWorkspaceEditLeaseResponse = {
+      holder_tab_id: "A",
+      renewed_at: "2026-10-20T07:00:00Z",
+      takeover_requested: false,
+      takeover_requested_by: null,
+    };
+    const driver: ExamWorkspaceEditLeaseServer = {
+      claim: () => claim.promise,
+      release: () => Promise.resolve({ ...held, holder_tab_id: null }),
+      renew: () => Promise.resolve(held),
+      requestTakeover: () => Promise.resolve(held),
+    };
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, { server: driver, tabId: "A" }));
+    editing.applyCommandResponse(reply(base));
+    await flushPromises();
+    expect(editing.editingLocked.value).toBe(true);
+    events.dispatchEvent(new Event("pagehide"));
+    claim.resolve(held);
+    history.resolve(await readHistory(LINEAGE));
+    await flushPromises();
+    await flushPromises();
+    expect({ locked: editing.editingLocked.value, position: editing.history.position.value }).toEqual({
+      locked: true,
+      position: null,
+    });
+    // The stale claim dropped, so the running heartbeat retries the claim and
+    // the gate's fresh load installs the document: the session ends editable.
+    api.getExamWorkspaceHistory.mockImplementation(readHistory);
+    await vi.advanceTimersByTimeAsync(5_000);
+    await flushPromises();
+    await flushPromises();
+    const workspace = editing.workspaceDocument.value;
+    if (workspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect({
+      locked: editing.editingLocked.value,
+      position: editing.history.position.value,
+      title: workspace.title,
+    }).toEqual({ locked: false, position: "step-0", title: "Original" });
+  });
 });
