@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7b768b3c7dd84a0d06673439945ea170e8f7181e053db650c60ad3a6f7721f84",
+  "source_set_digest": "9ea3de2aaa3811957ce8be878d4d367730f825b7a088f111044f56c76b824694",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5661,7 +5661,7 @@
       "type": "task",
       "title": "Each exam export blocker keeps one wording: the unused long readiness copy is deleted",
       "path": "docs/backlog/tasks/task-skript-39-05-16-each-exam-export-blocker-keeps-one-wording-the-unused-long-readiness-copy-is-deleted.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-05",
       "owners": [
@@ -5672,7 +5672,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-16 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer f9c21b59 approved 687f2ec0 with no findings (root 01a156ae evidence/reviews/). Focused proof on merge head a0e6ca5c: 22 spec files, 267 passed. Released on main 5611f0c8; the pre-push frontend suite passed 4097. The Mac staging check confirmed the export panel blocker labels unchanged (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, third section)."
       }
     },
     {

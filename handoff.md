@@ -3,15 +3,11 @@
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
   `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. One
   generation fence for every async result (user, 2026-10-20): FF `0090a024`,
-  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`; F3 (lease answers) running.
+  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`, F3 `303bc263`, F4 `6202fe16`.
   R1 closed (user): an old-format kept edit is upgraded before the merge.
-  Next: focused proof, suite slot, rereview 5 by `23bc9c5a`, then the Mac.
+  Next: merge main, suite slot, rereview 5 by `23bc9c5a`, then the Mac.
 - 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
   D24 a server claim per draft_id.
-- TASK-SKRIPT-39-05-16 delete the unused long-form readiness copy (user,
-  2026-10-20): lead `7ec7295f`, branch
-  `codex/task-skript-39-05-unused-readiness-copy-remote`, root `01a156ae`.
-  Next: deletion junior, focused proof, Pi review, the Mac.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
@@ -135,6 +131,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-20 `done` on main: TASK-SKRIPT-39-05-16 unused long-form readiness copy deleted (`5611f0c8`, user closure).
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-41-02-05 guest draft handover to Mina filer (`8be9aefa`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Follow-ups D10, D24 in Current.
 

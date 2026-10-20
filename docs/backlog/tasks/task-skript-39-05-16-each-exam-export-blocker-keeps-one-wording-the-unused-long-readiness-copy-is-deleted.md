@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 39-05-16 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer f9c21b59 approved 687f2ec0 with no findings (root 01a156ae evidence/reviews/). Focused proof on merge head a0e6ca5c: 22 spec files, 267 passed. Released on main 5611f0c8; the pre-push frontend suite passed 4097. The Mac staging check confirmed the export panel blocker labels unchanged (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, third section).'
 task_kind: story
 acceptance_criteria:
   - No long-form readiness or export-blocker sentence, map or helper without a production caller remains, a search proves no reference is left, every shown string is unchanged, and fe-type-check, fe-lint and the focused specs pass
