@@ -19,8 +19,7 @@ import type {
   NativeExamItemKind,
 } from "../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./exam-workspace/ExamWorkspaceQuestionEditor.vue";
-import { buildResponse, mountExamWorkspace, unmountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+import { buildResponse, mountExamWorkspace, resetSliceApiMocks, unmountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
 import type { ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
 type NativeExamAsset = ExamWorkspaceDocumentResponse["document"]["assets"][number];
@@ -156,10 +155,10 @@ async function clickRetry(wrapper: ViewWrapper): Promise<void> {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
-  arrangeStepHistory(apiMocks);
 });
 
 afterEach(() => {

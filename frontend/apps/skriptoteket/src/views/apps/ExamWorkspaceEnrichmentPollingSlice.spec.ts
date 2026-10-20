@@ -33,7 +33,6 @@ import {
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
 
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -84,7 +83,6 @@ function statusFailureToastCount(): number {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   resetEnrichmentApiMocks(apiMocks);
-  arrangeStepHistory(apiMocks);
 });
 
 afterEach(() => {

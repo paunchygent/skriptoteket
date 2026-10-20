@@ -25,6 +25,7 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   saveDocument,
   selectItemRow,
   unmountExamWorkspace,
@@ -41,8 +42,6 @@ import {
   rowStatus,
   succeededConversion,
 } from "./ExamWorkspaceWalkingSkeletonSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -67,12 +66,8 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 beforeEach(() => {
+  resetSliceApiMocks(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
-  apiMocks.getExamWorkspaceDocument.mockReset();
-  apiMocks.importExamWorkspaceDocument.mockReset();
-  apiMocks.storeExamWorkspaceUndoStep.mockReset();
-  arrangeStepHistory(apiMocks);
-  apiMocks.listExamWorkspaceDocuments.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });

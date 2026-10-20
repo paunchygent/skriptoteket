@@ -4,10 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamCourse, ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
 import {
-  buildResponse, mountExamWorkspace, saveDocument, type ViewWrapper,
+  buildResponse, mountExamWorkspace, resetSliceApiMocks, saveDocument, type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -61,8 +59,8 @@ async function choose(wrapper: ViewWrapper, query: string) {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
-  arrangeStepHistory(api);
+  resetSliceApiMocks(api);
+  for (const mock of Object.values(exportApiMocks)) mock.mockReset();
   rename.mockReset();
   original = buildResponse({ version: 1 });
   original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] };

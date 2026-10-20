@@ -13,7 +13,7 @@ import type { NativeExamDocument } from "../../api/examWorkspace";
 
 export const HISTORY_BASELINE_STEP_ID = "history-step-0";
 
-type HistoryApiMocks = {
+export type HistoryApiMocks = {
   getExamWorkspaceHistory: Mock;
   getExamWorkspaceHistoryStep: Mock;
   moveExamWorkspaceHistoryPosition: Mock;

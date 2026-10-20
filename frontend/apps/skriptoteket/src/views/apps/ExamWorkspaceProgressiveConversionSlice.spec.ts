@@ -7,7 +7,7 @@
  * the sibling progressive specs.
  */
 import { flushPromises } from "@vue/test-utils";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { NativeExamItem } from "../../api/examWorkspace";
 import {
@@ -30,8 +30,6 @@ import {
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
 import { saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
-
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
@@ -53,9 +51,6 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 installProgressiveConversionLifecycle(apiMocks);
-beforeEach(() => {
-  arrangeStepHistory(apiMocks);
-});
 
 describe("Exam workspace progressive conversion", () => {
   it("opens the first batch for editing, marks converting questions and fills them as batches arrive", async () => {

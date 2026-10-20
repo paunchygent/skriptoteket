@@ -23,7 +23,7 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamItem,
 } from "../../api/examWorkspace";
-import { buildResponse, type ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
+import { buildResponse, resetSliceApiMocks, type ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
 /** The `api/examWorkspace` module mock every enrichment spec declares. */
 export interface EnrichmentApiMocks {
@@ -92,9 +92,7 @@ export const SUCCEEDED = status("succeeded", {
 
 /** Resets every API mock and imports an unkeyed document with no job requested. */
 export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
-  for (const mock of Object.values(apiMocks)) {
-    mock.mockReset();
-  }
+  resetSliceApiMocks(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(SUCCEEDED_CONVERSION);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1, SUCCEEDED_CONVERSION));

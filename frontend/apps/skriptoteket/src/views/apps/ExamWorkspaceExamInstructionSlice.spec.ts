@@ -16,6 +16,7 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
@@ -94,7 +95,8 @@ async function clearInstruction(wrapper: ViewWrapper) {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) mock.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });

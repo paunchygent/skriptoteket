@@ -21,11 +21,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -101,10 +101,10 @@ afterEach(() => {
 });
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
-  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

@@ -17,11 +17,10 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   saveDocument,
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -52,10 +51,10 @@ const succeededConversion: ExamWorkspaceConversionStatus = {
 };
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
-  arrangeStepHistory(apiMocks);
   apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValue(null);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

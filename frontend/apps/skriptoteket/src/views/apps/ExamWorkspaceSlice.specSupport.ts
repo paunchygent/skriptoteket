@@ -32,6 +32,10 @@ import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 export { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
+  arrangeStepHistory,
+  type HistoryApiMocks,
+} from "./ExamWorkspaceHistory.specSupport";
+import {
   EXAM_WORKSPACE_LAYOUT_KEY,
   type ExamWorkspaceLayout,
 } from "./exam-workspace/useExamWorkspaceLayout";
@@ -169,6 +173,19 @@ export function buildResponse(params: {
       version: params.version,
     }),
   };
+}
+
+/**
+ * Reset a slice spec's `api/examWorkspace` mocks and prime the step-list
+ * history the sync gate reads after every open, so the view mounts into its
+ * `editing` phase by default. Every slice spec's `beforeEach` runs this; a
+ * spec that needs a specific step list arranges its own history afterwards.
+ */
+export function resetSliceApiMocks(api: HistoryApiMocks): ReturnType<typeof arrangeStepHistory> {
+  for (const mock of Object.values(api)) {
+    mock.mockReset();
+  }
+  return arrangeStepHistory(api);
 }
 
 export async function mountExamWorkspace(

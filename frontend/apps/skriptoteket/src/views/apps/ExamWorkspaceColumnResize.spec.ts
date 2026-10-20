@@ -31,12 +31,18 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
+  selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
@@ -116,7 +122,8 @@ afterEach(() => {
 
 beforeEach(() => {
   localStorage.clear();
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
@@ -145,6 +152,8 @@ describe("ExamWorkspaceView column resize wiring", () => {
   it("renders the list handle on desktop with a drawer open", async () => {
     const wrapper = await mountImported("desktop");
 
+    await selectItemRow(wrapper, "item_001");
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeUndefined();
     expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-column-handle-list"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-column-handle-side"]').exists()).toBe(true);

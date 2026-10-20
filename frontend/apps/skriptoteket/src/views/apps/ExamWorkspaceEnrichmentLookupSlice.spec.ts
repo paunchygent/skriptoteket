@@ -20,7 +20,6 @@ import {
   SUCCEEDED,
 } from "./ExamWorkspaceEnrichmentSlice.specSupport";
 import { importFixtureDocument, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -51,7 +50,6 @@ const LOOKUP_RETRY = '[data-test="exam-workspace-enrichment-lookup-retry"]';
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   resetEnrichmentApiMocks(apiMocks);
-  arrangeStepHistory(apiMocks);
 });
 
 afterEach(() => {
