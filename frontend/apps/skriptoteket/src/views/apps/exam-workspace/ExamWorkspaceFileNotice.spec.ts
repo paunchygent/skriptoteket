@@ -21,7 +21,6 @@ import {
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_RETRY_NAME,
-  EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY,
 } from "./examWorkspaceFileNoticeCopy";
 
@@ -97,8 +96,9 @@ describe("ExamWorkspaceFileNotice", () => {
     expect(download.attributes("title")).toBe(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME);
     expect(download.attributes("aria-label")).toBe(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME);
     const remove = wrapper.get('[data-test="exam-workspace-file-notice-remove"]');
-    expect(remove.attributes("title")).toBe(EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME);
-    expect(remove.attributes("aria-label")).toBe(EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME);
+    expect(remove.attributes("title")).toBe("Flytta provet till papperskorgen");
+    expect(remove.attributes("aria-label")).toBe("Flytta provet till papperskorgen");
+    expect(remove.text().trim()).toBe("");
   });
 
   it("disables every button while busy", () => {

@@ -40,10 +40,11 @@ backlog_document_profile: contract-derived
   branch base `f574d453` (schema drift in their seed data). The orchestrator routed them to a
   separate repair (assignment `a239b10a`, branch `codex/task-skript-migration-test-drift-remote`);
   this task does not touch them. Logs: the root's `evidence/proof/domain-suite-*.log`.
-- Running: U8 component-rendered screenshots for copy review.
-- Next: copy review with screenshots and the string inventory (root
-  `evidence/copy-review/`); domain suite on the orchestrator's go; U5 deep link waits until the
-  orchestrator reports the 40-04 address and open repair on main.
+- U8 component-rendered screenshots and string inventory (root `evidence/copy-review/`). Copy
+  review `1cb9a1de` approved S1-S6 (root `evidence/reviews/1cb9a1de-copy-832d637a.md`); user
+  decision 2026-10-20 changed S2 to "Flytta provet till papperskorgen" (U9), no new copy review.
+- Next: Pi code review routed by the orchestrator; U5 deep link waits until the orchestrator
+  reports the 40-04 address and open repair on main; the full frontend suite runs after U5.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
@@ -92,7 +93,7 @@ This task changes four things:
 | ID  | Where                           | String                                                                                                               |
 | --- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | S1  | State line of an unreadable row | Provet är sparat i ett äldre format och kan inte öppnas. Ladda ner det som en fil eller ta bort det från Mina filer. |
-| S2  | Remove tooltip and aria-label   | Ta bort provet från Mina filer                                                                                       |
+| S2  | Remove tooltip and aria-label   | Flytta provet till papperskorgen                                                                                     |
 | S3  | Download tooltip and aria-label | Ladda ner provet som fil (existing, approved)                                                                        |
 | S4  | Remove success toast            | Provet flyttades till papperskorgen.                                                                                 |
 | S5  | Remove failure toast            | Det gick inte att ta bort provet. Försök igen.                                                                       |
@@ -100,6 +101,7 @@ This task changes four things:
 
 The unreadable-list load failure reuses "Det gick inte att hämta dina sparade prov.". S1-S6 go to
 ui-copy review with component-rendered screenshots and a string inventory before code review.
+Review `1cb9a1de` approved them; the user then set S2 to "Flytta provet till papperskorgen".
 
 ## Core Vertical And Performance
 

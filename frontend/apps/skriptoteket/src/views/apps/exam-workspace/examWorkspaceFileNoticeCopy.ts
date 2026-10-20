@@ -21,7 +21,7 @@ export const EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME = "Ladda ner provet som fi
 export const EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME = "Ta bort provet från webbläsaren";
 export const EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY =
   "Provet är sparat i ett äldre format och kan inte öppnas. Ladda ner det som en fil eller ta bort det från Mina filer.";
-export const EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME = "Ta bort provet från Mina filer";
+export const EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME = "Flytta provet till papperskorgen";
 export const EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVED_COPY = "Provet flyttades till papperskorgen.";
 export const EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY =
   "Det gick inte att ta bort provet. Försök igen.";
