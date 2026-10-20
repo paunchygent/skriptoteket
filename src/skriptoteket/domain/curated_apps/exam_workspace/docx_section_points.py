@@ -33,6 +33,9 @@ class ScoredItems:
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
     events: tuple[DocxBuildEvent, ...]
+    # The reader's number for each item's heading, in item order, or None:
+    # a heading part opener's total, or a question-owned heading line's points.
+    read_heading_points: tuple[int | float | None, ...]
 
 
 def apply_printed_points(
@@ -133,7 +136,42 @@ def apply_printed_points(
             else parent
             for parent in parents
         )
-    return ScoredItems(tuple(scored), tuple(parents), tuple(events))
+    # The reader's number for each item's heading (D12 read-label correction):
+    # a heading part opener's total, or a question's printed points when one of
+    # its consumed line anchors is a heading chunk. The number goes only to the
+    # one item holding that heading: the member whose question owns the opener,
+    # or the item starting at the opener (``opened``); every other member gets
+    # None. Two differing numbers give None, so the gate compares with the
+    # settled points as before.
+    read: dict[str, set[int | float]] = {item.item_id: set() for item in scored}
+    for part in inner_first:
+        opener = by_anchor.get(part.opener)
+        if opener is None or opener.kind != "heading":
+            continue
+        holder: NativeExamItem | None = None
+        for number in part.questions:
+            if part.opener in printed.questions[number].anchors:
+                holder = member(number)
+                break
+        if holder is None:
+            first = opened.get(part.opener)
+            if first is not None:
+                holder = member(first)
+        if holder is not None:
+            read[holder.item_id].add(part.total)
+    for number, question in enumerate(printed.questions):
+        if question.points is None or (item := member(number)) is None:
+            continue
+        if any(
+            by_anchor.get(anchor) is not None and by_anchor[anchor].kind == "heading"
+            for anchor in question.lines
+        ):
+            read[item.item_id].add(question.points)
+    reads: list[int | float | None] = []
+    for item in scored:
+        values = read[item.item_id]
+        reads.append(next(iter(values)) if len(values) == 1 else None)
+    return ScoredItems(tuple(scored), tuple(parents), tuple(events), tuple(reads))
 
 
 def _inner_questions(part: PrintedPart, parts: tuple[PrintedPart, ...]) -> frozenset[int]:

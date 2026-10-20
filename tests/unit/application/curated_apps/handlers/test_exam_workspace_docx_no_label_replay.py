@@ -95,7 +95,15 @@ async def test_a_question_neither_pass_labels_becomes_a_source_review_item(monke
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons == (UNLABELED_REASON,)
     shown = [s.text for p in item.body for s in p.segments if isinstance(s, NativeTextSegment)]
-    assert shown == [texts[anchor] for anchor in _OWN]
+    # D6+D3+D2: the own "Poäng: 1 poäng" line is a points-only last line whose number
+    # equals the settled points, so it leaves the body whole; the full source text
+    # stays in retry_source and original_wording.
+    assert item.points == 1
+    assert shown == ["Fråga 21. Renässansen", "Vad menas med en renässansmänniska?"]
+    assert item.retry_source is not None
+    assert item.import_record is not None
+    assert texts[_OWN[-1]] in [c.text for c in item.retry_source.chunks]
+    assert texts[_OWN[-1]] in item.import_record.original_wording.question_text
     assert item.item_id in outcome.update.item_ids[_QUESTION]
     events = [(e.code, e.anchors) for e in outcome.result.events if e.code == "question_unlabeled"]
     assert events and events[0][1] == tuple(_OWN)

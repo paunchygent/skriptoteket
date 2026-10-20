@@ -77,6 +77,8 @@ class NativeExamItem(BaseModel):
     # The points the source printed for this question; None when it printed none, for
     # a share of a part total, and for teacher-created and split questions.
     source_points: int | float | None = None
+    # Trailing points wording whose number differs from points (D7)
+    leftover_points_text: str | None = None
     choices: tuple[NativeChoice, ...] = ()
     # An ordering question's steps in their saved printed order; its choices' list order
     # is the answer key (TASK-SKRIPT-39-06-08 D1, D5).

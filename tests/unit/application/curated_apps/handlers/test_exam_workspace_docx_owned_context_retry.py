@@ -59,6 +59,9 @@ _Q1 = "1. otrolig"
 _TEXT_A = "Text A"
 _PASSAGE = "Igår kom en ny elev till klassen. Han var blyg."
 _Q2 = "2. Jämför texterna och ge exempel. (10 p)"
+# D6+D3: the trailing label equals q2's settled points (10), so the final body
+# shows the question without it; lookups and expectations use this literal.
+_Q2_SHOWN = "2. Jämför texterna och ge exempel."
 _CHUNKS = (
     DocxChunk("body:0001", "heading", _HEADING, _HEADING),
     DocxChunk("body:0002", "paragraph", _TASK, _TASK),
@@ -163,14 +166,14 @@ def test_context_after_the_heading_follows_the_heading_and_keeps_the_item_identi
 
 
 def test_context_before_the_question_opens_the_item_and_keeps_the_item_identity():
-    q2 = _item(_published(), _Q2)
+    q2 = _item(_published(), _Q2_SHOWN)
 
-    assert q2.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert q2.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert q2.source_anchor == "body:0006"
 
 
 def test_the_retry_record_names_the_contexts_the_question_owns():
-    q2 = _item(_published(), _Q2)
+    q2 = _item(_published(), _Q2_SHOWN)
 
     assert q2.retry_source is not None
     assert q2.retry_source.owned_context_anchors == ("body:0004", "body:0005")
@@ -192,20 +195,20 @@ async def _retry(env: Env, text: str, reply: dict[str, JsonValue]) -> NativeExam
 
 @pytest.mark.asyncio
 async def test_retry_reply_leaving_the_passage_out_keeps_it_once_ahead(env: Env):
-    item = await _retry(env, _Q2, _reply(_entry(("body:0006",), 10)))
+    item = await _retry(env, _Q2_SHOWN, _reply(_entry(("body:0006",), 10)))
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0006"
 
 
 @pytest.mark.asyncio
 async def test_retry_reply_holding_the_passage_keeps_it_once(env: Env):
     held = _entry(("body:0004", "body:0005", "body:0006"), 10)
-    item = await _retry(env, _Q2, _reply(held))
+    item = await _retry(env, _Q2_SHOWN, _reply(held))
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
 
 
 @pytest.mark.asyncio
@@ -219,10 +222,10 @@ async def test_retry_reply_leaving_the_heading_context_out_keeps_it_after_the_he
 
 @pytest.mark.asyncio
 async def test_retry_without_a_converted_item_reviews_the_passage_with_its_question(env: Env):
-    item = await _retry(env, _Q2, _reply())
+    item = await _retry(env, _Q2_SHOWN, _reply())
 
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0006"
 
 
@@ -244,30 +247,30 @@ def _listed(
 @pytest.mark.asyncio
 async def test_retry_reply_listing_the_passage_as_an_instruction_joins_it_ahead(env: Env):
     reply = _listed((_entry(("body:0006",), 10),), instructions=("body:0004", "body:0005"))
-    item = await _retry(env, _Q2, reply)
+    item = await _retry(env, _Q2_SHOWN, reply)
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0006"
 
 
 @pytest.mark.asyncio
 async def test_retry_reply_listing_the_passage_as_an_answer_key_joins_it_ahead(env: Env):
     reply = _listed((_entry(("body:0006",), 10),), keys=("body:0004", "body:0005"))
-    item = await _retry(env, _Q2, reply)
+    item = await _retry(env, _Q2_SHOWN, reply)
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0006"
 
 
 @pytest.mark.asyncio
 async def test_retry_reply_listing_one_passage_line_as_an_instruction_keeps_both(env: Env):
     held = _entry(("body:0004", "body:0006"), 10)
-    item = await _retry(env, _Q2, _listed((held,), instructions=("body:0005",)))
+    item = await _retry(env, _Q2_SHOWN, _listed((held,), instructions=("body:0005",)))
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
 
 
 @pytest.mark.asyncio
@@ -285,8 +288,8 @@ async def test_retry_reply_listing_the_heading_context_as_an_instruction_joins_i
 @pytest.mark.asyncio
 async def test_retry_review_reply_listing_the_passage_elsewhere_reviews_it_as_printed(env: Env):
     review = _entry(("body:0006",), 10) | {"outcome": "review", "review_reason": "oklart"}
-    item = await _retry(env, _Q2, _listed((review,), instructions=("body:0004", "body:0005")))
+    item = await _retry(env, _Q2_SHOWN, _listed((review,), instructions=("body:0004", "body:0005")))
 
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0006"

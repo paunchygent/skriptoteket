@@ -10,7 +10,6 @@ from collections.abc import Iterable
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
-    ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import validation_error
@@ -212,15 +211,25 @@ def with_accepted_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> Pro
     return item.model_copy(update={"body": tuple(body)})
 
 
-# A number and a complete points-unit token, optionally ending in one period.
-# Whitespace, punctuation other than a period, or end of text must end the token.
+# A printed points label is parenthesised or ends its line; a bare label
+# followed by more words is prose, never points.
+_NUMBER_UNIT = r"\d+(?:[.,]\d+)?\s*(?:poäng|points?|pts?|p)\.?"
 POINT_LABEL = re.compile(
-    r"(?:\(\s*)?\b\d+(?:[.,]\d+)?\s*(?:poäng|points?|pts?|p)"
-    r"\.?(?=$|[^\w.])(?:\s*\))?",
-    re.IGNORECASE,
+    r"\(\s*" + _NUMBER_UNIT + r"\s*\)|\b" + _NUMBER_UNIT + r"(?=[ \t]*[.,;:!?]?[ \t]*$)",
+    re.IGNORECASE | re.MULTILINE,
 )
+# Any mention of points, wherever it stands: the number-unit pair with a leading
+# word boundary and no position rule. A prose sentence such as "Del 1 ger 4 p
+# för ..." mentions points without printing a label. A unit letter followed by
+# more letters, or a dot followed by a letter, is no mention: "3 personer",
+# "2 pass" and "3 p.m." mention none, while "(2 p)", "36p", "5 poäng." and
+# "Totalt: 36 p" do.
+POINTS_MENTION = re.compile(r"\b" + _NUMBER_UNIT + r"(?=$|[^\w.])", re.IGNORECASE)
 # A line that holds only a score field, such as "/4 p" or "____ /8 p".
-SCORE_FIELD = re.compile(r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*", re.IGNORECASE)
+SCORE_FIELD = re.compile(
+    r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*",
+    re.IGNORECASE | re.MULTILINE,
+)
 _WORD = re.compile(r"\w+")
 
 
@@ -228,6 +237,30 @@ def points_line(text: str) -> bool:
     """A line that prints points and at most a two-word label, such as "Total: 38 poäng"."""
     rest = POINT_LABEL.sub(" ", text)
     return rest != text and len(_WORD.findall(rest)) < 3
+
+
+_POINTS_ONLY_HEAD = re.compile(r"[ \t]*(?:[^\W\d_]+:?|[^\W\d_]+[ \t]+[^\W\d_]+:)[ \t]*")
+_POINTS_ONLY_TAIL = re.compile(r"[ \t]*[.,;:!?]?[ \t]*")
+
+
+def points_only_line(text: str) -> bool:
+    """A points line holding nothing but an optional short label, such as "Poäng: 6 poäng".
+
+    Exactly one points label, no answer line, an empty head, one letter-only
+    word with or without a colon ("Max", "Poäng:") or two letter-only words
+    ending in a colon ("Max poäng:"), and after the label only blank space and
+    at most one punctuation mark. A two-word head without a colon ("Max poäng
+    6 p", "Svara kort (2 p)"), a stem ("Beskriv processen. (2 p)"), an answer
+    blank ("Answer: ____________ (1 point)") and any digit, underscore or
+    further word beside the label is prose, never a points-only line.
+    """
+    matches = list(POINT_LABEL.finditer(text))
+    if len(matches) != 1 or not points_line(text) or answer_line(text):
+        return False
+    match = matches[0]
+    head, tail = text[: match.start()], text[match.end() :]
+    head_ok = not head.strip() or _POINTS_ONLY_HEAD.fullmatch(head) is not None
+    return head_ok and _POINTS_ONLY_TAIL.fullmatch(tail) is not None
 
 
 # A line's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ".
@@ -280,10 +313,7 @@ def uses_term(terms: Iterable[str], sources: Iterable[DocxChunk]) -> bool:
     return any(re.search(rf"(?<!\w){re.escape(term.casefold())}(?!\w)", text) for term in terms)
 
 
-_LABEL_RUN = re.compile(r"\s*(?:" + POINT_LABEL.pattern + ")", re.IGNORECASE)
-
-
-def _printed_points(label: str) -> int | float | None:
+def label_points(label: str) -> int | float | None:
     number = re.search(r"\d+(?:[.,]\d+)?", label)
     if number is None:
         return None
@@ -293,54 +323,42 @@ def _printed_points(label: str) -> int | float | None:
     return int(value) if value.is_integer() else value
 
 
-def _without_label(text: str) -> str:
-    stripped = _LABEL_RUN.sub("", text)
-    return stripped.lstrip() if _LABEL_RUN.match(text) else stripped
-
-
-def _joined_text_runs(segments: Iterable[ProducedSegment]) -> list[ProducedSegment]:
-    """Adjacent text segments as one, so a label split across them leaves as a whole."""
-    joined: list[ProducedSegment] = []
-    for segment in segments:
-        last = joined[-1] if joined else None
-        if segment.kind == "text" and last is not None and last.kind == "text":
-            text = (last.text or "") + (segment.text or "")
-            joined[-1] = last.model_copy(update={"text": text})
-        else:
-            joined.append(segment)
-    return joined
-
-
 def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
-    """The one points label the chunks print, as a number; None with none or several."""
-    labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
-    return _printed_points(labels[0]) if len(labels) == 1 else None
+    """The one points label the chunks print, as a number; None with none or several.
+
+    A second points mention anywhere in the chunks abstains, as base did: "mellan
+    3 poäng och 5 poäng" prints one label but mentions points twice, so no number.
+    """
+    texts = [chunk.text for chunk in own]
+    labels = [label.group() for text in texts for label in POINT_LABEL.finditer(text)]
+    mentions = [mention.group() for text in texts for mention in POINTS_MENTION.finditer(text)]
+    if len(labels) != 1 or len(mentions) != 1:
+        return None
+    return label_points(labels[0])
 
 
 def text_points(text: str) -> int | float | None:
-    """The one points label a text prints, as a number; None with none or several."""
+    """The one points label a text prints, as a number; None with none or several.
+
+    A second points mention anywhere in the text abstains, as base did: one label
+    with another mention is ambiguous, never authoritative points.
+    """
     labels = [label.group() for label in POINT_LABEL.finditer(text)]
-    return _printed_points(labels[0]) if len(labels) == 1 else None
+    mentions = [mention.group() for mention in POINTS_MENTION.finditer(text)]
+    if len(labels) != 1 or len(mentions) != 1:
+        return None
+    return label_points(labels[0])
 
 
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
-    """D3: a reply without points takes the one points label its own chunks print.
+    """D8: a reply without points takes the one points label its own chunks print.
 
-    The label, such as "(1 p)", leaves the item's stem text. With no label, or with
-    two or more, the item keeps the reply's reading.
+    The body is left as the reply gave it; trailing wording is settled later on
+    the final item, after every points source has run (D1, D2).
     """
     if item.points is not None:
         return item
     points = printed_points(own)
     if points is None:
         return item
-    body = []
-    for paragraph in item.body:
-        segments = tuple(
-            segment.model_copy(update={"text": _without_label(segment.text)})
-            if segment.kind == "text" and segment.text
-            else segment
-            for segment in _joined_text_runs(paragraph.segments)
-        )
-        body.append(paragraph.model_copy(update={"segments": segments}))
-    return item.model_copy(update={"points": points, "body": tuple(body)})
+    return item.model_copy(update={"points": points})

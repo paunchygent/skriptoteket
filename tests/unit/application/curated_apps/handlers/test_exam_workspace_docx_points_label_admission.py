@@ -30,7 +30,9 @@ def test_a_points_label_split_across_text_segments_leaves_the_stem():
 
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
-    assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
+    # D8: admission reads the points and leaves the reply body; the label leaves
+    # at the final gate (D2), so the admitted stem keeps the wording.
+    assert _stem_texts(admitted) == [stem]
 
     (final,) = state.result().document.items
     assert final.points == 1
@@ -67,7 +69,7 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
 
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
-    assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
+    assert _stem_texts(admitted) == [stem]
     assert admitted.review.reasons == ()
 
     (final,) = state.result().document.items
@@ -78,16 +80,29 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
 
 
 @pytest.mark.parametrize(
-    ("texts", "final_points"),
+    ("texts", "final_points", "final_stem"),
     [
-        (("Vilket ord är ett substantiv?", "A. bord", "B. springa"), None),
-        (("Vilket ord är ett substantiv? (1 p)", "A. bord (1 p)", "B. springa"), 1),
-        (("Vilket ord är ett substantiv? (0 p)", "A. bord", "B. springa"), None),
+        (
+            ("Vilket ord är ett substantiv?", "A. bord", "B. springa"),
+            None,
+            "Vilket ord är ett substantiv?",
+        ),
+        (
+            ("Vilket ord är ett substantiv? (1 p)", "A. bord (1 p)", "B. springa"),
+            1,
+            # D6+D3: the trailing label equals the settled points, so it leaves.
+            "Vilket ord är ett substantiv?",
+        ),
+        (
+            ("Vilket ord är ett substantiv? (0 p)", "A. bord", "B. springa"),
+            None,
+            "Vilket ord är ett substantiv? (0 p)",
+        ),
     ],
     ids=["no-label", "two-labels", "zero-points"],
 )
 def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_label(
-    texts, final_points
+    texts, final_points, final_stem
 ):
     state = _state(*texts)
     choices: list[JsonValue] = [
@@ -118,7 +133,7 @@ def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_lab
 
     (final,) = state.result().document.items
     assert final.points == final_points
-    assert _stem_texts(final) == [texts[0]]
+    assert _stem_texts(final) == [final_stem]
     assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert final.review.reasons == ()
 
@@ -135,7 +150,7 @@ def test_points_the_reply_gives_win_over_a_printed_label():
 
     (final,) = state.result().document.items
     assert final.points == 1
-    assert _stem_texts(final) == [stem]
+    assert _stem_texts(final) == ["Vilket ord är ett substantiv?"]
     assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert final.review.reasons == ()
 

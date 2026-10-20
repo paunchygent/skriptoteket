@@ -149,8 +149,18 @@ async def test_a_failed_item_listing_part_of_its_question_becomes_a_review_item_
     (item,) = [i for i in document.items if i.source_anchor == _FAILED_QUESTION]
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     printed = "\n".join(item.plain_text_lines())
-    for anchor in (*_FAILED_OWN, _FAILED_LISTED):
+    for anchor in _FAILED_OWN:
         assert text[anchor] in printed, f"{anchor} is missing from the review item"
+    # D6+D3+D2: the listed "Poäng: 2 poäng" is a points-only last line whose number
+    # equals the settled points, so it leaves the body whole; the full source text
+    # stays in retry_source and original_wording.
+    listed = text[_FAILED_LISTED]
+    assert item.points == 2
+    assert listed not in printed, f"{_FAILED_LISTED} stayed in the review item"
+    assert item.retry_source is not None
+    assert item.import_record is not None
+    assert listed in [c.text for c in item.retry_source.chunks]
+    assert listed in item.import_record.original_wording.question_text
     assert all(
         other.source_anchor not in {_FAILED_OWN[1], _FAILED_LISTED}
         for other in document.items

@@ -54,6 +54,61 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
 
 _QUIZ_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 _QUIZ = CORPUS / f"{_QUIZ_EXAM}.docx"
+# D6+D3: each provider-failure review item below settles at 1 point, so its trailing
+# " (1 point)" leaves the body; every other item shows its chunk verbatim.
+_STRIPPED_FIRST_LINES = {
+    "body:0006": (
+        "1. His profound essay about the war impressed the whole class. "
+        "What does “profound” mean here?"
+    ),
+    "body:0009": (
+        "2. They live a frugal life in a small house by the lake. What does “frugal” mean here?"
+    ),
+    "body:0012": (
+        "3. A peculiar noise woke her just after midnight. What does “peculiar” mean here?"
+    ),
+    "body:0015": (
+        "4. Everyone else changed their minds, but he stood his ground. "
+        "What does “stood his ground” mean here?"
+    ),
+    "body:0019": (
+        "5. “The kitchen smelled of cinnamon and warm bread.” "
+        "Which term names the technique that appeals to the reader’s sense of smell?"
+    ),
+    "body:0022": (
+        "6. “Love is a locked room with no windows.” "
+        "Which term names the direct equation of two unlike things without using like or as?"
+    ),
+    "body:0025": (
+        "7. In a poem, the person who talks is a tired nurse. The poet is a college student. "
+        "Which term names the tired nurse?"
+    ),
+    "body:0028": (
+        "8. Read the stanza: We played all day in the sand (A) / You and I across the land (A) / "
+        "The sea at night is wide and deep (B) / We hear it in our sleep (B). "
+        "Which term names the arrangement of the same end sounds in the lines?"
+    ),
+    "body:0032": "Part 2A: contemplation",
+    "body:0038": "Part 2A: dignified",
+    "body:0044": "Part 2A: enrich",
+    "body:0050": "Part 2A: ineffable",
+    "body:0056": "Part 2A: inscrutable",
+    "body:0062": "Part 2A: oblivion",
+    "body:0068": "Part 2A: prejudice",
+    "body:0074": "Part 2B: style",
+    "body:0080": "Part 2B: stanza",
+    "body:0086": "Part 2B: tone",
+    "body:0092": "Part 2B: rhythm",
+    "body:0098": "Part 2B: theme",
+    "body:0104": "Part 2B: symbolism",
+    "body:0111": "Part 3, Question 1",
+    "body:0117": "Part 3, Question 2",
+    "body:0123": "Part 3, Question 3",
+    "body:0129": "Part 3, Question 4",
+    "body:0135": "Part 3, Question 5",
+    "body:0141": "Part 3, Question 6",
+    "body:0147": "Part 3, Question 7",
+}
 
 
 class JobEnvironment(_Env):
@@ -173,9 +228,19 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     chunks = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes())
-    assert [item.plain_text_lines()[0] for item in opened.document.items] == [
-        c.text.strip() for c in chunks if not is_answer_line_chunk(c)
+    chunk_text = {c.anchor: c.text.strip() for c in chunks if not is_answer_line_chunk(c)}
+    items = opened.document.items
+    assert [item.source_anchor for item in items] == list(chunk_text)
+    assert [item.plain_text_lines()[0] for item in items] == [
+        _STRIPPED_FIRST_LINES.get(item.source_anchor or "", chunk_text[item.source_anchor or ""])
+        for item in items
     ]
+    for item in items:
+        first, full = item.plain_text_lines()[0], chunk_text[item.source_anchor or ""]
+        if first != full:
+            assert item.points == 1
+            assert item.import_record is not None
+            assert full in item.import_record.original_wording.question_text
     body_lines = [line for item in opened.document.items for line in item.plain_text_lines()]
     assert "Tomt källstycke." not in body_lines
     assert not any(line.strip("_ ") == "" for line in body_lines)

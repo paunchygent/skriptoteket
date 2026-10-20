@@ -1,121 +1,43 @@
-"""Printed headings become question body text or parent instructions (TASK-SKRIPT-39-05-08).
+"""Printed question headings open the body of the question they own.
 
-Synthetic placement: chunks and items are built directly, so these tests pin T1 and T2
-without a recorded provider reply. A heading over one question opens its body verbatim; a
-heading over two or more consecutive questions is the first line of their parent's
-instruction, also when no instruction line follows it.
+A heading over one question opens its body verbatim; a heading over two or
+more consecutive questions is the first line of their parent's instruction,
+also when no instruction line follows it. A question-number heading keeps its
+points label until the final gate settles it.
 """
 
-from types import MappingProxyType
-from uuid import uuid4
-
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
-    DocxChunk,
-    DocxSourceParagraph,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    Placed,
-    SectionInstructions,
-    place_section_instructions,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import Placed
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
-    NativeAnswerKey,
-    NativeItemReview,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeAnswerKeyOrigin,
-    NativeExamItemKind,
-    NativeItemReviewState,
-    NativeParseOrigin,
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
-
-_NOTHING_GOVERNED: MappingProxyType[str, frozenset[str]] = MappingProxyType({})
-
-
-def _chunk(anchor: str, kind: str, text: str) -> DocxChunk:
-    return DocxChunk(anchor=anchor, kind=kind, text=text, marked_text=text)
-
-
-def _titled(anchor: str, text: str, level: int) -> DocxChunk:
-    return DocxChunk(
-        anchor=anchor,
-        kind="heading",
-        text=text,
-        marked_text=text,
-        paragraphs=(DocxSourceParagraph(offset=0, text=text, heading_level=level),),
-    )
-
-
-def _item(text: str) -> NativeExamItem:
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        writing_lines=8,
-        body=(
-            NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
-        ),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_COMPLETE,
-            parse_origin=NativeParseOrigin.LLM_PARSED,
-        ),
-    )
-
-
-def _aligned(item: NativeExamItem, *chunks: str | None) -> AlignedItem:
-    """The item with the source chunk each body paragraph shows."""
-    return AlignedItem(item, chunks, frozenset())
-
-
-def _place(
-    chunks: tuple[DocxChunk, ...],
-    placed: list[Placed],
-    instructions: tuple[ProducedMetadata, ...] = (),
-    title_anchors: frozenset[str] = frozenset(),
-    governed: MappingProxyType[str, frozenset[str]] = _NOTHING_GOVERNED,
-) -> SectionInstructions:
-    return place_section_instructions(
-        chunks,
-        placed,
-        instructions,
-        governed,
-        title_anchors,
-    )
-
-
-def _ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
-    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    return [
-        (positions[anchor], (anchor,), _aligned(_item(f"Frågetext {anchor}"), anchor))
-        for anchor in anchors
-    ]
+from tests.unit.domain.curated_apps.exam_workspace.docx_heading_placement_test_support import (
+    aligned,
+    chunk,
+    item,
+    ordered,
+    place,
+)
 
 
 def test_heading_over_one_question_opens_its_body_verbatim() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "paragraph", "Första frågan?"),
-        _chunk("body:0003", "heading", "Facts"),
-        _chunk("body:0004", "paragraph", "Andra frågan?"),
-        _chunk("body:0005", "heading", "DNA base pairing"),
-        _chunk("body:0006", "paragraph", "Tredje frågan?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "paragraph", "Första frågan?"),
+        chunk("body:0003", "heading", "Facts"),
+        chunk("body:0004", "paragraph", "Andra frågan?"),
+        chunk("body:0005", "heading", "DNA base pairing"),
+        chunk("body:0006", "paragraph", "Tredje frågan?"),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0002", "body:0004", "body:0006"),
+        ordered(chunks, "body:0002", "body:0004", "body:0006"),
         title_anchors=frozenset({"body:0001"}),
     )
 
@@ -127,26 +49,26 @@ def test_heading_over_one_question_opens_its_body_verbatim() -> None:
 
 def test_heading_owned_by_one_question_opens_its_body() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Classification"),
-        _chunk("body:0003", "paragraph", "Frågan?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Classification"),
+        chunk("body:0003", "paragraph", "Frågan?"),
     )
     ordered: list[Placed] = [
-        (1, ("body:0002", "body:0003"), _aligned(_item("Frågetext"), "body:0003"))
+        (1, ("body:0002", "body:0003"), aligned(item("Frågetext"), "body:0003"))
     ]
-    placed = _place(chunks, ordered, title_anchors=frozenset({"body:0001"}))
+    placed = place(chunks, ordered, title_anchors=frozenset({"body:0001"}))
 
     assert placed.items[0].plain_text_lines() == ("Classification", "Frågetext")
 
 
 def test_heading_already_in_the_body_is_not_repeated() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Facts"),
-        _chunk("body:0003", "paragraph", "Frågan?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Facts"),
+        chunk("body:0003", "paragraph", "Frågan?"),
     )
-    item = _item("Facts")
-    item = item.model_copy(
+    exam_item = item("Facts")
+    exam_item = exam_item.model_copy(
         update={
             "body": (
                 NativeParagraph(
@@ -158,9 +80,9 @@ def test_heading_already_in_the_body_is_not_repeated() -> None:
             )
         }
     )
-    placed = _place(
+    placed = place(
         chunks,
-        [(2, ("body:0003",), _aligned(item, "body:0002", "body:0003"))],
+        [(2, ("body:0003",), aligned(exam_item, "body:0002", "body:0003"))],
         title_anchors=frozenset({"body:0001"}),
     )
 
@@ -169,16 +91,16 @@ def test_heading_already_in_the_body_is_not_repeated() -> None:
 
 def test_heading_over_a_group_forms_the_parent_without_an_instruction_line() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Del B: Cellen"),
-        _chunk("body:0003", "paragraph", "Fråga ett?"),
-        _chunk("body:0004", "paragraph", "Fråga två?"),
-        _chunk("body:0005", "heading", "Del C"),
-        _chunk("body:0006", "paragraph", "Fråga tre?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Del B: Cellen"),
+        chunk("body:0003", "paragraph", "Fråga ett?"),
+        chunk("body:0004", "paragraph", "Fråga två?"),
+        chunk("body:0005", "heading", "Del C"),
+        chunk("body:0006", "paragraph", "Fråga tre?"),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0003", "body:0004", "body:0006"),
+        ordered(chunks, "body:0003", "body:0004", "body:0006"),
         title_anchors=frozenset({"body:0001"}),
     )
 
@@ -192,16 +114,16 @@ def test_heading_over_a_group_forms_the_parent_without_an_instruction_line() -> 
 
 def test_group_heading_opens_the_parent_instruction_ahead_of_printed_instruction_text() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Ord och begrepp"),
-        _chunk("body:0003", "paragraph", "Fyll i rätt ord."),
-        _chunk("body:0004", "paragraph", "Fråga ett?"),
-        _chunk("body:0005", "paragraph", "Fråga två?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Ord och begrepp"),
+        chunk("body:0003", "paragraph", "Fyll i rätt ord."),
+        chunk("body:0004", "paragraph", "Fråga ett?"),
+        chunk("body:0005", "paragraph", "Fråga två?"),
     )
     instruction = ProducedMetadata(text="Fyll i rätt ord.", source_anchors=("body:0003",))
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0004", "body:0005"),
+        ordered(chunks, "body:0004", "body:0005"),
         instructions=(instruction,),
         title_anchors=frozenset({"body:0001"}),
     )
@@ -213,286 +135,47 @@ def test_group_heading_opens_the_parent_instruction_ahead_of_printed_instruction
 
 def test_opening_heading_is_the_exam_title_and_never_a_question_heading() -> None:
     chunks = (
-        _chunk("body:0001", "heading", "Celler och energi"),
-        _chunk("body:0002", "paragraph", "Fråga ett?"),
-        _chunk("body:0003", "paragraph", "Fråga två?"),
+        chunk("body:0001", "heading", "Celler och energi"),
+        chunk("body:0002", "paragraph", "Fråga ett?"),
+        chunk("body:0003", "paragraph", "Fråga två?"),
     )
-    placed = _place(chunks, _ordered(chunks, "body:0002", "body:0003"))
+    placed = place(chunks, ordered(chunks, "body:0002", "body:0003"))
 
     assert placed.parents == ()
     assert all("Celler och energi" not in item.plain_text_lines() for item in placed.items)
 
 
-def test_heading_that_is_only_a_question_number_and_points_leaves_nothing() -> None:
+def test_heading_of_only_a_question_number_and_points_keeps_the_label_until_the_final_gate() -> (
+    None
+):
+    # D12 extension (review F1): item headings keep points wording; the final gate removes it.
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Fråga 3 (2 p)"),
-        _chunk("body:0003", "paragraph", "Frågan?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Fråga 3 (2 p)"),
+        chunk("body:0003", "paragraph", "Frågan?"),
     )
-    item = _item("Frågetext").model_copy(update={"printed_label": "Fråga 3"})
-    placed = _place(
+    exam_item = item("Frågetext").model_copy(update={"printed_label": "Fråga 3"})
+    placed = place(
         chunks,
-        [(2, ("body:0003",), _aligned(item, "body:0003"))],
+        [(2, ("body:0003",), aligned(exam_item, "body:0003"))],
         title_anchors=frozenset({"body:0001"}),
     )
 
-    assert placed.items[0].plain_text_lines() == ("Frågetext",)
-
-
-def test_section_heading_before_owned_question_headings_forms_the_parent() -> None:
-    # A question's own heading is no section boundary: the section heading above two
-    # numbered question headings still introduces their parent (review F1).
-    chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Cellens delar"),
-        _chunk("body:0003", "heading", "Fråga 1. Beskriv kärnan."),
-        _chunk("body:0004", "paragraph", "Förklara kärnans funktion."),
-        _chunk("body:0005", "heading", "Fråga 2. Beskriv membranet."),
-        _chunk("body:0006", "paragraph", "Förklara membranets funktion."),
-    )
-    first = _item("Beskriv kärnan.\nFörklara kärnans funktion.").model_copy(
-        update={"printed_label": "Fråga 1"}
-    )
-    second = _item("Beskriv membranet.\nFörklara membranets funktion.").model_copy(
-        update={"printed_label": "Fråga 2"}
-    )
-    ordered: list[Placed] = [
-        (2, ("body:0003", "body:0004"), _aligned(first, "body:0003")),
-        (4, ("body:0005", "body:0006"), _aligned(second, "body:0005")),
-    ]
-    instruction = ProducedMetadata(text="Cellens delar", source_anchors=("body:0002",))
-    placed = _place(
-        chunks, ordered, instructions=(instruction,), title_anchors=frozenset({"body:0001"})
-    )
-
-    assert len(placed.parents) == 1
-    assert body_text_lines(placed.parents[0].instruction) == ("Cellens delar",)
-    assert placed.parents[0].item_ids == ("item_001", "item_002")
-    # The questions keep their own headings in their bodies, exactly once.
-    assert placed.items[0].plain_text_lines()[0].startswith("Beskriv kärnan.")
-    assert placed.items[1].plain_text_lines()[0].startswith("Beskriv membranet.")
-    assert 0 in placed.landed
-
-
-def test_governing_heading_opens_the_parent_ahead_of_an_earlier_governing_line() -> None:
-    # A heading the grouping marks as governing is the parent's first line even when
-    # another governing line is printed before it; that line is preserved (review F3).
-    chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "paragraph", "Namn: ____"),
-        _chunk("body:0003", "heading", "Cellens delar"),
-        _chunk("body:0004", "paragraph", "Fråga ett?"),
-        _chunk("body:0005", "paragraph", "Fråga två?"),
-    )
-    instructions = (
-        ProducedMetadata(text="Namn: ____", source_anchors=("body:0002",)),
-        ProducedMetadata(text="Cellens delar", source_anchors=("body:0003",)),
-    )
-    governed = MappingProxyType(
-        {
-            "body:0002": frozenset({"body:0004", "body:0005"}),
-            "body:0003": frozenset({"body:0004", "body:0005"}),
-        }
-    )
-    placed = _place(
-        chunks,
-        _ordered(chunks, "body:0004", "body:0005"),
-        instructions=instructions,
-        title_anchors=frozenset({"body:0001"}),
-        governed=governed,
-    )
-
-    assert len(placed.parents) == 1
-    assert body_text_lines(placed.parents[0].instruction) == ("Cellens delar", "Namn: ____")
-
-
-def test_line_before_a_section_heading_stays_document_level() -> None:
-    # A line printed before the section heading ends at that heading, even with
-    # instruction lines on both sides of it; it lands on no item and stays
-    # document-level instead of opening the section parent (biology Name line).
-    chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "paragraph", "Name: ___ Date: ___"),
-        _chunk("body:0003", "heading", "A. Multiple choice"),
-        _chunk("body:0004", "paragraph", "Choose the best answer."),
-        _chunk("body:0005", "paragraph", "Fråga ett?"),
-        _chunk("body:0006", "paragraph", "Fråga två?"),
-        _chunk("body:0007", "heading", "B. Open questions"),
-        _chunk("body:0008", "paragraph", "Fråga tre?"),
-    )
-    instructions = (
-        ProducedMetadata(text="Name: ___ Date: ___", source_anchors=("body:0002",)),
-        ProducedMetadata(text="A. Multiple choice", source_anchors=("body:0003",)),
-        ProducedMetadata(text="Choose the best answer.", source_anchors=("body:0004",)),
-    )
-    placed = _place(
-        chunks,
-        _ordered(chunks, "body:0005", "body:0006", "body:0008"),
-        instructions=instructions,
-        title_anchors=frozenset({"body:0001"}),
-    )
-
-    assert len(placed.parents) == 1
-    assert body_text_lines(placed.parents[0].instruction) == (
-        "A. Multiple choice",
-        "Choose the best answer.",
-    )
-    assert 0 not in placed.landed
-    assert all("Name:" not in line for item in placed.items for line in item.plain_text_lines())
-
-
-def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions_body() -> None:
-    # A heading the grouping marks as governing only q2-q3 never joins the q1-q3
-    # parent (D40 exact scope, review F5): parents are flat, so it opens the body
-    # of every question it governs. Through the production assembly.
-    chunks = (
-        _chunk("body:0001", "heading", "Prov"),
-        _chunk("body:0002", "paragraph", "Besvara alla frågor."),
-        _chunk("body:0003", "paragraph", "Första frågan?"),
-        _chunk("body:0004", "heading", "Använd följande ord för fråga två och tre"),
-        _chunk("body:0005", "paragraph", "Andra frågan?"),
-        _chunk("body:0006", "paragraph", "Tredje frågan?"),
-    )
-    accepted = (
-        (_aligned(_item("Första frågan?"), "body:0003"), ("body:0003",)),
-        (_aligned(_item("Andra frågan?"), "body:0005"), ("body:0005",)),
-        (_aligned(_item("Tredje frågan?"), "body:0006"), ("body:0006",)),
-    )
-    instructions = (
-        ProducedMetadata(text="Besvara alla frågor.", source_anchors=("body:0002",)),
-        ProducedMetadata(
-            text="Använd följande ord för fråga två och tre", source_anchors=("body:0004",)
-        ),
-    )
-    governed = MappingProxyType(
-        {
-            "body:0002": frozenset({"body:0003", "body:0005", "body:0006"}),
-            "body:0004": frozenset({"body:0005", "body:0006"}),
-        }
-    )
-    document = assemble_build_result(
-        document_id=uuid4(),
-        filename="prov.docx",
-        source_sha256="0" * 64,
-        chunks=chunks,
-        accepted=accepted,
-        review_reasons={},
-        instructions=instructions,
-        governed=governed,
-        title=ProducedMetadata(text="Prov", source_anchors=("body:0001",)),
-        questions=tuple(anchors for _, anchors in accepted),
-    ).document
-
-    assert len(document.parents) == 1
-    parent = document.parents[0]
-    assert parent.item_ids == ("item_001", "item_002", "item_003")
-    assert body_text_lines(parent.instruction) == ("Besvara alla frågor.",)
-    assert "Använd följande ord för fråga två och tre" not in document.items[0].plain_text_lines()
-    assert document.items[1].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
-    assert document.items[2].plain_text_lines()[0] == "Använd följande ord för fråga två och tre"
+    assert placed.items[0].plain_text_lines() == ("(2 p)", "Frågetext")
+    assert with_settled_points_wording(
+        placed.items[0].model_copy(update={"points": 2}), read_heading_points=None
+    ).plain_text_lines() == ("Frågetext",)
+    assert with_settled_points_wording(
+        placed.items[0].model_copy(update={"points": 3}), read_heading_points=None
+    ).plain_text_lines() == ("(2 p)", "Frågetext")
 
 
 def test_source_text_fallback_keeps_the_printed_points() -> None:
     chunks = (
-        _chunk("body:0001", "paragraph", "15. Skriv en mening om cellen. (3 p)"),
-        _chunk("body:0002", "paragraph", "____"),
+        chunk("body:0001", "paragraph", "15. Skriv en mening om cellen. (3 p)"),
+        chunk("body:0002", "paragraph", "____"),
     )
 
-    item = review_source_item(chunks, "Kontrollera frågan manuellt.")
+    exam_item = review_source_item(chunks, "Kontrollera frågan manuellt.")
 
-    assert item.points == 3
-
-
-def test_section_title_above_subsections_opens_its_own_questions_once() -> None:
-    # TASK-SKRIPT-39-09-08 walk: a Heading 1 directly above a Heading 2 reached no
-    # question and became exam-wide text repeated above every group.
-    chunks = (
-        _titled("body:0001", "Formateringsprov", 1),
-        _titled("body:0002", "Del A: Grundbegrepp", 1),
-        _titled("body:0003", "Flervalsfrågor", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
-        _titled("body:0006", "Del B: Resonemang", 1),
-        _titled("body:0007", "Fritextfrågor", 2),
-        _titled("body:0008", "Energi", 3),
-        _chunk("body:0009", "paragraph", "3. Fråga tre?"),
-    )
-    instructions = (
-        ProducedMetadata(text="Del A: Grundbegrepp", source_anchors=("body:0002",)),
-        ProducedMetadata(text="Del B: Resonemang", source_anchors=("body:0006",)),
-    )
-    placed = _place(
-        chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0009"),
-        instructions=instructions,
-        title_anchors=frozenset({"body:0001"}),
-    )
-
-    assert set(placed.landed) == {0, 1}
-    assert len(placed.parents) == 1
-    assert body_text_lines(placed.parents[0].instruction) == (
-        "Del A: Grundbegrepp",
-        "Flervalsfrågor",
-    )
-    assert placed.parents[0].item_ids == ("item_001", "item_002")
-    assert placed.items[2].plain_text_lines()[:3] == (
-        "Del B: Resonemang",
-        "Fritextfrågor",
-        "Energi",
-    )
-    shown = [line for item in placed.items for line in item.plain_text_lines()]
-    assert "Del A: Grundbegrepp" not in shown
-    assert shown.count("Del B: Resonemang") == 1
-
-
-def test_section_title_over_two_subsection_parents_opens_the_first_parent_only() -> None:
-    chunks = (
-        _titled("body:0001", "Provets titel", 1),
-        _titled("body:0002", "Del A", 1),
-        _titled("body:0003", "Flerval", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
-        _titled("body:0006", "Fritext", 2),
-        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
-        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
-    )
-    placed = _place(
-        chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
-        title_anchors=frozenset({"body:0001"}),
-    )
-
-    assert [body_text_lines(parent.instruction) for parent in placed.parents] == [
-        ("Del A", "Flerval"),
-        ("Fritext",),
-    ]
-    assert [parent.item_ids for parent in placed.parents] == [
-        ("item_001", "item_002"),
-        ("item_003", "item_004"),
-    ]
-    assert all("Del A" not in item.plain_text_lines() for item in placed.items)
-
-
-def test_points_labelled_section_heading_opens_its_own_questions() -> None:
-    # A styled heading is a title even when its label is short and prints points; a
-    # plain "Total: 59 points" paragraph is no heading at all.
-    chunks = (
-        _titled("body:0001", "Unit test", 1),
-        _chunk("body:0002", "paragraph", "Total: 59 points"),
-        _titled("body:0003", "Vocabulary Matching (9 points)", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
-        _titled("body:0006", "Language Choice (6 points)", 2),
-        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
-        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
-    )
-    placed = _place(
-        chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
-        title_anchors=frozenset({"body:0001"}),
-    )
-
-    assert [body_text_lines(parent.instruction) for parent in placed.parents] == [
-        ("Vocabulary Matching",),
-        ("Language Choice",),
-    ]
+    assert exam_item.points == 3

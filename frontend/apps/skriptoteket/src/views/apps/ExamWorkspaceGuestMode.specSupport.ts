@@ -82,6 +82,7 @@ export function keylessItem(sequence: number, kind: "single_choice" | "multiple_
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
+    leftover_points_text: null,
   };
 }
 
@@ -138,6 +139,7 @@ export function retryItem(): NativeExamItem {
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
+    leftover_points_text: null,
   };
 }
 
@@ -151,7 +153,7 @@ export function blankDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v9",
+    schema_version: "native_exam_document_v10",
     title: "Nytt prov",
   };
 }

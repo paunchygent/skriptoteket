@@ -34,6 +34,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
@@ -376,6 +377,8 @@ def test_echoed_instruction_text_does_not_replace_its_positioned_picture_content
 
 @pytest.mark.parametrize("offset", [0, 8, 17, 23, 31])
 def test_heading_normalization_maps_interior_and_removed_text_picture_positions(offset: int):
+    # D12, review F1: an item heading keeps a differing points label; only the
+    # question number and collapsed whitespace leave, so "8 poäng" stays.
     text = "Fråga 1. Betrakta   diagrammet, 8 poäng"
     image = DocxImage(_png(), "image/png", offset=offset, marked_offset=offset)
     heading = DocxChunk("body:0002", "heading", text, text, (image,))
@@ -396,8 +399,8 @@ def test_heading_normalization_maps_interior_and_removed_text_picture_positions(
     (item,) = built.document.items
     assert body_asset_ids(item.body) == (image.asset_id,)
     shown = item.body[0]
-    assert body_text_lines((shown,)) == ("Betrakta diagrammet",)
-    expected_offset = {0: 0, 8: 0, 17: 8, 23: 12, 31: 19}[offset]
+    assert body_text_lines((shown,)) == ("Betrakta diagrammet, 8 poäng",)
+    expected_offset = {0: 0, 8: 0, 17: 8, 23: 12, 31: 20}[offset]
     before = "".join(
         segment.text
         for segment in shown.segments[
@@ -410,6 +413,8 @@ def test_heading_normalization_maps_interior_and_removed_text_picture_positions(
 
 @pytest.mark.parametrize("text", ["Fråga 1. (2 p)", "(2 p)", ""])
 def test_heading_without_retained_wording_still_delivers_its_picture(text: str):
+    # D12, review F1: an item heading keeps a differing points label, so "(2 p)"
+    # stays with its picture; only an empty heading delivers the picture alone.
     image = _end_picture(text)
     built = assemble_build_result(
         document_id=uuid4(),
@@ -424,9 +429,48 @@ def test_heading_without_retained_wording_still_delivers_its_picture(text: str):
         review_reasons={},
         questions=(("body:0002", "body:0003"),),
     )
+    if text:
+        assert built.document.items[0].body[0].segments == (
+            NativeTextSegment(text="(2 p)", marks=()),
+            NativeAssetSegment(asset_id=image.asset_id),
+        )
+        return
     assert built.document.items[0].body[0].segments == (
         NativeAssetSegment(asset_id=image.asset_id),
     )
+
+
+def test_item_heading_with_points_label_keeps_its_picture_at_the_end() -> None:
+    """D12/F1: an item heading keeps its points wording; its picture stays at its place."""
+
+    heading = "2. Tidningsartiklar (2 poäng)"
+    image = _end_picture(heading)
+    built = assemble_build_result(
+        document_id=uuid4(),
+        filename="heading.docx",
+        source_sha256="0" * 64,
+        chunks=(
+            DocxChunk("body:0001", "paragraph", "Prov", "Prov"),
+            DocxChunk("body:0002", "heading", heading, heading, (image,)),
+            DocxChunk("body:0003", "paragraph", "Svara.", "Svara."),
+        ),
+        accepted=((_converted("body:0003", "Svara."), ("body:0002", "body:0003")),),
+        review_reasons={},
+        questions=(("body:0002", "body:0003"),),
+    )
+    (item,) = built.document.items
+    assert body_asset_ids(item.body) == (image.asset_id,)
+    shown = item.body[0]
+    assert body_text_lines((shown,)) == ("Tidningsartiklar (2 poäng)",)
+    before = "".join(
+        segment.text
+        for segment in shown.segments[
+            : next(i for i, segment in enumerate(shown.segments) if segment.kind == "asset")
+        ]
+        if segment.kind == "text"
+    )
+    assert before == "Tidningsartiklar (2 poäng)"
+    assert len(before) == 26
 
 
 @pytest.mark.parametrize("split_text", [False, True])

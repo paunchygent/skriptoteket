@@ -33,6 +33,7 @@ function reviewItem(): NativeExamItem {
   return {
     ai_suggestion: null,
     writing_lines: null,
+    leftover_points_text: null,
     criteria: [],
     facit_text: null,
     import_record: {

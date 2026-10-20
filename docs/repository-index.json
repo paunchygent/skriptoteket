@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b90abb7eb76157895f3bd580ee5524d11037befa44dd751343ebb864c2607e12",
+  "source_set_digest": "1c31e7685bf9b48a21a16c2b60e3b15f26f0aa55ac33ec7078f6c99c7a2b804e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5303,6 +5303,28 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-21",
+      "type": "task",
+      "title": "Printed points wording at the end of a question's text becomes its points and leaves the text",
+      "path": "docs/backlog/tasks/task-skript-39-04-21-printed-points-wording-at-the-end-of-a-question-s-text-becomes-its-points-and-leaves-the-text.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-04-21 on 2026-10-19 in the Hemma orchestrator session, with U4 (the offer line, D10) left parked as a later item and not built. Pi ruthless-reviewer 82849a3b rounds 1-4 (root 01a15594): R1-R6 fixed; rereview 4 ended changes_requested with mediums R7/R8 only, admitted by the parent on focused proof (123 files, 2651 passed) at f3bef38e. Full suite at 5c5b0503: backend 7898 passed, 59 skipped; frontend 3934 passed (root 01a1546f evidence/proof/full-suite-5c5b0503.log). Merged to main as 99378586 from dbcd9bcd; Mac staging walk PASS at 99378586 (Mac .artifacts/staging-walk-99378586/walk-record.md)."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6917,6 +6939,29 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User closure 2026-10-19 in Mac session 0b6afee3 (\"Close TASK-SKRIPT-40-04-17 as done\"). Independent ruthless-reviewer fd5c66c4 (Pi) at f87c2d44 returned changes_requested with F1-F3 medium and N1 low; all repaired at 7073e58e and admitted on focused proof without rereview. Merged to main as aac5bdfd and 32460f67. Hemma staging walks at 6a557b5d and 32460f67 passed every walked check; the 375 px coarse-pointer composition was not walked because Edge cannot emulate a coarse pointer or a window under 500 px."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-18",
+      "type": "task",
+      "title": "The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block",
+      "path": "docs/backlog/tasks/task-skript-40-04-18-the-exam-workspace-header-opens-provets-uppgifter-from-an-uppgifter-command-and-free-text-questions-set-their-writing-area-and-criteria-in-one-boxless-answer-block.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md)."
       }
     },
     {
