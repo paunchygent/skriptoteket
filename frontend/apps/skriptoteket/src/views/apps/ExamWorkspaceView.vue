@@ -50,10 +50,8 @@ import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
-import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
-import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
-import { useExamWorkspaceDrawerState } from "./exam-workspace/useExamWorkspaceDrawerState";
+import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceViewPanels";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -64,7 +62,6 @@ import { useExamWorkspaceKeyboard } from "./exam-workspace/useExamWorkspaceKeybo
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSaveFlow } from "./exam-workspace/useExamWorkspaceSaveFlow";
 import { useExamWorkspaceSelection } from "./exam-workspace/useExamWorkspaceSelection";
-import { useExamWorkspaceSideColumns } from "./exam-workspace/useExamWorkspaceSideColumns";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
 
 const props = defineProps<{ store: ExamWorkspaceStore }>();
@@ -106,33 +103,48 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
-const { showDocument } = useExamWorkspaceAddress({ isDirty, noteRouteRequest: editing.noteRouteRequest, openDocument, reloadOpen: editing.reloadOpenExam, summary });
-const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
-  useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {
+  closeAfterGoto,
+  consumeImportPick,
+  drawer,
   importOpen,
+  importPickPending,
+  isDesktop,
   isPhone,
   listOpen,
+  listRailCollapsed,
   previewBlocked,
   previewLoading,
   previewMessage,
   previewOpen,
   previewPages,
   previewQuestionPages,
+  requestImportPick,
+  resetWidth,
+  rootColumnStyle,
+  rootListState,
+  setListWidth,
+  setWidth,
+  showDocument,
+  side,
+  toggleDrawer,
+  toggleListCollapsed,
   togglePreview,
-} = useExamWorkspaceSideColumns({
-  drawer,
+} = useExamWorkspaceViewPanels({
+  dismissSignInPrompt,
   historyCursor,
   historyPosition: history.position,
+  isDirty,
+  isExamOpen: () => Boolean(summary.value),
   layout,
-  lineageId: computed(() => summary.value?.lineage_id ?? null),
+  noteRouteRequest: editing.noteRouteRequest,
+  openDocument,
+  reloadOpen: editing.reloadOpenExam,
   savedRevision,
   selectedItemId: editing.selectedItemId,
   store: props.store,
-  onLineage: (lineageId) => {
-    showDocument(lineageId);
-    dismissSignInPrompt();
-  },
+  summary,
+  workspaceDocument,
 });
 
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
@@ -182,24 +194,6 @@ const blockers = computed(() => [
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
 
-/** The width owner's side state and remembered column widths (TASK-SKRIPT-41-02-04). */
-const {
-  isDesktop,
-  listRailCollapsed,
-  resetWidth,
-  rootColumnStyle,
-  rootListState,
-  setListWidth,
-  setWidth,
-  side,
-  toggleListCollapsed,
-} = useExamWorkspaceColumnLayout(layout, {
-  drawer,
-  isPhone,
-  previewOpen,
-  store: props.store,
-  workspaceDocument,
-});
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
   isGuest: props.store.guest !== null,

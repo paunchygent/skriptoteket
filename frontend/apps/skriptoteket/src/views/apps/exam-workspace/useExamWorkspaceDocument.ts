@@ -20,12 +20,13 @@
  *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list, AI suggestion arrivals, conversion merges and
  *     one-question retries through their own composables.
+ *   - The open lifecycle (token-held read, rename reconciliation) in
+ *     `useExamWorkspaceDocumentOpen`.
  *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
  */
 
 import { computed, ref, shallowRef, watch } from "vue";
 
-import { isApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
@@ -41,10 +42,10 @@ import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
-import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceRouteRequest";
 import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
+import { useExamWorkspaceDocumentOpen } from "./useExamWorkspaceDocumentOpen";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
@@ -57,9 +58,6 @@ import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
 export type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
-
-const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
-const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 
 /**
  * One opening of an exam: created when a document of another lineage is
@@ -123,10 +121,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /** The saved version the open copy stands on. */
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
-  /** The current request's open is still reading; a retired open stops blocking at once. */
-  const openingToken = shallowRef<FenceToken | null>(null);
-  /** True while the held open token is still current; the fence generation is reactive, so a retire releases this. */
-  const isOpenReading = computed(() => openingToken.value !== null && isCurrent(openingToken.value));
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
@@ -151,6 +145,16 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     summary,
     workspaceDocument,
   });
+  const openScope = useExamWorkspaceDocumentOpen({
+    applyResponse: (token, response) => applyResponse(token, response),
+    beginSummaryRead: () => beginSummaryRead(),
+    invalidateCopy: () => keying.invalidateCopy(),
+    isBlocked: () => isOtherOperationBusy.value,
+    isCurrent,
+    selectedItemId,
+    store,
+  });
+  const { beginDocumentRead, isOpenReading, openDocument } = openScope;
   const {
     adoptConversion,
     conversionError,
@@ -188,13 +192,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
-  const isOperationBusy = computed(
-    () =>
-      operationBusy.value ||
-      isOpenReading.value ||
-      isImporting.value ||
-      (isConverting.value && !isEditingConversion.value),
+  /** A save, rename, retry, import or conversion holds the document; an open read is not one of them. */
+  const isOtherOperationBusy = computed(
+    () => operationBusy.value || isImporting.value || (isConverting.value && !isEditingConversion.value),
   );
+  const isOperationBusy = computed(() => isOtherOperationBusy.value || isOpenReading.value);
   /** An undo, redo or server command is reading the document that replaces the copy. */
   const replacing = ref(false);
   /** No edit, save or reload may start: an operation runs or the copy is about to be replaced. */
@@ -216,58 +218,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /** Whether `opening` is the exam opening in front of the teacher now. */
   function isOpen(opening: ExamWorkspaceOpening): boolean {
     return openExam.value === opening;
-  }
-
-  /** Capture rename ordering before the GET and reconcile in its caller's continuation. */
-  function beginDocumentRead() {
-    const reconcile = beginSummaryRead();
-    return (response: ExamWorkspaceDocumentResponse): ExamWorkspaceDocumentResponse => ({
-      ...response,
-      summary: reconcile(response.summary),
-    });
-  }
-
-  /**
-   * Open the exam for the request's token: install while current, supersede
-   * while retired without touching state or toasting, fail on a current
-   * failure after toasting as today. A save, rename or retry in flight
-   * refuses an open; another open never does. The open holds its token while
-   * reading, so a retired open stops blocking and a completion clears only
-   * its own token.
-   */
-  async function openDocument(lineageId: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
-    if (!isCurrent(token)) {
-      return "superseded";
-    }
-    if (isOperationBusy.value && !isOpenReading.value) {
-      return "failed";
-    }
-    openingToken.value = token;
-    try {
-      const reconcile = beginDocumentRead();
-      const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
-      if (!isCurrent(token)) {
-        return "superseded";
-      }
-      selectedItemId.value = null;
-      applyResponse(token, response);
-      keying.invalidateCopy();
-      return "installed";
-    } catch (error) {
-      const current = isCurrent(token);
-      if (current) {
-        toast.failure(
-          isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
-            ? OPEN_OUTDATED_COPY
-            : OPEN_FAILURE_COPY,
-        );
-      }
-      return current ? "failed" : "superseded";
-    } finally {
-      if (openingToken.value === token) {
-        openingToken.value = null;
-      }
-    }
   }
 
   /**
@@ -360,7 +310,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     }
   }
 
-  /** The one path every item edit takes; a picture the edit removed takes its asset record with it. */
+  /**
+   * The one path every item edit takes; a placeholder whose batch still converts is refused.
+   * A picture the edit removed takes its asset record with it.
+   */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
@@ -421,7 +374,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  /** An edit of the whole copy: structural edits step at once, typing waits for the pause. */
+  /**
+   * An edit of the whole copy. A structural edit (add, delete, reorder) is one
+   * undo step at once; typing waits for the pause like an item's text.
+   */
   function editDocument(
     edit: (document: NativeExamDocument) => NativeExamDocument,
     selectId: string | null = null,
