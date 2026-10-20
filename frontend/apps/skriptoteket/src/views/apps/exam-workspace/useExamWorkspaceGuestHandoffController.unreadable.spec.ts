@@ -1,102 +1,34 @@
 /**
  * Guest handoff controller: an outdated-format refusal shows the unreadable
- * notice (U14, repairs F1).
+ * notice (U14, repairs F1; split setup shared in U13b).
  *
  * Expected behavior:
- *   A signed-in handoff the server refuses with DOCUMENT_SCHEMA_OUTDATED
- *   leaves the `unreadable` notice with the same download and remove as the
- *   permanent one; every other refusal keeps its current reason. A recorded
- *   permanent rejection for a draft the browser itself cannot read shows the
- *   unreadable notice on remount without posting again.
+ *   A signed-in handoff of a draft the browser itself cannot read leaves the
+ *   `unreadable` notice with the same download and remove as the permanent
+ *   one; every other refusal on a readable draft keeps its current reason. A
+ *   recorded permanent rejection for a draft the browser itself cannot read
+ *   shows the unreadable notice on remount without posting again.
  */
 
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { unzipSync } from "fflate";
 
 import { useToastStore } from "../../../stores/toast";
-import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
-import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import {
   guestHandoffApiError as apiError,
   seedGuestHandoffHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
 import { EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY } from "./examWorkspaceFileNoticeCopy";
-import { useExamWorkspaceGuestHandoffController } from "./useExamWorkspaceGuestHandoffController";
-import type { GuestHandoffDeps } from "./useExamWorkspaceGuestHandoff";
-
-const OLD_TOKEN = '"native_exam_document_v10"';
-const V9_TOKEN = '"native_exam_document_v9"';
-
-function startController(deps: Omit<GuestHandoffDeps, "owner">, download?: (blob: Blob, filename: string) => void) {
-  const scope = effectScope();
-  const controller = scope.run(() =>
-    useExamWorkspaceGuestHandoffController(deps, download === undefined ? undefined : { download }),
-  );
-  if (controller === undefined) {
-    throw new Error("expected the scope to produce a controller");
-  }
-  return { controller, scope };
-}
+import {
+  blobBytes,
+  equipStoredPictureBytes,
+  seatOlderFormat,
+  startController,
+} from "./useExamWorkspaceGuestHandoffController.specSupport";
 
 function toastMessages(): string[] {
   return useToastStore().toasts.map((toast) => toast.message);
-}
-
-/**
- * Read a download Blob as raw bytes through FileReader: jsdom's Blob has no
- * `arrayBuffer` the specs can rely on.
- */
-async function blobBytes(blob: Blob): Promise<Uint8Array> {
-  return await new Promise<Uint8Array>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result instanceof ArrayBuffer) {
-        resolve(new Uint8Array(reader.result));
-        return;
-      }
-      reject(new Error("The FileReader did not return bytes."));
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Could not read the blob bytes."));
-    reader.readAsArrayBuffer(blob);
-  });
-}
-
-async function equipStoredPictureBytes(storage: {
-  load(): Promise<StoredGuestDraft | null>;
-}): Promise<void> {
-  const stored = await storage.load();
-  if (stored === null) {
-    throw new Error("expected a stored draft to equip");
-  }
-  for (const blob of Object.values(stored.assets)) {
-    Object.defineProperty(blob, "arrayBuffer", {
-      configurable: true,
-      value: async (): Promise<ArrayBuffer> => {
-        const bytes = await blobBytes(blob);
-        const copy = new Uint8Array(bytes.length);
-        copy.set(bytes);
-        return copy.buffer;
-      },
-    });
-  }
-}
-
-async function seatOlderFormat(storage: {
-  load(): Promise<StoredGuestDraft | null>;
-  replaceIf(expectedCursor: string | null, next: StoredGuestDraft): Promise<boolean>;
-}): Promise<void> {
-  const stored = await storage.load();
-  if (stored === null) {
-    throw new Error("expected a seeded draft to downgrade");
-  }
-  const draft: ExamWorkspaceGuestDraft = JSON.parse(
-    JSON.stringify(stored.draft).replaceAll(OLD_TOKEN, V9_TOKEN),
-  );
-  // Picture bytes stay by reference: the draft is JSON data, the assets are not.
-  const downgraded: StoredGuestDraft = { assets: stored.assets, draft };
-  expect(await storage.replaceIf(stored.draft.cursor, downgraded)).toBe(true);
 }
 
 beforeEach(() => {
@@ -110,22 +42,6 @@ afterEach(() => {
 });
 
 describe("useExamWorkspaceGuestHandoffController unreadable drafts", () => {
-  it("an outdated-format refusal shows the unreadable notice, no toast and no retry", async () => {
-    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ lock, rejections, storage, teacher });
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
-      expect(toastMessages()).toEqual([]);
-
-      await vi.advanceTimersByTimeAsync(3_600_000);
-      expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
-    } finally {
-      scope.stop();
-    }
-  });
-
   it("another permanent refusal on a readable draft keeps the permanent notice", async () => {
     const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "VALIDATION_ERROR"));

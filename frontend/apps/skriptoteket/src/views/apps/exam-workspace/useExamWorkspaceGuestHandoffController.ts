@@ -38,7 +38,6 @@
 import { onScopeDispose, readonly, shallowRef } from "vue";
 import type { Ref } from "vue";
 
-import { isApiError } from "../../../api/client";
 import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
@@ -99,18 +98,12 @@ export function useExamWorkspaceGuestHandoffController(
   };
 
   /**
-   * Snapshot cursors whose handoff POST the server refused as an outdated
-   * format. The handoff runner reports every such refusal as `permanent`,
-   * so the controller watches the teacher POST itself to map an outdated
-   * draft to the unreadable notice instead.
-   */
-  const schemaOutdatedCursors = new Set<string>();
-
-  /**
-   * Map a rejected handoff to the notice reason: an outdated-format refusal
-   * (seen on the POST, or recorded for a draft the browser itself cannot
-   * read) shows the unreadable notice; every other permanent refusal keeps
-   * the permanent notice.
+   * Map a rejected handoff to the notice reason: vault_full keeps its own
+   * notice, a draft the browser itself cannot read shows the unreadable
+   * notice, and every other permanent refusal keeps the permanent notice.
+   * The browser and the server read the same generated format constants, so
+   * an outdated-format refusal only ever arrives for a draft the browser
+   * already reports as unreadable.
    */
   function toRejectedNoticeReason(
     reason: "permanent" | "vault_full",
@@ -119,36 +112,10 @@ export function useExamWorkspaceGuestHandoffController(
     if (reason === "vault_full") {
       return "vault_full";
     }
-    if (schemaOutdatedCursors.has(draft.cursor) || !isGuestDraftReadable(draft)) {
+    if (!isGuestDraftReadable(draft)) {
       return "unreadable";
     }
     return "permanent";
-  }
-
-  /**
-   * Observe the teacher POST for outdated-format refusals without changing
-   * what the handoff runner posts, records or clears.
-   */
-  const innerTeacher = deps.teacher;
-  const observingTeacher: GuestHandoffDeps["teacher"] =
-    innerTeacher === null
-      ? null
-      : {
-          importExamWorkspaceGuestDraft: async (...args) => {
-            try {
-              return await innerTeacher.importExamWorkspaceGuestDraft(...args);
-            } catch (error) {
-              if (isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED") {
-                const [snapshotCursor] = args;
-                schemaOutdatedCursors.add(snapshotCursor);
-              }
-              throw error;
-            }
-          },
-        };
-
-  function handoffDeps(): GuestHandoffDeps {
-    return { ...deps, owner, teacher: observingTeacher };
   }
 
   function abortCurrentAttempt(): void {
@@ -208,7 +175,7 @@ export function useExamWorkspaceGuestHandoffController(
     currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff(handoffDeps(), { signal: attempt.signal });
+      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
     } catch {
       outcome = { kind: "transient" };
     } finally {
@@ -244,7 +211,7 @@ export function useExamWorkspaceGuestHandoffController(
     currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff(handoffDeps(), { signal: attempt.signal });
+      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
     } catch {
       outcome = { kind: "transient" };
     } finally {
@@ -374,7 +341,7 @@ export function useExamWorkspaceGuestHandoffController(
     let outcome: GuestHandoffOutcome;
     try {
       outcome = await runGuestHandoff(
-        handoffDeps(),
+        { ...deps, owner },
         { retryVaultFullOf: heldDraft?.cursor, signal: attempt.signal },
       );
     } catch {
