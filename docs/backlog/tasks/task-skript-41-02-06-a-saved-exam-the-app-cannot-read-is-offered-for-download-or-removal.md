@@ -35,6 +35,12 @@ backlog_document_profile: contract-derived
   (`a7edf784`); U6 Boy Scout repair of the `4e9b7d1c6a02` migration test (`ed269299`); U4 drawer
   rows with U4b view-spec mocks (`71330b6a`).
 - Committed after U4: U7 per-row busy guard for the unreadable rows (repair of U4).
+- Backend domain suite at `92942fd1`, accepted by the orchestrator on 2026-10-20: unit 5780
+  passed; integration 168 passed and 13 failed. The same 13 old migration tests also fail at the
+  branch base `f574d453` (schema drift in their seed data). The orchestrator routed them to a
+  separate repair (assignment `a239b10a`, branch `codex/task-skript-migration-test-drift-remote`);
+  this task does not touch them. Logs: the root's `evidence/proof/domain-suite-*.log`.
+- Running: U8 component-rendered screenshots for copy review.
 - Next: copy review with screenshots and the string inventory (root
   `evidence/copy-review/`); domain suite on the orchestrator's go; U5 deep link waits until the
   orchestrator reports the 40-04 address and open repair on main.
