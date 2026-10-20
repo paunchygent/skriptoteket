@@ -68,7 +68,12 @@ backlog_document_profile: contract-derived
   read `isOpenBlockedByOtherOperation`, never the drawer's own import or conversion. Entries stay
   disabled during the drawer's own import, with no toast. U22c (`48ecc53d`) moves the rule into
   `useExamWorkspaceOpenBlocking`, which brings the drawer under 500 lines.
-- Next: the full frontend suite in the orchestrator's slot, then review of U5 and U22 by `f5bfc8fe`.
+- Frontend suite at `ee28cb7e`: 638 files, 4386 tests passed (root `evidence/proof/fe-suite-ee28cb7e-*.log`).
+  Review `f5bfc8fe` of `ee28cb7e`: U5-1 (medium), a confirmed remove of a corrupt current-version file
+  left its row and notice. U23 repairs it: the remove reports the confirmed delete, and the saved list
+  forgets that exam. U5-2 (low; a delayed lookup can restore a notice, which a reload repairs) is an
+  accepted residual under the user's edge-case rule.
+- Next: the orchestrator's closeout and merge routing.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
