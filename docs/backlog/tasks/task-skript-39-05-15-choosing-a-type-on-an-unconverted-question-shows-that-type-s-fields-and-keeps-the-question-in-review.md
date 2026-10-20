@@ -22,16 +22,21 @@ backlog_document_profile: contract-derived
 
 ### Resume here
 
-- 2026-10-20: every unit committed: 5eb6681d (U1 review flip, blocker,
-  undo test; U3 D9 gap placement and shared table), 408dc062 (U2 frontend
-  reason, copy, same-kind resend), 84d8fd96 (U5 `teacher_retyped`, collision
-  tests, openapi regen), a02843ff (U6 frontend `teacher_retyped` and
-  collision specs; U4 Vitest on the shared table and the staging editor case;
-  U7 typed origin in parent commands; U8 table wire form). Focused proof at
-  a02843ff: backend 270 passed, frontend 11 spec files 81 passed; lint,
-  typecheck, fe-type-check, fe-lint rc 0 (`evidence/proof/`). Next: one
-  domain suite on the orchestrator's go, then independent review (routed by
-  the orchestrator), copy review, and the Mac walk of Fråga 3a.
+- 2026-10-20: every unit committed; head after this doc commit. Units:
+  5eb6681d (U1, U3), 408dc062 (U2), 84d8fd96 (U5), a02843ff (U4, U6, U7,
+  U8), d5461f6d (U10: the same-kind resend fires only for `source_fallback`,
+  matching the domain). Domain suite at 1d7127d4: backend curated_apps,
+  application and web 5735 passed, 59 skipped; frontend full 560 files, 3992
+  passed (`evidence/proof/`). Focused frontend proof at d5461f6d: 8 files, 29
+  passed; fe-type-check, fe-lint rc 0. Copy packet (component-rendered):
+  `evidence/screenshots/`. Next: independent review and copy review (routed by
+  the orchestrator), then the Mac walk.
+- Walk precondition: the stored staging item_006 is already `gap_fill` with
+  `source_fallback` and its gap in its own last paragraph (written by the old
+  retype). Choosing Lucktext there takes the same-kind path, flips only the
+  origin and keeps that body, which the editor shows as Kort svar (no
+  compatibility path, D8). Walk from a fresh import of the exam, or Ångra back
+  to the `free_text` state first, so Lucktext runs the retype and D9 placement.
 - Evidence root: Skriptoteket session `01a156ae-7f31-7338-be23-b8b32352aa02`.
 
 ### Problem
