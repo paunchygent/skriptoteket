@@ -10,7 +10,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-_VERSION_PATTERN = re.compile(r"native_exam_document_v(\d+)")
+_VERSION_PATTERN = re.compile(r"native_exam_document_v(\d{1,9})")
 
 
 def native_exam_document_version(schema_version: object) -> int | None:

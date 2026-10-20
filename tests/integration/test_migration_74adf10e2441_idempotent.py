@@ -24,12 +24,35 @@ def _head_zip(path: Path, *, schema_version: str) -> None:
         archive.writestr("document.json", json.dumps({"schema_version": schema_version}))
 
 
+def _head_zip_deflated(path: Path, *, schema_version: str, padding_size: int) -> None:
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr(
+            "document.json",
+            json.dumps({"schema_version": schema_version, "padding": " " * padding_size}),
+        )
+
+
+def _head_zip_raw(path: Path, *, content: str) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("document.json", content)
+
+
+def _head_zip_corrupt_crc(path: Path, *, schema_version: str) -> None:
+    _head_zip(path, schema_version=schema_version)
+    with zipfile.ZipFile(path) as archive:
+        info = archive.getinfo("document.json")
+        data_offset = info.header_offset + 30 + len(info.filename.encode("utf-8"))
+    raw = bytearray(path.read_bytes())
+    raw[data_offset + 2] ^= 0xFF
+    path.write_bytes(bytes(raw))
+
+
 async def _seed_index_rows(
     database_url: str,
     *,
     owner: UUID,
-    lineages: tuple[UUID, UUID, UUID, UUID],
-    file_ids: tuple[UUID, UUID, UUID, UUID],
+    lineages: tuple[UUID, ...],
+    file_ids: tuple[UUID, ...],
 ) -> None:
     engine = create_async_engine(database_url)
     try:
@@ -71,7 +94,7 @@ async def _seed_index_rows(
         await engine.dispose()
 
 
-async def _assert_backfilled(database_url: str, *, lineages: tuple[UUID, UUID, UUID, UUID]) -> None:
+async def _assert_backfilled(database_url: str, *, lineages: tuple[UUID, ...]) -> None:
     engine = create_async_engine(database_url)
     try:
         async with engine.begin() as connection:
@@ -85,6 +108,10 @@ async def _assert_backfilled(database_url: str, *, lineages: tuple[UUID, UUID, U
                 lineages[1]: 9,
                 lineages[2]: 0,
                 lineages[3]: 0,
+                lineages[4]: 0,
+                lineages[5]: 0,
+                lineages[6]: 0,
+                lineages[7]: 0,
             }
             nullable = await connection.scalar(
                 text(
@@ -117,14 +144,27 @@ def test_exam_index_format_version_backfills_from_head_files(
     command.downgrade(alembic_config, "base")
     command.upgrade(alembic_config, _PARENT)
     owner = uuid4()
-    lineages = (uuid4(), uuid4(), uuid4(), uuid4())
-    file_ids = (uuid4(), uuid4(), uuid4(), uuid4())
+    lineages = tuple(uuid4() for _ in range(8))
+    file_ids = tuple(uuid4() for _ in range(8))
     asyncio.run(_seed_index_rows(database_url, owner=owner, lineages=lineages, file_ids=file_ids))
     owner_directory = tmp_path / str(owner)
     owner_directory.mkdir()
     _head_zip(owner_directory / str(file_ids[0]), schema_version="native_exam_document_v10")
     _head_zip(owner_directory / str(file_ids[1]), schema_version="native_exam_document_v9")
     (owner_directory / str(file_ids[3])).write_bytes(b"not a zip")
+    _head_zip_corrupt_crc(
+        owner_directory / str(file_ids[4]), schema_version="native_exam_document_v10"
+    )
+    _head_zip_deflated(
+        owner_directory / str(file_ids[5]),
+        schema_version="native_exam_document_v10",
+        padding_size=33 * 1024 * 1024,
+    )
+    _head_zip(
+        owner_directory / str(file_ids[6]),
+        schema_version="native_exam_document_v" + "1" * 20,
+    )
+    _head_zip_raw(owner_directory / str(file_ids[7]), content="[" * 200000 + "]" * 200000)
 
     command.upgrade(alembic_config, _REVISION)
     command.upgrade(alembic_config, _REVISION)

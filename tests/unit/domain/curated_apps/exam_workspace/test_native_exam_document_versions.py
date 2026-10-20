@@ -69,6 +69,22 @@ def _sample_versions() -> set[int]:
     return versions
 
 
+def sample_label_mismatches(directory: Path) -> list[str]:
+    problems: list[str] = []
+    if not directory.is_dir():
+        return [f"missing sample directory {directory}"]
+    for path in sorted(directory.iterdir()):
+        match = _SAMPLE_PATTERN.fullmatch(path.name)
+        if match is None:
+            continue
+        claimed = int(match.group(1))
+        payload = json.loads(path.read_bytes().decode("utf-8"))
+        stored = payload.get("schema_version") if isinstance(payload, dict) else None
+        if native_exam_document_version(stored) != claimed:
+            problems.append(f"{path.name} holds {stored!r}, expected version {claimed}")
+    return problems
+
+
 def _stored_payload_bytes(schema_version: object) -> bytes:
     payload = json.loads(
         native_exam_document_json_bytes(make_document(make_free_text_item())).decode("utf-8")
@@ -86,14 +102,26 @@ class TestUpgradeChainSafeguard:
             sample_versions=_sample_versions(),
         )
         assert problems == []
+        assert sample_label_mismatches(FIXTURE_DIR) == []
         for version in range(
             OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
             CURRENT_NATIVE_EXAM_DOCUMENT_VERSION + 1,
         ):
             data = (FIXTURE_DIR / f"native_exam_document_v{version}.json").read_bytes()
+            stored = json.loads(data.decode("utf-8"))["schema_version"]
+            assert native_exam_document_version(stored) == version
             assert parse_native_exam_document(data).schema_version == (
                 NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
             )
+
+    def test_mislabeled_sample_is_reported(self, tmp_path: Path) -> None:
+        source = (
+            FIXTURE_DIR / f"native_exam_document_v{CURRENT_NATIVE_EXAM_DOCUMENT_VERSION}.json"
+        ).read_bytes()
+        (tmp_path / "native_exam_document_v9.json").write_bytes(source)
+        problems = sample_label_mismatches(tmp_path)
+        assert len(problems) == 1
+        assert "native_exam_document_v9.json" in problems[0]
 
 
 class TestChainGapsChecker:
@@ -171,6 +199,9 @@ class TestVersionParser:
             ("", None),
             (10, None),
             (None, None),
+            ("native_exam_document_v999999999", 999999999),
+            ("native_exam_document_v" + "1" * 20, None),
+            ("native_exam_document_v" + "1" * 5000, None),
         ],
     )
     def test_version_parser(self, raw: object, expected: int | None) -> None:
@@ -192,7 +223,14 @@ class TestReaderVersions:
 
     @pytest.mark.parametrize(
         "raw",
-        ["native_exam_document_v10x", "v10", "native_exam_document_v", 10],
+        [
+            "native_exam_document_v10x",
+            "v10",
+            "native_exam_document_v",
+            10,
+            "native_exam_document_v" + "1" * 20,
+            "native_exam_document_v" + "1" * 5000,
+        ],
     )
     def test_other_forms_are_outdated(self, raw: object) -> None:
         with pytest.raises(DomainError) as exc_info:

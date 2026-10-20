@@ -14,10 +14,10 @@ Revises: 67c02402930c
 
 from __future__ import annotations
 
-import io
 import json
 import re
 import zipfile
+import zlib
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -34,29 +34,42 @@ down_revision: str | Sequence[str] | None = "67c02402930c"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 
-_VERSION_PATTERN = re.compile(r"native_exam_document_v(\d+)")
+_VERSION_PATTERN = re.compile(r"native_exam_document_v(\d{1,9})")
+
+_DOCUMENT_READ_CAP_BYTES = 32 * 1024 * 1024
 
 
 def _read_format_version(
     *, vault_root: Path, owner_user_id: str, head_vault_file_id: str
 ) -> tuple[int, str]:
     """Return the head file's format version and the outcome bucket for the summary."""
+    path = vault_root / owner_user_id / head_vault_file_id
     try:
-        data = (vault_root / owner_user_id / head_vault_file_id).read_bytes()
+        with zipfile.ZipFile(path) as archive:
+            try:
+                with archive.open("document.json") as member:
+                    raw = member.read(_DOCUMENT_READ_CAP_BYTES + 1)
+            except KeyError:
+                return 0, "no_document"
+            except (
+                zipfile.BadZipFile,
+                zlib.error,
+                EOFError,
+                RuntimeError,
+                NotImplementedError,
+            ):
+                return 0, "corrupt"
     except FileNotFoundError:
         return 0, "missing"
-    try:
-        archive = zipfile.ZipFile(io.BytesIO(data))
+    except OSError:
+        return 0, "io_error"
     except zipfile.BadZipFile:
         return 0, "not_zip"
-    with archive:
-        try:
-            raw = archive.read("document.json")
-        except KeyError:
-            return 0, "no_document"
+    if len(raw) > _DOCUMENT_READ_CAP_BYTES:
+        return 0, "too_large"
     try:
         payload = json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
+    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):
         return 0, "invalid_json"
     schema_version = payload.get("schema_version") if isinstance(payload, dict) else None
     match = _VERSION_PATTERN.fullmatch(schema_version) if isinstance(schema_version, str) else None
