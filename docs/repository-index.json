@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b88f8dfcad401cbc30aad2da7b5fc6d7ccb92f916d31540f6544a0a7fecc7f04",
+  "source_set_digest": "ade9e7737fc2b5ec180589acd99c4ba6fb279de2b13bc2d0493b8da4d5de068b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5632,6 +5632,25 @@
         "decided_at": "2026-10-17",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User asked on 2026-10-17 to repair the five main test failures and then close the task (\"Reopen TASK-SKRIPT-39-05-14 (and keep ST-SKRIPT-39-05 open), repair the five failing tests through a Sol pair and reviewer, then close both\"). Repair units R1, R1F and R1G passed independent Sol review; second rereview approved with no open findings (evidence/rereview2-R1.md, D15 user decision recorded in b421b5f2). Merged to main d92b828e; domain tests pass (evidence/merged-main-d92b828e-domain.log). Staging walk at d92b828e converted Svenska 2 kursavslutande to 24 items, 0 review items, judge 24/24 gold, and Exam.net import 5344901 shows three parts, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14c/walk-report.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-15",
+      "type": "task",
+      "title": "Choosing a type on an unconverted question shows that type's fields and keeps the question in review",
+      "path": "docs/backlog/tasks/task-skript-39-05-15-choosing-a-type-on-an-unconverted-question-shows-that-type-s-fields-and-keeps-the-question-in-review.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
