@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 41-02-06 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer f5bfc8fe (root 01a1583c evidence/reviews/): R1 closed, R2-R4 admitted; the U5/U22 review at ee28cb7e ended changes_requested with medium U5-1 only, repaired in U23 (3d87bfdf, fail-first evidence/fail-first/u23.log) and admitted by the parent on focused proof (751 passed). U5-2 and an OS out-of-memory kill during the backfill are accepted residuals. Copy review 1cb9a1de approved. Merged on main 0ab8ccb8; pre-push suite passed (migrations 119 passed). Mac staging walk PASS at 0ab8ccb8: drawer rows, zip download, remove from the drawer and from a direct link (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). The narrow-drawer notice wrap goes to a separate fix.'
 task_kind: story
 acceptance_criteria:
   - A saved exam whose format version is below the oldest readable version shows in the Öppna list as a row that cannot be opened, with one line stating that, and glyph-only download and remove actions named in tooltip and aria-label

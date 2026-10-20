@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6667592fcde1fdf4f8543c07dcc14f03578c3ee3d7d5bc0251c28637454cf5bc",
+  "source_set_digest": "12baa04f1f3fcf1a58f688fb99cff56c004641cc14fbadfc45fd5cf13f6492cd",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7230,7 +7230,7 @@
       "type": "task",
       "title": "A saved exam the app cannot read is offered for download or removal",
       "path": "docs/backlog/tasks/task-skript-41-02-06-a-saved-exam-the-app-cannot-read-is-offered-for-download-or-removal.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7241,7 +7241,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 41-02-06 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer f5bfc8fe (root 01a1583c evidence/reviews/): R1 closed, R2-R4 admitted; the U5/U22 review at ee28cb7e ended changes_requested with medium U5-1 only, repaired in U23 (3d87bfdf, fail-first evidence/fail-first/u23.log) and admitted by the parent on focused proof (751 passed). U5-2 and an OS out-of-memory kill during the backfill are accepted residuals. Copy review 1cb9a1de approved. Merged on main 0ab8ccb8; pre-push suite passed (migrations 119 passed). Mac staging walk PASS at 0ab8ccb8: drawer rows, zip download, remove from the drawer and from a direct link (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). The narrow-drawer notice wrap goes to a separate fix."
       }
     },
     {
