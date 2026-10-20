@@ -22,15 +22,16 @@ backlog_document_profile: contract-derived
 
 ### Resume here
 
-- 2026-10-20: U1+U3 committed 5eb6681d (review flip, export blocker, undo
-  test, D9 gap placement, shared case table
-  `tests/fixtures/exam_workspace/gap_text_placement_cases.json`); U2 committed
-  408dc062 (frontend reason, copy, same-kind resend, specs). D1/D3 corrected to
-  the new origin `teacher_retyped`; U5 (backend origin, collision tests,
-  openapi regen) running. Next: U6 (frontend switch to `teacher_retyped`,
-  collision specs) and U4 (client spec on the shared table, staging editor
-  case), then focused proof and the domain-suite gate. Work orders under
-  `evidence/work-orders/`; component screenshots under `evidence/screenshots/`.
+- 2026-10-20: every unit committed: 5eb6681d (U1 review flip, blocker,
+  undo test; U3 D9 gap placement and shared table), 408dc062 (U2 frontend
+  reason, copy, same-kind resend), 84d8fd96 (U5 `teacher_retyped`, collision
+  tests, openapi regen), a02843ff (U6 frontend `teacher_retyped` and
+  collision specs; U4 Vitest on the shared table and the staging editor case;
+  U7 typed origin in parent commands; U8 table wire form). Focused proof at
+  a02843ff: backend 270 passed, frontend 11 spec files 81 passed; lint,
+  typecheck, fe-type-check, fe-lint rc 0 (`evidence/proof/`). Next: one
+  domain suite on the orchestrator's go, then independent review (routed by
+  the orchestrator), copy review, and the Mac walk of Fråga 3a.
 - Evidence root: Skriptoteket session `01a156ae-7f31-7338-be23-b8b32352aa02`.
 
 ### Problem
