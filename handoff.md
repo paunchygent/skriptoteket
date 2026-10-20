@@ -1,16 +1,17 @@
 ## Current
 
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
-  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Code
-  rereview 3 (`23bc9c5a`, root `01a155b5`) found T1/T2 high; the user chose to
-  simplify: one sync gate owns writes (G1a `eb26222f`, G1b `e52bf532`). Also
-  admitted: the Provets uppgifter ticks loss (TK1 `4a18beba`, TK2 `48be6751`:
-  Kurs clear save loop and backlog collapse). Next: G2 spec ports, T3 split,
-  copy rereview by `4c9e2855`, suites, rereview 4 by `23bc9c5a`, then the Mac.
-- TASK-SKRIPT-41-02-05 (guest draft handover to Mina filer): lead `489a15c8`,
-  branch `codex/task-skript-41-02-guest-handover-rejection-remote`, root
-  `01a1567f`. A permanent rejection stops retrying and offers download or remove
-  (user, 2026-10-19). Next: implementation, copy review, review, the Mac.
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. One
+  generation fence for every async result (user, 2026-10-20): FF `0090a024`,
+  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`; F3 (lease answers) running.
+  R1 closed (user): an old-format kept edit is upgraded before the merge.
+  Next: focused proof, suite slot, rereview 5 by `23bc9c5a`, then the Mac.
+- 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
+  D24 a server claim per draft_id.
+- TASK-SKRIPT-39-05-16 delete the unused long-form readiness copy (user,
+  2026-10-20): lead `7ec7295f`, branch
+  `codex/task-skript-39-05-unused-readiness-copy-remote`, root `01a156ae`.
+  Next: deletion junior, focused proof, Pi review, the Mac.
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
@@ -134,6 +135,10 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-20 `done` on main: TASK-SKRIPT-41-02-05 guest draft handover to Mina filer (`8be9aefa`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Follow-ups D10, D24 in Current.
+
+- 2026-10-20 `done` on main: TASK-SKRIPT-39-05-15 type choice on an unconverted question (`e4d15c4a`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`).
 
 - 2026-10-19 `done` on main: TASK-SKRIPT-39-04-21 points wording (`99378586`, user closure; Mac walk `.artifacts/staging-walk-99378586/walk-record.md`). U4 offer line parked.
 

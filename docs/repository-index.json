@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f8c218f5c1ff9239c5442a49117297a326ddfdcda5fea385a1fed946e58802a0",
+  "source_set_digest": "4bf9b1e926f7a04e56136a47ebe32bd8eb4bcfd476965c5b365eec9519ac7128",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5635,6 +5635,47 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-05-15",
+      "type": "task",
+      "title": "Choosing a type on an unconverted question shows that type's fields and keeps the question in review",
+      "path": "docs/backlog/tasks/task-skript-39-05-15-choosing-a-type-on-an-unconverted-question-shows-that-type-s-fields-and-keeps-the-question-in-review.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-05-15 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 32297fc0 (root 01a156ae evidence/reviews/32297fc0-8f6c-441a-9640-8d87e9771187.md) ended changes_requested with medium F1 only (kept gaps on retype), repaired in 2bcdf10d and admitted by the parent on focused proof (214 passed). Copy review be7c7069 approved. Suites at 3de35313: backend curated_apps domain, application and web 5744 passed, 59 skipped; frontend 3993 passed. Released on main e4d15c4a; Mac staging walk PASS at e4d15c4a on Fråga 3b (item_007) (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-05-16",
+      "type": "task",
+      "title": "Each exam export blocker keeps one wording: the unused long readiness copy is deleted",
+      "path": "docs/backlog/tasks/task-skript-39-05-16-each-exam-export-blocker-keeps-one-wording-the-unused-long-readiness-copy-is-deleted.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-05",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-06-01",
       "type": "task",
       "title": "Walking skeleton: a parent with two Lucktext children built through the API, exported to QTI and imported into Exam.net",
@@ -7107,6 +7148,28 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-05",
+      "type": "task",
+      "title": "A guest draft that Mina filer rejects for good stops retrying and is offered for download or removal",
+      "path": "docs/backlog/tasks/task-skript-41-02-05-a-guest-draft-that-mina-filer-rejects-for-good-stops-retrying-and-is-offered-for-download-or-removal.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 41-02-05 on 2026-10-20 in the Hemma orchestrator session, with D10 (pictures in the download) and D24 (a server claim per draft_id) left as follow-ups. Pi ruthless-reviewer ba74ef97 review and rereviews 1-2 (root 01a1567f evidence/reviews/): R1-R6 closed; rereview 2 ended changes_requested with mediums R7/R8 only, repaired in 3b0be5f4 and dd0b71cf and admitted by the parent on focused proof (143 passed). Copy review 917b4838 approved. Frontend suite at merge head c2aac72b: 4097 passed; backend full suite at d16e1653: 7900 passed, 59 skipped. Released on main 8be9aefa; Mac staging walk PASS on all five steps at 8be9aefa (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, second section). The observed rejection was 422 DOCUMENT_SCHEMA_OUTDATED for a native_exam_document_v9 guest draft."
       }
     },
     {

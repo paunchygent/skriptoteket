@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import { PARTIAL_GAP_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
-import {
-  examWorkspaceItemReadiness,
-  examWorkspaceReadinessByItemId,
-} from "./examWorkspaceItemReadiness";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildChoiceItem } from "./examWorkspaceItemReadiness.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
@@ -50,9 +46,6 @@ describe("export-only content readiness", () => {
     const item = dropdown();
     item.gaps[0]!.options[1]!.body = plainBody(text);
     expect(examWorkspaceItemReadiness(item)).toEqual(["empty_gap_option"]);
-    expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
-      "Ett alternativ i en lucka saknar text.",
-    ]);
   });
 
   it.each(["single_choice", "multiple_response"] as const)(
@@ -70,17 +63,14 @@ describe("export-only content readiness", () => {
       const item = buildMatchingItem();
       item[side][0]!.body = plainBody(" \n\t ");
       expect(examWorkspaceItemReadiness(item)).toEqual(["empty_match_entry"]);
-      expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
-        "En del i matchningen saknar text.",
-      ]);
       item[side][0]!.body.push(...plainBody(" Text "));
       expect(examWorkspaceItemReadiness(item)).toEqual([]);
     },
   );
 });
 
-describe("examWorkspaceReadinessByItemId", () => {
-  it("maps only questions that stop an export to Swedish copy", () => {
+describe("export readiness reasons", () => {
+  it("reports only the reasons for questions that stop an export", () => {
     const ready = buildChoiceItem();
     const partial = buildChoiceItem({
       choices: [],
@@ -93,12 +83,11 @@ describe("examWorkspaceReadinessByItemId", () => {
       sequence: 2,
     });
 
-    expect(examWorkspaceReadinessByItemId([ready, partial])).toEqual({
-      item_002: [PARTIAL_GAP_KEY_GUIDANCE, "Poäng saknas."],
-    });
+    expect(examWorkspaceItemReadiness(ready)).toEqual([]);
+    expect(examWorkspaceItemReadiness(partial)).toEqual(["partial_gap_key", "missing_points"]);
   });
 
-  it("maps the save-refused states to their Swedish copy", () => {
+  it("reports the save-refused states as reasons", () => {
     const item = buildChoiceItem({
       choices: [
         { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
@@ -107,8 +96,6 @@ describe("examWorkspaceReadinessByItemId", () => {
       points: -1,
     });
 
-    expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      item_001: ["Ange 0 poäng eller mer.", "Ett svarsalternativ saknar text."],
-    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["negative_points", "empty_choice"]);
   });
 });

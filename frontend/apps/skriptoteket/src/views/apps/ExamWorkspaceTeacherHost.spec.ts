@@ -9,12 +9,20 @@
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../api/client";
 import type { ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
+import { useToastStore } from "../../stores/toast";
+import { triggerBrowserDownload } from "../../utils/browserDownload";
 import ExamWorkspaceTeacherHost from "./ExamWorkspaceTeacherHost.vue";
 import type { StoredGuestDraft } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { newGuestDraft } from "./exam-workspace/examWorkspaceGuestDraft";
+import {
+  EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+  EXAM_WORKSPACE_GUEST_HANDOFF_VAULT_FULL_COPY,
+} from "./exam-workspace/examWorkspaceGuestHandoffCopy";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { buildParentDocument } from "./exam-workspace/examWorkspaceParentDocument.specSupport";
 import { buildResponse } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
@@ -24,8 +32,16 @@ vi.mock("./ExamWorkspaceView.vue", () => ({
   default: { name: "ExamWorkspaceViewStub", props: ["store"], template: "<div />" },
 }));
 
-const routeMocks = vi.hoisted(() => ({
-  query: {} as Record<string, string | undefined>,
+// The download writes a Blob to the browser; the mock records its arguments.
+vi.mock("../../utils/browserDownload", () => ({
+  triggerBrowserDownload: vi.fn(),
+}));
+
+const routeMocks = vi.hoisted((): {
+  query: Record<string, string | undefined>;
+  replace: ReturnType<typeof vi.fn>;
+} => ({
+  query: {},
   replace: vi.fn(),
 }));
 
@@ -38,9 +54,12 @@ vi.mock("vue-router", async (importOriginal) => {
   };
 });
 
-const storageMocks = vi.hoisted(() => ({
+const storageMocks = vi.hoisted((): {
+  failLoad: boolean;
+  stored: StoredGuestDraft | null;
+} => ({
   failLoad: false,
-  stored: null as StoredGuestDraft | null,
+  stored: null,
 }));
 
 vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
@@ -67,6 +86,49 @@ vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
     },
   }),
 }));
+
+const hostHooks = vi.hoisted((): {
+  lockMode: "memory" | "unavailable";
+  startOverride: null | (() => Promise<string | null>);
+} => ({
+  lockMode: "memory",
+  startOverride: null,
+}));
+
+vi.mock("./exam-workspace/examWorkspaceGuestHandoffLock", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./exam-workspace/examWorkspaceGuestHandoffLock")>();
+  return {
+    ...actual,
+    createWebGuestHandoffLock: () => {
+      if (hostHooks.lockMode === "unavailable") {
+        return {
+          run: (): Promise<never> => {
+            throw new actual.GuestHandoffLockUnavailableError("Web Locks are unavailable.");
+          },
+        };
+      }
+      return actual.createInMemoryGuestHandoffLock();
+    },
+  };
+});
+
+vi.mock("./exam-workspace/useExamWorkspaceGuestHandoffController", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("./exam-workspace/useExamWorkspaceGuestHandoffController")>();
+  return {
+    ...actual,
+    useExamWorkspaceGuestHandoffController: (
+      ...args: Parameters<typeof actual.useExamWorkspaceGuestHandoffController>
+    ) => {
+      const controller = actual.useExamWorkspaceGuestHandoffController(...args);
+      if (hostHooks.startOverride !== null) {
+        const start = hostHooks.startOverride;
+        return { ...controller, start };
+      }
+      return controller;
+    },
+  };
+});
 
 const apiMocks = vi.hoisted(() => ({
   importGuestDraft: vi.fn(),
@@ -95,11 +157,16 @@ function handoffResponse(lineageId: string): ExamWorkspaceDocumentResponse {
 
 describe("ExamWorkspaceTeacherHost", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
+    localStorage.clear();
     storageMocks.failLoad = false;
     storageMocks.stored = null;
     routeMocks.query = {};
     routeMocks.replace.mockReset();
     apiMocks.importGuestDraft.mockReset();
+    vi.mocked(triggerBrowserDownload).mockClear();
+    hostHooks.lockMode = "memory";
+    hostHooks.startOverride = null;
   });
 
   it("mounts the workspace on the signed-in server store", async () => {
@@ -154,5 +221,131 @@ describe("ExamWorkspaceTeacherHost", () => {
     expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
 
     wrapper.unmount();
+  });
+
+  it("a) a permanently rejected draft renders the view with a download/remove notice", async () => {
+    seatStoredDraft();
+    apiMocks.importGuestDraft.mockRejectedValue(
+      new ApiError({ code: "DOCUMENT_SCHEMA_OUTDATED", message: "outdated", status: 422 }),
+    );
+    const wrapper = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+
+    expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    );
+    expect(useToastStore().toasts).toEqual([]);
+
+    await wrapper.get('[data-test="exam-workspace-guest-handoff-download"]').trigger("click");
+    expect(triggerBrowserDownload).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(triggerBrowserDownload).mock.calls[0]?.[1]).toBe("English 1.json");
+
+    await wrapper.get('[data-test="exam-workspace-guest-handoff-remove"]').trigger("click");
+    await flushPromises();
+    expect(storageMocks.stored).toBeNull();
+    expect(wrapper.find('[data-test="exam-workspace-guest-handoff-notice"]').exists()).toBe(false);
+
+    wrapper.unmount();
+  });
+
+  it("b) a full Mina filer shows the vault notice and retry posts again", async () => {
+    seatStoredDraft();
+    apiMocks.importGuestDraft
+      .mockRejectedValueOnce(
+        new ApiError({
+          code: "VALIDATION_ERROR",
+          details: { reason: "vault_full" },
+          message: "full",
+          status: 422,
+        }),
+      )
+      .mockResolvedValue(handoffResponse("lineage-new"));
+    const wrapper = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_GUEST_HANDOFF_VAULT_FULL_COPY,
+    );
+    expect(wrapper.find('[data-test="exam-workspace-guest-handoff-retry"]').exists()).toBe(true);
+
+    await wrapper.get('[data-test="exam-workspace-guest-handoff-retry"]').trigger("click");
+    await flushPromises();
+    expect(apiMocks.importGuestDraft).toHaveBeenCalledTimes(2);
+
+    wrapper.unmount();
+  });
+
+  it("c) a draft without its position snapshot still renders with the permanent notice", async () => {
+    const seated = seatStoredDraft();
+    seated.draft.position_step_id = "missing-step";
+    const wrapper = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+
+    expect(apiMocks.importGuestDraft).not.toHaveBeenCalled();
+    expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    );
+
+    wrapper.unmount();
+  });
+
+  it("d) a remount after a permanent rejection makes no second POST", async () => {
+    seatStoredDraft();
+    apiMocks.importGuestDraft.mockRejectedValue(
+      new ApiError({ code: "DOCUMENT_SCHEMA_OUTDATED", message: "outdated", status: 422 }),
+    );
+
+    const first = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+    expect(apiMocks.importGuestDraft).toHaveBeenCalledTimes(1);
+    first.unmount();
+
+    const second = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+    expect(apiMocks.importGuestDraft).toHaveBeenCalledTimes(1);
+    expect(second.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+    );
+    second.unmount();
+  });
+
+  it("e) an unavailable lock still renders the view with the permanent notice", async () => {
+    hostHooks.lockMode = "unavailable";
+    seatStoredDraft();
+    const wrapper = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+
+    try {
+      expect(apiMocks.importGuestDraft).not.toHaveBeenCalled();
+      expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
+      expect(wrapper.get('[data-test="exam-workspace-guest-handoff-notice-text"]').text()).toBe(
+        EXAM_WORKSPACE_GUEST_HANDOFF_PERMANENT_COPY,
+      );
+      expect(wrapper.find('[data-test="exam-workspace-guest-handoff-retry"]').exists()).toBe(
+        false,
+      );
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it("f) the view still renders when start throws unexpectedly", async () => {
+    hostHooks.startOverride = async () => {
+      throw new Error("the handoff crashed");
+    };
+    const onError = vi.fn();
+    const wrapper = mount(ExamWorkspaceTeacherHost, {
+      global: { config: { errorHandler: onError } },
+    });
+    await flushPromises();
+
+    try {
+      expect(wrapper.findComponent({ name: "ExamWorkspaceViewStub" }).exists()).toBe(true);
+      expect(onError).toHaveBeenCalledTimes(1);
+    } finally {
+      wrapper.unmount();
+    }
   });
 });

@@ -4,12 +4,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamChoice, NativeExamGap, NativeExamItem } from "../../../api/examWorkspace";
-import { GAP_WITHOUT_CORRECT_OPTION_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import { withGapOptions } from "./examWorkspaceGapEdits";
-import {
-  examWorkspaceItemReadiness,
-  examWorkspaceReadinessByItemId,
-} from "./examWorkspaceItemReadiness";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildChoiceItem } from "./examWorkspaceItemReadiness.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
@@ -72,13 +68,9 @@ describe("dropdown without a correct option", () => {
     };
   }
 
-  it("blocks with its guidance copy", () => {
+  it("blocks a dropdown gap without a correct option", () => {
     const item = unkeyed();
     expect(examWorkspaceItemReadiness(item)).toContain("gap_without_correct_option");
-    expect(GAP_WITHOUT_CORRECT_OPTION_GUIDANCE).toBe("Markera rätt alternativ i varje rullista.");
-    expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toContain(
-      "Markera rätt alternativ i varje rullista.",
-    );
   });
 
   it("clears once a correct option is selected", () => {

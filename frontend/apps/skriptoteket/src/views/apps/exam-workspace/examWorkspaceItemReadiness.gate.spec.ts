@@ -9,16 +9,13 @@
  *   key, points not greater than zero, a choice without text, criteria
  *   that lack text or points or are not the item's points), in a stable
  *   order; ready
- *   questions report nothing and are left out of the per-item copy map.
+ *   questions report nothing.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import {
-  examWorkspaceItemReadiness,
-  examWorkspaceReadinessByItemId,
-} from "./examWorkspaceItemReadiness";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildChoiceItem } from "./examWorkspaceItemReadiness.specSupport";
 
 describe("examWorkspaceItemReadiness", () => {
@@ -62,7 +59,6 @@ describe("examWorkspaceItemReadiness", () => {
       });
 
       expect(examWorkspaceItemReadiness(item)).toEqual([]);
-      expect(examWorkspaceReadinessByItemId([item])).toEqual({});
     },
   );
 

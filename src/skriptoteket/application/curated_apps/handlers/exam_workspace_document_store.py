@@ -36,6 +36,13 @@ from skriptoteket.protocols.vault import (
 EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX = "documents.conversion_hub:exam-workspace"
 
 
+def _vault_full_error() -> DomainError:
+    return validation_error(
+        "Mina filer är fullt; ta bort filer och försök igen.",
+        details={"reason": "vault_full"},
+    )
+
+
 class ExamWorkspaceDocumentStore:
     """Serialize writes against the lineage lock and account for replaced bytes."""
 
@@ -177,7 +184,7 @@ class ExamWorkspaceDocumentStore:
                 usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
                 total = usage.bytes_total + actual_bytes
                 if total > self._settings.VAULT_MAX_TOTAL_BYTES:
-                    raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
+                    raise _vault_full_error()
                 vault_file = await self._vault_files.create(
                     file=VaultFile(
                         id=file_id,
@@ -248,7 +255,7 @@ class ExamWorkspaceDocumentStore:
         counted_bytes = head.bytes if head.deleted_at is None else 0
         total = usage.bytes_total + len(content) - counted_bytes
         if total > self._settings.VAULT_MAX_TOTAL_BYTES:
-            raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
+            raise _vault_full_error()
         file_id = head.id
         previous_content: bytes | None = None
         if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):

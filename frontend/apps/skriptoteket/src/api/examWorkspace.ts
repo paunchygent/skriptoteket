@@ -16,6 +16,7 @@
  */
 
 import { apiFetch, apiGet, apiPatch, apiPost, resolveProtectedApiUrl } from "./client";
+import type { AuthSession } from "../stores/auth";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -394,13 +395,20 @@ export async function updateExamListOrdering(ordering: ExamListOrdering): Promis
  * bytes the document no longer names are never sent. `handoffKey` identifies
  * one browser snapshot: the caller passes the snapshot's cursor, so the
  * server claims once per (user, key) and a later handoff of newer edits
- * imports its own exam.
+ * imports its own exam. `binding` carries the handoff owner's auth
+ * lifetime, the superseded-success signal and the attempt's abort signal:
+ * a replaced sign-in fails as `SupersededAuthSessionError` instead of
+ * posting under the new teacher, and a 2xx answered after retirement
+ * reports through `onSupersededSuccess` so the caller can clear the posted
+ * snapshot. Aborting the signal settles the POST so the cross-tab lock is
+ * released.
  */
 export async function importExamWorkspaceGuestDraft(
   handoffKey: string,
   document: NativeExamDocument,
   assets: Record<string, Blob>,
   notes: ExamWorkspaceDocumentResponse["notes"],
+  binding: { session: AuthSession; onSupersededSuccess: () => void; signal: AbortSignal },
 ): Promise<ExamWorkspaceDocumentResponse> {
   const form = new FormData();
   form.append("draft_id", handoffKey);
@@ -415,5 +423,11 @@ export async function importExamWorkspaceGuestDraft(
     }
     form.append(`asset:${asset.asset_id}`, blob);
   }
-  return await apiPost<ExamWorkspaceDocumentResponse>(`${ROOT}/guest-drafts`, form);
+  return await apiFetch<ExamWorkspaceDocumentResponse>(`${ROOT}/guest-drafts`, {
+    body: form,
+    method: "POST",
+    onSupersededSuccess: binding.onSupersededSuccess,
+    session: binding.session,
+    signal: binding.signal,
+  });
 }

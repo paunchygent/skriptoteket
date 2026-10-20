@@ -1,0 +1,130 @@
+---
+type: task
+id: TASK-SKRIPT-39-05-15
+title: Choosing a type on an unconverted question shows that type's fields and keeps the question in review
+repository: skriptoteket
+owners:
+  - kind: service
+    id: skriptoteket
+created: '2026-10-20'
+status: done
+closeout_review:
+  record: inline
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 39-05-15 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 32297fc0 (root 01a156ae evidence/reviews/32297fc0-8f6c-441a-9640-8d87e9771187.md) ended changes_requested with medium F1 only (kept gaps on retype), repaired in 2bcdf10d and admitted by the parent on focused proof (214 passed). Copy review be7c7069 approved. Suites at 3de35313: backend curated_apps domain, application and web 5744 passed, 59 skipped; frontend 3993 passed. Released on main e4d15c4a; Mac staging walk PASS at e4d15c4a on Fråga 3b (item_007) (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md).'
+task_kind: story
+acceptance_criteria:
+  - Choosing any type on an unconverted question shows that type's fields and gap tools at once, export stays blocked on that question until the teacher marks it reviewed, and one Ångra restores the kind and the unconverted state
+story: ST-SKRIPT-39-05
+backlog_document_profile: contract-derived
+---
+
+## Implementation Contract
+
+### Resume here
+
+- 2026-10-20: every unit committed; head after this doc commit. Units:
+  5eb6681d (U1, U3), 408dc062 (U2), 84d8fd96 (U5), a02843ff (U4, U6, U7,
+  U8), d5461f6d (U10: the same-kind resend fires only for `source_fallback`,
+  matching the domain). Domain suite at 1d7127d4: backend curated_apps,
+  application and web 5735 passed, 59 skipped; frontend full 560 files, 3992
+  passed (`evidence/proof/`). Focused frontend proof at d5461f6d: 8 files, 29
+  passed; fe-type-check, fe-lint rc 0. Copy packet (component-rendered):
+  `evidence/screenshots/`. Review 32297fc0 at 511a5227: changes_requested, one medium F1 (kept gaps
+  break a type change); repaired by U11 (see head), admitted on focused proof
+  without rereview: 214 passed, the reviewer's probe passes for all three
+  targets, lint and typecheck rc 0 (`evidence/proof/f1-*.log`). Domain suite at
+  3de35313: backend curated_apps domain, application and web 5744 passed, 59
+  skipped; frontend full 560 files, 3993 passed, 2 todo, 0 failed
+  (`evidence/proof/domain-*-3de35313.log`). Next: copy review, then the Mac
+  walk.
+- Walk precondition: the stored staging item_006 is already `gap_fill` with
+  `source_fallback` and its gap in its own last paragraph (written by the old
+  retype). Choosing Lucktext there takes the same-kind path, flips only the
+  origin and keeps that body, which the editor shows as Kort svar (no
+  compatibility path, D8). Walk from a fresh import of the exam, or Ångra back
+  to the `free_text` state first, so Lucktext runs the retype and D9 placement.
+- Evidence root: Skriptoteket session `01a156ae-7f31-7338-be23-b8b32352aa02`.
+
+### Problem
+
+On staging 99378586, exam 996a684f, Fråga 3a (item_006), choosing Lucktext on an
+unconverted question stored `kind: gap_fill` but kept
+`review: {state: review_required, parse_origin: source_fallback}`. The editor
+treats `review_required` with `source_fallback` as unconverted and hides every
+field, so the gap tools never appear. Two causes:
+
+1. `change_item_type` (`native_exam_change_type.py`) never changes `review`.
+2. The domain and `useExamWorkspaceStructure.changeType` both return early when
+   the chosen kind equals the stored kind. Fallback items are stored as
+   `free_text`, so choosing Fritext did nothing, and choosing Lucktext again on
+   the staging item does nothing.
+3. A retype from free text to Lucktext appended the gap as its own last
+   paragraph, which the editor counts as Kort svar since TASK-SKRIPT-40-04-08,
+   so the editor showed the Kort svar field and no gap tools.
+
+### Change
+
+- Domain: retyping a `source_fallback` item sets `parse_origin` to
+  `teacher_retyped` and keeps `state` as it is. Choosing the stored kind on a
+  `source_fallback` item changes only the origin. Items with any other origin
+  keep their origin, and the same-kind no-op stays for them.
+- Export rules: a new blocker reason `unreviewed_retyped_question` applies to
+  `review_required` with `teacher_retyped`. `is_unbuilt_question` is unchanged.
+- Frontend: `examWorkspaceItemReadiness` mirrors the new reason; the blocker
+  list fixes it with the existing review action and focuses the existing review
+  button; `changeType` sends the stored kind when the question is unconverted.
+- Undo: the server undo step stores the full document, so one Ångra restores
+  the kind and `source_fallback`. No history, document, lease or sync-gate file
+  changes.
+
+## Contract Inputs
+
+- User decision 2026-10-19 (Hemma orchestrator): "Show fields, keep review".
+- TASK-SKRIPT-39-05-07 D1 (review flags on converted items do not block export)
+  and D2 (an unbuilt question blocks export until it is marked reviewed).
+- Copy approved provisionally by the orchestrator 2026-10-20; copy review follows.
+
+## Core Vertical And Performance
+
+Byt frågetyp or the "Ej konverterad" dropdown → change-type endpoint →
+`change_item_type` → undo step → editor readiness → export blockers. No
+performance concern: one item is rebuilt per command.
+
+## Validation
+
+- Domain tests: retype of a `source_fallback` item leaves the unconverted state
+  and stays `review_required`; same-kind retype flips only the origin; other
+  origins keep their origin; the export blocker lists the retyped item until it
+  is marked reviewed, and `llm_parsed`/`deterministic` review flags stay
+  non-blocking.
+- Handler test: one undo after the retype restores the previous kind and
+  `source_fallback`.
+- Frontend specs: the fields and gap tools appear after the switch; the new
+  reason shows in the export panel and the question list until reviewed; the
+  unconverted same-kind choice sends the command.
+- `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`, `pdm run fe-lint`, focused tests, and one domain suite at the end.
+- Component-rendered screenshots (labelled as such) of the export line, the
+  list label and the editor after the switch, with a string inventory.
+
+## Stop Conditions
+
+- The fix needs `useExamWorkspaceHistory*`, `useExamWorkspaceDocument*`, the edit
+  lease or the sync gate.
+- Undo does not restore the full prior document.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Retyping a `source_fallback` item sets `parse_origin` to the new value `teacher_retyped` and keeps `review_required` (corrected 2026-10-20 by the orchestrator: `teacher_created` with `review_required` already means a teacher-made question with an unapproved AI key or an unmarked review, so it cannot carry the blocker).                                                                                                                                                                                 |
+| D2  | Choosing the stored kind on a `source_fallback` item is a real change that flips only the origin; for any other origin it stays a no-op.                                                                                                                                                                                                                                                                                                                                                                         |
+| D3  | Export blocks on the new reason `unreviewed_retyped_question`, keyed only on `review_required` with `teacher_retyped` (corrected 2026-10-20 from `teacher_created`); an AI suggestion or Ångra granskad on a teacher-made question does not add it, and the `llm_parsed`/`deterministic` review flags stay non-blocking (39-05-07 D1).                                                                                                                                                                           |
+| D4  | Only marking the question reviewed ends the block (39-05-07 D2); the fix action is the existing "Markera som granskad".                                                                                                                                                                                                                                                                                                                                                                                          |
+| D5  | Undo uses the existing full-document server undo step; no history code changes.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| D6  | Copy: list and export-panel row label "inte granskad" (what the teacher sees); the long map line "Frågan har fått en ny typ men är inte granskad. Kontrollera den och markera den som granskad." follows the existing pattern and is rendered nowhere, like the other long readiness lines (pre-existing gap, not widened here); the type-change notice is unchanged. Provisional until copy review.                                                                                                             |
+| D7  | An item that is unconverted only because of a missing picture keeps its current behaviour; out of scope.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| D8  | Skriptoteket is unreleased: no compatibility path for stored documents.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| D9  | A domain retype to Lucktext places the new gap at the end of the last question paragraph by the client's `withGapTextShape` rule (trailing empty paragraphs drop; a space separates text without trailing whitespace; an empty question gives the gap paragraph then an empty paragraph), so Lucktext opens as Lucktext with the gap tools, not as Kort svar. One shared case table is asserted by both the pytest and the Vitest suites (orchestrator 2026-10-20). Dropdown retype keeps its own gap paragraph. |

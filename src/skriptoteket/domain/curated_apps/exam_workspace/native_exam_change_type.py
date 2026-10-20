@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.errors import validation_error
 
@@ -67,6 +68,106 @@ def _options_from_accepted_values(values: tuple[str, ...]) -> tuple[NativeChoice
     )
 
 
+def _without_kept_links(
+    body: list[dict[str, object]] | tuple[dict[str, object], ...],
+    *,
+    gap_ids: set[str] | None = None,
+) -> list[dict[str, object]]:
+    """Strip kept-gap word links, keeping the visible words and their marks."""
+    cleaned_body: list[dict[str, object]] = []
+    for paragraph in body:
+        raw_segments = paragraph.get("segments")
+        if not isinstance(raw_segments, (list, tuple)):
+            cleaned_body.append(paragraph)
+            continue
+        segments: list[dict[str, object]] = []
+        for segment in raw_segments:
+            if (
+                isinstance(segment, dict)
+                and segment.get("kind") == "text"
+                and segment.get("kept_gap_id") is not None
+                and (gap_ids is None or segment.get("kept_gap_id") in gap_ids)
+            ):
+                segments.append({**segment, "kept_gap_id": None})
+            elif isinstance(segment, dict):
+                segments.append(segment)
+        cleaned_body.append({**paragraph, "segments": segments})
+    return cleaned_body
+
+
+def _kept_gaps_become_options(
+    kept_gaps: tuple[NativeGap, ...],
+) -> tuple[tuple[NativeGap, ...], set[str]]:
+    """Turn kept typed answers into kept dropdown options, like the live gaps.
+
+    Returns the transformed records and the ids of kept gaps without answers,
+    which a revert never keeps and which drop with their links.
+    """
+    transformed: list[NativeGap] = []
+    dropped_ids: set[str] = set()
+    for gap in kept_gaps:
+        if not gap.accepted_values:
+            dropped_ids.add(gap.gap_id)
+            continue
+        transformed.append(
+            NativeGap(
+                gap_id=gap.gap_id,
+                options=_options_from_accepted_values(gap.accepted_values),
+                correct_option_id="choice_001",
+            )
+        )
+    return tuple(transformed), dropped_ids
+
+
+def _rebuild_with_changed_item(
+    document: NativeExamDocument, *, item_id: str, changed: NativeExamItem
+) -> NativeExamDocument:
+    """Return the document with one item replaced, leaving the input untouched."""
+    rebuilt = document.model_dump()
+    rebuilt["items"] = [
+        changed.model_dump() if entry.item_id == item_id else entry.model_dump()
+        for entry in document.items
+    ]
+    return NativeExamDocument.model_validate(rebuilt)
+
+
+def _place_gap_at_end(body: tuple[NativeParagraph, ...], gap_id: str) -> list[dict[str, object]]:
+    """Append a gap at the end of the last question paragraph (D9).
+
+    Trailing paragraphs without segments hold no content, so they drop away
+    before the gap is placed; when nothing with content remains, the gap
+    paragraph first is followed by an empty paragraph. Otherwise the gap goes
+    last in the final paragraph, separated from the text by one unmarked
+    ``" "`` unless that paragraph already ends in whitespace or in a non-text
+    segment. Earlier paragraphs keep their shape; the paragraph keeps its
+    heading level. Mirrors the client's ``withGapTextShape``.
+    """
+    kept = len(body)
+    while kept > 0 and len(body[kept - 1].segments) == 0:
+        kept -= 1
+    gap_segment: dict[str, object] = {"kind": "gap", "gap_id": gap_id}
+    if kept == 0:
+        return [
+            {"segments": [gap_segment], "heading_level": None},
+            {"segments": [], "heading_level": None},
+        ]
+    last = body[kept - 1]
+    trailing = last.segments[-1] if last.segments else None
+    separator: list[dict[str, object]] = (
+        [{"kind": "text", "text": " ", "marks": ()}]
+        if isinstance(trailing, NativeTextSegment)
+        and trailing.text
+        and not trailing.text[-1].isspace()
+        else []
+    )
+    dumped = last.model_dump()
+    kept_segments = dumped["segments"]
+    return [
+        *(paragraph.model_dump() for paragraph in body[: kept - 1]),
+        dict(dumped, segments=[*kept_segments, *separator, gap_segment]),
+    ]
+
+
 def change_item_type(
     document: NativeExamDocument,
     *,
@@ -78,8 +179,20 @@ def change_item_type(
     if target_kind == NativeExamItemKind.ORDERING and document.parent_of(item_id) is not None:
         raise ordering_inside_parent_error(item_id)
     item = document.item_by_id(item_id)
+    fallback = item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     if item.kind == target_kind:
-        return NativeExamChangeTypeResult(document, ())
+        if not fallback:
+            return NativeExamChangeTypeResult(document, ())
+        changed_item = item.model_copy(
+            update={
+                "review": item.review.model_copy(
+                    update={"parse_origin": NativeParseOrigin.TEACHER_RETYPED}
+                )
+            }
+        )
+        return NativeExamChangeTypeResult(
+            _rebuild_with_changed_item(document, item_id=item_id, changed=changed_item), ()
+        )
     if target_kind == NativeExamItemKind.MATCHING and item.points is not None:
         points = Decimal(str(item.points))
         exponent = points.as_tuple().exponent
@@ -89,6 +202,11 @@ def change_item_type(
                 details={"reason": "matching_points_precision", "item_id": item_id},
             )
     data = item.model_dump()
+    if fallback:
+        data["review"] = {
+            **data["review"],
+            "parse_origin": NativeParseOrigin.TEACHER_RETYPED,
+        }
     dropped: list[str] = []
 
     def drop(name: str, present: bool) -> None:
@@ -120,13 +238,36 @@ def change_item_type(
     drop(
         "accepted_values",
         not values_become_options
-        and any(
-            g.accepted_values or g.automatic_values or g.excluded_automatic_values
-            for g in item.gaps
+        and (
+            any(
+                g.accepted_values or g.automatic_values or g.excluded_automatic_values
+                for g in item.gaps
+            )
+            or (
+                target_kind not in _GAP
+                and any(
+                    gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values
+                    for gap in item.kept_gaps
+                )
+            )
         ),
     )
-    drop("options", any(g.options for g in item.gaps))
-    drop("correct_option_id", any(g.correct_option_id for g in item.gaps))
+    drop(
+        "options",
+        any(g.options for g in item.gaps)
+        or (
+            target_kind is not NativeExamItemKind.INLINE_CHOICE
+            and any(gap.options for gap in item.kept_gaps)
+        ),
+    )
+    drop(
+        "correct_option_id",
+        any(g.correct_option_id for g in item.gaps)
+        or (
+            target_kind is not NativeExamItemKind.INLINE_CHOICE
+            and any(gap.correct_option_id for gap in item.kept_gaps)
+        ),
+    )
     for name in ("match_left", "match_right", "criteria"):
         drop(name, bool(getattr(item, name)))
         data[name] = ()
@@ -197,10 +338,13 @@ def change_item_type(
                 )
             )
         if not keep_gaps:
-            data["body"] = [
-                *data["body"],
-                {"segments": [{"kind": "gap", "gap_id": "gap_001"}], "heading_level": None},
-            ]
+            if target_kind == NativeExamItemKind.GAP_FILL:
+                data["body"] = _place_gap_at_end(item.body, "gap_001")
+            else:
+                data["body"] = [
+                    *data["body"],
+                    {"segments": [{"kind": "gap", "gap_id": "gap_001"}], "heading_level": None},
+                ]
     elif target_kind == NativeExamItemKind.MATCHING:
         # A grid needs two columns, but only one correct pair. Empty labels block export.
         data["match_left"] = [{"left_id": "left_001", "body": _empty_body()}]
@@ -214,6 +358,17 @@ def change_item_type(
                 match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
             )
     data["answer_key"] = key
+    if values_become_options:
+        transformed_kept_gaps, dropped_kept_ids = _kept_gaps_become_options(item.kept_gaps)
+        data["kept_gaps"] = transformed_kept_gaps
+        if dropped_kept_ids:
+            data["body"] = _without_kept_links(data["body"], gap_ids=dropped_kept_ids)
+    elif item.kept_gaps and target_kind is not NativeExamItemKind.INLINE_CHOICE:
+        # Kept answers survive only as kept dropdown options above: every other
+        # target drops the hidden records while the words stay as plain text
+        # with their marks. Dropdown options never become typed answers.
+        data["kept_gaps"] = ()
+        data["body"] = _without_kept_links(data["body"])
     if item.kind in _GAP and not keep_gaps:
         # Remove interaction markers, not surrounding teacher text or its formatting.
         body = []
@@ -223,9 +378,7 @@ def change_item_type(
                 body.append(dict(paragraph, segments=segments))
         data["body"] = body or _empty_body()
     changed = NativeExamItem.model_validate(data)
-    rebuilt = document.model_dump()
-    rebuilt["items"] = [
-        changed.model_dump() if entry.item_id == item_id else entry.model_dump()
-        for entry in document.items
-    ]
-    return NativeExamChangeTypeResult(NativeExamDocument.model_validate(rebuilt), tuple(dropped))
+    return NativeExamChangeTypeResult(
+        _rebuild_with_changed_item(document, item_id=item_id, changed=changed),
+        tuple(dropped),
+    )

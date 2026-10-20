@@ -73,6 +73,7 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   partial_gap_key: "lucka utan svar",
   gap_without_correct_option: "rullista utan rätt svar",
   too_few_gap_options: "rullista med färre än två alternativ",
+  unreviewed_retyped_question: "inte granskad",
   unbuilt_question: "kunde inte konverteras",
 };
 
