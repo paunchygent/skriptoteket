@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f10aca4350249c401720d27b8c12b58b719890d527dc7c6a5cef0446afa39ad8",
+  "source_set_digest": "4276ae60001c31ec70ad7aaf89042f2d39ea1682e82dbb9ad21b6d9e06b8fd62",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2482,7 +2482,7 @@
       "type": "story",
       "title": "Bring every Skriptoteket screen onto the shared visual direction",
       "path": "docs/backlog/stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2495,7 +2495,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-20: all ten tasks TASK-SKRIPT-40-03-01 to TASK-SKRIPT-40-03-10 are done, each closed on 2026-10-17 with its recorded reviewer approval and closeout evidence in its own frontmatter."
       }
     },
     {
@@ -6849,7 +6853,7 @@
       "type": "task",
       "title": "Teachers see a printed-total difference in one line and fix the exam text or the questions",
       "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6860,7 +6864,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-20 after main 0d928d3a (Hemma pre-push suite passed), independent review 6f95a153 (F1 repaired at e7394eb0 and cleared on rereview; F2-F6 repaired and admitted on focused proof) and the Mac staging walks: cf9547fa passed T4, T6, T7, T9 and T11 with one defect, and the re-walk at main 6f1c5195 passed with that defect fixed (Mac .artifacts/staging-walk-cf9547fa and staging-walk-6f1c5195 walk-record.md)."
       }
     },
     {

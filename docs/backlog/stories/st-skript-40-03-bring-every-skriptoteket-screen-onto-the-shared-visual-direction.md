@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-12'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the story on 2026-10-20: all ten tasks TASK-SKRIPT-40-03-01 to TASK-SKRIPT-40-03-10 are done, each closed on 2026-10-17 with its recorded reviewer approval and closeout evidence in its own frontmatter.'
 epic: EPIC-SKRIPT-40
 acceptance_criteria:
   - Every Skriptoteket screen except the app shell and the exam workspace keeps its layout and renders panels, cards and controls with the shared huleedu-ui-design visual authority, tokens, action buttons and components, without hard offset shadows

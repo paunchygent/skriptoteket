@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-20 after main 0d928d3a (Hemma pre-push suite passed), independent review 6f95a153 (F1 repaired at e7394eb0 and cleared on rereview; F2-F6 repaired and admitted on focused proof) and the Mac staging walks: cf9547fa passed T4, T6, T7, T9 and T11 with one defect, and the re-walk at main 6f1c5195 passed with that defect fixed (Mac .artifacts/staging-walk-cf9547fa and staging-walk-6f1c5195 walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - A printed-total difference reads as one line, "Provtexten säger N p, frågorna ger M p.", with two glyph-only actions, "Godta frågornas summa till M p" and "Visa frågorna"; the line goes when the totals agree; the Använd actions are gone
@@ -116,4 +120,4 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 ### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
 
 - Merged to main as `0d928d3a` (2026-10-19); the "Next" line above is resolved. Staging walk at `cf9547fa` passed T4, T6, T7, T9 and T11 with one defect (an undone Godta was not persisted); the re-walk at main `6f1c5195` passed and records that defect as fixed.
-- Owed: closeout.
+- Closed by the user on 2026-10-20 (see `closeout_review`).

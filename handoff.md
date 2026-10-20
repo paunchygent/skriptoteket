@@ -65,7 +65,6 @@
   explorers Haiku. Exam.net has no QTI export; QTI is the Exam.net route and the print
   PDF renders the DOCX house template (user 2026-10-18).
   - On main, closeout owed (user or orchestrator closes):
-    - 40-04-10: staging walk passed (6f1c5195).
     - 40-04-12: K11 passed; K7 "/" check owed, shared with 39-04-20 (f7eeada5).
     - 40-01-04: review owed.
     - 40-04-09: F1 rereview and the R14 Exam.net check (REP-0048) owed.
@@ -75,7 +74,7 @@
     - 39-07-03: suites and walk not recorded.
     - 39-01-02: review of the 2026-10-18 commits owed.
     - 40-02-01: tranche 3 review, 13 exam-held wrappers, `lucide-vue-next` removal.
-  - User closure owed: ST-SKRIPT-40-03 (all ten tasks `done`).
+  - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 41-02-03: removes the old guest DigiExam converter (user 2026-10-20).
     - 39-06-09: waits on 39-06-08.

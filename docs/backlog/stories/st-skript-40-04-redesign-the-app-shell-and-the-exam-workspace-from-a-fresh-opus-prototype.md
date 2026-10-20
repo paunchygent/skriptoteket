@@ -149,8 +149,8 @@ their own tasks own.
     gaps are made by clicking a word (done).
 12. TASK-SKRIPT-40-04-09: the gap tool and the toolbar's shortcut names (in
     progress: on main, F1 rereview, R14 Exam.net check and closeout owed).
-13. TASK-SKRIPT-40-04-10: a printed-total difference shows in one line (in
-    progress: on main, staging walk passed, closeout owed).
+13. TASK-SKRIPT-40-04-10: a printed-total difference shows in one line (done
+    2026-10-20: main 0d928d3a, staging walk passed, user closure).
 14. TASK-SKRIPT-40-04-11: one compact three-tier control system (canceled;
     replaced by TASK-SKRIPT-40-04-17).
 15. TASK-SKRIPT-40-04-12: printed PDF exams keep each question's text and its

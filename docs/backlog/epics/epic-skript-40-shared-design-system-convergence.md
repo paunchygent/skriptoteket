@@ -50,10 +50,10 @@ call-site migration and removal of `lucide-vue-next`.
 
 | Story           | Slice                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ST-SKRIPT-40-01 | In progress: tokens, theme and logo adopted through sync (TASK-SKRIPT-40-01-01 done 2026-10-12). Remaining: dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer.                                                                                                                                                                                                     |
-| ST-SKRIPT-40-02 | Expanded shared meaning vocabulary, complete icon migration, and old Lucide dependency removal.                                                                                                                                                                                                                                                                                                                         |
-| ST-SKRIPT-40-03 | Proposed (user decision 2026-10-12): every Skriptoteket screen on the shared visual direction: design rule 045 replaced, panels and surfaces off hard offset shadows, and one token pass per curated app. Every screen outside the app shell and the exam workspace keeps its layout; Sol 6.1 pairs refresh the areas in parallel right after TASK-SKRIPT-40-01-02 and TASK-SKRIPT-40-01-03 (user 2026-10-17, G9, G11). |
-| ST-SKRIPT-40-04 | Proposed (user 2026-10-17, G1): an Opus prototype of the app shell and the exam workspace, approved by the user, then built by two Opus builders in parallel; replaces TASK-SKRIPT-39-04-05.                                                                                                                                                                                                                            |
+| ST-SKRIPT-40-01 | Active: TASK-SKRIPT-40-01-01 to -03 done (tokens, theme, logo, shared Vue subtree, toast adapter, action buttons); TASK-SKRIPT-40-01-04 (huleedu-integrated 0.1.34) on main, review owed. |
+| ST-SKRIPT-40-02 | Active: TASK-SKRIPT-40-02-01 tranches 1-3 on main; the 13 exam-held wrappers and the `lucide-vue-next` removal remain. |
+| ST-SKRIPT-40-03 | Done 2026-10-20 (user closure): every screen outside the app shell and the exam workspace is on the shared visual direction through TASK-SKRIPT-40-03-01 to TASK-SKRIPT-40-03-10; the .codex/rules facts live in their owning skills. |
+| ST-SKRIPT-40-04 | Active: the prototype is approved and the app shell and exam workspace are rebuilt (40-04-01 to -03 done); follow-up workspace tasks continue in the story's task list. |
 
 ## Verification
 
@@ -62,6 +62,12 @@ call-site migration and removal of `lucide-vue-next`.
 - No local fork of an adopted export or `lucide-vue-next` dependency remains. Explicitly classified local icons may remain when no shared meaning fits.
 - Each story passes frontend typecheck, unit tests, build and shared design-system validation, plus the relevant Hemma staging walks using the HuleEdu browser-session helpers/preflight.
 - HuleEdu is synced to each required release with design-system validation and frontend checks passing. Shared SystemMessage defaults and rich-slot rendering remain unchanged.
+
+## Epic Verification Plan
+
+| Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
+| --- | --- | --- | --- | --- |
+| Every Skriptoteket screen on the shared visual direction | verified | ST-SKRIPT-40-03 closeout (user closure 2026-10-20); TASK-SKRIPT-40-03-01 to -10 closeout evidence | ST-SKRIPT-40-03 | None |
 
 ## Decided Contract Terms
 
