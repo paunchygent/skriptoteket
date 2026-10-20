@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: proposed
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 06-17-02 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 749a17aa (root 01a1586c evidence/reviews/TASK-SKRIPT-06-17-02-613fb45e-review.md) ended changes_requested with mediums R1-R3 only, repaired at c5c69bbb and admitted by the parent on focused proof. test-migrations 118 of 118 passed; pre-push tests 12 of 12. Merged to main as 3d3f867a; the new pre-push stage ran on that first real push and passed 118 in 50.89 s (Mac report).'
 task_kind: story
 acceptance_criteria:
   - The 13 docker migration tests that failed on f574d453 pass, each pinned to its own revision from an empty database, and each repaired pattern fails against a deliberately broken migration.
