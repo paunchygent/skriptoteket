@@ -23,6 +23,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocumentOrigin,
     NativeExamHeader,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import ExamCourses, User, UserProfile
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
@@ -49,6 +52,7 @@ def _exam(*, owner: User, course: str | None, title: str, age: int) -> SavedExam
         title=title,
         saved_at=_NOW - timedelta(days=age),
         head_vault_file_id=uuid4(),
+        document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
         name=f"{title}.provdokument.zip",
         version=3,
     )

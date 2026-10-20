@@ -18,6 +18,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+    OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -57,6 +61,7 @@ async def test_upsert_joins_live_filename_isolates_owner_and_tracks_trash_restor
         title="Teacher title",
         saved_at=_NOW,
         head_vault_file_id=file.id,
+        document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
     )
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
         vault = PostgreSQLUserVaultFileRepository(session)
@@ -146,6 +151,7 @@ async def test_join_does_not_expose_cross_owner_wrong_lineage_or_export_heads(
                     title=wrong,
                     saved_at=_NOW,
                     head_vault_file_id=file.id,
+                    document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
                 )
             )
         assert await index.list_for_owner(owner_user_id=owner.id) == []
@@ -219,3 +225,82 @@ async def test_failed_outer_save_transaction_restores_index_vault_and_file_bytes
         assert saved.head_vault_file_id == file.id
         assert saved.saved_at == _NOW
         assert await storage.read_file(user_id=actor.id, file_id=file.id) == original
+
+
+async def test_readable_and_unreadable_listings_split_by_format_version(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    owner = await create_owner(session_factory)
+    readable_lineage, older_lineage, zero_lineage, trashed_lineage = (
+        uuid4(),
+        uuid4(),
+        uuid4(),
+        uuid4(),
+    )
+    readable_file = _exam_file(
+        owner_id=owner.id, lineage_id=readable_lineage, version=1, created_at=_NOW
+    )
+    older_file = _exam_file(owner_id=owner.id, lineage_id=older_lineage, version=1, created_at=_NOW)
+    zero_file = _exam_file(owner_id=owner.id, lineage_id=zero_lineage, version=1, created_at=_NOW)
+    trashed_file = _exam_file(
+        owner_id=owner.id,
+        lineage_id=trashed_lineage,
+        version=1,
+        created_at=_NOW,
+        deleted_at=_NOW,
+    )
+    old_version = OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION - 1
+    assert old_version < OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION
+    entries = [
+        ExamIndexEntry(
+            owner_user_id=owner.id,
+            lineage_id=readable_lineage,
+            course_key=None,
+            title="Readable",
+            saved_at=_NOW,
+            head_vault_file_id=readable_file.id,
+            document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+        ),
+        ExamIndexEntry(
+            owner_user_id=owner.id,
+            lineage_id=older_lineage,
+            course_key=None,
+            title="Older",
+            saved_at=_NOW + timedelta(days=1),
+            head_vault_file_id=older_file.id,
+            document_format_version=old_version,
+        ),
+        ExamIndexEntry(
+            owner_user_id=owner.id,
+            lineage_id=zero_lineage,
+            course_key=None,
+            title="Zero",
+            saved_at=_NOW - timedelta(days=1),
+            head_vault_file_id=zero_file.id,
+            document_format_version=0,
+        ),
+        ExamIndexEntry(
+            owner_user_id=owner.id,
+            lineage_id=trashed_lineage,
+            course_key=None,
+            title="Trashed",
+            saved_at=_NOW + timedelta(days=2),
+            head_vault_file_id=trashed_file.id,
+            document_format_version=old_version,
+        ),
+    ]
+    async with session_factory() as session, SQLAlchemyUnitOfWork(session):
+        vault = PostgreSQLUserVaultFileRepository(session)
+        for file in (readable_file, older_file, zero_file, trashed_file):
+            await vault.create(file=file)
+        index = PostgreSQLExamIndexRepository(session)
+        for entry in entries:
+            await index.upsert(entry=entry)
+    async with session_factory() as session:
+        index = PostgreSQLExamIndexRepository(session)
+        readable = await index.list_for_owner(owner_user_id=owner.id)
+        assert [exam.title for exam in readable] == ["Readable"]
+        unreadable = await index.list_unreadable_for_owner(owner_user_id=owner.id)
+        assert [exam.title for exam in unreadable] == ["Older", "Zero"]
+        assert await index.get(owner_user_id=owner.id, lineage_id=older_lineage) is not None
+        assert await index.get(owner_user_id=owner.id, lineage_id=zero_lineage) is not None

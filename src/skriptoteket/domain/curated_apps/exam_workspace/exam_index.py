@@ -18,6 +18,7 @@ class ExamIndexEntry(BaseModel):
     title: str
     saved_at: datetime
     head_vault_file_id: UUID
+    document_format_version: int
 
 
 class SavedExam(ExamIndexEntry):

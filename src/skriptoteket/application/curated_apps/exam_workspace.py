@@ -116,6 +116,26 @@ class ExamWorkspaceDocumentListResponse(BaseModel):
     groups: tuple[ExamWorkspaceDocumentGroup, ...]
 
 
+class ExamWorkspaceUnreadableDocument(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    lineage_id: UUID
+    vault_file_id: UUID
+    name: str
+    title: str
+    saved_at: datetime
+
+
+class ExamWorkspaceUnreadableDocumentListResponse(BaseModel):
+    """Saved exams in a format the app cannot read; the teacher can download or remove them
+    (ADR-SKRIPT-0093).
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    documents: tuple[ExamWorkspaceUnreadableDocument, ...]
+
+
 class ExamCourseCatalogResponse(BaseModel):
     """The committed course catalog, loaded once per page and searched in the browser."""
 

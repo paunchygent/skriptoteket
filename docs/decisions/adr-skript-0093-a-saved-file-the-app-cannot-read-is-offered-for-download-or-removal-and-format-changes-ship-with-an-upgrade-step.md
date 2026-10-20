@@ -1,19 +1,18 @@
 ---
 type: adr
 id: ADR-SKRIPT-0093
-title: A saved file the app cannot read is offered for download or removal, and format
-  changes ship with an upgrade step
+title: A saved file the app cannot read is offered for download or removal, and format changes ship with an upgrade step
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-20'
 status: accepted
 deciders:
-- user
+  - user
 links:
   governing:
-  - TASK-SKRIPT-41-02-06
+    - TASK-SKRIPT-41-02-06
 ---
 
 ## Context

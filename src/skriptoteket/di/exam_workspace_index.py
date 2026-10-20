@@ -7,12 +7,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
+    ListUnreadableExamWorkspaceDocumentsHandler,
 )
 from skriptoteket.infrastructure.repositories.exam_index_repository import (
     PostgreSQLExamIndexRepository,
 )
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
-from skriptoteket.protocols.exam_workspace import ListExamWorkspaceDocumentsHandlerProtocol
+from skriptoteket.protocols.exam_workspace import (
+    ListExamWorkspaceDocumentsHandlerProtocol,
+    ListUnreadableExamWorkspaceDocumentsHandlerProtocol,
+)
 from skriptoteket.protocols.identity import ProfileRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -33,3 +37,12 @@ class ExamWorkspaceIndexProvider(Provider):
     ) -> ListExamWorkspaceDocumentsHandlerProtocol:
         """Provide the joined saved-exam index list handler."""
         return ListExamWorkspaceDocumentsHandler(index=index, profiles=profiles, uow=uow)
+
+    @provide(scope=Scope.REQUEST)
+    def list_unreadable_handler(
+        self,
+        index: ExamIndexRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> ListUnreadableExamWorkspaceDocumentsHandlerProtocol:
+        """Provide the unreadable saved-exam list handler."""
+        return ListUnreadableExamWorkspaceDocumentsHandler(index=index, uow=uow)

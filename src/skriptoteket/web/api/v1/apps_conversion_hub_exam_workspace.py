@@ -24,6 +24,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
     ExamWorkspacePrintPreviewResponse,
+    ExamWorkspaceUnreadableDocumentListResponse,
     RetryExamWorkspaceItemRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
@@ -62,6 +63,7 @@ from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceQtiDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    ListUnreadableExamWorkspaceDocumentsHandlerProtocol,
     PreviewExamWorkspacePrintHandlerProtocol,
     RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
@@ -151,6 +153,19 @@ async def list_exam_workspace_documents(
     handler: FromDishka[ListExamWorkspaceDocumentsHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentListResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user)
+
+
+@router.get(
+    "/exam-workspace/unreadable-documents",
+    response_model=ExamWorkspaceUnreadableDocumentListResponse,
+)
+async def list_unreadable_exam_workspace_documents(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ListUnreadableExamWorkspaceDocumentsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceUnreadableDocumentListResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user)
 

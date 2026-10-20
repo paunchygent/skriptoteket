@@ -6,6 +6,8 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentGroup,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentSummary,
+    ExamWorkspaceUnreadableDocument,
+    ExamWorkspaceUnreadableDocumentListResponse,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
@@ -83,4 +85,34 @@ class ListExamWorkspaceDocumentsHandler:
             ordering="course",
             groups=groups,
             documents=tuple(document for group in groups for document in group.documents),
+        )
+
+
+class ListUnreadableExamWorkspaceDocumentsHandler:
+    """List the actor's saved exams in a format the app cannot read."""
+
+    def __init__(
+        self,
+        *,
+        index: ExamIndexRepositoryProtocol,
+        uow: UnitOfWorkProtocol,
+    ) -> None:
+        self._index = index
+        self._uow = uow
+
+    async def handle(self, *, actor: User) -> ExamWorkspaceUnreadableDocumentListResponse:
+        async with self._uow:
+            exams = await self._index.list_unreadable_for_owner(owner_user_id=actor.id)
+        exams.sort(key=lambda exam: (-exam.saved_at.timestamp(), str(exam.lineage_id)))
+        return ExamWorkspaceUnreadableDocumentListResponse(
+            documents=tuple(
+                ExamWorkspaceUnreadableDocument(
+                    lineage_id=exam.lineage_id,
+                    vault_file_id=exam.head_vault_file_id,
+                    name=exam.name,
+                    title=exam.title,
+                    saved_at=exam.saved_at,
+                )
+                for exam in exams
+            )
         )

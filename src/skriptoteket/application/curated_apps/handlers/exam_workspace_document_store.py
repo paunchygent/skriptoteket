@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
@@ -212,6 +215,7 @@ class ExamWorkspaceDocumentStore:
                             title=document.title,
                             saved_at=now,
                             head_vault_file_id=vault_file.id,
+                            document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
                         )
                     )
                 self._rollback_frames[-1].append((actor.id, file_id, previous_content))
@@ -285,6 +289,7 @@ class ExamWorkspaceDocumentStore:
                     title=document.title,
                     saved_at=now,
                     head_vault_file_id=vault_file.id,
+                    document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
                 )
             )
         self._rollback_frames[-1].append((actor.id, file_id, previous_content))

@@ -8,6 +8,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry, SavedExam
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+    OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.infrastructure.db.models.exam_index import ExamIndexModel
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
@@ -16,8 +20,10 @@ from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 def _joined_query(
     *,
     owner_user_id: UUID,
-) -> Select[tuple[UUID, UUID, str | None, str, datetime, UUID, str, int | None]]:
-    return (
+    readable: bool | None,
+) -> Select[tuple[UUID, UUID, str | None, str, datetime, UUID, int, str, int | None]]:
+    """Live saved exams; `readable` keeps the readable ones, the others, or all (None)."""
+    statement = (
         select(
             ExamIndexModel.owner_user_id,
             ExamIndexModel.lineage_id,
@@ -25,6 +31,7 @@ def _joined_query(
             ExamIndexModel.title,
             ExamIndexModel.saved_at,
             ExamIndexModel.head_vault_file_id,
+            ExamIndexModel.document_format_version,
             UserVaultFileModel.name,
             UserVaultFileModel.document_version.label("version"),
         )
@@ -38,6 +45,20 @@ def _joined_query(
         )
         .order_by(ExamIndexModel.saved_at.desc(), ExamIndexModel.lineage_id)
     )
+    if readable is True:
+        return statement.where(
+            ExamIndexModel.document_format_version >= OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
+            ExamIndexModel.document_format_version <= CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+        )
+    if readable is False:
+        return statement.where(
+            or_(
+                ExamIndexModel.document_format_version
+                < OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION,
+                ExamIndexModel.document_format_version > CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+            )
+        )
+    return statement
 
 
 class PostgreSQLExamIndexRepository(ExamIndexRepositoryProtocol):
@@ -51,18 +72,32 @@ class PostgreSQLExamIndexRepository(ExamIndexRepositoryProtocol):
                 index_elements=["owner_user_id", "lineage_id"],
                 set_={
                     key: getattr(statement.excluded, key)
-                    for key in ("course_key", "title", "saved_at", "head_vault_file_id")
+                    for key in (
+                        "course_key",
+                        "title",
+                        "saved_at",
+                        "head_vault_file_id",
+                        "document_format_version",
+                    )
                 },
             )
         )
 
     async def list_for_owner(self, *, owner_user_id: UUID) -> list[SavedExam]:
-        rows = await self._session.execute(_joined_query(owner_user_id=owner_user_id))
+        rows = await self._session.execute(
+            _joined_query(owner_user_id=owner_user_id, readable=True)
+        )
+        return [SavedExam.model_validate(row) for row in rows.mappings()]
+
+    async def list_unreadable_for_owner(self, *, owner_user_id: UUID) -> list[SavedExam]:
+        rows = await self._session.execute(
+            _joined_query(owner_user_id=owner_user_id, readable=False)
+        )
         return [SavedExam.model_validate(row) for row in rows.mappings()]
 
     async def get(self, *, owner_user_id: UUID, lineage_id: UUID) -> SavedExam | None:
         result = await self._session.execute(
-            _joined_query(owner_user_id=owner_user_id).where(
+            _joined_query(owner_user_id=owner_user_id, readable=None).where(
                 ExamIndexModel.lineage_id == lineage_id
             )
         )
