@@ -40,9 +40,13 @@ backlog_document_profile: contract-derived
   D16-D19: core lock, owner and cursor-owned records (`4cba6dac`); controller removal, stale
   retry and success cleanup after retirement (`d0e03abb`). 96 focused tests green;
   fe-type-check, fe-lint and fe-build green (`evidence/u7a/`, `evidence/u7b/`).
-- Rereview ba74ef97 at `0b8bef2e`: R1-R4 repaired; new R5 (high), R6, R7 (medium) admitted.
-  Repair per D21-D23 in units U8a (R5) then U8b (R6, R7).
-- Next: U8a, U8b, then ba74ef97 rereview, then the staging walk of the rejected-draft notice.
+- Rereview ba74ef97 at `0b8bef2e`: R1-R4 repaired; R5 (`f780f899`, D21) and R6/R7
+  (`b518e6ad`, D22, D23) repaired. Rereview 2 at `b518e6ad`: R5, R6 closed; medium R7 (held
+  draft read, `3b0be5f4`) and R8 (host routes before mount, `dd0b71cf`) repaired, admitted on
+  focused proof: 15 files, 143 tests green; fe-type-check, fe-lint, fe-build green
+  (`evidence/u9a/`).
+- Next: domain suite on the orchestrator's go, then the staging walk of the rejected-draft
+  notice.
 - Follow-up D24: a server claim keyed on `draft_id` alone, so a lost answer cannot lead to a
   second teacher's import.
 - Work orders: `work/orders/` in the retained root. Explorer maps: `discovery/explorer/`.
