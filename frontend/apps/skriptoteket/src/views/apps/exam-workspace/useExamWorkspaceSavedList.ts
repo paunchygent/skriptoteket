@@ -21,7 +21,7 @@ import { useToast } from "../../../composables/useToast";
 import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 
-const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
+export const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
 
 type SummaryReconcile = (summary: ExamWorkspaceDocumentSummary) => ExamWorkspaceDocumentSummary;
 

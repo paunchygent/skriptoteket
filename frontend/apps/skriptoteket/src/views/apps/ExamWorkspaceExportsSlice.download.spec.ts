@@ -56,8 +56,10 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
+const unreadable = vi.hoisted(() => ({ listUnreadableExamWorkspaceDocuments: vi.fn() }));
 
 vi.mock("../../utils/browserDownload", () => downloadMocks);
+vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadable);
 
 /** The server filename and the inline created copy per offered format. */
 const DOWNLOAD_CASES: Record<ExamWorkspaceExportTarget, { created: string; filename: string }> = {
@@ -72,6 +74,8 @@ const DOWNLOAD_CASES: Record<ExamWorkspaceExportTarget, { created: string; filen
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
+  unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
 });
 
 afterEach(unmountWrappers);

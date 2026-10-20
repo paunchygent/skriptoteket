@@ -1,6 +1,7 @@
 import { computed, ref, watch } from "vue";
 
 import { apiFetch, apiGet, isApiError } from "../../api/client";
+import { vaultFileDeletePath } from "../../api/vaultFilePaths";
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
 
@@ -144,10 +145,9 @@ export function useVaultFiles(options: UseVaultFilesOptions = {}) {
   }
 
   async function deleteFile(fileId: string): Promise<VaultFileInfo> {
-    const result = await apiFetch<DeleteVaultFileResult>(
-      `/api/v1/vault/files/${encodeURIComponent(fileId)}/delete`,
-      { method: "POST" },
-    );
+    const result = await apiFetch<DeleteVaultFileResult>(vaultFileDeletePath(fileId), {
+      method: "POST",
+    });
     return result.file;
   }
 

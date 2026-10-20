@@ -29,9 +29,13 @@ const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
 }));
 const rename = vi.hoisted(() => vi.fn());
+const unreadable = vi.hoisted(() => ({
+  listUnreadableExamWorkspaceDocuments: vi.fn(),
+}));
 vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", () => ({ ...api }));
 vi.mock("../../api/vault", () => ({ renameVaultFile: rename }));
+vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadable);
 const wrappers: ViewWrapper[] = [];
 
 function response() {
@@ -71,6 +75,8 @@ function saveState(wrapper: ViewWrapper): string {
 beforeEach(() => {
   for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
   rename.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   arrangeStepHistory(api);
   api.getExamCourseCatalog.mockResolvedValue({ courses: [] });
   api.getExamWorkspaceDocument.mockResolvedValue(response());

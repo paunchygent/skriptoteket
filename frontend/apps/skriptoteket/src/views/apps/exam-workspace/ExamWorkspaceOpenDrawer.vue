@@ -25,6 +25,7 @@ import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAcces
 import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
+import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
@@ -84,6 +85,8 @@ const groups = computed(() =>
 const openBlocked = computed(() => props.isBusy || props.isDirty);
 /** A blocked Öppna click answers at once, through the same toast channel an open failure uses. */
 const OPEN_BLOCKED_COPY = "Vänta tills ändringarna har sparats.";
+/** Unreadable saved exams reported by the rows below, so the empty hint hides when they exist. */
+const unreadableCount = ref(0);
 const toast = useToast();
 
 /** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
@@ -339,7 +342,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       </span>
     </h3>
     <p
-      v-if="groups.length === 0"
+      v-if="groups.length === 0 && unreadableCount === 0"
       class="xw-hint"
     >
       Inga sparade prov ännu.
@@ -417,6 +420,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         </div>
       </div>
     </div>
+    <ExamWorkspaceUnreadableFiles @count="unreadableCount = $event" />
   </section>
 </template>
 

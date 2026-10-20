@@ -57,8 +57,10 @@ vi.mock("../../../api/examWorkspace", async () => ({
 }));
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
+const unreadable = vi.hoisted(() => ({ listUnreadableExamWorkspaceDocuments: vi.fn() }));
 
 vi.mock("../../../utils/browserDownload", () => downloadMocks);
+vi.mock("../../../api/examWorkspaceUnreadableFiles", () => unreadable);
 
 const TITLE_ROW = "Ge provet en titel med bokstäver eller siffror";
 const TITLE_REFUSAL = {
@@ -97,6 +99,8 @@ function judgeAutosaves(): void {
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
+  unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   judgeAutosaves();
 });
 

@@ -1,6 +1,7 @@
 import { ref, type Ref } from "vue";
 
 import { apiFetchBlob, isApiError } from "../../api/client";
+import { vaultFileDownloadPath } from "../../api/vaultFilePaths";
 import type { components } from "../../api/openapi";
 import type { useVaultFiles } from "../../composables/vault/useVaultFiles";
 import { useToastStore } from "../../stores/toast";
@@ -137,7 +138,7 @@ export function useVaultFileActions({
   }
 
   function downloadHref(fileId: string): string {
-    return `/api/v1/vault/files/${encodeURIComponent(fileId)}/download`;
+    return vaultFileDownloadPath(fileId);
   }
 
   return {
