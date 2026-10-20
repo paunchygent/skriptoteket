@@ -33,12 +33,13 @@ def test_migration_0003_script_suggestions_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0002_catalog_taxonomy")
+    command.upgrade(alembic_cfg, "0003_script_suggestions")
+    command.upgrade(alembic_cfg, "0003_script_suggestions")
 
     assert asyncio.run(_script_suggestion_count(database_url=database_url)) == 0
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0002_catalog_taxonomy")
+    command.upgrade(alembic_cfg, "0003_script_suggestions")
 
     assert asyncio.run(_script_suggestion_count(database_url=database_url)) == 0

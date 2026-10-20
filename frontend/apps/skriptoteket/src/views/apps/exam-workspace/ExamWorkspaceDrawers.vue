@@ -70,6 +70,7 @@ const props = withDefaults(
 defineEmits<{
   close: [];
   "import-pick-consumed": [];
+  open: [lineageId: string];
   run: [target: ExamWorkspaceExportTarget, destination: "download" | "files"];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
@@ -92,7 +93,6 @@ const {
   isDirty,
   listOrdering,
   notes,
-  openDocument,
   renameFailure,
   renameFile,
   retryConversionStatus,
@@ -109,6 +109,12 @@ const currentExports = computed(() =>
   EXAM_WORKSPACE_EXPORT_FORMATS.filter(
     (format) => props.exports.savedExports.value[format.target] !== undefined,
   ).map((format) => format.name),
+);
+/** The one save status for the Öppna drawer: its state and, while unsaved, its own reason. */
+const openSaveStatus = computed(() => props.editing.history.saveStatus.value);
+const openSaveState = computed(() => openSaveStatus.value.state);
+const openSaveDetail = computed(() =>
+  openSaveStatus.value.state === "unsaved" ? openSaveStatus.value.detail : null,
 );
 </script>
 
@@ -133,6 +139,8 @@ const currentExports = computed(() =>
       :import-blocked="importBlocked"
       :is-busy="isBusy"
       :is-dirty="isDirty"
+      :save-state="openSaveState"
+      :save-detail="openSaveDetail"
       :source-file-error="sourceFileError"
       :conversion-message="conversionMessage"
       :conversion-error="conversionError"
@@ -143,7 +151,7 @@ const currentExports = computed(() =>
       :import-pick-pending="importPickPending"
       @select-file="handleSelectedFile"
       @drop-files="handleDroppedFiles"
-      @open="openDocument"
+      @open="$emit('open', $event)"
       @set-ordering="$emit('set-ordering', $event)"
       @retry-conversion="retryConversionStatus"
       @import-pick-consumed="$emit('import-pick-consumed')"

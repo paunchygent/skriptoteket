@@ -23,10 +23,13 @@ import {
   currentDocument,
   currentItem,
   deferred,
+  type DocumentState,
   openingOf,
   openMatchingDocument as openWith,
+  openMatchingDocumentWithFence as openWithFence,
   savedResponse,
 } from "./useExamWorkspaceDocument.specSupport";
+import type { SyncFence } from "./examWorkspaceSyncFence";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -54,6 +57,29 @@ beforeEach(() => {
 
 function openMatchingDocument(item?: NativeExamItem) {
   return openWith(apiMocks.getExamWorkspaceDocument, item);
+}
+
+/**
+ * Drive Spara som at document level the way the replacement coordinator
+ * does: start the copy candidate and install a settled response, so arrivals
+ * that land mid-copy replay onto it. A rejected copy leaves the working copy
+ * as the failed Spara som does.
+ */
+async function startCopyInstall(state: DocumentState, fence: SyncFence): Promise<void> {
+  const lineageId = state.summary.value?.lineage_id;
+  if (lineageId === undefined || lineageId === null) {
+    throw new Error("expected an open exam");
+  }
+  const posting = state.beginCopy(lineageId, "Kopia");
+  if (posting === null) {
+    throw new Error("expected the copy to start");
+  }
+  try {
+    const response = await posting;
+    state.installReplacementDocument(fence.begin(), response);
+  } catch {
+    return;
+  }
 }
 
 function matchingSuggestion(pairs: Array<[string, string]>): NativeAnswerKeySuggestion {
@@ -91,12 +117,12 @@ function sentDocument() {
 describe("arriving suggestions during Spara som", () => {
 
   it("does not downgrade a source key equal to the arriving suggestion when Spara som fails", async () => {
-    const state = await openMatchingDocument();
+    const { fence, state } = await openWithFence(apiMocks.getExamWorkspaceDocument);
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = startCopyInstall(state, fence);
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     pendingSave.reject(new Error("network down"));
     await copying;
@@ -108,12 +134,12 @@ describe("arriving suggestions during Spara som", () => {
   });
 
   it("A4/A5: an arrival that changes nothing on the returned revision leaves it clean", async () => {
-    const state = await openMatchingDocument();
+    const { fence, state } = await openWithFence(apiMocks.getExamWorkspaceDocument);
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
     const suggestion = matchingSuggestion(SOURCE_PAIRS);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = startCopyInstall(state, fence);
     state.applyArrivingSuggestions(openingOf(state), [{ item_id: "item_001", suggestion }]);
     const sent = sentDocument();
     pendingSave.resolve(
@@ -143,7 +169,8 @@ describe("a newly promoted key survives a revision that stores an equal older su
    */
   async function clearKeyThenSaveWhileSuggestionReturns() {
     const kept = matchingSuggestion(SOURCE_PAIRS);
-    const state = await openMatchingDocument(
+    const { fence, state } = await openWithFence(
+      apiMocks.getExamWorkspaceDocument,
       buildMatchingItem({
         ai_suggestion: kept,
         answer_key: {
@@ -158,7 +185,7 @@ describe("a newly promoted key survives a revision that stores an equal older su
     const pendingSave = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.copyExamWorkspaceDocument.mockReturnValue(pendingSave.promise);
 
-    const copying = state.saveDocumentAs("Kopia");
+    const copying = startCopyInstall(state, fence);
     state.applyArrivingSuggestions(openingOf(state), [
       { item_id: "item_001", suggestion: matchingSuggestion(SOURCE_PAIRS) },
     ]);

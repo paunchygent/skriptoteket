@@ -8,7 +8,7 @@
  *   `editing.createItemGap` as one undoable structural edit. No control
  *   inserts an empty gap, and with the tool off a word click only places
  *   the caret. At `gap_999` the switch is disabled with
- *   "Luckverktyg – högst 999 luckor".
+ *   "Luckverktyg – inga fler luckor kan läggas till i frågan".
  *
  * jsdom has no layout, so selections are set through TipTap commands, word
  * clicks reach the view through its own click handler with a stubbed
@@ -44,8 +44,10 @@ import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSuppo
 import { withBody } from "./examWorkspaceItemEdits";
 import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
+import { GAP_TOOL_AT_CAP_REASON } from "./useExamWorkspaceMakeGap";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
+import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
   exam,
   inScope,
@@ -55,7 +57,7 @@ import type { ExamWorkspaceItemEntry } from "./examWorkspaceListEntries";
 
 const TOOLBAR_GAP_TOOL = '[data-test="exam-workspace-toolbar-gap-tool"]';
 const FLOATING_GAP = '[data-test="exam-workspace-make-gap"]';
-const TOOL_AT_CAP = "Luckverktyg – högst 999 luckor";
+const TOOL_AT_CAP = GAP_TOOL_AT_CAP_REASON;
 
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 
@@ -355,7 +357,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     ]);
     question.unmount();
 
-    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore, nullRouteProjection()));
     const created = vi.spyOn(editing, "createItemGap");
     const entry: ExamWorkspaceItemEntry = {
       kind: "item",

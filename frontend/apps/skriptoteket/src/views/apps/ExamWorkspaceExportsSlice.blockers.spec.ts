@@ -34,7 +34,6 @@ import {
 } from "./ExamWorkspaceExportsSlice.specSupport";
 import { buildResponse, saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -67,7 +66,6 @@ vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadable);
 
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
-  arrangeStepHistory(apiMocks);
   unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
   unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
 });

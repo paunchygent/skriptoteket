@@ -40,12 +40,13 @@ def test_migration_0004_suggestion_review_decisions_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0003_script_suggestions")
+    command.upgrade(alembic_cfg, "0004_suggestion_review_decisions")
+    command.upgrade(alembic_cfg, "0004_suggestion_review_decisions")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0003_script_suggestions")
+    command.upgrade(alembic_cfg, "0004_suggestion_review_decisions")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

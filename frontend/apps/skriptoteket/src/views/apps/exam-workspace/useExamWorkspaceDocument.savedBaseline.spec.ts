@@ -4,9 +4,10 @@ import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentResponse } from "../../../api/examWorkspace";
-import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
+import { buildResponse, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 const api = vi.hoisted(() => ({
@@ -37,12 +38,13 @@ describe("saved exam baseline", () => {
   it.each(["open", "reload", "reopen"])("keeps command results dirty on %s and opens the copied exam clean", async (path) => {
     const response = commandResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(response);
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       if (path === "reload") await state.reloadDocument();
-      if (path === "reopen") await state.openDocument("lineage-1");
+      if (path === "reopen") await state.openDocument("lineage-1", fence.begin());
       expect(state.workspaceDocument.value).toEqual(response.document);
       expect(state.isDirty.value).toBe(true);
       expect(state.isBusy.value).toBe(false);
@@ -52,7 +54,7 @@ describe("saved exam baseline", () => {
         ...response, document: copied, saved_document: copied,
         summary: { ...response.summary, lineage_id: "lineage-2", version: 1 },
       });
-      expect(await state.saveDocumentAs("Kopia")).toBe("saved");
+      expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
       expect(api.copyExamWorkspaceDocument).toHaveBeenCalledWith(
         "lineage-1",
         "Kopia",
@@ -69,12 +71,13 @@ describe("saved exam baseline", () => {
     const base = buildResponse();
     const response = { ...base, document: { ...base.document, title: "Arbetskopia" } };
     api.getExamWorkspaceDocument.mockResolvedValue(response);
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(true);
-      state.noteStored({ ...response.document });
+      state.noteStored(createSyncFence().begin(), { ...response.document });
       expect(state.isDirty.value).toBe(false);
       expect(state.savedRevision.value).toBe(1);
     } finally {
@@ -85,10 +88,11 @@ describe("saved exam baseline", () => {
   it("opens an unchanged saved exam clean", async () => {
     const response = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue({ ...response, saved_document: response.document });
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(false);
     } finally {
       scope.stop();

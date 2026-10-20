@@ -50,13 +50,12 @@ import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
-import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
-import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
-import { useExamWorkspaceDrawerState } from "./exam-workspace/useExamWorkspaceDrawerState";
+import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceViewPanels";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
+import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 import { useExamWorkspaceGuestSignIn } from "./exam-workspace/useExamWorkspaceGuestSignIn";
@@ -64,7 +63,6 @@ import { useExamWorkspaceKeyboard } from "./exam-workspace/useExamWorkspaceKeybo
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSaveFlow } from "./exam-workspace/useExamWorkspaceSaveFlow";
 import { useExamWorkspaceSelection } from "./exam-workspace/useExamWorkspaceSelection";
-import { useExamWorkspaceSideColumns } from "./exam-workspace/useExamWorkspaceSideColumns";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
 
 const props = defineProps<{ store: ExamWorkspaceStore }>();
@@ -72,21 +70,23 @@ const props = defineProps<{ store: ExamWorkspaceStore }>();
 provide(EXAM_WORKSPACE_STORE_KEY, props.store);
 
 const layout = useExamWorkspaceLayout();
-const editing = useExamWorkspaceEditing(props.store);
+const routeProjection = createRouteProjection();
+const editing = useExamWorkspaceEditing(props.store, routeProjection);
 const {
   history,
   structure,
   applyArrivingSuggestions,
+  currentRouteAddress,
   historyCursor,
   isBusy,
-  isDirty,
   isOpen,
   loadSavedDocuments,
-  openDocument,
   openExam,
   importDocument,
   importBlocked,
-  readOnly,
+  leaseReadOnly,
+  editingLocked,
+  requestRoute,
   requestTakeover,
   savedRevision,
   setTags,
@@ -105,33 +105,49 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
-const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
-const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
-  useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {
+  closeAfterGoto,
+  consumeImportPick,
+  drawer,
   importOpen,
+  importPickPending,
+  isDesktop,
   isPhone,
   listOpen,
+  listRailCollapsed,
+  openRoutedDocument,
   previewBlocked,
   previewLoading,
   previewMessage,
   previewOpen,
   previewPages,
   previewQuestionPages,
+  requestImportPick,
+  resetWidth,
+  rootColumnStyle,
+  rootListState,
+  setListWidth,
+  setWidth,
+  side,
+  toggleDrawer,
+  toggleListCollapsed,
   togglePreview,
-} = useExamWorkspaceSideColumns({
-  drawer,
+} = useExamWorkspaceViewPanels({
+  currentAddress: currentRouteAddress,
+  dismissSignInPrompt,
   historyCursor,
   historyPosition: history.position,
+  isExamOpen: () => Boolean(summary.value),
   layout,
-  lineageId: computed(() => summary.value?.lineage_id ?? null),
+  projection: routeProjection,
   savedRevision,
   selectedItemId: editing.selectedItemId,
   store: props.store,
-  onLineage: (lineageId) => {
-    showDocument(lineageId);
-    dismissSignInPrompt();
+  submitRoute: (lineageId) => {
+    void requestRoute(lineageId);
   },
+  summary,
+  workspaceDocument,
 });
 
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
@@ -175,35 +191,12 @@ const {
 } = selection;
 editing.registerSelectParent(selectEntry);
 
-const disabled = computed(() => isBusy.value || structure.running.value || readOnly.value);
+const disabled = computed(() => isBusy.value || structure.running.value || editingLocked.value);
 const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
 
-/**
- * The width owner's side state and the remembered column widths (TASK-SKRIPT-41-02-04),
- * owned by `useExamWorkspaceColumnLayout`: on desktop the root carries the widths
- * as inline custom properties and the list state as `data-list`; tablet and
- * phone render without either.
- */
-const {
-  isDesktop,
-  listRailCollapsed,
-  resetWidth,
-  rootColumnStyle,
-  rootListState,
-  setListWidth,
-  setWidth,
-  side,
-  toggleListCollapsed,
-} = useExamWorkspaceColumnLayout(layout, {
-  drawer,
-  isPhone,
-  previewOpen,
-  store: props.store,
-  workspaceDocument,
-});
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
   isGuest: props.store.guest !== null,
@@ -320,7 +313,7 @@ onMounted(() => void loadSavedDocuments());
       @dismiss="dismissSignInPrompt"
     />
     <ExamWorkspaceEditLeaseNotice
-      v-if="readOnly && workspaceDocument"
+      v-if="leaseReadOnly && workspaceDocument"
       :waiting="takeoverWaiting"
       @takeover="requestTakeover"
     />
@@ -464,6 +457,7 @@ onMounted(() => void loadSavedDocuments());
         :import-pick-pending="importPickPending"
         @close="drawer = null"
         @import-pick-consumed="consumeImportPick"
+        @open="openRoutedDocument"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

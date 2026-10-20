@@ -8,10 +8,10 @@ import { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./exam-workspace/useExamWorks
 import {
   buildResponse,
   mountExamWorkspace,
+  resetSliceApiMocks,
   saveDocument,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const api = vi.hoisted(() => ({
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -73,11 +73,11 @@ function saveState(wrapper: ViewWrapper): string {
 }
 
 beforeEach(() => {
-  for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
+  resetSliceApiMocks(api);
+  for (const mock of Object.values(exportApiMocks)) mock.mockReset();
   rename.mockReset();
   unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
   unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  arrangeStepHistory(api);
   api.getExamCourseCatalog.mockResolvedValue({ courses: [] });
   api.getExamWorkspaceDocument.mockResolvedValue(response());
   api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });

@@ -24,12 +24,11 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   saveDocument,
   selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
-
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -82,12 +81,12 @@ const succeededConversion: ExamWorkspaceConversionStatus = {
 };
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
   unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
   unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
-  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

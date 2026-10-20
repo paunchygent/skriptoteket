@@ -65,7 +65,7 @@ import {
 } from "./examWorkspaceAnswerKeyRules";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
 import { nextGapId } from "./examWorkspaceGapEdits";
-import { gapDisabledReason } from "./useExamWorkspaceMakeGap";
+import { GAP_TOOL_AT_CAP_REASON, gapDisabledReason } from "./useExamWorkspaceMakeGap";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
@@ -261,12 +261,15 @@ function handleRestoreKeptGap(keptGapId: string, blockIndex: number): void {
   emit("restoreKeptGap", props.item.item_id, keptGapId, blockIndex);
 }
 
-/** Tom lucka: insert one empty gap at the caret, or refuse with the shared disabled reason. */
+/** Tom lucka: insert one empty gap at the caret, or refuse silently outside gap questions and at the cap. */
 function handleInsertEmptyGap(): void {
   if (props.disabled) {
     return;
   }
-  if (gapDisabledReason(props.item.kind, newGapId.value) !== null) {
+  if (props.item.kind !== "gap_fill" && props.item.kind !== "inline_choice") {
+    return;
+  }
+  if (gapDisabledReason(newGapId.value) !== null) {
     return;
   }
   editor.value?.insertEmptyGap();
@@ -339,8 +342,8 @@ watch(newGapId, (gapId) => {
         :disabled="disabled"
         show-headings
         :show-gap="gapKind"
-        :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
-        :empty-gap-disabled-reason="gapDisabledReason(item.kind, newGapId)"
+        :gap-tool-disabled-reason="gapKind && newGapId === null ? GAP_TOOL_AT_CAP_REASON : null"
+        :empty-gap-disabled-reason="gapKind ? gapDisabledReason(newGapId) : null"
         :gap-tool-on="gapToolOn"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"

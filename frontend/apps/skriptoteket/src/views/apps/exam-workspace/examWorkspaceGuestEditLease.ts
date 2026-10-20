@@ -25,6 +25,8 @@
  *     injected, and the specs run them in memory with a channel double.
  */
 
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
+
 export const GUEST_EDIT_LEASE_HEARTBEAT_MS = 5_000;
 export const GUEST_EDIT_LEASE_TTL_MS = 15_000;
 export const GUEST_EDIT_LEASE_CHANNEL_NAME = "skriptoteket:guest-edit-lease";
@@ -39,9 +41,127 @@ export type GuestEditLeaseRecord = {
 };
 
 export type GuestEditLeaseStoragePort = {
+  /**
+   * A read-only peek at the slot: tests, the store's lenient pre-check and
+   * observers may look, but no claim path decides on what it returns. Every
+   * decision below runs atomically inside one step (one IndexedDB readwrite
+   * transaction in production, one synchronous decision in memory), and the
+   * controller returns the outcome of that atomic decision, never a prior
+   * read.
+   */
   load(): Promise<GuestEditLeaseRecord | null>;
-  save(record: GuestEditLeaseRecord | null): Promise<void>;
+  /**
+   * Claim the slot when it is free, held by this tab, or expired. Returns the
+   * resulting record and whether this tab holds the lease afterwards.
+   */
+  claim(tabId: string, now: number): Promise<GuestEditLeaseClaimResult>;
+  /**
+   * Renew the slot only while this tab holds it and nobody else asked to take
+   * over. Returns the resulting record (null when the slot is empty) and
+   * whether this tab still holds the lease.
+   */
+  renew(tabId: string, now: number): Promise<GuestEditLeaseRenewResult>;
+  /** Release the slot only while this tab holds it. */
+  release(tabId: string): Promise<boolean>;
+  /**
+   * Ask to take over: `own` when this tab already holds the slot, `claimed`
+   * when the slot is free or expired (this tab takes it at once), else record
+   * this tab's ask and return `requested` with the resulting record, whose
+   * holder is the tab to signal.
+   */
+  requestTakeover(tabId: string, now: number): Promise<GuestEditLeaseTakeoverResult>;
 };
+
+/** The outcome of one atomic claim decision: the record to keep and who holds it. */
+export type GuestEditLeaseClaimResult = {
+  record: GuestEditLeaseRecord;
+  held: boolean;
+};
+
+/** The outcome of one atomic renew decision: the record to keep and who holds it. */
+export type GuestEditLeaseRenewResult = {
+  record: GuestEditLeaseRecord | null;
+  held: boolean;
+};
+
+/** The outcome of one atomic takeover decision: what happened and the record to keep. */
+export type GuestEditLeaseTakeoverResult = {
+  outcome: GuestEditLeaseTakeoverOutcome;
+  record: GuestEditLeaseRecord;
+};
+
+function isLeaseExpired(record: GuestEditLeaseRecord, at: number): boolean {
+  return at - record.renewedAt > GUEST_EDIT_LEASE_TTL_MS;
+}
+
+/**
+ * The pure claim decision both adapters run inside one atomic step: a live
+ * foreign lease refuses, everything else stores the returned record for this
+ * tab. A self-claim refreshes the renewal and keeps a waiting tab's ask,
+ * which the next heartbeat answers.
+ */
+export function decideGuestEditLeaseClaim(
+  current: GuestEditLeaseRecord | null,
+  tabId: string,
+  at: number,
+): GuestEditLeaseClaimResult {
+  if (current !== null && current.tabId !== tabId && !isLeaseExpired(current, at)) {
+    return { held: false, record: { ...current } };
+  }
+  if (current !== null && current.tabId === tabId) {
+    return { held: true, record: { ...current, renewedAt: at } };
+  }
+  return { held: true, record: { renewedAt: at, tabId, takeoverRequestedBy: null } };
+}
+
+/**
+ * The pure renew decision both adapters run inside one atomic step: only the
+ * holding tab renews, and a waiting tab's ask pauses renewal so the holder
+ * answers the takeover instead.
+ */
+export function decideGuestEditLeaseRenew(
+  current: GuestEditLeaseRecord | null,
+  tabId: string,
+  at: number,
+): GuestEditLeaseRenewResult {
+  if (current === null || current.tabId !== tabId) {
+    return { held: false, record: current === null ? null : { ...current } };
+  }
+  if (current.takeoverRequestedBy !== null && current.takeoverRequestedBy !== tabId) {
+    return { held: false, record: { ...current } };
+  }
+  return { held: true, record: { ...current, renewedAt: at } };
+}
+
+/**
+ * The pure takeover decision both adapters run inside one atomic step: the
+ * holder sees `own`, a free or expired slot is taken at once, otherwise this
+ * tab's ask is recorded on the live record.
+ */
+export function decideGuestEditLeaseTakeover(
+  current: GuestEditLeaseRecord | null,
+  tabId: string,
+  at: number,
+): GuestEditLeaseTakeoverResult {
+  if (current !== null && current.tabId === tabId) {
+    return { outcome: "own", record: { ...current } };
+  }
+  if (current === null || isLeaseExpired(current, at)) {
+    return { outcome: "claimed", record: { renewedAt: at, tabId, takeoverRequestedBy: null } };
+  }
+  return { outcome: "requested", record: { ...current, takeoverRequestedBy: tabId } };
+}
+
+/**
+ * The pure release check both adapters run inside one atomic step: only the
+ * holding tab frees the slot, so a stale release never clears a new owner.
+ */
+export function ownsGuestEditLease(
+  current: GuestEditLeaseRecord | null,
+  tabId: string,
+): boolean {
+  return current !== null && current.tabId === tabId;
+}
 
 /** One in-memory lease slot, shared by every controller that receives it, like two tabs. */
 export function createInMemoryGuestEditLeaseStorage(): GuestEditLeaseStoragePort {
@@ -50,8 +170,39 @@ export function createInMemoryGuestEditLeaseStorage(): GuestEditLeaseStoragePort
     async load() {
       return record === null ? null : { ...record };
     },
-    async save(next) {
-      record = next === null ? null : { ...next };
+    async claim(tabId, at) {
+      // No await runs between the read and the write below, so concurrent
+      // claims against this slot decide one after another, like IndexedDB
+      // serializes one readwrite transaction per tab.
+      const decided = decideGuestEditLeaseClaim(record, tabId, at);
+      if (decided.held) {
+        record = { ...decided.record };
+      }
+      return { held: decided.held, record: { ...decided.record } };
+    },
+    async renew(tabId, at) {
+      const decided = decideGuestEditLeaseRenew(record, tabId, at);
+      if (decided.held && decided.record !== null) {
+        record = { ...decided.record };
+      }
+      return {
+        held: decided.held,
+        record: decided.record === null ? null : { ...decided.record },
+      };
+    },
+    async release(tabId) {
+      if (!ownsGuestEditLease(record, tabId)) {
+        return false;
+      }
+      record = null;
+      return true;
+    },
+    async requestTakeover(tabId, at) {
+      const decided = decideGuestEditLeaseTakeover(record, tabId, at);
+      if (decided.outcome !== "own") {
+        record = { ...decided.record };
+      }
+      return { outcome: decided.outcome, record: { ...decided.record } };
     },
   };
 }
@@ -120,14 +271,6 @@ export function createGuestEditLeaseChannel(
   };
 }
 
-/** A random tab id per page load, mirroring the toast id fallback. */
-export function createGuestEditLeaseTabId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 export type GuestEditLeaseClaimOutcome = "held" | "readonly";
 export type GuestEditLeaseTakeoverOutcome = "claimed" | "requested" | "own";
 
@@ -146,6 +289,18 @@ export type GuestEditLeaseControllerDeps = {
    * Unit K8 provides this; the controller releases afterwards either way.
    */
   onTakeoverRequested?: () => Promise<void> | void;
+  /**
+   * The owning session's fence: the answer takes a token when it starts and
+   * acts at each step after an await only while that token is current, so an
+   * answer retired by an exam switch releases nothing and changes no
+   * holding.
+   */
+  fence: Pick<SyncFence, "begin" | "isCurrent">;
+  /**
+   * Runs after a current answer releases, so the owning session turns
+   * read-only and restarts its heartbeat. Absent in the isolated specs.
+   */
+  onYielded?: () => void;
 };
 
 export type GuestEditLeaseController = {
@@ -168,10 +323,6 @@ export function createGuestEditLeaseController(
   /** True while this tab answers a takeover, so a channel ping and a heartbeat poll answer once. */
   let answering = false;
 
-  function isExpired(record: GuestEditLeaseRecord, at: number): boolean {
-    return at - record.renewedAt > GUEST_EDIT_LEASE_TTL_MS;
-  }
-
   function stopHeartbeat(): void {
     if (heartbeat !== null) {
       clearInterval(heartbeat);
@@ -186,25 +337,35 @@ export function createGuestEditLeaseController(
   }
 
   async function releaseLease(): Promise<boolean> {
-    const record = await deps.storage.load();
     stopHeartbeat();
-    if (record === null || record.tabId !== deps.tabId) {
+    const released = await deps.storage.release(deps.tabId);
+    if (!released) {
       return false;
     }
-    await deps.storage.save(null);
     channel.postMessage({ byTabId: deps.tabId, kind: "lease-released" });
     notify({ byTabId: deps.tabId, kind: "lease-released" });
     return true;
   }
 
-  async function answerTakeover(): Promise<void> {
+  async function answerTakeover(token: FenceToken): Promise<void> {
     if (answering) {
       return;
     }
     answering = true;
+    // The token dates the answer: the heartbeat or the channel signal begins
+    // it before the wait, and each step after an await runs only while that
+    // token is current. A stale answer releases nothing and changes no
+    // holding; the genuine current takeover still flushes, releases and
+    // yields.
     try {
       await deps.onTakeoverRequested?.();
+      if (!deps.fence.isCurrent(token)) {
+        return;
+      }
       await releaseLease();
+      if (deps.fence.isCurrent(token)) {
+        deps.onYielded?.();
+      }
     } finally {
       answering = false;
     }
@@ -214,7 +375,9 @@ export function createGuestEditLeaseController(
     const message = event.data;
     if (message.kind === "takeover-requested" && message.toTabId === deps.tabId) {
       notify({ fromTabId: message.fromTabId, kind: "takeover-requested" });
-      void answerTakeover();
+      // Begin the token when the message arrives, so a switch that retires
+      // the generation before the flush answers nothing.
+      void answerTakeover(deps.fence.begin());
     } else if (message.kind === "lease-released" && message.byTabId !== deps.tabId) {
       notify({ byTabId: message.byTabId, kind: "lease-released" });
     }
@@ -231,18 +394,37 @@ export function createGuestEditLeaseController(
   }
 
   async function renew(): Promise<boolean> {
-    const record = await deps.storage.load();
-    if (record === null || record.tabId !== deps.tabId) {
+    // Begin the token before the storage await, so a switch that retires the
+    // generation while the decision is in flight stays visible afterwards.
+    const token: FenceToken = deps.fence.begin();
+    const decided = await deps.storage.renew(deps.tabId, now());
+    if (!deps.fence.isCurrent(token)) {
+      // An obsolete decision answers no takeover, releases nothing and stops
+      // no heartbeat: report held so the interval keeps the heartbeat that
+      // now belongs to the current visit.
+      return true;
+    }
+    if (!decided.held) {
       stopHeartbeat();
+      // The takeover poll fallback: the holder answers at its next heartbeat
+      // even when the channel ping never arrived.
+      const record = decided.record;
+      if (
+        record !== null &&
+        record.tabId === deps.tabId &&
+        record.takeoverRequestedBy !== null &&
+        record.takeoverRequestedBy !== deps.tabId
+      ) {
+        await answerTakeover(token);
+        if (!deps.fence.isCurrent(token)) {
+          // The answer settled after the generation retired, so a new visit
+          // already owns the heartbeat: report held so the retired
+          // continuation never stops the new interval.
+          return true;
+        }
+      }
       return false;
     }
-    // The takeover poll fallback: the holder answers at its next heartbeat
-    // even when the channel ping never arrived.
-    if (record.takeoverRequestedBy !== null && record.takeoverRequestedBy !== deps.tabId) {
-      await answerTakeover();
-      return false;
-    }
-    await deps.storage.save({ ...record, renewedAt: now() });
     return true;
   }
 
@@ -262,16 +444,12 @@ export function createGuestEditLeaseController(
   return {
     tabId: deps.tabId,
     async claim() {
-      const record = await deps.storage.load();
-      const at = now();
-      if (record !== null && record.tabId !== deps.tabId && !isExpired(record, at)) {
+      // The atomic claim decides and stores in one step: the outcome below
+      // is that decision, never a prior read.
+      const decided = await deps.storage.claim(deps.tabId, now());
+      if (!decided.held) {
         return "readonly";
       }
-      // A self-claim refreshes the renewal and keeps a waiting tab's ask,
-      // which the next heartbeat answers.
-      const takeoverRequestedBy =
-        record !== null && record.tabId === deps.tabId ? record.takeoverRequestedBy : null;
-      await deps.storage.save({ renewedAt: at, tabId: deps.tabId, takeoverRequestedBy });
       startHeartbeat();
       return "held";
     },
@@ -295,21 +473,20 @@ export function createGuestEditLeaseController(
     },
     renew,
     async requestTakeover() {
-      const record = await deps.storage.load();
-      const at = now();
-      if (record !== null && record.tabId === deps.tabId) {
+      // The atomic takeover decides and stores in one step: the outcome
+      // below is that decision, never a prior read.
+      const decided = await deps.storage.requestTakeover(deps.tabId, now());
+      if (decided.outcome === "own") {
         return "own";
       }
-      if (record === null || isExpired(record, at)) {
-        await deps.storage.save({ renewedAt: at, tabId: deps.tabId, takeoverRequestedBy: null });
+      if (decided.outcome === "claimed") {
         startHeartbeat();
         return "claimed";
       }
-      await deps.storage.save({ ...record, takeoverRequestedBy: deps.tabId });
       channel.postMessage({
         fromTabId: deps.tabId,
         kind: "takeover-requested",
-        toTabId: record.tabId,
+        toTabId: decided.record.tabId,
       });
       return "requested";
     },

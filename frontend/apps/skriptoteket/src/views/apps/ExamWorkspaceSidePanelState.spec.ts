@@ -29,11 +29,17 @@ import {
   EXAM_WORKSPACE_PATH,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
+  selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
@@ -87,7 +93,8 @@ afterEach(() => {
 });
 
 beforeEach(() => {
-  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
+  resetSliceApiMocks(apiMocks);
+  for (const mock of Object.values(exportApiMocks)) {
     mock.mockReset();
   }
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
@@ -165,6 +172,8 @@ describe("exam workspace width owner (data-side)", () => {
   it("reports open for the Öppna drawer on desktop", async () => {
     const wrapper = await mountImported("desktop");
 
+    await selectItemRow(wrapper, "item_001");
+    expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeUndefined();
     expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
     expect(frameSide(wrapper)).toBe("open");
     expectNoLegacyStateClasses(wrapper);

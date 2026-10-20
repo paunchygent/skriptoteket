@@ -22,6 +22,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { serverExamWorkspaceStore, type ExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceConversionBinding } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 
@@ -46,6 +47,7 @@ const QTI_SUMMARY = {
 };
 
 function binding(): ExamWorkspaceConversionBinding {
+  const fence = createSyncFence();
   return {
     isDirty: ref(false),
     serverDocument: ref<NativeExamDocument | null>(null),
@@ -53,7 +55,8 @@ function binding(): ExamWorkspaceConversionBinding {
     workspaceDocument: ref<NativeExamDocument | null>(null),
     beginDocumentRead: () => (response) => response,
     applyResponse: vi.fn(),
-    beforeFirstRevision: vi.fn(),
+    getFence: () => fence,
+    isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
     store: serverExamWorkspaceStore,
   };
@@ -65,7 +68,7 @@ function setup() {
   const busyWhileOpening: { isImporting: boolean | null } = { isImporting: null };
   const openImported = vi.fn(async () => {
     busyWhileOpening.isImporting = conversion?.isImporting.value ?? null;
-    return true;
+    return "installed" as const;
   });
   let conversion: ReturnType<typeof useExamWorkspaceConversion> | null = null;
   conversion = scope.run(() =>
@@ -173,7 +176,7 @@ describe("guest-mode QTI .zip import dispatch", () => {
     };
     const openImported = vi.fn(async () => {
       busyWhileOpening.isImporting = conversion?.isImporting.value ?? null;
-      return true;
+      return "installed" as const;
     });
     let conversion: ReturnType<typeof useExamWorkspaceConversion> | null = null;
     conversion = scope.run(() =>

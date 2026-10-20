@@ -10,7 +10,8 @@
  *
  * Relationships:
  *   - Opened from the Spara menu by `ExamWorkspaceView`, which saves through
- *     `useExamWorkspaceDocument.saveDocumentAs` and passes back a refusal.
+ *     the editing session's `saveAs` (the replacement coordinator's copy
+ *     intent) and passes back a refusal.
  *   - Keyboard and focus handling comes from `useDialogFocus`.
  */
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6fce7a83cb217a2fd67d995ea19636ac24ca69392bbc7537ca30f46740b7c53c",
+  "source_set_digest": "7d50aba756a0130ec7e08ef7517f6ff614caa5bf2752e7ab1819922f5a7c619f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2612,7 +2612,7 @@
       "type": "task",
       "title": "Resolve merge-revision parents in the migration idempotency support",
       "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
       "owners": [
@@ -2623,7 +2623,32 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-20 (AskUserQuestion, Hemma orchestrator session) to close this task as superseded by TASK-SKRIPT-06-17-02 (on main 3d3f867a), whose U5 resolves merge parents in the migration idempotency support. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-06-17-02 named as its successor."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-17-02",
+      "type": "task",
+      "title": "Pin docker migration tests to their own revision",
+      "path": "docs/backlog/tasks/task-skript-06-17-02-pin-docker-migration-tests-to-their-own-revision.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 06-17-02 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 749a17aa (root 01a1586c evidence/reviews/TASK-SKRIPT-06-17-02-613fb45e-review.md) ended changes_requested with mediums R1-R3 only, repaired at c5c69bbb and admitted by the parent on focused proof. test-migrations 118 of 118 passed; pre-push tests 12 of 12. Merged to main as 3d3f867a; the new pre-push stage ran on that first real push and passed 118 in 50.89 s (Mac report)."
       }
     },
     {
@@ -9931,6 +9956,20 @@
       ]
     },
     {
+      "id": "REF-SKRIPT-DECISIONS-skola24-timetable-import-client-decisions-2026-10-20",
+      "type": "reference",
+      "title": "Skola24 timetable import client decisions 2026-10-20",
+      "path": "docs/reference/ref-skript-decisions-skola24-timetable-import-client-decisions-2026-10-20-skola24-timetable-import-client-decisions-2026-10-20.md",
+      "status": "draft",
+      "reference_kind": "decisions",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
       "id": "REF-SKRIPT-DECISIONS-symbol-semantics-inventory-and-decision-contract",
       "type": "reference",
       "title": "Symbol semantics inventory and decision contract",
@@ -11180,6 +11219,20 @@
       ]
     },
     {
+      "id": "REF-SKRIPT-GENERAL-skola24-timetable-api-for-the-signed-in-teacher",
+      "type": "reference",
+      "title": "Skola24 timetable API for the signed-in teacher",
+      "path": "docs/reference/ref-skript-general-skola24-timetable-api-for-the-signed-in-teacher-skola24-timetable-api-for-the-signed-in-teacher.md",
+      "status": "active",
+      "reference_kind": "general",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
       "id": "REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff-PART-01",
       "type": "reference",
       "title": "Skriptoteket help copy signoff — part 01",
@@ -11256,6 +11309,20 @@
       ],
       "retired_ids": [
         "REF-lead-architect-suggestions-post-mvp"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-GENERAL-teacher-year-calendar-pipeline",
+      "type": "reference",
+      "title": "Teacher year calendar pipeline",
+      "path": "docs/reference/ref-skript-general-teacher-year-calendar-pipeline-teacher-year-calendar-pipeline.md",
+      "status": "draft",
+      "reference_kind": "general",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

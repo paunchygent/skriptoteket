@@ -77,12 +77,13 @@ def test_migration_c1d2e3f4a5b6_drops_browser_auth_sessions(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
+    command.upgrade(alembic_cfg, "0f4c2d7a9b1e")
     command.upgrade(alembic_cfg, "c1d2e3f4a5b6")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "c1d2e3f4a5b6")
     asyncio.run(_assert_sessions_absent(database_url=database_url))
 
     command.downgrade(alembic_cfg, "0f4c2d7a9b1e")
     asyncio.run(_assert_sessions_downgrade_shape(database_url=database_url))
 
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "c1d2e3f4a5b6")
     asyncio.run(_assert_sessions_absent(database_url=database_url))

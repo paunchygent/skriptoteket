@@ -21,7 +21,8 @@ import type {
 } from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { createTestRouter, mountWithContext } from "../../test/utils";
-import { adminUser } from "./ExamWorkspaceSlice.specSupport";
+import { adminUser, resetSliceApiMocks } from "./ExamWorkspaceSlice.specSupport";
+import { type HistoryApiMocks } from "./ExamWorkspaceHistory.specSupport";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
@@ -138,15 +139,13 @@ export function pressKey(init: KeyboardEventInit, target: EventTarget = window):
 }
 
 /** The mocks `arrangeViewApis` resets and primes before every test. */
-export type ViewApiMocks = Record<string, Mock> & {
+export type ViewApiMocks = HistoryApiMocks & {
   getExamWorkspaceConversionStatus: Mock;
   listExamWorkspaceDocuments: Mock;
 };
 
 export function arrangeViewApis(api: ViewApiMocks): void {
-  for (const mock of Object.values(api)) {
-    mock.mockReset();
-  }
+  resetSliceApiMocks(api);
   api.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
 }

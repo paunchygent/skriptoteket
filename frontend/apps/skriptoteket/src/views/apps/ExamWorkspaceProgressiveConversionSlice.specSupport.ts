@@ -26,9 +26,11 @@ import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
+  resetSliceApiMocks,
   selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
+import { type HistoryApiMocks } from "./ExamWorkspaceHistory.specSupport";
 
 type UnitState = ExamWorkspaceConversionUnit["state"];
 
@@ -89,7 +91,7 @@ export const FIRST = revision(1, [converted(1), placeholder(2), placeholder(3)],
 export const SECOND_STATUS = status("running", 2, ["ready", "ready", "ready"]);
 export const SECOND = revision(2, [converted(1), converted(2), converted(3)], SECOND_STATUS);
 
-export type ProgressiveApiMocks = Record<string, Mock>;
+export type ProgressiveApiMocks = HistoryApiMocks & Record<string, Mock>;
 
 let mountedView: ViewWrapper | undefined;
 
@@ -100,7 +102,7 @@ let mountedView: ViewWrapper | undefined;
 export function installProgressiveConversionLifecycle(apiMocks: ProgressiveApiMocks) {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-    for (const mock of Object.values(apiMocks)) mock.mockReset();
+    resetSliceApiMocks(apiMocks);
     apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued", null, []));
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(FIRST_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(FIRST);

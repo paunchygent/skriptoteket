@@ -20,6 +20,7 @@ import {
   type GuestEditLeaseChannel,
   type GuestEditLeaseMessage,
 } from "./examWorkspaceGuestEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 type ChannelListener = (event: { data: GuestEditLeaseMessage }) => void;
 
@@ -69,6 +70,7 @@ function setup() {
   };
   const holder = (onTakeoverRequested: () => Promise<void> | void = () => undefined) =>
     createGuestEditLeaseController({
+      fence: createSyncFence(),
       now,
       onTakeoverRequested,
       openChannel: () => hub.createChannel(),
@@ -185,6 +187,152 @@ describe("examWorkspaceGuestEditLease", () => {
     } finally {
       first.dispose();
       second.dispose();
+    }
+  });
+
+  it("lets exactly one tab edit when two tabs claim the free slot at the same time", async () => {
+    const context = setup();
+    const first = context.holder();
+    const second = context.holder();
+    try {
+      const outcomes = await Promise.all([first.claim(), second.claim()]);
+
+      expect(outcomes.filter((outcome) => outcome === "held")).toHaveLength(1);
+      const stored = await context.storage.load();
+      expect(stored === null ? null : stored.tabId).toBe(
+        outcomes[0] === "held" ? first.tabId : second.tabId,
+      );
+    } finally {
+      first.dispose();
+      second.dispose();
+    }
+  });
+
+  it("does not let a stale renew or release overwrite the tab that took the lease", async () => {
+    const context = setup();
+    const first = context.holder();
+    const second = context.holder();
+    try {
+      expect(await first.claim()).toBe("held");
+
+      // The second tab takes over fully and claims the freed lease.
+      expect(await second.requestTakeover()).toBe("requested");
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        if ((await context.storage.load()) === null) {
+          break;
+        }
+        await Promise.resolve();
+      }
+      expect(await second.claim()).toBe("held");
+
+      // The first tab lost the lease: its renewal and release report false
+      // and leave the new owner's record alone.
+      expect(await first.renew()).toBe(false);
+      expect(await context.storage.load()).toMatchObject({ tabId: second.tabId });
+      expect(await first.release()).toBe(false);
+      expect(await context.storage.load()).toMatchObject({ tabId: second.tabId });
+    } finally {
+      first.dispose();
+      second.dispose();
+    }
+  });
+
+  it("decides each lease step atomically on one shared slot", async () => {
+    const storage = createInMemoryGuestEditLeaseStorage();
+    const at = 1_000_000;
+
+    const free = await storage.claim("tab-a", at);
+    expect(free).toEqual({
+      held: true,
+      record: { renewedAt: at, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+
+    const refused = await storage.claim("tab-b", at + 1_000);
+    expect(refused.held).toBe(false);
+    expect(refused.record).toMatchObject({ tabId: "tab-a" });
+
+    const renewed = await storage.renew("tab-a", at + 2_000);
+    expect(renewed).toEqual({
+      held: true,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+    expect(await storage.renew("tab-b", at + 2_000)).toEqual({
+      held: false,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+
+    const asked = await storage.requestTakeover("tab-b", at + 3_000);
+    expect(asked.outcome).toBe("requested");
+    expect(asked.record).toMatchObject({ tabId: "tab-a", takeoverRequestedBy: "tab-b" });
+
+    // A renewal paused by a waiting ask does not move the renewal forward.
+    expect(await storage.renew("tab-a", at + 4_000)).toEqual({
+      held: false,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: "tab-b" },
+    });
+
+    expect(await storage.requestTakeover("tab-a", at + 4_000)).toEqual({
+      outcome: "own",
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: "tab-b" },
+    });
+    expect(await storage.release("tab-b")).toBe(false);
+    expect(await storage.release("tab-a")).toBe(true);
+    expect(await storage.load()).toBeNull();
+
+    // An expired lease is taken at once, clearing the old ask.
+    const expiredAt = at + GUEST_EDIT_LEASE_TTL_MS + 1;
+    expect(await storage.claim("tab-a", at)).toBeDefined();
+    const taken = await storage.requestTakeover("tab-b", expiredAt);
+    expect(taken.outcome).toBe("claimed");
+    expect(taken.record).toEqual({
+      renewedAt: expiredAt,
+      tabId: "tab-b",
+      takeoverRequestedBy: null,
+    });
+  });
+
+  it("keeps the heartbeat when a retired takeover completion settles", async () => {
+    const storage = createInMemoryGuestEditLeaseStorage();
+    const fence = createSyncFence();
+    const hub = createChannelHub();
+    let flushCalls = 0;
+    let releaseFlush: (() => void) | undefined;
+    const controller = createGuestEditLeaseController({
+      fence,
+      now: () => 1_000_000,
+      onTakeoverRequested: () => {
+        flushCalls += 1;
+        return new Promise<void>((resolve) => {
+          releaseFlush = resolve;
+        });
+      },
+      openChannel: () => hub.createChannel(),
+      storage,
+      tabId: "tab-a",
+    });
+    try {
+      expect(await controller.claim()).toBe("held");
+      // Another tab asks to take over, so the next renew takes the flush path.
+      await storage.requestTakeover("tab-b", 1_000_000);
+      const renewed = controller.renew();
+      // Let the renew reach the takeover flush, then retire the generation as
+      // an exam switch would before the flush completes.
+      for (let attempt = 0; attempt < 20 && flushCalls === 0; attempt += 1) {
+        await Promise.resolve();
+      }
+      const flush = releaseFlush;
+      if (flush === undefined) {
+        throw new Error("expected the takeover flush to start");
+      }
+      fence.retire();
+      flush();
+      // The retired continuation must not stop the new visit's poller: it
+      // reports held, so the interval cleanup keeps the heartbeat. Nothing
+      // is released either, since the answer is no longer current.
+      await expect(renewed).resolves.toBe(true);
+      expect(await storage.load()).toMatchObject({ tabId: "tab-a" });
+    } finally {
+      controller.dispose();
     }
   });
 });

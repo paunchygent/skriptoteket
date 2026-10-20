@@ -31,7 +31,6 @@ import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./exam-workspace/examWorkspaceExportFormats";
 import { AUTOSAVE_FAILURE_COPY } from "./exam-workspace/useExamWorkspaceSaveStatus";
 
-import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -73,7 +72,6 @@ const DOWNLOAD_CASES: Record<ExamWorkspaceExportTarget, { created: string; filen
 
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
-  arrangeStepHistory(apiMocks);
   unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
   unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
 });

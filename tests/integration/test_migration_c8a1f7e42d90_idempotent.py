@@ -5,9 +5,13 @@ from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+
+_REVISION = "c8a1f7e42d90"
+_PARENT = "4e9b7d1c6a02"
 
 
 async def _seed_existing_profile(database_url: str, user_id: UUID) -> None:
@@ -50,19 +54,19 @@ async def _assert_column_and_existing_default(database_url: str, user_id: UUID) 
 
 @pytest.mark.docker
 def test_exam_courses_migration_backfills_existing_profile_and_reupgrade_is_safe(
-    database_url: str,
-    alembic_config: Config,
-    monkeypatch: pytest.MonkeyPatch,
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.upgrade(alembic_config, "4e9b7d1c6a02")
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _PARENT)
     user_id = uuid4()
     asyncio.run(_seed_existing_profile(database_url, user_id))
 
-    command.upgrade(alembic_config, "head")
-    command.upgrade(alembic_config, "head")
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_column_and_existing_default(database_url, user_id))
 
-    command.downgrade(alembic_config, "4e9b7d1c6a02")
-    command.upgrade(alembic_config, "head")
+    command.downgrade(config, _PARENT)
+    command.upgrade(config, _REVISION)
     asyncio.run(_assert_column_and_existing_default(database_url, user_id))

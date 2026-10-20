@@ -19,7 +19,14 @@
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
-import type { GuestEditLeaseRecord, GuestEditLeaseStoragePort } from "./examWorkspaceGuestEditLease";
+import {
+  decideGuestEditLeaseClaim,
+  decideGuestEditLeaseRenew,
+  decideGuestEditLeaseTakeover,
+  ownsGuestEditLease,
+  type GuestEditLeaseRecord,
+  type GuestEditLeaseStoragePort,
+} from "./examWorkspaceGuestEditLease";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 
 export const EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME = "skriptoteket_exam_workspace_guest";
@@ -223,20 +230,74 @@ export function createIndexedDbGuestEditLeaseStorage(): GuestEditLeaseStoragePor
         )) ?? null
       );
     },
-    async save(next) {
+    /**
+     * One readwrite transaction: read the stored lease, run the claim
+     * decision, then write only when this tab takes the slot. IndexedDB
+     * serializes readwrite transactions on one store across tabs, so the
+     * decision is atomic across tabs. Only IndexedDB calls are awaited
+     * inside the transaction; anything else would auto-close it.
+     */
+    async claim(tabId, at) {
       const db = await getDb();
-      if (next === null) {
-        await db.delete(
-          EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
-          EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
-        );
-        return;
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME, "readwrite");
+      const current =
+        (await tx.store.get(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY)) ?? null;
+      const decided = decideGuestEditLeaseClaim(current, tabId, at);
+      if (decided.held) {
+        await tx.store.put({ ...decided.record }, EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY);
       }
-      await db.put(
-        EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
-        { ...next },
-        EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
-      );
+      await tx.done;
+      return decided;
+    },
+    /**
+     * One readwrite transaction: renew only while this tab holds the slot
+     * and nobody else asked to take over, so a stale renewal never
+     * overwrites a new owner.
+     */
+    async renew(tabId, at) {
+      const db = await getDb();
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME, "readwrite");
+      const current =
+        (await tx.store.get(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY)) ?? null;
+      const decided = decideGuestEditLeaseRenew(current, tabId, at);
+      if (decided.held && decided.record !== null) {
+        await tx.store.put({ ...decided.record }, EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY);
+      }
+      await tx.done;
+      return decided;
+    },
+    /**
+     * One readwrite transaction: free the slot only while this tab holds
+     * it, so a stale release never clears a new owner.
+     */
+    async release(tabId) {
+      const db = await getDb();
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME, "readwrite");
+      const current =
+        (await tx.store.get(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY)) ?? null;
+      if (!ownsGuestEditLease(current, tabId)) {
+        await tx.done;
+        return false;
+      }
+      await tx.store.delete(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY);
+      await tx.done;
+      return true;
+    },
+    /**
+     * One readwrite transaction: take a free or expired slot at once, or
+     * record this tab's ask on the live record.
+     */
+    async requestTakeover(tabId, at) {
+      const db = await getDb();
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME, "readwrite");
+      const current =
+        (await tx.store.get(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY)) ?? null;
+      const decided = decideGuestEditLeaseTakeover(current, tabId, at);
+      if (decided.outcome !== "own") {
+        await tx.store.put({ ...decided.record }, EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY);
+      }
+      await tx.done;
+      return decided;
     },
   };
 }

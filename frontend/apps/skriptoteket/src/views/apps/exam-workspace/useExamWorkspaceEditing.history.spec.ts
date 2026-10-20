@@ -134,6 +134,7 @@ describe("the edit lease on a 409 (K8)", () => {
     server.state.cursor = "other-tab";
     editing.setTitle("Osparad");
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    api.getExamWorkspaceDocument.mockClear();
 
     await editing.history.undo();
     await flushPromises();
@@ -142,7 +143,7 @@ describe("the edit lease on a 409 (K8)", () => {
     expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Osparad");
     expect(editing.history.pending.value).toBe(true);
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
     expect(toast.failure).not.toHaveBeenCalled();
   });
 
@@ -151,12 +152,13 @@ describe("the edit lease on a 409 (K8)", () => {
     editing.setTitle("Lärarens osparade text");
     await editing.history.flush();
     api.changeExamWorkspaceItemType.mockRejectedValueOnce(leaseHeld());
+    api.getExamWorkspaceDocument.mockClear();
 
     await editing.structure.changeType("item_001", "single_choice");
 
     expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
   });
 
   it("waits for a running operation on a busy-time 409 instead of skipping the reload", async () => {
@@ -168,7 +170,7 @@ describe("the edit lease on a 409 (K8)", () => {
           releaseOpen = resolve;
         }),
     );
-    const opening = editing.openDocument(LINEAGE);
+    const opening = editing.requestRoute(LINEAGE);
     await flushPromises();
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 
@@ -182,6 +184,9 @@ describe("the edit lease on a 409 (K8)", () => {
     releaseOpen(response(exam("Opened"), "cursor-open"));
     await opening;
     await reloading;
+    // The reload still owns its captured exam after the operation, so its own
+    // fresh read installs after.
+    await flushPromises();
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
   });

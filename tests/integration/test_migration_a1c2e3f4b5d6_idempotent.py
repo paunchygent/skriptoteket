@@ -15,14 +15,14 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable
+from typing import TypeVar
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import PooledDatabase
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 from tests.integration.migration_schema_helpers import (
     column_map,
@@ -38,7 +38,7 @@ _PARENT = "e8a3c5f1b7d2"
 _TABLE = "public_request_windows"
 _INDEX = "ix_public_request_windows_window_start"
 
-_SchemaAssertion = Callable[[AsyncEngine], Awaitable[None]]
+_T = TypeVar("_T")
 
 
 async def _primary_key_columns(engine: AsyncEngine) -> list[str]:
@@ -87,10 +87,28 @@ async def _assert_public_request_windows_absent(engine: AsyncEngine) -> None:
     assert await index_definitions(engine, _TABLE) == {}
 
 
-async def _with_engine(database_url: str, assertion: _SchemaAssertion) -> None:
+async def _seed_request_window(engine: AsyncEngine) -> None:
+    async with engine.begin() as connection:
+        await connection.execute(
+            text(
+                "INSERT INTO public_request_windows "
+                "(bucket, caller_key, window_start, request_count) "
+                "VALUES ('public-guest', 'test-key', now(), 1)"
+            )
+        )
+
+
+async def _request_window_count(engine: AsyncEngine) -> int:
+    async with engine.connect() as connection:
+        count = await connection.scalar(text("SELECT count(*) FROM public_request_windows"))
+        assert isinstance(count, int)
+        return count
+
+
+async def _with_engine(database_url: str, action: Callable[[AsyncEngine], Awaitable[_T]]) -> _T:
     engine = create_async_engine(database_url, pool_pre_ping=True)
     try:
-        await assertion(engine)
+        return await action(engine)
     finally:
         await engine.dispose()
 
@@ -106,18 +124,25 @@ def test_migration_a1c2e3f4b5d6_is_idempotent(
 
 
 def test_downgrade_drops_public_request_windows_and_reupgrade_restores(
-    alembic_config: Config, database_url: str, monkeypatch: pytest.MonkeyPatch
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
     monkeypatch.setenv("DATABASE_URL", database_url)
-    command.downgrade(alembic_config, "base")
-    command.upgrade(alembic_config, _PARENT)
+    config = alembic_config_for(database_url=database_url)
+    command.upgrade(config, _PARENT)
     asyncio.run(_with_engine(database_url, _assert_public_request_windows_absent))
 
-    command.upgrade(alembic_config, _REVISION)
+    command.upgrade(config, _REVISION)
+    command.upgrade(config, _REVISION)
     asyncio.run(_with_engine(database_url, _assert_public_request_windows_schema))
+    asyncio.run(_with_engine(database_url, _seed_request_window))
+    assert asyncio.run(_with_engine(database_url, _request_window_count)) == 1
 
-    command.downgrade(alembic_config, _PARENT)
+    command.downgrade(config, _PARENT)
     asyncio.run(_with_engine(database_url, _assert_public_request_windows_absent))
 
-    command.upgrade(alembic_config, "head")
+    command.upgrade(config, _REVISION)
     asyncio.run(_with_engine(database_url, _assert_public_request_windows_schema))
+    assert asyncio.run(_with_engine(database_url, _request_window_count)) == 0
+    asyncio.run(_with_engine(database_url, _seed_request_window))
+    assert asyncio.run(_with_engine(database_url, _request_window_count)) == 1

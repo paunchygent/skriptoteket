@@ -26,6 +26,7 @@ import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
+import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
@@ -41,6 +42,10 @@ const props = defineProps<{
   importBlocked: boolean;
   isBusy: boolean;
   isDirty: boolean;
+  /** The one save status: `saving` while an edit is not yet stored, `unsaved` with the reason when it reads Inte sparat. */
+  saveState: "saving" | "saved" | "unsaved";
+  /** The save status's own reason while `saveState` is `unsaved`; null otherwise. */
+  saveDetail: string | null;
   sourceFileError: string | null;
   conversionMessage: string | null;
   conversionError: string | null;
@@ -82,9 +87,23 @@ const groups = computed(() =>
     (key) => courseByKey(key)?.name ?? null,
   ),
 );const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
-const openBlocked = computed(() => props.isBusy || props.isDirty);
-/** A blocked Öppna click answers at once, through the same toast channel an open failure uses. */
-const OPEN_BLOCKED_COPY = "Vänta tills ändringarna har sparats.";
+const openBlocked = computed(
+  () => props.isBusy || props.isDirty || props.saveState !== "saved",
+);
+/** One reason per blocked state, used by the hint, the entry tooltip and the blocked-click toast. */
+const OPEN_BUSY_COPY = "En annan åtgärd pågår. Försök igen om en stund.";
+const blockedReason = computed<string | null>(() => {
+  if (props.saveState === "unsaved") {
+    return props.saveDetail ?? PENDING_SAVE_COPY;
+  }
+  if (props.saveState === "saving" || props.isDirty) {
+    return PENDING_SAVE_COPY;
+  }
+  if (props.isBusy) {
+    return OPEN_BUSY_COPY;
+  }
+  return null;
+});
 /** Unreadable saved exams reported by the rows below, so the empty hint hides when they exist. */
 const unreadableCount = ref(0);
 const toast = useToast();
@@ -152,7 +171,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     return;
   }
   if (openBlocked.value) {
-    toast.failure(OPEN_BLOCKED_COPY);
+    toast.failure(blockedReason.value ?? OPEN_BUSY_COPY);
     return;
   }
   emit("open", entry.lineage_id);
@@ -304,14 +323,14 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       />{{ sourceFileError }}
     </p>
     <p
-      v-else-if="isDirty"
+      v-else-if="blockedReason"
       class="xw-hint"
       data-test="exam-workspace-open-dirty-hint"
     >
       <UiGlyph
         meaning="info"
         :size="16"
-      />Spara det öppna provet innan du importerar eller öppnar ett annat.
+      />{{ blockedReason }}
     </p>
   </section>
 
@@ -368,7 +387,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
           tabindex="0"
           :aria-disabled="(entry.lineage_id !== currentLineageId && openBlocked) || undefined"
           :aria-current="entry.lineage_id === currentLineageId || undefined"
-          :title="entry.lineage_id !== currentLineageId && isDirty ? 'Spara det öppna provet innan du öppnar ett annat.' : undefined"
+          :title="entry.lineage_id !== currentLineageId && openBlocked && blockedReason !== null ? blockedReason : undefined"
           :data-test="`exam-workspace-open-${entry.lineage_id}`"
           @click="openEntry(entry)"
           @keydown.enter.prevent="openEntry(entry)"

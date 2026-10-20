@@ -4,9 +4,10 @@
  * Expected behavior (unit D1o):
  *   Opening a document whose stored schema is older than the current native
  *   exam document fails with `DOCUMENT_SCHEMA_OUTDATED`, and the failure
- *   toast reads `Provet är sparat i ett äldre format och kan inte öppnas.`
+ *   toast reads `Provet är sparat i ett äldre format och kan inte öppnas.
+ *   Importera originalfilen på nytt.`
  *   Every other open failure keeps `Det gick inte att öppna provet. Försök
- *   igen.` Both outcomes return false, so the deep link watcher restores the
+ *   igen.` Both outcomes report `failed`, so the deep link watcher restores the
  *   address exactly as it does for any other failed open.
  */
 
@@ -17,9 +18,10 @@ import { effectScope } from "vue";
 import { ApiError } from "../../../api/client";
 import { useToastStore } from "../../../stores/toast";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
-const OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas.";
+const OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 
 const api = vi.hoisted(() => ({
@@ -49,11 +51,12 @@ describe("openDocument with an older saved format", () => {
       }),
     );
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const fence = createSyncFence();
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      const opened = await state.openDocument("lineage-1");
+      const opened = await state.openDocument("lineage-1", fence.begin());
 
-      expect(opened).toBe(false);
+      expect(opened).toBe("failed");
       expect(state.workspaceDocument.value).toBeNull();
       expect(toastMessages()).toContain(OUTDATED_COPY);
       expect(toastMessages()).not.toContain(OPEN_FAILURE_COPY);
@@ -71,11 +74,12 @@ describe("openDocument with an older saved format", () => {
       }),
     );
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const fence = createSyncFence();
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      const opened = await state.openDocument("lineage-1");
+      const opened = await state.openDocument("lineage-1", fence.begin());
 
-      expect(opened).toBe(false);
+      expect(opened).toBe("failed");
       expect(state.workspaceDocument.value).toBeNull();
       expect(toastMessages()).toContain(OPEN_FAILURE_COPY);
       expect(toastMessages()).not.toContain(OUTDATED_COPY);
@@ -87,11 +91,12 @@ describe("openDocument with an older saved format", () => {
   it("keeps the generic copy when the open request never reaches the server", async () => {
     api.getExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const fence = createSyncFence();
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      const opened = await state.openDocument("lineage-1");
+      const opened = await state.openDocument("lineage-1", fence.begin());
 
-      expect(opened).toBe(false);
+      expect(opened).toBe("failed");
       expect(state.workspaceDocument.value).toBeNull();
       expect(toastMessages()).toContain(OPEN_FAILURE_COPY);
       expect(toastMessages()).not.toContain(OUTDATED_COPY);

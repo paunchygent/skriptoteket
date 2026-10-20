@@ -5,7 +5,7 @@ import { SupersededAuthSessionError, useAuthStore } from "../stores/auth";
 import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse as serverSession } from "../stores/authTestHelpers";
 import { postChatStream } from "../composables/editor/chat/editorChatApi";
 import { cancelTranscriptJob, submitTranscriptJob } from "./sirConvertGateway/client";
-import { apiFetch, apiFetchBlob, apiFetchBlobResponse } from "./client";
+import { apiFetch, apiFetchBlob, apiFetchBlobResponse, apiPost, isApiError } from "./client";
 
 const rejection = () => mockJsonResponse({ error: {
   code: "AUTHORIZATION_ERROR", message: "CSRF token required for browser session write",
@@ -145,7 +145,8 @@ describe.each(transports)("$name CSRF recovery", ({ name: transportName, request
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "unbound" }))
       .mockResolvedValueOnce(mockJsonResponse(job));
     await expect(request()).rejects.toThrow();
-    expect(fetch).toHaveBeenCalledTimes(transportName === "logout" ? 0 : 1);
+    // A write without a token is never dispatched, so no transport reaches fetch.
+    expect(fetch).toHaveBeenCalledTimes(0);
     expect(auth.csrfToken).toBeNull();
   });
   it("never replays across a session change during rehydration", async () => {
@@ -160,5 +161,58 @@ describe.each(transports)("$name CSRF recovery", ({ name: transportName, request
     if (result !== undefined) expect(result).toBeInstanceOf(SupersededAuthSessionError);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(auth.csrfToken).toBe("B");
+  });
+});
+
+describe("missing CSRF token", () => {
+  const claimPath = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/lineage-1/edit-lease/claim";
+
+  function claimWasSent(): boolean {
+    return vi.mocked(fetch).mock.calls
+      .map(([url]) => String(url))
+      .some((url) => url.includes("/edit-lease/claim"));
+  }
+
+  it("rejects an edit-lease claim without sending it when the token load returns an error", async () => {
+    useAuthStore().csrfToken = null;
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(mockJsonResponse({ error: { message: "Unavailable" } }, 503))
+      .mockResolvedValueOnce(mockJsonResponse({ lease: "claimed" }));
+    const result = await apiPost(claimPath, { owner: "teacher-a" }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(isApiError(result)).toBe(true);
+    expect(result).toMatchObject({
+      status: 403,
+      code: "AUTHORIZATION_ERROR",
+      message: "CSRF token required for browser session write",
+    });
+    expect(claimWasSent()).toBe(false);
+  });
+
+  it("rejects an edit-lease claim without sending it when the token load throws", async () => {
+    useAuthStore().csrfToken = null;
+    vi.mocked(fetch)
+      .mockRejectedValueOnce(new Error("Det gick inte att hämta CSRF-token."))
+      .mockResolvedValueOnce(mockJsonResponse({ lease: "claimed" }));
+    const result = await apiPost(claimPath, { owner: "teacher-a" }).then(
+      () => null,
+      (error: unknown) => error,
+    );
+    expect(isApiError(result)).toBe(true);
+    expect(result).toMatchObject({
+      status: 403,
+      code: "AUTHORIZATION_ERROR",
+      message: "CSRF token required for browser session write",
+    });
+    expect(claimWasSent()).toBe(false);
+  });
+
+  it("sends the claim once with its header when the token is available", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ lease: "claimed" }));
+    await apiPost(claimPath, { owner: "teacher-a" });
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(new Headers(vi.mocked(fetch).mock.calls[0][1]?.headers).get("X-CSRF-Token")).toBe("stale");
   });
 });

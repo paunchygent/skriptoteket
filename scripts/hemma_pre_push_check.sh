@@ -1,13 +1,27 @@
 #!/usr/bin/env bash
 # Pre-push gate for main: run the full `pdm run typecheck` and `pdm run test`
-# on Hemma for the commit being pushed. A failure blocks the push. Hemma being
-# unreachable pushes with a warning. Commits that only change Markdown or docs/ since
-# the last passing commit reuse that result.
+# on Hemma for the commit being pushed. When the pushed range changes migrations
+# or migration tests, `pdm run test-migrations` also runs. A failure blocks the
+# push. Hemma being unreachable pushes with a warning. Commits that only change
+# Markdown or docs/ since the last passing commit reuse that result.
 set -euo pipefail
 
 [[ "${PRE_COMMIT_REMOTE_BRANCH:-}" == "refs/heads/main" ]] || exit 0
-sha="${PRE_COMMIT_TO_REF:?pre-commit did not supply PRE_COMMIT_TO_REF}"
-sha="$(git rev-parse "$sha^{commit}")"
+if [[ -n "${PRE_COMMIT_TO_REF:-}" ]]; then
+  sha="$(git rev-parse "$PRE_COMMIT_TO_REF^{commit}")"
+  decision="$(scripts/pre_push_touches_migrations.sh "${PRE_COMMIT_FROM_REF:?pre-commit supplied TO without FROM}" "$sha")"
+else
+  # Pre-commit all-files mode: the push includes the repository root commit,
+  # so the whole tree is new and the migration stage must run.
+  sha="$(git rev-parse "${PRE_COMMIT_LOCAL_BRANCH:?pre-commit did not supply PRE_COMMIT_LOCAL_BRANCH}^{commit}")"
+  decision=run
+fi
+
+run_migrations=0
+if [[ $decision == run ]]; then
+  run_migrations=1
+  echo "hemma-check: pushed range changes migrations; docker migration tests will run."
+fi
 
 hemma_repo="apps/skriptoteket"
 hemma_worktree="apps/skriptoteket-verify-main"
@@ -49,7 +63,8 @@ cd ~/$hemma_worktree
   pdm run fe-install --frozen-lockfile --silent &&
   pdm run fe-build >/dev/null &&
   pdm run typecheck &&
-  pdm run test
+  pdm run test &&
+  { [[ $run_migrations == 0 ]] || pdm run test-migrations; }
 } >"\$log" 2>&1
 status=\$?
 tail -n 15 "\$log"

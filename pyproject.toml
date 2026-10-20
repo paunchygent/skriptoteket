@@ -526,6 +526,7 @@ pytest = "python -m scripts.run_pytest_with_native_libs"
 test-serial = "python -m scripts.run_pytest_with_native_libs -n 0 -s -v --log-cli-level=INFO"
 test-simulations = "python -m scripts.run_pytest_with_native_libs -m simulation"
 test-docker = "python -m scripts.run_pytest_with_native_libs -m docker tests/integration"
+test-migrations = {shell = "python -m scripts.run_pytest_with_native_libs -m docker tests/integration/test_migration_*.py"}
 
 # Docs-as-code governance
 handoff-validate = "python -m scripts.check_agent_doc_budgets"

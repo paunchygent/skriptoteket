@@ -1,17 +1,15 @@
 ## Current
 
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
-  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. One
-  generation fence for every async result (user, 2026-10-20): FF `0090a024`,
-  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`, F3 `303bc263`, F4 `6202fe16`.
-  R1 closed (user): an old-format kept edit is upgraded before the merge.
-  Rereview 6 closed V1-V3; its lock findings R6-1..R6-3 are in repair (head
-  `31fbd255`, 2026-10-20). Next: focused proof, suite slot, rereview 7 of R6-1,
-  then the Mac merge and walk (lease paths, Kurs clear, ticks, drawer hints).
-
-- 41-02-05 follow-ups: D10 pictures in the guest draft download is built by
-  TASK-SKRIPT-41-02-06 U3 (`a7edf784`, lead branch); D24 a server claim per draft_id is
-  unscheduled.
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Released
+  on main `4951dec2`; the Mac walk failed step 5 (route race, CSRF 403).
+  Rebuilt from the R9 design; rereview 12 approved head `d3a4b5dc`, merged to
+  main 2026-10-20 (`f84eb85d`); the Mac re-walk of step 5 passed on staging.
+- TASK-SKRIPT-41-02-06 unreadable exam files (user, 2026-10-20; ADR-SKRIPT-0093):
+  lead `2203a0c2`, branch `codex/task-skript-41-02-unreadable-exam-files-remote`,
+  root `01a1583c`. All review findings closed at `4623a344`; `f84eb85d` merged in. U5 in
+  progress: deep link and DOCUMENT_UNREADABLE mapping, its last unit.
+- 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
@@ -42,10 +40,6 @@
   package retained at `evidence/talmanus-review-package-2026-10-15/` (sent 2026-10-15).
   Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
   parses Skola24; correction and `generate-planner-help` regen still pending.
-
-- [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
-  `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
-  (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
@@ -84,7 +78,7 @@
   RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
 
   - 40-04-08 `done`: walk repair on main be979cd7, Mac re-walk PASS 2026-10-19. 40-04-04 `done`: Mac walk PASS at cf9547fa (jump, fix, QTI 200). 40-04-16 `done`: Mac walk PASS at cf9547fa.
-  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 builds them on that branch. 9cec90f5 is on main and was walked on the Mac at 6f1c5195 (2026-10-19). e13ea08e was released to main as 00f62f1a and walked on staging (2026-10-19). After it on the branch: R2 tests, R3, R4 (a yielded tab reclaims the lease) and L5 (empty dropdown focus). Next: the next batch head on the orchestrator's slot, then copy review, then independent code review of Part B. 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
+  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 builds them on that branch. 9cec90f5 is on main and was walked on the Mac at 6f1c5195 (2026-10-19). e13ea08e was released to main as 00f62f1a and walked on staging (2026-10-19). After it on the branch: R2 tests, R3, R4 (a yielded tab reclaims the lease) and L5 (empty dropdown focus). Rereview 9 (2026-10-20): R9-3 at 7d11ced2; the reviewer's R9 design built as R9-2 23e78826 and R9-1 7ce4aeaf (L13-L15); rereview 10 fixes R10-2 44c2c7fe and R10-1 4bdb4287; R10-2 repaired again as R11 c7a70c6a; next rereview 12 (see the task's Resume here). 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
   - Toolbar redesign: TASK-SKRIPT-40-04-17 `done` 2026-10-19 (user closure; main aac5bdfd, 32460f67; staging walks passed, 375 px coarse pointer not walkable in Edge; task doc "Outcome"). Follow-up TASK-SKRIPT-40-04-18 `done` 2026-10-20 (user closure; main 98cbab6c, staging walk passed).
   - 40-04-12 PDF keep-together on main 8d51a6ba; the K7 "/" check is for the Mac walk. 40-04-15 inline "(N p)" points `done`: main df87d633, Mac walk PASS 2026-10-19 (walk observations in its task doc).
   - 41-02-02 `done`: deployed to production at f7eeada5 on 2026-10-19 with the nginx-proxy /32 trust (task doc "Production Deploy").
@@ -137,6 +131,8 @@
 
 ## Recent
 
+- 2026-10-20 `done` on main: TASK-SKRIPT-06-17-02 migration tests pinned to their own revision, plus the pre-push migration stage (`3d3f867a`, user closure; the stage ran on its first push, 118 passed). TASK-SKRIPT-06-17-01 canceled as superseded by it.
+
 - 2026-10-20 `done` on main: TASK-SKRIPT-39-05-16 unused long-form readiness copy deleted (`5611f0c8`, user closure).
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-41-02-05 guest draft handover to Mina filer (`8be9aefa`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Follow-ups D10, D24 in Current.
@@ -148,33 +144,6 @@
 - 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
 
 - 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
-
-- Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
-  39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,
-  39-07-02, 40-04-02 (`baf1e2e7`) and 39-06-06 on tests by user ruling (`69c0610b`).
-  Staging and Exam.net proof at main `1f9e4367` (exam 5345261):
-  `01a149c9.../evidence/staging-proof-1f9e4367/proof.md`.
-
-- [TASK-SKRIPT-40-03-10](docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
-  `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
-  edit controls glyph-only and frameless (0.1.31), roomier school forms; main `e5ab32c6`.
-
-- 2026-10-17 hooks: `precommit-install` now runs the package installer
-  `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
-  so an install from a task worktree keeps the shared hook on the primary
-  `.venv`; repository-governance pin 0.11.134 (`70bbfefd`, binding `6363b36e`).
-
-- [TASK-SKRIPT-REP-0042](docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md)
-  `done` 2026-10-17 (approved review): the docker DOCX job proof asserts the
-  formatting diagnostics contract; one live recording answers the bf26 typed
-  type-conflict resend; replays require a recording per build request; main
-  `ef8cd6ea`, docker suite 9/9; review `01a148db.../evidence/review-rep0042.md`.
-
-- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
-  `done` 2026-10-17 (user closure gate), tasks 1-5 `done`; epic summary
-  updated. Story check: list grouping and sort preference on staging
-  `d31e939a` (`01a14b79.../evidence/staging-list-check/CHECK.md`); tags from
-  the wave-2 walk; task evidence in each task's closeout. Worktree retired.
 
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked

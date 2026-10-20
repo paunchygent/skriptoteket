@@ -7,10 +7,13 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: proposed
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-20 (AskUserQuestion, Hemma orchestrator session) to close this task as superseded by TASK-SKRIPT-06-17-02 (on main 3d3f867a), whose U5 resolves merge parents in the migration idempotency support. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-06-17-02 named as its successor.'
 task_kind: story
 acceptance_criteria:
 - pdm run test-sequential -m 'integration and docker' tests/integration/test_migration_revision_coverage_idempotent.py

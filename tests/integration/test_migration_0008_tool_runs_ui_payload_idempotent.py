@@ -41,12 +41,13 @@ def test_migration_0008_tool_runs_ui_payload_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0007_tool_maintainer_audit_log")
+    command.upgrade(alembic_cfg, "0008_tool_runs_ui_payload")
+    command.upgrade(alembic_cfg, "0008_tool_runs_ui_payload")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0007_tool_maintainer_audit_log")
+    command.upgrade(alembic_cfg, "0008_tool_runs_ui_payload")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

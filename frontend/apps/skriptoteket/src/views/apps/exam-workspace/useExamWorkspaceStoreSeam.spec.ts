@@ -15,7 +15,8 @@ import { effectScope, ref } from "vue";
 import type { ExamWorkspaceDocumentSummary, NativeExamDocument } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
-import { buildResponse, buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
+import { buildResponse, buildSavedExamSummary, saveCopyAs } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import * as exportsModule from "./useExamWorkspaceExports";
 import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
@@ -44,13 +45,14 @@ beforeEach(() => {
 describe("teacher actions in guest mode", () => {
   it("does nothing for Spara som and never copies the exam", async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: guestStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: guestStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       await flushPromises();
 
-      await expect(state.saveDocumentAs("Kopia")).resolves.toBe("failed");
+      await expect(saveCopyAs(state, fence, "Kopia")).resolves.toBe("failed");
       expect(apiMocks.copyExamWorkspaceDocument).not.toHaveBeenCalled();
     } finally {
       scope.stop();

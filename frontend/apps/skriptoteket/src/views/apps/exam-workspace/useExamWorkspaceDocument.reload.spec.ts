@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildResponse, deferred } from "./useExamWorkspaceDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 const api = vi.hoisted(() => ({
@@ -36,14 +37,15 @@ describe("reloadDocument while an operation runs", () => {
   it("waits for the running open instead of skipping the reload", async () => {
     const first = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(first);
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
 
       const gate = deferred<ReturnType<typeof buildResponse>>();
       api.getExamWorkspaceDocument.mockImplementationOnce(() => gate.promise);
-      const opening = state.openDocument("lineage-1");
+      const opening = state.openDocument("lineage-1", fence.begin());
       await flushPromises();
       expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
 
@@ -66,10 +68,11 @@ describe("reloadDocument while an operation runs", () => {
   it("reloads at once when nothing runs", async () => {
     const first = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(first);
+    const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       const reloaded = { ...first, history_cursor: "reloaded-cursor" };
       api.getExamWorkspaceDocument.mockResolvedValueOnce(reloaded);
 
@@ -87,15 +90,18 @@ describe("read-only editing", () => {
     const first = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(first);
     const readOnly = ref(true);
+    const fence = createSyncFence();
     const scope = effectScope();
     const state = scope.run(() =>
       useExamWorkspaceDocument({
+        getFence: () => fence,
         isReadOnly: () => readOnly.value,
         store: serverExamWorkspaceStore,
+        submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined,
       }),
     )!;
     try {
-      await state.openDocument("lineage-1");
+      await state.openDocument("lineage-1", fence.begin());
       const before = state.workspaceDocument.value;
 
       state.setTitle("Försök");

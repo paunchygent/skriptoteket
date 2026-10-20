@@ -95,12 +95,13 @@ def test_migration_0013_user_profiles_and_security_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0012_tool_owner_user_id")
+    command.upgrade(alembic_cfg, "0013_user_profiles_and_security")
+    command.upgrade(alembic_cfg, "0013_user_profiles_and_security")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0012_tool_owner_user_id")
+    command.upgrade(alembic_cfg, "0013_user_profiles_and_security")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

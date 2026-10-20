@@ -28,6 +28,8 @@ import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 const apiMocks = vi.hoisted(() => ({
@@ -86,9 +88,12 @@ function setup(selected: string | null = null) {
   const noteLeaseLost = vi.fn(async () => undefined);
   const applied: ExamWorkspaceDocumentResponse[] = [];
   const selectParent = vi.fn();
+  const fence = createSyncFence();
+  const transport = createFencedTransport(() => fence, serverExamWorkspaceStore.shared);
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: (next) => {
+      applyCommandResponse: (token, next) => {
+        void token;
         applied.push(next);
         workspaceDocument.value = next.document;
       },
@@ -97,9 +102,14 @@ function setup(selected: string | null = null) {
         if (selectId !== null) selectedItemId.value = selectId;
         return true;
       },
+      enqueueWrite: (run, refused) => {
+        void refused;
+        return run(fence.begin());
+      },
       flush,
       historyCursor,
       isBusy: () => false,
+      isCurrent: (token) => fence.isCurrent(token),
       isReadOnly: () => false,
       lineageId: () => "lineage-1",
       noteLeaseLost,
@@ -112,7 +122,7 @@ function setup(selected: string | null = null) {
       selectParent,
       selectedItemId,
       selectedParentId,
-      shared: serverExamWorkspaceStore.shared,
+      transport,
       tabId: () => "tab-1",
       workspaceDocument,
     }),
