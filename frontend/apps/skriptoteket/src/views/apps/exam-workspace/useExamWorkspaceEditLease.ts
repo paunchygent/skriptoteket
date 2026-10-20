@@ -276,6 +276,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
             () => deps.onTakeoverRequested(),
             noteLostLease,
             noteYielded,
+            deps.fence,
           )
         : createServerDriver(deps.server ?? defaultServer, tabId);
     } catch {

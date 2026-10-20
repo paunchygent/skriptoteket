@@ -25,6 +25,8 @@
  *     injected, and the specs run them in memory with a channel double.
  */
 
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
+
 export const GUEST_EDIT_LEASE_HEARTBEAT_MS = 5_000;
 export const GUEST_EDIT_LEASE_TTL_MS = 15_000;
 export const GUEST_EDIT_LEASE_CHANNEL_NAME = "skriptoteket:guest-edit-lease";
@@ -295,6 +297,18 @@ export type GuestEditLeaseControllerDeps = {
    * Unit K8 provides this; the controller releases afterwards either way.
    */
   onTakeoverRequested?: () => Promise<void> | void;
+  /**
+   * The owning session's fence: the answer takes a token when it starts and
+   * acts at each step after an await only while that token is current, so an
+   * answer retired by an exam switch releases nothing and changes no
+   * holding.
+   */
+  fence: Pick<SyncFence, "begin" | "isCurrent">;
+  /**
+   * Runs after a current answer releases, so the owning session turns
+   * read-only and restarts its heartbeat. Absent in the isolated specs.
+   */
+  onYielded?: () => void;
 };
 
 export type GuestEditLeaseController = {
@@ -346,9 +360,20 @@ export function createGuestEditLeaseController(
       return;
     }
     answering = true;
+    // The token dates the answer: a switch retires its generation, so each
+    // step after an await runs only while the token is current. A stale
+    // answer releases nothing and changes no holding; the genuine current
+    // takeover still flushes, releases and yields.
+    const token: FenceToken = deps.fence.begin();
     try {
       await deps.onTakeoverRequested?.();
+      if (!deps.fence.isCurrent(token)) {
+        return;
+      }
       await releaseLease();
+      if (deps.fence.isCurrent(token)) {
+        deps.onYielded?.();
+      }
     } finally {
       answering = false;
     }

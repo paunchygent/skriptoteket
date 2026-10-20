@@ -31,6 +31,7 @@ import {
   type GuestEditLeaseChannel,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
+import type { SyncFence } from "./examWorkspaceSyncFence";
 
 export type ExamWorkspaceEditLeaseServer = {
   claim(lineageId: string, tabId: string): Promise<ExamWorkspaceEditLeaseResponse>;
@@ -143,16 +144,14 @@ export function createGuestDriver(
    * happens one full heartbeat after the release.
    */
   onYielded: () => void,
+  /** The owning session's fence: a retired takeover answer yields nothing. */
+  fence: Pick<SyncFence, "begin" | "isCurrent">,
 ): ExamWorkspaceEditLeaseDriver {
   const controller = createGuestEditLeaseController({
+    fence,
     now,
-    onTakeoverRequested: async () => {
-      await onTakeoverRequested();
-      // The controller releases the lease immediately after this callback in
-      // the same microtask drain, so no heartbeat tick can interleave: this
-      // restart counts as after the release.
-      onYielded();
-    },
+    onTakeoverRequested,
+    onYielded,
     openChannel,
     storage: guestStorage,
     tabId,

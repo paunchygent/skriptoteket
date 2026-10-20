@@ -20,6 +20,7 @@ import {
   type GuestEditLeaseChannel,
   type GuestEditLeaseMessage,
 } from "./examWorkspaceGuestEditLease";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 
 type ChannelListener = (event: { data: GuestEditLeaseMessage }) => void;
 
@@ -69,6 +70,7 @@ function setup() {
   };
   const holder = (onTakeoverRequested: () => Promise<void> | void = () => undefined) =>
     createGuestEditLeaseController({
+      fence: createSyncFence(),
       now,
       onTakeoverRequested,
       openChannel: () => hub.createChannel(),
