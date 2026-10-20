@@ -72,6 +72,14 @@ function mountField(
   return wrapper;
 }
 
+function requireButton(element: Element): HTMLButtonElement {
+  expect(element).toBeInstanceOf(HTMLButtonElement);
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error("expected a button element");
+  }
+  return element;
+}
+
 afterEach(() => {
   for (const wrapper of mounted.splice(0)) {
     wrapper.unmount();
@@ -161,8 +169,10 @@ describe("ExamWorkspaceWritingLinesField", () => {
     const wrapper = mountField(1, { freeText: [{ itemId: "i1", label: "1", lines: 1 }, { itemId: "i2", label: "2", lines: 3 }] });
     await wrapper.get(APPLY_ALL).trigger("click");
 
-    expect(wrapper.findAll(`${POPOVER} p`)[0]!.text()).toBe("Alla 2 fritextfrågor får 1 rad.");
-    expect(wrapper.findAll(`${POPOVER} p`)[1]!.text()).toBe("2 har i dag en annan skrivyta.");
+    expect(wrapper.findAll(`${POPOVER} p`).slice(0, 2).map((paragraph) => paragraph.text())).toEqual([
+      "Alla 2 fritextfrågor får 1 rad.",
+      "2 har i dag en annan skrivyta.",
+    ]);
     expect(wrapper.get(CONFIRM).text()).toBe("Använd 1 rad");
   });
 
@@ -223,7 +233,7 @@ describe("ExamWorkspaceWritingLinesField", () => {
       await wrapper.get(APPLY_ALL).trigger("click");
       await nextTick();
       // Focus left the popover without landing on another control (relatedTarget null), so the popover stays open.
-      (wrapper.get(CONFIRM).element as HTMLButtonElement).blur();
+      requireButton(wrapper.get(CONFIRM).element).blur();
       await nextTick();
       expect(wrapper.find(POPOVER).exists()).toBe(true);
       outside.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
@@ -255,7 +265,7 @@ describe("ExamWorkspaceWritingLinesField", () => {
       const wrapper = mountField(8);
       await wrapper.get(APPLY_ALL).trigger("click");
       await nextTick();
-      const confirmButton = wrapper.get(CONFIRM).element as HTMLButtonElement;
+      const confirmButton = requireButton(wrapper.get(CONFIRM).element);
       expect(document.activeElement).toBe(confirmButton);
       outside.focus();
       await nextTick();
@@ -272,8 +282,8 @@ describe("ExamWorkspaceWritingLinesField", () => {
     const wrapper = mountField(8);
     await wrapper.get(APPLY_ALL).trigger("click");
     await nextTick();
-    (wrapper.get(APPLY_ALL).element as HTMLButtonElement).focus();
-    (wrapper.get(CANCEL).element as HTMLButtonElement).focus();
+    requireButton(wrapper.get(APPLY_ALL).element).focus();
+    requireButton(wrapper.get(CANCEL).element).focus();
     await nextTick();
 
     expect(wrapper.find(POPOVER).exists()).toBe(true);
