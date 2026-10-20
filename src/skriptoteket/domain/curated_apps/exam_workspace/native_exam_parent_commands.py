@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 
@@ -66,7 +67,7 @@ def _new_child(document: NativeExamDocument, child: NativeExamItem) -> NativeExa
         raise ordering_inside_parent_error(child.item_id)
     data = child.model_dump()
     data["item_id"] = _next_id("item", {item.item_id for item in document.items}, 9999)
-    data["review"]["parse_origin"] = "teacher_created"
+    data["review"]["parse_origin"] = NativeParseOrigin.TEACHER_CREATED
     return NativeExamItem.model_validate(data)
 
 

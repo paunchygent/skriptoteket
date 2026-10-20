@@ -31,6 +31,8 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_change_type_test_
     GAP_KINDS,
     KINDS,
     expected_dropped,
+    gap_fill_with_kept_word,
+    inline_choice_with_kept_word,
     source_item,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
@@ -77,7 +79,27 @@ def test_every_kind_pair_keeps_text_points_identity_and_parent(
     assert actual.item_id == item.item_id
     assert actual.sequence == item.sequence
     assert actual.points == item.points
-    assert _text_segments(actual) == _text_segments(item)
+    before_text = _text_segments(item)
+    after_text = _text_segments(actual)
+    if target is NativeExamItemKind.GAP_FILL and source not in GAP_KINDS:
+        # D9: the new gap sits at the end of the last question paragraph, so one
+        # unmarked " " separator may follow the otherwise preserved wording.
+        assert after_text[: len(before_text)] == before_text
+        added = after_text[len(before_text) :]
+        assert len(added) <= 1
+        if added:
+            (heading, separator) = added[0]
+            assert heading == item.body[-1].heading_level
+            assert (
+                isinstance(separator, NativeTextSegment)
+                and separator.text == " "
+                and separator.marks == ()
+            )
+        last = actual.body[-1]
+        assert isinstance(last.segments[-1], NativeGapSegment)
+        assert len(last.segments) > 1
+    else:
+        assert after_text == before_text
     assert changed.items[1] == sibling
     assert changed.parents == document.parents
     assert changed.document_id == document.document_id
@@ -307,3 +329,125 @@ def test_a_type_change_keeps_source_points(target: NativeExamItemKind) -> None:
     )
 
     assert result.document.items[0].source_points == 4
+
+
+def _visible_words(item: NativeExamItem) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    return tuple(
+        (segment.text, segment.marks)
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    )
+
+
+def _kept_links(item: NativeExamItem) -> tuple[str | None, ...]:
+    return tuple(
+        segment.kept_gap_id
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    )
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        NativeExamItemKind.FREE_TEXT,
+        NativeExamItemKind.SINGLE_CHOICE,
+        NativeExamItemKind.MULTIPLE_RESPONSE,
+        NativeExamItemKind.MATCHING,
+        NativeExamItemKind.ORDERING,
+    ],
+    ids=lambda kind: kind.value,
+)
+def test_retype_gap_fill_with_kept_word_to_plain_kind_drops_kept_answers(
+    target: NativeExamItemKind,
+) -> None:
+    item = gap_fill_with_kept_word()
+
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
+
+    changed = result.document.items[0]
+    assert changed.kind is target
+    assert changed.kept_gaps == ()
+    assert all(link is None for link in _kept_links(changed))
+    assert _visible_words(changed) == (("Ange frastyp: ", ()), (" NF", ("bold",)))
+    assert changed.points == item.points == 2
+    assert "accepted_values" in result.dropped_content
+    NativeExamDocument.model_validate(result.document.model_dump())
+
+
+def test_retype_gap_fill_with_kept_word_to_inline_choice_transforms_kept_gap() -> None:
+    item = gap_fill_with_kept_word()
+
+    result = change_item_type(
+        make_document(item),
+        item_id=item.item_id,
+        target_kind=NativeExamItemKind.INLINE_CHOICE,
+        rng=random.Random(1),
+    )
+
+    changed = result.document.items[0]
+    assert changed.kind is NativeExamItemKind.INLINE_CHOICE
+    assert len(changed.kept_gaps) == 1
+    kept = changed.kept_gaps[0]
+    assert kept.gap_id == "gap_002"
+    assert [
+        segment.text
+        for option in kept.options
+        for paragraph in option.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ] == ["NF", "nominalfras"]
+    assert [option.choice_id for option in kept.options] == ["choice_001", "choice_002"]
+    assert kept.correct_option_id == "choice_001"
+    assert kept.accepted_values == ()
+    assert kept.automatic_values == ()
+    assert kept.excluded_automatic_values == ()
+    assert "gap_002" in _kept_links(changed)
+    assert _visible_words(changed) == (("Ange frastyp: ", ()), (" NF", ("bold",)))
+    assert "accepted_values" not in result.dropped_content
+    NativeExamDocument.model_validate(result.document.model_dump())
+
+
+def test_retype_inline_choice_with_kept_word_to_gap_fill_drops_kept_options() -> None:
+    item = inline_choice_with_kept_word()
+    word = _visible_words(item)[1][0]
+
+    result = change_item_type(
+        make_document(item),
+        item_id=item.item_id,
+        target_kind=NativeExamItemKind.GAP_FILL,
+        rng=random.Random(1),
+    )
+
+    changed = result.document.items[0]
+    assert changed.kind is NativeExamItemKind.GAP_FILL
+    assert changed.kept_gaps == ()
+    assert all(link is None for link in _kept_links(changed))
+    assert _visible_words(changed)[1] == (word, ())
+    assert changed.points == item.points
+    assert "options" in result.dropped_content
+    assert "correct_option_id" in result.dropped_content
+    NativeExamDocument.model_validate(result.document.model_dump())
+
+
+def test_retype_inline_choice_with_kept_word_to_free_text_drops_kept_options() -> None:
+    item = inline_choice_with_kept_word()
+    word = _visible_words(item)[1][0]
+
+    result = change_item_type(
+        make_document(item),
+        item_id=item.item_id,
+        target_kind=NativeExamItemKind.FREE_TEXT,
+        rng=random.Random(1),
+    )
+
+    changed = result.document.items[0]
+    assert changed.kind is NativeExamItemKind.FREE_TEXT
+    assert changed.kept_gaps == ()
+    assert all(link is None for link in _kept_links(changed))
+    assert _visible_words(changed)[1] == (word, ())
+    assert set(result.dropped_content) == {"gaps", "options", "correct_option_id"}

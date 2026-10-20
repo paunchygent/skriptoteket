@@ -44,6 +44,8 @@ class NativeParseOrigin(StrEnum):
     DETERMINISTIC = "deterministic"
     LLM_PARSED = "llm_parsed"
     TEACHER_CREATED = "teacher_created"
+    # The teacher chose the type of a question the import printed from source.
+    TEACHER_RETYPED = "teacher_retyped"
 
 
 class NativeItemReviewState(StrEnum):
