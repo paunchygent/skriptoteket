@@ -35,6 +35,9 @@ export const AUTOSAVE_FAILURE_COPY = "Ändringarna kunde inte sparas. Vi försö
 export const LEASE_LOST_COPY =
   "Ändringen sparades inte eftersom provet redigeras i den andra fliken.";
 
+/** The pending-save hint the Öppna drawer and the details drawer share. */
+export const PENDING_SAVE_COPY = "Vänta tills ändringarna har sparats.";
+
 /** A failed store is retried this often until it succeeds. */
 export const EXAM_WORKSPACE_SAVE_RETRY_MS = 5000;
 

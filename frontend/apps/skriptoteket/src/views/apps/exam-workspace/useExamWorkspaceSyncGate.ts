@@ -30,7 +30,7 @@
  *     the lease through `leaseAcquired` and `leaseLost`.
  */
 
-import { computed, ref } from "vue";
+import { computed, ref, shallowRef } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
@@ -125,7 +125,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
 
   let generation = 0;
   let lineage: string | null = null;
-  let kept: ExamWorkspaceSyncGateKeptEdit | null = null;
+  const kept = shallowRef<ExamWorkspaceSyncGateKeptEdit | null>(null);
   /** The generation whose merge install the kept edit waits for; `noteStored` clears only in it. */
   let mergeGeneration: number | null = null;
   let disposed = false;
@@ -192,7 +192,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     }
     // A kept edit always needs a fresh merge base, even when the cursor came
     // with this tab's own fresh document.
-    const wantDocument = !skipDocument || kept !== null;
+    const wantDocument = !skipDocument || kept.value !== null;
     let resolveAbandoned: (() => void) | null = null;
     const abandoned = new Promise<void>((resolve) => {
       resolveAbandoned = resolve;
@@ -226,7 +226,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
           if (disposed || loadGeneration !== generation) {
             return;
           }
-          if (kept === null) {
+          if (kept.value === null) {
             deps.installFresh(fresh);
           }
         }
@@ -250,12 +250,12 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
         // merged working copy then reaches the server through one ordinary
         // store; the kept edit clears when that store reports back in this
         // generation.
-        const pendingKept = kept;
+        const pendingKept = kept.value;
         const freshResponse = fresh;
         if (pendingKept !== null && freshResponse !== null) {
           const merged = deps.mergeRefusedEdit(pendingKept.base, pendingKept.edited, freshResponse.document);
           if (merged === null) {
-            kept = null;
+            kept.value = null;
             mergeGeneration = null;
           } else {
             deps.installMerged(freshResponse, merged);
@@ -288,7 +288,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       return;
     }
     lineage = nextLineageId;
-    kept = null;
+    kept.value = null;
     mergeGeneration = null;
     bumpGeneration();
     phase.value = "loading";
@@ -325,7 +325,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
       const base = deps.currentStepDocument();
       const edited = deps.currentWorkingCopy();
       if (base !== null && edited !== null) {
-        kept = { base, edited };
+        kept.value = { base, edited };
       }
     }
     deps.dropOwedSnapshots();
@@ -370,11 +370,18 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     if (disposed) {
       return;
     }
-    if (kept !== null && mergeGeneration !== null && mergeGeneration === generation) {
-      kept = null;
+    if (kept.value !== null && mergeGeneration !== null && mergeGeneration === generation) {
+      kept.value = null;
       mergeGeneration = null;
     }
   }
+
+  /**
+   * Whether the gate holds a kept refused edit that no store has confirmed
+   * yet. The save status reads through this so it never reports `Sparat`
+   * while the kept edit is unstored.
+   */
+  const hasKeptEdit = computed(() => kept.value !== null);
 
   function dispose(): void {
     disposed = true;
@@ -387,6 +394,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     editingLocked,
     enqueueWrite,
     foreignCursor,
+    hasKeptEdit,
     leaseAcquired,
     leaseLost,
     leaseReadOnly,

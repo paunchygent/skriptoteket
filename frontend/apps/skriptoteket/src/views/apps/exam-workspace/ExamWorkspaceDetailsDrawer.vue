@@ -35,6 +35,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
+import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
@@ -141,7 +142,7 @@ watch(
 
 const tagsById = computed(() => new Map(props.document.header.tags.map((tag) => [tag.id, tag])));
 const suggestBlocked = computed(() =>
-  !courseKey.value ? "Välj en kurs först." : props.dirty ? "Vänta tills ändringarna har sparats. Förslagen görs från det sparade provet." : null,
+  !courseKey.value ? "Välj en kurs först." : props.dirty ? PENDING_SAVE_COPY : null,
 );
 
 function toggleTag(entryId: string, text: string): void {

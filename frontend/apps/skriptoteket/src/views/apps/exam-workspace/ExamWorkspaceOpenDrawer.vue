@@ -25,6 +25,7 @@ import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAcces
 import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
+import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
@@ -89,14 +90,13 @@ const openBlocked = computed(
   () => props.isBusy || props.isDirty || props.saveState !== "saved",
 );
 /** One reason per blocked state, used by the hint, the entry tooltip and the blocked-click toast. */
-const OPEN_PENDING_COPY = "Vänta tills ändringarna har sparats.";
 const OPEN_BUSY_COPY = "En annan åtgärd pågår. Försök igen om en stund.";
 const blockedReason = computed<string | null>(() => {
   if (props.saveState === "unsaved") {
-    return props.saveDetail ?? OPEN_PENDING_COPY;
+    return props.saveDetail ?? PENDING_SAVE_COPY;
   }
   if (props.saveState === "saving" || props.isDirty) {
-    return OPEN_PENDING_COPY;
+    return PENDING_SAVE_COPY;
   }
   if (props.isBusy) {
     return OPEN_BUSY_COPY;

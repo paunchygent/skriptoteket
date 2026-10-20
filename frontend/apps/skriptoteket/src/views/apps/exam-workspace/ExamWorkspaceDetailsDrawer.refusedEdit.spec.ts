@@ -33,6 +33,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
+import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
@@ -70,7 +71,7 @@ const CONTENT: ExamCourseContent = {
 };
 
 const NO_COURSE_HINT = "Välj en kurs först.";
-const DIRTY_HINT = "Vänta tills ändringarna har sparats. Förslagen görs från det sparade provet.";
+const DIRTY_HINT = PENDING_SAVE_COPY;
 
 function courseDocument(): NativeExamDocument {
   return { ...buildDocument(), header: { tags: [], course: { key: "eng5", name: "Engelska 5" } } };
