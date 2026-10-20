@@ -96,3 +96,10 @@ Stop and report to the parent in any of these cases:
 | P3  | Ordering questions are standalone only (story ST-SKRIPT-39-06).                                                                                                            |
 | P21 | Grading is all-or-nothing with a default of 1 point the teacher can edit (story ST-SKRIPT-39-06).                                                                          |
 | D8  | Exports always print their added words in Swedish (Fråga, Lucka, Bild, Poäng, Rätt svar, Rätt ordning); user decision 2026-10-18, supersedes TASK-SKRIPT-39-05-03 D18/D21. |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Work on main through merge `bacdd0d0` (2026-10-18, typing-pause undo fix). Review-1 F1-F4 and review-2 F1 repairs are named in commit subjects; no verdict is recorded here.
+- Owed: the staging walk with the Exam.net import (Validation), not recorded as run; then closeout. TASK-SKRIPT-39-06-09 waits on this task.

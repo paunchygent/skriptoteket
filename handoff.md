@@ -55,35 +55,33 @@
   34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
   Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
 
-- Plan 2026-10-17 (user decisions G1-G30, lead L1-L9; retained
-  `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md).
-  Owner: Mac Opus parent, root `01a149c9-5bc7-7713-ba64-12dee0470bdd`. Rules: walk
-  only exam-converter changes, once per wave; restyle and repairs close on approved
-  review plus unit tests. Wave 2 is closed (Recent).
-  2026-10-18 on main: TASK-SKRIPT-40-04-03 `done` (merge 10eef9fd, staging walk
-  passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
-  `done`; ordering TASK-SKRIPT-39-06-08 `in_progress` (Mac Opus lead 58ebedec, worktree Skriptoteket-task-skript-39-06-08, root 01a14c27); tutorial
-  video focus fix 39230851.
-  Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
-  39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
-  Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
-  39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
-  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF is a fallback only; QTI is the Exam.net route.
-  RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
-
-  - 40-04-08 `done`: walk repair on main be979cd7, Mac re-walk PASS 2026-10-19. 40-04-04 `done`: Mac walk PASS at cf9547fa (jump, fix, QTI 200). 40-04-16 `done`: Mac walk PASS at cf9547fa.
-  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `done` on main `f84eb85d` (2026-10-20). 9cec90f5 is on main and was walked on the Mac at 6f1c5195 (2026-10-19). e13ea08e was released to main as 00f62f1a and walked on staging (2026-10-19). After it on the branch: R2 tests, R3, R4 (a yielded tab reclaims the lease) and L5 (empty dropdown focus). 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
-  - Toolbar redesign: TASK-SKRIPT-40-04-17 `done` 2026-10-19 (user closure; main aac5bdfd, 32460f67; staging walks passed, 375 px coarse pointer not walkable in Edge; task doc "Outcome"). Follow-up TASK-SKRIPT-40-04-18 `done` 2026-10-20 (user closure; main 98cbab6c, staging walk passed).
-  - 40-04-12 PDF keep-together on main 8d51a6ba; the K7 "/" check is for the Mac walk. 40-04-15 inline "(N p)" points `done`: main df87d633, Mac walk PASS 2026-10-19 (walk observations in its task doc).
-  - 41-02-02 `done`: deployed to production at f7eeada5 on 2026-10-19 with the nginx-proxy /32 trust (task doc "Production Deploy").
-  - 40-04-10 points banner (`in_progress`, lead 4ebb41f3, branch `codex/task-skript-40-04-points-mismatch-remote`, root 01a15330): one-line footer; review 6f95a153 findings F1-F6 repaired and admitted (F1 rereview cleared), F3 floating lines over a one-row end room (6d08aae9); origin/main 043163cb merged; domain suite green at 6d08aae9. Merged to main 2026-10-19 (0d928d3a); next: Mac staging walk with F5 and the bottom-scrolled step.
-  - 40-04-16 export split button `done`: main cf9547fa, Mac walk PASS 2026-10-19 (Mac `.artifacts/staging-walk-cf9547fa/walk-record.md`).
-  - REP-0048: 6 Exam.net walk checks (Mac walk).
-  - 41-02-04 workspace width `done` 2026-10-19 (merged ffab920a, walk repair 67861ab3, both staging walks passed; task doc "Outcome"). W1 and W2 are handed to 40-04-17.
-  - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
-    Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
-    main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
-    session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
+- Exam epics 39/40/41, backlog reconciled 2026-10-20 against main 114ca971; each open
+  task's `## Progress` names its main merge and what is owed. Plan 2026-10-17 (user
+  decisions G1-G30, retained `01a1495e-8398-75be-b2da-f0b08ba11afa`
+  evidence/planning/decisions-2026-10-17.md): walk only exam-converter changes, once
+  per wave; restyle and repairs close on approved review plus unit tests. Mac parent
+  integrates, pushes main and walks staging; the Hemma orchestrator (desktop SSH
+  session, cwd ~/apps/skriptoteket) runs leads. Leads Opus 5.5, reviews Pi Sol 6.1,
+  explorers Haiku. Exam.net has no QTI export; QTI is the Exam.net route and the print
+  PDF renders the DOCX house template (user 2026-10-18).
+  - On main, closeout owed (user or orchestrator closes):
+    - 40-04-10: staging walk passed (6f1c5195).
+    - 40-04-12: K11 passed; K7 "/" check owed, shared with 39-04-20 (f7eeada5).
+    - 40-01-04: review owed.
+    - 40-04-09: F1 rereview and the R14 Exam.net check (REP-0048) owed.
+    - 40-04-05: review and walk owed.
+    - 39-04-11 and 39-04-12: staging omprov/Svenska 2 import owed.
+    - 39-06-08: walk with the Exam.net import owed.
+    - 39-07-03: suites and walk not recorded.
+    - 39-01-02: review of the 2026-10-18 commits owed.
+    - 40-02-01: tranche 3 review, 13 exam-held wrappers, `lucide-vue-next` removal.
+  - User closure owed: ST-SKRIPT-40-03 (all ten tasks `done`).
+  - Ready, not started:
+    - 41-02-03: removes the old guest DigiExam converter (user 2026-10-20).
+    - 39-06-09: waits on 39-06-08.
+    - 41-01-02, -03, -04: wait on HuleEdu TASK-HULE-14-03-01 on staging.
+  - Planned, no story yet: EPIC-SKRIPT-39 item 06, digital-PDF import (scanned
+    deferred).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.

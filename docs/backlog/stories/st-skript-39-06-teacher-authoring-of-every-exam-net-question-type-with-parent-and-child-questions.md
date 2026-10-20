@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-10"
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -162,7 +162,10 @@ workspace control.
    undo step (user 2026-10-17).
 
 The user decided on 2026-10-18, after TASK-SKRIPT-39-06-02, to build ordering;
-it joins this story as TASK-SKRIPT-39-06-08, carrying P3 and P21.
+it joins this story as TASK-SKRIPT-39-06-08, carrying P3 and P21 (in progress:
+on main, staging walk with the Exam.net import and closeout owed).
+TASK-SKRIPT-39-06-09 probes an ordering question inside a part in Exam.net
+before that is built; it waits on TASK-SKRIPT-39-06-08 (ready).
 
 10. TASK-SKRIPT-39-06-10 (backend, API, export, workspace controls). Group
     marked questions into a new part, add an empty part, move a question into,

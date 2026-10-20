@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -93,3 +93,10 @@ Focused tests only:
 ## Resume here
 
 2026-10-19, lead `c30dba85`: the user accepted the plan as built, and the status is ready. The code, the F1 repair and the merge of origin/main `eba9d0f2` are committed, and the focused print tests pass (389). Next: the Mac parent merges and runs the staging walk (K11), then the TASK-SKRIPT-39-04-20 "/" check once that task is on main.
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Status corrected from `ready` to `in_progress`: merged to main as `8d51a6ba` (2026-10-19). The staging walk passed K11 (`.artifacts/staging-walk-40-04-12/walk-record.md`). TASK-SKRIPT-39-04-20 is on main (`f7eeada5`), so K7 can now be checked.
+- Owed: the K7 "/" check on staging, then closeout.

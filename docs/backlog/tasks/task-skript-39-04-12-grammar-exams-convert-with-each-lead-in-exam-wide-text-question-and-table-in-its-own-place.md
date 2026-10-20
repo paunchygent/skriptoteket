@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -61,3 +61,10 @@ Stop and report to the parent when a fix needs a product decision (for example C
 | C2  | Exam-wide governing text goes to the exam instructions once, never into items or an all-items parent; Namn, Klass and Datum are header metadata. |
 | C3  | A question the grouping declares is admitted as one item; the cause of split replies is traced and fixed.                                        |
 | C4  | A chunk between a question's first and last anchor belongs to that question.                                                                     |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Status corrected from `ready` to `in_progress`: C1-C4 are on main (53 commits, latest merge `d3a62108`, review-4 lows L1-L4, 2026-10-18). Review rounds 1-4 are named in commit subjects; no verdict is recorded in this doc.
+- Owed: the gold corpus rerun and the omprov_grammatik_sve2 staging walk (not recorded as run), then closeout.

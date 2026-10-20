@@ -96,3 +96,9 @@ metric, baseline and budget before becoming a gate.
 - Open: the 13 exam-held wrappers migrate after TASK-SKRIPT-40-04-03 and
   TASK-SKRIPT-39-07-03 reach main; then remove `lucide-vue-next` and reconcile
   the frontend lock.
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Tranche 3 (tutorial play disc, `06d396fc`) is on main through merge `b8d5a3ae` (2026-10-18); no review is recorded for it.
+- The wrapper migration is unblocked: TASK-SKRIPT-40-04-03 is `done` and TASK-SKRIPT-39-07-03 is on main. 16 source files and `frontend/apps/skriptoteket/package.json` still use `lucide-vue-next`.
+- Owed: tranche 3 review, the 13 exam-held wrappers, removal of `lucide-vue-next`, then closeout.

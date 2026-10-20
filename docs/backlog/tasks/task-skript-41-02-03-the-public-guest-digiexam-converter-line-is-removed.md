@@ -47,3 +47,9 @@ Stop and report if a removed module turns out to serve another caller, or if the
 | ID  | Decided contract term |
 | --- | --------------------- |
 | X1  | ST-SKRIPT-41-02 P6 applies as written; no compatibility path or redirect for the old guest job routes. |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Ready to start: TASK-SKRIPT-41-02-02 is `done`. The user confirmed the removal on 2026-10-20. The old guest DigiExam converter is subsumed by the exam workspace, where DigiExam is one input. The public workspace replaces the old converter as the demo that leads guests to an account. The earlier "guest converter stays" wording in EPIC-SKRIPT-39 and ST-SKRIPT-39-07 S8 now points here.

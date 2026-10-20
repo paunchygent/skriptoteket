@@ -84,3 +84,9 @@ presentation change.
   (11) pass, 24 tests. Logs: retained session
   01a15604-06b5-7d32-8594-c25940728f5d `evidence/proof/`.
 - Next: independent review, routed by the orchestrator.
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Merged to main as `e9983e4f` (2026-10-19); huleedu-integrated 0.1.34 is pinned. Owed: the independent review, then closeout.

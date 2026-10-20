@@ -142,3 +142,10 @@ material performance concern.
 | T5  | Both repairs are deterministic and provider-free; no LLM-based repair, extra provider call, or extra enrichment job is introduced.                                                        |
 | T6  | Other parser relaxations and unreferenced image-payload policy are outside this task; supplied teacher files remain uncommitted and minimal synthetic fixtures carry regression coverage. |
 | T7  | A missing or blank question title uses the existing deterministic `Question N` fallback, emits an item-bound non-blocking Swedish review warning, and does not block export.              |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Work on main: merge `066d51af` (2026-09-05, deployed then) and merge `d35f0ee2` (2026-10-18: DigiExam prompt images classified with an HTML parser, PDF prompt images bound through `prompt_image_positions`, gap depth tracked structurally). The 2026-10-18 commits have no review recorded here.
+- Owed: review of the 2026-10-18 commits, then closeout. The Exam.net import check stays user-coordinated.

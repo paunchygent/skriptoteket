@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-12'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -43,7 +43,7 @@ The story delivers:
   correction sessions, the old DigiExam answer-key lane and the old converter
   screens are removed (G21, E16). The public guest exam converter
   (ADR-SKRIPT-0085) stays with its routes and modules; a later decision covers
-  it (G27).
+  it (G27). The later decision is made (user 2026-10-20): the old guest DigiExam converter is subsumed by the exam workspace, where DigiExam is one input; TASK-SKRIPT-41-02-03 removes it and the public workspace (TASK-SKRIPT-41-02-02) replaces it as the demo that leads guests to an account (EPIC-SKRIPT-41 E5).
 
 Scope boundaries:
 
@@ -121,4 +121,4 @@ Scope boundaries:
 | S5  | DigiExam imports use the workspace's per-question review and AI answer-key suggestions; the old correction overlay, correction sessions and their routes retire with the old converter; unsupported types keep E12 (G21, user 2026-10-17).                                          |
 | S6  | The story starts now as a backend lane; the wait for the PDF and Markdown routes is dropped (G22, user 2026-10-17).                                                                                                                                                                 |
 | S7  | The import box shows original wording and a few readable steps for DigiExam imports as for DOCX imports; TASK-SKRIPT-39-04-06 builds that projection (G19, user 2026-10-17).                                                                                                        |
-| S8  | The public guest exam converter (ADR-SKRIPT-0085) stays with its routes and modules; this story retires only the signed-in old converter, its correction overlay and correction sessions; a later decision covers the guest converter (user 2026-10-17, G27).                       |
+| S8  | The public guest exam converter (ADR-SKRIPT-0085) stays with its routes and modules; this story retires only the signed-in old converter, its correction overlay and correction sessions; a later decision covers the guest converter (user 2026-10-17, G27). The later decision is made (user 2026-10-20): the old guest DigiExam converter is subsumed by the exam workspace, where DigiExam is one input; TASK-SKRIPT-41-02-03 removes it and the public workspace (TASK-SKRIPT-41-02-02) replaces it as the demo that leads guests to an account (EPIC-SKRIPT-41 E5).                       |

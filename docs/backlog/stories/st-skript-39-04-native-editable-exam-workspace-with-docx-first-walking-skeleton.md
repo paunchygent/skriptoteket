@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-05'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -89,7 +89,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 6. `TASK-SKRIPT-39-04-06`: backend lane: each imported question's original
    wording and a few readable steps (chosen type, answer-key source,
    retries) in the saved exam and the workspace API, for DOCX and DigiExam
-   imports alike; the import box is ST-SKRIPT-40-04's (proposed).
+   imports alike; the import box is ST-SKRIPT-40-04's. Done.
 7. `TASK-SKRIPT-39-04-07`: keep AI answer-key suggestions on each question
    and request them per question. Done 2026-10-13: the suggestion is stored
    on the question, becomes the key only under T5/P12/P13, survives save
@@ -97,7 +97,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 8. `TASK-SKRIPT-39-04-08`: backend lane: the save model. One file per exam
    that `Spara` overwrites, `Spara som` copies, at most 10 undo steps stored
    on the server, and one saved export per format per exam in Mina filer;
-   the controls and shortcuts are ST-SKRIPT-40-04's (proposed).
+   the controls and shortcuts are ST-SKRIPT-40-04's. Done.
 9. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
    reload and block importing over unsaved edits. Done 2026-10-13: the page
    finds the latest job for the current saved version on open, a running job
@@ -109,6 +109,18 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    through one owner per points line: part totals take one path, a points
    line belongs to its question in every stage, and code reads the exam
    total (root-cause repair of DOCX import variation, user 2026-10-17).
+   In progress: on main, staging import and closeout owed.
+   DOCX conversion repairs that followed, each its own task:
+   - `TASK-SKRIPT-39-04-12`: grammar exams place each lead-in, exam-wide text,
+     question and table (in progress: on main, walk and closeout owed).
+   - `TASK-SKRIPT-39-04-13` to `TASK-SKRIPT-39-04-19`: section instructions,
+     governing chunks, body paragraphs, gap paragraphs, inline answer keys
+     and left-out marks follow source alignment, never wording. Done.
+   - `TASK-SKRIPT-39-04-20`: a paragraph holding only a score field is the
+     points source and leaves no slash (in progress: on main `f7eeada5`,
+     staging check and closeout owed).
+   - `TASK-SKRIPT-39-04-21`: printed points wording at the end of a
+     question becomes its points. Done.
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.

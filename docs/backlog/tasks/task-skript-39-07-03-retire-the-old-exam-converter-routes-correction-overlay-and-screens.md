@@ -216,3 +216,8 @@ behave as before.
 - One public bundle change: the manual-follow-up `qti_validation_report_v1`
   inside the public bundle no longer carries `"retry_identity": null`; only the
   removed dxe lane set it, and no reader uses it.
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Work on main through merge `fc5b317d` (2026-10-18, guest converter polling and the missing-key notice `aff91a7e`, `31bd9b62`). No review verdict is recorded here.
+- Owed: the Validation suites and the Hemma staging walk are not recorded as run; then closeout. The public guest converter that this task kept is removed by TASK-SKRIPT-41-02-03 (user ruling 2026-10-20).

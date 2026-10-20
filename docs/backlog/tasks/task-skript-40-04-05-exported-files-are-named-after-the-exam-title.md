@@ -48,3 +48,10 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 | ID  | Decided contract term                                                                                                                                                               |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | Every export and its Mina filer copy is named after the exam title without punctuation plus the extension; all formats share that base name, with no -qti or -examnet suffix (T14). |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Work on main through merge `2b5dcb94` (2026-10-18): export names from the exam title (`6ebfc01b`, merged at `8ad14147`) and the blank-title repair `c7226069` (a blank title saves and autosaves; only export refuses it). No review or staging walk is recorded.
+- Owed: review, a staging walk of the export names, then closeout.

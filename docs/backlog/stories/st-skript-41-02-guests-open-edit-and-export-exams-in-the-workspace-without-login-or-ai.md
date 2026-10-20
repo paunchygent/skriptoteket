@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -44,7 +44,7 @@ The public guest converter today converts DigiExam files through its own jobs ta
 ## Progress
 
 - 2026-10-19: TASK-SKRIPT-41-02-01, 41-02-02 and 41-02-04 are `done`; TASK-SKRIPT-41-02-03 is `ready`.
-- 2026-10-20: TASK-SKRIPT-41-02-05 is `in_progress` at `e4e13592` (suite green, copy reviewed; code review and walk next).
+- 2026-10-20: TASK-SKRIPT-41-02-05 and TASK-SKRIPT-41-02-06 are `done`. TASK-SKRIPT-41-02-03 is `ready`: its dependency TASK-SKRIPT-41-02-02 is done, and the user confirmed the removal (2026-10-20).
 - TASK-SKRIPT-41-02-04 merged to main as `ffab920a` and its walk repair as `67861ab3`. Both
   staging walks passed. The guest workspace fills the desktop window, is held to the window
   height, and the editor is the widest column at default widths. Panels have drag handles, a

@@ -57,6 +57,7 @@ is locally patched.
 | 1 | TASK-SKRIPT-40-01-01 | Done 2026-10-12: three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook; Hemma staging walk passed at fc42b918. |
 | 2 | TASK-SKRIPT-40-01-02 | Complete shared Vue subtree, glyph peer/runtime, import migration, message adaptation and toast adapter. |
 | 3 | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules. |
+| 4 | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. On main `e9983e4f`; review and closeout owed. |
 
 ## Verification
 

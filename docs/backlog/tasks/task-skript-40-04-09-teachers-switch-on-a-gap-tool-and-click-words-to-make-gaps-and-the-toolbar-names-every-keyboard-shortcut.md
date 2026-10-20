@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -120,3 +120,10 @@ Stop and ask the user if Ctrl+Alt+G or Cmd+Option+G turns out to be taken by the
 | R12 | A disabled editor suspends the gap tool instead of ending it: while disabled, clicks make no gap and an open popover closes; Ångra, Gör om, Spara som, structural commands and the conversion lock never end the tool (walk finding A3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | R13 | Every message that names a question uses Skriptoteket's list label, the one the question list and the editor heading show ("Fråga 5", "4a", "Del 3"), never `sequence` or the source exam's numbering (walk finding A4; user rule 2026-10-19: "we refer to our lists and our logic after conversion")                                                                                                                                                                                                                                                                                                                                                                                                      |
 | R14 | R13 applies to every export made for people: the print preview, the student PDF, the PDF med facit and the DOCX head each question with its list label ("Fråga 1a", "Fråga 1b", "Fråga 2"). The PDF för Exam.net heading and the QTI titles keep position numbers 1, 2, 3 for now, because Exam.net parses them and nothing proves it accepts "2a" (user 2026-10-19, AskUserQuestion: "Test first"). Follow-up: after the main merge brings REP-0048 in, add one Exam.net walk check there that imports a PDF för Exam.net and a QTI package whose headings and titles use list labels such as "2a", and record whether Exam.net accepts them; switching both to list labels waits for that check to pass  |
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Status corrected from `ready` to `in_progress`: the gap tool is on main (merge `26f84883`), with the Part A repair R9-R10 (`3810aec3`) and R14 label tests (`41348458`), all 2026-10-19. The Part A staging walk passed. Q5, Q12 and Q13 are reversed by TASK-SKRIPT-40-04-13, which is `done`.
+- Owed: the F1 rereview, the R14 Exam.net walk check (TASK-SKRIPT-REP-0048), then closeout.

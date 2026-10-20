@@ -110,3 +110,10 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 - F3 built and admitted (6d08aae9; T11, plan rows D2, D3; mockups evidence/lead-4ebb41f3/mock/f3/): floating lines over a fixed one-row end room; headless geometry check fail-first then passing at 440 and 260 px (evidence/lead-4ebb41f3/r3/).
 - Domain suite green at 6d08aae9: backend curated_apps 2676 passed, fe-test 3566 passed (evidence/lead-4ebb41f3/suite3-\*.txt).
 - Next: the Mac merges the branch and runs the final staging walk with F5 and the bottom-scrolled check (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
+
+## Progress
+
+### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
+
+- Merged to main as `0d928d3a` (2026-10-19); the "Next" line above is resolved. Staging walk at `cf9547fa` passed T4, T6, T7, T9 and T11 with one defect (an undone Godta was not persisted); the re-walk at main `6f1c5195` passed and records that defect as fixed.
+- Owed: closeout.

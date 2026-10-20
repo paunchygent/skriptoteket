@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7fb6863143f32bcd87731f88830031e341fc0abdfaf5720b58854854170acabd",
+  "source_set_digest": "f10aca4350249c401720d27b8c12b58b719890d527dc7c6a5cef0446afa39ad8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -591,7 +591,7 @@
       "type": "epic",
       "title": "Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget",
       "path": "docs/backlog/epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md",
-      "status": "ready",
+      "status": "active",
       "owners": [
         {
           "kind": "service",
@@ -2302,7 +2302,7 @@
       "type": "story",
       "title": "Native editable exam workspace with DOCX-first walking skeleton",
       "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2350,7 +2350,7 @@
       "type": "story",
       "title": "Teacher authoring of every Exam.net question type with parent and child questions",
       "path": "docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2371,7 +2371,7 @@
       "type": "story",
       "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
       "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2461,7 +2461,7 @@
       "type": "story",
       "title": "Converge icons onto the shared glyph vocabulary",
       "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2503,7 +2503,7 @@
       "type": "story",
       "title": "Redesign the app shell and the exam workspace from a fresh Opus prototype",
       "path": "docs/backlog/stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2545,7 +2545,7 @@
       "type": "story",
       "title": "Guests open, edit and export exams in the workspace without login or AI",
       "path": "docs/backlog/stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md",
-      "status": "ready",
+      "status": "active",
       "epic": "EPIC-SKRIPT-41",
       "owners": [
         {
@@ -5133,7 +5133,7 @@
       "type": "task",
       "title": "Grammar exams convert with each lead-in, exam-wide text, question and table in its own place",
       "path": "docs/backlog/tasks/task-skript-39-04-12-grammar-exams-convert-with-each-lead-in-exam-wide-text-question-and-table-in-its-own-place.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -6830,7 +6830,7 @@
       "type": "task",
       "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
       "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6889,7 +6889,7 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

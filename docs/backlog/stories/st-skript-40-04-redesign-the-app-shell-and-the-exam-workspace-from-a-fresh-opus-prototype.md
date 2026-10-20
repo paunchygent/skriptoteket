@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: active
 closeout_review:
   record: inline
   status: not_started
@@ -131,19 +131,41 @@ their own tasks own.
    after this task offers the DigiExam import.
 4. TASK-SKRIPT-40-04-04: teachers edit a dropdown gap's options and mark the
    correct one in the gap popover.
-5. TASK-SKRIPT-40-04-05: exported files are named after the exam title.
+5. TASK-SKRIPT-40-04-05: exported files are named after the exam title
+   (in progress: on main, review, walk and closeout owed).
 6. TASK-SKRIPT-40-04-06: exam texts edit as one document per field, exam
    instructions are editable and printed totals can be accepted.
 7. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
    exams and imports drop paper answer lines.
 8. TASK-SKRIPT-40-04-16: each export format downloads or saves to Mina filer
-   from one split button at the right of its menu row (ready).
+   from one split button at the right of its menu row (done).
 9. TASK-SKRIPT-40-04-17: the workspace header and toolbars share one compact
    control system with an autosave status, file commands and a gap switch
    (done 2026-10-19: main aac5bdfd and 32460f67, staging walks passed).
 10. TASK-SKRIPT-40-04-18: the header opens Provets uppgifter from an Uppgifter
     command, and free-text questions set their writing area and criteria in
     one boxless answer block (done 2026-10-20: main 98cbab6c, staging walk passed).
+11. TASK-SKRIPT-40-04-08: short-answer and gap-text questions look different and
+    gaps are made by clicking a word (done).
+12. TASK-SKRIPT-40-04-09: the gap tool and the toolbar's shortcut names (in
+    progress: on main, F1 rereview, R14 Exam.net check and closeout owed).
+13. TASK-SKRIPT-40-04-10: a printed-total difference shows in one line (in
+    progress: on main, staging walk passed, closeout owed).
+14. TASK-SKRIPT-40-04-11: one compact three-tier control system (canceled;
+    replaced by TASK-SKRIPT-40-04-17).
+15. TASK-SKRIPT-40-04-12: printed PDF exams keep each question's text and its
+    alternatives on one page (in progress: on main, K11 walk passed, K7 "/"
+    check and closeout owed).
+16. TASK-SKRIPT-40-04-13: a click on a gap turns it back into its words and one
+    gap control replaces Lucka (done).
+17. TASK-SKRIPT-40-04-14: the question editor has its own Ångra and Gör om and
+    every edit autosaves (done).
+18. TASK-SKRIPT-40-04-15: printed PDF exams show each question's points as
+    (N p) (done).
+19. TASK-SKRIPT-40-04-19: two tabs holding exam locks stop invalidating each
+    other's CSRF token (proposed; the user owns proposed to ready).
+20. TASK-SKRIPT-40-04-20: printed exams and the editor keep imported text
+    formatting (done).
 
 Tasks 2 and 3 run in parallel.
 
