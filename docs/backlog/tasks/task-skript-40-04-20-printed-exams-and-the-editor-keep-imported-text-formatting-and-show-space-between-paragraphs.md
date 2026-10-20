@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 40-04-20 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 1b2189ee (root 01a15992 evidence/reviews/task-skript-40-04-20-717a8628-review.md) ended changes_requested with mediums F1-F4 only, repaired at 00f540c1 and admitted by the parent on focused proof (541 passed). Domain suite at 5dc5b835: 5730 backend, 3 docker integration, 2095 Vitest. Merged on main 43f47eda; pre-push suite passed. Mac staging walk PASS at a8de9ae6 on the user''s imported exam: bold runs and paragraph space in the editor and Forhandsgranska (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). The DOCX student copy was not walked; unit tests cover it. Empty imported paragraphs go to a separate fix.'
 task_kind: story
 acceptance_criteria:
   - A native exam text with bold, italic, underline, superscript or subscript words prints those words with the same marks in the print PDF, the Förhandsgranska preview and the DOCX student copy

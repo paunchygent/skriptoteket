@@ -1,9 +1,5 @@
 ## Current
 
-- TASK-SKRIPT-40-04-20 print keeps imported formatting (user, 2026-10-20): lead
-  `ca586f66`, branch `codex/task-skript-print-formatting-remote`, root `01a15992`.
-  Reviewed head `00f540c1` merged to main 2026-10-20. Next: the Mac staging walk.
-
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
 - TASK-SKRIPT-40-04-19 `proposed` (user, 2026-10-20): two tabs holding exam
@@ -128,6 +124,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-20 `done` on main: TASK-SKRIPT-40-04-20 print keeps imported formatting (`43f47eda`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Unreadable-notice wrap fix merged `a8de9ae6` (Pi review `ec4f5dae` approved; walk PASS).
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-41-02-06 unreadable exam files (`0ab8ccb8`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`).
 
