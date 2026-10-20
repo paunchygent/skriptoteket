@@ -256,16 +256,17 @@ describe("examWorkspace transport", () => {
     const blobB = new Blob(["b"]);
 
     const session = Symbol("guest handoff owner");
+    const onSupersededSuccess = vi.fn();
     const result = await importExamWorkspaceGuestDraft("draft-1", document, {
       "asset-a": blobA,
       "asset-b": blobB,
       "asset-extra": new Blob(["extra"]),
-    }, ["Fråga 3 hoppades över."], session);
+    }, ["Fråga 3 hoppades över."], { onSupersededSuccess, session });
 
     expect(apiFetchMock).toHaveBeenCalledTimes(1);
     const [path, options] = apiFetchMock.mock.calls[0];
     expect(path).toBe("/api/v1/apps/documents.conversion_hub/exam-workspace/guest-drafts");
-    expect(options).toMatchObject({ method: "POST", session });
+    expect(options).toMatchObject({ method: "POST", session, onSupersededSuccess });
     expect(options?.body).toBeInstanceOf(FormData);
     const form = options?.body as FormData;
     expect(form.get("draft_id")).toBe("draft-1");

@@ -17,7 +17,11 @@
  *   A newer draft (a new cursor) makes the record stale and clears that
  *   cursor before posting. Every attempt runs inside one cross-tab lock and
  *   carries the controller's owner: a retired owner defers with no POST and
- *   no record or draft mutation. This module shows no toasts: a later
+ *   no record or draft mutation, except for one committed case. A 2xx that
+ *   arrives after the owner retired is reported through the import's
+ *   superseded-success signal and clears only the posted cursor's slot and
+ *   record before deferring; any other retired outcome clears nothing. This
+ *   module shows no toasts: a later
  *   controller unit owns all user messages.
  *
  * Relationships:
@@ -120,7 +124,10 @@ function declaredAssets(
  * its record only when the stored draft still has the posted cursor; success
  * and removal clear only their own cursor's record. Once the POST has
  * resolved, a success always clears the posted snapshot's slot and its own
- * record first, and only then defers when the owner has retired.
+ * record first, and only then defers when the owner has retired. A 2xx that
+ * arrives after the owner retired takes the same cursor-owned cleanup
+ * through the import's superseded-success signal and then defers; an
+ * unanswered or failed request clears nothing.
  */
 export async function runGuestHandoff(
   deps: GuestHandoffDeps,
@@ -174,15 +181,32 @@ export async function runGuestHandoff(
     }
 
     let response: ExamWorkspaceDocumentResponse;
+    let committed = false;
     try {
       response = await deps.teacher.importExamWorkspaceGuestDraft(
         snapshotCursor,
         document,
         declaredAssets(document, stored.assets),
         stored.draft.notes,
-        deps.owner.session,
+        {
+          onSupersededSuccess: () => {
+            committed = true;
+          },
+          session: deps.owner.session,
+        },
       );
     } catch (error) {
+      if (committed) {
+        try {
+          await deps.storage.clearIf(snapshotCursor);
+        } catch {
+          // The exam is already saved; the server ledger makes a repeated
+          // post of the same snapshot a no-op. A newer draft (a new cursor)
+          // is kept by clearIf itself, so it is never deleted here.
+        }
+        deps.rejections.clearIf(snapshotCursor);
+        return { kind: "deferred" };
+      }
       const kind = classifyGuestHandoffFailure(error);
       if (kind === "permanent" || kind === "vault_full") {
         if (!deps.owner.isLive()) {

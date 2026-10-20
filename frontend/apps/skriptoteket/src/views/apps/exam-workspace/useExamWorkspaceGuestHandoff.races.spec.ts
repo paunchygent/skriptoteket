@@ -12,8 +12,9 @@
  *   g) Two concurrent attempts over one lock and one shared localStorage make
  *      exactly one POST; the second sees the first permanent record.
  *   h) Removing stale A keeps B's record; the next B load makes no POST.
- *   i) The owner retiring while the POST is pending still clears the saved
- *      snapshot and its record, and the outcome is deferred.
+ *   i) A 200 arriving after the owner retired still clears the posted
+ *      snapshot and its record, defers, and causes no B POST.
+ *   j) A 422 arriving after the owner retired defers and clears nothing.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -258,23 +259,98 @@ describe("runGuestHandoff races", () => {
     }
   });
 
-  it("i) the owner retiring while the POST is pending still clears the saved snapshot", async () => {
-    const { draft, lock, owner, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    const reply = deferred<ExamWorkspaceDocumentResponse>();
-    teacher.importExamWorkspaceGuestDraft.mockReturnValue(reply.promise);
-    let live = true;
+  it("i) a 200 arriving after the owner retired clears the saved snapshot and defers; B makes no POST", async () => {
+    const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
+    const auth = useAuthStore();
+    auth.$patch({
+      csrfToken: "csrf-a",
+      sharedSessionId: "session-a",
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
+    });
+    const sessionA = auth.captureSession();
+    const sent = deferred<void>();
+    const response = deferred<Response>();
+    const requests: string[] = [];
+    vi.mocked(fetch).mockImplementationOnce(() => {
+      requests.push(auth.user?.id ?? "anonymous");
+      sent.resolve();
+      return response.promise;
+    });
     const pending = runGuestHandoff({
       lock,
-      owner: { isLive: () => live && owner.isLive(), session: owner.session },
+      owner: { isLive: () => auth.isCurrentSession(sessionA), session: sessionA },
       rejections,
       storage,
-      teacher,
+      teacher: { importExamWorkspaceGuestDraft },
     });
-    await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1));
-    live = false;
-    reply.resolve(handoffResponse(draft, "lineage-a"));
+    await sent.promise;
+    auth.$patch({
+      csrfToken: "csrf-b",
+      sharedSessionId: "session-b",
+      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
+    });
+    expect(auth.isCurrentSession(sessionA)).toBe(false);
+    response.resolve(
+      new Response(JSON.stringify(handoffResponse(draft, "lineage-a")), {
+        headers: { "Content-Type": "application/json" },
+        status: 200,
+      }),
+    );
     await expect(pending).resolves.toEqual({ kind: "deferred" });
     expect(await storage.load()).toBeNull();
     expect(rejections.read()).toBeNull();
+    const sessionB = auth.captureSession();
+    await expect(
+      runGuestHandoff({
+        lock,
+        owner: { isLive: () => auth.isCurrentSession(sessionB), session: sessionB },
+        rejections,
+        storage,
+        teacher: { importExamWorkspaceGuestDraft },
+      }),
+    ).resolves.toEqual({ kind: "none" });
+    expect(requests).toEqual(["10000000-0000-4000-8000-000000000001"]);
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
+  });
+
+  it("j) a 422 arriving after the owner retired defers and clears nothing", async () => {
+    const { draft, lock, rejections, storage } = await seedGuestHandoffHarness();
+    const auth = useAuthStore();
+    auth.$patch({
+      csrfToken: "csrf-a",
+      sharedSessionId: "session-a",
+      user: createTestUser({ id: "10000000-0000-4000-8000-000000000001" }),
+    });
+    const sessionA = auth.captureSession();
+    const sent = deferred<void>();
+    const response = deferred<Response>();
+    vi.mocked(fetch).mockImplementationOnce(() => {
+      sent.resolve();
+      return response.promise;
+    });
+    const pending = runGuestHandoff({
+      lock,
+      owner: { isLive: () => auth.isCurrentSession(sessionA), session: sessionA },
+      rejections,
+      storage,
+      teacher: { importExamWorkspaceGuestDraft },
+    });
+    await sent.promise;
+    auth.$patch({
+      csrfToken: "csrf-b",
+      sharedSessionId: "session-b",
+      user: createTestUser({ id: "20000000-0000-4000-8000-000000000002" }),
+    });
+    expect(auth.isCurrentSession(sessionA)).toBe(false);
+    response.resolve(
+      new Response(JSON.stringify({ error: { code: "VALIDATION_ERROR", message: "rejected" } }), {
+        headers: { "Content-Type": "application/json" },
+        status: 422,
+      }),
+    );
+    await expect(pending).resolves.toEqual({ kind: "deferred" });
+    expect((await storage.load())?.draft.cursor).toBe(draft.cursor);
+    expect(rejections.read()).toBeNull();
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
   });
 });

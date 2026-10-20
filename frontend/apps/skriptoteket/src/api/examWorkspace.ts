@@ -395,16 +395,18 @@ export async function updateExamListOrdering(ordering: ExamListOrdering): Promis
  * bytes the document no longer names are never sent. `handoffKey` identifies
  * one browser snapshot: the caller passes the snapshot's cursor, so the
  * server claims once per (user, key) and a later handoff of newer edits
- * imports its own exam. `session` binds the POST to the handoff owner's
- * auth lifetime: a replaced sign-in fails as `SupersededAuthSessionError`
- * instead of posting under the new teacher.
+ * imports its own exam. `binding` carries the handoff owner's auth
+ * lifetime and the superseded-success signal: a replaced sign-in fails as
+ * `SupersededAuthSessionError` instead of posting under the new teacher,
+ * and a 2xx answered after retirement reports through
+ * `onSupersededSuccess` so the caller can clear the posted snapshot.
  */
 export async function importExamWorkspaceGuestDraft(
   handoffKey: string,
   document: NativeExamDocument,
   assets: Record<string, Blob>,
   notes: ExamWorkspaceDocumentResponse["notes"],
-  session: AuthSession,
+  binding: { session: AuthSession; onSupersededSuccess: () => void },
 ): Promise<ExamWorkspaceDocumentResponse> {
   const form = new FormData();
   form.append("draft_id", handoffKey);
@@ -422,6 +424,7 @@ export async function importExamWorkspaceGuestDraft(
   return await apiFetch<ExamWorkspaceDocumentResponse>(`${ROOT}/guest-drafts`, {
     body: form,
     method: "POST",
-    session,
+    onSupersededSuccess: binding.onSupersededSuccess,
+    session: binding.session,
   });
 }
