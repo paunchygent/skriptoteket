@@ -107,12 +107,13 @@ def test_migration_0027_tool_run_jobs_execution_queue_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0026_profile_ai_settings")
+    command.upgrade(alembic_cfg, "0027_tool_run_jobs_execution_queue")
+    command.upgrade(alembic_cfg, "0027_tool_run_jobs_execution_queue")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0026_profile_ai_settings")
+    command.upgrade(alembic_cfg, "0027_tool_run_jobs_execution_queue")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

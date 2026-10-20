@@ -119,12 +119,13 @@ def test_migration_0021_login_events_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0020_sandbox_snapshots")
+    command.upgrade(alembic_cfg, "0021_login_events")
+    command.upgrade(alembic_cfg, "0021_login_events")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0020_sandbox_snapshots")
+    command.upgrade(alembic_cfg, "0021_login_events")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

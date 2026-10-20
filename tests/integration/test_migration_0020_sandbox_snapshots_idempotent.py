@@ -34,7 +34,8 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
         assert columns["entrypoint"] == ("character varying", "NO")
         assert columns["source_code"] == ("text", "NO")
         assert columns["settings_schema"] == ("jsonb", "YES")
-        assert columns["input_schema"] == ("jsonb", "NO")
+        # 0020 creates input_schema nullable; 0023_input_schema_not_null makes it NOT NULL.
+        assert columns["input_schema"] == ("jsonb", "YES")
         assert columns["usage_instructions"] == ("text", "YES")
         assert columns["payload_bytes"] == ("bigint", "NO")
         assert columns["created_at"] == ("timestamp with time zone", "NO")
@@ -166,12 +167,13 @@ def test_migration_0020_sandbox_snapshots_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0019_draft_locks")
+    command.upgrade(alembic_cfg, "0020_sandbox_snapshots")
+    command.upgrade(alembic_cfg, "0020_sandbox_snapshots")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0019_draft_locks")
+    command.upgrade(alembic_cfg, "0020_sandbox_snapshots")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

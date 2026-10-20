@@ -6,7 +6,8 @@ Purpose:
 
 Relationships:
     - Covers migration `e7b3a9c4d1f2`.
-    - Exercises the upgraded projection resolver against backfilled data.
+    - Asserts the backfilled projection rows resolve the legacy subject
+      to the seeded user through raw SQL at this revision.
 """
 
 from __future__ import annotations
@@ -22,20 +23,8 @@ from uuid import UUID, uuid4
 import pytest
 from alembic import command
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 
-from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppProjectionResolver
-from skriptoteket.domain.identity.internal_identity_context import InternalIdentityContextV1
-from skriptoteket.infrastructure.clock import UTCClock
-from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.id_generator import UUID4Generator
-from skriptoteket.infrastructure.repositories.identity_projection_repository import (
-    PostgreSQLIdentityProjectionEventRepository,
-    PostgreSQLIdentityProjectionRepository,
-)
-from skriptoteket.infrastructure.repositories.profile_repository import PostgreSQLProfileRepository
-from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
-from skriptoteket.observability.auth_outcomes import NoopAuthOutcomeRecorder
 from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 _REVISION = "e7b3a9c4d1f2"
@@ -53,28 +42,6 @@ def _database_url_env(database_url: str) -> Iterator[None]:
             os.environ.pop("DATABASE_URL", None)
         else:
             os.environ["DATABASE_URL"] = previous_database_url
-
-
-def _context_payload(*, subject: str) -> dict[str, object]:
-    now_ts = int(datetime.now(timezone.utc).timestamp())
-    return {
-        "context_version": 1,
-        "iss": "api_gateway_service",
-        "aud": "skriptoteket",
-        "sub": subject,
-        "session_id": "migration-session",
-        "roles": ["teacher"],
-        "grants": ["tools:run"],
-        "policy_version": "2026-04-12",
-        "iat": now_ts,
-        "exp": now_ts + 60,
-        "jti": "migration-context",
-        "active_app": "skriptoteket",
-        "active_product_identity_realm": "huleedu_school",
-        "realm_subject_id": subject,
-        "email": "migration-teacher@example.test",
-        "email_verified": True,
-    }
 
 
 async def _insert_user(database_url: str, values: Mapping[str, object]) -> None:
@@ -157,32 +124,28 @@ async def _assert_backfill(database_url: str, *, user_id: UUID, subject: str) ->
         await engine.dispose()
 
 
-async def _assert_resolver_uses_backfilled_projection(
+async def _assert_projection_resolves_to_user(
     database_url: str,
     *,
     user_id: UUID,
     subject: str,
 ) -> None:
+    """Prove the backfilled subject resolves to the seeded user via raw SQL."""
     engine = create_async_engine(database_url, pool_pre_ping=True)
-    session_factory = async_sessionmaker(engine, expire_on_commit=False)
     try:
-        async with session_factory() as session:
-            resolver = HuleEduAppProjectionResolver(
-                uow=SQLAlchemyUnitOfWork(session),
-                users=PostgreSQLUserRepository(session),
-                profiles=PostgreSQLProfileRepository(session),
-                projections=PostgreSQLIdentityProjectionRepository(session),
-                projection_events=PostgreSQLIdentityProjectionEventRepository(session),
-                clock=UTCClock(),
-                id_generator=UUID4Generator(),
-                auth_outcomes=NoopAuthOutcomeRecorder(),
+        async with engine.connect() as conn:
+            rows = await conn.execute(
+                text(
+                    """
+                    SELECT user_id
+                    FROM identity_projections
+                    WHERE product_identity_realm = 'huleedu_school'
+                      AND realm_subject_id = :subject
+                    """
+                ),
+                {"subject": subject},
             )
-            projection = await resolver.resolve(
-                context=InternalIdentityContextV1.model_validate(_context_payload(subject=subject))
-            )
-
-        assert projection.user.id == user_id
-        assert projection.profile.user_id == user_id
+            assert [row[0] for row in rows.fetchall()] == [user_id]
     finally:
         await engine.dispose()
 
@@ -217,7 +180,7 @@ def test_migration_e7b3a9c4d1f2_backfills_and_removes_external_id(
         command.upgrade(alembic_cfg, _REVISION)
         asyncio.run(_assert_backfill(database_url, user_id=user_id, subject=subject))
         asyncio.run(
-            _assert_resolver_uses_backfilled_projection(
+            _assert_projection_resolves_to_user(
                 database_url,
                 user_id=user_id,
                 subject=subject,

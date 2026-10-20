@@ -40,9 +40,13 @@
   Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
   parses Skola24; correction and `generate-planner-help` regen still pending.
 
-- [TASK-SKRIPT-06-17-01](docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md)
-  `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
-  (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
+- [TASK-SKRIPT-06-17-02](docs/backlog/tasks/task-skript-06-17-02-pin-docker-migration-tests-to-their-own-revision.md)
+  `proposed`, lead a239b10a on `codex/task-skript-migration-test-drift-remote`
+  (retained `01a1586c-edd0-77d4-a64f-fe236646aa05`). Every docker migration test
+  is pinned to its own revision from an empty database; absorbs TASK-SKRIPT-06-17-01
+  (merge revision). The Hemma pre-push check runs `pdm run test-migrations` when the
+  pushed range touches migrations (user decision 2026-10-20). Next: domain suite,
+  commit, Pi ruthless review.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).

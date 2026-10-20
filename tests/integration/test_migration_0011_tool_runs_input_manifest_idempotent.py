@@ -216,8 +216,8 @@ def test_migration_0011_tool_runs_input_manifest_is_idempotent(
         _seed_pre_0011_run_from_url(database_url=database_url)
     )
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0011_tool_runs_input_manifest")
+    command.upgrade(alembic_cfg, "0011_tool_runs_input_manifest")
 
     asyncio.run(
         _smoke_schema_from_url(
@@ -228,7 +228,7 @@ def test_migration_0011_tool_runs_input_manifest_is_idempotent(
     )
     asyncio.run(_cleanup_seeded_run_from_url(database_url=database_url, run_id=seeded_run_id))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0010_curated_apps_runs")
+    command.upgrade(alembic_cfg, "0011_tool_runs_input_manifest")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

@@ -120,12 +120,13 @@ def test_migration_0017_tool_runs_input_values_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0016_tool_versions_input_schema")
+    command.upgrade(alembic_cfg, "0017_tool_runs_input_values")
+    command.upgrade(alembic_cfg, "0017_tool_runs_input_values")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0016_tool_versions_input_schema")
+    command.upgrade(alembic_cfg, "0017_tool_runs_input_values")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

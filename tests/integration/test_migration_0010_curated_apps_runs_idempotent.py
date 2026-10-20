@@ -89,7 +89,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "requested_by_user_id": user_id,
                 "status": "succeeded",
                 "workdir_path": str(run_id),
-                "input_filename": None,
+                "input_filename": "input.bin",
                 "input_size_bytes": 0,
                 "artifacts_manifest": json.dumps({"artifacts": []}),
             },
@@ -114,12 +114,13 @@ def test_migration_0010_curated_apps_runs_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0009_tool_sessions")
+    command.upgrade(alembic_cfg, "0010_curated_apps_runs")
+    command.upgrade(alembic_cfg, "0010_curated_apps_runs")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0009_tool_sessions")
+    command.upgrade(alembic_cfg, "0010_curated_apps_runs")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

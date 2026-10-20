@@ -36,8 +36,9 @@ def test_migration_0002_catalog_taxonomy_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0001_init")
+    command.upgrade(alembic_cfg, "0002_catalog_taxonomy")
+    command.upgrade(alembic_cfg, "0002_catalog_taxonomy")
 
     professions, categories, profession_categories = asyncio.run(
         _taxonomy_counts(database_url=database_url)
@@ -46,8 +47,8 @@ def test_migration_0002_catalog_taxonomy_is_idempotent(
     assert categories == 4
     assert profession_categories == 20
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0001_init")
+    command.upgrade(alembic_cfg, "0002_catalog_taxonomy")
 
     professions, categories, profession_categories = asyncio.run(
         _taxonomy_counts(database_url=database_url)

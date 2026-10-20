@@ -5,9 +5,10 @@ from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
+
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
 
@@ -114,8 +115,10 @@ async def _assert_step_storage(database_url: str, *, owner, lineage) -> None:
 
 
 def test_exam_step_storage_drops_the_blob_and_creates_per_step_tables(
-    database_url: str, alembic_config: Config, monkeypatch: pytest.MonkeyPatch
+    fresh_database: PooledDatabase, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    database_url = fresh_database.url
+    alembic_config = alembic_config_for(database_url=database_url)
     monkeypatch.setenv("DATABASE_URL", database_url)
     command.upgrade(alembic_config, _PARENT)
     owner, lineage = uuid4(), uuid4()

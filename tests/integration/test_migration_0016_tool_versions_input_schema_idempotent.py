@@ -23,7 +23,8 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
         assert row is not None, "input_schema column should exist"
         data_type, is_nullable = row
         assert data_type == "jsonb", f"Expected jsonb, got {data_type}"
-        assert is_nullable == "NO", f"Expected NOT NULL, got is_nullable={is_nullable}"
+        # 0016 adds input_schema nullable; 0023_input_schema_not_null makes it NOT NULL.
+        assert is_nullable == "YES", f"Expected nullable, got is_nullable={is_nullable}"
 
 
 async def _smoke_schema_from_url(*, database_url: str) -> None:
@@ -44,12 +45,13 @@ def test_migration_0016_tool_versions_input_schema_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0015_usage_instructions")
+    command.upgrade(alembic_cfg, "0016_tool_versions_input_schema")
+    command.upgrade(alembic_cfg, "0016_tool_versions_input_schema")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0015_usage_instructions")
+    command.upgrade(alembic_cfg, "0016_tool_versions_input_schema")
 
     asyncio.run(_smoke_schema_from_url(database_url=database_url))

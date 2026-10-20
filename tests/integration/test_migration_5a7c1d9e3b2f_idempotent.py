@@ -111,12 +111,13 @@ def test_migration_5a7c1d9e3b2f_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "4d2c6b8e1a9f")
+    command.upgrade(alembic_cfg, "5a7c1d9e3b2f")
+    command.upgrade(alembic_cfg, "5a7c1d9e3b2f")
 
     asyncio.run(_assert_domain_allowlist_schema_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "4d2c6b8e1a9f")
+    command.upgrade(alembic_cfg, "5a7c1d9e3b2f")
 
     asyncio.run(_assert_domain_allowlist_schema_from_url(database_url=database_url))

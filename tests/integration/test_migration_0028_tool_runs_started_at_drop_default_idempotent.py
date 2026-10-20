@@ -40,12 +40,13 @@ def test_migration_0028_tool_runs_started_at_drop_default_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0027_tool_run_jobs_execution_queue")
+    command.upgrade(alembic_cfg, "0028_tool_runs_started_at_drop_default")
+    command.upgrade(alembic_cfg, "0028_tool_runs_started_at_drop_default")
 
     asyncio.run(_assert_started_at_has_no_default_from_url(database_url=database_url))
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0027_tool_run_jobs_execution_queue")
+    command.upgrade(alembic_cfg, "0028_tool_runs_started_at_drop_default")
 
     asyncio.run(_assert_started_at_has_no_default_from_url(database_url=database_url))

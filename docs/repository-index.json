@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db99bea11adabba85299829b9573be710e682c65eb40cd7c676259687cbe35c9",
+  "source_set_digest": "3a1409af13b5bcdabe7653499da6dd979439dbdf649ec29d8ada6b2ee303aa30",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2612,6 +2612,25 @@
       "type": "task",
       "title": "Resolve merge-revision parents in the migration idempotency support",
       "path": "docs/backlog/tasks/task-skript-06-17-01-resolve-merge-revision-parents-in-the-migration-idempotency-support.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-17-02",
+      "type": "task",
+      "title": "Pin docker migration tests to their own revision",
+      "path": "docs/backlog/tasks/task-skript-06-17-02-pin-docker-migration-tests-to-their-own-revision.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",

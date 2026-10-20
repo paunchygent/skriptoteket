@@ -41,15 +41,16 @@ def test_migration_0029_profile_inline_completion_provider_is_idempotent(
 
     alembic_cfg = alembic_config_for(database_url=database_url)
 
-    command.upgrade(alembic_cfg, "head")
-    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0028_tool_runs_started_at_drop_default")
+    command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
+    command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
 
     asyncio.run(
         _assert_inline_completion_provider_column_exists_from_url(database_url=database_url)
     )
 
-    command.downgrade(alembic_cfg, "base")
-    command.upgrade(alembic_cfg, "head")
+    command.downgrade(alembic_cfg, "0028_tool_runs_started_at_drop_default")
+    command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
 
     asyncio.run(
         _assert_inline_completion_provider_column_exists_from_url(database_url=database_url)
