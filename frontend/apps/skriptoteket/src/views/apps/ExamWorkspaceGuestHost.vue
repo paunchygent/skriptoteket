@@ -209,8 +209,8 @@ async function removeUnreadableDraft(): Promise<void> {
       admission.value = { kind: "readable" };
       return;
     }
-    admission.value = { kind: "readable" };
     await router.replace({ query: { ...route.query, document: undefined } });
+    admission.value = { kind: "readable" };
   } catch {
     return;
   } finally {
