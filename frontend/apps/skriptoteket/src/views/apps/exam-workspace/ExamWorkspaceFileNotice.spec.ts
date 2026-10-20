@@ -141,6 +141,16 @@ describe("ExamWorkspaceFileNotice", () => {
     }
   });
 
+  it("keeps the one-line banner layout without the stacked variant", () => {
+    const wrapper = mount(ExamWorkspaceFileNotice, {
+      props: { busy: false, reason: "saved_unreadable" },
+    });
+
+    expect(wrapper.get('[data-test="exam-workspace-file-notice"]').classes()).not.toContain(
+      "xw-notice--stack",
+    );
+  });
+
   it("emits the matching event for each action", async () => {
     const wrapper = mount(ExamWorkspaceFileNotice, {
       props: { busy: false, reason: "guest_vault_full" },

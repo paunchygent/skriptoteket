@@ -126,4 +126,14 @@ const removeName = computed(() =>
 
 <style scoped>
 .notice { margin-bottom: var(--huleedu-space-3); }
+/* Narrow-drawer variant: the text takes the first line beside the info
+   glyph and the glyph actions sit on their own line at the row end. */
+.notice.xw-notice--stack {
+  flex-wrap: wrap; row-gap: var(--huleedu-space-1-5);
+  margin: var(--huleedu-space-2) 0 0;
+}
+.notice.xw-notice--stack > .xw-grow {
+  flex-basis: calc(100% - 16px - var(--huleedu-space-2));
+}
+.notice.xw-notice--stack > .xw-tool:first-of-type { margin-left: auto; }
 </style>
