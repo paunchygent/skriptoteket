@@ -18,6 +18,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
     ExamWorkspacePrintPreviewResponse,
+    ExamWorkspaceUnreadableDocumentListResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
     RetryExamWorkspaceItemRequest,
 )
@@ -139,6 +140,10 @@ class ExamPrintRendererProtocol(Protocol):
 
 class ListExamWorkspaceDocumentsHandlerProtocol(Protocol):
     async def handle(self, *, actor: User) -> ExamWorkspaceDocumentListResponse: ...
+
+
+class ListUnreadableExamWorkspaceDocumentsHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User) -> ExamWorkspaceUnreadableDocumentListResponse: ...
 
 
 class ImportExamWorkspaceDocumentHandlerProtocol(Protocol):

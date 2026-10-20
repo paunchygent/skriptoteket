@@ -60,6 +60,7 @@ from skriptoteket.protocols.exam_workspace_history import (
     StoreExamWorkspaceUndoStepHandlerProtocol,
 )
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as documents_api
+from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_exports as exports_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
@@ -123,6 +124,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
     app.include_router(documents_api.router)
+    app.include_router(exports_api.router)
     app.dependency_overrides[require_app_user_api] = lambda: actor
     setup_dishka(container, app)
     try:

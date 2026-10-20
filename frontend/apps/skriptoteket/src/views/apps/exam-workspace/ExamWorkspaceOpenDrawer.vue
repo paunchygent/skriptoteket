@@ -25,11 +25,12 @@ import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAcces
 import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
-import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
+import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
+import { isGuestImportFile, useExamWorkspaceOpenBlocking } from "./useExamWorkspaceOpenBlocking";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
@@ -40,6 +41,11 @@ const props = defineProps<{
   /** No import now: busy, or the open exam has unsaved changes (one rule, also gating drops). */
   importBlocked: boolean;
   isBusy: boolean;
+  /**
+   * True while an operation other than the drawer's own import or conversion
+   * blocks opening; the busy hint names only this, never the drawer's own work.
+   */
+  isOpenBlockedByOtherOperation: boolean;
   isDirty: boolean;
   /** The one save status: `saving` while an edit is not yet stored, `unsaved` with the reason when it reads Inte sparat. */
   saveState: "saving" | "saved" | "unsaved";
@@ -85,30 +91,18 @@ const groups = computed(() =>
     registeredCourseKeys.value,
     (key) => courseByKey(key)?.name ?? null,
   ),
-);const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
-const openBlocked = computed(
-  () => props.isBusy || props.isDirty || props.saveState !== "saved",
 );
-/** One reason per blocked state, used by the hint, the entry tooltip and the blocked-click toast. */
-const OPEN_BUSY_COPY = "En annan åtgärd pågår. Försök igen om en stund.";
-const blockedReason = computed<string | null>(() => {
-  if (props.saveState === "unsaved") {
-    return props.saveDetail ?? PENDING_SAVE_COPY;
-  }
-  if (props.saveState === "saving" || props.isDirty) {
-    return PENDING_SAVE_COPY;
-  }
-  if (props.isBusy) {
-    return OPEN_BUSY_COPY;
-  }
-  return null;
+const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
+const { openBlocked, blockedReason } = useExamWorkspaceOpenBlocking({
+  isBusy: () => props.isBusy,
+  isDirty: () => props.isDirty,
+  saveDetail: () => props.saveDetail,
+  saveState: () => props.saveState,
+  isOpenBlockedByOtherOperation: () => props.isOpenBlockedByOtherOperation,
 });
+/** Unreadable saved exams reported by the rows below, so the empty hint hides when they exist. */
+const unreadableCount = ref(0);
 const toast = useToast();
-
-/** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
-function isGuestImportFile(file: File): boolean {
-  return file.name.toLowerCase().endsWith(".zip");
-}
 
 function handlePickFile(): void {
   fileInput.value?.click();
@@ -127,7 +121,8 @@ onMounted(answerImportPick);
 watch(() => props.importPickPending, answerImportPick, { flush: "post" });
 
 function handleFileInput(event: Event): void {
-  const input = event.target as HTMLInputElement;
+  if (!(event.target instanceof HTMLInputElement)) return;
+  const input = event.target;
   const [file] = Array.from(input.files ?? []);
   if (file) {
     if (isGuest.value && !isGuestImportFile(file)) {
@@ -168,7 +163,9 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     return;
   }
   if (openBlocked.value) {
-    toast.failure(blockedReason.value ?? OPEN_BUSY_COPY);
+    if (blockedReason.value !== null) {
+      toast.failure(blockedReason.value);
+    }
     return;
   }
   emit("open", entry.lineage_id);
@@ -358,7 +355,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       </span>
     </h3>
     <p
-      v-if="groups.length === 0"
+      v-if="groups.length === 0 && unreadableCount === 0"
       class="xw-hint"
     >
       Inga sparade prov ännu.
@@ -436,6 +433,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         </div>
       </div>
     </div>
+    <ExamWorkspaceUnreadableFiles @count="unreadableCount = $event" />
   </section>
 </template>
 

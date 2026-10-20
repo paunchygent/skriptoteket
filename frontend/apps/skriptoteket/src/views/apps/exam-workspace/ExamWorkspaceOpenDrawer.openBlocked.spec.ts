@@ -11,14 +11,33 @@
  *   old "Spara det öppna provet …" copy is gone.
  */
 
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Plugin } from "vue";
 
+import type { ExamWorkspaceUnreadableDocument } from "../../../api/examWorkspaceUnreadableFiles";
+import { listUnreadableExamWorkspaceDocuments } from "../../../api/examWorkspaceUnreadableFiles";
 import { useToastStore } from "../../../stores/toast";
 import ExamWorkspaceOpenDrawer from "./ExamWorkspaceOpenDrawer.vue";
+import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import {
+  EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
+  useExamWorkspaceUnreadableFiles,
+} from "./useExamWorkspaceUnreadableFiles";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+
+const unreadableApiMocks = vi.hoisted(() => ({
+  downloadSavedExamFile: vi.fn(),
+  listUnreadableExamWorkspaceDocuments: vi.fn(),
+  removeSavedExamFile: vi.fn(),
+}));
+
+vi.mock("../../../api/examWorkspaceUnreadableFiles", () => unreadableApiMocks);
+
+const listUnreadableMock = vi.mocked(listUnreadableExamWorkspaceDocuments);
 
 const PENDING_COPY = "Vänta tills ändringarna har sparats.";
 const BUSY_COPY = "En annan åtgärd pågår. Försök igen om en stund.";
@@ -39,6 +58,12 @@ function mountDrawer(options: {
   saveDetail: string | null;
 }) {
   setActivePinia(createPinia());
+  const unreadable = useExamWorkspaceUnreadableFiles();
+  const provideUnreadable: Plugin = {
+    install(app) {
+      app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+    },
+  };
   return mount(ExamWorkspaceOpenDrawer, {
     props: {
       conversionError: null,
@@ -49,6 +74,8 @@ function mountDrawer(options: {
       documents: DOCUMENTS,
       importBlocked: false,
       isBusy: options.isBusy,
+      // Every busy case below is another operation, never the drawer's own import or conversion.
+      isOpenBlockedByOtherOperation: options.isBusy,
       isConverting: false,
       isDirty: options.isDirty,
       notes: [],
@@ -58,7 +85,7 @@ function mountDrawer(options: {
       sourceFileError: null,
     },
     global: {
-      plugins: [createPinia(), examWorkspaceProvidersPlugin()],
+      plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
     },
   });
 }
@@ -70,6 +97,8 @@ function toastMessages(): string[] {
 describe("ExamWorkspaceOpenDrawer blocked open", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    vi.clearAllMocks();
+    listUnreadableMock.mockResolvedValue({ documents: [] });
   });
 
   it("shows the pending-save copy in the hint, tooltip and toast while an edit is not yet stored", async () => {
@@ -182,5 +211,159 @@ describe("ExamWorkspaceOpenDrawer blocked open", () => {
     });
     expect(failed.html()).not.toContain("Spara det öppna provet");
     failed.unmount();
+  });
+});
+
+describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    listUnreadableMock.mockResolvedValue({ documents: [] });
+  });
+
+  function buildUnreadable(
+    overrides: Partial<ExamWorkspaceUnreadableDocument> = {},
+  ): ExamWorkspaceUnreadableDocument {
+    return {
+      lineage_id: "lineage-u",
+      name: "Gammalt prov.provdokument.zip",
+      saved_at: "2026-10-11T08:00:00Z",
+      title: "Gammalt prov",
+      vault_file_id: "vault-u",
+      ...overrides,
+    };
+  }
+
+  it("opens the readable row but not the unreadable row", async () => {
+    listUnreadableMock.mockResolvedValue({ documents: [buildUnreadable()] });
+    const wrapper = mountDrawer({
+      currentLineageId: null,
+      isBusy: false,
+      isDirty: false,
+      saveDetail: null,
+      saveState: "saved",
+    });
+    await flushPromises();
+
+    await wrapper.get('[data-test="exam-workspace-open-lineage-a"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-unreadable-lineage-u"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.emitted("open")).toEqual([["lineage-a"]]);
+  });
+
+  it("hides the empty hint when only an unreadable exam exists", async () => {
+    listUnreadableMock.mockResolvedValue({ documents: [buildUnreadable()] });
+    setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
+    const wrapper = mount(ExamWorkspaceOpenDrawer, {
+      props: {
+        conversionError: null,
+        conversionMessage: null,
+        conversionProgress: null,
+        currentExports: [],
+        currentLineageId: null,
+        documents: [],
+        importBlocked: false,
+        isBusy: false,
+        isConverting: false,
+        isDirty: false,
+        isOpenBlockedByOtherOperation: false,
+        notes: [],
+        ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
+        sourceFileError: null,
+      },
+      global: {
+        plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.findComponent(ExamWorkspaceUnreadableFiles).exists()).toBe(true);
+    expect(wrapper.text()).not.toContain("Inga sparade prov ännu.");
+  });
+
+  it("shows the empty hint when no readable or unreadable exam exists", async () => {
+    setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
+    const wrapper = mount(ExamWorkspaceOpenDrawer, {
+      props: {
+        conversionError: null,
+        conversionMessage: null,
+        conversionProgress: null,
+        currentExports: [],
+        currentLineageId: null,
+        documents: [],
+        importBlocked: false,
+        isBusy: false,
+        isConverting: false,
+        isDirty: false,
+        isOpenBlockedByOtherOperation: false,
+        notes: [],
+        ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
+        sourceFileError: null,
+      },
+      global: {
+        plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.text()).toContain("Inga sparade prov ännu.");
+  });
+
+  it("renders no unreadable rows and fetches none in guest mode", async () => {
+    setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
+    const wrapper = mount(ExamWorkspaceOpenDrawer, {
+      props: {
+        conversionError: null,
+        conversionMessage: null,
+        conversionProgress: null,
+        currentExports: [],
+        currentLineageId: null,
+        documents: [],
+        importBlocked: false,
+        isBusy: false,
+        isConverting: false,
+        isDirty: false,
+        isOpenBlockedByOtherOperation: false,
+        notes: [],
+        ordering: "newest",
+        saveDetail: null,
+        saveState: "saved",
+        sourceFileError: null,
+      },
+      global: {
+        plugins: [
+          createPinia(),
+          examWorkspaceProvidersPlugin({ store: { ...serverExamWorkspaceStore, teacher: null } }),
+          provideUnreadable,
+        ],
+      },
+    });
+    await flushPromises();
+
+    expect(wrapper.findComponent(ExamWorkspaceUnreadableFiles).exists()).toBe(false);
+    expect(listUnreadableMock).not.toHaveBeenCalled();
   });
 });

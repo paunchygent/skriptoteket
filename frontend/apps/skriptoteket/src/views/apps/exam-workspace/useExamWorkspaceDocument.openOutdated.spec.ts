@@ -1,14 +1,14 @@
 /**
- * Exam workspace document: an exam saved in an older format gets its own message.
+ * Exam workspace document: an exam the app cannot read reports `unreadable`.
  *
- * Expected behavior (unit D1o):
+ * Expected behavior (unit D15, U5):
  *   Opening a document whose stored schema is older than the current native
- *   exam document fails with `DOCUMENT_SCHEMA_OUTDATED`, and the failure
- *   toast reads `Provet är sparat i ett äldre format och kan inte öppnas.
- *   Importera originalfilen på nytt.`
- *   Every other open failure keeps `Det gick inte att öppna provet. Försök
- *   igen.` Both outcomes report `failed`, so the deep link watcher restores the
- *   address exactly as it does for any other failed open.
+ *   exam document fails with `DOCUMENT_SCHEMA_OUTDATED`, and opening a
+ *   current-version file the app cannot parse fails with
+ *   `DOCUMENT_UNREADABLE`. Both outcomes report `unreadable` with no toast:
+ *   the teacher sees the download-or-remove notice instead. Every other
+ *   open failure keeps `Det gick inte att öppna provet. Försök igen.` and
+ *   reports `failed`.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -21,7 +21,6 @@ import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
-const OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 
 const api = vi.hoisted(() => ({
@@ -41,8 +40,8 @@ function toastMessages(): string[] {
   return useToastStore().toasts.map((toast) => toast.message);
 }
 
-describe("openDocument with an older saved format", () => {
-  it("shows the older-format copy and opens nothing", async () => {
+describe("openDocument with a file the app cannot read", () => {
+  it("an older saved format reports unreadable with no toast", async () => {
     api.getExamWorkspaceDocument.mockRejectedValue(
       new ApiError({
         code: "DOCUMENT_SCHEMA_OUTDATED",
@@ -56,10 +55,31 @@ describe("openDocument with an older saved format", () => {
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
-      expect(opened).toBe("failed");
+      expect(opened).toBe("unreadable");
       expect(state.workspaceDocument.value).toBeNull();
-      expect(toastMessages()).toContain(OUTDATED_COPY);
-      expect(toastMessages()).not.toContain(OPEN_FAILURE_COPY);
+      expect(toastMessages()).toEqual([]);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("a corrupt current-version file reports unreadable with no toast", async () => {
+    api.getExamWorkspaceDocument.mockRejectedValue(
+      new ApiError({
+        code: "DOCUMENT_UNREADABLE",
+        message: "Stored exam file cannot be read.",
+        status: 422,
+      }),
+    );
+    const scope = effectScope();
+    const fence = createSyncFence();
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    try {
+      const opened = await state.openDocument("lineage-1", fence.begin());
+
+      expect(opened).toBe("unreadable");
+      expect(state.workspaceDocument.value).toBeNull();
+      expect(toastMessages()).toEqual([]);
     } finally {
       scope.stop();
     }
@@ -81,8 +101,7 @@ describe("openDocument with an older saved format", () => {
 
       expect(opened).toBe("failed");
       expect(state.workspaceDocument.value).toBeNull();
-      expect(toastMessages()).toContain(OPEN_FAILURE_COPY);
-      expect(toastMessages()).not.toContain(OUTDATED_COPY);
+      expect(toastMessages()).toEqual([OPEN_FAILURE_COPY]);
     } finally {
       scope.stop();
     }
@@ -98,8 +117,7 @@ describe("openDocument with an older saved format", () => {
 
       expect(opened).toBe("failed");
       expect(state.workspaceDocument.value).toBeNull();
-      expect(toastMessages()).toContain(OPEN_FAILURE_COPY);
-      expect(toastMessages()).not.toContain(OUTDATED_COPY);
+      expect(toastMessages()).toEqual([OPEN_FAILURE_COPY]);
     } finally {
       scope.stop();
     }

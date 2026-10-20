@@ -1,6 +1,6 @@
 /**
- * Guest handoff controller: first attempt, backoff, toasts and notice actions
- * (TASK-SKRIPT-41-02-05, U2b).
+ * Guest handoff controller: first attempt, backoff, toasts and retry lifetime
+ * (TASK-SKRIPT-41-02-05, U2b; split by responsibility in U13b).
  *
  * Expected behavior:
  *   The first attempt gates the view. Transient failures show one toast and
@@ -11,15 +11,9 @@
  */
 
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useToastStore } from "../../../stores/toast";
-import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
-import { createInMemoryGuestHandoffRejectionStorage } from "./examWorkspaceGuestHandoffRejection";
-import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 import {
-  editedGuestDraft,
   guestHandoffApiError as apiError,
   seedGuestHandoffHarness,
 } from "./useExamWorkspaceGuestHandoff.specSupport";
@@ -28,77 +22,15 @@ import {
   GUEST_HANDOFF_MANUAL_RETRY_FAILED_COPY,
   GUEST_HANDOFF_RETRIES_EXHAUSTED_COPY,
   GUEST_HANDOFF_TRANSIENT_COPY,
-  useExamWorkspaceGuestHandoffController,
 } from "./useExamWorkspaceGuestHandoffController";
+import type { ImportResult } from "./useExamWorkspaceGuestHandoffController.specSupport";
 import {
-  type GuestHandoffDeps,
-  type GuestHandoffTeacher,
-} from "./useExamWorkspaceGuestHandoff";
-
-type ImportResult = Awaited<ReturnType<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]>>;
-
-function successResult(draft: ExamWorkspaceGuestDraft, lineageId = "lineage-new"): ImportResult {
-  return {
-    conversion: null,
-    document: draft.saved_document,
-    export_blockers: [],
-    history_cursor: draft.cursor,
-    notes: [],
-    saved_document: draft.saved_document,
-    summary: {
-      course_key: null,
-      lineage_id: lineageId,
-      name: draft.saved_document.title,
-      saved_at: draft.saved_at,
-      title: draft.saved_document.title,
-      vault_file_id: "file-1",
-      version: draft.saved_document.revision,
-    },
-  };
-}
-
-function toastSpies() {
-  const store = useToastStore();
-  return {
-    failure: vi.spyOn(store, "failure"),
-    success: vi.spyOn(store, "success"),
-    warning: vi.spyOn(store, "warning"),
-  };
-}
-
-function toastMessages(spy: { mock: { calls: Array<[string, ...unknown[]]> } }): string[] {
-  return spy.mock.calls.map((call) => call[0]);
-}
-
-/**
- * jsdom's Blob has no `text` and its Response cannot consume a Blob; read the
- * download bytes through FileReader like the production fallback.
- */
-async function blobText(blob: Blob): Promise<string> {
-  return await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-        return;
-      }
-      reject(new Error("The FileReader did not return text."));
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Could not read the blob text."));
-    reader.readAsText(blob);
-  });
-}
-
-function startController(deps: Omit<GuestHandoffDeps, "owner">, download?: (blob: Blob, filename: string) => void) {
-  const scope = effectScope();
-  const controller = scope.run(() =>
-    useExamWorkspaceGuestHandoffController(deps, download === undefined ? undefined : { download }),
-  );
-  if (controller === undefined) {
-    throw new Error("expected the scope to produce a controller");
-  }
-  return { controller, scope };
-}
+  seatOlderFormat,
+  startController,
+  successResult,
+  toastMessages,
+  toastSpies,
+} from "./useExamWorkspaceGuestHandoffController.specSupport";
 
 beforeEach(() => {
   setActivePinia(createPinia());
@@ -110,7 +42,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("useExamWorkspaceGuestHandoffController", () => {
+describe("useExamWorkspaceGuestHandoffController handoff and retry lifetime", () => {
   it("1) transient at start retries three times with doubling delay, then stops", async () => {
     const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(503, "SERVICE_UNAVAILABLE"));
@@ -119,7 +51,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     try {
       await expect(controller.start()).resolves.toBeNull();
       expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
-      expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
+      expect(toastMessages(spies.warning)).toEqual([
         GUEST_HANDOFF_TRANSIENT_COPY,
       ]);
 
@@ -168,25 +100,6 @@ describe("useExamWorkspaceGuestHandoffController", () => {
 
       await vi.advanceTimersByTimeAsync(3_600_000);
       expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(3);
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("3) permanent at start leaves a notice, no toast and no retry", async () => {
-    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ lock, rejections, storage, teacher });
-    const spies = toastSpies();
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
-      expect(spies.warning).not.toHaveBeenCalled();
-      expect(spies.success).not.toHaveBeenCalled();
-      expect(spies.failure).not.toHaveBeenCalled();
-
-      await vi.advanceTimersByTimeAsync(3_600_000);
-      expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     } finally {
       scope.stop();
     }
@@ -254,7 +167,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     }
   });
 
-  it("6b) vault_full retry can turn permanent with a new draft", async () => {
+  it("6b) vault_full retry can turn unreadable with a new draft", async () => {
     const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
@@ -263,9 +176,12 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
+      // The retry meets a draft the browser itself cannot read: the server
+      // only refuses an outdated format for such a draft.
+      await seatOlderFormat(storage);
       await controller.retry();
       expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
       expect(spies.warning).not.toHaveBeenCalled();
       expect(spies.success).not.toHaveBeenCalled();
       expect(spies.failure).not.toHaveBeenCalled();
@@ -289,99 +205,6 @@ describe("useExamWorkspaceGuestHandoffController", () => {
 
       await vi.advanceTimersByTimeAsync(3_600_000);
       expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("7) download saves the held draft under its title, Prov for a blank title", async () => {
-    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const download = vi.fn<(blob: Blob, filename: string) => void>();
-    const { controller, scope } = startController({ lock, rejections, storage, teacher }, download);
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      controller.download();
-      expect(download).toHaveBeenCalledTimes(1);
-      const [blob, filename] = download.mock.calls[0];
-      expect(filename).toBe(`${draft.saved_document.title}.json`);
-      // FileReader never fires under fake timers; no retry timer is pending here.
-      vi.useRealTimers();
-      expect(JSON.parse(await blobText(blob))).toEqual(draft);
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("7b) download falls back to Prov.json when the title is blank", async () => {
-    const blankStorage = createInMemoryExamWorkspaceGuestDraftStorage();
-    const blankRejections = createInMemoryGuestHandoffRejectionStorage();
-    const { draft: base } = editedGuestDraft();
-    const blank: ExamWorkspaceGuestDraft = {
-      ...base,
-      saved_document: { ...base.saved_document, title: "   " },
-    };
-    expect(await blankStorage.replaceIf(null, { assets: {}, draft: blank })).toBe(true);
-    const { lock, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const download = vi.fn<(blob: Blob, filename: string) => void>();
-    const { controller, scope } = startController(
-      { lock, rejections: blankRejections, storage: blankStorage, teacher },
-      download,
-    );
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
-      controller.download();
-      expect(download).toHaveBeenCalledTimes(1);
-      const [blob, filename] = download.mock.calls[0];
-      expect(filename).toBe("Prov.json");
-      // FileReader never fires under fake timers; no retry timer is pending here.
-      vi.useRealTimers();
-      expect(JSON.parse(await blobText(blob))).toEqual(blank);
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("8a) remove clears the draft, the record and the notice", async () => {
-    const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const { controller, scope } = startController({ lock, rejections, storage, teacher });
-    const spies = toastSpies();
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      await controller.remove();
-      await expect(storage.load()).resolves.toBeNull();
-      expect(rejections.read()).toBeNull();
-      expect(controller.notice.value).toBeNull();
-      expect(spies.warning).not.toHaveBeenCalled();
-      expect(spies.success).not.toHaveBeenCalled();
-      expect(spies.failure).not.toHaveBeenCalled();
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("8b) remove keeps the notice and the record when clearIf throws", async () => {
-    const { draft, lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
-    const failingStorage = {
-      ...storage,
-      clearIf: vi.fn<() => Promise<boolean>>().mockRejectedValue(new Error("locked")),
-    };
-    const { controller, scope } = startController({
-      lock,
-      rejections,
-      storage: failingStorage,
-      teacher,
-    });
-    try {
-      await expect(controller.start()).resolves.toBeNull();
-      await controller.remove();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
-      expect(rejections.read()).toEqual({ cursor: draft.cursor, reason: "permanent" });
-      await expect(storage.load()).resolves.not.toBeNull();
     } finally {
       scope.stop();
     }

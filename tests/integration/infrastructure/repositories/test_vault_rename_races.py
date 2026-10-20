@@ -31,6 +31,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
@@ -410,6 +413,7 @@ async def test_rename_response_joins_new_name_without_rewriting_saved_exam_metad
         title="The content title, not a filename",
         saved_at=_NOW,
         head_vault_file_id=head.id,
+        document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
     )
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
         await PostgreSQLExamIndexRepository(session).upsert(entry=entry)

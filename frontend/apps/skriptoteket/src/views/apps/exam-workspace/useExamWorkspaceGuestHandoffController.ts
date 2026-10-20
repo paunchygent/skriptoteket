@@ -28,8 +28,9 @@
  *     attempt; reads no storage directly except `clearIf` on remove.
  *   - Owns every handoff toast through `useToast`; `runGuestHandoff` itself
  *     shows no toast.
- *   - Downloads the held rejected draft as JSON through
- *     `triggerBrowserDownload`.
+ *   - Downloads the stored draft record and its stored picture bytes as
+ *     one zip through `triggerBrowserDownload`; a missing or unreadable
+ *     stored record shows the download failure toast and downloads nothing.
  *   - Called from `ExamWorkspaceTeacherHost.vue` setup; the notice shape is
  *     rendered there by a later unit.
  */
@@ -41,6 +42,8 @@ import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
+import { buildGuestDraftArchive } from "./examWorkspaceGuestDraftArchive";
+import { isGuestDraftReadable } from "./examWorkspaceGuestDraftReadability";
 import { GuestHandoffLockUnavailableError } from "./examWorkspaceGuestHandoffLock";
 import {
   runGuestHandoff,
@@ -48,6 +51,7 @@ import {
   type GuestHandoffOutcome,
   type GuestHandoffOwner,
 } from "./useExamWorkspaceGuestHandoff";
+import { EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY } from "./examWorkspaceFileNoticeCopy";
 
 export const GUEST_HANDOFF_RETRY_DELAYS_MS: readonly number[] = [5_000, 10_000, 20_000];
 
@@ -59,12 +63,12 @@ export const GUEST_HANDOFF_RETRIES_EXHAUSTED_COPY =
 export const GUEST_HANDOFF_MANUAL_RETRY_FAILED_COPY =
   "Provet kunde inte flyttas till Mina filer just nu. Försök igen om en stund.";
 
-export type GuestHandoffNotice = { reason: "permanent" | "vault_full"; busy: boolean };
+export type GuestHandoffNotice = { reason: "permanent" | "vault_full" | "unreadable"; busy: boolean };
 
 export type GuestHandoffController = {
   notice: Readonly<Ref<GuestHandoffNotice | null>>;
   start(): Promise<string | null>;
-  download(): void;
+  download(): Promise<void>;
   remove(): Promise<void>;
   retry(): Promise<void>;
 };
@@ -92,6 +96,27 @@ export function useExamWorkspaceGuestHandoffController(
     isLive: () => !disposed && auth.isCurrentSession(session),
     session,
   };
+
+  /**
+   * Map a rejected handoff to the notice reason: vault_full keeps its own
+   * notice, a draft the browser itself cannot read shows the unreadable
+   * notice, and every other permanent refusal keeps the permanent notice.
+   * The browser and the server read the same generated format constants, so
+   * an outdated-format refusal only ever arrives for a draft the browser
+   * already reports as unreadable.
+   */
+  function toRejectedNoticeReason(
+    reason: "permanent" | "vault_full",
+    draft: ExamWorkspaceGuestDraft,
+  ): GuestHandoffNotice["reason"] {
+    if (reason === "vault_full") {
+      return "vault_full";
+    }
+    if (!isGuestDraftReadable(draft)) {
+      return "unreadable";
+    }
+    return "permanent";
+  }
 
   function abortCurrentAttempt(): void {
     currentAttempt?.abort();
@@ -123,7 +148,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return;
     }
     if (outcome.kind === "lock_unavailable") {
@@ -200,7 +225,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return null;
     }
     if (outcome.kind === "lock_unavailable") {
@@ -219,14 +244,35 @@ export function useExamWorkspaceGuestHandoffController(
     return null;
   }
 
-  function download(): void {
-    if (heldDraft === null) {
+  /**
+   * Save the stored draft record and its stored picture bytes as one zip
+   * `<titel>.zip` (`draft.json` plus `assets/<id>`), unchanged. A stored
+   * draft with another cursor, nothing stored, or any failure downloads
+   * nothing and shows the download failure toast. The notice stays busy
+   * while the zip is built, as remove does for its own work.
+   */
+  async function download(): Promise<void> {
+    const draft = heldDraft;
+    const current = notice.value;
+    if (draft === null || current === null) {
       return;
     }
-    const draft = heldDraft;
-    const title = draft.saved_document.title.trim();
-    const filename = `${title === "" ? "Prov" : title}.json`;
-    downloadFn(new Blob([JSON.stringify(draft, null, 2)], { type: "application/json" }), filename);
+    notice.value = { reason: current.reason, busy: true };
+    try {
+      const stored = await deps.storage.load();
+      if (stored?.draft.cursor !== draft.cursor) {
+        toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+        return;
+      }
+      const archive = await buildGuestDraftArchive(stored);
+      downloadFn(archive.blob, archive.filename);
+    } catch {
+      toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+    } finally {
+      if (!disposed && notice.value !== null) {
+        notice.value = { reason: current.reason, busy: false };
+      }
+    }
   }
 
   async function remove(): Promise<void> {
@@ -314,7 +360,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return;
     }
     if (outcome.kind === "lock_unavailable") {

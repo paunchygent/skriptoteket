@@ -2,8 +2,8 @@
 
 - TASK-SKRIPT-41-02-06 unreadable exam files (user, 2026-10-20; ADR-SKRIPT-0093):
   lead `2203a0c2`, branch `codex/task-skript-41-02-unreadable-exam-files-remote`,
-  root `01a1583c`. All review findings closed at `4623a344`; main merged at
-  `9a4a85aa`. U5 (deep link and DOCUMENT_UNREADABLE mapping), its last unit, running.
+  root `01a1583c`. All units built and reviewed; head `a7d12b6f` merged to main
+  2026-10-20. Next: the Mac staging walk, then the orchestrator's closeout.
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 - TASK-SKRIPT-40-04-19 `proposed` (user, 2026-10-20): two tabs holding exam
   locks invalidate each other's CSRF token on every renew. Not started.

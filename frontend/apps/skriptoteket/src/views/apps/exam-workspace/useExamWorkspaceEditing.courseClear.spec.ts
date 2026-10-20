@@ -25,6 +25,7 @@
 import { mount } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Plugin } from "vue";
 
 import { ApiError } from "../../../api/client";
 import type {
@@ -34,6 +35,10 @@ import type {
 } from "../../../api/examWorkspace";
 import ExamWorkspaceOpenDrawer from "./ExamWorkspaceOpenDrawer.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
+import {
+  EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
+  useExamWorkspaceUnreadableFiles,
+} from "./useExamWorkspaceUnreadableFiles";
 import { AUTOSAVE_FAILURE_COPY } from "./useExamWorkspaceSaveStatus";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -328,6 +333,12 @@ describe("a save outage collapses the backlog into one store of the newest copy"
       throw new Error("expected Inte sparat after the failed store");
     }
     setActivePinia(createPinia());
+    const unreadable = useExamWorkspaceUnreadableFiles();
+    const provideUnreadable: Plugin = {
+      install(app) {
+        app.provide(EXAM_WORKSPACE_UNREADABLE_FILES_KEY, unreadable);
+      },
+    };
     const wrapper = mount(ExamWorkspaceOpenDrawer, {
       props: {
         conversionError: null,
@@ -343,6 +354,7 @@ describe("a save outage collapses the backlog into one store of the newest copy"
         isBusy: false,
         isConverting: false,
         isDirty: true,
+        isOpenBlockedByOtherOperation: false,
         notes: [],
         ordering: "newest",
         saveDetail: status.detail,
@@ -350,7 +362,7 @@ describe("a save outage collapses the backlog into one store of the newest copy"
         sourceFileError: null,
       },
       global: {
-        plugins: [createPinia(), examWorkspaceProvidersPlugin()],
+        plugins: [createPinia(), examWorkspaceProvidersPlugin(), provideUnreadable],
       },
     });
 

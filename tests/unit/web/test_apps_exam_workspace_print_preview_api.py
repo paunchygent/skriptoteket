@@ -16,7 +16,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import User
-from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as api
+from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_exports as api
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.web.test_apps_exam_workspace_answer_key_suggestions_api import FakeRegistry
 

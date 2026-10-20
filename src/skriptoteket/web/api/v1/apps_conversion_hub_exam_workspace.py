@@ -1,18 +1,20 @@
 """Exam workspace API routes (ST-SKRIPT-39-04 walking skeleton).
 
 Purpose:
-  Expose DOCX and QTI package import, listing, reopen, save, history, copy and exports for the
+  Expose DOCX and QTI package import, listing, reopen, save, history and copy for the
   native editable exam workspace under the Conversion Hub curated app.
 
 Relationships:
   - Shares Conversion Hub app access with `apps_conversion_hub`.
   - Delegates behavior to the exam workspace application handlers; the
     native document persists in one Mina filer container with a separate editor history.
+  - Export downloads, the Exam.net export checklist, print previews and saved
+    exports live in `apps_conversion_hub_exam_workspace_exports`.
 """
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Request, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamCourseCatalogResponse,
@@ -20,10 +22,8 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
-    ExamWorkspaceExportChecklistResponse,
-    ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
-    ExamWorkspacePrintPreviewResponse,
+    ExamWorkspaceUnreadableDocumentListResponse,
     RetryExamWorkspaceItemRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
@@ -49,10 +49,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
-    ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
@@ -62,7 +60,7 @@ from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceQtiDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
-    PreviewExamWorkspacePrintHandlerProtocol,
+    ListUnreadableExamWorkspaceDocumentsHandlerProtocol,
     RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
@@ -82,7 +80,6 @@ from skriptoteket.web.api.v1.apps_conversion_hub_exam_workspace_guest_draft_requ
     read_guest_draft_request,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_ai_api, require_app_user_api
-from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
@@ -151,6 +148,19 @@ async def list_exam_workspace_documents(
     handler: FromDishka[ListExamWorkspaceDocumentsHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceDocumentListResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user)
+
+
+@router.get(
+    "/exam-workspace/unreadable-documents",
+    response_model=ExamWorkspaceUnreadableDocumentListResponse,
+)
+async def list_unreadable_exam_workspace_documents(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ListUnreadableExamWorkspaceDocumentsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceUnreadableDocumentListResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user)
 
@@ -258,70 +268,6 @@ async def get_exam_workspace_document(
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id)
-
-
-@router.get("/exam-workspace/documents/{lineage_id}/exports/{target}")
-async def export_exam_workspace_document(
-    lineage_id: UUID,
-    target: ExamWorkspaceExportTarget,
-    expected_revision: int,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> Response:
-    require_conversion_hub_access(registry=registry, user=user)
-    result = await handler.handle(
-        actor=user, lineage_id=lineage_id, target=target, expected_revision=expected_revision
-    )
-    return Response(
-        content=result.content,
-        media_type=result.media_type,
-        headers={"Content-Disposition": attachment_content_disposition(filename=result.filename)},
-    )
-
-
-@router.get(
-    "/exam-workspace/documents/{lineage_id}/export-checklist",
-    response_model=ExamWorkspaceExportChecklistResponse,
-)
-async def export_exam_workspace_document_checklist(
-    lineage_id: UUID,
-    expected_revision: int,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceExportChecklistResponse:
-    """List what an Exam.net import of this document's QTI package loses (Q15)."""
-
-    require_conversion_hub_access(registry=registry, user=user)
-    return await handler.checklist(
-        actor=user, lineage_id=lineage_id, expected_revision=expected_revision
-    )
-
-
-@router.get(
-    "/exam-workspace/documents/{lineage_id}/print-preview",
-    response_model=ExamWorkspacePrintPreviewResponse,
-)
-async def preview_exam_workspace_document_print(
-    lineage_id: UUID,
-    expected_revision: int,
-    expected_cursor: UUID,
-    step_id: UUID,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[PreviewExamWorkspacePrintHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> ExamWorkspacePrintPreviewResponse:
-    """Render the retained history step the editor names for the Förhandsgranska panel (W5)."""
-
-    require_conversion_hub_access(registry=registry, user=user)
-    return await handler.handle(
-        actor=user,
-        lineage_id=lineage_id,
-        expected_revision=expected_revision,
-        expected_cursor=expected_cursor,
-        step_id=step_id,
-    )
 
 
 @router.post(
@@ -458,21 +404,6 @@ async def copy_exam_workspace_document(
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.save_as(actor=user, lineage_id=lineage_id, request=request)
-
-
-@router.post("/exam-workspace/documents/{lineage_id}/exports/{target}", response_model=VaultFile)
-async def save_exam_workspace_export(
-    lineage_id: UUID,
-    target: ExamWorkspaceExportTarget,
-    expected_revision: int,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> VaultFile:
-    require_conversion_hub_access(registry=registry, user=user)
-    return await handler.save(
-        actor=user, lineage_id=lineage_id, target=target, expected_revision=expected_revision
-    )
 
 
 @router.post(

@@ -139,6 +139,9 @@ export type ExamWorkspaceSyncGateDeps = {
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
   /** Report a current route-open failure (the existing open copy). */
   notifyRouteFailed: () => void;
+  /** Report a current route-open target the stored file cannot supply: the
+   * teacher sees the download-or-remove notice instead of a toast. */
+  notifyRouteUnreadable: (lineageId: string) => void;
   /** Report a current copy failure (the existing Spara som copy). */
   notifyCopyFailed: () => void;
   /** Release the retired copy selection's busy hold at once. */
@@ -240,6 +243,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     isVisibleDirty: () => deps.isVisibleDirty(),
     notifyCopyFailed: () => deps.notifyCopyFailed(),
     notifyRouteFailed: () => deps.notifyRouteFailed(),
+    notifyRouteUnreadable: (lineageId) => deps.notifyRouteUnreadable(lineageId),
     openRouteTarget: (nextLineageId, token) => deps.openRouteTarget(nextLineageId, token),
     projectAddress: (nextLineageId) => deps.projectAddress(nextLineageId),
     recoverRetainedSource: () => recoverRetainedSource(),

@@ -170,6 +170,7 @@ export function createGate(): SyncGateHarness {
       counts.reloadFailures += 1;
     },
     notifyRouteFailed: () => undefined,
+    notifyRouteUnreadable: () => undefined,
     openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),
     projectAddress: () => undefined,
     releaseCopyBusy: () => undefined,

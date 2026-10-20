@@ -21,6 +21,8 @@
  *   - Every exam state comes from `useExamWorkspaceEditing` (document,
  *     autosave history, structure commands); address, intake, conversion,
  *     enrichment, exports and content suggestions from their composables.
+ *   - Exposes the saved-unreadable notice state so `ExamWorkspaceTeacherHost`
+ *     renders it in its own notice slot above the view.
  *   - Selection and navigation, the save flow and the keyboard shortcuts
  *     come from their own composables; the editor column and the open
  *     drawer are `ExamWorkspaceEditorPane` and `ExamWorkspaceDrawers`.
@@ -94,6 +96,10 @@ const {
   takeoverWaiting,
   titleWithoutText,
   workspaceDocument,
+  unreadableTarget,
+  unreadableTargetBusy,
+  downloadUnreadableTarget,
+  removeUnreadableTarget,
 } = editing;
 
 const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignIn({
@@ -102,7 +108,7 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
   workspaceDocument,
 });
 
-defineExpose({ depart });
+defineExpose({ depart, downloadUnreadableTarget, removeUnreadableTarget, unreadableTarget, unreadableTargetBusy });
 
 const frame = ref<HTMLElement | null>(null);
 const {

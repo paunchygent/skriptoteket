@@ -21,8 +21,10 @@ import type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 export type { ExamWorkspaceSaveAsOutcome };
 
-/** A routed open's outcome: installed, superseded by a newer request, or failed while current. */
-export type ExamWorkspaceRouteOpenOutcome = "installed" | "superseded" | "failed";
+/** A routed open's outcome: installed, superseded by a newer request, failed
+ * while current, or unreadable while current because the stored file cannot
+ * be read (an outdated format or a corrupt current-version file). */
+export type ExamWorkspaceRouteOpenOutcome = "installed" | "superseded" | "failed" | "unreadable";
 
 /** One immutable replacement request. Request-object identity tells Y1 from
  * Y2 when Z intervenes; lineage equality is not request identity. */
@@ -99,6 +101,9 @@ export type ExamWorkspaceReplacementDeps = {
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
   /** Report a current route-open failure (the existing open copy). */
   notifyRouteFailed: () => void;
+  /** Report a current route-open target the stored file cannot supply: the
+   * teacher sees the download-or-remove notice instead of a toast. */
+  notifyRouteUnreadable: (lineageId: string) => void;
   /** Report a current copy failure (the existing Spara som copy). */
   notifyCopyFailed: () => void;
   /** Release the retired copy selection's busy hold at once. */

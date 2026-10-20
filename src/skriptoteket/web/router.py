@@ -47,6 +47,9 @@ from skriptoteket.web.api.v1 import (
     apps_conversion_hub_exam_workspace_enrichment as api_v1_exam_workspace_enrichment,
 )
 from skriptoteket.web.api.v1 import (
+    apps_conversion_hub_exam_workspace_exports as api_v1_exam_workspace_exports,
+)
+from skriptoteket.web.api.v1 import (
     apps_conversion_hub_exam_workspace_parents as api_v1_exam_workspace_parents,
 )
 from skriptoteket.web.api.v1 import (
@@ -122,6 +125,7 @@ router.include_router(api_v1_apps_conversion_hub.router)
 router.include_router(api_v1_doc_converter_saved_files.router)
 router.include_router(api_v1_doc_converter_previews.router)
 router.include_router(api_v1_apps_conversion_hub_exam_workspace.router)
+router.include_router(api_v1_exam_workspace_exports.router)
 router.include_router(api_v1_exam_workspace_parents.router)
 router.include_router(api_v1_exam_workspace_change_type.router)
 router.include_router(api_v1_exam_workspace_assets.router)

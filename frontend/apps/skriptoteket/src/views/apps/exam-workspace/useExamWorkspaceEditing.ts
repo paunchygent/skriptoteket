@@ -19,8 +19,8 @@
  *
  * Relationships:
  *   - Composes `useExamWorkspaceDocument`, `useExamWorkspaceHistory`,
- *     `useExamWorkspaceStructure` and `useExamWorkspaceSyncGate`; consumed
- *     by `ExamWorkspaceView`.
+ *     `useExamWorkspaceStructure`, `useExamWorkspaceSyncGate` and
+ *     `useExamWorkspaceUnreadableTarget`; consumed by `ExamWorkspaceView`.
  */
 
 import { computed, onScopeDispose, ref } from "vue";
@@ -31,7 +31,9 @@ import { useToast } from "../../../composables/useToast";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { createFencedTransport } from "./examWorkspaceFencedTransport";
 import { OPEN_FAILURE_COPY } from "./useExamWorkspaceDocumentOpen";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import { useExamWorkspaceUnreadableTarget } from "./useExamWorkspaceUnreadableTarget";
 import {
   useExamWorkspaceEditLease,
   type ExamWorkspaceEditLeaseDeps,
@@ -95,6 +97,34 @@ export function useExamWorkspaceEditing(
     submitRoute: (lineageId) => requireGate().submitRoute(lineageId),
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
+
+  const {
+    unreadableTarget,
+    unreadableTargetBusy,
+    unreadableFiles,
+    noteRouteUnreadable,
+    clearOnInstalled,
+    downloadUnreadableTarget,
+    removeUnreadableTarget,
+  } = useExamWorkspaceUnreadableTarget({
+    forgetSavedDocument: (lineageId) => document.forgetSavedDocument(lineageId),
+    loadSavedDocuments: () => document.loadSavedDocuments(),
+    savedDocuments: document.savedDocuments,
+    store,
+  });
+
+  /**
+   * Read and install the named document for the selection's token: the only
+   * open path. An installed open clears the unreadable notice, whatever it
+   * reported before.
+   */
+  async function openRouteTarget(lineage: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
+    const outcome = await document.openDocument(lineage, token);
+    if (outcome === "installed") {
+      clearOnInstalled();
+    }
+    return outcome;
+  }
 
   /**
    * A server command stored a new step: its response already installed the
@@ -211,7 +241,10 @@ export function useExamWorkspaceEditing(
     isVisibleDirty: () => document.isDirty.value,
     notifyCopyFailed: () => toast.failure(SAVE_AS_FAILURE_COPY),
     notifyRouteFailed: () => toast.failure(OPEN_FAILURE_COPY),
-    openRouteTarget: (nextLineageId, token) => document.openDocument(nextLineageId, token),
+    notifyRouteUnreadable: (lineage) => {
+      void noteRouteUnreadable(lineage);
+    },
+    openRouteTarget: (nextLineageId, token) => openRouteTarget(nextLineageId, token),
     projectAddress: (nextLineageId) => projection.project(nextLineageId),
     releaseCopyBusy: () => document.releaseCopyBusy(),
     waitForRouterIdle: () => projection.waitForIdle(),
@@ -295,6 +328,18 @@ export function useExamWorkspaceEditing(
   const isBusy = computed(
     () => document.isOperationBusy.value || (document.isReplacing.value && (gateForBusy()?.phase.value ?? "loading") !== "loading"),
   );
+  /**
+   * The Öppna drawer's busy hint: true while an operation other than the
+   * drawer's own import or conversion blocks opening, plus the replacing lock
+   * on the same loading rule `isBusy` uses. Unlike `isBusy` this never counts
+   * the drawer's own `isImporting` or `isConverting`; the drawer shows those
+   * through its conversion progress instead.
+   */
+  const isOpenBlockedByOtherOperation = computed(
+    () =>
+      document.isOpenBlockedByOtherOperation.value ||
+      (document.isReplacing.value && (gateForBusy()?.phase.value ?? "loading") !== "loading"),
+  );
 
   return {
     ...document,
@@ -305,6 +350,7 @@ export function useExamWorkspaceEditing(
     },
     history,
     isBusy,
+    isOpenBlockedByOtherOperation,
     save,
     saveAs,
     selectedParentId,
@@ -327,5 +373,16 @@ export function useExamWorkspaceEditing(
     currentRouteAddress: () => requireGate().currentAddress(),
     /** The shared router adapter: observed by the address, published only by the coordinator. */
     routeProjection: projection,
+    /** A saved exam the app could not open: the notice owns this lineage until
+     * an installed open or a successful remove clears it. */
+    unreadableTarget,
+    /** The shared unreadable-files list the Öppna drawer rows render too. */
+    unreadableFiles,
+    /** True while the unreadable target's own download or remove runs. */
+    unreadableTargetBusy,
+    /** Download the notice's stored file unchanged through the shared path. */
+    downloadUnreadableTarget,
+    /** Move the notice's stored file to the papperskorg and reload the lists. */
+    removeUnreadableTarget,
   };
 }

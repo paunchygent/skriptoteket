@@ -30,7 +30,7 @@ _FIXED_ZIP_DATETIME = (1980, 1, 1, 0, 0, 0)
 
 
 def _invalid(message: str) -> DomainError:
-    return DomainError(code=ErrorCode.VALIDATION_ERROR, message=message)
+    return DomainError(code=ErrorCode.DOCUMENT_UNREADABLE, message=message)
 
 
 class ExamWorkspaceContainerCodec:
@@ -66,47 +66,59 @@ class ExamWorkspaceContainerCodec:
 
     def parse(self, *, content: bytes) -> ExamWorkspaceContainerContent:
         try:
-            archive = zipfile.ZipFile(io.BytesIO(content))
-        except zipfile.BadZipFile as error:
+            with zipfile.ZipFile(io.BytesIO(content)) as archive:
+                names = set(archive.namelist())
+                if _MANIFEST_NAME not in names or _DOCUMENT_NAME not in names:
+                    raise _invalid("Dokumentfilen saknar manifest eller dokumentinnehåll.")
+                try:
+                    manifest = json.loads(archive.read(_MANIFEST_NAME).decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError) as error:
+                    raise _invalid("Dokumentets manifest kunde inte läsas.") from error
+                if not isinstance(manifest, dict):
+                    raise _invalid("Dokumentets manifest kunde inte läsas.")
+                if manifest.get("schema_version") != EXAM_WORKSPACE_CONTAINER_SCHEMA_VERSION:
+                    raise _invalid("Dokumentfilen har en okänd schemaversion.")
+
+                document_bytes = archive.read(_DOCUMENT_NAME)
+                if hashlib.sha256(document_bytes).hexdigest() != manifest.get("document_sha256"):
+                    raise _invalid("Dokumentinnehållet matchar inte manifestet.")
+
+                assets_by_id: dict[str, bytes] = {}
+                for name in names - {_MANIFEST_NAME, _DOCUMENT_NAME}:
+                    if not name.startswith(_ASSET_PREFIX) or "/" in name[len(_ASSET_PREFIX) :]:
+                        raise _invalid("Dokumentfilen innehåller en otillåten post.")
+                    assets_by_id[name[len(_ASSET_PREFIX) :]] = archive.read(name)
+
+                notes_raw = manifest.get("notes")
+                if not isinstance(notes_raw, list) or any(
+                    not isinstance(note, str) for note in notes_raw
+                ):
+                    raise _invalid("Dokumentets manifest har ogiltiga anteckningar.")
+        except DomainError:
+            raise
+        except Exception as error:
             raise _invalid("Dokumentfilen kunde inte läsas.") from error
 
-        with archive:
-            names = set(archive.namelist())
-            if _MANIFEST_NAME not in names or _DOCUMENT_NAME not in names:
-                raise _invalid("Dokumentfilen saknar manifest eller dokumentinnehåll.")
-            try:
-                manifest = json.loads(archive.read(_MANIFEST_NAME).decode("utf-8"))
-            except (UnicodeDecodeError, json.JSONDecodeError) as error:
-                raise _invalid("Dokumentets manifest kunde inte läsas.") from error
-            if manifest.get("schema_version") != EXAM_WORKSPACE_CONTAINER_SCHEMA_VERSION:
-                raise _invalid("Dokumentfilen har en okänd schemaversion.")
-
-            document_bytes = archive.read(_DOCUMENT_NAME)
-            if hashlib.sha256(document_bytes).hexdigest() != manifest.get("document_sha256"):
-                raise _invalid("Dokumentinnehållet matchar inte manifestet.")
+        try:
             document = parse_native_exam_document(document_bytes)
-            if str(document.document_id) != manifest.get("document_id"):
-                raise _invalid("Dokumentets identitet matchar inte manifestet.")
-            if document.revision != manifest.get("revision"):
-                raise _invalid("Dokumentets version matchar inte manifestet.")
+        except DomainError as error:
+            if error.code is ErrorCode.VALIDATION_ERROR:
+                raise DomainError(
+                    code=ErrorCode.DOCUMENT_UNREADABLE,
+                    message=error.message,
+                    details=error.details,
+                ) from error
+            raise
+        if str(document.document_id) != manifest.get("document_id"):
+            raise _invalid("Dokumentets identitet matchar inte manifestet.")
+        if document.revision != manifest.get("revision"):
+            raise _invalid("Dokumentets version matchar inte manifestet.")
 
-            assets_by_id: dict[str, bytes] = {}
-            for name in names - {_MANIFEST_NAME, _DOCUMENT_NAME}:
-                if not name.startswith(_ASSET_PREFIX) or "/" in name[len(_ASSET_PREFIX) :]:
-                    raise _invalid("Dokumentfilen innehåller en otillåten post.")
-                assets_by_id[name[len(_ASSET_PREFIX) :]] = archive.read(name)
-
-            notes_raw = manifest.get("notes")
-            if not isinstance(notes_raw, list) or any(
-                not isinstance(note, str) for note in notes_raw
-            ):
-                raise _invalid("Dokumentets manifest har ogiltiga anteckningar.")
-
-            try:
-                return ExamWorkspaceContainerContent(
-                    document=document,
-                    assets_by_id=assets_by_id,
-                    notes=tuple(notes_raw),
-                )
-            except ValidationError as error:
-                raise _invalid("Dokumentets resurser matchar inte innehållet.") from error
+        try:
+            return ExamWorkspaceContainerContent(
+                document=document,
+                assets_by_id=assets_by_id,
+                notes=tuple(notes_raw),
+            )
+        except ValidationError as error:
+            raise _invalid("Dokumentets resurser matchar inte innehållet.") from error

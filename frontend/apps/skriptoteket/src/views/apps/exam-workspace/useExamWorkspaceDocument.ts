@@ -129,7 +129,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
   const selectedItemId = ref<string | null>(null);
-  const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
+  const { forgetSavedDocument, listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
   let adoptConversionHolder: (response: ExamWorkspaceDocumentResponse) => void = () => undefined;
   let replayHeldHolder: () => void = () => undefined;
@@ -204,6 +204,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       copyBusy.value ||
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
+  );
+  /**
+   * True while an operation other than the drawer's own import or conversion
+   * blocks opening: a save, rename, retry or Spara som copy, or an open read.
+   * Unlike `isOtherOperationBusy` this never counts `isImporting` or
+   * `isConverting`; the drawer's own progress shows those instead.
+   */
+  const isOpenBlockedByOtherOperation = computed(
+    () => operationBusy.value || copyBusy.value || isOpenReading.value,
   );
   const isOperationBusy = computed(() => isOtherOperationBusy.value || isOpenReading.value);
   /** An undo, redo or server command is reading the document that replaces the copy. */
@@ -430,6 +439,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     ...fieldCommands,
     applyCommandResponse,
     editDocument,
+    forgetSavedDocument,
     historyCursor,
     installDocument: replacingScope.installDocument,
     listOrdering,
@@ -446,6 +456,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     importDocument,
     isBusy,
     isDirty,
+    isOpenBlockedByOtherOperation,
     isOperationBusy,
     isReplacing: computed(() => replacing.value),
     replaceCopy: replacingScope.replaceCopy,

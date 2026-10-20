@@ -21,6 +21,9 @@ from skriptoteket.application.identity.handlers.update_exam_list_ordering import
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import SavedExam
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
+    CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
+)
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
@@ -145,6 +148,7 @@ async def test_ordering_survives_a_fresh_client_and_does_not_replace_other_prefe
         title="Indexed title",
         saved_at=clock.now() - timedelta(days=1),
         head_vault_file_id=uuid4(),
+        document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
         name="Different file name.provdokument.zip",
         version=7,
     )

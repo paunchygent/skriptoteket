@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "978abf93622d64b67a76a0adb32de712bf800e3ab671ea313493135cc35e0695",
+  "source_set_digest": "6667592fcde1fdf4f8543c07dcc14f03578c3ee3d7d5bc0251c28637454cf5bc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7226,6 +7226,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-41-02-06",
+      "type": "task",
+      "title": "A saved exam the app cannot read is offered for download or removal",
+      "path": "docs/backlog/tasks/task-skript-41-02-06-a-saved-exam-the-app-cannot-read-is-offered-for-download-or-removal.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-REP-0001",
       "type": "task",
       "title": "Publish product context reference for external architect agents",
@@ -9906,6 +9925,24 @@
       "links": {
         "governing": [
           "TASK-SKRIPT-REP-0037"
+        ]
+      }
+    },
+    {
+      "id": "ADR-SKRIPT-0093",
+      "type": "adr",
+      "title": "A saved file the app cannot read is offered for download or removal, and format changes ship with an upgrade step",
+      "path": "docs/decisions/adr-skript-0093-a-saved-file-the-app-cannot-read-is-offered-for-download-or-removal-and-format-changes-ship-with-an-upgrade-step.md",
+      "status": "accepted",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "governing": [
+          "TASK-SKRIPT-41-02-06"
         ]
       }
     },
@@ -13547,6 +13584,16 @@
         "title": "Script-bank tools ship as tool-owned bundles loaded as a package over their own directory",
         "status": "accepted",
         "path": "docs/decisions/adr-skript-0092-script-bank-tools-ship-as-tool-owned-bundles-loaded-as-a-package-over-their-own-directory.md",
+        "governing": [],
+        "governed_contracts": [],
+        "supersedes": [],
+        "superseded_by": null
+      },
+      {
+        "id": "ADR-SKRIPT-0093",
+        "title": "A saved file the app cannot read is offered for download or removal, and format changes ship with an upgrade step",
+        "status": "accepted",
+        "path": "docs/decisions/adr-skript-0093-a-saved-file-the-app-cannot-read-is-offered-for-download-or-removal-and-format-changes-ship-with-an-upgrade-step.md",
         "governing": [],
         "governed_contracts": [],
         "supersedes": [],

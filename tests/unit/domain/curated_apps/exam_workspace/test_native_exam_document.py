@@ -225,3 +225,49 @@ class TestApiOutputSchema:
         assert "facit_text" not in item_schema.get("required", ())
         assert "tick_points" not in item_schema.get("required", ())
         assert "criteria" not in item_schema.get("required", ())
+
+
+class TestUntrustedDecodeContainment:
+    def test_huge_integer_in_document_is_a_validation_error(self) -> None:
+        payload = b'{"schema_version": "native_exam_document_v10", "probe": ' + b"9" * 5000 + b"}"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(payload)
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_unknown_decode_error_is_a_validation_error(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        class _UnexpectedDecodeError(Exception):
+            pass
+
+        def _raise_unexpected(payload: object) -> object:
+            raise _UnexpectedDecodeError("injected decode failure")
+
+        monkeypatch.setattr(json, "loads", _raise_unexpected)
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(b"{}")
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_keyboard_interrupt_propagates(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def _raise_interrupted(payload: object) -> object:
+            raise KeyboardInterrupt
+
+        monkeypatch.setattr(json, "loads", _raise_interrupted)
+
+        with pytest.raises(KeyboardInterrupt):
+            parse_native_exam_document(b"{}")
+
+    def test_outdated_document_keeps_code_and_details(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v9"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
+        assert exc_info.value.details == {"schema_version": "native_exam_document_v9"}

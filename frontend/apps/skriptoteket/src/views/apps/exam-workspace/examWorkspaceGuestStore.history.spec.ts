@@ -37,14 +37,12 @@ async function startBlankSetup(title = "Original"): Promise<GuestStoreSetup> {
 describe("examWorkspaceGuestStore history and save", () => {
   it("has no teacher services and starts a blank exam in the browser", async () => {
     const context = setupGuestStore();
-    expect(await context.store.currentLineageId()).toBeNull();
 
     const lineageId = await startBlank(context, "Nytt prov");
 
     expect(context.store.store.teacher).toBeNull();
     expect(typeof context.store.store.guest?.startBlank).toBe("function");
     expect(lineageId).toBe(DOCUMENT_ID);
-    expect(await context.store.currentLineageId()).toBe(DOCUMENT_ID);
     const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
     expect(opened.document.title).toBe("Nytt prov");
     expect(opened.document.revision).toBe(1);

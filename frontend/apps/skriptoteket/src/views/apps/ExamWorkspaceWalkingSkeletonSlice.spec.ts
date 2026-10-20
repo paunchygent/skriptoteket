@@ -58,8 +58,10 @@ const apiMocks = vi.hoisted(() => ({
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
 }));
+const unreadable = vi.hoisted(() => ({ listUnreadableExamWorkspaceDocuments: vi.fn() }));
 
 vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
+vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadable);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -69,6 +71,8 @@ beforeEach(() => {
   resetSliceApiMocks(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
+  unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {

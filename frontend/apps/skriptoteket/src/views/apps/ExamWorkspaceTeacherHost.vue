@@ -10,24 +10,29 @@
  *   the view renders only after the first attempt settles, and a successful
  *   first handoff points the route at the handed-off lineage before the view
  *   mounts, so the view opens the handed-off exam. A draft Mina filer
- *   refused for good leaves a notice above the view with glyph actions
+ *   refused for good leaves a file notice above the view with glyph actions
  *   (download, remove, and for a full Mina filer retry); transient failures
- *   toast and retry in the background.
+ *   toast and retry in the background. A saved exam the app cannot open
+ *   leaves the same slot's download-or-remove notice through the view's
+ *   exposed notice state.
  *
  * Relationships:
  *   - Mounted by the `/apps/exam-workspace` route and the curated app host.
  *   - Renders `ExamWorkspaceView` with `serverExamWorkspaceStore`.
  *   - Runs the stored guest draft through `useExamWorkspaceGuestHandoffController`
  *     before the view opens the exam named by `?document=<lineage_id>`, and
- *     renders `ExamWorkspaceGuestHandoffNotice` above the view while the
- *     controller holds a rejection.
+ *     renders `ExamWorkspaceFileNotice` above the view while the
+ *     controller holds a rejection, mapping `permanent` to the
+ *     refused-draft reason, `unreadable` to the older-format reason and
+ *     `vault_full` to the full-Mina-filer reason. The view's exposed
+ *     saved-unreadable notice state renders next in the same slot.
  */
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
-import ExamWorkspaceGuestHandoffNotice from "./exam-workspace/ExamWorkspaceGuestHandoffNotice.vue";
+import ExamWorkspaceFileNotice from "./exam-workspace/ExamWorkspaceFileNotice.vue";
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createWebGuestHandoffLock } from "./exam-workspace/examWorkspaceGuestHandoffLock";
 import { createLocalStorageGuestHandoffRejectionStorage } from "./exam-workspace/examWorkspaceGuestHandoffRejection";
@@ -44,6 +49,39 @@ const handoff = useExamWorkspaceGuestHandoffController({
   teacher: serverExamWorkspaceStore.teacher,
 });
 const handoffSettled = ref(false);
+
+/**
+ * Map the controller's handoff reason to the shared file notice reason: an
+ * outdated-format refusal shows the older-format sentence with the same
+ * download and remove, every other permanent refusal the refused-draft
+ * sentence, and a full Mina filer the vault sentence.
+ */
+const noticeReason = computed(() => {
+  const reason = handoff.notice.value?.reason;
+  if (reason === "vault_full") {
+    return "guest_vault_full";
+  }
+  if (reason === "unreadable") {
+    return "guest_unreadable";
+  }
+  return "guest_permanent";
+});
+
+/**
+ * The saved exam the app could not open: the view's exposed editing state
+ * owns the target lineage, and this host renders its download-or-remove
+ * notice in the same slot above the view. The template ref is empty until
+ * the view mounts after the handoff settles.
+ */
+const viewRef = ref<InstanceType<typeof ExamWorkspaceView> | null>(null);
+const savedUnreadableTarget = computed(() => viewRef.value?.unreadableTarget ?? null);
+const savedUnreadableBusy = computed(() => viewRef.value?.unreadableTargetBusy ?? false);
+function downloadSavedUnreadable(): void {
+  void viewRef.value?.downloadUnreadableTarget();
+}
+function removeSavedUnreadable(): void {
+  void viewRef.value?.removeUnreadableTarget();
+}
 
 onMounted(async () => {
   try {
@@ -62,16 +100,24 @@ onMounted(async () => {
     class="teacher-host"
     data-test="exam-workspace-teacher-host"
   >
-    <ExamWorkspaceGuestHandoffNotice
+    <ExamWorkspaceFileNotice
       v-if="handoff.notice.value"
-      :reason="handoff.notice.value.reason"
+      :reason="noticeReason"
       :busy="handoff.notice.value.busy"
       @download="handoff.download()"
       @remove="handoff.remove()"
       @retry="handoff.retry()"
     />
+    <ExamWorkspaceFileNotice
+      v-if="savedUnreadableTarget !== null"
+      reason="saved_unreadable"
+      :busy="savedUnreadableBusy"
+      @download="downloadSavedUnreadable()"
+      @remove="removeSavedUnreadable()"
+    />
     <ExamWorkspaceView
       v-if="handoffSettled"
+      ref="viewRef"
       :store="serverExamWorkspaceStore"
     />
   </div>

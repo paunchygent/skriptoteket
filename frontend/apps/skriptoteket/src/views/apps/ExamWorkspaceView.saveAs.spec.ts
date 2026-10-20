@@ -38,8 +38,10 @@ const apiMocks = vi.hoisted(() => ({
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
 }));
+const unreadable = vi.hoisted(() => ({ listUnreadableExamWorkspaceDocuments: vi.fn() }));
 
 vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
+vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadable);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -49,6 +51,8 @@ afterEach(unmountViews);
 
 beforeEach(() => {
   arrangeViewApis(apiMocks);
+  unreadable.listUnreadableExamWorkspaceDocuments.mockReset();
+  unreadable.listUnreadableExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
 });
 
 describe("ExamWorkspaceView Spara som", () => {

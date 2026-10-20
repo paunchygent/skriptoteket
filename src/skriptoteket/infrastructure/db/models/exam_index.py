@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -26,3 +26,4 @@ class ExamIndexModel(Base):
         nullable=False,
         unique=True,
     )
+    document_format_version: Mapped[int] = mapped_column(Integer, nullable=False)

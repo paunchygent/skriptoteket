@@ -467,9 +467,11 @@ exam-conversion-judge = { cmd = "python -m scripts.exam_conversion_eval.judge", 
 transcript-parity-proof = "python -m scripts.transcript_parity_proof_launcher"
 audio-transcription-reattempt-proof = "python -m scripts.audio_transcription_retryable_reattempt_public_proof"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
+export-native-exam-document-versions = "python -m scripts.export_native_exam_document_versions"
 fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",
     "pnpm -C frontend --filter @skriptoteket/spa gen:api-types",
+    "python -m scripts.export_native_exam_document_versions",
 ] }
 
 # Frontend (full SPA; ADR-0027/ADR-0029)

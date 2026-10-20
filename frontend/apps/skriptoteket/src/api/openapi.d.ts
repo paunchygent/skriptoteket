@@ -1966,6 +1966,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/unreadable-documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Unreadable Exam Workspace Documents */
+        get: operations["list_unreadable_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_unreadable_documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -6204,6 +6221,37 @@ export interface components {
              */
             readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             history: components["schemas"]["ExamWorkspaceHistoryResponse"];
+        };
+        /** ExamWorkspaceUnreadableDocument */
+        ExamWorkspaceUnreadableDocument: {
+            /**
+             * Lineage Id
+             * Format: uuid
+             */
+            lineage_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Saved At
+             * Format: date-time
+             */
+            saved_at: string;
+            /** Title */
+            title: string;
+            /**
+             * Vault File Id
+             * Format: uuid
+             */
+            vault_file_id: string;
+        };
+        /**
+         * ExamWorkspaceUnreadableDocumentListResponse
+         * @description Saved exams in a format the app cannot read; the teacher can download or remove them
+         *     (ADR-SKRIPT-0093).
+         */
+        ExamWorkspaceUnreadableDocumentListResponse: {
+            /** Documents */
+            documents: components["schemas"]["ExamWorkspaceUnreadableDocument"][];
         };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
@@ -15035,6 +15083,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_unreadable_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_unreadable_documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceUnreadableDocumentListResponse"];
                 };
             };
         };
