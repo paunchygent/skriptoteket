@@ -34,9 +34,13 @@ backlog_document_profile: contract-derived
 - U3 notice and host wiring (`fdc5758a`); U4 component-rendered screenshots and string inventory
   (`evidence/copy/`). Merged origin/main `98cbab6c` as `d16e1653`; domain suite there green
   (backend 7900 passed, frontend 4015 passed; `evidence/suite/pdm-test-d16e1653.log`).
-- Copy review 917b4838: C6, C7 and C9 replaced as proposed; C1-C5, C8 and C10 approved.
-- Next: C6 recheck by 917b4838, then the Pi code review routed by the orchestrator, then the
-  staging walk of the rejected-draft notice.
+- Copy review 917b4838: C6, C7 and C9 replaced as proposed; C1-C5, C8 and C10 approved (D20).
+- CSRF 403 `AUTHORIZATION_ERROR` deferred (`a0e8fe5a`, D8).
+- Pi review ba74ef97 at `d16e1653`: changes requested (R1 high, R2-R4 medium). Repaired per
+  D16-D19: core lock, owner and cursor-owned records (`4cba6dac`); controller removal, stale
+  retry and success cleanup after retirement (`d0e03abb`). 96 focused tests green;
+  fe-type-check, fe-lint and fe-build green (`evidence/u7a/`, `evidence/u7b/`).
+- Next: ba74ef97 rereview of R1-R4, then the staging walk of the rejected-draft notice.
 - Work orders: `work/orders/` in the retained root. Explorer maps: `discovery/explorer/`.
 
 ## Implementation Contract
