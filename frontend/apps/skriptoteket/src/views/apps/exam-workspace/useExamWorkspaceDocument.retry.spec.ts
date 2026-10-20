@@ -34,6 +34,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildResponse, currentItem, deferred, openingOf } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
@@ -259,7 +260,7 @@ describe("retryItem", () => {
     await state.retryItem("item_001", "free_text");
 
     expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
-    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("failed");
+    await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("failed");
     expect(apiMocks.copyExamWorkspaceDocument).not.toHaveBeenCalled();
 
     pending.resolve({ lineage_id: "lineage-1", item: convertedItem() });

@@ -81,6 +81,12 @@ export type ExamWorkspaceDocumentOptions = {
   isReadOnly?: () => boolean;
   /** The sync gate's generation owner; every install carries its token. */
   getFence?: () => SyncFence;
+  /**
+   * The gate's fresh reload for a reload whose generation retired while it
+   * waited and whose exam is still the open one. Absent in specs without a
+   * gate, whose fence never retires mid-wait.
+   */
+  requestFreshLoad?: () => void;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
@@ -258,6 +264,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
     if (!currentSummary) return;
+    const lineageId = currentSummary.lineage_id;
+    const fence = resolveFence();
+    const token = fence.begin();
     if (isOperationBusy.value) {
       // A busy-time 409 waits for the operation instead of skipping the
       // reload; the watch resolves when the operation clears without a timer.
@@ -267,13 +276,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
         }, { immediate: true });
       });
     }
+    if (!fence.isCurrent(token)) {
+      // The wait outlived the generation: when the captured exam is still
+      // the open one, its install may hold an older copy, so the gate reads
+      // it fresh. Another exam in front drops the reload.
+      if (summary.value?.lineage_id === lineageId) {
+        options.requestFreshLoad?.();
+      }
+      return;
+    }
     operationBusy.value = true;
     try {
-      const fence = resolveFence();
-      const token = fence.begin();
       const reconcile = beginDocumentRead();
       const response = reconcile(
-        await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id),
+        await store.shared.getExamWorkspaceDocument(lineageId),
       );
       if (!fence.isCurrent(token)) {
         return;
@@ -323,10 +339,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
     if (isReadOnly()) return;
     const prior = workspaceDocument.value;
-    const before = prior?.items.find((item) => item.item_id === itemId);
-    await requestItemRetry(itemId, kind);
-    const after = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
-    if (after !== before) {
+    const applied = await requestItemRetry(itemId, kind);
+    if (applied) {
       keying.invalidateItem(itemId);
       noteEdit(true, prior);
     }
@@ -379,7 +393,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     applyResponse,
     arrivals,
     beginDocumentRead,
-    getFence: () => resolveFence(),
     isBusy,
     isCurrent,
     keying,

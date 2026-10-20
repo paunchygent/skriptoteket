@@ -81,13 +81,13 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
   }
 
   /** Send the retry for one question that still holds its stored source and awaits review. */
-  async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
+  async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<boolean> {
     const current = binding.workspaceDocument.value;
     const currentSummary = binding.summary.value;
     const opening = binding.openExam.value;
     const teacher = binding.teacher;
     if (!canUseAi.value || !current || !currentSummary || !opening || !teacher || binding.isBusy()) {
-      return;
+      return false;
     }
     const target = current.items.find((item) => item.item_id === itemId) ?? null;
     if (
@@ -95,7 +95,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
       target.retry_source === null ||
       target.review.state !== "review_required"
     ) {
-      return;
+      return false;
     }
     const lineageId = currentSummary.lineage_id;
     const revision = current.revision;
@@ -105,7 +105,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
     try {
       const response = await teacher.retryExamWorkspaceItem(lineageId, current, itemId, kind);
       if (!binding.isCurrent(token)) {
-        return;
+        return false;
       }
       const draft = binding.workspaceDocument.value;
       const draftTarget = draft?.items.find((item) => item.item_id === itemId) ?? null;
@@ -116,21 +116,23 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
         draftTarget === null ||
         !sameValue(draftTarget, target)
       ) {
-        return;
+        return false;
       }
       binding.workspaceDocument.value = {
         ...draft,
         items: draft.items.map((item) => (item.item_id === itemId ? response.item : item)),
       };
+      return true;
     } catch (error) {
       if (!binding.isCurrent(token) || !retryRequestIsLive(opening, lineageId, revision)) {
-        return;
+        return false;
       }
       const serverCopy =
         isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
           ? error.message
           : null;
       toast.failure(serverCopy || RETRY_FAILURE_COPY);
+      return false;
     } finally {
       binding.operationBusy.value = false;
     }

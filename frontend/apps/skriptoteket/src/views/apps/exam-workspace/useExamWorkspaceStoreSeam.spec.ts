@@ -15,6 +15,7 @@ import { effectScope, ref } from "vue";
 import type { ExamWorkspaceDocumentSummary, NativeExamDocument } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { buildResponse, buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import * as exportsModule from "./useExamWorkspaceExports";
@@ -50,7 +51,7 @@ describe("teacher actions in guest mode", () => {
       await state.openDocument("lineage-1");
       await flushPromises();
 
-      await expect(state.saveDocumentAs("Kopia")).resolves.toBe("failed");
+      await expect(state.saveDocumentAs("Kopia", createSyncFence().begin())).resolves.toBe("failed");
       expect(apiMocks.copyExamWorkspaceDocument).not.toHaveBeenCalled();
     } finally {
       scope.stop();

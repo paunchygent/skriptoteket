@@ -28,7 +28,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
-import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import type { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import type { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import type { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -45,7 +45,6 @@ type SaveState = {
   operationBusy: Ref<boolean>;
   applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
   beginDocumentRead: () => (response: ExamWorkspaceDocumentResponse) => ExamWorkspaceDocumentResponse;
-  getFence: () => SyncFence;
   isCurrent: (token: FenceToken) => boolean;
   syncAfterConflict: ReturnType<typeof useExamWorkspaceConversion>["syncAfterConflict"];
   arrivals: ReturnType<typeof useExamWorkspaceSaveArrivals>;
@@ -74,20 +73,19 @@ export function useExamWorkspaceSave(state: SaveState) {
   /**
    * Spara som: the working copy becomes a new exam named `name` with its own
    * history, and opens in place; the exam it came from keeps its last save.
-   * The caller stores any pending edit first, so the copy holds what the
-   * teacher sees. A retired answer installs nothing.
+   * The caller stores any pending edit first and hands over the token its
+   * operation started with, so the copy and its install belong to that
+   * operation. A retired answer installs nothing.
    */
-  async function saveDocumentAs(name: string): Promise<ExamWorkspaceSaveAsOutcome> {
+  async function saveDocumentAs(name: string, token: FenceToken): Promise<ExamWorkspaceSaveAsOutcome> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     const teacher = state.store.teacher;
-    if (!current || !currentSummary || !teacher || state.isBusy.value) {
+    if (!current || !currentSummary || !teacher || state.isBusy.value || !state.isCurrent(token)) {
       return "failed";
     }
     operationBusy.value = true;
     try {
-      const fence = state.getFence();
-      const token = fence.begin();
       const response = await teacher.copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
       if (!state.isCurrent(token)) {
         return "failed";

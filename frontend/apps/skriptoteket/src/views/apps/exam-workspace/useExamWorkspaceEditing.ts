@@ -81,6 +81,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     getFence: () => requireGate().fence,
     isReadOnly: () => requireGate().editingLocked.value,
     onEdit: (structural, before) => noteEdit(structural, before),
+    requestFreshLoad: () => requireGate().reloadFresh(),
     store,
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
@@ -249,8 +250,13 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
 
   /** Spara som: store the pending edit, then copy the working exam under `name`. */
   async function saveAs(name: string) {
-    await history.flush(false);
-    return await document.saveDocumentAs(name);
+    const fence = requireGate().fence;
+    const token = fence.begin();
+    const stored = await history.flush(false);
+    if (!stored || !fence.isCurrent(token)) {
+      return "failed";
+    }
+    return await document.saveDocumentAs(name, token);
   }
 
   /**

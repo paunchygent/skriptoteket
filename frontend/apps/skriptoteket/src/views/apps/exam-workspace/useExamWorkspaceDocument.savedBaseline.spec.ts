@@ -53,7 +53,7 @@ describe("saved exam baseline", () => {
         ...response, document: copied, saved_document: copied,
         summary: { ...response.summary, lineage_id: "lineage-2", version: 1 },
       });
-      expect(await state.saveDocumentAs("Kopia")).toBe("saved");
+      expect(await state.saveDocumentAs("Kopia", createSyncFence().begin())).toBe("saved");
       expect(api.copyExamWorkspaceDocument).toHaveBeenCalledWith(
         "lineage-1",
         "Kopia",

@@ -114,6 +114,31 @@ describe("the sync gate phases and events", () => {
     expect(harness.freshInstalled.length).toBe(1);
   });
 
+  it("reloads the document fresh on a handed-over stale reload, and stays put in readonly", async () => {
+    const harness = createGate();
+    harness.gate.openExam(LINEAGE, false);
+    const abandoned = harness.documentReads[0];
+    if (abandoned === undefined) {
+      throw new Error("expected the first document read");
+    }
+    harness.gate.reloadFresh();
+    expect(harness.gate.phase.value).toBe("loading");
+    expect(harness.documentReads.length).toBe(2);
+    abandoned.resolve(response(withPoints(exam(), 9), "step-0"));
+    await harness.settle();
+    expect(harness.freshInstalled.length).toBe(0);
+    await succeedLoad(harness, exam());
+    expect(harness.gate.phase.value).toBe("editing");
+    expect(harness.freshInstalled.length).toBe(1);
+    harness.gate.leaseLost();
+    await harness.settle();
+    expect(harness.gate.phase.value).toBe("readonly");
+    const reads = harness.documentReads.length;
+    harness.gate.reloadFresh();
+    expect(harness.documentReads.length).toBe(reads);
+    expect(harness.gate.phase.value).toBe("readonly");
+  });
+
   it("starts a fresh load on a lease acquired from readonly", async () => {
     const harness = createGate();
     harness.flags.leaseHeld = false;

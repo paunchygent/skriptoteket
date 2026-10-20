@@ -308,6 +308,22 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
+   * A reload whose generation retired while it waited hands over: when its
+   * exam is still the open one, retire and read it fresh. The load always
+   * reads the document, because the install that retired the reload may hold
+   * an older copy. In `readonly` it does nothing: the next acquisition
+   * reloads anyway.
+   */
+  function reloadFresh(): void {
+    if (disposed || phase.value === "readonly") {
+      return;
+    }
+    retire();
+    phase.value = "loading";
+    startFreshLoad(false);
+  }
+
+  /**
    * Open an exam: another lineage starts a fresh load. When the response
    * already installed the document, only the step list is read.
    */
@@ -472,6 +488,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     noteStored,
     openExam,
     phase,
+    reloadFresh,
     staleConflict,
   };
 }
