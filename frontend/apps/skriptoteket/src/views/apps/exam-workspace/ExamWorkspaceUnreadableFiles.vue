@@ -29,7 +29,7 @@ const emit = defineEmits<{
   count: [count: number];
 }>();
 
-const { busyId, download, files, load, remove } = useExamWorkspaceUnreadableFiles();
+const { busyIds, download, files, load, remove } = useExamWorkspaceUnreadableFiles();
 
 /** Load the rows on mount, then report the count; every remove reports it again. */
 onMounted(async () => {
@@ -66,7 +66,7 @@ async function handleRemove(file: ExamWorkspaceUnreadableDocument): Promise<void
           </span>
           <ExamWorkspaceFileNotice
             reason="saved_unreadable"
-            :busy="busyId === file.lineage_id"
+            :busy="busyIds.has(file.lineage_id)"
             @download="download(file)"
             @remove="handleRemove(file)"
           />

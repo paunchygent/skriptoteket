@@ -39,8 +39,8 @@ import { LIST_FAILURE_COPY } from "./useExamWorkspaceSavedList";
 
 export type UnreadableFilesState = {
   files: Ref<ExamWorkspaceUnreadableDocument[]>;
-  /** The row an action currently runs on; every other row stays enabled. */
-  busyId: Ref<string | null>;
+  /** Lineage ids with a running action; only the acting row is disabled. */
+  busyIds: Ref<ReadonlySet<string>>;
   load: () => Promise<void>;
   download: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
   remove: (file: ExamWorkspaceUnreadableDocument) => Promise<void>;
@@ -49,7 +49,7 @@ export type UnreadableFilesState = {
 export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
   const toast = useToast();
   const files = ref<ExamWorkspaceUnreadableDocument[]>([]);
-  const busyId = ref<string | null>(null);
+  const busyIds = ref<ReadonlySet<string>>(new Set());
 
   async function load(): Promise<void> {
     try {
@@ -61,21 +61,23 @@ export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
   }
 
   async function download(file: ExamWorkspaceUnreadableDocument): Promise<void> {
-    if (busyId.value !== null) return;
-    busyId.value = file.lineage_id;
+    if (busyIds.value.has(file.lineage_id)) return;
+    busyIds.value = new Set([...busyIds.value, file.lineage_id]);
     try {
       const response = await downloadSavedExamFile(file.vault_file_id);
       triggerBrowserDownload(response.blob, response.filename ?? file.name);
     } catch {
       toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
     } finally {
-      busyId.value = null;
+      const next = new Set(busyIds.value);
+      next.delete(file.lineage_id);
+      busyIds.value = next;
     }
   }
 
   async function remove(file: ExamWorkspaceUnreadableDocument): Promise<void> {
-    if (busyId.value !== null) return;
-    busyId.value = file.lineage_id;
+    if (busyIds.value.has(file.lineage_id)) return;
+    busyIds.value = new Set([...busyIds.value, file.lineage_id]);
     try {
       await removeSavedExamFile(file.vault_file_id);
       files.value = files.value.filter((entry) => entry.lineage_id !== file.lineage_id);
@@ -84,9 +86,11 @@ export function useExamWorkspaceUnreadableFiles(): UnreadableFilesState {
     } catch {
       toast.failure(EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY);
     } finally {
-      busyId.value = null;
+      const next = new Set(busyIds.value);
+      next.delete(file.lineage_id);
+      busyIds.value = next;
     }
   }
 
-  return { busyId, download, files, load, remove };
+  return { busyIds, download, files, load, remove };
 }

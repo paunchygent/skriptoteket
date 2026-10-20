@@ -164,4 +164,42 @@ describe("ExamWorkspaceUnreadableFiles", () => {
     expect(wrapper.find(rowTestId("lineage-2")).exists()).toBe(true);
     wrapper.unmount();
   });
+
+  it("disables only the busy row while its download runs", async () => {
+    const rowA = buildRow();
+    const rowB = buildRow({ lineage_id: "lineage-2", vault_file_id: "vault-2" });
+    const wrapper = await mountRows([rowA, rowB]);
+    let finish!: (response: { blob: Blob; contentType: string | null; filename: string | null }) => void;
+    downloadMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+
+    await wrapper
+      .get(rowTestId("lineage-1"))
+      .get('[data-test="exam-workspace-file-notice-download"]')
+      .trigger("click");
+    await flushPromises();
+
+    const busyRow = wrapper.get(rowTestId("lineage-1"));
+    const busyButtons = busyRow.findAll("button");
+    expect(busyButtons.length).toBeGreaterThan(0);
+    for (const button of busyButtons) {
+      expect(button.attributes("disabled")).toBeDefined();
+    }
+    const idleRow = wrapper.get(rowTestId("lineage-2"));
+    const idleButtons = idleRow.findAll("button");
+    expect(idleButtons.length).toBeGreaterThan(0);
+    for (const button of idleButtons) {
+      expect(button.attributes("disabled")).toBeUndefined();
+    }
+
+    finish({ blob: new Blob(["provdokument"]), contentType: "application/zip", filename: "Prov.provdokument.zip" });
+    await flushPromises();
+    for (const button of wrapper.get(rowTestId("lineage-1")).findAll("button")) {
+      expect(button.attributes("disabled")).toBeUndefined();
+    }
+    wrapper.unmount();
+  });
 });

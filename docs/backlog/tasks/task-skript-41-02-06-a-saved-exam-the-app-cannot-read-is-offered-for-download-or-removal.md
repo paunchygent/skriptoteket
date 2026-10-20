@@ -30,9 +30,15 @@ backlog_document_profile: contract-derived
 - Done: code map (explorers e01-e22 in the root's `discovery/explorer/`), ledger D1-D16 below.
 - Orchestrator accepted the ledger, the backfill (D7) and copy S1-S6 on 2026-10-20; D15 became the
   last unit U5.
-- Units: U1 format versions and safeguard (running); U2 index column, migration and unreadable
-  route; U3 shared file notice and guest zip; U4 drawer rows; U5 deep link after 40-04 lands.
-  Work orders in the root's `work/orders/`.
+- Committed: U1 format versions and safeguard (`3d87b9ef`, `330fe2ae`); U2 index column,
+  migration `74adf10e2441` and unreadable route (`c931d6ee`); U3 shared file notice and guest zip
+  (`a7edf784`); U6 Boy Scout repair of the `4e9b7d1c6a02` migration test (`ed269299`); U4 drawer
+  rows with U4b view-spec mocks (`71330b6a`).
+- Committed after U4: U7 per-row busy guard for the unreadable rows (repair of U4).
+- Next: copy review with screenshots and the string inventory (root
+  `evidence/copy-review/`); domain suite on the orchestrator's go; U5 deep link waits until the
+  orchestrator reports the 40-04 address and open repair on main.
+- Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
 

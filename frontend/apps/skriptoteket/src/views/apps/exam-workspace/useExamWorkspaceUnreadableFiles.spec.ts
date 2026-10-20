@@ -126,7 +126,7 @@ describe("useExamWorkspaceUnreadableFiles", () => {
       expect(downloadMock).toHaveBeenCalledWith("vault-1");
       expect(downloadFile.triggerBrowserDownload).toHaveBeenCalledTimes(1);
       expect(downloadFile.triggerBrowserDownload).toHaveBeenCalledWith(blob, "Server.provdokument.zip");
-      expect(state.busyId.value).toBeNull();
+      expect(state.busyIds.value.size).toBe(0);
     } finally {
       scope.stop();
     }
@@ -165,7 +165,7 @@ describe("useExamWorkspaceUnreadableFiles", () => {
       expect(toastMessages()).toEqual([
         { message: EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY, variant: "failure" },
       ]);
-      expect(state.busyId.value).toBeNull();
+      expect(state.busyIds.value.size).toBe(0);
     } finally {
       scope.stop();
     }
@@ -196,7 +196,7 @@ describe("useExamWorkspaceUnreadableFiles", () => {
         { message: EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVED_COPY, variant: "success" },
       ]);
       expect(listMock).toHaveBeenCalledTimes(2);
-      expect(state.busyId.value).toBeNull();
+      expect(state.busyIds.value.size).toBe(0);
     } finally {
       scope.stop();
     }
@@ -218,6 +218,115 @@ describe("useExamWorkspaceUnreadableFiles", () => {
         { message: EXAM_WORKSPACE_FILE_NOTICE_REMOVE_FAILURE_COPY, variant: "failure" },
       ]);
       expect(listMock).toHaveBeenCalledTimes(1);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("runs row B's download while row A's download is pending", async () => {
+    const rowA = buildRow();
+    const rowB = buildRow({ lineage_id: "lineage-2", name: "Andra.provdokument.zip", vault_file_id: "vault-2" });
+    let finishA!: (response: { blob: Blob; contentType: string | null; filename: string | null }) => void;
+    const blobB = new Blob(["andra"]);
+    downloadMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishA = resolve;
+      }),
+    );
+    downloadMock.mockResolvedValueOnce({ blob: blobB, contentType: "application/zip", filename: "Andra.provdokument.zip" });
+    const { state, scope } = mountState();
+    try {
+      const pendingA = state.download(rowA);
+      await flushPromises();
+      expect(downloadMock).toHaveBeenCalledTimes(1);
+      expect(state.busyIds.value.has("lineage-1")).toBe(true);
+
+      await state.download(rowB);
+      await flushPromises();
+
+      expect(downloadMock).toHaveBeenCalledTimes(2);
+      expect(downloadMock).toHaveBeenNthCalledWith(2, "vault-2");
+      expect(downloadFile.triggerBrowserDownload).toHaveBeenCalledWith(blobB, "Andra.provdokument.zip");
+
+      finishA({ blob: new Blob(["provdokument"]), contentType: "application/zip", filename: "Prov.provdokument.zip" });
+      await pendingA;
+      await flushPromises();
+      expect(state.busyIds.value.size).toBe(0);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("ignores a second download click on the busy row", async () => {
+    const rowA = buildRow();
+    let finishA!: (response: { blob: Blob; contentType: string | null; filename: string | null }) => void;
+    downloadMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishA = resolve;
+      }),
+    );
+    const { state, scope } = mountState();
+    try {
+      const pendingA = state.download(rowA);
+      await flushPromises();
+      expect(downloadMock).toHaveBeenCalledTimes(1);
+
+      await state.download(rowA);
+      await flushPromises();
+
+      expect(downloadMock).toHaveBeenCalledTimes(1);
+
+      finishA({ blob: new Blob(["provdokument"]), contentType: "application/zip", filename: "Prov.provdokument.zip" });
+      await pendingA;
+      await flushPromises();
+      expect(state.busyIds.value.size).toBe(0);
+    } finally {
+      scope.stop();
+    }
+  });
+
+  it("runs row B's remove while row A's remove is pending", async () => {
+    const rowA = buildRow();
+    const rowB = buildRow({ lineage_id: "lineage-2", vault_file_id: "vault-2" });
+    listMock.mockResolvedValue({ documents: [] });
+    let finishA!: (response: { bytes: number; created_at: string; id: string; is_missing_on_disk: boolean; name: string; ref: string }) => void;
+    removeMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        finishA = resolve;
+      }),
+    );
+    removeMock.mockResolvedValueOnce({
+      bytes: 4,
+      created_at: "2026-10-11T08:00:00Z",
+      id: "vault-2",
+      is_missing_on_disk: false,
+      name: "Andra.provdokument.zip",
+      ref: "vault-file-ref-2",
+    });
+    const { state, scope } = mountState();
+    try {
+      const pendingA = state.remove(rowA);
+      await flushPromises();
+      expect(removeMock).toHaveBeenCalledTimes(1);
+      expect(state.busyIds.value.has("lineage-1")).toBe(true);
+
+      await state.remove(rowB);
+      await flushPromises();
+
+      expect(removeMock).toHaveBeenCalledTimes(2);
+      expect(removeMock).toHaveBeenNthCalledWith(2, "vault-2");
+
+      finishA({
+        bytes: 4,
+        created_at: "2026-10-11T08:00:00Z",
+        id: "vault-1",
+        is_missing_on_disk: false,
+        name: "Prov.provdokument.zip",
+        ref: "vault-file-ref",
+      });
+      await pendingA;
+      await flushPromises();
+      expect(state.busyIds.value.size).toBe(0);
     } finally {
       scope.stop();
     }
