@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ad09cce57471ebecf4d47d909a3556caa66aa8c2813cde8d65b3e36e0f693a8e",
+  "source_set_digest": "ad9f54c878ecd79263264d2048257f61668b1aa0c8a755760d9b4e86a5742014",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9913,6 +9913,20 @@
       ]
     },
     {
+      "id": "REF-SKRIPT-DECISIONS-skola24-timetable-import-client-decisions-2026-10-20",
+      "type": "reference",
+      "title": "Skola24 timetable import client decisions 2026-10-20",
+      "path": "docs/reference/ref-skript-decisions-skola24-timetable-import-client-decisions-2026-10-20-skola24-timetable-import-client-decisions-2026-10-20.md",
+      "status": "draft",
+      "reference_kind": "decisions",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
       "id": "REF-SKRIPT-DECISIONS-symbol-semantics-inventory-and-decision-contract",
       "type": "reference",
       "title": "Symbol semantics inventory and decision contract",
@@ -11162,6 +11176,20 @@
       ]
     },
     {
+      "id": "REF-SKRIPT-GENERAL-skola24-timetable-api-for-the-signed-in-teacher",
+      "type": "reference",
+      "title": "Skola24 timetable API for the signed-in teacher",
+      "path": "docs/reference/ref-skript-general-skola24-timetable-api-for-the-signed-in-teacher-skola24-timetable-api-for-the-signed-in-teacher.md",
+      "status": "active",
+      "reference_kind": "general",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ]
+    },
+    {
       "id": "REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff-PART-01",
       "type": "reference",
       "title": "Skriptoteket help copy signoff — part 01",
@@ -11238,6 +11266,20 @@
       ],
       "retired_ids": [
         "REF-lead-architect-suggestions-post-mvp"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-GENERAL-teacher-year-calendar-pipeline",
+      "type": "reference",
+      "title": "Teacher year calendar pipeline",
+      "path": "docs/reference/ref-skript-general-teacher-year-calendar-pipeline-teacher-year-calendar-pipeline.md",
+      "status": "draft",
+      "reference_kind": "general",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {
