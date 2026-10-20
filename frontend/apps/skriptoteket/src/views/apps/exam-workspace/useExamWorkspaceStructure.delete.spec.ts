@@ -22,6 +22,8 @@ import type {
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
@@ -127,15 +129,23 @@ function setup(initial: NativeExamDocument) {
     workspaceDocument.value = edit(workspaceDocument.value!);
     return true;
   });
+  const fence = createSyncFence();
+  const transport = createFencedTransport(() => fence, serverExamWorkspaceStore.shared);
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: (next) => {
+      applyCommandResponse: (token, next) => {
+        void token;
         workspaceDocument.value = next.document;
       },
       editDocument,
+      enqueueWrite: (run, refused) => {
+        void refused;
+        return run(fence.begin());
+      },
       flush: vi.fn(async () => true),
       historyCursor: ref("cursor"),
       isBusy: () => false,
+      isCurrent: (token) => fence.isCurrent(token),
       isReadOnly: () => false,
       lineageId: () => "lineage-1",
       noteLeaseLost: vi.fn(),
@@ -146,7 +156,7 @@ function setup(initial: NativeExamDocument) {
       selectParent: vi.fn(),
       selectedItemId,
       selectedParentId,
-      shared: serverExamWorkspaceStore.shared,
+      transport,
       tabId: () => "tab-1",
       workspaceDocument,
     }),

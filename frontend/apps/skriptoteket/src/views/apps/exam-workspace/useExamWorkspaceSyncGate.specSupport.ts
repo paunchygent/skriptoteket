@@ -118,11 +118,13 @@ export function createGate(): SyncGateHarness {
       counts.owedDropped += 1;
     },
     hasPendingEdit: () => flags.pendingEdit,
-    installFresh: (fresh: ExamWorkspaceDocumentResponse) => {
+    installFresh: (token: FenceToken, fresh: ExamWorkspaceDocumentResponse) => {
+      void token;
       freshInstalled.push(fresh);
     },
-    installMerged: (fresh: ExamWorkspaceDocumentResponse, merged: NativeExamDocument) => {
+    installMerged: (token: FenceToken, fresh: ExamWorkspaceDocumentResponse, merged: NativeExamDocument) => {
       void fresh;
+      void token;
       mergedInstalled.push(merged);
     },
     isLeaseHeld: () => flags.leaseHeld,

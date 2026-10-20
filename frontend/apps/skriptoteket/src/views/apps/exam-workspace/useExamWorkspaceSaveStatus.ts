@@ -29,6 +29,7 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceGuestSaveStatus } from "./examWorkspaceGuestDraft";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 
 export const AUTOSAVE_FAILURE_COPY = "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.";
 
@@ -56,8 +57,10 @@ export type ExamWorkspaceSaveStatusDeps = {
   isGuest: () => boolean;
   /** The sync gate holds a refused edit no store has confirmed. */
   keptUnstored: () => boolean;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
   /** A store or a position move confirmed this document; the file holds it now. */
-  noteStored: (document: NativeExamDocument) => void;
+  noteStored: (token: FenceToken, document: NativeExamDocument) => void;
   /** True while the working copy differs from the confirmed snapshot. */
   pending: () => boolean;
   /** True while a store or a position move is in flight. */
@@ -166,17 +169,23 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
     }
   }
 
-  function confirmed(document: NativeExamDocument): void {
+  function confirmed(token: FenceToken, document: NativeExamDocument): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     lastSavedAt.value = new Date().toISOString();
     lastRefusal.value = null;
     lastFailure.value = false;
     leaseLostWithPendingEdit.value = false;
     clearRetryTimer();
-    deps.noteStored(document);
+    deps.noteStored(token, document);
   }
 
   /** A store failed; the pending edit stays, toasts once per outage, and retries. */
-  function noteFailed(): void {
+  function noteFailed(token: FenceToken): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     if (!lastFailure.value) {
       // One toast per outage: the retry below keeps storing without repeating it.
       toast.failure(AUTOSAVE_FAILURE_COPY);
@@ -186,7 +195,10 @@ export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {
   }
 
   /** A store was refused; the reason shows until a store succeeds. */
-  function noteRefused(reason: string): void {
+  function noteRefused(token: FenceToken, reason: string): void {
+    if (!deps.isCurrent(token)) {
+      return;
+    }
     lastRefusal.value = reason;
     leaseLostWithPendingEdit.value = false;
   }

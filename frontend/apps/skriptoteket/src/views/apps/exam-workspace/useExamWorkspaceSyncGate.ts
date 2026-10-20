@@ -86,9 +86,13 @@ export type ExamWorkspaceSyncGateDeps = {
   /** Clear the step list after a current-generation read failure; stale tokens do nothing. */
   resetStepList: (token: FenceToken) => void;
   /** Install a fresh response with no kept edit waiting. */
-  installFresh: (response: ExamWorkspaceDocumentResponse) => void;
+  installFresh: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
   /** Apply the fresh response, then install the merged working copy. */
-  installMerged: (response: ExamWorkspaceDocumentResponse, merged: NativeExamDocument) => void;
+  installMerged: (
+    token: FenceToken,
+    response: ExamWorkspaceDocumentResponse,
+    merged: NativeExamDocument,
+  ) => void;
   /** Run a replacing read under the existing lock. */
   replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Queue one ordinary store of the working copy through the write queue. */
@@ -218,7 +222,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
             return;
           }
           if (kept.value === null) {
-            deps.installFresh(fresh);
+            deps.installFresh(token, fresh);
           }
         }
         const base = fresh !== null ? fresh.document : null;
@@ -250,7 +254,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
             kept.value = null;
             mergeToken = null;
           } else {
-            deps.installMerged(freshResponse, merged);
+            deps.installMerged(token, freshResponse, merged);
             mergeToken = token;
           }
         }
@@ -374,10 +378,10 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   /**
    * A store succeeded while the merge token is still current: the kept edit
    * is recovered. Stores from any other generation leave it pending for the
-   * next merge.
+   * next merge. A stale token changes nothing.
    */
-  function noteStored(): void {
-    if (disposed) {
+  function noteStored(token: FenceToken): void {
+    if (disposed || !fence.isCurrent(token)) {
       return;
     }
     if (kept.value !== null && mergeToken !== null && fence.isCurrent(mergeToken)) {

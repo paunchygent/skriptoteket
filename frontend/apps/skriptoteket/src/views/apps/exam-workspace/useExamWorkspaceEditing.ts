@@ -27,6 +27,7 @@ import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../..
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useToast } from "../../../composables/useToast";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
   useExamWorkspaceEditLease,
@@ -34,6 +35,7 @@ import {
 } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { readStepList } from "./useExamWorkspaceHistoryLoader";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import { createSyncGateTimer, useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
@@ -65,17 +67,47 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   // A cursor the gate's own install set: the history watcher must not report
   // it back as foreign. Consumed on the first matching cursor event.
   let gateCursor: { lineage: string; cursor: string } | null = null;
+  let gate: ReturnType<typeof useExamWorkspaceSyncGate> | null = null;
+  function requireGate(): ReturnType<typeof useExamWorkspaceSyncGate> {
+    if (!gate) {
+      throw new Error("expected the sync gate");
+    }
+    return gate;
+  }
+  const fenced = createFencedTransport(() => requireGate().fence, store.shared);
   const document = useExamWorkspaceDocument({
-    isReadOnly: () => gate.editingLocked.value,
+    getFence: () => requireGate().fence,
+    isReadOnly: () => requireGate().editingLocked.value,
     onEdit: (structural, before) => noteEdit(structural, before),
     store,
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
 
+  /**
+   * A server command stored a new step: its response already installed the
+   * fresh document, so the gate reads only the step list. An initial open of
+   * another lineage leaves this to the lineage watcher, which opens the exam
+   * in the gate. A retired token installs nothing and reports nothing back.
+   */
+  function applyCommandResponse(token: FenceToken, response: ExamWorkspaceDocumentResponse): void {
+    const current = requireGate();
+    if (!current.fence.isCurrent(token)) {
+      return;
+    }
+    const changed = document.summary.value?.lineage_id !== response.summary.lineage_id;
+    if (!changed) {
+      gateCursor = { cursor: response.history_cursor, lineage: response.summary.lineage_id };
+    }
+    document.applyCommandResponse(token, response);
+    if (!changed) {
+      current.foreignCursor(true);
+    }
+  }
+
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
     install: document.installDocument,
-    isReadOnly: () => gate.editingLocked.value,
+    isReadOnly: () => requireGate().editingLocked.value,
     isReplacing: () => document.isReplacing.value,
     // Not `isBusy`: that includes the replacing lock the history's own reads hold.
     isBlocked: () => document.isOperationBusy.value,
@@ -90,39 +122,41 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
         gateCursor = null;
         return true;
       }
-      gate.foreignCursor(true);
+      requireGate().foreignCursor(true);
       return false;
     },
-    noteGateStored: () => gate.noteStored(),
-    keptUnstored: () => gate.hasKeptEdit.value,
+    noteGateStored: (token) => requireGate().noteStored(token),
+    keptUnstored: () => requireGate().hasKeptEdit.value,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
     onConflict: () => {
-      gate.staleConflict();
+      requireGate().staleConflict();
       return Promise.resolve();
     },
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
-    enqueueWrite: (run, refused) => gate.enqueueWrite(run, refused),
-    isCurrent: (token) => gate.fence.isCurrent(token),
-    shared: store.shared,
+    enqueueWrite: (run, refused) => requireGate().enqueueWrite(run, refused),
+    isCurrent: (token) => requireGate().fence.isCurrent(token),
+    transport: fenced,
     tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
   });
   noteEdit = history.noteEdit;
 
   const structure = useExamWorkspaceStructure({
-    applyCommandResponse: (response) => applyCommandResponse(response),
+    applyCommandResponse: (token, response) => applyCommandResponse(token, response),
     editDocument: document.editDocument,
+    enqueueWrite: (run, refused) => requireGate().enqueueWrite(run, refused),
     flush: history.flush,
     historyCursor: document.historyCursor,
     isBusy: () => document.isBusy.value || history.storing.value,
-    isReadOnly: () => gate.editingLocked.value,
+    isCurrent: (token) => requireGate().fence.isCurrent(token),
+    isReadOnly: () => requireGate().editingLocked.value,
     lineageId,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     onConflict: () => {
-      gate.staleConflict();
+      requireGate().staleConflict();
       return Promise.resolve();
     },
     replaceCopy: document.replaceCopy,
@@ -131,12 +165,12 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     selectParent: (parentId) => selectParent(parentId),
     selectedItemId: document.selectedItemId,
     selectedParentId,
-    shared: store.shared,
+    transport: fenced,
     tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
   });
 
-  const gate = useExamWorkspaceSyncGate({
+  gate = useExamWorkspaceSyncGate({
     isLeaseHeld: () => leaseHolder.session !== null && !leaseHolder.session.readOnly.value,
     hasPendingEdit: () => history.pending.value,
     currentStepDocument: () => history.stepDocument.value,
@@ -146,14 +180,20 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     readStepList: (readLineageId) => readStepList(store.shared, readLineageId),
     applyStepList: (token, read, base) => history.applySteps(token, read, base ?? document.serverDocument.value),
     resetStepList: (token) => history.resetSteps(token),
-    installFresh: (fresh) => {
+    installFresh: (token, fresh) => {
+      if (!requireGate().fence.isCurrent(token)) {
+        return;
+      }
       gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
-      document.applyCommandResponse(fresh);
+      document.applyCommandResponse(token, fresh);
     },
-    installMerged: (fresh, merged) => {
+    installMerged: (token, fresh, merged) => {
+      if (!requireGate().fence.isCurrent(token)) {
+        return;
+      }
       gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
-      document.applyCommandResponse(fresh);
-      document.installDocument(merged);
+      document.applyCommandResponse(token, fresh);
+      document.installDocument(token, merged);
     },
     replaceCopy: document.replaceCopy,
     requestStore: () => {
@@ -164,29 +204,12 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     timer: createSyncGateTimer(),
   });
 
-  /**
-   * A server command stored a new step: its response already installed the
-   * fresh document, so the gate reads only the step list. An initial open of
-   * another lineage leaves this to the lineage watcher, which opens the exam
-   * in the gate.
-   */
-  function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
-    const changed = document.summary.value?.lineage_id !== response.summary.lineage_id;
-    if (!changed) {
-      gateCursor = { cursor: response.history_cursor, lineage: response.summary.lineage_id };
-    }
-    document.applyCommandResponse(response);
-    if (!changed) {
-      gate.foreignCursor(true);
-    }
-  }
-
   leaseHolder.session = useExamWorkspaceEditLease({
     guestStorage: lease?.guestStorage,
     isGuest: () => store.guest !== null,
     lineageId,
     now: lease?.now,
-    onAcquired: () => gate.leaseAcquired(),
+    onAcquired: () => requireGate().leaseAcquired(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,
@@ -199,7 +222,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     }
     // The open response already installed the document; the gate reads the step list.
     gateCursor = null;
-    gate.openExam(next, true);
+    requireGate().openExam(next, true);
   });
 
   watch(
@@ -209,15 +232,15 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
         return;
       }
       if (readOnly) {
-        gate.leaseLost();
+        requireGate().leaseLost();
       } else {
-        gate.leaseAcquired();
+        requireGate().leaseAcquired();
       }
     },
   );
 
   onScopeDispose(() => {
-    gate.dispose();
+    requireGate().dispose();
   });
 
   /**
@@ -240,13 +263,18 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
    * `editingLocked` but never blocks the Öppna drawer, so the replacing lock
    * it holds does not count while the gate loads.
    */
+  const gateForBusy = () => gate;
   const isBusy = computed(
-    () => document.isOperationBusy.value || (document.isReplacing.value && gate.phase.value !== "loading"),
+    () => document.isOperationBusy.value || (document.isReplacing.value && (gateForBusy()?.phase.value ?? "loading") !== "loading"),
   );
 
   return {
     ...document,
-    applyCommandResponse,
+    applyCommandResponse: (response: ExamWorkspaceDocumentResponse) => {
+      const current = requireGate();
+      const token = current.fence.begin();
+      applyCommandResponse(token, response);
+    },
     history,
     isBusy,
     save,
@@ -254,9 +282,9 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     selectedParentId,
     structure,
     /** The lease notice reads only this, so `loading` never shows the lease message. */
-    leaseReadOnly: gate.leaseReadOnly,
+    leaseReadOnly: requireGate().leaseReadOnly,
     /** Every input locks while this holds, in `loading` and in `readonly`. */
-    editingLocked: gate.editingLocked,
+    editingLocked: requireGate().editingLocked,
     /** True while `Ta över` waits for the holder to release. */
     takeoverWaiting: leaseHolder.session!.waiting,
     /** Ask for the lease, claim it once free and read the newest state. */

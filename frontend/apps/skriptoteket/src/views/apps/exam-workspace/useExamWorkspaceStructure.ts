@@ -41,7 +41,8 @@ import { useToast } from "../../../composables/useToast";
 import { nextItemId } from "./examWorkspaceConversionMerge";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
-import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceFencedTransport } from "./examWorkspaceFencedTransport";
+import type { FenceToken, Settled } from "./examWorkspaceSyncFence";
 import {
   examWorkspaceChangeTypeNotice,
   examWorkspaceIsOnlyQuestion,
@@ -64,8 +65,12 @@ export type ExamWorkspaceStructureDeps = {
   lineageId: () => string | null;
   savedRevision: () => number | null;
   isBusy: () => boolean;
-  /** The shared store half the structure commands run through. */
-  shared: ExamWorkspaceSharedStore;
+  /** The fenced step, move and command calls; no unfenced command remains. */
+  transport: ExamWorkspaceFencedTransport;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
+  /** The sync gate's single write queue; commands run inside one slot each. */
+  enqueueWrite: <T>(run: (token: FenceToken) => Promise<T>, refused: T) => Promise<T>;
   /** The tab id the edit lease holds; every command carries it. */
   tabId: () => string;
   /** True while another tab holds the edit lease: every command refuses. */
@@ -76,7 +81,7 @@ export type ExamWorkspaceStructureDeps = {
     edit: (document: NativeExamDocument) => NativeExamDocument,
     selectId?: string | null,
   ) => boolean;
-  applyCommandResponse: (response: ExamWorkspaceDocumentResponse) => void;
+  applyCommandResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
   selectItem: (itemId: string) => void;
   /** Open a part's instruction in the editor, reusing the selection composable's entry selection. */
   selectParent: (parentId: string) => void;
@@ -96,18 +101,27 @@ const LAST_QUESTION_COPY = "Provet måste ha minst en fråga.";
 
 /** The server's refusal of a delete that would leave the exam without a question. */
 function isExamRequiresQuestion(error: unknown): boolean {
-  return (
-    isApiError(error) &&
-    error.status === 422 &&
-    typeof error.details === "object" &&
-    error.details !== null &&
-    (error.details as { reason?: unknown }).reason === "exam_requires_question"
-  );
+  if (!isApiError(error) || error.status !== 422) {
+    return false;
+  }
+  const details = error.details;
+  if (typeof details !== "object" || details === null || !("reason" in details)) {
+    return false;
+  }
+  const reason: unknown = details.reason;
+  return reason === "exam_requires_question";
 }
 
 function newChildContent(kind: TeacherItemKind) {
   // The server assigns the child's id and sequence.
   return newTeacherItem("item_001", 1, kind);
+}
+
+function commandMessage(error: unknown): string {
+  if (error instanceof Error && error.message !== "") {
+    return error.message;
+  }
+  return COMMAND_FAILURE_COPY;
 }
 
 export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
@@ -133,7 +147,11 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
 
   /** Run one server command against the newest stored step; select what it added. */
   async function runCommand<Response extends ExamWorkspaceDocumentResponse>(
-    command: (lineageId: string, cursor: string) => Promise<Response>,
+    command: (
+      token: FenceToken,
+      lineageId: string,
+      cursor: string,
+    ) => Promise<Settled<Response>>,
   ): Promise<Response | null> {
     if (blocked.value) {
       return null;
@@ -141,43 +159,51 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     running.value = true;
     deleteNotice.value = null;
     try {
-      return await deps.replaceCopy(() => commandOutcome(command));
+      // The response replaces the copy: without the pending edit stored, it would be lost.
+      if (!(await deps.flush(true))) {
+        return null;
+      }
+      return await deps.enqueueWrite(
+        (token) => deps.replaceCopy(() => commandOutcome(token, command)),
+        null,
+      );
     } finally {
       running.value = false;
     }
   }
 
   async function commandOutcome<Response extends ExamWorkspaceDocumentResponse>(
-    command: (lineageId: string, cursor: string) => Promise<Response>,
+    token: FenceToken,
+    command: (
+      token: FenceToken,
+      lineageId: string,
+      cursor: string,
+    ) => Promise<Settled<Response>>,
   ): Promise<Response | null> {
-    try {
-      // The response replaces the copy: without the pending edit stored, it would be lost.
-      if (!(await deps.flush(true))) {
+    if (!deps.isCurrent(token)) {
+      return null;
+    }
+    const lineageId = deps.lineageId();
+    const cursor = deps.historyCursor.value;
+    const before = new Set(deps.workspaceDocument.value?.items.map((item) => item.item_id) ?? []);
+    if (!lineageId || !cursor) {
+      return null;
+    }
+    const settled = await command(token, lineageId, cursor);
+    if (settled.kind === "stale" || !deps.isCurrent(token)) {
+      return null;
+    }
+    if (settled.kind === "failed") {
+      const error = settled.error;
+      if (!deps.isCurrent(token)) {
         return null;
       }
-      const lineageId = deps.lineageId();
-      const cursor = deps.historyCursor.value;
-      const before = new Set(deps.workspaceDocument.value?.items.map((item) => item.item_id) ?? []);
-      if (!lineageId || !cursor) {
-        return null;
-      }
-      const response = await command(lineageId, cursor);
-      if (deps.lineageId() !== lineageId) {
-        return null;
-      }
-      deps.applyCommandResponse(response);
-      const added = response.document.items.find((item) => !before.has(item.item_id));
-      if (added) {
-        deps.selectItem(added.item_id);
-      }
-      return response;
-    } catch (error) {
       if (isEditLeaseHeldError(error)) {
         deps.noteLeaseLost();
       } else if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
       } else if (isExamRequiresQuestion(error)) {
-        deleteNotice.value = { kind: "refused", text: (error as Error).message };
+        deleteNotice.value = { kind: "refused", text: commandMessage(error) };
       } else if (isApiError(error) && error.status === 422) {
         toast.failure(error.message);
       } else {
@@ -185,6 +211,16 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
       }
       return null;
     }
+    const response = settled.value;
+    if (!deps.isCurrent(token) || deps.lineageId() !== lineageId) {
+      return null;
+    }
+    deps.applyCommandResponse(token, response);
+    const added = response.document.items.find((item) => !before.has(item.item_id));
+    if (added) {
+      deps.selectItem(added.item_id);
+    }
+    return response;
   }
 
   function addItem(kind: TeacherItemKind): void {
@@ -208,9 +244,10 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     }
     const parent = document.parents.find((entry) => entry.item_ids.includes(itemId));
     if (parent) {
+      const parentId = parent.parent_id;
       const next = examWorkspaceNeighbourId(document, itemId);
-      void runCommand((lineageId, cursor) =>
-        deps.shared.deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor, deps.tabId()),
+      void runCommand((token, lineageId, cursor) =>
+        deps.transport.deleteChild(token, lineageId, parentId, itemId, cursor, deps.tabId()),
       ).then((response) => {
         if (!response) {
           return;
@@ -241,11 +278,12 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
       return;
     }
     const firstChild = parent.item_ids[0] ?? null;
-    const lastChild = parent.item_ids[parent.item_ids.length - 1] ?? null;
+    const children = parent.item_ids;
+    const lastChild = children.length > 0 ? children[children.length - 1] ?? null : null;
     const next =
       mode === "keep_questions" ? firstChild : lastChild && examWorkspaceNeighbourId(document, lastChild);
-    const response = await runCommand((lineageId, cursor) =>
-      deps.shared.deleteExamWorkspaceParent(lineageId, parentId, mode, cursor, deps.tabId()),
+    const response = await runCommand((token, lineageId, cursor) =>
+      deps.transport.deleteParent(token, lineageId, parentId, mode, cursor, deps.tabId()),
     );
     if (response && next && response.document.items.some((item) => item.item_id === next)) {
       deps.selectItem(next);
@@ -263,8 +301,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     }
     const after = selectedUnitIndex(document);
     const position = after < 0 ? examWorkspaceUnits(document).length : after + 1;
-    await runCommand((lineageId, cursor) =>
-      deps.shared.createExamWorkspaceParent(lineageId, {
+    await runCommand((token, lineageId, cursor) =>
+      deps.transport.createParent(token, lineageId, {
         child: newChildContent("free_text"),
         expected_cursor: cursor,
         instruction: [
@@ -281,11 +319,12 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     if (!parent) {
       return;
     }
-    await runCommand((lineageId, cursor) =>
-      deps.shared.addExamWorkspaceChild(lineageId, parentId, {
+    const length = parent.item_ids.length;
+    await runCommand((token, lineageId, cursor) =>
+      deps.transport.addChild(token, lineageId, parentId, {
         child: newChildContent(kind),
         expected_cursor: cursor,
-        position: parent.item_ids.length,
+        position: length,
         tab_id: deps.tabId(),
       }),
     );
@@ -293,8 +332,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
 
   /** Group marked standalone questions into one new part and open its instruction (G4, G10). */
   async function groupItems(itemIds: string[]): Promise<boolean> {
-    const response = await runCommand((lineageId, cursor) =>
-      deps.shared.groupExamWorkspaceItems(lineageId, itemIds, cursor, deps.tabId()),
+    const response = await runCommand((token, lineageId, cursor) =>
+      deps.transport.groupItems(token, lineageId, itemIds, cursor, deps.tabId()),
     );
     if (!response) {
       return false;
@@ -311,8 +350,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     }
     const after = selectedUnitIndex(document);
     const position = after < 0 ? examWorkspaceUnits(document).length : after + 1;
-    const response = await runCommand((lineageId, cursor) =>
-      deps.shared.createEmptyExamWorkspacePart(lineageId, position, cursor, deps.tabId()),
+    const response = await runCommand((token, lineageId, cursor) =>
+      deps.transport.createEmptyPart(token, lineageId, position, cursor, deps.tabId()),
     );
     if (response) {
       deps.selectParent(response.created_parent_id);
@@ -321,8 +360,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
 
   /** Move one question into a part, out to standalone, or between parts (G3, R3, R4). */
   async function moveItem(itemId: string, targetParentId: string | null): Promise<void> {
-    const response = await runCommand((lineageId, cursor) =>
-      deps.shared.moveExamWorkspaceItem(lineageId, itemId, targetParentId, cursor, deps.tabId()),
+    const response = await runCommand((token, lineageId, cursor) =>
+      deps.transport.moveItem(token, lineageId, itemId, targetParentId, cursor, deps.tabId()),
     );
     if (response) {
       deps.selectItem(itemId);
@@ -339,8 +378,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     const itemIds = [...parent.item_ids];
     itemIds.splice(from, 1);
     itemIds.splice(to, 0, itemId);
-    await runCommand((lineageId, cursor) =>
-      deps.shared.reorderExamWorkspaceChildren(lineageId, parentId, itemIds, cursor, deps.tabId()),
+    await runCommand((token, lineageId, cursor) =>
+      deps.transport.reorderChildren(token, lineageId, parentId, itemIds, cursor, deps.tabId()),
     );
   }
 
@@ -350,17 +389,20 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
       return;
     }
     let dropped: string[] = [];
-    const response = await runCommand(async (lineageId, cursor) => {
+    const response = await runCommand((token, lineageId, cursor) => {
       const revision = deps.savedRevision();
-      const changed = await deps.shared.changeExamWorkspaceItemType(lineageId, {
+      return deps.transport.changeItemType(token, lineageId, {
         expected_cursor: cursor,
         expected_revision: revision ?? 0,
         item_id: itemId,
         tab_id: deps.tabId(),
         target_kind: kind,
+      }).then((settled) => {
+        if (settled.kind === "current") {
+          dropped = settled.value.dropped_content;
+        }
+        return settled;
       });
-      dropped = changed.dropped_content;
-      return changed;
     });
     if (response) {
       typeNotice.value = { itemId, kind, text: examWorkspaceChangeTypeNotice(kind, dropped) };

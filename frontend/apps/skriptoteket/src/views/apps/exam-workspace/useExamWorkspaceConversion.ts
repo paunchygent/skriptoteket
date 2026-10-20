@@ -39,6 +39,7 @@ import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 
 export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
@@ -65,9 +66,13 @@ export type ExamWorkspaceConversionBinding = {
   /** Capture metadata ordering before a GET; reconcile without delaying its application. */
   beginDocumentRead: () => (response: ExamWorkspaceDocumentResponse) => ExamWorkspaceDocumentResponse;
   /** Replace the local copy with a server response; `local` keeps merged teacher edits. */
-  applyResponse: (response: ExamWorkspaceDocumentResponse, local?: NativeExamDocument) => void;
+  applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse, local?: NativeExamDocument) => void;
   /** Called once before the first revision of a new import is shown. */
   beforeFirstRevision: () => void;
+  /** The sync gate's generation owner; every install carries its token. */
+  getFence: () => SyncFence;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
   /** A save is in flight; its response replaces the copy, so merging waits. */
   isSaving: () => boolean;
   /** The store the document reads and the import lifecycle run through. */
@@ -240,9 +245,14 @@ export function useExamWorkspaceConversion(
     if (binding.isSaving() && !duringSave) return true;
     const first = binding.summary.value?.lineage_id !== status.lineage_id;
     const shown = shownUnits.value ?? [];
+    const fence = binding.getFence();
+    const token = fence.begin();
     const reconcile = binding.beginDocumentRead();
-    const response = reconcile(await binding.store.shared.getExamWorkspaceDocument(status.lineage_id));
-    if (pollGeneration !== generation) return false;
+    const response = reconcile(
+      await binding.store.shared.getExamWorkspaceDocument(status.lineage_id),
+    );
+    if (!binding.isCurrent(token)) return false;
+    if (pollGeneration !== generation || !binding.isCurrent(token)) return false;
     const conversion = response.conversion;
     if (conversion === null) {
       // Only the response's own conversion names the units of its head: reconcile like a failed fetch.
@@ -252,12 +262,12 @@ export function useExamWorkspaceConversion(
     const base = binding.serverDocument.value;
     if (first) {
       binding.beforeFirstRevision();
-      binding.applyResponse(response);
+      binding.applyResponse(token, response);
     } else if (!local || !base || sameDocument(local, base)) {
       // Nothing edited since the base: take the head as is. An autosave
       // stores the copy without fetching, so the saved baseline can stand
       // ahead of this base; the merge still runs while the copy differs.
-      binding.applyResponse(response);
+      binding.applyResponse(token, response);
     } else {
       const merged = mergeConversionRevision({
         base,
@@ -266,7 +276,7 @@ export function useExamWorkspaceConversion(
         headUnits: conversion.units,
         local,
       });
-      binding.applyResponse(response, merged);
+      binding.applyResponse(token, response, merged);
     }
     return false;
   }

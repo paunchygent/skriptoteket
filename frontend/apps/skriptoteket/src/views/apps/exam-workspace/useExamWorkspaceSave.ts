@@ -28,6 +28,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 import type { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import type { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import type { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -42,8 +43,10 @@ type SaveState = {
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   isBusy: ComputedRef<boolean>;
   operationBusy: Ref<boolean>;
-  applyResponse: (response: ExamWorkspaceDocumentResponse) => void;
+  applyResponse: (token: FenceToken, response: ExamWorkspaceDocumentResponse) => void;
   beginDocumentRead: () => (response: ExamWorkspaceDocumentResponse) => ExamWorkspaceDocumentResponse;
+  getFence: () => SyncFence;
+  isCurrent: (token: FenceToken) => boolean;
   syncAfterConflict: ReturnType<typeof useExamWorkspaceConversion>["syncAfterConflict"];
   arrivals: ReturnType<typeof useExamWorkspaceSaveArrivals>;
   keying: ReturnType<typeof useExamWorkspaceGapKeying>;
@@ -72,7 +75,7 @@ export function useExamWorkspaceSave(state: SaveState) {
    * Spara som: the working copy becomes a new exam named `name` with its own
    * history, and opens in place; the exam it came from keeps its last save.
    * The caller stores any pending edit first, so the copy holds what the
-   * teacher sees.
+   * teacher sees. A retired answer installs nothing.
    */
   async function saveDocumentAs(name: string): Promise<ExamWorkspaceSaveAsOutcome> {
     const current = workspaceDocument.value;
@@ -83,8 +86,13 @@ export function useExamWorkspaceSave(state: SaveState) {
     }
     operationBusy.value = true;
     try {
+      const fence = state.getFence();
+      const token = fence.begin();
       const response = await teacher.copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
-      state.applyResponse(response);
+      if (!state.isCurrent(token)) {
+        return "failed";
+      }
+      state.applyResponse(token, response);
       keying.invalidateCopy();
       return "saved";
     } catch (error) {

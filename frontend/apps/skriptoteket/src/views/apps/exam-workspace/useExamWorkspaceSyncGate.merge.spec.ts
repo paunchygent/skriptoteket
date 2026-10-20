@@ -109,7 +109,7 @@ describe("the sync gate merge point", () => {
     expect(harness.mergeCalls.length).toBe(1);
     harness.gate.staleConflict();
     expect(harness.gate.phase.value).toBe("loading");
-    harness.gate.noteStored();
+    harness.gate.noteStored(harness.gate.fence.begin());
     await harness.settle();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
@@ -124,7 +124,7 @@ describe("the sync gate merge point", () => {
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
-    harness.gate.noteStored();
+    harness.gate.noteStored(harness.gate.fence.begin());
     await harness.settle();
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
@@ -138,7 +138,7 @@ describe("the sync gate merge point", () => {
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
     expect(harness.counts.storeRequests).toBe(1);
-    harness.gate.noteStored();
+    harness.gate.noteStored(harness.gate.fence.begin());
     await harness.settle();
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());

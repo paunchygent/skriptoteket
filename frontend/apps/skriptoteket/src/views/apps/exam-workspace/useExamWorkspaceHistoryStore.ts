@@ -1,27 +1,29 @@
 /**
- * Exam workspace history store handler (TASK-SKRIPT-40-04-14, F1).
+ * Exam workspace history store handler (TASK-SKRIPT-40-04-14, F2).
  *
  * Domain purpose:
- *   Stores one snapshot through the server's step store: "stored" when the
+ *   Stores one snapshot through the fenced step store: "stored" when the
  *   server's newest step now holds it (or nothing needed storing), "refused"
  *   when the save rules reject it so it can never be a step, and "failed"
- *   otherwise. A network failure keeps the pending edit; a stale-cursor 409
- *   is reported through `onConflict` to the sync gate, while an
- *   `EDIT_LEASE_HELD` 409 turns the tab read-only and keeps the edit visible
- *   with no reload, toast or retry. Refusals are decided from the snapshot,
- *   with the server's 422 as the backstop. Storing the working copy ends its
- *   pause; storing an owed snapshot leaves typing's pause running. A response
- *   never replaces later typing: when the working copy still equals the sent
- *   snapshot, the server's stored copy is installed instead, so nothing
- *   re-stores; when it differs, a store of the newer copy follows.
+ *   otherwise. Every call carries the queue token it runs under; a retired
+ *   answer installs, confirms and clears nothing. A network failure keeps the
+ *   pending edit; a stale-cursor 409 is reported through `onConflict` to the
+ *   sync gate, while an `EDIT_LEASE_HELD` 409 turns the tab read-only and
+ *   keeps the edit visible with no reload, toast or retry. Refusals are
+ *   decided from the snapshot, with the server's 422 as the backstop. Storing
+ *   the working copy ends its pause; storing an owed snapshot leaves typing's
+ *   pause running. A current response never replaces later typing: when the
+ *   working copy still equals the sent snapshot, the server's stored copy is
+ *   installed instead, so nothing re-stores; when it differs, a store of the
+ *   newer copy follows.
  *
  *   Structural-edit snapshots stay owed until stored, oldest first, and a
- *   failed store never merges them. The `storing` flag and the owed list live
- *   here; the history owns the retry timer and the flush that runs this
- *   handler inside the gate's write queue.
+ *   failed store never merges them. The `storing` flag records the token it
+ *   was set under and reads true only while that token is current, so a
+ *   retired completion cannot clear it under a current store.
  */
 
-import { ref } from "vue";
+import { ref, shallowRef } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
@@ -29,6 +31,7 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
 import type { ExamWorkspaceHistoryDeps } from "./useExamWorkspaceHistory";
 import {
@@ -41,14 +44,15 @@ export type ExamWorkspaceHistoryStoreDeps = Pick<
   ExamWorkspaceHistoryDeps,
   | "historyCursor"
   | "isBlocked"
+  | "isCurrent"
   | "lineageId"
   | "noteExportBlockers"
   | "noteGateStored"
   | "noteLeaseLost"
   | "noteStored"
   | "onConflict"
-  | "shared"
   | "tabId"
+  | "transport"
   | "workspaceDocument"
 >;
 
@@ -68,17 +72,17 @@ export type ExamWorkspaceHistoryStoreState = {
 
 /** The save-status half the store reports its outcome through. */
 export type ExamWorkspaceHistoryStoreStatus = {
-  confirmed: (document: NativeExamDocument) => void;
-  noteFailed: () => void;
+  confirmed: (token: FenceToken, document: NativeExamDocument) => void;
+  noteFailed: (token: FenceToken) => void;
   noteLeaseLost: () => void;
-  noteRefused: (reason: string) => void;
+  noteRefused: (token: FenceToken, reason: string) => void;
 };
 
 export type ExamWorkspaceHistoryStoreHooks = {
   /** Queue the typing pause again after a blocked store. */
   scheduleTyping: () => void;
   /** Store the newer working copy that arrived while a store was in flight. */
-  flushNewer: () => void;
+  flushNewer: (token: FenceToken) => void;
 };
 
 /** Steps compare without the revision: a step stored before a Spara carries the older one. */
@@ -95,18 +99,23 @@ export function createHistoryStore(
   status: ExamWorkspaceHistoryStoreStatus,
   hooks: ExamWorkspaceHistoryStoreHooks,
 ): {
-  /** Store the snapshot, or the working copy when it is null. */
-  store: (settle?: boolean, snapshot?: NativeExamDocument | null) => Promise<StoreOutcome>;
+  /** Store the snapshot, or the working copy when it is null, for the queue token. */
+  store: (
+    token: FenceToken,
+    settle?: boolean,
+    snapshot?: NativeExamDocument | null,
+  ) => Promise<StoreOutcome>;
   /** Store the owed snapshots in order, stopping at the first that fails. */
-  storeOwed: () => Promise<boolean>;
+  storeOwed: (token: FenceToken) => Promise<boolean>;
   /** Hold a structural-edit snapshot until it is stored. */
   pushOwed: (snapshot: NativeExamDocument) => void;
   /** Drop structural snapshots owed from a copy the lease loss retired. */
   dropOwedSnapshots: () => void;
-  /** True while a store is in flight. */
+  /** True while a current-generation store is in flight. */
   storing: Ref<boolean>;
 } {
   const toast = useToast();
+  const storingToken = shallowRef<FenceToken | null>(null);
   const storing = ref(false);
   /**
    * Structural-edit snapshots not stored yet, oldest first: the copy just
@@ -123,7 +132,21 @@ export function createHistoryStore(
     owed.push(snapshot);
   }
 
-  async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
+  function clearStoring(token: FenceToken): void {
+    if (storingToken.value === token) {
+      storingToken.value = null;
+      storing.value = false;
+    }
+  }
+
+  async function store(
+    token: FenceToken,
+    settle = false,
+    snapshot: NativeExamDocument | null = null,
+  ): Promise<StoreOutcome> {
+    if (!deps.isCurrent(token)) {
+      return "failed";
+    }
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
     const document = snapshot ?? deps.workspaceDocument.value;
@@ -133,28 +156,56 @@ export function createHistoryStore(
     }
     const undone = after !== state.newestId.value;
     if (sameContent(document, state.stepDocument.value) && !(settle && undone)) {
-      deps.noteGateStored();
+      deps.noteGateStored(token);
       return "stored";
     }
     const refusal = examWorkspaceSaveRefusalCopy(document);
     if (refusal !== null) {
       // A draft the save rules refuse already shows why inline in the editor.
-      status.noteRefused(refusal);
+      status.noteRefused(token, refusal);
       return "refused";
     }
     if (deps.isBlocked()) {
       hooks.scheduleTyping();
       return "failed";
     }
+    storingToken.value = token;
     storing.value = true;
     try {
-      const response = await deps.shared.storeExamWorkspaceUndoStep(lineageId, {
+      const settled = await deps.transport.storeUndoStep(token, lineageId, {
         afterStepId: after,
         document,
         expectedCursor: cursor,
         tabId: deps.tabId(),
       });
-      if (deps.lineageId() !== lineageId) {
+      if (settled.kind === "stale" || !deps.isCurrent(token)) {
+        return "failed";
+      }
+      if (settled.kind === "failed") {
+        const error = settled.error;
+        if (isEditLeaseHeldError(error)) {
+          // Another tab holds the lease: turn read-only and keep the pending
+          // edit visible, with no reload, no toast and no retry scheduled. The
+          // status leaves `Sparar …` for `Inte sparat` with the lease reason
+          // while that edit stays unconfirmed.
+          status.noteLeaseLost();
+          deps.noteLeaseLost();
+        } else if (isApiError(error) && error.status === 409) {
+          await deps.onConflict();
+        } else if (isApiError(error) && error.status === 422) {
+          // Only the server sees this refusal, so it always toasts.
+          status.noteRefused(token, refusalReason(document, error));
+          toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
+          return "refused";
+        } else {
+          // The next store sends the newest working copy, not old snapshots.
+          owed = [];
+          status.noteFailed(token);
+        }
+        return "failed";
+      }
+      const response = settled.value;
+      if (!deps.isCurrent(token)) {
         return "failed";
       }
       deps.noteExportBlockers(response.document.title, response.export_blockers);
@@ -164,41 +215,23 @@ export function createHistoryStore(
       state.stepIds.value = [...response.history.step_ids];
       state.position.value = response.history.position_step_id;
       state.stepDocument.value = response.document;
-      status.confirmed(response.document);
-      deps.noteGateStored();
+      status.confirmed(token, response.document);
+      deps.noteGateStored(token);
+      if (!deps.isCurrent(token)) {
+        return "stored";
+      }
       if (!sameContent(deps.workspaceDocument.value, document)) {
         // Keystrokes typed while the store was in flight stay in the copy;
         // the newer copy is stored next, so the status reads `Sparar …`.
-        hooks.flushNewer();
+        hooks.flushNewer(token);
       } else {
         // The server normalised the stored copy: install it, so the copies
         // agree and nothing re-stores.
         deps.workspaceDocument.value = response.document;
       }
       return "stored";
-    } catch (error) {
-      if (isEditLeaseHeldError(error)) {
-        // Another tab holds the lease: turn read-only and keep the pending
-        // edit visible, with no reload, no toast and no retry scheduled. The
-        // status leaves `Sparar …` for `Inte sparat` with the lease reason
-        // while that edit stays unconfirmed.
-        status.noteLeaseLost();
-        deps.noteLeaseLost();
-      } else if (isApiError(error) && error.status === 409) {
-        await deps.onConflict();
-      } else if (isApiError(error) && error.status === 422) {
-        // Only the server sees this refusal, so it always toasts.
-        status.noteRefused(refusalReason(document, error));
-        toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
-        return "refused";
-      } else {
-        // The next store sends the newest working copy, not old snapshots.
-        owed = [];
-        status.noteFailed();
-      }
-      return "failed";
     } finally {
-      storing.value = false;
+      clearStoring(token);
     }
   }
 
@@ -207,14 +240,24 @@ export function createHistoryStore(
    * nothing newer is stored past it; it stays owed for the next write. A
    * refused snapshot is dropped, since no retry can store it.
    */
-  async function storeOwed(): Promise<boolean> {
+  async function storeOwed(token: FenceToken): Promise<boolean> {
+    if (!deps.isCurrent(token)) {
+      return false;
+    }
     while (owed.length > 0) {
+      if (!deps.isCurrent(token)) {
+        return false;
+      }
       const next = owed[0];
       if (next === undefined) {
         owed.shift();
         continue;
       }
-      if ((await store(false, next)) === "failed") {
+      const outcome = await store(token, false, next);
+      if (!deps.isCurrent(token)) {
+        return false;
+      }
+      if (outcome === "failed") {
         return false;
       }
       if (owed[0] === next) {

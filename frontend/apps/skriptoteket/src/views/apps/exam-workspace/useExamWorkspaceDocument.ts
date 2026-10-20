@@ -41,6 +41,8 @@ import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
+import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
@@ -77,13 +79,29 @@ export type ExamWorkspaceDocumentOptions = {
   store: ExamWorkspaceStore;
   /** True while another tab holds the edit lease: every edit entry refuses. */
   isReadOnly?: () => boolean;
+  /** The sync gate's generation owner; every install carries its token. */
+  getFence?: () => SyncFence;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
+  const fallbackFence = createSyncFence();
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
   const isReadOnly = options.isReadOnly ?? (() => false);
   const store = options.store;
+  const getFence = options.getFence;
+
+  function resolveFence(): SyncFence {
+    const fence = getFence?.();
+    if (fence) {
+      return fence;
+    }
+    return fallbackFence;
+  }
+
+  function isCurrent(token: FenceToken): boolean {
+    return resolveFence().isCurrent(token);
+  }
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
@@ -102,6 +120,27 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
+  let adoptConversionHolder: (response: ExamWorkspaceDocumentResponse) => void = () => undefined;
+  let replayHeldHolder: () => void = () => undefined;
+  const {
+    applyCommandResponse,
+    applyResponse,
+    noteStored,
+  } = createDocumentInstalls({
+    adoptConversion: (response) => adoptConversionHolder(response),
+    historyCursor,
+    isCurrent,
+    noteExportBlockers,
+    notes,
+    openExam,
+    recordSummary,
+    replayHeld: () => replayHeldHolder(),
+    savedDocument,
+    selectedItemId,
+    serverDocument,
+    summary,
+    workspaceDocument,
+  });
   const {
     adoptConversion,
     conversionError,
@@ -124,6 +163,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       beforeFirstRevision: () => {
         selectedItemId.value = null;
       },
+      getFence: () => resolveFence(),
+      isCurrent,
       isDirty,
       isSaving: () => operationBusy.value,
       serverDocument,
@@ -133,6 +174,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     },
     (lineageId) => openDocument(lineageId),
   );
+  adoptConversionHolder = adoptConversion;
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
@@ -165,28 +207,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     return openExam.value === opening;
   }
 
-  function applyResponse(
-    response: ExamWorkspaceDocumentResponse,
-    local: NativeExamDocument = response.document,
-  ): void {
-    if (openExam.value?.lineageId !== response.summary.lineage_id) {
-      openExam.value = { lineageId: response.summary.lineage_id };
-    }
-    workspaceDocument.value = local;
-    noteExportBlockers(response.document.title, response.export_blockers);
-    serverDocument.value = response.document;
-    savedDocument.value = response.saved_document;
-    summary.value = response.summary;
-    historyCursor.value = response.history_cursor;
-    recordSummary(response.summary);
-    notes.value = response.notes;
-    adoptConversion(response);
-    const items = local.items;
-    selectedItemId.value = items.some((item) => item.item_id === selectedItemId.value)
-      ? selectedItemId.value
-      : (items[0]?.item_id ?? null);
-  }
-
   /**
    * Capture rename ordering before the GET and reconcile in its caller's continuation.
    * Installing an opening must not wait an extra microtask: other completions
@@ -206,10 +226,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     }
     operationBusy.value = true;
     try {
+      const fence = resolveFence();
+      const token = fence.begin();
       const reconcile = beginDocumentRead();
       const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
+      if (!fence.isCurrent(token)) {
+        return false;
+      }
       selectedItemId.value = null;
-      applyResponse(response);
+      applyResponse(token, response);
       keying.invalidateCopy();
       return true;
     } catch (error) {
@@ -227,7 +252,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /**
    * Read the exam again. Also the conflict recovery of undo and the server
    * commands. A 409 that arrives while an operation runs no longer skips the
-   * reload: it waits for the running operation to end instead.
+   * reload: it waits for the running operation to end instead. A retired
+   * answer installs nothing.
    */
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
@@ -243,9 +269,16 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     }
     operationBusy.value = true;
     try {
+      const fence = resolveFence();
+      const token = fence.begin();
       const reconcile = beginDocumentRead();
-      const response = reconcile(await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id));
-      applyResponse(response);
+      const response = reconcile(
+        await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id),
+      );
+      if (!fence.isCurrent(token)) {
+        return;
+      }
+      applyResponse(token, response);
       keying.invalidateCopy();
       replacingScope.replayArrivalsAfterReload();
     } catch {
@@ -275,7 +308,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
 
   const { retryItem: requestItemRetry } = useExamWorkspaceItemRetry({
+    getFence: () => resolveFence(),
     isBusy: () => isBusy.value,
+    isCurrent,
     openExam,
     operationBusy,
     serverDocument,
@@ -336,13 +371,17 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     replacing,
     arrivals,
     keying,
+    isCurrent,
   });
+  replayHeldHolder = () => replacingScope.replayHeld();
 
   const { saveDocumentAs } = useExamWorkspaceSave({
     applyResponse,
     arrivals,
     beginDocumentRead,
+    getFence: () => resolveFence(),
     isBusy,
+    isCurrent,
     keying,
     operationBusy,
     summary,
@@ -384,27 +423,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     courseKey: () => workspaceDocument.value?.header.course?.key ?? null,
     editDocument,
   });
-
-  /**
-   * A store or a position move confirmed this document; the exam file holds
-   * it now. The saved baseline becomes the confirmed snapshot, and the open
-   * copy's revision follows the file: the working copy keeps its content
-   * (later edits stay), only its revision tracks the confirmed file version,
-   * so dirty still means the content differs from the file.
-   */
-  function noteStored(document: NativeExamDocument): void {
-    savedDocument.value = document;
-    const current = workspaceDocument.value;
-    if (current !== null && current.revision !== document.revision) {
-      workspaceDocument.value = { ...current, revision: document.revision };
-    }
-  }
-
-  /** A server command (parent, change type) stored a new step; show its document. */
-  function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
-    applyResponse(response);
-    replacingScope.replayHeld();
-  }
 
   return {
     ...itemEdits,

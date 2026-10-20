@@ -32,6 +32,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
@@ -377,7 +378,11 @@ describe("a failed lookup affects only the opening that asked", () => {
 describe("the answer is admitted only when it lands on the opening that asked", () => {
   it("C8: the copy was saved to a newer version while the lookup was in flight", async () => {
     const { document, enrichment, lookup } = await openAWithLookupHeld();
-    document.noteStored({ ...document.workspaceDocument.value!, revision: 2 });
+    const currentC8 = document.workspaceDocument.value;
+    if (currentC8 === null) {
+      throw new Error("expected an open document");
+    }
+    document.noteStored(createSyncFence().begin(), { ...currentC8, revision: 2 });
     expect(document.savedRevision.value).toBe(2);
 
     lookup.resolve(jobStatus("succeeded", { withSuggestion: true }));
@@ -480,7 +485,11 @@ describe("which openings ask", () => {
     const { document, lookup } = await openAWithLookupHeld();
     lookup.resolve(jobStatus("running"));
     await flushPromises();
-    document.noteStored({ ...document.workspaceDocument.value!, revision: 2 });
+    const currentC16 = document.workspaceDocument.value;
+    if (currentC16 === null) {
+      throw new Error("expected an open document");
+    }
+    document.noteStored(createSyncFence().begin(), { ...currentC16, revision: 2 });
 
     apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
       jobStatus("succeeded", { withSuggestion: true }),

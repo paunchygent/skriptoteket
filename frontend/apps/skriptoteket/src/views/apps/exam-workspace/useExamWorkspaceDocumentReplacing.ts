@@ -22,6 +22,7 @@ import type { Ref } from "vue";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import type { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 
 export type ExamWorkspaceDocumentReplacingBinding = {
   workspaceDocument: Ref<NativeExamDocument | null>;
@@ -30,6 +31,8 @@ export type ExamWorkspaceDocumentReplacingBinding = {
   replacing: Ref<boolean>;
   arrivals: ReturnType<typeof useExamWorkspaceSaveArrivals>;
   keying: ReturnType<typeof useExamWorkspaceGapKeying>;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
 };
 
 export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocumentReplacingBinding) {
@@ -100,8 +103,11 @@ export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocument
     }
   }
 
-  /** Put an undo step's document in front of the teacher; not an edit. */
-  function installDocument(document: NativeExamDocument): void {
+  /** Put an undo step's document in front of the teacher; not an edit. A stale token changes nothing. */
+  function installDocument(token: FenceToken, document: NativeExamDocument): void {
+    if (!binding.isCurrent(token)) {
+      return;
+    }
     workspaceDocument.value = document;
     keepSelection(document);
     replayHeld();

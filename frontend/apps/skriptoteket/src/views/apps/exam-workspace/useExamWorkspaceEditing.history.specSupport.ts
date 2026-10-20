@@ -18,6 +18,8 @@ import { serverExamWorkspaceStore, type ExamWorkspaceSharedStore } from "./examW
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { createFencedTransport } from "./examWorkspaceFencedTransport";
+import type { FenceToken } from "./examWorkspaceSyncFence";
 import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 
@@ -314,15 +316,22 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
 
   const scope = effectScope();
   const constructed = scope.run(() => {
+    const fenced = createFencedTransport(
+      () => requireGate().fence,
+      options.shared ?? shared,
+    );
     const history = useExamWorkspaceHistory({
       historyCursor,
-      install: (document) => {
+      install: (token: FenceToken, document: NativeExamDocument) => {
+        if (!requireGate().fence.isCurrent(token)) {
+          return;
+        }
         workspaceDocument.value = document;
       },
       isBlocked: options.isBlocked ?? (() => false),
       enqueueWrite: (run, refused) => requireGate().enqueueWrite(run, refused),
       isCurrent: (token) => requireGate().fence.isCurrent(token),
-      noteGateStored: () => requireGate().noteStored(),
+      noteGateStored: (token: FenceToken) => requireGate().noteStored(token),
       noteInstalledCursor: (foreignLineageId, cursor) => {
         if (
           gateCursor !== null &&
@@ -347,14 +356,19 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
         requireGate().leaseLost();
         options.noteLeaseLost?.();
       },
-      noteStored: options.noteStored ?? (() => undefined),
+      noteStored: (token: FenceToken, document: NativeExamDocument) => {
+        if (!requireGate().fence.isCurrent(token)) {
+          return;
+        }
+        options.noteStored?.(document);
+      },
       onConflict: () => {
         requireGate().staleConflict();
         options.noteConflict?.();
         return Promise.resolve();
       },
       savedRevision: () => baseline.revision,
-      shared,
+      transport: fenced,
       tabId: () => options.tabId ?? "tab-1",
       workspaceDocument,
     });
@@ -368,13 +382,19 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       readStepList: (readLineageId) => readStepList(shared, readLineageId),
       applyStepList: (token, read, base) => history.applySteps(token, read, base ?? serverDocument.value),
       resetStepList: (token) => history.resetSteps(token),
-      installFresh: (fresh) => {
+      installFresh: (token: FenceToken, fresh) => {
+        if (!requireGate().fence.isCurrent(token)) {
+          return;
+        }
         gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
         serverDocument.value = fresh.document;
         workspaceDocument.value = fresh.document;
         historyCursor.value = fresh.history_cursor;
       },
-      installMerged: (fresh, merged) => {
+      installMerged: (token: FenceToken, fresh, merged) => {
+        if (!requireGate().fence.isCurrent(token)) {
+          return;
+        }
         gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
         serverDocument.value = fresh.document;
         workspaceDocument.value = merged;

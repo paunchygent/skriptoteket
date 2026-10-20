@@ -296,7 +296,9 @@ describe("guest departure across the sign-in redirect", () => {
       expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
       expect(addSpy.mock.calls.some(([name]) => name === "pageshow")).toBe(false);
       expect(editing.isBusy.value).toBe(false);
-      expect(editing.history.pending.value).toBe(false);
+      // F2 fence: the unmount retired the generation, so the late write
+      // installs nothing and the edit stays pending in memory.
+      expect(editing.history.pending.value).toBe(true);
     } finally {
       releaseWrite();
       window.dispatchEvent(new Event("pageshow"));

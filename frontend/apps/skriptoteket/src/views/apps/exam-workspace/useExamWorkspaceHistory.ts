@@ -49,7 +49,7 @@ import { computed, onScopeDispose, ref, shallowRef } from "vue";
 import type { Ref } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
-import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceFencedTransport } from "./examWorkspaceFencedTransport";
 import { watchHistoryCursor } from "./useExamWorkspaceHistoryCursor";
 import { useExamWorkspaceHistoryDeparture } from "./useExamWorkspaceHistoryDeparture";
 import { useExamWorkspaceHistoryNavigation } from "./useExamWorkspaceHistoryNavigation";
@@ -72,7 +72,7 @@ export type ExamWorkspaceHistoryDeps = {
   /** The tab id the edit lease holds; every store and move carries it. */
   tabId: () => string;
   /** The merged working copy reached the server in the merge generation. */
-  noteGateStored: () => void;
+  noteGateStored: (token: FenceToken) => void;
   /**
    * A response installed this cursor. True when the sync gate installed it
    * itself through a fresh load: the event is consumed and nothing changes.
@@ -87,8 +87,8 @@ export type ExamWorkspaceHistoryDeps = {
   isReadOnly: () => boolean;
   /** A write met `EDIT_LEASE_HELD`: turn read-only and keep the pending edit. */
   noteLeaseLost: () => void;
-  /** The shared store half the history reads and writes run through. */
-  shared: ExamWorkspaceSharedStore;
+  /** The fenced step store, move and command calls; no unfenced write remains. */
+  transport: ExamWorkspaceFencedTransport;
   /** True while an import or a save may not be interleaved with a step write; excludes the replacing lock. */
   isBlocked: () => boolean;
   /** Another undo, redo or server command is replacing the copy; undo and redo wait for it. */
@@ -100,9 +100,9 @@ export type ExamWorkspaceHistoryDeps = {
   /** Run a read that replaces the copy: locks editing and keeps arrivals that land meanwhile. */
   replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Put a stored step's document in front of the teacher. */
-  install: (document: NativeExamDocument) => void;
+  install: (token: FenceToken, document: NativeExamDocument) => void;
   /** A store or a position move confirmed this document; the file holds it now. */
-  noteStored: (document: NativeExamDocument) => void;
+  noteStored: (token: FenceToken, document: NativeExamDocument) => void;
   /** The export gate's verdict on a stored step, for the title blocker. */
   noteExportBlockers: ExamWorkspaceTitleVerdict;
   /** Another undo, redo or server command replaced the copy; the gate reloads. */
@@ -142,19 +142,22 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     deps,
     { baselineId, newestId, ownCursor, position, stepDocument, stepIds },
     {
-      confirmed: (document) => status.confirmed(document),
-      noteFailed: () => status.noteFailed(),
+      confirmed: (token, document) => status.confirmed(token, document),
+      noteFailed: (token) => status.noteFailed(token),
       noteLeaseLost: () => status.noteLeaseLost(),
-      noteRefused: (reason) => status.noteRefused(reason),
+      noteRefused: (token, reason) => status.noteRefused(token, reason),
     },
     {
-      flushNewer: () => {
-        void flush();
+      flushNewer: (token) => {
+        if (deps.isCurrent(token)) {
+          void flush();
+        }
       },
       scheduleTyping: () => schedule(),
     },
   );
   const status = useExamWorkspaceSaveStatus({
+    isCurrent: deps.isCurrent,
     isGuest: deps.isGuest,
     keptUnstored: deps.keptUnstored,
     noteStored: deps.noteStored,
@@ -242,16 +245,23 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * flush clears it.
    */
   function flushOutcome(settle = false): Promise<StoreOutcome> {
-    return deps.enqueueWrite(() => flushOutcomeInner(settle), "failed");
+    return deps.enqueueWrite((token) => flushOutcomeInner(token, settle), "failed");
   }
 
   /**
    * The raw flush body, run inside one queue slot. The newer-typing
    * follow-up and undo call this directly: they already hold a queue slot,
-   * so queuing again would wait on itself.
+   * so queuing again would wait on itself. A retired token stores nothing
+   * and schedules no retry.
    */
-  async function flushOutcomeInner(settle = false): Promise<StoreOutcome> {
-    if (!(await storeHandler.storeOwed())) {
+  async function flushOutcomeInner(token: FenceToken, settle = false): Promise<StoreOutcome> {
+    if (!deps.isCurrent(token)) {
+      return "failed";
+    }
+    if (!(await storeHandler.storeOwed(token))) {
+      if (!deps.isCurrent(token)) {
+        return "failed";
+      }
       if (!deps.isReadOnly()) {
         status.scheduleRetry(() => void flush());
       }
@@ -259,7 +269,10 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     // Storing the working copy ends its pause; owed snapshots keep it running.
     clearTimer();
-    const outcome = await storeHandler.store(settle);
+    const outcome = await storeHandler.store(token, settle);
+    if (!deps.isCurrent(token)) {
+      return "failed";
+    }
     if (outcome === "failed") {
       if (!deps.isReadOnly()) {
         status.scheduleRetry(() => void flush());
@@ -313,7 +326,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (after !== null) {
         storeHandler.pushOwed(after);
       }
-      void deps.enqueueWrite(() => flushOutcomeInner(), "failed");
+      void deps.enqueueWrite((token) => flushOutcomeInner(token), "failed");
     } else {
       schedule();
     }
@@ -324,21 +337,24 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     canRedo,
     canUndo,
     enqueueWrite: deps.enqueueWrite,
-    flushOutcome: flushOutcomeInner,
+    flushOutcome: (token, settle = false) => flushOutcomeInner(token, settle),
+    isCurrent: deps.isCurrent,
     history: {
       historyCursor: deps.historyCursor,
       install: deps.install,
       isBlocked: deps.isBlocked,
+      isCurrent: deps.isCurrent,
       isReadOnly: deps.isReadOnly,
       isReplacing: deps.isReplacing,
       lineageId: deps.lineageId,
       noteExportBlockers: deps.noteExportBlockers,
       noteLeaseLost: deps.noteLeaseLost,
+      noteStored: deps.noteStored,
       onConflict: deps.onConflict,
       replaceCopy: deps.replaceCopy,
       savedRevision: deps.savedRevision,
-      shared: deps.shared,
       tabId: deps.tabId,
+      transport: deps.transport,
       workspaceDocument: deps.workspaceDocument,
     },
     ids,

@@ -5,10 +5,11 @@
  *   Reconvert one review question from the saved revision's stored source
  *   with the teacher's chosen type (TASK-SKRIPT-39-05-09 D1). The reply
  *   replaces only that draft item, and only while the same opening still
- *   stands on the same revision with that item unedited; a reply that lost
- *   its place, or a failure of a request that did, changes nothing. One
- *   retry runs at a time: it holds the document owner's request lock for
- *   its whole request, so open, save and import are serialized behind it.
+ *   stands on the same revision with that item unedited and its generation
+ *   still current; a reply that lost its place, its generation, or a failure
+ *   of a request that did, changes nothing. One retry runs at a time: it
+ *   holds the document owner's request lock for its whole request, so open,
+ *   save and import are serialized behind it.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which hands over its document
@@ -31,6 +32,7 @@ import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
+import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
@@ -48,6 +50,10 @@ export type ExamWorkspaceItemRetryBinding = {
   operationBusy: Ref<boolean>;
   /** The document owner's combined busy state; a retry sends nothing while it holds. */
   isBusy: () => boolean;
+  /** The sync gate's generation owner; every install carries its token. */
+  getFence: () => SyncFence;
+  /** True while the token's generation is still current; stale installs do nothing. */
+  isCurrent: (token: FenceToken) => boolean;
   /** The teacher services the retry runs through; null in guest mode. */
   teacher: ExamWorkspaceTeacherServices | null;
 };
@@ -93,9 +99,14 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
     }
     const lineageId = currentSummary.lineage_id;
     const revision = current.revision;
+    const fence = binding.getFence();
+    const token = fence.begin();
     binding.operationBusy.value = true;
     try {
       const response = await teacher.retryExamWorkspaceItem(lineageId, current, itemId, kind);
+      if (!binding.isCurrent(token)) {
+        return;
+      }
       const draft = binding.workspaceDocument.value;
       const draftTarget = draft?.items.find((item) => item.item_id === itemId) ?? null;
       if (
@@ -112,7 +123,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
         items: draft.items.map((item) => (item.item_id === itemId ? response.item : item)),
       };
     } catch (error) {
-      if (!retryRequestIsLive(opening, lineageId, revision)) {
+      if (!binding.isCurrent(token) || !retryRequestIsLive(opening, lineageId, revision)) {
         return;
       }
       const serverCopy =
