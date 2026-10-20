@@ -64,7 +64,11 @@ backlog_document_profile: contract-derived
   saved_unreadable notice with download and remove, and no toast. U5b (`e9afce71`) moves that state
   into `useExamWorkspaceUnreadableTarget`, types the host's view ref from the view itself, and
   shares one unreadable-files list.
-- Next: the full frontend suite in the orchestrator's slot, then the orchestrator's review routing.
+- U22 (`952ff6a9`, from the user's staging test): the Öppna drawer's busy hint, tooltip and toast
+  read `isOpenBlockedByOtherOperation`, never the drawer's own import or conversion. Entries stay
+  disabled during the drawer's own import, with no toast. U22c (`48ecc53d`) moves the rule into
+  `useExamWorkspaceOpenBlocking`, which brings the drawer under 500 lines.
+- Next: the full frontend suite in the orchestrator's slot, then review of U5 and U22 by `f5bfc8fe`.
 - Work orders in the root's `work/orders/`; proof logs in the root's `evidence/proof/`.
 
 ## Implementation Contract
