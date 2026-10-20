@@ -53,7 +53,10 @@ const toast = useToast();
 
 const limitReached = ref(false);
 /** The stored draft the app cannot open, held for download or explicit removal. */
-const unreadableStored = shallowRef<StoredGuestDraft | null>(null);
+type GuestAdmission =
+  | { kind: "pending" }
+  | { kind: "readable" }
+  | { kind: "unreadable"; stored: StoredGuestDraft };
 /**
  * Signed-out admission: pending until the stored draft is loaded and
  * classified, readable once the editor may mount (or no draft is stored),
@@ -62,8 +65,7 @@ const unreadableStored = shallowRef<StoredGuestDraft | null>(null);
  * reaches the route, so the view's address watcher never runs the ordinary
  * outdated-open error path for it.
  */
-type GuestAdmission = "pending" | "readable" | "unreadable";
-const admission = ref<GuestAdmission>("pending");
+const admission = shallowRef<GuestAdmission>({ kind: "pending" });
 /** True while the unreadable draft's zip is built or its record is removed. */
 const recoveryBusy = ref(false);
 const guestStorage = createExamWorkspaceGuestDraftStorage();
@@ -140,14 +142,13 @@ onMounted(async () => {
   }
   const stored = await guestStorage.load();
   if (stored && !isGuestDraftReadable(stored.draft)) {
-    unreadableStored.value = stored;
-    admission.value = "unreadable";
+    admission.value = { kind: "unreadable", stored };
     return;
   }
   if (stored) {
     await router.replace({ query: { ...route.query, document: stored.draft.lineage_id } });
   }
-  admission.value = "readable";
+  admission.value = { kind: "readable" };
 });
 
 /**
@@ -155,7 +156,7 @@ onMounted(async () => {
  * saves. The stored record stays untouched; nothing is retried.
  */
 async function downloadUnreadableDraft(): Promise<void> {
-  const held = unreadableStored.value;
+  const held = admission.value.kind === "unreadable" ? admission.value.stored : null;
   if (held === null || recoveryBusy.value) {
     return;
   }
@@ -185,7 +186,7 @@ async function downloadUnreadableDraft(): Promise<void> {
  * an empty slot shows the empty guest start.
  */
 async function removeUnreadableDraft(): Promise<void> {
-  const held = unreadableStored.value;
+  const held = admission.value.kind === "unreadable" ? admission.value.stored : null;
   if (held === null || recoveryBusy.value) {
     return;
   }
@@ -195,8 +196,7 @@ async function removeUnreadableDraft(): Promise<void> {
     if (!removed) {
       const current = await guestStorage.load();
       if (current && !isGuestDraftReadable(current.draft)) {
-        unreadableStored.value = current;
-        admission.value = "unreadable";
+        admission.value = { kind: "unreadable", stored: current };
         return;
       }
       if (current) {
@@ -206,12 +206,10 @@ async function removeUnreadableDraft(): Promise<void> {
       } else {
         await router.replace({ query: { ...route.query, document: undefined } });
       }
-      unreadableStored.value = null;
-      admission.value = "readable";
+      admission.value = { kind: "readable" };
       return;
     }
-    unreadableStored.value = null;
-    admission.value = "readable";
+    admission.value = { kind: "readable" };
     await router.replace({ query: { ...route.query, document: undefined } });
   } catch {
     return;
@@ -227,7 +225,7 @@ async function removeUnreadableDraft(): Promise<void> {
     data-test="exam-workspace-guest-host"
   >
     <div
-      v-if="admission !== 'unreadable'"
+      v-if="admission.kind !== 'unreadable'"
       class="xw-notice notice xw-notice--info"
       role="status"
       data-test="exam-workspace-guest-browser-notice"
@@ -248,14 +246,14 @@ async function removeUnreadableDraft(): Promise<void> {
       {{ EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY }}
     </p>
     <ExamWorkspaceFileNotice
-      v-if="admission === 'unreadable'"
+      v-if="admission.kind === 'unreadable'"
       reason="guest_unreadable"
       :busy="recoveryBusy"
       @download="downloadUnreadableDraft()"
       @remove="removeUnreadableDraft()"
     />
     <ExamWorkspaceView
-      v-if="!leaving && admission === 'readable'"
+      v-if="!leaving && admission.kind === 'readable'"
       ref="viewRef"
       :store="guestStore.store"
     />

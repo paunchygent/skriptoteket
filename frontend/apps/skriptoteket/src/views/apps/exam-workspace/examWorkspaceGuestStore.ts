@@ -73,8 +73,6 @@ export type ExamWorkspaceGuestStoreDeps = {
 
 export type ExamWorkspaceGuestStore = {
   store: ExamWorkspaceStore;
-  /** The lineage of the stored draft, or null when the guest has none. */
-  currentLineageId(): Promise<string | null>;
   /** Start a fresh blank exam through the public route and store it. */
   startBlank(): Promise<string>;
   /** Start a guest exam from a QTI .zip through the public parse route. */
@@ -463,10 +461,6 @@ export function createGuestExamWorkspaceStore(
 
   return {
     store: { shared, teacher: null, guest: { startBlank, startFromQti } },
-    async currentLineageId() {
-      const stored = await deps.storage.load();
-      return stored?.draft.lineage_id ?? null;
-    },
     startBlank,
     startFromQti,
     /**
