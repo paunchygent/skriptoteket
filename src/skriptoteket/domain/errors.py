@@ -52,6 +52,9 @@ class ErrorCode(StrEnum):
     # Document schema (422)
     DOCUMENT_SCHEMA_OUTDATED = "DOCUMENT_SCHEMA_OUTDATED"
 
+    # Stored content readability (422)
+    DOCUMENT_UNREADABLE = "DOCUMENT_UNREADABLE"
+
     # Server Errors (500)
     INTERNAL_ERROR = "INTERNAL_ERROR"
     DATABASE_ERROR = "DATABASE_ERROR"

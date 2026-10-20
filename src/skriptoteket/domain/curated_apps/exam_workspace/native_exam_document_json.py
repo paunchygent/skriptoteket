@@ -25,7 +25,7 @@ def native_exam_document_json_bytes(document: NativeExamDocument) -> bytes:
 def parse_native_exam_document(data: bytes) -> NativeExamDocument:
     try:
         payload = json.loads(data.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+    except Exception as error:
         raise DomainError(
             code=ErrorCode.VALIDATION_ERROR,
             message="Native exam document payload is not valid JSON.",

@@ -4,9 +4,17 @@
 revision backfills each existing row from its head file, read at
 ``VAULT_ROOT/<owner_user_id>/<head_vault_file_id>`` as migration
 4e9b7d1c6a02 reads that root: the version number of `document.json`'s
-`schema_version`, or 0 when the file is missing, is not a zip, or has no
-parsable version. 0 is below every readable version, so such an exam is
-listed as unreadable.
+`schema_version`, or 0 when the file cannot be read or has no usable root
+version. 0 is below every readable version, so such an exam is listed as
+unreadable.
+
+The whole per-file read (open the archive, read `document.json` to its end
+so the zip CRC check runs, decode UTF-8, parse the full JSON value, take the
+root `schema_version` token, close member and archive) sits inside one
+`except Exception` boundary: any failure there writes 0 with outcome
+``unreadable:<exception class>`` and never the payload or error text. The
+query, the `VAULT_ROOT` validation, the writes and cancellation stay outside
+that boundary and fail loudly.
 
 Revision ID: 74adf10e2441
 Revises: 67c02402930c
@@ -17,7 +25,6 @@ from __future__ import annotations
 import json
 import re
 import zipfile
-import zlib
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -36,8 +43,6 @@ depends_on: str | Sequence[str] | None = None
 
 _VERSION_PATTERN = re.compile(r"native_exam_document_v(\d{1,9})")
 
-_DOCUMENT_READ_CAP_BYTES = 32 * 1024 * 1024
-
 
 def _read_format_version(
     *, vault_root: Path, owner_user_id: str, head_vault_file_id: str
@@ -46,36 +51,22 @@ def _read_format_version(
     path = vault_root / owner_user_id / head_vault_file_id
     try:
         with zipfile.ZipFile(path) as archive:
-            try:
-                with archive.open("document.json") as member:
-                    raw = member.read(_DOCUMENT_READ_CAP_BYTES + 1)
-            except KeyError:
-                return 0, "no_document"
-            except (
-                zipfile.BadZipFile,
-                zlib.error,
-                EOFError,
-                RuntimeError,
-                NotImplementedError,
-            ):
-                return 0, "corrupt"
-    except FileNotFoundError:
-        return 0, "missing"
-    except OSError:
-        return 0, "io_error"
-    except zipfile.BadZipFile:
-        return 0, "not_zip"
-    if len(raw) > _DOCUMENT_READ_CAP_BYTES:
-        return 0, "too_large"
-    try:
-        payload = json.loads(raw.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError, RecursionError):
-        return 0, "invalid_json"
-    schema_version = payload.get("schema_version") if isinstance(payload, dict) else None
-    match = _VERSION_PATTERN.fullmatch(schema_version) if isinstance(schema_version, str) else None
-    if match is None:
-        return 0, "unknown_version"
-    return int(match.group(1)), "versioned"
+            with archive.open("document.json") as member:
+                raw = member.read()
+                payload = json.loads(raw.decode("utf-8"))
+                schema_version = (
+                    payload.get("schema_version") if isinstance(payload, dict) else None
+                )
+                match = (
+                    _VERSION_PATTERN.fullmatch(schema_version)
+                    if isinstance(schema_version, str)
+                    else None
+                )
+                if match is None:
+                    return 0, "unknown_version"
+                return int(match.group(1)), "versioned"
+    except Exception as error:
+        return 0, f"unreadable:{type(error).__name__}"
 
 
 def _backfill_format_versions(*, connection: Connection) -> None:
@@ -88,6 +79,10 @@ def _backfill_format_versions(*, connection: Connection) -> None:
     ).all()
 
     vault_root = Settings().VAULT_ROOT
+    if rows and not vault_root.is_dir():
+        raise RuntimeError(
+            f"exam_index backfill refused: VAULT_ROOT {vault_root} is not an existing directory"
+        )
     outcomes: dict[str, int] = {}
     for row in rows:
         version, outcome = _read_format_version(

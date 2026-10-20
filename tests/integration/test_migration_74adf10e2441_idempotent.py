@@ -1,6 +1,7 @@
 """Real PostgreSQL proof of the exam_index format-version backfill."""
 
 import asyncio
+import hashlib
 import json
 import zipfile
 from pathlib import Path
@@ -17,6 +18,14 @@ pytestmark = [pytest.mark.integration, pytest.mark.docker]
 
 _PARENT = "67c02402930c"
 _REVISION = "74adf10e2441"
+
+_SAMPLE = (
+    Path(__file__).resolve().parents[1]
+    / "fixtures"
+    / "exam_workspace"
+    / "document_versions"
+    / "native_exam_document_v10.json"
+)
 
 
 def _head_zip(path: Path, *, schema_version: str) -> None:
@@ -35,6 +44,29 @@ def _head_zip_deflated(path: Path, *, schema_version: str, padding_size: int) ->
 def _head_zip_raw(path: Path, *, content: str) -> None:
     with zipfile.ZipFile(path, "w") as archive:
         archive.writestr("document.json", content)
+
+
+def _head_zip_bytes(path: Path, *, data: bytes) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("document.json", data)
+
+
+def _head_zip_without_document(path: Path) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr("other.json", json.dumps({"schema_version": "native_exam_document_v10"}))
+
+
+def _head_zip_version_last(path: Path, *, schema_version: str, padding_size: int) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr(
+            "document.json",
+            json.dumps({"padding": " " * padding_size, "schema_version": schema_version}),
+        )
+
+
+def _head_zip_trailing_whitespace(path: Path, *, whitespace_size: int) -> None:
+    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("document.json", _SAMPLE.read_text() + " " * whitespace_size)
 
 
 def _head_zip_corrupt_crc(path: Path, *, schema_version: str) -> None:
@@ -94,7 +126,7 @@ async def _seed_index_rows(
         await engine.dispose()
 
 
-async def _assert_backfilled(database_url: str, *, lineages: tuple[UUID, ...]) -> None:
+async def _assert_backfilled(database_url: str, *, expected: dict[UUID, int]) -> None:
     engine = create_async_engine(database_url)
     try:
         async with engine.begin() as connection:
@@ -103,16 +135,7 @@ async def _assert_backfilled(database_url: str, *, lineages: tuple[UUID, ...]) -
                     text("SELECT lineage_id, document_format_version FROM exam_index")
                 )
             ).all()
-            assert {row[0]: row[1] for row in rows} == {
-                lineages[0]: 10,
-                lineages[1]: 9,
-                lineages[2]: 0,
-                lineages[3]: 0,
-                lineages[4]: 0,
-                lineages[5]: 0,
-                lineages[6]: 0,
-                lineages[7]: 0,
-            }
+            assert {row[0]: row[1] for row in rows} == expected
             nullable = await connection.scalar(
                 text(
                     "SELECT is_nullable FROM information_schema.columns "
@@ -144,32 +167,96 @@ def test_exam_index_format_version_backfills_from_head_files(
     command.downgrade(alembic_config, "base")
     command.upgrade(alembic_config, _PARENT)
     owner = uuid4()
-    lineages = tuple(uuid4() for _ in range(8))
-    file_ids = tuple(uuid4() for _ in range(8))
+    lineages = tuple(uuid4() for _ in range(20))
+    file_ids = tuple(uuid4() for _ in range(20))
     asyncio.run(_seed_index_rows(database_url, owner=owner, lineages=lineages, file_ids=file_ids))
     owner_directory = tmp_path / str(owner)
     owner_directory.mkdir()
-    _head_zip(owner_directory / str(file_ids[0]), schema_version="native_exam_document_v10")
-    _head_zip(owner_directory / str(file_ids[1]), schema_version="native_exam_document_v9")
-    (owner_directory / str(file_ids[3])).write_bytes(b"not a zip")
-    _head_zip_corrupt_crc(
-        owner_directory / str(file_ids[4]), schema_version="native_exam_document_v10"
+
+    # Processing order follows owner/lineage, so sort the pairs to place a bad
+    # file first and a good file right after it.
+    order = sorted(range(len(lineages)), key=lambda index: lineages[index])
+    by_position = [lineages[index] for index in order]
+    files_by_position = [file_ids[index] for index in order]
+
+    def path_at(position: int) -> Path:
+        return owner_directory / str(files_by_position[position])
+
+    # 0: not a zip, immediately followed by a good file: the backfill continues.
+    path_at(0).write_bytes(b"not a zip")
+    _head_zip(path_at(1), schema_version="native_exam_document_v10")
+    # 2: missing file (nothing written).
+    _head_zip_without_document(path_at(3))
+    _head_zip_corrupt_crc(path_at(4), schema_version="native_exam_document_v10")
+    _head_zip_bytes(path_at(5), data=b'{"schema_version": "\xff\xfe invalid"}')
+    _head_zip_raw(
+        path_at(6),
+        content='{"schema_version": "native_exam_document_v10", "other": 1',
+    )
+    _head_zip_raw(path_at(7), content='{"title": "no version here"}')
+    _head_zip_raw(path_at(8), content='{"schema_version": 10}')
+    _head_zip_raw(path_at(9), content='{"schema_version": "v10"}')
+    _head_zip(path_at(10), schema_version="native_exam_document_v" + "1" * 10)
+    _head_zip(path_at(11), schema_version="native_exam_document_v" + "1" * 20)
+    _head_zip_raw(
+        path_at(12),
+        content='{"schema_version":"native_exam_document_v10","other":' + "1" * 5000 + "}",
+    )
+    _head_zip_raw(path_at(13), content="[" * 200000 + "]" * 200000)
+    _head_zip_raw(path_at(14), content='["not", "a", "dict"]')
+    # Valid documents the backfill must version, however large or ordered.
+    _head_zip_version_last(
+        path_at(15), schema_version="native_exam_document_v10", padding_size=1024 * 1024
     )
     _head_zip_deflated(
-        owner_directory / str(file_ids[5]),
+        path_at(16),
         schema_version="native_exam_document_v10",
         padding_size=33 * 1024 * 1024,
     )
-    _head_zip(
-        owner_directory / str(file_ids[6]),
-        schema_version="native_exam_document_v" + "1" * 20,
-    )
-    _head_zip_raw(owner_directory / str(file_ids[7]), content="[" * 200000 + "]" * 200000)
+    _head_zip_trailing_whitespace(path_at(17), whitespace_size=33 * 1024 * 1024)
+    _head_zip(path_at(18), schema_version="native_exam_document_v10")
+    _head_zip(path_at(19), schema_version="native_exam_document_v9")
+
+    expected = {
+        by_position[0]: 0,
+        by_position[1]: 10,
+        by_position[2]: 0,
+        by_position[3]: 0,
+        by_position[4]: 0,
+        by_position[5]: 0,
+        by_position[6]: 0,
+        by_position[7]: 0,
+        by_position[8]: 0,
+        by_position[9]: 0,
+        by_position[10]: 0,
+        by_position[11]: 0,
+        by_position[12]: 0,
+        by_position[13]: 0,
+        by_position[14]: 0,
+        by_position[15]: 10,
+        by_position[16]: 10,
+        by_position[17]: 10,
+        by_position[18]: 10,
+        by_position[19]: 9,
+    }
+
+    hashes_before = {
+        position: hashlib.sha256(path_at(position).read_bytes()).hexdigest()
+        for position in range(20)
+        if position != 2
+    }
 
     command.upgrade(alembic_config, _REVISION)
     command.upgrade(alembic_config, _REVISION)
-    asyncio.run(_assert_backfilled(database_url, lineages=lineages))
+    asyncio.run(_assert_backfilled(database_url, expected=expected))
+
+    hashes_after = {
+        position: hashlib.sha256(path_at(position).read_bytes()).hexdigest()
+        for position in range(20)
+        if position != 2
+    }
+    assert hashes_after == hashes_before
 
     command.downgrade(alembic_config, _PARENT)
     command.upgrade(alembic_config, _REVISION)
-    asyncio.run(_assert_backfilled(database_url, lineages=lineages))
+    asyncio.run(_assert_backfilled(database_url, expected=expected))
