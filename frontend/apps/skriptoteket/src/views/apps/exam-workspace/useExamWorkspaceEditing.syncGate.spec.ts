@@ -253,7 +253,11 @@ describe("the sync gate fail-first ports", () => {
     const secondResponse = response(second, "step-0");
     secondResponse.summary = { ...secondResponse.summary, lineage_id: lineageB, vault_file_id: lineageB };
     api.getExamWorkspaceDocument.mockImplementation(async () => secondResponse);
-    expect(await editing.openDocument(lineageB)).toBe(true);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    expect(await editing.openDocument(lineageB, token)).toBe("installed");
     await flushPromises();
     expect(editing.history.position.value).toBe("step-0");
     // The lineage switch re-claims the lease asynchronously; the drawer

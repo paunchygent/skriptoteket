@@ -70,6 +70,7 @@ const props = withDefaults(
 defineEmits<{
   close: [];
   "import-pick-consumed": [];
+  open: [lineageId: string];
   run: [target: ExamWorkspaceExportTarget, destination: "download" | "files"];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
@@ -92,7 +93,6 @@ const {
   isDirty,
   listOrdering,
   notes,
-  openDocument,
   renameFailure,
   renameFile,
   retryConversionStatus,
@@ -151,7 +151,7 @@ const openSaveDetail = computed(() =>
       :import-pick-pending="importPickPending"
       @select-file="handleSelectedFile"
       @drop-files="handleDroppedFiles"
-      @open="openDocument"
+      @open="$emit('open', $event)"
       @set-ordering="$emit('set-ordering', $event)"
       @retry-conversion="retryConversionStatus"
       @import-pick-consumed="$emit('import-pick-consumed')"

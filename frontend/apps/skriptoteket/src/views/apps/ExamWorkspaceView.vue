@@ -182,12 +182,7 @@ const blockers = computed(() => [
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
 
-/**
- * The width owner's side state and the remembered column widths (TASK-SKRIPT-41-02-04),
- * owned by `useExamWorkspaceColumnLayout`: on desktop the root carries the widths
- * as inline custom properties and the list state as `data-list`; tablet and
- * phone render without either.
- */
+/** The width owner's side state and remembered column widths (TASK-SKRIPT-41-02-04). */
 const {
   isDesktop,
   listRailCollapsed,
@@ -465,6 +460,7 @@ onMounted(() => void loadSavedDocuments());
         :import-pick-pending="importPickPending"
         @close="drawer = null"
         @import-pick-consumed="consumeImportPick"
+        @open="showDocument"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

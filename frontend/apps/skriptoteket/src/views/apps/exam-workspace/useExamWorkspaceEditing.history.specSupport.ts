@@ -390,6 +390,8 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       isLeaseHeld: () => leaseHeld.value,
       isOpenClaimPending: () => false,
       hasPendingEdit: () => history.pending.value,
+      currentInflightDocument: () => history.inflightDocument.value,
+      settleEdit: () => history.flush(true),
       currentStepDocument: () => history.stepDocument.value,
       currentWorkingCopy: () => workspaceDocument.value,
       dropOwedSnapshots: () => history.dropOwedSnapshots(),

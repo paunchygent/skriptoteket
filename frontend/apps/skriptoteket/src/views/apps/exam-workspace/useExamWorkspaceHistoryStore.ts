@@ -115,9 +115,13 @@ export function createHistoryStore(
   dropOwedSnapshots: () => void;
   /** True while the last store's token is still current: reads false after a retire. */
   storing: ComputedRef<boolean>;
+  /** What the in-flight store sent while its answer is unknown; null once it settles or retires. */
+  inflightDocument: ComputedRef<NativeExamDocument | null>;
 } {
   const toast = useToast();
   const storingToken = shallowRef<FenceToken | null>(null);
+  /** What the in-flight store sent; cleared with the storing token, so the gate reads it only while unknown. */
+  const inflight = shallowRef<NativeExamDocument | null>(null);
   /**
    * True while a current-generation store is in flight. `isCurrent` reads
    * the fence's reactive generation, so a retire flips this at once, even
@@ -144,6 +148,7 @@ export function createHistoryStore(
   function clearStoring(token: FenceToken): void {
     if (storingToken.value === token) {
       storingToken.value = null;
+      inflight.value = null;
     }
   }
 
@@ -178,6 +183,7 @@ export function createHistoryStore(
       return "failed";
     }
     storingToken.value = token;
+    inflight.value = document;
     try {
       const settled = await deps.transport.storeUndoStep(token, lineageId, {
         afterStepId: after,
@@ -274,5 +280,12 @@ export function createHistoryStore(
     return true;
   }
 
-  return { dropOwedSnapshots, pushOwed, store, storeOwed, storing };
+  return {
+    dropOwedSnapshots,
+    inflightDocument: computed(() => inflight.value),
+    pushOwed,
+    store,
+    storeOwed,
+    storing,
+  };
 }

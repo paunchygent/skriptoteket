@@ -98,7 +98,11 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      expect(await editing.openDocument(original.lineage_id)).toBe(true);
+      const token = await editing.noteRouteRequest();
+      if (token === null) {
+        throw new Error("expected the route request to settle");
+      }
+      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
       await flushPromises();
       editing.setTitle("snapshot A");
 
@@ -128,7 +132,11 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port: backing }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      expect(await editing.openDocument(original.lineage_id)).toBe(true);
+      const token = await editing.noteRouteRequest();
+      if (token === null) {
+        throw new Error("expected the route request to settle");
+      }
+      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
       await flushPromises();
       editing.setTitle("one");
       await editing.history.flush();
@@ -183,7 +191,11 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(port);
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      expect(await editing.openDocument(original.lineage_id)).toBe(true);
+      const token = await editing.noteRouteRequest();
+      if (token === null) {
+        throw new Error("expected the route request to settle");
+      }
+      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
       await flushPromises();
       editing.setTitle("unsaved A");
 
@@ -207,7 +219,11 @@ describe("guest sign-in departure under the editing lock", () => {
     const guest = createGuest(port);
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
-      expect(await editing.openDocument(original.lineage_id)).toBe(true);
+      const token = await editing.noteRouteRequest();
+      if (token === null) {
+        throw new Error("expected the route request to settle");
+      }
+      expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
       await flushPromises();
       editing.setTitle("unsaved A");
 

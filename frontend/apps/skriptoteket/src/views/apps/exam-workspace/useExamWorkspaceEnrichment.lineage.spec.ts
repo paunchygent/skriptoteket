@@ -28,6 +28,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence } from "./examWorkspaceSyncFence";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
@@ -129,8 +130,9 @@ afterEach(() => {
 async function openExamA() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(examResponse("lineage-a"));
   const scope = effectScope();
+  const fence = createSyncFence();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore });
+    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,
@@ -144,8 +146,8 @@ async function openExamA() {
   if (!composed) {
     throw new Error("expected the composed workspace state");
   }
-  await composed.document.openDocument("lineage-a");
-  return composed;
+  await composed.document.openDocument("lineage-a", fence.begin());
+  return { ...composed, fence };
 }
 
 /** Exam A has a queued job whose status poll is in flight. */
@@ -161,10 +163,13 @@ async function examAWithPollInFlight() {
 }
 
 /** Start opening exam B and hold its response. */
-function startOpeningB(state: ReturnType<typeof useExamWorkspaceDocument>) {
+function startOpeningB(
+  state: ReturnType<typeof useExamWorkspaceDocument>,
+  fence: ReturnType<typeof createSyncFence>,
+) {
   const response = deferred<ExamWorkspaceDocumentResponse>();
   apiMocks.getExamWorkspaceDocument.mockReturnValue(response.promise);
-  const opening = state.openDocument("lineage-b");
+  const opening = state.openDocument("lineage-b", fence.begin());
   return { opening, response };
 }
 
@@ -182,8 +187,8 @@ async function expectNoFurtherPoll(calls: number): Promise<void> {
 
 describe("a completion settling in the same turn as the open of another exam", () => {
   it("E2: a succeeded poll writes nothing into the newly opened exam", async () => {
-    const { document, enrichment, poll } = await examAWithPollInFlight();
-    const { opening, response } = startOpeningB(document);
+    const { document, enrichment, fence, poll } = await examAWithPollInFlight();
+    const { opening, response } = startOpeningB(document, fence);
 
     response.resolve(examResponse("lineage-b"));
     poll.resolve(jobStatus("succeeded", true));
@@ -195,11 +200,11 @@ describe("a completion settling in the same turn as the open of another exam", (
   });
 
   it("E3: a succeeded request response writes nothing into the newly opened exam", async () => {
-    const { document, enrichment } = await openExamA();
+    const { document, enrichment, fence } = await openExamA();
     const request = deferred<ExamWorkspaceAnswerKeySuggestionsStatus>();
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValue(request.promise);
     const requesting = enrichment.requestSuggestionsForAll();
-    const { opening, response } = startOpeningB(document);
+    const { opening, response } = startOpeningB(document, fence);
 
     response.resolve(examResponse("lineage-b"));
     request.resolve(jobStatus("succeeded", true));
@@ -212,8 +217,8 @@ describe("a completion settling in the same turn as the open of another exam", (
   });
 
   it("E4: a running poll shows no status and schedules no next poll", async () => {
-    const { document, enrichment, poll } = await examAWithPollInFlight();
-    const { opening, response } = startOpeningB(document);
+    const { document, enrichment, fence, poll } = await examAWithPollInFlight();
+    const { opening, response } = startOpeningB(document, fence);
 
     response.resolve(examResponse("lineage-b"));
     poll.resolve(jobStatus("running"));
@@ -226,8 +231,8 @@ describe("a completion settling in the same turn as the open of another exam", (
   });
 
   it("E5: a failed poll shows no toast and schedules no retry", async () => {
-    const { document, poll } = await examAWithPollInFlight();
-    const { opening, response } = startOpeningB(document);
+    const { document, fence, poll } = await examAWithPollInFlight();
+    const { opening, response } = startOpeningB(document, fence);
 
     response.resolve(examResponse("lineage-b"));
     poll.reject(new Error("network down"));
@@ -239,11 +244,11 @@ describe("a completion settling in the same turn as the open of another exam", (
   });
 
   it("E5: a failed request shows no toast on the newly opened exam", async () => {
-    const { document, enrichment } = await openExamA();
+    const { document, enrichment, fence } = await openExamA();
     const request = deferred<ExamWorkspaceAnswerKeySuggestionsStatus>();
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValue(request.promise);
     const requesting = enrichment.requestSuggestionsForAll();
-    const { opening, response } = startOpeningB(document);
+    const { opening, response } = startOpeningB(document, fence);
 
     response.resolve(examResponse("lineage-b"));
     request.reject(new Error("network down"));
@@ -257,12 +262,12 @@ describe("a completion settling in the same turn as the open of another exam", (
 
 describe("a job of an exam that is no longer open", () => {
   it("E8: reopening exam A later does not revive A's old poll", async () => {
-    const { document, enrichment, poll } = await examAWithPollInFlight();
+    const { document, enrichment, fence, poll } = await examAWithPollInFlight();
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(examResponse("lineage-b"));
-    await document.openDocument("lineage-b");
+    await document.openDocument("lineage-b", fence.begin());
     await flushPromises();
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(examResponse("lineage-a"));
-    await document.openDocument("lineage-a");
+    await document.openDocument("lineage-a", fence.begin());
     await flushPromises();
 
     poll.resolve(jobStatus("succeeded", true));
@@ -275,12 +280,12 @@ describe("a job of an exam that is no longer open", () => {
   });
 
   it("E10: exam B can request while A's request is still in flight, and A's return leaves B's job alone", async () => {
-    const { document, enrichment } = await openExamA();
+    const { document, enrichment, fence } = await openExamA();
     const requestA = deferred<ExamWorkspaceAnswerKeySuggestionsStatus>();
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockReturnValueOnce(requestA.promise);
     const requestingA = enrichment.requestSuggestionsForAll();
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(examResponse("lineage-b"));
-    await document.openDocument("lineage-b");
+    await document.openDocument("lineage-b", fence.begin());
     await flushPromises();
 
     const statusB: ExamWorkspaceAnswerKeySuggestionsStatus = {

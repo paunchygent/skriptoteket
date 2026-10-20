@@ -3,7 +3,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
-import { currentDocument, currentItem, openMatchingDocument, savedResponse } from "./useExamWorkspaceDocument.specSupport";
+import { currentDocument, currentItem, openMatchingDocument, openMatchingDocumentWithFence, savedResponse } from "./useExamWorkspaceDocument.specSupport";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 
 const api = vi.hoisted(() => ({
@@ -75,14 +75,14 @@ describe("document conversion-key actions", () => {
 
   it("refuses all new actions while busy and ignores unknown items", async () => {
     const source = interpretedItem();
-    const state = await openMatchingDocument(api.getExamWorkspaceDocument, source);
+    const { fence, state } = await openMatchingDocumentWithFence(api.getExamWorkspaceDocument, source);
     state.undoItemInterpretation("missing");
     state.removeItemAutomaticValue("missing", "gap_001", "Stockhom");
     state.showItemGapAsText("missing", "gap_002");
     expect(state.isDirty.value).toBe(false);
     const opened = currentDocument(state);
     api.getExamWorkspaceDocument.mockImplementation(() => new Promise(() => {}));
-    void state.openDocument("another-lineage");
+    void state.openDocument("another-lineage", fence.begin());
     expect(state.isBusy.value).toBe(true);
     state.undoItemInterpretation("item_001");
     state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");

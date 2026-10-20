@@ -165,7 +165,11 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const opening = editing.openDocument(LINEAGE);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    const opening = editing.openDocument(LINEAGE, token);
     await flushPromises();
     expect(lease.pending.map((claim) => claim.lineageId)).toEqual([LINEAGE]);
 
@@ -179,7 +183,7 @@ describe("the gate waits for the open claim", () => {
     openClaim.resolve(heldResponse("tab-A"));
     await flushPromises();
 
-    expect(await opening).toBe(true);
+    expect(await opening).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).not.toContain(true);
     expect(editing.leaseReadOnly.value).toBe(false);
@@ -210,13 +214,17 @@ describe("the gate waits for the open claim", () => {
     );
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const opening = editing.openDocument(LINEAGE);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    const opening = editing.openDocument(LINEAGE, token);
     await flushPromises();
 
     resolveStepReads(pendingSteps);
     await flushPromises();
 
-    expect(await opening).toBe(true);
+    expect(await opening).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).toEqual([true]);
     expect(editing.leaseReadOnly.value).toBe(true);
@@ -250,7 +258,11 @@ describe("the gate waits for the open claim", () => {
     api.getExamWorkspaceDocument.mockClear();
     const pendingSteps: Array<(history: StepHistory) => void> = [];
     holdStepLists(pendingSteps);
-    const openingB = editing.openDocument(EXAM_B);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    const openingB = editing.openDocument(EXAM_B, token);
     await flushPromises();
     expect(lease.releases).toEqual([{ lineageId: LINEAGE, tabId: "tab-A" }]);
 
@@ -265,7 +277,7 @@ describe("the gate waits for the open claim", () => {
     claimB.resolve(heldResponse("tab-A"));
     await flushPromises();
 
-    expect(await openingB).toBe(true);
+    expect(await openingB).toBe("installed");
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(readonlySeen).not.toContain(true);
     expect(editing.editingLocked.value).toBe(false);

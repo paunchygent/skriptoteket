@@ -50,6 +50,8 @@ export type SyncGateFlags = {
   /** An open claim is still in flight; a finished fresh load then keeps `loading`. */
   claimPending: boolean;
   pendingEdit: boolean;
+  /** What the in-flight store sent while its answer is unknown; null when no store is in flight. */
+  inflightDocument: NativeExamDocument | null;
   stepDocument: NativeExamDocument | null;
   workingCopy: NativeExamDocument | null;
   /** The merge spy's result; undefined falls back to the fresh copy with 7 points. */
@@ -108,6 +110,7 @@ export function createGate(): SyncGateHarness {
   const timers: Array<() => void> = [];
   const flags: SyncGateFlags = {
     claimPending: false,
+    inflightDocument: null,
     leaseHeld: true,
     mergeResult: undefined,
     pendingEdit: false,
@@ -115,6 +118,7 @@ export function createGate(): SyncGateHarness {
     workingCopy: null,
   };
   const gate = useExamWorkspaceSyncGate({
+    currentInflightDocument: () => flags.inflightDocument,
     currentStepDocument: () => flags.stepDocument,
     currentWorkingCopy: () => flags.workingCopy,
     dropOwedSnapshots: () => {
@@ -169,6 +173,7 @@ export function createGate(): SyncGateHarness {
     requestStore: () => {
       counts.storeRequests += 1;
     },
+    settleEdit: () => Promise.resolve(true),
     timer: {
       cancel: () => {
         timers.length = 0;

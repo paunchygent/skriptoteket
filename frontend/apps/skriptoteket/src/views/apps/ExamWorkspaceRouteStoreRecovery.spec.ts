@@ -9,11 +9,11 @@
  * source is read-only and lives outside the repository:
  * `RR/scratch/2ec498b8-d165-46f0-a53c-9a9ade583ad5/route-positive.spec.mjs`.
  *
- * The `residual:` case is the one whose expectation the lead's repair may
- * restate: the repair will make a route request store the open exam's latest
- * edit before it retires, so the end state may change from "a 5 s retry
- * stores 7" to "the store reaches the server before any open, and nothing
- * reports saved early". It is ported as the reviewer wrote it now.
+ * The `residual:` case is the one the lead restated for the repair: the route
+ * request settles the open exam's latest edit before it retires, so the held
+ * store answers first and the settle confirms the latest copy with no second
+ * transport; the failed open then reports `failed` and the confirmed edit
+ * stays visible.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -158,26 +158,45 @@ it("control: an ordinary current network store failure retries after five second
   }).toEqual({ count: 2, points: 7 });
 });
 
-it("residual: retiring a current save while a different open fails leaves its edit unconfirmed without retry", async () => {
+it("residual: a held save settles before a failed direct open leaves the confirmed edit visible", async () => {
   const server = fakeServer(api, exam());
+  const persist = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (persist === undefined) {
+    throw new Error("expected the step store double");
+  }
   const ack = deferred<unknown>();
-  api.storeExamWorkspaceUndoStep.mockReturnValueOnce(ack.promise);
+  let stored: unknown = null;
+  api.storeExamWorkspaceUndoStep.mockImplementationOnce((lineageId: string, request: unknown) => {
+    const saving = persist(lineageId, request);
+    stored = saving;
+    return ack.promise;
+  });
   const editing = session();
   editing.applyCommandResponse(response(exam(), "step-0"));
   await settle();
   editing.updateItemPoints("item_001", 7);
   const saving = editing.save();
   await settle();
+  // The switch waits on the held acknowledgement; once it answers, the
+  // settle stores the latest copy before any open begins. This exercises the
+  // public open entry directly, not the address owner's dirty guard.
+  const switching = editing.noteRouteRequest();
+  await settle();
+  ack.resolve(stored);
+  const token = await switching;
+  if (token === null) {
+    throw new Error("expected the settle to store");
+  }
   api.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("next exam offline"));
-  await editing.openDocument("00000000-0000-4000-8000-000000000002");
+  const outcome = await editing.openDocument("00000000-0000-4000-8000-000000000002", token);
   await saving;
   await settle();
   await vi.advanceTimersByTimeAsync(6000);
   await settle();
-  // This exercises the public open entry directly, not the address owner's dirty guard.
+  expect(outcome).toBe("failed");
   expect({
     count: api.storeExamWorkspaceUndoStep.mock.calls.length,
     points: pointsOf(server.documents.get(server.state.position) ?? null, "item_001"),
     visible: pointsOf(editing.workspaceDocument.value, "item_001"),
-  }).toEqual({ count: 2, points: 7, visible: 7 });
+  }).toEqual({ count: 1, points: 7, visible: 7 });
 });

@@ -4,15 +4,20 @@
  * Domain purpose:
  *   Keep the `?document=<lineage_id>` query and the open exam in step. On
  *   mount, a query naming a document opens it. Later query changes
- *   (back/forward or an in-app link) open the named document; with unsaved
- *   edits, or when the named document does not open, the open document
- *   stays and the address is pointed back at it. `showDocument` writes a
- *   newly open document into the address.
+ *   (back/forward or an in-app link) settle the open exam, retire its
+ *   generation and open the named document under the request's token; with
+ *   unsaved edits, or when the named document does not open, the open
+ *   document stays and the address is pointed back at it. `showDocument`
+ *   writes a newly open document into the address. Only the initiating
+ *   current request clears the pending target or restores the address: a
+ *   superseded completion clears and restores nothing; a failed one clears,
+ *   restores and reads the retained exam fresh.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView`, which calls `showDocument` from its
  *     open-document watcher.
- *   - Opens documents through `useExamWorkspaceDocument.openDocument`.
+ *   - Opens documents through the routed open, which takes the token the
+ *     settle-and-retire entry hands back.
  */
 
 import { onMounted, ref, watch } from "vue";
@@ -20,13 +25,16 @@ import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
+import type { FenceToken } from "./examWorkspaceSyncFence";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceRouteRequest";
 
 export type ExamWorkspaceAddressParams = {
   isDirty: Readonly<Ref<boolean>>;
-  openDocument: (lineageId: string) => Promise<boolean>;
-  /** Retire the superseded open when the route returns to the open exam. */
-  noteRouteRequest: () => void;
-  /** Read the open exam fresh when the route returns to it. */
+  /** Open the named document for the request's token; reports the routed outcome. */
+  openDocument: (lineageId: string, token: FenceToken) => Promise<ExamWorkspaceRouteOpenOutcome>;
+  /** Settle the latest edit and retire the generation; null when the edit did not settle. */
+  noteRouteRequest: () => Promise<FenceToken | null>;
+  /** Read the open exam fresh when the route returns to it or its replacement fails. */
   reloadOpen: () => void;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
 };
@@ -57,6 +65,44 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
     void router.replace({ query: openLineageId ? { ...rest, document: openLineageId } : rest });
   }
 
+  /** Clear the pending target only for the request that set it. */
+  function clearPendingTarget(lineageId: string): void {
+    if (pendingTarget.value === lineageId) {
+      pendingTarget.value = null;
+    }
+  }
+
+  /** Restore the address only while the route still names this request. */
+  function restoreForRequest(lineageId: string): void {
+    if (routeDocumentId() === lineageId) {
+      restoreDocumentAddress();
+    }
+  }
+
+  /**
+   * Settle and open the named document for this request. A superseded
+   * request clears and restores nothing; a settled failure and an unsettled
+   * request restore the address and read the retained exam fresh (a failed
+   * one through the recovery, an unsettled one through the dirty guard).
+   */
+  async function openRequestedDocument(lineageId: string): Promise<void> {
+    const token = await params.noteRouteRequest();
+    if (token === null) {
+      clearPendingTarget(lineageId);
+      restoreForRequest(lineageId);
+      return;
+    }
+    const outcome = await params.openDocument(lineageId, token);
+    if (outcome === "superseded") {
+      return;
+    }
+    clearPendingTarget(lineageId);
+    if (outcome === "failed") {
+      restoreForRequest(lineageId);
+      params.reloadOpen();
+    }
+  }
+
   watch(
     () => routeDocumentId(),
     async (lineageId) => {
@@ -67,12 +113,16 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
       if (lineageId === openLineageId) {
         // The route is back at the open exam while another open was pending:
         // retire the superseded open and read the open exam fresh. A dirty
-        // open exam is never read over: retire only, and keep its edits.
+        // open exam is never read over: retire only, and keep its edits. A
+        // newer request that arrived during the settle owns the route now.
         if (pendingTarget.value === null) {
           return;
         }
         pendingTarget.value = null;
-        params.noteRouteRequest();
+        await params.noteRouteRequest();
+        if (pendingTarget.value !== null) {
+          return;
+        }
         if (!params.isDirty.value) {
           params.reloadOpen();
         }
@@ -83,13 +133,7 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
         return;
       }
       pendingTarget.value = lineageId;
-      const opened = await params.openDocument(lineageId);
-      if (pendingTarget.value === lineageId) {
-        pendingTarget.value = null;
-      }
-      if (!opened && routeDocumentId() === lineageId) {
-        restoreDocumentAddress();
-      }
+      await openRequestedDocument(lineageId);
     },
   );
 
@@ -97,11 +141,7 @@ export function useExamWorkspaceAddress(params: ExamWorkspaceAddressParams) {
     const lineageId = routeDocumentId();
     if (lineageId) {
       pendingTarget.value = lineageId;
-      void params.openDocument(lineageId).then(() => {
-        if (pendingTarget.value === lineageId) {
-          pendingTarget.value = null;
-        }
-      });
+      void openRequestedDocument(lineageId);
     }
   });
 

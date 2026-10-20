@@ -16,12 +16,12 @@
  *   reload-failure port, and retries after 5 s. After a merge install the
  *   gate queues one ordinary store of the working copy through the write
  *   queue; the kept edit clears only when `noteStored` arrives while the
- *   merge token is still current. A network failure of the merged store is
- *   retried by the history's own save retry; a stale-cursor 409 on that
- *   store arrives as `staleConflict` and merges again at the next merge
- *   point. A lease lost during `loading` retires the running load and moves
- *   the gate to `readonly`, so the load can never become editable after a
- *   later reacquisition starts a fresh load.
+ *   merge token is still current. A lease lost during `loading` retires the
+ *   running load and moves the gate to `readonly`, so the load can never
+ *   become editable after a later reacquisition starts a fresh load. A route
+ *   request first settles the latest edit and only then retires; a kept edit
+ *   exists whenever the desired copy is unconfirmed, and the merge starts
+ *   from the in-flight copy when the server holds the same content.
  *
  * Relationships:
  *   - Calls `mergeRefusedEdit`, which stays the merge owner; G1b passes the
@@ -41,6 +41,11 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
+import {
+  pickKeptMergeBase,
+  requestRouteRetire,
+  shouldCaptureKeptEdit,
+} from "./examWorkspaceRouteRequest";
 import type { ExamWorkspaceStepListRead } from "./useExamWorkspaceHistoryLoader";
 import {
   SYNC_GATE_RELOAD_RETRY_MS,
@@ -51,11 +56,13 @@ import { createSyncGateQueue } from "./examWorkspaceSyncGateQueue";
 /** The confirmed sync state: no fresh copy and step list, lease held and fresh, or another tab's lease. */
 export type ExamWorkspaceSyncGatePhase = "loading" | "editing" | "readonly";
 
-/** The kept refused edit: the step document the edit started from and the refused working copy. */
+/** The kept edit: the confirmed base, the in-flight copy (or null) and the edited working copy. */
 export type ExamWorkspaceSyncGateKeptEdit = {
-  /** The step document the refused edit started from. */
+  /** The step document the desired copy stands on. */
   base: NativeExamDocument;
-  /** The refused working copy, kept until a store in the merge generation succeeds. */
+  /** What the in-flight store sent while its answer was unknown. */
+  inflight: NativeExamDocument | null;
+  /** The working copy in front of the teacher, kept until a store confirms it. */
   edited: NativeExamDocument;
 };
 
@@ -71,6 +78,10 @@ export type ExamWorkspaceSyncGateDeps = {
   isOpenClaimPending: () => boolean;
   /** Whether the working copy differs from the step document. */
   hasPendingEdit: () => boolean;
+  /** What the in-flight store sent while its answer is unknown, or null. */
+  currentInflightDocument: () => NativeExamDocument | null;
+  /** Store the latest edit now; true when the server's newest step holds it. */
+  settleEdit: () => Promise<boolean>;
   /** The step document the editor stands on, if any. */
   currentStepDocument: () => NativeExamDocument | null;
   /** The working copy in front of the teacher, if any. */
@@ -151,16 +162,22 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
-   * A route request starts its own generation: an older open still reading
-   * settles stale, so its install and its claim never run. The phase stays,
-   * so the open exam keeps its state until the new open installs or the
-   * return path reads it fresh.
+   * A route request starts its own generation: settle the latest edit first,
+   * and only when the store lands retire in the same continuation and hand
+   * back the request's token. A request that does not settle retires nothing
+   * and gets null. Outside `editing` there is nothing to settle: retire at
+   * once. An older open still reading settles stale, so its install and its
+   * claim never run.
    */
-  function openRequested(): void {
-    if (disposed) {
-      return;
-    }
-    retire();
+  function openRequested(): Promise<FenceToken | null> {
+    return requestRouteRetire({
+      begin: () => fence.begin(),
+      isDisposed: () => disposed,
+      isEditing: () => phase.value === "editing",
+      replaceCopy: deps.replaceCopy,
+      retire,
+      settleEdit: () => deps.settleEdit(),
+    });
   }
 
   function startFreshLoad(skipDocument: boolean): void {
@@ -170,12 +187,11 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
 
   /**
    * Read the fresh document (unless the cursor arrived with this tab's own
-   * fresh copy, and no kept edit needs a fresh merge base) and then the step
-   * list, both under the replacing lock. Every read settles through the
-   * fence: a retired load installs, merges, resets and changes nothing, and
-   * its failure is silent. A current failure resets the step list, reports
-   * through the reload-failure port, and retries after 5 s. Every install
-   * after an await runs only on a current token.
+   * fresh copy and no kept edit needs a merge base) and then the step list,
+   * both under the replacing lock. A retired load installs, merges, resets
+   * and changes nothing, and its failure is silent. A current failure resets
+   * the step list, reports through the reload-failure port, and retries.
+   * Every install after an await runs only on a current token.
    */
   async function freshLoad(token: FenceToken, skipDocument: boolean): Promise<void> {
     const lineageId = lineage;
@@ -219,16 +235,19 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
         }
         deps.applyStepList(token, read, base);
         // The only merge point: a kept edit merges onto the fresh document
-        // after both reads succeed, and only the merge install is shown. The
-        // phase flips to `editing` first, so the ordinary store the merge
-        // queues through the write queue is admitted; the kept edit clears
-        // when that store reports back while the merge token is still
-        // current.
+        // after both reads succeed, from the in-flight copy when the server
+        // holds the same content and from the confirmed base otherwise. The
+        // phase flips to `editing` first, so the merge's store is admitted;
+        // the kept edit clears when that store reports back while current.
         const pendingKept = kept.value;
         const freshResponse = fresh;
         let merged: NativeExamDocument | null = null;
         if (pendingKept !== null && freshResponse !== null) {
-          merged = deps.mergeRefusedEdit(pendingKept.base, pendingKept.edited, freshResponse.document);
+          merged = deps.mergeRefusedEdit(
+            pickKeptMergeBase(pendingKept, freshResponse.document),
+            pendingKept.edited,
+            freshResponse.document,
+          );
           if (merged === null) {
             kept.value = null;
             mergeToken = null;
@@ -303,13 +322,9 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
-   * The lease is held now. A fresh load that deferred on the open claim just
-   * read in this generation, and a first-try claim means no other tab held
-   * the exam, so move to `editing` without another load. Otherwise a load in
-   * flight reads `isLeaseHeld` when it finishes, so in `loading` this is a
-   * no-op: the phase is still `loading` only when the lease was never lost
-   * since this load started, because a loss during `loading` retires the load
-   * and moves the gate to `readonly`. In `readonly` this starts a fresh load.
+   * The lease is held now. A fresh load that deferred on the open claim
+   * moves to `editing` without another load; a load still in flight reads
+   * the held lease when it finishes. In `readonly` this starts a fresh load.
    */
   function leaseAcquired(): void {
     if (disposed) {
@@ -330,10 +345,9 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
-   * The open claim ended without holding (a live foreign lease holds the
-   * exam). A fresh load that deferred on that claim already read in this
-   * generation, so move to `readonly` without another load. A load still in
-   * flight concludes as today and reads the unheld lease.
+   * The open claim ended without holding. A fresh load that deferred on that
+   * claim moves to `readonly` without another load; a load still in flight
+   * concludes as today.
    */
   function leaseRefused(): void {
     if (disposed) {
@@ -347,31 +361,31 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   }
 
   /**
-   * Capture the pending edit as the kept edit and drop owed snapshots. The
-   * `editing` branches of `leaseLost` and `pageHidden` share this, so a
-   * retired holder keeps the same recovery either way.
+   * Capture the unconfirmed copy as the kept edit and drop owed snapshots. A
+   * kept edit exists whenever the desired copy is unconfirmed: the working
+   * copy differs from the last confirmed store, or a store is in flight whose
+   * answer is unknown. The `editing` branches of `leaseLost`, `pageHidden`
+   * and the route retire share this, so a retired holder keeps the same
+   * recovery either way.
    */
   function captureKeptEdit(): void {
-    if (deps.hasPendingEdit()) {
-      const base = deps.currentStepDocument();
-      const edited = deps.currentWorkingCopy();
-      if (base !== null && edited !== null) {
-        kept.value = { base, edited };
-      }
+    const base = deps.currentStepDocument();
+    const edited = deps.currentWorkingCopy();
+    const inflight = deps.currentInflightDocument();
+    if (base !== null && edited !== null && shouldCaptureKeptEdit(deps.hasPendingEdit(), inflight)) {
+      kept.value = { base, edited, inflight };
     }
     deps.dropOwedSnapshots();
   }
 
   /**
    * The lease is gone, or a write was refused with `EDIT_LEASE_HELD`: turn
-   * read-only. In `editing`, when a pending edit exists, always (re)capture
-   * the kept edit from the current step document and working copy, replacing
-   * any older one, and drop owed snapshots. After a merge install the
-   * working copy is the merge plus later typing, so the new capture carries
-   * both. In `loading` there is no pending edit to capture (inputs are
-   * locked) and any kept edit stays; the bump retires the running load, so
-   * it can never become editable after a later reacquisition starts a fresh
-   * load.
+   * read-only. In `editing` the unconfirmed copy is (re)captured as the kept
+   * edit, replacing any older one, and owed snapshots are dropped. After a
+   * merge install the working copy is the merge plus later typing, so the new
+   * capture carries both. In `loading` there is nothing to capture (inputs
+   * are locked) and any kept edit stays; the bump retires the running load,
+   * so it can never become editable after a later reacquisition.
    */
   function leaseLost(): void {
     if (disposed) {
@@ -392,11 +406,11 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
   /**
    * The page is going away (`pagehide`): retire the current generation in
    * every live phase, so a pending claim or load settles stale and never
-   * unlocks the retired page. In `editing` the pending edit is captured as
-   * the kept edit exactly like `leaseLost`; in `loading` the running load is
-   * retired and the gate goes `readonly`; in `readonly` the pending retry
-   * claim is retired and the gate stays `readonly`. A later genuine
-   * heartbeat claim still reacquires and loads fresh.
+   * unlocks the retired page. In `editing` the unconfirmed copy is captured
+   * exactly like `leaseLost`; in `loading` the running load is retired and
+   * the gate goes `readonly`; in `readonly` the pending retry claim is
+   * retired. A later genuine heartbeat claim still reacquires and loads
+   * fresh.
    */
   function pageHidden(): void {
     if (disposed) {
@@ -424,11 +438,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     startFreshLoad(false);
   }
 
-  /**
-   * Another tab moved the history. When the cursor arrived with this tab's
-   * own fresh document (a command or Spara som response), the fresh load is
-   * the step-list read only; otherwise both reads run.
-   */
+  /** Another tab moved the history: reload, with the document read only when the cursor did not arrive with it. */
   function foreignCursor(documentFresh: boolean): void {
     if (disposed) {
       return;
@@ -438,11 +448,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     startFreshLoad(documentFresh);
   }
 
-  /**
-   * A store succeeded while the merge token is still current: the kept edit
-   * is recovered. Stores from any other generation leave it pending for the
-   * next merge. A stale token changes nothing.
-   */
+  /** A store in the merge generation recovered the kept edit; other generations leave it pending. */
   function noteStored(token: FenceToken): void {
     if (disposed || !fence.isCurrent(token)) {
       return;
@@ -453,11 +459,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     }
   }
 
-  /**
-   * Whether the gate holds a kept refused edit that no store has confirmed
-   * yet. The save status reads through this so it never reports `Sparat`
-   * while the kept edit is unstored.
-   */
+  /** The gate holds an unconfirmed copy; the save status never reports `Sparat` while it does. */
   const hasKeptEdit = computed(() => kept.value !== null);
 
   function dispose(): void {

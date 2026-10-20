@@ -109,7 +109,11 @@ async function openExamB(
   base: NativeExamDocument,
 ): Promise<void> {
   api.getExamWorkspaceDocument.mockResolvedValue(reply({ ...base, document_id: EXAM_B, title: "Exam B" }, "step-0", EXAM_B));
-  expect(await editing.openDocument(EXAM_B)).toBe(true);
+  const token = await editing.noteRouteRequest();
+  if (token === null) {
+    throw new Error("expected the route request to settle");
+  }
+  expect(await editing.openDocument(EXAM_B, token)).toBe("installed");
   await flushPromises();
   expect(editing.editingLocked.value).toBe(false);
 }

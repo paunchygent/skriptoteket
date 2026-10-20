@@ -170,7 +170,11 @@ describe("the edit lease on a 409 (K8)", () => {
           releaseOpen = resolve;
         }),
     );
-    const opening = editing.openDocument(LINEAGE);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    const opening = editing.openDocument(LINEAGE, token);
     await flushPromises();
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
 

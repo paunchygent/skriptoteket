@@ -234,7 +234,11 @@ describe("the lease fence fail-first ports", () => {
     await vi.advanceTimersByTimeAsync(5000);
     const second = { ...base, document_id: EXAM_B, title: "Exam B" };
     api.getExamWorkspaceDocument.mockResolvedValue(reply(second, "step-0", EXAM_B));
-    expect(await editing.openDocument(EXAM_B)).toBe(true);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    expect(await editing.openDocument(EXAM_B, token)).toBe("installed");
     await flushPromises();
     expect(editing.editingLocked.value).toBe(false);
     old.resolve(held("A", true));

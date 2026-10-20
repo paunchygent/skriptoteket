@@ -179,7 +179,11 @@ describe("the generation fence fail-first ports", () => {
     server.state.cursor = "step-B";
     server.state.position = "step-B";
     api.getExamWorkspaceDocument.mockImplementation(async () => structuredClone(next));
-    expect(await editing.openDocument(other)).toBe(true);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    expect(await editing.openDocument(other, token)).toBe("installed");
     await flushPromises();
     await flushPromises();
     await flushPromises();
@@ -358,7 +362,11 @@ describe("the generation fence fail-first ports", () => {
     await vi.advanceTimersByTimeAsync(4000);
     await flushPromises();
     await flushPromises();
-    await editing.openDocument(LINEAGE);
+    const token = await editing.noteRouteRequest();
+    if (token === null) {
+      throw new Error("expected the route request to settle");
+    }
+    await editing.openDocument(LINEAGE, token);
     await flushPromises();
     expect(workspaceOf(editing).items.map((item) => item.points)).toEqual([5, 9]);
     reply.resolve(oldAck);

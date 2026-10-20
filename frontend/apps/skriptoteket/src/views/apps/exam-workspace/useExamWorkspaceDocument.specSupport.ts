@@ -21,6 +21,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { createSyncFence, type SyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -83,19 +84,28 @@ export function savedResponse(document: NativeExamDocument): ExamWorkspaceDocume
   };
 }
 
-export async function openMatchingDocument(
+export async function openMatchingDocumentWithFence(
   getDocument: Mock,
   item?: NativeExamItem,
-): Promise<DocumentState> {
+): Promise<{ fence: SyncFence; state: DocumentState }> {
   getDocument.mockResolvedValue(buildResponse(item));
+  const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
-  await state.openDocument("lineage-1");
+  await state.openDocument("lineage-1", fence.begin());
   await flushPromises();
+  return { fence, state };
+}
+
+export async function openMatchingDocument(
+  getDocument: Mock,
+  item?: NativeExamItem,
+): Promise<DocumentState> {
+  const { state } = await openMatchingDocumentWithFence(getDocument, item);
   return state;
 }
 

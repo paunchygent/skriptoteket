@@ -158,13 +158,14 @@ async function openRetryDocument(
   assets: NativeExamAsset[] = [],
 ): Promise<DocumentState> {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(responseWith(items, assets));
+  const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
-  await state.openDocument("lineage-1");
+  await state.openDocument("lineage-1", fence.begin());
   await flushPromises();
   return state;
 }

@@ -86,13 +86,15 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
     "./exam-workspace/useExamWorkspaceDocument"
   );
   const { useExamWorkspaceAddress } = await import("./exam-workspace/useExamWorkspaceAddress");
+  const { createSyncFence } = await import("./exam-workspace/examWorkspaceSyncFence");
   const { serverExamWorkspaceStore } = await import("./exam-workspace/examWorkspaceStore");
   return {
     default: {
       name: "ProbeWorkspaceView",
       setup() {
+        const fence = createSyncFence();
         const doc = useExamWorkspaceDocument({
-          beginOpenGeneration: () => undefined,
+          getFence: () => fence,
           store: {
             ...serverExamWorkspaceStore,
             shared: {
@@ -104,8 +106,9 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
         useExamWorkspaceAddress({
           ...doc,
           // This probe owns no gate: its paths never return to the open exam
-          // while another open is pending, so both hooks stay unused.
-          noteRouteRequest: () => undefined,
+          // while another open is pending, so the return path stays unused.
+          // The token comes straight from the probe fence, which never retires.
+          noteRouteRequest: () => Promise.resolve(fence.begin()),
           reloadOpen: () => undefined,
         });
         watch(doc.summary, (value) => {

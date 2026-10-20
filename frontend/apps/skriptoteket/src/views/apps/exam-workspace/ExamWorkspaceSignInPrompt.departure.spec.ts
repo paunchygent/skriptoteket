@@ -109,7 +109,11 @@ async function openWith(
     },
   });
   const wrapper = mount(host, { attachTo: document.body, global: { plugins: [createPinia()] } });
-  expect(await editing.openDocument(original.lineage_id)).toBe(true);
+  const token = await editing.noteRouteRequest();
+  if (token === null) {
+    throw new Error("expected the route request to settle");
+  }
+  expect(await editing.openDocument(original.lineage_id, token)).toBe("installed");
   await flushPromises();
   return { editing, wrapper };
 }

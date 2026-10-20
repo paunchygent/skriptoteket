@@ -54,13 +54,14 @@ function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentRespo
 
 async function openParentDocument() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
+  const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
-  await state.openDocument("lineage-1");
+  await state.openDocument("lineage-1", fence.begin());
   await flushPromises();
   return state;
 }
@@ -127,10 +128,11 @@ describe("parents in useExamWorkspaceDocument", () => {
     const estimated = buildParentDocument();
     estimated.items = estimated.items.map((item) => ({ ...item, points_estimated: true }));
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
+    const fence = createSyncFence();
     const state = effectScope().run(() =>
-      useExamWorkspaceDocument({ beginOpenGeneration: () => undefined, store: serverExamWorkspaceStore }),
+      useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore }),
     )!;
-    await state.openDocument("lineage-1");
+    await state.openDocument("lineage-1", fence.begin());
     await flushPromises();
 
     state.updateItemPoints("item_002", 3);

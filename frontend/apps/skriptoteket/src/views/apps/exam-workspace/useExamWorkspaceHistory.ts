@@ -385,6 +385,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     depart: departure.depart,
     dropOwedSnapshots,
     flush,
+    /** What the in-flight store sent while its answer is unknown; the gate keeps it across retirements. */
+    inflightDocument: computed(() => storeHandler.inflightDocument.value),
     navigating: computed(() => navigating.value),
     /** The snapshot the editor stands on; null until the step list is loaded. */
     position: computed(() => position.value),

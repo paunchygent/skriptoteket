@@ -18,10 +18,9 @@
  *     printed-total accepts) in `useExamWorkspaceDocumentFields`, built on
  *     `editDocument` here.
  *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
- *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
- *     conversion merges and one-question retries through their own composables.
+ *     saved-exams list, AI suggestion arrivals, conversion merges and
+ *     one-question retries through their own composables.
  *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
- *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
  */
 
 import { computed, ref, shallowRef, watch } from "vue";
@@ -42,6 +41,7 @@ import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
+import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceRouteRequest";
 import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
@@ -75,8 +75,6 @@ export type ExamWorkspaceDocumentOptions = {
    * stored as its own step first; null when no such copy applies.
    */
   onEdit?: (structural: boolean, before: NativeExamDocument | null) => void;
-  /** Starts this route request's own generation before it awaits anything. */
-  beginOpenGeneration: () => void;
   /** The store every server call the document owns runs through. */
   store: ExamWorkspaceStore;
   /** True while another tab holds the edit lease: every edit entry refuses. */
@@ -125,8 +123,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /** The saved version the open copy stands on. */
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
-  /** Opens reading now; a newer route request never waits for an older open. */
-  const openingDocument = ref(0);
+  /** The current request's open is still reading; a retired open stops blocking at once. */
+  const openingToken = shallowRef<FenceToken | null>(null);
+  /** True while the held open token is still current; the fence generation is reactive, so a retire releases this. */
+  const isOpenReading = computed(() => openingToken.value !== null && isCurrent(openingToken.value));
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
     useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
@@ -182,7 +182,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       workspaceDocument,
       store,
     },
-    (lineageId) => openDocument(lineageId),
+    (lineageId) => openDocument(lineageId, resolveFence().begin()).then((outcome) => outcome === "installed"),
   );
   adoptConversionHolder = adoptConversion;
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
@@ -191,7 +191,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   const isOperationBusy = computed(
     () =>
       operationBusy.value ||
-      openingDocument.value > 0 ||
+      isOpenReading.value ||
       isImporting.value ||
       (isConverting.value && !isEditingConversion.value),
   );
@@ -218,11 +218,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     return openExam.value === opening;
   }
 
-  /**
-   * Capture rename ordering before the GET and reconcile in its caller's continuation.
-   * Installing an opening must not wait an extra microtask: other completions
-   * settling in the same turn must already see that the previous opening ended.
-   */
+  /** Capture rename ordering before the GET and reconcile in its caller's continuation. */
   function beginDocumentRead() {
     const reconcile = beginSummaryRead();
     return (response: ExamWorkspaceDocumentResponse): ExamWorkspaceDocumentResponse => ({
@@ -231,44 +227,52 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     });
   }
 
-  async function openDocument(lineageId: string): Promise<boolean> {
-    // A save, rename or retry in flight refuses an open; another open never does.
-    if (isOperationBusy.value && openingDocument.value === 0) {
-      return false;
+  /**
+   * Open the exam for the request's token: install while current, supersede
+   * while retired without touching state or toasting, fail on a current
+   * failure after toasting as today. A save, rename or retry in flight
+   * refuses an open; another open never does. The open holds its token while
+   * reading, so a retired open stops blocking and a completion clears only
+   * its own token.
+   */
+  async function openDocument(lineageId: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
+    if (!isCurrent(token)) {
+      return "superseded";
     }
-    openingDocument.value += 1;
-    options.beginOpenGeneration();
-    const fence = resolveFence();
-    const token = fence.begin();
+    if (isOperationBusy.value && !isOpenReading.value) {
+      return "failed";
+    }
+    openingToken.value = token;
     try {
       const reconcile = beginDocumentRead();
       const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
-      if (!fence.isCurrent(token)) {
-        return false;
+      if (!isCurrent(token)) {
+        return "superseded";
       }
       selectedItemId.value = null;
       applyResponse(token, response);
       keying.invalidateCopy();
-      return true;
+      return "installed";
     } catch (error) {
-      // A superseded open settles without a toast.
-      if (fence.isCurrent(token)) {
+      const current = isCurrent(token);
+      if (current) {
         toast.failure(
           isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
             ? OPEN_OUTDATED_COPY
             : OPEN_FAILURE_COPY,
         );
       }
-      return false;
+      return current ? "failed" : "superseded";
     } finally {
-      openingDocument.value -= 1;
+      if (openingToken.value === token) {
+        openingToken.value = null;
+      }
     }
   }
 
   /**
-   * Read the exam again. Also the conflict recovery of undo and the server
-   * commands. A 409 that arrives while an operation runs no longer skips the
-   * reload: it waits for the running operation to end instead. A retired
+   * Read the exam again, also the conflict recovery of undo and the server
+   * commands. A 409 during an operation waits for it to end; a retired
    * answer installs nothing.
    */
   async function reloadDocument(): Promise<void> {
@@ -356,10 +360,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     }
   }
 
-  /**
-   * The one path every item edit takes; a placeholder whose batch still converts is refused.
-   * A picture the edit removed takes its asset record with it.
-   */
+  /** The one path every item edit takes; a picture the edit removed takes its asset record with it. */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
@@ -420,10 +421,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  /**
-   * An edit of the whole copy. A structural edit (add, delete, reorder) is one
-   * undo step at once; typing waits for the pause like an item's text.
-   */
+  /** An edit of the whole copy: structural edits step at once, typing waits for the pause. */
   function editDocument(
     edit: (document: NativeExamDocument) => NativeExamDocument,
     selectId: string | null = null,
