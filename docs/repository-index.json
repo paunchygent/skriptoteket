@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9cfba779cff3f9cb74eb4081e189c2ffd110367caae69b55433639229ee117bc",
+  "source_set_digest": "978abf93622d64b67a76a0adb32de712bf800e3ab671ea313493135cc35e0695",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6908,7 +6908,7 @@
       "type": "task",
       "title": "With the gap tool on, a click on a gap turns it back into its words, any highlighted span becomes one gap, and one gap control replaces the Lucka button",
       "path": "docs/backlog/tasks/task-skript-40-04-13-with-the-gap-tool-on-a-click-on-a-gap-turns-it-back-into-its-words-any-highlighted-span-becomes-one-gap-and-one-gap-control-replaces-the-lucka-button.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6919,7 +6919,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 40-04-13 and 40-04-14 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 23bc9c5a approved d3a4b5dc in rereview 12 with no findings (root 01a155b5 evidence/reviews/23bc9c5a-rereview12-d3a4b5dc.md). Released on main f84eb85d; the pre-push suite passed 624 frontend files, 4312 tests. The Mac step 5 re-walk passed on staging at f84eb85d, 3 of 3 runs (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). Accepted residuals: ledger L12 and L15. Follow-up: TASK-SKRIPT-40-04-19 (cross-tab CSRF 403 on renew)."
       }
     },
     {
@@ -6927,7 +6930,7 @@
       "type": "task",
       "title": "The question editor toolbar has its own Ångra and Gör om, and every question edit autosaves after a short pause",
       "path": "docs/backlog/tasks/task-skript-40-04-14-the-question-editor-toolbar-has-its-own-ångra-and-gör-om-and-every-question-edit-autosaves-after-a-short-pause.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6938,7 +6941,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-20",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 40-04-13 and 40-04-14 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 23bc9c5a approved d3a4b5dc in rereview 12 with no findings (root 01a155b5 evidence/reviews/23bc9c5a-rereview12-d3a4b5dc.md). Released on main f84eb85d; the pre-push suite passed 624 frontend files, 4312 tests. The Mac step 5 re-walk passed on staging at f84eb85d, 3 of 3 runs (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). Accepted residuals: ledger L12 and L15. Follow-up: TASK-SKRIPT-40-04-19 (cross-tab CSRF 403 on renew)."
       }
     },
     {
@@ -7031,6 +7037,25 @@
         "decided_at": "2026-10-20",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-19",
+      "type": "task",
+      "title": "Two tabs that each hold an exam lock stop invalidating each other's CSRF token on every renew",
+      "path": "docs/backlog/tasks/task-skript-40-04-19-two-tabs-that-each-hold-an-exam-lock-stop-invalidating-each-other-s-csrf-token-on-every-renew.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

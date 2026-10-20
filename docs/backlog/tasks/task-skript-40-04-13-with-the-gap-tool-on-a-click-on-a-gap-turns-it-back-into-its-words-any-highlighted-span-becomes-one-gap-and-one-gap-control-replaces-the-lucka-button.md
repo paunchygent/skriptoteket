@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 40-04-13 and 40-04-14 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 23bc9c5a approved d3a4b5dc in rereview 12 with no findings (root 01a155b5 evidence/reviews/23bc9c5a-rereview12-d3a4b5dc.md). Released on main f84eb85d; the pre-push suite passed 624 frontend files, 4312 tests. The Mac step 5 re-walk passed on staging at f84eb85d, 3 of 3 runs (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). Accepted residuals: ledger L12 and L15. Follow-up: TASK-SKRIPT-40-04-19 (cross-tab CSRF 403 on renew).'
 task_kind: story
 acceptance_criteria:
   - With the gap tool on, clicking a gap turns it back into its first answer in one undo step and keeps its other answers hidden on that word; a tool click on the word makes the whole gap again; any highlighted span inside one paragraph becomes one gap; the gap tool switch is the only gap control

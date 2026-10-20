@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-20'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 40-04-13 and 40-04-14 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 23bc9c5a approved d3a4b5dc in rereview 12 with no findings (root 01a155b5 evidence/reviews/23bc9c5a-rereview12-d3a4b5dc.md). Released on main f84eb85d; the pre-push suite passed 624 frontend files, 4312 tests. The Mac step 5 re-walk passed on staging at f84eb85d, 3 of 3 runs (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). Accepted residuals: ledger L12 and L15. Follow-up: TASK-SKRIPT-40-04-19 (cross-tab CSRF 403 on renew).'
 task_kind: story
 acceptance_criteria:
   - Every edit is saved to the exam file in Mina filer after a 900 ms pause, or at once for structural edits, with no Spara button; Ångra and Gör om move the saved file with them; an edit made in another tab is never lost silently; the question toolbar can run the one workspace history
