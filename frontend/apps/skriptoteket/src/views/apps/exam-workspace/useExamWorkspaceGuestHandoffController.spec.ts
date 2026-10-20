@@ -206,14 +206,14 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     }
   });
 
-  it("3) permanent at start leaves a notice, no toast and no retry", async () => {
+  it("3) outdated format at start leaves the unreadable notice, no toast and no retry", async () => {
     const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft.mockRejectedValue(apiError(422, "DOCUMENT_SCHEMA_OUTDATED"));
     const { controller, scope } = startController({ lock, rejections, storage, teacher });
     const spies = toastSpies();
     try {
       await expect(controller.start()).resolves.toBeNull();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
       expect(spies.warning).not.toHaveBeenCalled();
       expect(spies.success).not.toHaveBeenCalled();
       expect(spies.failure).not.toHaveBeenCalled();
@@ -287,7 +287,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     }
   });
 
-  it("6b) vault_full retry can turn permanent with a new draft", async () => {
+  it("6b) vault_full retry can turn unreadable with a new draft", async () => {
     const { lock, rejections, storage, teacher } = await seedGuestHandoffHarness();
     teacher.importExamWorkspaceGuestDraft
       .mockRejectedValueOnce(apiError(422, "VALIDATION_ERROR", { reason: "vault_full" }))
@@ -298,7 +298,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       await expect(controller.start()).resolves.toBeNull();
       await controller.retry();
       expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
       expect(spies.warning).not.toHaveBeenCalled();
       expect(spies.success).not.toHaveBeenCalled();
       expect(spies.failure).not.toHaveBeenCalled();
@@ -343,7 +343,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       const [blob, filename] = download.mock.calls[0];
       expect(filename).toBe(`${draft.saved_document.title}.zip`);
       expect(blob.type).toBe("application/zip");
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
       expect(spies.failure).not.toHaveBeenCalled();
       const stored = await storage.load();
       if (stored === null) {
@@ -422,7 +422,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       expect(toastMessages(spies.failure)).toEqual([
         EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
       ]);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
     } finally {
       scope.stop();
     }
@@ -443,7 +443,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       expect(toastMessages(spies.failure)).toEqual([
         EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
       ]);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
     } finally {
       scope.stop();
     }
@@ -470,7 +470,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
       expect(toastMessages(spies.failure)).toEqual([
         EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY,
       ]);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
     } finally {
       scope.stop();
     }
@@ -494,13 +494,13 @@ describe("useExamWorkspaceGuestHandoffController", () => {
           }),
       };
       const pending = controller.download();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: true });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: true });
       expect(download).not.toHaveBeenCalled();
       vi.useRealTimers();
       release(await storage.load());
       await pending;
       expect(download).toHaveBeenCalledTimes(1);
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
     } finally {
       scope.stop();
     }
@@ -541,7 +541,7 @@ describe("useExamWorkspaceGuestHandoffController", () => {
     try {
       await expect(controller.start()).resolves.toBeNull();
       await controller.remove();
-      expect(controller.notice.value).toEqual({ reason: "permanent", busy: false });
+      expect(controller.notice.value).toEqual({ reason: "unreadable", busy: false });
       expect(rejections.read()).toEqual({ cursor: draft.cursor, reason: "permanent" });
       await expect(storage.load()).resolves.not.toBeNull();
     } finally {

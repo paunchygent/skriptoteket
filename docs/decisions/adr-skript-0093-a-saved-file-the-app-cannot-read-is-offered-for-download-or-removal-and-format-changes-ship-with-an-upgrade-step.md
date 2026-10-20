@@ -44,6 +44,9 @@ The user decided this rule on 2026-10-20 in the Hemma orchestrator session; it i
   step and a sample for every version from the oldest readable one up to the current one, and every
   sample reads into the current format. Before release no upgrade steps exist: the oldest readable
   version equals the current one, and the chain is empty.
+- **The browser.** The browser reads the same constants from a file generated from the Python
+  constants, and runs no upgrade steps. A guest draft held in the browser opens only when every
+  stored document is in the current version; otherwise it falls under the rule.
 
 ## Non-Decisions
 

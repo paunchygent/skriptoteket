@@ -37,12 +37,14 @@
 
 import { onScopeDispose, readonly, shallowRef } from "vue";
 import type { Ref } from "vue";
-import { strToU8, zipSync } from "fflate";
 
+import { isApiError } from "../../../api/client";
 import { useToast } from "../../../composables/useToast";
 import { useAuthStore } from "../../../stores/auth";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
+import { buildGuestDraftArchive } from "./examWorkspaceGuestDraftArchive";
+import { isGuestDraftReadable } from "./examWorkspaceGuestDraftReadability";
 import { GuestHandoffLockUnavailableError } from "./examWorkspaceGuestHandoffLock";
 import {
   runGuestHandoff,
@@ -62,7 +64,7 @@ export const GUEST_HANDOFF_RETRIES_EXHAUSTED_COPY =
 export const GUEST_HANDOFF_MANUAL_RETRY_FAILED_COPY =
   "Provet kunde inte flyttas till Mina filer just nu. Försök igen om en stund.";
 
-export type GuestHandoffNotice = { reason: "permanent" | "vault_full"; busy: boolean };
+export type GuestHandoffNotice = { reason: "permanent" | "vault_full" | "unreadable"; busy: boolean };
 
 export type GuestHandoffController = {
   notice: Readonly<Ref<GuestHandoffNotice | null>>;
@@ -96,6 +98,59 @@ export function useExamWorkspaceGuestHandoffController(
     session,
   };
 
+  /**
+   * Snapshot cursors whose handoff POST the server refused as an outdated
+   * format. The handoff runner reports every such refusal as `permanent`,
+   * so the controller watches the teacher POST itself to map an outdated
+   * draft to the unreadable notice instead.
+   */
+  const schemaOutdatedCursors = new Set<string>();
+
+  /**
+   * Map a rejected handoff to the notice reason: an outdated-format refusal
+   * (seen on the POST, or recorded for a draft the browser itself cannot
+   * read) shows the unreadable notice; every other permanent refusal keeps
+   * the permanent notice.
+   */
+  function toRejectedNoticeReason(
+    reason: "permanent" | "vault_full",
+    draft: ExamWorkspaceGuestDraft,
+  ): GuestHandoffNotice["reason"] {
+    if (reason === "vault_full") {
+      return "vault_full";
+    }
+    if (schemaOutdatedCursors.has(draft.cursor) || !isGuestDraftReadable(draft)) {
+      return "unreadable";
+    }
+    return "permanent";
+  }
+
+  /**
+   * Observe the teacher POST for outdated-format refusals without changing
+   * what the handoff runner posts, records or clears.
+   */
+  const innerTeacher = deps.teacher;
+  const observingTeacher: GuestHandoffDeps["teacher"] =
+    innerTeacher === null
+      ? null
+      : {
+          importExamWorkspaceGuestDraft: async (...args) => {
+            try {
+              return await innerTeacher.importExamWorkspaceGuestDraft(...args);
+            } catch (error) {
+              if (isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED") {
+                const [snapshotCursor] = args;
+                schemaOutdatedCursors.add(snapshotCursor);
+              }
+              throw error;
+            }
+          },
+        };
+
+  function handoffDeps(): GuestHandoffDeps {
+    return { ...deps, owner, teacher: observingTeacher };
+  }
+
   function abortCurrentAttempt(): void {
     currentAttempt?.abort();
   }
@@ -126,7 +181,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return;
     }
     if (outcome.kind === "lock_unavailable") {
@@ -153,7 +208,7 @@ export function useExamWorkspaceGuestHandoffController(
     currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
+      outcome = await runGuestHandoff(handoffDeps(), { signal: attempt.signal });
     } catch {
       outcome = { kind: "transient" };
     } finally {
@@ -189,7 +244,7 @@ export function useExamWorkspaceGuestHandoffController(
     currentAttempt = attempt;
     let outcome: GuestHandoffOutcome;
     try {
-      outcome = await runGuestHandoff({ ...deps, owner }, { signal: attempt.signal });
+      outcome = await runGuestHandoff(handoffDeps(), { signal: attempt.signal });
     } catch {
       outcome = { kind: "transient" };
     } finally {
@@ -203,7 +258,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return null;
     }
     if (outcome.kind === "lock_unavailable") {
@@ -242,15 +297,8 @@ export function useExamWorkspaceGuestHandoffController(
         toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
         return;
       }
-      const files: Record<string, Uint8Array> = {
-        "draft.json": strToU8(JSON.stringify(stored.draft, null, 2)),
-      };
-      for (const [id, blob] of Object.entries(stored.assets)) {
-        files[`assets/${id}`] = new Uint8Array(await blob.arrayBuffer());
-      }
-      const title = stored.draft.saved_document.title.trim();
-      const filename = `${title === "" ? "Prov" : title}.zip`;
-      downloadFn(new Blob([zipSync(files)], { type: "application/zip" }), filename);
+      const archive = await buildGuestDraftArchive(stored);
+      downloadFn(archive.blob, archive.filename);
     } catch {
       toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
     } finally {
@@ -326,7 +374,7 @@ export function useExamWorkspaceGuestHandoffController(
     let outcome: GuestHandoffOutcome;
     try {
       outcome = await runGuestHandoff(
-        { ...deps, owner },
+        handoffDeps(),
         { retryVaultFullOf: heldDraft?.cursor, signal: attempt.signal },
       );
     } catch {
@@ -345,7 +393,7 @@ export function useExamWorkspaceGuestHandoffController(
     }
     if (outcome.kind === "rejected") {
       heldDraft = outcome.draft;
-      notice.value = { reason: outcome.reason, busy: false };
+      notice.value = { reason: toRejectedNoticeReason(outcome.reason, outcome.draft), busy: false };
       return;
     }
     if (outcome.kind === "lock_unavailable") {

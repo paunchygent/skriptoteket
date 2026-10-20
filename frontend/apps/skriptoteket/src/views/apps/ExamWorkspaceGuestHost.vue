@@ -8,10 +8,12 @@
  *   browser, a stored draft reopens through the view's `?document=` address,
  *   and a hit guest limit surfaces the sign-in prompt. A signed-in visitor
  *   is sent to the signed-in workspace, which hands the draft off there.
- *   Every sign-in exit first departs through the guest view under its held
- *   editing lock, so signing in never abandons the working copy
- *   before its autosave; a failed departure keeps the guest view mounted with
- *   the inline failure copy.
+ *   A stored draft the app cannot read shows the shared file notice with
+ *   download or remove instead of the editor; only the explicit remove
+ *   deletes it. Every sign-in exit first departs through the guest view
+ *   under its held editing lock, so signing in never abandons the working
+ *   copy before its autosave; a failed departure keeps the guest view
+ *   mounted with the inline failure copy.
  *
  * Relationships:
  *   - Mounted by `curatedAppHostRegistry` for the public
@@ -20,26 +22,42 @@
  *     `ExamWorkspaceTeacherHost` does with the server store.
  */
 
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, shallowRef, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import * as publicExamWorkspaceApi from "../../api/publicExamWorkspace";
+import { useToast } from "../../composables/useToast";
 import { useAuthStore } from "../../stores/auth";
+import { triggerBrowserDownload } from "../../utils/browserDownload";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import ExamWorkspaceFileNotice from "./exam-workspace/ExamWorkspaceFileNotice.vue";
 import {
   GUEST_BROWSER_ONLY_NOTICE,
   GUEST_LIMIT_SIGN_IN,
 } from "./exam-workspace/examWorkspaceGuestCopy";
-import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
+import { buildGuestDraftArchive } from "./exam-workspace/examWorkspaceGuestDraftArchive";
+import { isGuestDraftReadable } from "./exam-workspace/examWorkspaceGuestDraftReadability";
+import {
+  createExamWorkspaceGuestDraftStorage,
+  type StoredGuestDraft,
+} from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
+import { EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY } from "./exam-workspace/examWorkspaceFileNoticeCopy";
 import { EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY } from "./exam-workspace/examWorkspaceSignIn";
 import ExamWorkspaceSignInPrompt from "./exam-workspace/ExamWorkspaceSignInPrompt.vue";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const limitReached = ref(false);
+/** The stored draft the app cannot open, held for download or explicit removal. */
+const unreadableStored = shallowRef<StoredGuestDraft | null>(null);
+/** True while the unreadable draft's zip is built or its record is removed. */
+const recoveryBusy = ref(false);
+const guestStorage = createExamWorkspaceGuestDraftStorage();
+
 /** True once the guest view has safely settled and left for the signed-in workspace. */
 const leaving = ref(false);
 /** The pending edit could not be settled, so the guest view stays mounted. */
@@ -113,8 +131,59 @@ onMounted(async () => {
   const lineageId = await guestStore.currentLineageId();
   if (lineageId) {
     await router.replace({ query: { ...route.query, document: lineageId } });
+    const stored = await guestStorage.load();
+    if (stored && stored.draft.lineage_id === lineageId && !isGuestDraftReadable(stored.draft)) {
+      unreadableStored.value = stored;
+    }
   }
 });
+
+/**
+ * Save the unreadable draft as the same zip the signed-in guest download
+ * saves. The stored record stays untouched; nothing is retried.
+ */
+async function downloadUnreadableDraft(): Promise<void> {
+  const held = unreadableStored.value;
+  if (held === null || recoveryBusy.value) {
+    return;
+  }
+  recoveryBusy.value = true;
+  try {
+    const current = await guestStorage.load();
+    if (current?.draft.cursor !== held.draft.cursor) {
+      toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+      return;
+    }
+    const archive = await buildGuestDraftArchive(current);
+    triggerBrowserDownload(archive.blob, archive.filename);
+  } catch {
+    toast.failure(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_FAILURE_COPY);
+  } finally {
+    recoveryBusy.value = false;
+  }
+}
+
+/**
+ * Delete the unreadable draft and its pictures from IndexedDB on the
+ * explicit click, then show the normal empty guest start: the notice
+ * clears, the document address clears, and the view mounts with no draft.
+ */
+async function removeUnreadableDraft(): Promise<void> {
+  const held = unreadableStored.value;
+  if (held === null || recoveryBusy.value) {
+    return;
+  }
+  recoveryBusy.value = true;
+  try {
+    await guestStorage.clearIf(held.draft.cursor);
+  } catch {
+    recoveryBusy.value = false;
+    return;
+  }
+  recoveryBusy.value = false;
+  unreadableStored.value = null;
+  await router.replace({ query: { ...route.query, document: undefined } });
+}
 </script>
 
 <template>
@@ -142,8 +211,15 @@ onMounted(async () => {
     >
       {{ EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY }}
     </p>
+    <ExamWorkspaceFileNotice
+      v-if="unreadableStored !== null"
+      reason="guest_unreadable"
+      :busy="recoveryBusy"
+      @download="downloadUnreadableDraft()"
+      @remove="removeUnreadableDraft()"
+    />
     <ExamWorkspaceView
-      v-if="!leaving"
+      v-if="!leaving && unreadableStored === null"
       ref="viewRef"
       :store="guestStore.store"
     />

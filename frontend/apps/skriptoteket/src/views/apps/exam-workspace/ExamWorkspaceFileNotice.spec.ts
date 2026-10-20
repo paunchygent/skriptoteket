@@ -19,6 +19,7 @@ import {
   EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME,
+  EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_RETRY_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY,
@@ -101,8 +102,33 @@ describe("ExamWorkspaceFileNotice", () => {
     expect(remove.text().trim()).toBe("");
   });
 
+  it("shows the older-format sentence with browser download and remove glyphs only", () => {
+    const wrapper = mount(ExamWorkspaceFileNotice, {
+      props: { busy: false, reason: "guest_unreadable" },
+    });
+
+    expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY,
+    );
+    const buttons = wrapper.findAll("button");
+    expect(buttons.map((button) => button.attributes("data-test"))).toEqual([
+      "exam-workspace-file-notice-download",
+      "exam-workspace-file-notice-remove",
+    ]);
+    expect(wrapper.find('[data-test="exam-workspace-file-notice-retry"]').exists()).toBe(false);
+    for (const button of buttons) {
+      expect(button.text().trim()).toBe("");
+    }
+    const download = wrapper.get('[data-test="exam-workspace-file-notice-download"]');
+    expect(download.attributes("title")).toBe(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME);
+    expect(download.attributes("aria-label")).toBe(EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME);
+    const remove = wrapper.get('[data-test="exam-workspace-file-notice-remove"]');
+    expect(remove.attributes("title")).toBe(EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME);
+    expect(remove.attributes("aria-label")).toBe(EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME);
+  });
+
   it("disables every button while busy", () => {
-    for (const reason of ["guest_permanent", "guest_vault_full", "saved_unreadable"] as const) {
+    for (const reason of ["guest_permanent", "guest_vault_full", "saved_unreadable", "guest_unreadable"] as const) {
       const wrapper = mount(ExamWorkspaceFileNotice, {
         props: { busy: true, reason },
       });

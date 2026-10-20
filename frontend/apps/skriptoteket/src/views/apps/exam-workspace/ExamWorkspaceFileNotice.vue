@@ -27,6 +27,7 @@ import {
   EXAM_WORKSPACE_FILE_NOTICE_DOWNLOAD_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_REMOVE_NAME,
+  EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY,
   EXAM_WORKSPACE_FILE_NOTICE_RETRY_NAME,
   EXAM_WORKSPACE_FILE_NOTICE_SAVED_REMOVE_NAME,
@@ -34,7 +35,7 @@ import {
 } from "./examWorkspaceFileNoticeCopy";
 
 const props = defineProps<{
-  reason: "guest_permanent" | "guest_vault_full" | "saved_unreadable";
+  reason: "guest_permanent" | "guest_vault_full" | "saved_unreadable" | "guest_unreadable";
   busy: boolean;
 }>();
 
@@ -50,7 +51,9 @@ const noticeText = computed(() =>
     ? EXAM_WORKSPACE_FILE_NOTICE_GUEST_VAULT_FULL_COPY
     : props.reason === "saved_unreadable"
       ? EXAM_WORKSPACE_FILE_NOTICE_SAVED_UNREADABLE_COPY
-      : EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
+      : props.reason === "guest_unreadable"
+        ? EXAM_WORKSPACE_FILE_NOTICE_GUEST_UNREADABLE_COPY
+        : EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
 );
 
 /** The remove name: a saved exam is removed from Mina filer, a draft from the browser. */

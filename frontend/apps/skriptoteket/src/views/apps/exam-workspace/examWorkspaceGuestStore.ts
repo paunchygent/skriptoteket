@@ -48,11 +48,9 @@ import {
   retainDeclaredAssets,
 } from "./examWorkspaceGuestStoreCommit";
 import {
-  conflictError,
-  editLeaseHeldError,
-  notFoundError,
-  refusalError,
+  conflictError, editLeaseHeldError, notFoundError, outdatedGuestDocumentError, refusalError,
 } from "./examWorkspaceGuestStoreErrors";
+import { isGuestDraftReadable } from "./examWorkspaceGuestDraftReadability";
 import type { GuestPublicApi } from "./examWorkspaceGuestLimitApi";
 import { wrapGuestPublicApiForLimit } from "./examWorkspaceGuestLimitApi";
 import type { ExamWorkspaceSharedStore, ExamWorkspaceStore } from "./examWorkspaceStore";
@@ -166,6 +164,7 @@ export function createGuestExamWorkspaceStore(
   const shared: ExamWorkspaceSharedStore = {
     async getExamWorkspaceDocument(lineageId) {
       const stored = await loadStored(lineageId);
+      if (!isGuestDraftReadable(stored.draft)) { throw outdatedGuestDocumentError(); }
       mountAssets(stored);
       return guestDocumentResponse(stored.draft);
     },

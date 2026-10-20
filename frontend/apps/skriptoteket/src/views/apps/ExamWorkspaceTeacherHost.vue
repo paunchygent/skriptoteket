@@ -21,10 +21,11 @@
  *     before the view opens the exam named by `?document=<lineage_id>`, and
  *     renders `ExamWorkspaceFileNotice` above the view while the
  *     controller holds a rejection, mapping `permanent` to the
- *     refused-draft reason and `vault_full` to the full-Mina-filer reason.
+ *     refused-draft reason, `unreadable` to the older-format reason and
+ *     `vault_full` to the full-Mina-filer reason.
  */
 
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
@@ -46,6 +47,23 @@ const handoff = useExamWorkspaceGuestHandoffController({
 });
 const handoffSettled = ref(false);
 
+/**
+ * Map the controller's handoff reason to the shared file notice reason: an
+ * outdated-format refusal shows the older-format sentence with the same
+ * download and remove, every other permanent refusal the refused-draft
+ * sentence, and a full Mina filer the vault sentence.
+ */
+const noticeReason = computed(() => {
+  const reason = handoff.notice.value?.reason;
+  if (reason === "vault_full") {
+    return "guest_vault_full";
+  }
+  if (reason === "unreadable") {
+    return "guest_unreadable";
+  }
+  return "guest_permanent";
+});
+
 onMounted(async () => {
   try {
     const lineageId = await handoff.start();
@@ -65,7 +83,7 @@ onMounted(async () => {
   >
     <ExamWorkspaceFileNotice
       v-if="handoff.notice.value"
-      :reason="handoff.notice.value.reason === 'permanent' ? 'guest_permanent' : 'guest_vault_full'"
+      :reason="noticeReason"
       :busy="handoff.notice.value.busy"
       @download="handoff.download()"
       @remove="handoff.remove()"
