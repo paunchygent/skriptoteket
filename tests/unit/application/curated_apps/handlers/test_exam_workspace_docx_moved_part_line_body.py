@@ -141,14 +141,20 @@ def test_part_line_rendered_in_its_own_child_entry_leaves_its_body(kind: str):
 
 
 @pytest.mark.parametrize("separator", [" ", "\n"])
-def test_part_line_merged_into_a_stem_paragraph_leaves_the_body(separator: str):
-    # One reply paragraph holds the DEL 2 line and the noun stem: no alignment separates them,
-    # so the noun's body is its own source paragraph, never the reply's merged text.
+@pytest.mark.parametrize("rendered", [_DEL_2, "Del 2: Verb", "Del 2:"])
+@pytest.mark.parametrize("trailing", [False, True])
+def test_part_line_merged_into_a_stem_paragraph_leaves_the_body(
+    separator: str, rendered: str, trailing: bool
+):
+    # One reply paragraph holds the DEL 2 line, whole or a fragment, beside the noun stem: no
+    # alignment separates them, so the noun's body is its own source paragraph, never the
+    # reply's merged text.
+    merged = f"{_NOUN}{separator}{rendered}" if trailing else f"{rendered}{separator}{_NOUN}"
     document = _published(
         _noun_and_verb("heading"),
         {"q1": ("body:0001",), "q2": ("body:0003",)},
         [
-            _entry(["body:0001", "body:0002"], (f"{_DEL_2}{separator}{_NOUN}",), 4),
+            _entry(["body:0001", "body:0002"], (merged,), 4),
             _entry(["body:0003"], (_VERB,), 2),
         ],
     )
@@ -157,6 +163,26 @@ def test_part_line_merged_into_a_stem_paragraph_leaves_the_body(separator: str):
     assert noun.plain_text_lines() == (_NOUN,)
     assert verb.plain_text_lines() == (_VERB,)
     assert [body_text_lines(p.instruction) for p in document.parents] == [("Del 2: Verb",)]
+
+
+@pytest.mark.parametrize("rendered", ["Del 2: Verb", "Del 2:"])
+def test_part_fragment_merged_into_its_own_child_stem_leaves_the_body(rendered: str):
+    # The verb entry renders a fragment of the line that opens its parent inside its own stem
+    # paragraph: the verb's body is its own source paragraph and the parent keeps the line.
+    document = _published(
+        _noun_and_verb("heading"),
+        {"q1": ("body:0001",), "q2": ("body:0003",)},
+        [
+            _entry(["body:0001"], (_NOUN,), 4),
+            _entry(["body:0002", "body:0003"], (f"{rendered} {_VERB}",), 2),
+        ],
+    )
+
+    noun, verb = sorted(document.items, key=lambda item: item.sequence)
+    assert noun.plain_text_lines() == (_NOUN,)
+    assert verb.plain_text_lines() == (_VERB,)
+    assert [body_text_lines(p.instruction) for p in document.parents] == [("Del 2: Verb",)]
+    assert (noun.points, verb.points) == (4, 2)
 
 
 def test_own_stem_paragraph_the_part_line_repeats_stays_in_the_item():

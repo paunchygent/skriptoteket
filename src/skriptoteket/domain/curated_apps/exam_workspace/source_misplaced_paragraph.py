@@ -50,14 +50,24 @@ def is_released(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
 
 
 def holds_released(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
-    """Whether a reply paragraph holds a whole released part line beside other text, where
-    this item's own source holds no such text: the part's source shares the paragraph with the
-    question's, and no source alignment separates them (review F1)."""
+    """Whether a reply paragraph holds released part-line source beside other text, where this
+    item's own source holds no such text: the part's source shares the paragraph with the
+    question's, and no source alignment separates them (review F1). The released source is a
+    whole released line anywhere in the paragraph, or a fragment of one that opens or closes
+    the paragraph at a word boundary."""
     text = "".join(segment.text for segment in paragraph.segments if segment.kind == "text")
     wanted, _ = normalized_source_index(text)
+    lines = tuple(line for line in source.released_normalized if line)
+    if any(line in wanted and line not in source.normalized for line in lines):
+        return True
+    words = wanted.split(" ")
+    edges = (
+        edge
+        for cut in range(1, len(words))
+        for edge in (" ".join(words[:cut]), " ".join(words[cut:]))
+    )
     return any(
-        line and line in wanted and line not in source.normalized
-        for line in source.released_normalized
+        edge not in source.normalized and any(edge in line for line in lines) for edge in edges
     )
 
 
