@@ -58,7 +58,6 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             workspace_course_key=job.workspace_course_key,
             workspace_request_json=job.workspace_request_json,
             workspace_suggestions_json=job.workspace_suggestions_json,
-            retry_identity=job.retry_identity,
             attempts=job.attempts,
             max_attempts=job.max_attempts,
             available_at=job.available_at,

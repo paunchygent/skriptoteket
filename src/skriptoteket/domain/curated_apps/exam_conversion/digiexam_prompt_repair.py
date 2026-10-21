@@ -7,8 +7,7 @@ Purpose:
     deterministic and provider-free.
 
 Relationships:
-    - Consumed by `domain.digiexam_embedded_assets` and
-      `domain.digiexam_examnet_pdf_prompt`.
+    - Consumed by `domain.digiexam_embedded_assets`.
     - Carries no service, renderer, or provider coupling.
 """
 
@@ -22,9 +21,6 @@ MISSING_PROMPT_IMAGE_MESSAGE_TEMPLATE = (
     "Bilden i fråga {question_number} saknas. Lägg till den innan du använder provet."
 )
 PROMPT_IMAGE_PLACEHOLDER_LINE = "Bild saknas – lägg till bilden innan du använder provet."
-PROMPT_IMAGE_PLACEHOLDER_HTML = (
-    f'<span class="missing-image-placeholder">{PROMPT_IMAGE_PLACEHOLDER_LINE}</span>'
-)
 
 MISSING_QUESTION_TITLE_MESSAGE_TEMPLATE = (
     "Fråga {question_number} saknade titel. "
