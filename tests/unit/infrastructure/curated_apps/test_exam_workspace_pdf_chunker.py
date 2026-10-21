@@ -149,6 +149,45 @@ def test_a_bottom_line_that_does_not_repeat_is_kept() -> None:
     assert "Svar: ja" in _texts(chunks)
 
 
+@pytest.mark.parametrize(
+    "ending",
+    [" och förklara resonemanget.", ""],
+    ids=["mention-in-middle", "mention-at-end"],
+)
+def test_questions_that_name_a_page_are_not_page_furniture(ending: str) -> None:
+    body = "".join(
+        f'<section style="page-break-before: {"auto" if page == 1 else "always"}">'
+        f"<p>{page}. Läs sida {10 + page}{ending}</p>"
+        f"<p>Unik svarstext för uppgift {page}.</p></section>"
+        for page in range(1, 4)
+    )
+    chunks = _chunks(body, css="body { margin: 0; }")
+
+    assert _texts(chunks) == [
+        text
+        for page in range(1, 4)
+        for text in (
+            f"{page}. Läs sida {10 + page}{ending}",
+            f"Unik svarstext för uppgift {page}.",
+        )
+    ]
+
+
+def test_a_footer_that_names_its_page_is_dropped_and_keeps_its_fixed_numbers() -> None:
+    body = "".join(
+        f'<p style="page-break-before: {"auto" if page == 1 else "always"}">'
+        f"Fråga {page}. Svara på frågan.</p>"
+        for page in range(1, 4)
+    )
+    chunks = _chunks(
+        body,
+        css='@page { @bottom-center { content: "Engelska 1 HT26, sida " counter(page)'
+        ' " av " counter(pages); font-size: 9pt; } }',
+    )
+
+    assert _texts(chunks) == [f"Fråga {page}. Svara på frågan." for page in range(1, 4)]
+
+
 def test_two_columns_read_left_column_then_right_after_the_full_width_heading() -> None:
     paragraphs = "".join(
         f"<p>Kolumnstycke {index} med lite text som fyller ut kolumnen ordentligt.</p>"

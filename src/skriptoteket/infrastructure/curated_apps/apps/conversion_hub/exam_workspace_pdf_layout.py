@@ -34,9 +34,15 @@ _PAGE_NUMBER = re.compile(
 )
 _DIGITS = re.compile(r"\d+")
 # A header or footer line that names its page, such as "Engelska 1, sida 3 av 5".
+# The counter only reads as pagination at the start or end of the line; a mention in the
+# middle of a line is ordinary text, such as a question naming a page ("Läs sida 11 och
+# förklara"). Spaces and punctuation (",", "–", "-", "|", ".") may sit next to it.
+_PAGE_COUNTER = (
+    r"(?:\b(?:sida|sid\.|page|s\.)\s*\d{1,3}(?:\s*(?:av|of|/)\s*\d{1,3})?"
+    r"|\b\d{1,3}\s*(?:av|of|/)\s*\d{1,3})"
+)
 _PAGE_MENTION = re.compile(
-    r"\b(?:sida|sid\.|page|s\.)\s*\d{1,3}\b|\b\d{1,3}\s*(?:av|of|/)\s*\d{1,3}\b",
-    re.IGNORECASE,
+    rf"^[\s,–\-.|]*{_PAGE_COUNTER}|{_PAGE_COUNTER}[\s,–\-.|]*$", re.IGNORECASE
 )
 
 # Page-furniture band: the outer share of the page height where headers and footers sit,
@@ -364,13 +370,14 @@ def _reading_order(items: list[PdfItem]) -> list[PdfItem]:
 
 
 def _furniture_key(line: PdfLine) -> str:
-    """The text a repeated line keeps on every page; only a page mention's numbers vary.
+    """The text a repeated line keeps on every page; only a page counter's numbers vary.
 
     "Fråga 2" at the top of page 2 and "Fråga 3" at the top of page 3 are questions, so
-    numbers count as page numbers only on a line that names its page.
+    only the numbers of a page counter at the start or end of the line may differ
+    between pages; every other number stays as it is.
     """
     text = " ".join(line.text.lower().split())
-    return _DIGITS.sub("#", text) if _PAGE_MENTION.search(text) else text
+    return _PAGE_MENTION.sub(lambda match: _DIGITS.sub("#", match.group()), text)
 
 
 def _furniture_candidates(items: Sequence[PdfItem], height: float) -> list[PdfLine]:
