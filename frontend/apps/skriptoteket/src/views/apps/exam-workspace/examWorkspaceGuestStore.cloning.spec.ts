@@ -75,7 +75,7 @@ async function startBlank(context: CloningStoreSetup): Promise<void> {
     document: exam("Original"),
     export_blockers: [],
   });
-  await context.store.startBlank();
+  await context.store.startBlank(null);
 }
 
 describe("examWorkspaceGuestStore reactive snapshots", () => {

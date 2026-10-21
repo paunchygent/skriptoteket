@@ -20,7 +20,7 @@ describe("ExamWorkspaceHeader layout", () => {
     const wrapper = mountHeader();
     const order = [
       "exam-workspace-title", "exam-workspace-rename", "exam-workspace-meta", "exam-workspace-details",
-      "exam-workspace-new", "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
+      "exam-workspace-new-exam", "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
       "exam-workspace-import", "exam-workspace-print-preview-toggle", "exam-workspace-suggest-all",
       "exam-workspace-save-state",
     ];
@@ -103,7 +103,7 @@ describe("ExamWorkspaceHeader layout", () => {
     const command = closed.get('[data-test="exam-workspace-details"]');
     expect(closed.get('[role="toolbar"]').find("button").element).toBe(command.element);
     expect(command.element.nextElementSibling?.classList.contains("xw-toolsep")).toBe(true);
-    expect(command.element.nextElementSibling?.nextElementSibling).toBe(closed.get('[data-test="exam-workspace-new"]').element);
+    expect(command.element.nextElementSibling?.nextElementSibling).toBe(closed.get('[data-test="exam-workspace-new-exam"]').element);
     expect(command.text()).toBe("Uppgifter");
     expect(command.attributes("title")).toBe("Provets uppgifter");
     expect(command.attributes("aria-label")).toBe("Provets uppgifter");

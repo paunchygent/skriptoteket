@@ -184,5 +184,6 @@ export async function startBlank(
     document: exam(title),
     export_blockers: [],
   });
-  return await setup.store.startBlank();
+  const current = await setup.storage.load();
+  return await setup.store.startBlank(current?.draft.cursor ?? null);
 }

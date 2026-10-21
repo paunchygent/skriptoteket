@@ -99,7 +99,7 @@ describe("ExamWorkspaceView guest mode intake", () => {
       "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.",
     );
     expect(wrapper.find('[data-test="exam-workspace-sign-in-prompt"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-new"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-new-exam"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Word (.docx)");
     expect(wrapper.text()).toContain("DigiExam (.dxe)");
     expect(wrapper.text()).toContain("QTI (.zip)");
@@ -110,7 +110,7 @@ describe("ExamWorkspaceView guest mode intake", () => {
     expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(false);
     expect(document.querySelector("#exam-workspace-import-course")).toBeNull();
 
-    await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     expect(publicMocks.createPublicExamWorkspaceBlank).toHaveBeenCalledTimes(1);

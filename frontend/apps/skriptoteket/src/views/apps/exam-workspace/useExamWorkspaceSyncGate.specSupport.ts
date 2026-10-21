@@ -132,6 +132,7 @@ export function createGate(): SyncGateHarness {
       counts.abandonedAttempts += 1;
     },
     beginCopy: () => null,
+    beginNewExam: () => null,
     claimSelectedLease: () => undefined,
     confirmedCopy: () => flags.confirmedCopy,
     desiredCopy: () => flags.desiredCopy,
@@ -166,6 +167,7 @@ export function createGate(): SyncGateHarness {
     installReplacementDocument: () => undefined,
     installedSource: () => null,
     notifyCopyFailed: () => undefined,
+    notifyNewExamFailed: () => undefined,
     notifyReloadFailed: () => {
       counts.reloadFailures += 1;
     },

@@ -10,8 +10,10 @@
  *   installed source is read from the exam in front of the teacher, never
  *   cached: external opens land there too. A route-open
  *   intent carries its lineage; Spara som carries the captured source lineage
- *   and the requested name until its response supplies the new lineage.
- *   Request-object identity tells Y1 from Y2; lineage equality never does.
+ *   and the requested name until its response supplies the new lineage; Nytt
+ *   prov carries the captured source and the history cursor of the draft its
+ *   D9 check read. Request-object identity tells Y1 from
+ *   Y2 when Z intervenes; lineage equality is never request identity.
  *   Replacing the slot resolves its former caller as superseded at once;
  *   callers never wait in a queue.
  *
@@ -53,17 +55,28 @@
 
 import type { FenceToken } from "./examWorkspaceSyncFence";
 import { isCopyNameTaken } from "./useExamWorkspaceSave";
+import {
+  createNewExamEntry,
+  createRouteEntry,
+  createSaveAsEntry,
+  holdsCopyBusy,
+  isDuplicateNewExam,
+  isDuplicateRoute,
+  isDuplicateSaveAs,
+  resolveReplaced,
+  resolveTerminated,
+} from "./examWorkspaceReplacementEntries";
 import type {
+  ExamWorkspaceNewExamOutcome,
   ExamWorkspaceReplacementDeps,
   ExamWorkspaceReplacementDesired,
+  ExamWorkspaceReplacementNewExamEntry,
   ExamWorkspaceReplacementRouteEntry,
   ExamWorkspaceReplacementSaveAsEntry,
   ExamWorkspaceReplacementSelected,
   ExamWorkspaceRouteOpenOutcome,
   ExamWorkspaceSaveAsOutcome,
 } from "./examWorkspaceReplacementTypes";
-
-
 
 export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps) {
   /** The single latest-intent slot: one immutable request object, or none. */
@@ -92,17 +105,7 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     if (current === null) {
       return;
     }
-    switch (current.kind) {
-      case "route":
-        current.resolve("superseded");
-        break;
-      case "saveAs":
-        // Spara som knows no superseded outcome: an obsolete copy never runs.
-        current.resolve("failed");
-        break;
-      case "recover":
-        break;
-    }
+    resolveReplaced(current);
   }
 
   /** Release the running selection's busy hold; a retired read stops blocking
@@ -110,7 +113,7 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
   function retireSelected(): void {
     const current = selected;
     selected = null;
-    if (current !== null && current.entry.kind === "saveAs") {
+    if (current !== null && holdsCopyBusy(current.entry)) {
       deps.releaseCopyBusy();
     }
   }
@@ -155,23 +158,11 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     desired = null;
     selected = null;
     stage = "idle";
-    if (
-      (entry !== null && entry.kind === "saveAs") ||
-      (running !== null && running.entry.kind === "saveAs")
-    ) {
+    if ((entry !== null && holdsCopyBusy(entry)) || (running !== null && holdsCopyBusy(running.entry))) {
       deps.releaseCopyBusy();
     }
     if (entry !== null) {
-      switch (entry.kind) {
-        case "route":
-          entry.resolve("failed");
-          break;
-        case "saveAs":
-          entry.resolve("failed");
-          break;
-        case "recover":
-          break;
-      }
+      resolveTerminated(entry);
     }
     if (publishSource) {
       deps.projectAddress(deps.installedSource());
@@ -186,8 +177,9 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     }
     if (!deps.isEditing()) {
       // A copy never starts outside editing: Spara som stores first, and no
-      // store runs while the gate does not admit writes.
-      if (entry.kind === "saveAs") {
+      // store runs while the gate does not admit writes. Nytt prov over an
+      // open source ends the same way; over no source it selects at once.
+      if (entry.kind === "saveAs" || (entry.kind === "newExam" && entry.intent.source !== null)) {
         terminateDesired(false);
         return;
       }
@@ -225,7 +217,7 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     }
     if (stage === "running") {
       const entry = desired;
-      if (entry.kind === "saveAs") {
+      if (entry.kind === "saveAs" || entry.kind === "newExam") {
         // A copy never starts behind a running replacement.
         terminateDesired(false);
         return;
@@ -339,16 +331,27 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     entry.resolve("failed");
   }
 
-  async function runCopy(entry: ExamWorkspaceReplacementSaveAsEntry, token: FenceToken): Promise<void> {
-    const intent = entry.intent;
+  async function runCopy(
+    entry: ExamWorkspaceReplacementSaveAsEntry | ExamWorkspaceReplacementNewExamEntry,
+    token: FenceToken,
+  ): Promise<void> {
     if (!isSelected(entry, token)) {
       return;
     }
-    const posting = deps.beginCopy(intent.source, intent.name);
+    const posting =
+      entry.kind === "saveAs"
+        ? deps.beginCopy(entry.intent.source, entry.intent.name)
+        : deps.beginNewExam(entry.intent.expectedCursor);
     if (posting === null) {
+      // The begin guards refused: the copy busy was never held, so the
+      // source stays editable with its work intact. A refused new exam
+      // reports once, like a failed one; a refused Spara som stays silent.
       if (isSelected(entry, token)) {
         finishSelected(entry);
         entry.resolve("failed");
+        if (entry.kind === "newExam") {
+          deps.notifyNewExamFailed();
+        }
       }
       return;
     }
@@ -360,11 +363,16 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     }
     if (settled.kind === "failed") {
       finishSelected(entry);
-      const taken = isCopyNameTaken(settled.error);
-      entry.resolve(taken ? "name_taken" : "failed");
-      if (!taken) {
-        deps.notifyCopyFailed();
+      if (entry.kind === "saveAs") {
+        const taken = isCopyNameTaken(settled.error);
+        entry.resolve(taken ? "name_taken" : "failed");
+        if (!taken) {
+          deps.notifyCopyFailed();
+        }
+        return;
       }
+      entry.resolve("failed");
+      deps.notifyNewExamFailed();
       return;
     }
     // Current-copy success adopts its response through the same opening
@@ -377,7 +385,11 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     adoptSelected(lineageId);
     finishSelected(entry);
     deps.projectAddress(lineageId);
-    entry.resolve("saved");
+    if (entry.kind === "saveAs") {
+      entry.resolve("saved");
+    } else {
+      entry.resolve("created");
+    }
   }
 
   /**
@@ -388,27 +400,14 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     if (deps.isDisposed()) {
       return Promise.resolve("superseded");
     }
-    const current = desired;
-    if (current !== null) {
-      switch (current.kind) {
-        case "route":
-          if (current.intent.lineage === lineageId) {
-            return current.promise;
-          }
-          break;
-        case "saveAs":
-        case "recover":
-          break;
-      }
+    if (isDuplicateRoute(desired, lineageId)) {
+      return desired.promise;
     }
     replaceDesired();
-    let resolve: (outcome: ExamWorkspaceRouteOpenOutcome) => void = () => undefined;
-    const promise = new Promise<ExamWorkspaceRouteOpenOutcome>((run) => {
-      resolve = run;
-    });
-    desired = { intent: { kind: "route", lineage: lineageId }, kind: "route", promise, resolve };
+    const entry = createRouteEntry(lineageId);
+    desired = entry;
     advance();
-    return promise;
+    return entry.promise;
   }
 
   /**
@@ -422,27 +421,36 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     if (deps.isDisposed() || origin === null) {
       return Promise.resolve("failed");
     }
-    const current = desired;
-    if (current !== null) {
-      switch (current.kind) {
-        case "saveAs":
-          if (current.intent.source === origin && current.intent.name === name) {
-            return current.promise;
-          }
-          break;
-        case "route":
-        case "recover":
-          break;
-      }
+    if (isDuplicateSaveAs(desired, origin, name)) {
+      return desired.promise;
     }
     replaceDesired();
-    let resolve: (outcome: ExamWorkspaceSaveAsOutcome) => void = () => undefined;
-    const promise = new Promise<ExamWorkspaceSaveAsOutcome>((run) => {
-      resolve = run;
-    });
-    desired = { intent: { kind: "saveAs", source: origin, name }, kind: "saveAs", promise, resolve };
+    const entry = createSaveAsEntry(origin, name);
+    desired = entry;
     advance();
-    return promise;
+    return entry.promise;
+  }
+
+  /**
+   * Submit a Nytt prov intent. The source is settled behind the shared
+   * barrier and the editor locked before anything changes; the guest's
+   * browser slot is replaced only while it still holds exactly the draft
+   * the D9 check read. Recorded synchronously before any await; a duplicate
+   * submit while the same newExam entry is desired returns its promise.
+   */
+  function submitNewExam(expectedCursor: string | null): Promise<ExamWorkspaceNewExamOutcome> {
+    const origin = deps.installedSource();
+    if (deps.isDisposed()) {
+      return Promise.resolve("failed");
+    }
+    if (isDuplicateNewExam(desired, origin, expectedCursor)) {
+      return desired.promise;
+    }
+    replaceDesired();
+    const entry = createNewExamEntry(origin, expectedCursor);
+    desired = entry;
+    advance();
+    return entry.promise;
   }
 
   /** A lifecycle event retired the source generation: the pending barrier or
@@ -473,6 +481,7 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     dispose,
     notifyPageHidden,
     notifySourceRetired,
+    submitNewExam,
     submitRoute,
     submitSaveAs,
   };

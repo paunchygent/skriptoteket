@@ -27,7 +27,7 @@ useDialogFocus(frame, {
   modal: () => true,
   takesFocus: () => true,
   initialFocus: () => cancelButton.value,
-  fallbackFocus: () => document.querySelector<HTMLElement>('[data-test="exam-workspace-new"]'),
+  fallbackFocus: () => document.querySelector<HTMLElement>('[data-test="exam-workspace-new-exam"]'),
   onClose: () => emit("cancel"),
 });
 </script>
@@ -45,7 +45,7 @@ useDialogFocus(frame, {
     :aria-labelledby="`${id}-title`"
     :aria-describedby="`${id}-body`"
     tabindex="-1"
-    data-test="exam-workspace-new-confirm"
+    data-test="exam-workspace-new-exam-confirm"
   >
     <h2 :id="`${id}-title`">
       Nytt prov
@@ -61,7 +61,7 @@ useDialogFocus(frame, {
         ref="cancelButton"
         type="button"
         class="xw-btn"
-        data-test="exam-workspace-new-confirm-cancel"
+        data-test="exam-workspace-new-exam-confirm-cancel"
         @click="emit('cancel')"
       >
         Avbryt
@@ -69,7 +69,7 @@ useDialogFocus(frame, {
       <button
         type="button"
         class="xw-btn xw-btn--primary"
-        data-test="exam-workspace-new-confirm-replace"
+        data-test="exam-workspace-new-exam-confirm-replace"
         @click="emit('replace')"
       >
         Ersätt

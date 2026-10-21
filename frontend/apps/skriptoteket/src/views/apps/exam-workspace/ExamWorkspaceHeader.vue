@@ -191,7 +191,7 @@ function handleSuggestAll(): void {
         class="xw-cmd"
         aria-label="Nytt prov"
         title="Skapa ett nytt prov"
-        data-test="exam-workspace-new"
+        data-test="exam-workspace-new-exam"
         :disabled="newExamBusy"
         @click="emit('newExam')"
       >

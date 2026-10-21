@@ -2,19 +2,16 @@
  * Exam workspace new-exam intake (TASK-SKRIPT-40-04-21).
  *
  * Expected behavior:
- *   `createNewExam` posts through the teacher side when one is present and
- *   starts the guest draft otherwise, returning the opened lineage in both
- *   cases and null when neither side can create. `examWorkspaceDraftHasContent`
- *   reports the blank shape as empty and every single content signal as
- *   content, so a wrong "empty" never discards a guest's work.
+ *   `examWorkspaceDraftHasContent` reports the blank shape as empty and every
+ *   single content signal as content, so a wrong "empty" never discards a
+ *   guest's work.
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import { blankDocument, keylessItem, textBody } from "../ExamWorkspaceGuestMode.specSupport";
-import { createNewExam, examWorkspaceDraftHasContent } from "./examWorkspaceNewExam";
-import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { examWorkspaceDraftHasContent } from "./examWorkspaceNewExam";
 
 function emptyItem(): NativeExamItem {
   return {
@@ -28,45 +25,6 @@ function emptyItem(): NativeExamItem {
 function emptyDraft(): NativeExamDocument {
   return { ...blankDocument(), header: { tags: [] }, instructions: [], title: "", items: [emptyItem()] };
 }
-
-function teacherStore(createExamWorkspaceBlank: () => Promise<{ lineage_id: string }>): ExamWorkspaceStore {
-  return {
-    shared: {} as ExamWorkspaceStore["shared"],
-    teacher: {
-      createExamWorkspaceBlank,
-    } as unknown as ExamWorkspaceStore["teacher"],
-    guest: null,
-  };
-}
-
-describe("createNewExam", () => {
-  it("posts through the teacher side and returns its lineage", async () => {
-    const createExamWorkspaceBlank = vi.fn().mockResolvedValue({ lineage_id: "lineage-new" });
-    const lineageId = await createNewExam(teacherStore(createExamWorkspaceBlank));
-    expect(createExamWorkspaceBlank).toHaveBeenCalledTimes(1);
-    expect(lineageId).toBe("lineage-new");
-  });
-
-  it("starts the guest draft when no teacher side is present", async () => {
-    const startBlank = vi.fn().mockResolvedValue("guest-lineage");
-    const store: ExamWorkspaceStore = {
-      shared: {} as ExamWorkspaceStore["shared"],
-      teacher: null,
-      guest: { startBlank, startFromQti: vi.fn() },
-    };
-    await expect(createNewExam(store)).resolves.toBe("guest-lineage");
-    expect(startBlank).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns null when neither side can create", async () => {
-    const store: ExamWorkspaceStore = {
-      shared: {} as ExamWorkspaceStore["shared"],
-      teacher: null,
-      guest: null,
-    };
-    await expect(createNewExam(store)).resolves.toBeNull();
-  });
-});
 
 describe("examWorkspaceDraftHasContent", () => {
   it("reports the blank shape as empty", () => {

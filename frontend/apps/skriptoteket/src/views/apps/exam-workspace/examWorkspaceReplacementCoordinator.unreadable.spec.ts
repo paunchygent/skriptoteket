@@ -40,6 +40,7 @@ function createHarness(openOutcome: ExamWorkspaceRouteOpenOutcome) {
     abandonAttempt: () => undefined,
     adoptSelectedOpening: () => undefined,
     beginCopy: () => null,
+    beginNewExam: () => null,
     captureKept: () => undefined,
     claimSelectedLease: () => undefined,
     fence,
@@ -51,6 +52,7 @@ function createHarness(openOutcome: ExamWorkspaceRouteOpenOutcome) {
     isEditing: () => false,
     isVisibleDirty: () => false,
     notifyCopyFailed: () => undefined,
+    notifyNewExamFailed: () => undefined,
     notifyRouteFailed: () => {
       calls.notifiedFailed += 1;
     },

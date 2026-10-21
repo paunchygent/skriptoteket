@@ -375,9 +375,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
   replayHeldHolder = () => replacingScope.replayHeld();
 
-  const { beginCopy } = useExamWorkspaceSave({
+  const { beginCopy, beginNewExam } = useExamWorkspaceSave({
     copyBusy,
     getFence: () => resolveFence(),
+    historyCursor,
     isBusy,
     summary,
     store,
@@ -473,6 +474,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     restoreItemSuggestion,
     retryItem,
     beginCopy,
+    beginNewExam,
     installReplacementDocument,
     releaseCopyBusy: () => {
       copyBusy.value = false;

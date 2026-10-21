@@ -73,8 +73,13 @@ export type ExamWorkspaceGuestStoreDeps = {
 
 export type ExamWorkspaceGuestStore = {
   store: ExamWorkspaceStore;
-  /** Start a fresh blank exam through the public route and store it. */
-  startBlank(): Promise<string>;
+  /**
+   * Start a fresh blank exam through the public route and store it. The
+   * write commits only when `expectedCursor` still owns the browser slot
+   * (null for an empty slot); a concurrent tab's newer draft is kept and
+   * reported as the established conflict instead of being overwritten.
+   */
+  startBlank(expectedCursor: string | null): Promise<string>;
   /** Start a guest exam from a QTI .zip through the public parse route. */
   startFromQti(file: File, courseKey: string | null): Promise<string>;
   /**
@@ -434,15 +439,18 @@ export function createGuestExamWorkspaceStore(
   }
 
   /**
-   * Start a fresh blank exam through the public route and store it. A
-   * concurrent tab's newer draft is kept and reported as the conflict.
+   * Start a fresh blank exam through the public route and store it. The
+   * D9 check's cursor arrives as `expectedCursor` and passes straight to
+   * the conditional write: no fresh load re-reads the slot, so a stale or
+   * read-only view of an empty exam can never replace a newer
+   * content-bearing draft another tab stored after the check. A concurrent
+   * tab's newer draft is kept and reported as the established conflict.
    */
-  async function startBlank(): Promise<string> {
-    return await replaceSlotWith(async () => {
-      const response = await api.createPublicExamWorkspaceBlank();
-      const draft = newGuestDraft(response.document, deps.ids, []);
-      return { assets: {}, draft };
-    });
+  async function startBlank(expectedCursor: string | null): Promise<string> {
+    const response = await api.createPublicExamWorkspaceBlank();
+    const draft = newGuestDraft(response.document, deps.ids, []);
+    await persist(expectedCursor, { assets: {}, draft });
+    return draft.lineage_id;
   }
 
   /**

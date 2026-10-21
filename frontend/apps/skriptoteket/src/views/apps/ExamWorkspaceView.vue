@@ -215,7 +215,6 @@ const saveFlow = useExamWorkspaceSaveFlow({
 const newExam = useExamWorkspaceNewExam({
   editing,
   store: props.store,
-  openRoutedDocument,
   toast: useToast(),
 });
 const { fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState, saveText, saveTitle } =

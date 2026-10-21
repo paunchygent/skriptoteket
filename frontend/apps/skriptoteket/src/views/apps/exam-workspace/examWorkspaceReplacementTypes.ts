@@ -5,9 +5,10 @@
  *   The shared vocabulary of the gate-owned replacement coordinator: one
  *   immutable request object per intent (a route open names its lineage;
  *   Spara som names the captured source lineage and the requested name until
- *   its response supplies the new lineage; recovery names the retained
- *   source), the routed outcome, and the barrier and selection ports the
- *   coordinator's owner binds.
+ *   its response supplies the new lineage; Nytt prov names the captured
+ *   source and the history cursor of the draft its D9 check read; recovery
+ *   names the retained source), the routed outcome, and the barrier and
+ *   selection ports the coordinator's owner binds.
  *
  * Relationships:
  *   - Owned by `examWorkspaceReplacementCoordinator`, which stays the only
@@ -31,6 +32,13 @@ export type ExamWorkspaceRouteOpenOutcome = "installed" | "superseded" | "failed
 export type ExamWorkspaceReplacementIntent =
   | { readonly kind: "route"; readonly lineage: string }
   | { readonly kind: "saveAs"; readonly source: string; readonly name: string }
+  | {
+      readonly kind: "newExam";
+      /** The installed source when Nytt prov was clicked; null with no exam open. */
+      readonly source: string | null;
+      /** The history cursor of the draft the D9 check read; null with no exam open. */
+      readonly expectedCursor: string | null;
+    }
   | { readonly kind: "recover"; readonly source: string | null };
 
 export type ExamWorkspaceReplacementRouteEntry = {
@@ -47,6 +55,16 @@ export type ExamWorkspaceReplacementSaveAsEntry = {
   promise: Promise<ExamWorkspaceSaveAsOutcome>;
 };
 
+/** Nytt prov's outcome: the new exam is installed, or the source stays. */
+export type ExamWorkspaceNewExamOutcome = "created" | "failed";
+
+export type ExamWorkspaceReplacementNewExamEntry = {
+  kind: "newExam";
+  intent: Extract<ExamWorkspaceReplacementIntent, { kind: "newExam" }>;
+  resolve: (outcome: ExamWorkspaceNewExamOutcome) => void;
+  promise: Promise<ExamWorkspaceNewExamOutcome>;
+};
+
 export type ExamWorkspaceReplacementRecoverEntry = {
   kind: "recover";
   intent: Extract<ExamWorkspaceReplacementIntent, { kind: "recover" }>;
@@ -55,11 +73,13 @@ export type ExamWorkspaceReplacementRecoverEntry = {
 export type ExamWorkspaceReplacementDesired =
   | ExamWorkspaceReplacementRouteEntry
   | ExamWorkspaceReplacementSaveAsEntry
+  | ExamWorkspaceReplacementNewExamEntry
   | ExamWorkspaceReplacementRecoverEntry;
 
 export type ExamWorkspaceReplacementSelected =
   | ExamWorkspaceReplacementRouteEntry
-  | ExamWorkspaceReplacementSaveAsEntry;
+  | ExamWorkspaceReplacementSaveAsEntry
+  | ExamWorkspaceReplacementNewExamEntry;
 
 export type ExamWorkspaceReplacementDeps = {
   /** True once the owner is torn down: every submission ends at once. */
@@ -99,6 +119,15 @@ export type ExamWorkspaceReplacementDeps = {
     sourceLineageId: string,
     name: string,
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
+  /**
+   * Start creating the new exam and read it back as a document response;
+   * null when its guards refuse (the source's history cursor is no longer
+   * `expectedCursor`, or another operation holds the document). Holds the
+   * copy busy until retired or settled, exactly like `beginCopy`.
+   */
+  beginNewExam: (expectedCursor: string | null) => Promise<ExamWorkspaceDocumentResponse> | null;
+  /** Report a current new-exam failure (`NEW_EXAM_FAILURE_COPY`). */
+  notifyNewExamFailed: () => void;
   /** Report a current route-open failure (the existing open copy). */
   notifyRouteFailed: () => void;
   /** Report a current route-open target the stored file cannot supply: the

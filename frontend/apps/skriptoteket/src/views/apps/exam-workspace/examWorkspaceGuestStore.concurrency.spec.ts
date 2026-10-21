@@ -123,7 +123,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       storage: losing,
     });
 
-    const error = await loser.startBlank().catch((caught: unknown) => caught);
+    const error = await loser.startBlank(null).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
@@ -145,7 +145,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       },
     );
     context.mocks.createBlank.mockReturnValueOnce(pending);
-    const starting = context.store.startBlank();
+    const starting = context.store.startBlank(old.cursor);
     await vi.waitFor(() => expect(context.mocks.createBlank).toHaveBeenCalledOnce());
 
     // Another tab replaces the slot while the public blank route is in flight.

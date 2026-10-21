@@ -42,6 +42,8 @@ export type ExamWorkspaceSaveAsOutcome = "saved" | "name_taken" | "failed";
 type SaveState = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
+  /** The server's newest undo step; a source exam is open exactly when the summary names one. */
+  historyCursor: Ref<string | null>;
   isBusy: ComputedRef<boolean>;
   /** The copy's own busy hold; set while its POST runs, cleared by its own settle or its retire. */
   copyBusy: Ref<boolean>;
@@ -108,5 +110,56 @@ export function useExamWorkspaceSave(state: SaveState) {
     return owned;
   }
 
-  return { beginCopy, copyBusy };
+  /**
+   * Nytt prov: create the blank exam and read it back as a document
+   * response, a candidate the owning coordinator settles through the fence.
+   * Null when the guards refuse: another operation holds the document, no
+   * side can create, or a source exam is open and its current history cursor
+   * is no longer `expectedCursor` (the draft the D9 check read changed
+   * meanwhile). The hold belongs to this creation's own fence token, so a
+   * retired creation's late settle never clears a newer creation's hold.
+   */
+  function beginNewExam(
+    expectedCursor: string | null,
+  ): Promise<ExamWorkspaceDocumentResponse> | null {
+    const teacher = state.store.teacher;
+    const guest = state.store.guest;
+    if ((!teacher && !guest) || state.isBusy.value) {
+      return null;
+    }
+    if (state.summary.value !== null && state.historyCursor.value !== expectedCursor) {
+      return null;
+    }
+    const fence = state.getFence();
+    const token: FenceToken = fence.begin();
+    copyBusy.value = true;
+    const posting = (async (): Promise<ExamWorkspaceDocumentResponse> => {
+      if (teacher) {
+        const created = await teacher.createExamWorkspaceBlank();
+        return await state.store.shared.getExamWorkspaceDocument(created.lineage_id);
+      }
+      if (guest) {
+        const lineageId = await guest.startBlank(expectedCursor);
+        return await state.store.shared.getExamWorkspaceDocument(lineageId);
+      }
+      throw new Error("No exam workspace store side can create a new exam.");
+    })();
+    const owned = posting.then(
+      (response) => {
+        if (fence.isCurrent(token)) {
+          copyBusy.value = false;
+        }
+        return response;
+      },
+      (error: unknown) => {
+        if (fence.isCurrent(token)) {
+          copyBusy.value = false;
+        }
+        throw error;
+      },
+    );
+    return owned;
+  }
+
+  return { beginCopy, beginNewExam, copyBusy };
 }

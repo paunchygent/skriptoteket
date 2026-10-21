@@ -115,7 +115,7 @@ async function seedDraft(): Promise<StoredGuestDraft> {
     onLimit: () => undefined,
     storage: port,
   });
-  await seeder.startBlank();
+  await seeder.startBlank(null);
   const stored = await port.load();
   if (stored === null) {
     throw new Error("Expected the seeder to store a guest draft.");
@@ -287,7 +287,7 @@ describe("ExamWorkspaceGuestHost", () => {
     });
     apiMocks.createBlank.mockRejectedValueOnce(limit);
     await guestStoreOf(wrapper)
-      .guest?.startBlank()
+      .guest?.startBlank(null)
       .catch((caught: unknown) => caught);
     await flushPromises();
 
@@ -317,7 +317,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank()
+        .guest?.startBlank(null)
         .catch((caught: unknown) => caught);
       await flushPromises();
 
@@ -355,7 +355,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank()
+        .guest?.startBlank(null)
         .catch((caught: unknown) => caught);
       await flushPromises();
 

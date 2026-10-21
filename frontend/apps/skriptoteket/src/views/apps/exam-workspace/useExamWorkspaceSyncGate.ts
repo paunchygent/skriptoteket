@@ -137,6 +137,10 @@ export type ExamWorkspaceSyncGateDeps = {
     sourceLineageId: string,
     name: string,
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
+  /** Start the new-exam creation; null when its guards refuse. */
+  beginNewExam: (
+    expectedCursor: string | null,
+  ) => Promise<ExamWorkspaceDocumentResponse> | null;
   /** Report a current route-open failure (the existing open copy). */
   notifyRouteFailed: () => void;
   /** Report a current route-open target the stored file cannot supply: the
@@ -144,6 +148,8 @@ export type ExamWorkspaceSyncGateDeps = {
   notifyRouteUnreadable: (lineageId: string) => void;
   /** Report a current copy failure (the existing Spara som copy). */
   notifyCopyFailed: () => void;
+  /** Report a current new-exam failure (the Nytt prov copy). */
+  notifyNewExamFailed: () => void;
   /** Release the retired copy selection's busy hold at once. */
   releaseCopyBusy: () => void;
   /** Publish the address; a repeated value is a no-op. */
@@ -231,6 +237,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     abandonAttempt: () => deps.abandonAttempt(),
     adoptSelectedOpening: (nextLineageId) => adoptSelectedOpening(nextLineageId),
     beginCopy: (sourceLineageId, name) => deps.beginCopy(sourceLineageId, name),
+    beginNewExam: (expectedCursor) => deps.beginNewExam(expectedCursor),
     captureKept: () => kept.captureKeptEdit(),
     claimSelectedLease: (nextLineageId) => deps.claimSelectedLease(nextLineageId),
     fence,
@@ -242,6 +249,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     isEditing: () => phase.value === "editing",
     isVisibleDirty: () => deps.isVisibleDirty(),
     notifyCopyFailed: () => deps.notifyCopyFailed(),
+    notifyNewExamFailed: () => deps.notifyNewExamFailed(),
     notifyRouteFailed: () => deps.notifyRouteFailed(),
     notifyRouteUnreadable: (lineageId) => deps.notifyRouteUnreadable(lineageId),
     openRouteTarget: (nextLineageId, token) => deps.openRouteTarget(nextLineageId, token),
@@ -465,5 +473,6 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     staleConflict,
     submitRoute: coordinator.submitRoute,
     submitSaveAs: coordinator.submitSaveAs,
+    submitNewExam: coordinator.submitNewExam,
   };
 }

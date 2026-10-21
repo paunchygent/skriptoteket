@@ -184,7 +184,7 @@ describe("ExamWorkspaceView guest exports", () => {
     async (target) => {
       const { guest, publicMocks } = setupGuest();
       const wrapper = await mountGuestView(guest.store);
-      await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
+      await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
       await flushPromises();
 
       await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
@@ -219,7 +219,7 @@ describe("ExamWorkspaceView guest exports", () => {
   it("sends the export request after an edit in the guest workspace", async () => {
     const { guest, publicMocks } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-row-item_001"]').trigger("click");
@@ -254,7 +254,7 @@ describe("ExamWorkspaceView guest exports", () => {
   it("hides the teacher-only Förhandsgranska toggle in guest mode without calling its render", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     expect(
@@ -267,7 +267,7 @@ describe("ExamWorkspaceView guest exports", () => {
   it("names the print PDF and the Exam.net fallback as separate guest choices", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");

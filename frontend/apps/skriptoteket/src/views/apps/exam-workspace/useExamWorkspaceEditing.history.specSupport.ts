@@ -391,6 +391,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
     const gate = useExamWorkspaceSyncGate({
       abandonAttempt: () => history.abandonAttempt(),
       beginCopy: () => null,
+      beginNewExam: () => null,
       claimSelectedLease: () => undefined,
       confirmedCopy: () => history.confirmedCopy(),
       desiredCopy: () => history.desiredCopy(),
@@ -406,6 +407,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
     installedSource: () => null,
       isVisibleDirty: () => false,
       notifyCopyFailed: () => undefined,
+      notifyNewExamFailed: () => undefined,
       notifyRouteFailed: () => undefined,
       notifyRouteUnreadable: () => undefined,
       openRouteTarget: (): Promise<ExamWorkspaceRouteOpenOutcome> => Promise.resolve("installed"),

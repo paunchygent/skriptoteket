@@ -43,7 +43,7 @@ function mountWithStore(store: ExamWorkspaceStore, overrides: Partial<HeaderProp
 
 /** The file commands in toolbar order, as the teacher and the guest each see them. */
 function fileCommandOrder(wrapper: ReturnType<typeof mountWithStore>): (string | undefined)[] {
-  const commands = ["exam-workspace-new", "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-import"];
+  const commands = ["exam-workspace-new-exam", "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-import"];
   return wrapper
     .findAll("[data-test]")
     .map((element) => element.attributes("data-test"))
@@ -54,7 +54,7 @@ describe("ExamWorkspaceHeader Nytt prov", () => {
   it("reads Nytt prov first for a teacher, before Öppna, Spara som and Importera", () => {
     const wrapper = mountWithStore(serverExamWorkspaceStore);
     expect(fileCommandOrder(wrapper)).toEqual([
-      "exam-workspace-new",
+      "exam-workspace-new-exam",
       "exam-workspace-open",
       "exam-workspace-save-as-command",
       "exam-workspace-import",
@@ -65,7 +65,7 @@ describe("ExamWorkspaceHeader Nytt prov", () => {
   it("reads Nytt prov first for a guest, with no Spara som", () => {
     const wrapper = mountWithStore(guestStore);
     expect(fileCommandOrder(wrapper)).toEqual([
-      "exam-workspace-new",
+      "exam-workspace-new-exam",
       "exam-workspace-open",
       "exam-workspace-import",
     ]);
@@ -75,7 +75,7 @@ describe("ExamWorkspaceHeader Nytt prov", () => {
 
   it("shows the file-new glyph with its label and emits newExam", async () => {
     const wrapper = mountWithStore(serverExamWorkspaceStore);
-    const button = wrapper.get('[data-test="exam-workspace-new"]');
+    const button = wrapper.get('[data-test="exam-workspace-new-exam"]');
     expect(button.attributes("type")).toBe("button");
     expect(button.attributes("class")).toContain("xw-cmd");
     expect(button.attributes("aria-label")).toBe("Nytt prov");
@@ -89,12 +89,12 @@ describe("ExamWorkspaceHeader Nytt prov", () => {
 
   it("locks the command while a new exam is being created", async () => {
     const wrapper = mountWithStore(serverExamWorkspaceStore, { newExamBusy: true });
-    const button = wrapper.get('[data-test="exam-workspace-new"]');
+    const button = wrapper.get('[data-test="exam-workspace-new-exam"]');
     expect(button.attributes("disabled")).toBeDefined();
     wrapper.unmount();
 
     const idle = mountWithStore(serverExamWorkspaceStore, { newExamBusy: false });
-    expect(idle.get('[data-test="exam-workspace-new"]').attributes("disabled")).toBeUndefined();
+    expect(idle.get('[data-test="exam-workspace-new-exam"]').attributes("disabled")).toBeUndefined();
     idle.unmount();
   });
 });

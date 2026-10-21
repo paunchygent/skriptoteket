@@ -2,12 +2,12 @@
  * Exam workspace new-exam intake (TASK-SKRIPT-40-04-21).
  *
  * Domain purpose:
- *   Start one new untitled exam with a single empty question: through the
- *   signed-in blank route when a teacher side is present, through the guest
- *   store's browser draft otherwise. This is one intake with two store
- *   halves; there is no second intake composable. Whether the open browser
- *   draft holds anything worth keeping is decided here too, so creating over
- *   it never silently discards a guest's work.
+ *   Whether the open browser draft holds anything worth keeping, so creating
+ *   over it never silently discards a guest's work. The creation itself runs
+ *   through the gate-owned replacement coordinator (Nytt prov is a third
+ *   replacement intent, modelled on Spara som): the source settles behind
+ *   the shared barrier first, and the guest's browser slot is replaced only
+ *   while it still holds exactly the draft this check read.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceNewExam`, which owns the open gate, the guest
@@ -15,27 +15,9 @@
  */
 
 import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
-import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 /** The failure copy when the new exam could not be created. */
 export const NEW_EXAM_FAILURE_COPY = "Det gick inte att skapa ett nytt prov. Försök igen.";
-
-/**
- * Start one new blank exam: through the signed-in blank route when a
- * teacher side is present, through the guest store's browser draft
- * otherwise. Returns the opened lineage, or null when neither side can
- * create.
- */
-export async function createNewExam(store: ExamWorkspaceStore): Promise<string | null> {
-  const teacher = store.teacher;
-  if (teacher) {
-    const summary = await teacher.createExamWorkspaceBlank();
-    return summary.lineage_id;
-  }
-  const guest = store.guest;
-  if (!guest) return null;
-  return await guest.startBlank();
-}
 
 /** The one item's content the draft check reads; every other item field keeps its stored value. */
 function blankItemIsEmpty(item: NativeExamItem): boolean {
