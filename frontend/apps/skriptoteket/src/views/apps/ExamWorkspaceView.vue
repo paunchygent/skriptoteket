@@ -36,6 +36,7 @@ import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditLeaseNotice from "./exam-workspace/ExamWorkspaceEditLeaseNotice.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
+import ExamWorkspaceEnrichmentNotice from "./exam-workspace/ExamWorkspaceEnrichmentNotice.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
 import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vue";
@@ -335,32 +336,12 @@ onMounted(() => void loadSavedDocuments());
       :waiting="takeoverWaiting"
       @takeover="requestTakeover"
     />
-    <div
+    <ExamWorkspaceEnrichmentNotice
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
-      class="xw-notice xw-notice--info ws__bar"
-      role="status"
-      data-test="exam-workspace-enrichment"
-    >
-      <span
-        v-if="enrichment.enrichmentLookupError.value"
-        class="xw-grow"
-        data-test="exam-workspace-enrichment-lookup-error"
-      >{{ enrichment.enrichmentLookupError.value }}</span>
-      <span
-        v-else
-        class="xw-grow"
-        data-test="exam-workspace-enrichment-message"
-      >{{ enrichment.enrichmentMessage.value }}</span>
-      <button
-        v-if="enrichment.enrichmentLookupError.value"
-        type="button"
-        class="xw-btn xw-btn--compact"
-        data-test="exam-workspace-enrichment-lookup-retry"
-        @click="enrichment.retryEnrichmentLookup"
-      >
-        Försök igen
-      </button>
-    </div>
+      :message="enrichment.enrichmentMessage.value"
+      :lookup-error="enrichment.enrichmentLookupError.value"
+      @retry="enrichment.retryEnrichmentLookup"
+    />
 
     <ExamWorkspacePhoneStrip
       v-if="isPhone && workspaceDocument"
