@@ -133,3 +133,11 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 
 - Rereview 4 (`evidence/reviews/review-40-04-21-f1-f5-rereview4.md`, changes_requested; F1 cleared) repaired: `importDocument` captures the sync gate's fence token when a guest QTI import starts, and the `replaceSlotIf` admission now requires that token to be current alongside the import's conversion generation; the in-transaction cursor and lease checks stay. A lost lease or pagehide retires the token, so a late parse refuses even after the lease is released or expires. The signed-in import and ordinary writes are unchanged. `useExamWorkspaceConversion.guestQtiGateRetired.spec.ts` runs the real gate, conversion and guest store: after `leaseLost` or `pageHidden`, with the lease then released, expired or never claimed, C with its history and picture stays and nothing opens; a positive control with current authority replaces the slot and opens the import.
 - Proof logs: retained root `01a15f95-9eca-7a87-b3b5-4cb77a0761c6` `evidence/f5-gate-authority/` (`before-fix.log` 4 failures, control passing; `after-fix.log`; suite 342 files / 2554 tests). Owed: independent rereview of F5, the Mac staging walk.
+
+### 2026-10-21 (Hemma orchestrator, review closeout)
+
+- Rereview 5 (Pi ruthless-reviewer `df1d3e1d`, record `evidence/reviews/review-40-04-21-f5-rereview5.md` in retained root `01a15f95-9eca-7a87-b3b5-4cb77a0761c6`): **approved**. F5 is resolved and there are no new material findings. Rereview 4 cleared F1 (`review-40-04-21-f1-f5-rereview4.md`), and round 2 cleared F2-F4 and D13. Accepted nonblocking residuals:
+  - a read-only guest tab whose heartbeat acquires the lease during a QTI parse has the import refused (it can be retried and destroys nothing);
+  - a retired but living tab shows a failure toast when its write is refused;
+  - cross-store atomicity is established by reading the code and the idb documentation, not in a browser.
+- Next: merge to main with the D13 shared 238-character cap, the staging walk by the Mac (signed in, as a guest and through a rename), then user closure.
