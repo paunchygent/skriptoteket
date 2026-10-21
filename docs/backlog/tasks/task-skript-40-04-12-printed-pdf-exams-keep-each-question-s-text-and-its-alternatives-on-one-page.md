@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22 after merge 8d51a6ba, the K11 staging walk (Mac .artifacts/staging-walk-40-04-12/walk-record.md) and the K7 walk at fd2d911c: neither the student PDF nor the PDF med facit holds a line with only "/" under omprov Fråga 1c (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - In the print preview and the exported student and facit PDF, no page break falls inside a question's text block (heading, instruction and problem body) or inside its choice alternatives, writing lines may split, and a block taller than one page still splits
@@ -100,3 +104,7 @@ Focused tests only:
 
 - Status corrected from `ready` to `in_progress`: merged to main as `8d51a6ba` (2026-10-19). The staging walk passed K11 (`.artifacts/staging-walk-40-04-12/walk-record.md`). TASK-SKRIPT-39-04-20 is on main (`f7eeada5`), so K7 can now be checked.
 - Owed: the K7 "/" check on staging, then closeout.
+
+### 2026-10-22 (Mac orchestrator, closure)
+
+- Closed by the user on 2026-10-22 (see `closeout_review`).
