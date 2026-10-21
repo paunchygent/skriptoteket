@@ -146,3 +146,9 @@ Bounded units:
 
 - Work on main through merge `becbb932` (2026-10-18, section repair `97d47894`), integrated with TASK-SKRIPT-39-04-12. Review rounds 3-5 are named in commit subjects; no verdict is recorded in this doc.
 - Owed: the Svenska 2 staging import (24 questions, 36 points, exam total 36) is not recorded as run; the Validation suites are not recorded as run here. Then closeout.
+
+### Tail review 2026-10-21 (Hemma orchestrator)
+
+- Independent tail review of `baa128a2..97d47894` (Pi ruthless-reviewer `f26e6d2b`, Hemma retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/reviews/task-skript-39-04-11-tail-review.md`): verdict `changes_requested`. R5-1 and R5-2 are cleared.
+- R6-1 (medium: an unowned repeated part heading still ends the continuing section, `docx_instruction_runs.py:212-218`) is accepted unfixed by the user's triage of 2026-10-21, relayed by the Mac orchestrator.
+- The review's non-authorizing question about conflicting question totals is with the user. Still owed before closeout: the Svenska 2 staging import and the Validation suites.
