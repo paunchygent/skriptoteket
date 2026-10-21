@@ -173,6 +173,28 @@ def test_refusal_names_only_the_objects_that_block(
 
 
 @pytest.mark.asyncio
+async def test_252_character_title_keeps_every_mina_filer_name_within_255(
+    env: _Env,
+) -> None:
+    """A 252-character accepted title must still persist every Mina filer copy (F1)."""
+    title = "Prov " + "a" * 247
+    assert len(title) == 252
+    actor, lineage_id, revision = await _retitled(env, title)
+    handler = _export_handler(env)
+
+    for target in ExamWorkspaceExportTarget:
+        download = await handler.handle(
+            actor=actor, lineage_id=lineage_id, target=target, expected_revision=revision
+        )
+        saved = await handler.save(
+            actor=actor, lineage_id=lineage_id, target=target, expected_revision=revision
+        )
+        assert download.filename == saved.name
+        assert len(download.filename) <= 255
+        assert len(saved.name) <= 255
+
+
+@pytest.mark.asyncio
 async def test_saved_document_response_carries_the_gates_title_verdict(env: _Env) -> None:
     actor, lineage_id = await _imported_and_reviewed(env, b"")
     head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage_id)

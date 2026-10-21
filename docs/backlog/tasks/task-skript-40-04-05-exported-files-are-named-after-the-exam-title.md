@@ -61,3 +61,8 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 - User decision 2026-10-21 (relayed by the Mac orchestrator): the PDF variant suffixes stay as main names them; D1 is amended to match. No code change.
 - Mac staging walk wave 1b on `a8de9ae6` (app code equal to main `b9ad44a4`) passed: export names follow the title; a blank title and "???" both save, and export is refused with 422 `title_without_text` (Mac record `.artifacts/staging-walk-l1b-a8de9ae6/walk-record.md`).
 - Review f9239f80 (2026-10-21, changes_requested, two medium findings: titles long enough to overflow the 255-character Mina filer name column, and the size of `user_vault_file_repository.py`) is held for user triage (retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/reviews/task-skript-40-04-05-review-f9239f80.md`).
+
+### 2026-10-21 (repair owner, review f9239f80)
+
+- F1 repair on branch `codex/task-skript-40-04-05` per the user's 2026-10-21 triage (cap the export base name so every export file name, including the longest ` Exam.net.pdf` variant suffix and its extension, fits within 255 characters): `export_file_base_name` in `exam_workspace_exports.py` now caps the shared base at 242 characters, so the download name and the Mina filer name stay the same; the title itself and the schema are unchanged. Focused proof: new 252-character-title boundary test (fails before with a 256-character QTI name, passes after), the existing export-name and Content-Disposition tests, `pdm run lint` and `pdm run typecheck`.
+- The user's triage of 2026-10-21 accepted F2 (the 665-line `user_vault_file_repository.py`) unfixed; no decomposition was done here.
