@@ -17,9 +17,12 @@ from __future__ import annotations
 import base64
 import binascii
 import hashlib
+import io
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Literal
+
+from PIL import Image
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamEmbeddedAsset,
@@ -193,14 +196,32 @@ def _image_metadata(payload: bytes) -> _ImageMetadata | None:
     if payload.startswith(b"\x89PNG\r\n\x1a\n") and len(payload) >= 24:
         width = int.from_bytes(payload[16:20], byteorder="big")
         height = int.from_bytes(payload[20:24], byteorder="big")
-        if width > 0 and height > 0:
+        if width > 0 and height > 0 and _fully_decodable(payload):
             return _ImageMetadata(media_type="image/png", width_px=width, height_px=height)
     if payload.startswith(b"\xff\xd8"):
         jpeg_size = _jpeg_size(payload)
-        if jpeg_size is not None:
+        if jpeg_size is not None and _fully_decodable(payload):
             width, height = jpeg_size
             return _ImageMetadata(media_type="image/jpeg", width_px=width, height_px=height)
     return None
+
+
+def _fully_decodable(payload: bytes) -> bool:
+    """True when the full image stream decodes, not just its header.
+
+    A recognizable PNG or JPEG header with positive dimensions is not enough:
+    a truncated or corrupt stream renders as nothing downstream, so the payload
+    must take the existing missing-image path instead of entering the usable
+    asset collection. Mirrors the Pillow readability probe used for embedded
+    pictures elsewhere in the codebase.
+    """
+
+    try:
+        with Image.open(io.BytesIO(payload)) as image:
+            image.load()
+    except (OSError, ValueError, Image.DecompressionBombError):
+        return False
+    return True
 
 
 def _jpeg_size(payload: bytes) -> tuple[int, int] | None:
