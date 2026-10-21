@@ -1,4 +1,9 @@
-"""Raw OpenAI Decisions and Responses calls that keep usage, timing and limit headers."""
+"""Raw OpenAI Decisions and Responses calls relayed through the provider door.
+
+The request bodies are unchanged OpenAI payloads; the door client owns the key,
+the teacher's user id, the exempt flag and the paid-overage mode. Usage, timing
+and limit headers are kept as with the direct calls.
+"""
 
 from __future__ import annotations
 
@@ -7,7 +12,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
-import httpx
+from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.llm_door import DoorOperation, LlmDoorClientProtocol
 
 DECISIONS_MODEL = "gpt-6-luna"
 _KEPT_HEADERS = (
@@ -87,35 +93,37 @@ class CallRecord:
 
 
 class OpenAIClient:
-    def __init__(self, *, client: httpx.AsyncClient, base_url: str, api_key: str, timeout: float):
-        self._client = client
-        self._base_url = (
-            base_url.rstrip("/")
-            if base_url.rstrip("/").endswith("/v1")
-            else f"{base_url.rstrip('/')}/v1"
-        )
-        self._api_key = api_key
+    """OpenAI-dialect Decisions/Responses calls sent through the provider door."""
+
+    def __init__(
+        self, *, door: LlmDoorClientProtocol, caller: AiDoorCaller, timeout: float
+    ) -> None:
+        self._door = door
+        self._caller = caller
         self._timeout = timeout
 
     async def _post(
-        self, endpoint: str, label: str, payload: dict[str, Any], summary: dict[str, Any]
+        self,
+        operation: DoorOperation,
+        endpoint: str,
+        label: str,
+        payload: dict[str, Any],
+        summary: dict[str, Any],
     ) -> CallRecord:
         started = time.perf_counter()
-        response = await self._client.post(
-            f"{self._base_url}/{endpoint}",
-            headers={"Authorization": f"Bearer {self._api_key}"},
-            json=payload,
-            timeout=self._timeout,
+        reply = await self._door.send(
+            operation=operation,
+            payload=payload,
+            caller=self._caller,
+            timeout_seconds=self._timeout,
         )
         duration = time.perf_counter() - started
         try:
-            body: Any = response.json()
+            body: Any = json.loads(reply.body)
         except json.JSONDecodeError:
-            body = response.text
-        headers = {
-            name: response.headers[name] for name in _KEPT_HEADERS if name in response.headers
-        }
-        return CallRecord(endpoint, label, response.status_code, duration, headers, body, summary)
+            body = reply.body.decode("utf-8", errors="replace")
+        headers = {name: reply.headers[name] for name in _KEPT_HEADERS if name in reply.headers}
+        return CallRecord(endpoint, label, reply.status_code, duration, headers, body, summary)
 
     async def decisions(
         self,
@@ -126,7 +134,7 @@ class OpenAIClient:
     ) -> CallRecord:
         payload = {"model": DECISIONS_MODEL, "input": input_value, "questions": questions}
         summary = {"questions": len(questions), "input_chars": len(json.dumps(input_value))}
-        return await self._post("decisions", label, payload, summary)
+        return await self._post(DoorOperation.DECISIONS, "decisions", label, payload, summary)
 
     async def responses(
         self,
@@ -165,7 +173,7 @@ class OpenAIClient:
             },
         }
         summary = {"model": model, "effort": reasoning_effort, "input_chars": len(user_text)}
-        return await self._post("responses", label, payload, summary)
+        return await self._post(DoorOperation.RESPONSES, "responses", label, payload, summary)
 
 
 def responses_output_json(record: CallRecord) -> Any:

@@ -95,11 +95,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.llm_door import door_caller_for
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+    door_caller_for,
+)
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _RETRY_BATCH_ID = "retry-01"
+_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _DEFAULT_FAILURE_REASON = "Frågan kunde inte konverteras om. Kontrollera källtexten manuellt."
 _TYPE_CONFLICT_REASON = (
@@ -305,7 +312,7 @@ class RetryExamWorkspaceItemHandler:
             owned_contexts=dict.fromkeys(family.question_anchors, owned),
             document_language=infer_exam_document_language(native_exam_document_text(saved)),
         )
-        outcome = await convert_batch(
+        outcome = await _convert_with_limit(
             state=state,
             batch=batch,
             families={family.question_id: family},
@@ -353,6 +360,40 @@ class RetryExamWorkspaceItemHandler:
             return _placed(
                 review, draft_item, original=saved_item, chosen_kind=kind, converted=False
             )
+
+
+async def _convert_with_limit(
+    *,
+    state: DocxBuildState,
+    batch: ConversionBatch,
+    families: dict[str, QuestionFamily],
+    exchange: DocxBuildExchangeProtocol,
+    profile: StructuredLLMProviderProfile,
+    caller: AiDoorCaller,
+) -> BatchOutcome:
+    """Run one retry batch; a door refusal becomes the 429 limit error, never a review item."""
+
+    try:
+        return await convert_batch(
+            state=state,
+            batch=batch,
+            families=families,
+            exchange=exchange,
+            profile=profile,
+            caller=caller,
+        )
+    except AiDailyLimitReached as error:
+        raise DomainError(
+            code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+            message=_LIMIT_MESSAGE,
+            details={"limit": error.limit.value},
+        ) from error
+    except AiJobOverageCapReached as error:
+        raise DomainError(
+            code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+            message=_LIMIT_MESSAGE,
+            details={"limit": AiDailyLimit.POOL.value},
+        ) from error
 
 
 def _missing_source_assets(

@@ -22,6 +22,7 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.DUPLICATE_ENTRY: 409,
     ErrorCode.EDIT_LEASE_HELD: 409,
     ErrorCode.TOO_MANY_REQUESTS: 429,
+    ErrorCode.AI_DAILY_LIMIT_REACHED: 429,
     ErrorCode.PAYLOAD_TOO_LARGE: 413,
     ErrorCode.UNSUPPORTED_MEDIA_TYPE: 415,
     ErrorCode.EMAIL_SEND_FAILED: 503,

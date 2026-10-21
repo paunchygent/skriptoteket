@@ -2,12 +2,12 @@
 
 Questions come from source chunks plus a saved provider grouping (never gold).
 Every HTTP exchange of the production adapter is recorded with an allowlist of
-response headers; the Authorization header is never recorded. The API key is
-read from ``OPENAI_LLM_ANSWER_KEY_API_KEY`` and never written or printed.
+response headers; the Authorization header is never recorded. The door's
+internal key is read from Settings and never written or printed.
 
 Usage:
-    python -m scripts.item_type_labeler_live --groupings <dir> --out <dir>
-        [--corpus <dir>] [--split-exams <stem> ...]
+    python -m scripts.item_type_labeler_live --groupings <dir> --out <dir> --user-id <uuid>
+        [--corpus <dir>] [--split-exams <stem> ...] [--allow-paid-overage]
 
 Every escalation is re-asked alone using its own tight source context.
 """
@@ -17,10 +17,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import os
 import time
 import uuid
 from pathlib import Path
+from uuid import UUID
 
 import httpx
 from pydantic import JsonValue, TypeAdapter
@@ -37,9 +37,12 @@ from scripts.item_type_labeler_live.records import (
     RunSummary,
     SavedGrouping,
 )
+from skriptoteket.config import Settings
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
 )
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
     build_decisions_payload,
@@ -203,7 +206,8 @@ async def run_one(
     name: str,
     items: list[LabelingItem],
     out: Path,
-    api_key: str,
+    settings: Settings,
+    caller: AiDoorCaller,
     *,
     corpus_started: float,
 ) -> RunSummary:
@@ -218,14 +222,20 @@ async def run_one(
         "first_pass_wall_seconds": 0.0,
     }
     async with httpx.AsyncClient(transport=transport) as client:
-        labeler = OpenAIDecisionsItemTypeLabeler(
+        # RecordingTransport wraps the httpx transport under the door client, so the
+        # recorded relayed OpenAI bodies are the same shapes the job sees.
+        door = HuleEduLlmDoorClient(
             client=client,
-            base_url="https://api.openai.com",
-            api_key=api_key,
-            timeout_seconds=60.0,
+            base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
+            internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+            job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+        )
+        labeler = OpenAIDecisionsItemTypeLabeler(
+            door=door,
+            timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
             sleeper=AsyncioSleeper(),
         )
-        request = LabelingRequest(job_id=uuid.uuid4(), items=tuple(items))
+        request = LabelingRequest(job_id=uuid.uuid4(), items=tuple(items), caller=caller)
         started = time.perf_counter()
         try:
             outcome = labeling_json(await labeler.label(request=request))
@@ -264,14 +274,41 @@ async def run_one(
     return summary
 
 
-async def main() -> None:
+def _limit_exit(error: AiDailyLimitReached) -> int:
+    """Stop the run on a door limit; a pool refusal needs the user's overage approval."""
+
+    if error.limit is AiDailyLimit.POOL:
+        print(
+            "The OpenAI pool for today is exhausted. Paying overage needs the user's approval; "
+            "rerun with --allow-paid-overage only after the user says yes."
+        )
+        return 2
+    print(error.limit.value)
+    return 1
+
+
+async def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--groupings", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--split-exams", nargs="*", default=[])
     parser.add_argument("--corpus", type=Path, default=CORPUS)
+    parser.add_argument(
+        "--user-id",
+        type=UUID,
+        required=True,
+        help="User the door calls run for; the run is recorded as their exempt agent run.",
+    )
+    parser.add_argument(
+        "--allow-paid-overage",
+        action="store_true",
+        help="Run as approved paid overage for this one run (C6: only after the user says yes).",
+    )
     args = parser.parse_args()
-    api_key = os.environ["OPENAI_LLM_ANSWER_KEY_API_KEY"]
+    settings = Settings()
+    caller = AiDoorCaller(
+        user_id=args.user_id, exempt=True, overage_approved=args.allow_paid_overage
+    )
     args.out.mkdir(parents=True, exist_ok=True)
     stems = sorted(path.stem for path in args.corpus.glob("*.docx"))
     items = {
@@ -285,9 +322,15 @@ async def main() -> None:
         for stem in stems
     }
     started = time.perf_counter()
-    summaries = await asyncio.gather(
-        *(run_one(stem, items[stem], args.out, api_key, corpus_started=started) for stem in stems)
-    )
+    try:
+        summaries = await asyncio.gather(
+            *(
+                run_one(stem, items[stem], args.out, settings, caller, corpus_started=started)
+                for stem in stems
+            )
+        )
+    except AiDailyLimitReached as error:
+        return _limit_exit(error)
     corpus_wall = round(time.perf_counter() - started, 3)
     first_pass_wall = max(
         (run["start_offset"] + run["first_pass_wall_seconds"] for run in summaries),
@@ -295,15 +338,19 @@ async def main() -> None:
     )
     if args.split_exams:
         combined = [item for stem in args.split_exams for item in items[stem]]
-        summaries.append(
-            await run_one(
-                "split_" + "_".join(args.split_exams[:1]),
-                combined,
-                args.out,
-                api_key,
-                corpus_started=started,
+        try:
+            summaries.append(
+                await run_one(
+                    "split_" + "_".join(args.split_exams[:1]),
+                    combined,
+                    args.out,
+                    settings,
+                    caller,
+                    corpus_started=started,
+                )
             )
-        )
+        except AiDailyLimitReached as error:
+            return _limit_exit(error)
     summary: CorpusSummary = {
         "corpus_wall_seconds": corpus_wall,
         "first_pass_wall_seconds": first_pass_wall,
@@ -311,7 +358,8 @@ async def main() -> None:
     }
     (args.out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
+    return 0
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    raise SystemExit(asyncio.run(main()))

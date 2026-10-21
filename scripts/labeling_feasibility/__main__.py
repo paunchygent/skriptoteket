@@ -5,10 +5,10 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
-import os
 from collections.abc import Coroutine
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 import httpx
 
@@ -17,10 +17,13 @@ from scripts.labeling_feasibility.api import OpenAIClient
 from scripts.labeling_feasibility.method_models import Grouping
 from scripts.labeling_feasibility.render import png_data_url, render_docx_pages
 from scripts.labeling_feasibility.requests import MethodResult
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
 )
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 
@@ -299,11 +302,18 @@ async def _run(client: OpenAIClient, args: argparse.Namespace) -> None:
 
 
 async def _main(args: argparse.Namespace) -> None:
-    api_key = os.environ["OPENAI_LLM_ANSWER_KEY_API_KEY"]
+    settings = Settings()
+    caller = AiDoorCaller(
+        user_id=args.user_id, exempt=True, overage_approved=args.allow_paid_overage
+    )
     async with httpx.AsyncClient() as http:
-        client = OpenAIClient(
-            client=http, base_url="https://api.openai.com", api_key=api_key, timeout=300.0
+        door = HuleEduLlmDoorClient(
+            client=http,
+            base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
+            internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+            job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
         )
+        client = OpenAIClient(door=door, caller=caller, timeout=300.0)
         if args.command == "probe":
             await _probe(client, args.evidence_dir)
         elif args.command == "probe-limits":
@@ -319,7 +329,7 @@ def _evaluate(args: argparse.Namespace) -> None:
     print((args.evidence_dir / "report.md").read_text()[:6000])
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser(prog="labeling_feasibility")
     parser.add_argument(
         "command",
@@ -331,12 +341,34 @@ def main() -> None:
     parser.add_argument("--corpus", type=Path, default=_CORPUS)
     parser.add_argument("--exams", nargs="*", default=[])
     parser.add_argument("--methods", nargs="*", default=[])
+    parser.add_argument(
+        "--user-id",
+        type=UUID,
+        required=True,
+        help="User the door calls run for; the run is recorded as their exempt agent run.",
+    )
+    parser.add_argument(
+        "--allow-paid-overage",
+        action="store_true",
+        help="Run as approved paid overage for this one run (C6: only after the user says yes).",
+    )
     args = parser.parse_args()
     if args.command == "evaluate":
         _evaluate(args)
-    else:
+        return 0
+    try:
         asyncio.run(_main(args))
+    except AiDailyLimitReached as error:
+        if error.limit is AiDailyLimit.POOL:
+            print(
+                "The OpenAI pool for today is exhausted. Paying overage needs the user's "
+                "approval; rerun with --allow-paid-overage only after the user says yes."
+            )
+            return 2
+        print(error.limit.value)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

@@ -142,3 +142,9 @@ def test_docx_conversion_defaults_to_sixteen_families_per_batch_at_low_effort() 
 
     assert settings.LLM_DOCX_BATCH_FAMILIES == 16
     assert settings.LLM_DOCX_CONVERSION_REASONING_EFFORT == "low"
+
+
+def test_answer_key_model_defaults_to_luna_six_low() -> None:
+    settings = Settings(_env_file=None)
+
+    assert settings.LLM_ANSWER_KEY_MODEL == "gpt-6-luna"

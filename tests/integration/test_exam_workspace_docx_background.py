@@ -117,7 +117,6 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
         VAULT_MAX_FILE_BYTES=5_000_000,
         VAULT_MAX_TOTAL_BYTES=50_000_000,
         LLM_ANSWER_KEY_ENABLED=True,
-        OPENAI_LLM_ANSWER_KEY_API_KEY=API_KEY,
         LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
     )
     transport = RecordedTransport(RECORDINGS / _EXAM)
@@ -282,7 +281,6 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
             client,
             settings=Settings.model_construct(
                 LLM_ANSWER_KEY_ENABLED=True,
-                OPENAI_LLM_ANSWER_KEY_API_KEY=API_KEY,
                 LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
             ),
             uow=NoTransaction(),

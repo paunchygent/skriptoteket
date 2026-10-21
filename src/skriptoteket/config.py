@@ -319,11 +319,11 @@ class Settings(BaseSettings):
     LLM_CHAT_FAILOVER_BREAKER_COOLDOWN_SECONDS: int = 90
     LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
 
-    # Exam answer-key completion (ST-SKRIPT-39-02): GPT-5.6 Luna structured
-    # proposals for unkeyed in-process conversions, guarded by the Postgres
-    # daily token lease. GLM-5.3-flash via OpenRouter is the failover-only
-    # backup; it shares the context/output/timeout/temperature settings and
-    # draws from the same daily token lease.
+    # Exam answer-key completion (ST-SKRIPT-39-02, ST-SKRIPT-41-01): every paid
+    # AI call goes through HuleEdu's LLM provider door on the shared
+    # hule-network; the door meters the daily pools, shares and USD ceiling.
+    # GPT-6 Luna 6 low is the single model for grouping, conversion, labeling
+    # and answer keys. There is no token lease and no GLM failover.
     LLM_ANSWER_KEY_ENABLED: bool = False
     # HuleEdu's LLM provider door (ST-SKRIPT-41-01 B1, C3): every paid AI call
     # goes to llm_provider_service on the shared hule-network with this internal
@@ -333,30 +333,23 @@ class Settings(BaseSettings):
     # A started AI job finishes as paid overage until the door has charged it
     # this much overage (TASK-SKRIPT-41-01-03 C7); then the job stops.
     LLM_JOB_OVERAGE_CAP_USD: float = Field(default=1.0, ge=0.0)
-    LLM_ANSWER_KEY_BASE_URL: str = "https://api.openai.com"
-    OPENAI_LLM_ANSWER_KEY_API_KEY: str = ""
-    LLM_ANSWER_KEY_MODEL: str = "gpt-5.6-luna"
-    LLM_ANSWER_KEY_FAILOVER_BASE_URL: str = "https://openrouter.ai/api/v1"
-    OPENROUTER_LLM_ANSWER_KEY_API_KEY: str = ""
-    LLM_ANSWER_KEY_FAILOVER_MODEL: str = "z-ai/glm-5.3-flash"
+    LLM_ANSWER_KEY_MODEL: str = "gpt-6-luna"
     LLM_ANSWER_KEY_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_ANSWER_KEY_TEXT_VERBOSITY: LlmTextVerbosity = "low"
     LLM_ANSWER_KEY_CONTEXT_WINDOW_TOKENS: int = 32_768
     LLM_ANSWER_KEY_MAX_OUTPUT_TOKENS: int = 4_096
-    LLM_ANSWER_KEY_TEMPERATURE: float = 0.0
     LLM_ANSWER_KEY_TIMEOUT_SECONDS: int = 90
-    LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT: int = 5_000_000
     LLM_ANSWER_KEY_JOB_LEASE_TTL_SECONDS: int = 900
-    # DOCX exam conversion (TASK-SKRIPT-39-05-01): GPT-6 Luna medium reasoning
-    # on the answer-key Responses endpoint, key, verbosity and daily token
-    # lease. The context limit is the GPT-6 Luna model limit. One whole-exam
+    # DOCX exam conversion (TASK-SKRIPT-39-05-01): GPT-6 Luna low reasoning
+    # through the door's Responses route, keyed by the shared internal key.
+    # The context limit is the GPT-6 Luna model limit. One whole-exam
     # round has taken 95.7 s, so its timeout is its own.
     LLM_DOCX_CONVERSION_MODEL: str = "gpt-6-luna"
     LLM_DOCX_CONVERSION_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS: int = 1_050_000
     LLM_DOCX_CONVERSION_TIMEOUT_SECONDS: int = 300
-    # Item-type labeler (TASK-SKRIPT-39-05-04): Decisions on the answer-key
-    # base URL, key and daily token lease. Its model and acceptance threshold
+    # Item-type labeler (TASK-SKRIPT-39-05-04): Decisions through the door on
+    # the shared internal key. Its model and acceptance threshold
     # are decided (TASK-SKRIPT-39-05-04 D10) and live with the adapter.
     LLM_ITEM_LABELER_TIMEOUT_SECONDS: int = 60
     # Type-batched DOCX conversion: question families per converter batch. Sixteen

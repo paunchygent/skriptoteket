@@ -16,7 +16,6 @@ import json
 import traceback
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import date, datetime
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -43,16 +42,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseDayUsage,
-    AnswerKeyTokenLeaseState,
-)
 from skriptoteket.domain.identity.models import User
-from skriptoteket.infrastructure.clock import UTCClock
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -113,9 +108,15 @@ class _RecordingProvider:
             self.decisions.append(response.json())
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await self._provider.complete_structured(request=request, profile=profile)
+        response = await self._provider.complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         self.replies[request.item_id] = response.content
         return response
 
@@ -149,29 +150,6 @@ class _CountedProgress:
         return None
 
 
-class _UnmeteredLeases:
-    """Grant every reservation; the eval reports provider usage instead of a daily budget."""
-
-    async def reserve(
-        self,
-        *,
-        now: datetime,
-        requested_tokens: int,
-        job_id: UUID,
-        item_id: str,
-        provider_profile_id: str,
-    ) -> AnswerKeyTokenLease:
-        return AnswerKeyTokenLease(
-            uuid4(), now.date(), requested_tokens, AnswerKeyTokenLeaseState.RESERVED
-        )
-
-    async def reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
-        return None
-
-    async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage:
-        raise NotImplementedError("The DOCX converter never reads daily usage.")
-
-
 class _NoTransaction:
     """The eval persists nothing, so lease bookkeeping needs no transaction."""
 
@@ -182,8 +160,31 @@ class _NoTransaction:
         return None
 
 
+def _door_caller(user_id: UUID, *, allow_paid_overage: bool) -> AiDoorCaller:
+    """One caller for the whole run; agent-run tooling sets the overage flag per run."""
+
+    return AiDoorCaller(user_id=user_id, exempt=True, overage_approved=allow_paid_overage)
+
+
+def _limit_exit(error: AiDailyLimitReached) -> int:
+    """Stop the run on a door limit; a pool refusal needs the user's overage approval."""
+
+    if error.limit is AiDailyLimit.POOL:
+        print(
+            "The OpenAI pool for today is exhausted. Paying overage needs the user's approval; "
+            "rerun with --allow-paid-overage only after the user says yes."
+        )
+        return 2
+    print(error.limit.value)
+    return 1
+
+
 async def _evaluate(
-    docx: Path, client: httpx.AsyncClient, settings: Settings, recorder: _RecordingProvider
+    docx: Path,
+    door: HuleEduLlmDoorClient,
+    settings: Settings,
+    recorder: _RecordingProvider,
+    caller: AiDoorCaller,
 ) -> _ExamReport:
     """Run the DOCX job's chunk-and-convert step and compare the document with its gold.
 
@@ -196,12 +197,10 @@ async def _evaluate(
         raise SystemExit(f"{docx.name}: gold source_sha256 does not match the DOCX")
     progress = _CountedProgress()
     pipeline = build_docx_conversion_pipeline(
-        client=client,
+        door=door,
         provider=recorder,
         sleeper=AsyncioSleeper(),
-        leases=_UnmeteredLeases(),
         uow=SerializedUnitOfWork(_NoTransaction()),
-        clock=UTCClock(),
         settings=settings,
         progress=progress,
     )
@@ -217,6 +216,7 @@ async def _evaluate(
                 source_docx=content,
                 chunks=chunks,
                 course_key=None,
+                caller=caller,
             )
         )
     except Exception as error:
@@ -254,31 +254,37 @@ async def _evaluate(
     )
 
 
-def _live_provider(client: httpx.AsyncClient, settings: Settings) -> _RecordingProvider:
+def _live_provider(
+    client: httpx.AsyncClient, settings: Settings
+) -> tuple[HuleEduLlmDoorClient, _RecordingProvider]:
+    door = HuleEduLlmDoorClient(
+        client=client,
+        base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
+        internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+        job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+    )
     recorder = _RecordingProvider(
         OpenAIAnswerKeyStructuredProvider(
-            client=client,
-            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-            api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+            door=door,
             timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
         )
     )
     client.event_hooks["response"] = [recorder.on_response]
-    return recorder
+    return door, recorder
 
 
-async def _live_grouping(docx: Path, settings: Settings, evidence_dir: Path) -> str:
+async def _live_grouping(
+    docx: Path, settings: Settings, caller: AiDoorCaller, evidence_dir: Path
+) -> str:
     """Run only the job's grouping pass and store its replies; return a one-line summary."""
     async with httpx.AsyncClient() as client:
-        recorder = _live_provider(client, settings)
+        _, recorder = _live_provider(client, settings)
         grouper = ResponsesExamGrouper(
-            exchange=DocxBuildRoundExchange(
-                recorder, _UnmeteredLeases(), SerializedUnitOfWork(_NoTransaction()), UTCClock()
-            ),
+            exchange=DocxBuildRoundExchange(recorder),
             profile=build_luna_docx_grouping_profile(settings),
         )
         chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
-        grouping = await grouper.group(job_id=uuid4(), chunks=chunks)
+        grouping = await grouper.group(job_id=uuid4(), chunks=chunks, caller=caller)
     _write_recordings(recorder, evidence_dir / "recordings" / docx.stem)
     manifest = grouping.manifest
     header = ", ".join(f"{h.kind}:{h.anchor}" for h in manifest.header) or "none"
@@ -288,11 +294,13 @@ async def _live_grouping(docx: Path, settings: Settings, evidence_dir: Path) -> 
     )
 
 
-async def _live_exam(docx: Path, settings: Settings, evidence_dir: Path) -> _ExamReport:
+async def _live_exam(
+    docx: Path, settings: Settings, caller: AiDoorCaller, evidence_dir: Path
+) -> _ExamReport:
     """One client per exam, so each exam's Decisions replies are recorded with that exam."""
     async with httpx.AsyncClient() as client:
-        recorder = _live_provider(client, settings)
-        report = await _evaluate(docx, client, settings, recorder)
+        door, recorder = _live_provider(client, settings)
+        report = await _evaluate(docx, door, settings, recorder, caller)
     _write_recordings(recorder, evidence_dir / "recordings" / docx.stem)
     return report
 
@@ -307,13 +315,21 @@ def _write_recordings(recorder: _RecordingProvider, directory: Path) -> None:
         path.write_text(json.dumps(body, ensure_ascii=False, indent=2) + "\n")
 
 
-async def _live(settings: Settings, evidence_dir: Path, exams: list[Path]) -> list[_ExamReport]:
-    return list(await asyncio.gather(*(_live_exam(docx, settings, evidence_dir) for docx in exams)))
-
-
-async def _live_groupings(settings: Settings, evidence_dir: Path, exams: list[Path]) -> list[str]:
+async def _live(
+    settings: Settings, caller: AiDoorCaller, evidence_dir: Path, exams: list[Path]
+) -> list[_ExamReport]:
     return list(
-        await asyncio.gather(*(_live_grouping(docx, settings, evidence_dir) for docx in exams))
+        await asyncio.gather(*(_live_exam(docx, settings, caller, evidence_dir) for docx in exams))
+    )
+
+
+async def _live_groupings(
+    settings: Settings, caller: AiDoorCaller, evidence_dir: Path, exams: list[Path]
+) -> list[str]:
+    return list(
+        await asyncio.gather(
+            *(_live_grouping(docx, settings, caller, evidence_dir) for docx in exams)
+        )
     )
 
 
@@ -355,9 +371,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         action="store_true",
         help="Run and record only the grouping pass; no build, no gold comparison.",
     )
+    parser.add_argument(
+        "--user-id",
+        type=UUID,
+        required=True,
+        help="User the door calls run for; the run is recorded as their exempt agent run.",
+    )
+    parser.add_argument(
+        "--allow-paid-overage",
+        action="store_true",
+        help="Run as approved paid overage for this one run (C6: only after the user says yes).",
+    )
     args = parser.parse_args(argv)
     # The eval runs conversion with the job's composition whatever the local enable flag says.
     settings = Settings().model_copy(update={"LLM_ANSWER_KEY_ENABLED": True})
+    caller = _door_caller(args.user_id, allow_paid_overage=args.allow_paid_overage)
     exams = sorted(_CORPUS.glob("*.docx"))
     if args.exam:
         exams = [docx for docx in exams if docx.stem in set(args.exam)]
@@ -365,11 +393,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         if missing:
             raise SystemExit(f"not in the corpus: {sorted(missing)}")
     args.evidence_dir.mkdir(parents=True, exist_ok=True)
-    if args.grouping_only:
-        for line in asyncio.run(_live_groupings(settings, args.evidence_dir, exams)):
-            print(line)
-        return 0
-    reports = asyncio.run(_live(settings, args.evidence_dir, exams))
+    try:
+        if args.grouping_only:
+            for line in asyncio.run(_live_groupings(settings, caller, args.evidence_dir, exams)):
+                print(line)
+            return 0
+        reports = asyncio.run(_live(settings, caller, args.evidence_dir, exams))
+    except AiDailyLimitReached as error:
+        return _limit_exit(error)
     _print_report(reports)
     failed = [report.exam for report in reports if not report.comparison.passed]
     (args.evidence_dir / "report.json").write_text(

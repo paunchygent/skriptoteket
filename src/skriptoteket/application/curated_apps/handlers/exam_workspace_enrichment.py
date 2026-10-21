@@ -48,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDailyLimit
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -267,9 +268,9 @@ def suggestions_response_for_job(
     """Report one suggestion job's state and, once finished, its suggestions."""
 
     if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
-        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED)
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED, job.ai_limit)
     if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
-        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING)
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING, job.ai_limit)
     payload = _stored_suggestions(job.workspace_suggestions_json)
     if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
         # A failed job still delivers every suggestion it produced before
@@ -278,6 +279,7 @@ def suggestions_response_for_job(
             job_id=job.id,
             lineage_id=lineage_id,
             state=ExamWorkspaceEnrichmentState.FAILED,
+            ai_limit=job.ai_limit,
             message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
             suggestions=payload.suggestions if payload is not None else (),
         )
@@ -286,12 +288,14 @@ def suggestions_response_for_job(
             job_id=job.id,
             lineage_id=lineage_id,
             state=ExamWorkspaceEnrichmentState.FAILED,
+            ai_limit=job.ai_limit,
             message=_DEFAULT_FAILURE_MESSAGE,
         )
     return ExamWorkspaceAnswerKeySuggestionsResponse(
         job_id=job.id,
         lineage_id=lineage_id,
         state=ExamWorkspaceEnrichmentState.SUCCEEDED,
+        ai_limit=job.ai_limit,
         suggestions=payload.suggestions,
     )
 
@@ -308,10 +312,14 @@ def _stored_suggestions(
 
 
 def _status(
-    lineage_id: UUID, job_id: UUID, state: ExamWorkspaceEnrichmentState
+    lineage_id: UUID,
+    job_id: UUID,
+    state: ExamWorkspaceEnrichmentState,
+    ai_limit: AiDailyLimit | None,
 ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
     return ExamWorkspaceAnswerKeySuggestionsResponse(
         job_id=job_id,
         lineage_id=lineage_id,
         state=state,
+        ai_limit=ai_limit,
     )

@@ -35,6 +35,7 @@ class ErrorCode(StrEnum):
 
     # Request throttling (429)
     TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS"
+    AI_DAILY_LIMIT_REACHED = "AI_DAILY_LIMIT_REACHED"
 
     # Payload/media validation (413/415)
     PAYLOAD_TOO_LARGE = "PAYLOAD_TOO_LARGE"

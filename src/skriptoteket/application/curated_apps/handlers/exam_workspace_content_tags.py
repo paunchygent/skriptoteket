@@ -87,6 +87,7 @@ def content_response(job: ExamAnswerKeyEnrichmentJob) -> ContentSuggestionsRespo
         document_revision=job.workspace_document_revision,
         course_key=job.workspace_course_key,
         state=job.status,
+        ai_limit=job.ai_limit,
         suggestions=payload.suggestions if payload else (),
         message=message,
     )
