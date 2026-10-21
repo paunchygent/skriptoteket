@@ -90,3 +90,18 @@ A conversion finishes and its questions open in the workspace. The workspace com
 
 - Independent review of the whole task (Pi ruthless-reviewer `dd95a00e`, record `evidence/reviews/review-40-04-23.md` in retained root `01a15ff0-a322-73b4-83e9-d7209f112e84`): changes_requested with two medium findings, F1 (a retried question dropped its printed conflict) and F2 (two files above 500 lines). The rest of the task passed review. The lead's residuals were judged not blocking: no end-to-end two-value DOCX test, staging exams unreadable after the v11 bump, a possible false amber row, and the acceptance wording behind P8.
 - F1 and F2 were repaired in `5e4649b3a` and admitted by the Hemma orchestrator on the lead's focused proof (F1 fail-first logs; backend 4527 passed; frontend exam-workspace domain 2797 passed; lint, typecheck, fe-type-check, fe-lint and docs-validate clean). Medium repairs need no rereview. Next: merge to main, the staging walk by the Mac from a fresh DOCX import, then user closure.
+
+### 2026-10-21 (Hemma orchestrator, staging walk)
+
+- The Mac staging walk at `87ab4573`, repeated at `25c4ac01` with the proof admin and a fresh DOCX (Mac `.artifacts/staging-walk-40-04-23/walk-record.md`), passed these checks:
+  - the line "1 fråga avviker från provtexten";
+  - amber points on the differing row only;
+  - the hint "Provtexten: 2,5 p och 3 p";
+  - Visa frågorna stepping and wrapping;
+  - Avfärda clearing everything in one click;
+  - a reload ending the warning;
+  - later edits adding no line.
+- Open walk findings for a repair unit:
+  - W1, against P8: a question printing "(4 p)" in its heading and "(3 poäng)" in its text imported as "Ej konverterad" with 3 p. It had `source_points` 3 and `conflicting_source_points` [], kept the heading line in its body, and was neither counted nor hinted. A two-value question that fails conversion escapes the warning.
+  - W2, for the lead to judge against P8: a question printing heading "(4 p)" plus parts "(2,5 p)" and "(3 p)" has 4 p and `conflicting_source_points` [2.5, 3]. The heading value is missing from the conflict list and the hint.
+- Not exercised: the single-value hint, the three-value form, and a differing row that shows a problem text.
