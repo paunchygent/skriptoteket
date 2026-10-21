@@ -194,6 +194,18 @@ async def test_252_character_title_keeps_every_mina_filer_name_within_255(
         assert len(saved.name) <= 255
 
 
+def test_cut_just_after_a_space_leaves_no_trailing_space_and_names_fit_255() -> None:
+    """The 242-char cap cut just after a space must not leave a trailing space (repair)."""
+    title = "a" * 241 + " " + "b" * 20
+    base = _base(title)
+    assert not base.endswith(" ")
+    assert base == "a" * 241
+    for suffix in _SUFFIXES.values():
+        name = f"{base}{suffix}"
+        assert len(name) <= 255
+        assert "  " not in name
+
+
 @pytest.mark.asyncio
 async def test_saved_document_response_carries_the_gates_title_verdict(env: _Env) -> None:
     actor, lineage_id = await _imported_and_reviewed(env, b"")

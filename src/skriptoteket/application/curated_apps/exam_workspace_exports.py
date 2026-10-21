@@ -68,7 +68,7 @@ def export_file_base_name(document: NativeExamDocument) -> str:
         for char in unicodedata.normalize("NFC", document.title)
         if char.isalnum() or char.isspace() or unicodedata.category(char).startswith("M")
     )
-    return " ".join(kept.split())[:_MAX_EXPORT_BASE_NAME_LENGTH]
+    return " ".join(kept.split())[:_MAX_EXPORT_BASE_NAME_LENGTH].rstrip()
 
 
 def build_native_examnet_qti_package(
