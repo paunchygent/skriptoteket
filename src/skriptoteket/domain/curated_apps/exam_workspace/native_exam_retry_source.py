@@ -218,7 +218,9 @@ def question_retry_source(
         if anchor in by_anchor
     )
     owned = tuple(a for a in dict.fromkeys(owned_context_anchors) if a in by_anchor)
-    question: list[str] = [a for a in own_anchors if a in by_anchor]
+    # Grouping repeats a question's anchors in subpart_anchors, so the caller's own
+    # anchors may name a chunk twice; the stored source keeps each chunk once.
+    question: list[str] = list(dict.fromkeys(a for a in own_anchors if a in by_anchor))
     for anchor in sorted(owned, key=lambda a: position[a]):
         # An owned context keeps its source place among the question's own chunks.
         later = [n for n, a in enumerate(question) if position[a] > position[anchor]]

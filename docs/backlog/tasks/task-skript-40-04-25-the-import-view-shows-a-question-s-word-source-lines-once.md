@@ -49,3 +49,7 @@ Stop and report if the Word file itself repeats the lines, or if the fix needs a
 | ID  | Decided contract term                                                                                                             |
 | --- | --------------------------------------------------------------------------------------------------------------------------------- |
 | R1  | Light route (user rule 2026-10-21): one junior unit with a focused fail-first test, admitted on that proof with no review rounds. |
+
+## Progress
+
+- Diagnosed on staging doc b8ea2e5b: stored retry_source chunks repeat body:0006/0007 and question_text doubles the a)/b) lines; the Import pane renders the stored text verbatim. Root cause is grouping's subpart_anchors repeats entering question_retry_source without dedupe. Added fail-first test test_repeated_subpart_anchors_keep_each_source_line_once; fixed question_retry_source to keep each own anchor once. Focused 39 passed, domain exam_workspace 2686 passed, handlers docx/retry/import 1500 passed, lint/typecheck/docs-validate clean.
