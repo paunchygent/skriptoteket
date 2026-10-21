@@ -103,3 +103,9 @@ Stop and report if a removed module turns out to serve another caller, or if the
 - Pi ruthless-reviewer `e81a0e99` reviewed `a7f61563..ef65d98d`: changes_requested, two medium findings F1 and F2, no runtime regression (retained root `01a15f53-3b1b-7dcd-8cae-f7e114f55406`, `evidence/reviews/review-ef65d98d.md`).
 - Repairs `c204d880` and `bd7a57a7` admitted by the Hemma orchestrator on focused proof without rereview: lint, typecheck, domain/application/web/infrastructure tests, app factory (255 routes) and the removed-name search pass (`evidence/validation/repair-ef65d98d/`).
 - Merged to main with `--no-ff` at `e6fee0d0`. Owed: the staging walk (signed-in and signed-out on `/apps/exam-converter`, guest on the `/public/...` converter URL) and the user's answer on where a signed-out visitor on `/apps/exam-converter` goes; then user closure.
+- Mac staging walk at `4b321fa1` (Edge, 2026-10-21) passed (Mac record `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`):
+  - Signed in, `/apps/exam-converter` lands on `/apps/exam-workspace` (walk finding F1 fixed). Signed out, it opens login with `next=/apps/exam-workspace` and lands there after sign-in.
+  - Guest at `/public/apps/documents.conversion_hub/exam-converter`: the guest workspace opens; a `.dxe` import shows the sign-in notice with no server call (ST-SKRIPT-41-02 P1, 41-02-02 G4); a QTI import (200) and a PDF export (200) work.
+  - Signed in: a DigiExam import completes (202, 7 questions); a document with answer keys exports QTI and PDF (200); the imported document's exports return the normal 422 `missing_answer_key`.
+  - `POST .../exam-converter/jobs` returns 405, not a redirect (X1).
+  - Open with the user: whether a signed-out visitor on `/apps/exam-converter` goes to the guest workspace instead of login. Waits for user closure.

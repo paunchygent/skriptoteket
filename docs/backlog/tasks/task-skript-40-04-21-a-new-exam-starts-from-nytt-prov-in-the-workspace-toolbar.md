@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-21'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -79,3 +79,9 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 | D6  | If another exam is open, it is saved first, as when switching with Öppna today. There is no confirm dialog. |
 | D7  | The empty-state text when no exam is open is "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam." |
 | D8  | Guests get the same "Nytt prov" toolbar button, backed by the existing public blank route. The guest "Tomt prov" button in the import drawer is removed, with no old wording or alias kept. This replaces the earlier term B1 ("guest path unchanged"). |
+
+## Progress
+
+### 2026-10-21 (Hemma orchestrator)
+
+- The user approved the decided terms D1-D8 as written and asked for the feature (relayed by the Mac orchestrator); the task is ready and a lead is assigned.
