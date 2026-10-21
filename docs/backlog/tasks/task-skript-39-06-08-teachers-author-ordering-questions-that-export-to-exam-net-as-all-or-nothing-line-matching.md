@@ -99,6 +99,13 @@ Stop and report to the parent in any of these cases:
 
 ## Progress
 
+### T1 repair 2026-10-21 (tail review `e88796c5`, user-triaged medium quick fix)
+
+- Repaired finding T1 in `frontend/apps/skriptoteket/src/views/apps/exam-workspace/useExamWorkspaceHistory.ts`: a structural flush (`flushOutcomeInner` with `structural = true` from `noteEdit`) drains owed snapshots at once but leaves a working copy whose typing pause still runs until the pause, so the burst keeps its pause and one-step undo grouping; the `flushNewer` acknowledgement hook likewise leaves newer typing to a running pause instead of queueing an eager store. Explicit flush, undo, departure, retry and settle paths still force the working-copy store.
+- Added `useExamWorkspaceEditing.typingBurstUndo.spec.ts`: type B, add an ordering step, type C at 10 ms, assert only the two owed steps exist at 200 ms, extend to CD, assert 3 steps after the pause, and assert one undo restores the pre-burst body (first step `B`, second step empty). The spec fails before the fix (premature `C` step) and passes after.
+- Proof: the new spec, the existing `typingPause`/`ordering`/`history`/`structuralRetry` editing specs and the `useExamWorkspaceHistory.*` plus loader specs (69 tests passed), `pdm run fe-type-check` and `pdm run fe-lint`. Logs under the repair session's `evidence/t1-fix/`.
+- Task status unchanged; no rereview claimed here — the parent owns review closeout.
+
 ### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
 
 - Work on main through merge `bacdd0d0` (2026-10-18, typing-pause undo fix). Review-1 F1-F4 and review-2 F1 repairs are named in commit subjects; no verdict is recorded here.

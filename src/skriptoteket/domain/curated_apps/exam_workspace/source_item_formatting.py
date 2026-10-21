@@ -46,10 +46,15 @@ class ItemSourceFormatting:
 
 
 def item_source_formatting(
-    produced: ProducedItem, chunks: tuple[DocxChunk, ...], *, foreign_chunks: Sequence[DocxChunk]
+    produced: ProducedItem,
+    chunks: tuple[DocxChunk, ...],
+    *,
+    foreign_chunks: Sequence[DocxChunk],
+    released_chunks: Sequence[DocxChunk],
 ) -> ItemSourceFormatting:
     """Prepare one item's source; a paragraph whose text is another question's source is not
-    this item's content, so the body knows those other chunks (TASK-SKRIPT-39-04-15 D4)."""
+    this item's content, so the body knows those other chunks (TASK-SKRIPT-39-04-15 D4), and
+    the part lines admission moved out of the reply's entries (review F1)."""
     text = "\n".join(chunk.text for chunk in chunks)
     carrier_spans: tuple[tuple[int, int], ...] = ()
     surfaces = tuple(
@@ -130,6 +135,7 @@ def item_source_formatting(
         ignored=(produced.printed_label or "",),
         excluded=tuple(sorted((*ownership.exclusion_ranges(), *carrier_spans))),
         foreign=tuple(chunk.text for chunk in foreign_chunks),
+        released=tuple(chunk.text for chunk in released_chunks),
     )
     for start, end in carrier_spans:
         body.covered.update(range(start, end))

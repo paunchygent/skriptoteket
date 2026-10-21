@@ -7,12 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-21'
-status: in_progress
+status: done
 closeout_review:
   record: inline
   status: approved
-  reviewer: ruthless-reviewer
+  reviewer: user
   decided_at: '2026-10-21'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-21 ("Close it", relayed by the Mac orchestrator) after Pi ruthless-reviewer 4156e084 approved repair 7b6f17a7 with no findings (retained root 01a15f58-90ab-7006-b41e-b9d7ee5a13fc, evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json), merge 469cbaa7 verified by the full suite on main d9fab7e2 run on Hemma, and the Mac staging walk A at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md).'
 task_kind: story
 acceptance_criteria:
 - After a teacher signs out, the landing page shows no 'Det gick inte att hämta dina
@@ -66,3 +68,4 @@ One sign-out from the exam workspace in a real browser on staging, with no list 
 - Pi ruthless-reviewer `4156e084` approved with no findings (`evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json`). Non-blocking note: the shell check reads matched records and any `minRole` string, while the router guard reads merged meta and recognised roles; they agree for the current flat route table.
 - Merged to main with `--no-ff`. Owed: the staging walk of a real sign-out, then user closure.
 - Mac staging walk at `4b321fa1` (Edge, 2026-10-21) passed: with an exam open and with no exam open, "Logga ut" lands on `/` with no saved-list toast, and no request reaches `/exam-workspace/documents` or `/exam-workspace/unreadable-documents` (Mac record `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`). Waits for user closure.
+- Closed to done on 2026-10-21 by the user's closure (agent-planning:user-closure-gate).

@@ -69,8 +69,6 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     workspace_suggestions_json: Mapped[dict[str, JsonValue] | None] = mapped_column(
         JSONB, nullable=True
     )
-    retry_identity: Mapped[str | None] = mapped_column(String(255), nullable=True)
-
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     max_attempts: Mapped[int] = mapped_column(Integer, nullable=False, server_default="1")
     available_at: Mapped[datetime] = mapped_column(

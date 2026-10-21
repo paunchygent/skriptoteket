@@ -7,12 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
   status: approved
-  reviewer: ruthless-reviewer
+  reviewer: user
   decided_at: '2026-10-21'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-21 ("close 41-02-03 and keep working", relayed by the Mac orchestrator) after Pi ruthless-reviewer e81a0e99 (changes_requested; medium F1-F2 repaired at c204d880 and bd7a57a7 and admitted on focused proof, retained root 01a15f53-3b1b-7dcd-8cae-f7e114f55406, evidence/reviews/review-ef65d98d.md), merge e6fee0d0 with the Hemma pre-push suite passing, and the Mac staging walk at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - The public guest DigiExam jobs table, routes, worker, artifacts, planner, PDF builder, QTI adapter and view are removed with no remaining reference
@@ -108,4 +110,5 @@ Stop and report if a removed module turns out to serve another caller, or if the
   - Guest at `/public/apps/documents.conversion_hub/exam-converter`: the guest workspace opens; a `.dxe` import shows the sign-in notice with no server call (ST-SKRIPT-41-02 P1, 41-02-02 G4); a QTI import (200) and a PDF export (200) work.
   - Signed in: a DigiExam import completes (202, 7 questions); a document with answer keys exports QTI and PDF (200); the imported document's exports return the normal 422 `missing_answer_key`.
   - `POST .../exam-converter/jobs` returns 405, not a redirect (X1).
-  - Open with the user: whether a signed-out visitor on `/apps/exam-converter` goes to the guest workspace instead of login. Waits for user closure.
+  - User decision 2026-10-21 (through the Mac orchestrator: "Ja, behåll inloggningen för utloggade besökare på /apps/exam-converter."): a signed-out visit to `/apps/exam-converter` keeps going to HuleEdu login and then lands on `/apps/exam-workspace`, as built and walked. No code change. Waits for user closure.
+- Closed to done on 2026-10-21 by the user's closure (agent-planning:user-closure-gate).

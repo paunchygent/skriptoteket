@@ -59,7 +59,6 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     # suggestions it produced; both stay on the job, never in an overlay table.
     workspace_request_json: dict[str, JsonValue] | None = None
     workspace_suggestions_json: dict[str, JsonValue] | None = None
-    retry_identity: str | None = Field(default=None, max_length=255)
 
     attempts: int = 0
     max_attempts: int = 1
@@ -140,7 +139,6 @@ def enqueue_workspace_enrichment_job(
     workspace_document_revision: int,
     workspace_request_json: dict[str, JsonValue],
     now: datetime,
-    retry_identity: str | None = None,
 ) -> ExamAnswerKeyEnrichmentJob:
     """Build one queued suggestion job running on editor-sent content.
 
@@ -158,7 +156,6 @@ def enqueue_workspace_enrichment_job(
         workspace_lineage_id=workspace_lineage_id,
         workspace_document_revision=workspace_document_revision,
         workspace_request_json=workspace_request_json,
-        retry_identity=retry_identity,
         available_at=now,
         created_at=now,
         updated_at=now,

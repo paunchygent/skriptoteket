@@ -50,6 +50,7 @@ The public guest converter today converts DigiExam files through its own jobs ta
   height, and the editor is the widest column at default widths. Panels have drag handles, a
   collapsible list rail and widths remembered per browser. W1 and W2 are handed to
   TASK-SKRIPT-40-04-17.
+- 2026-10-21: TASK-SKRIPT-41-02-03 is `done` (user closure), so all six tasks are done. The Mac staging walk at `4b321fa1` gave each guest start and export its own browser proof: QTI import, blank start, and QTI, print PDF, DOCX and Exam.net PDF exports all returned 200 (Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, B3 and addendum). Owed before story closure: the empty-title sign-in handoff fix (TASK-SKRIPT-40-04-21 D12), because a guest who starts blank and never sets a title is probably refused when the draft is saved to Mina filer at sign-in (P5).
 
 ## Verification
 

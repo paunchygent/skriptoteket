@@ -28,11 +28,15 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_qti_import im
     ParseExamWorkspaceQtiPackageHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_package_reader import (  # noqa: E501
     ExamNetQtiPackageReader,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_conversion import EmbeddedImageDecodabilityProtocol
 from skriptoteket.protocols.exam_workspace import (
     CreateBlankExamWorkspaceDocumentHandlerProtocol,
     ExamNetQtiPackageReaderProtocol,
@@ -50,6 +54,11 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 class ExamWorkspaceImportProvider(Provider):
     """Provide exam workspace import lanes (DOCX, DigiExam, QTI)."""
 
+    @provide(scope=Scope.APP)
+    def embedded_image_decodability(self) -> EmbeddedImageDecodabilityProtocol:
+        """Provide the stateless Pillow full-decode check for embedded images."""
+        return PillowEmbeddedImageDecodability()
+
     @provide(scope=Scope.REQUEST)
     def process_digiexam_job(
         self,
@@ -60,6 +69,7 @@ class ExamWorkspaceImportProvider(Provider):
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
+        image_decodability: EmbeddedImageDecodabilityProtocol,
     ) -> ProcessExamWorkspaceDigiExamJobHandler:
         return ProcessExamWorkspaceDigiExamJobHandler(
             jobs=jobs,
@@ -69,6 +79,7 @@ class ExamWorkspaceImportProvider(Provider):
             clock=clock,
             id_generator=id_generator,
             codec=codec,
+            image_decodability=image_decodability,
         )
 
     @provide(scope=Scope.REQUEST)

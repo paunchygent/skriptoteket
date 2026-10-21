@@ -149,3 +149,10 @@ material performance concern.
 
 - Work on main: merge `066d51af` (2026-09-05, deployed then) and merge `d35f0ee2` (2026-10-18: DigiExam prompt images classified with an HTML parser, PDF prompt images bound through `prompt_image_positions`, gap depth tracked structurally). The 2026-10-18 commits have no review recorded here.
 - Owed: review of the 2026-10-18 commits, then closeout. The Exam.net import check stays user-coordinated.
+
+### Repair 2026-10-21 (review d35f0ee2 F3, branch codex/task-skript-39-01-02)
+
+- Fixed F3 (medium): `_image_metadata` in `digiexam_embedded_assets.py` treated a PNG or JPEG with a valid header but a truncated or corrupt image stream as usable, so the image vanished from the PDF with no placeholder and no warning. Image usability is now decided at the embedded-asset extraction owner: after header/dimension recognition, the payload must fully decode through Pillow (`Image.open` + `load()`, reusing the existing readability-probe pattern); otherwise it stays out of the usable-asset collection and takes the existing missing-image path (visible placeholder plus the non-blocking `MISSING_PROMPT_IMAGE` warning, T2/T3). Valid images keep their header-derived metadata unchanged. Unreferenced-payload policy is unchanged (T6).
+- Proof: new `test_truncated_png_reference_becomes_placeholder_without_blocking` (the review's 24-byte truncated PNG), `test_truncated_jpeg_reference_becomes_placeholder_without_blocking`, and `test_valid_png_reference_stays_usable_without_warning` in `test_digiexam_recoverable_source_repairs.py`; both truncated tests failed before the fix and pass after. Full exam-conversion suite (293 tests), `pdm run lint`, and `pdm run typecheck` pass; logs under the repair session's `evidence/`.
+- The user's triage of 2026-10-21 accepted F1 and F2 of review d35f0ee2 unfixed; no change was made for either finding.
+- Status stays `in_progress`: review admission and task closeout remain with the parent.

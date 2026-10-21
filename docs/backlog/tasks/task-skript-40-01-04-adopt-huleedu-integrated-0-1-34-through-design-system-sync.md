@@ -14,7 +14,7 @@ closeout_review:
 task_kind: story
 acceptance_criteria:
 - Running repository-governance-frontend-catalog design-system sync from skill-repository main 5cbfeb7f sets design-system-map.json and the mirror to 0.1.34, and the diff holds only what 0.1.34 changed
-- UiSegmentedToggle.vue matches the 0.1.34 export byte for byte, with no cast, FocusableButton alias or non-null assertion
+- UiSegmentedToggle.vue matches the 0.1.34 export byte for byte, with no cast or non-null assertion (the FocusableButton alias is retained as the focus guard's narrow type)
 - pdm run design-system-validate, frontend typecheck, ESLint, build and the focused UiSegmentedToggle specs pass
 dependencies:
 - TASK-SKILL-REP-0351
@@ -31,8 +31,9 @@ skill-repository main 5cbfeb7f. Skriptoteket mirrored 0.1.33, synced in
 
 - 0.1.34 changes only `UiSegmentedToggle.vue`: `setButtonRef` takes the raw ref
   value and keeps it only when an `isFocusableButton` guard accepts it. The
-  `as FocusableButton | null` cast, the `FocusableButton` alias and the
-  `props.options[index]!` assertion are gone. There is no visual change.
+  `as FocusableButton | null` cast and the `props.options[index]!` assertion
+  are gone. The `FocusableButton` alias is retained: 0.1.34 keeps it as the
+  `isFocusableButton` guard's narrow type. There is no visual change.
 - This is a version-only refresh: the root map's export set is unchanged, the
   pre-commit hook stays active, and sync updates the version (40-01-01
   adoption rule).
@@ -90,3 +91,19 @@ presentation change.
 ### Reconciliation 2026-10-20 (Mac parent, against main 114ca971)
 
 - Merged to main as `e9983e4f` (2026-10-19); huleedu-integrated 0.1.34 is pinned. Owed: the independent review, then closeout.
+
+### Fix 2026-10-21 (review findings F1, F2)
+
+- Independent review 2026-10-21 (retained session `01a15f48-0f71-77ba-b7df-f48c8e838efb`
+  `evidence/reviews/task-skript-40-01-04-code-review.md`, verdict `changes_requested`)
+  raised medium findings F1 (unchecked `EditorWorkspaceMode` assertion in
+  `EditorWorkspaceModeSelector.vue`) and F2 (positional DOM selection and
+  `HTMLElement` cast in `sharedSegmentedToggle.spec.ts`), and noted this doc
+  overstated the `FocusableButton` removal.
+- F1: caller options now carry mode-typed values and `onSelect` narrows through
+  an `isEditorWorkspaceMode` guard; no shared-component fork, new modes, or
+  compatibility path. F2: the spec selects radios and labels by role and visible
+  text with `instanceof` narrowing; click, opt-in measurement, resize, and
+  disconnect assertions retained.
+- Corrected the alias sentences above: the alias is retained as the guard's
+  narrow type. Task status unchanged.

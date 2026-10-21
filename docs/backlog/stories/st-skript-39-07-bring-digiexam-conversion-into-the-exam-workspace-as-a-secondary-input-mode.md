@@ -101,6 +101,10 @@ Scope boundaries:
 | TASK-SKRIPT-39-07-02 | Answer-key suggestions for DigiExam-imported questions through the existing per-question suggestion lane                                              | TASK-SKRIPT-39-07-01                                                                               |
 | TASK-SKRIPT-39-07-03 | Removal of the old converter routes, correction sessions, correction overlay, old DigiExam answer-key lane and screens of the signed-in old converter | TASK-SKRIPT-39-07-01, TASK-SKRIPT-39-07-02, and TASK-SKRIPT-40-04-03 shipping the DigiExam entry   |
 
+## Progress
+
+- 2026-10-21 (Hemma orchestrator), closure readiness: the Mac staging walk at `4b321fa1` proved the in-app DigiExam import (signed-in import 202, document opens with 7 questions) and editing a DigiExam-imported document in the workspace editor (document `ea09e8ec…` reached revision 2 and the edit survived a reload) (Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, B4 and the last addendum). Exports are proved by TASK-SKRIPT-39-07-01. Open: TASK-SKRIPT-39-07-03 (its tail review waits for the user's decision; its clause that the public guest converter stays is superseded by TASK-SKRIPT-41-02-03).
+
 ## Verification
 
 - Each task's focused tests and API proof as named in its contract.

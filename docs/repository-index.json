@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0c102a61bcc41838e674cd332019fad9fce9a3a42f765db5a8f678bbe1b1ce5c",
+  "source_set_digest": "3142e3491f6e08eaf3b87b538232e725c88fd42811e4344d9ef347972692479a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7108,7 +7108,7 @@
       "type": "task",
       "title": "Signing out shows no saved-exam list error",
       "path": "docs/backlog/tasks/task-skript-40-04-22-signing-out-shows-no-saved-exam-list-error.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7120,8 +7120,29 @@
       "closeout_review": {
         "record": "inline",
         "status": "approved",
-        "reviewer": "ruthless-reviewer",
-        "decided_at": "2026-10-21"
+        "reviewer": "user",
+        "decided_at": "2026-10-21",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-21 (\"Close it\", relayed by the Mac orchestrator) after Pi ruthless-reviewer 4156e084 approved repair 7b6f17a7 with no findings (retained root 01a15f58-90ab-7006-b41e-b9d7ee5a13fc, evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json), merge 469cbaa7 verified by the full suite on main d9fab7e2 run on Hemma, and the Mac staging walk A at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-23",
+      "type": "task",
+      "title": "After an import the question list warns about questions whose points differ from the source",
+      "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
@@ -7232,7 +7253,7 @@
       "type": "task",
       "title": "The public guest DigiExam converter line is removed",
       "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7244,8 +7265,10 @@
       "closeout_review": {
         "record": "inline",
         "status": "approved",
-        "reviewer": "ruthless-reviewer",
-        "decided_at": "2026-10-21"
+        "reviewer": "user",
+        "decided_at": "2026-10-21",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-21 (\"close 41-02-03 and keep working\", relayed by the Mac orchestrator) after Pi ruthless-reviewer e81a0e99 (changes_requested; medium F1-F2 repaired at c204d880 and bd7a57a7 and admitted on focused proof, retained root 01a15f53-3b1b-7dcd-8cae-f7e114f55406, evidence/reviews/review-ef65d98d.md), merge e6fee0d0 with the Hemma pre-push suite passing, and the Mac staging walk at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
@@ -8484,6 +8507,24 @@
         "decided_at": "2026-10-21",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 321854a9 (retained session 01a15559-85c6-7d24-9a7f-4009457f671a, evidence/reviews/321854a9-01dc-4c81-853e-fbc3d9f2f9cb.md) reviewed e0ae15bb: changes requested, six medium findings F1-F6, no blocker or high. Repaired at b1f019e6 (one delta per finding) and merged to main 6a557b5d. Admitted by the Hemma orchestrator on focused proof without rereview, 2026-10-21 at main b9ad44a4: tests/unit/governance/test_pytest_execution_policy.py 23 passed, ruff check and format clean on the eleven repaired Python files, full pdm run typecheck passes (retained session 01a15f48-0f71-77ba-b7df-f48c8e838efb, evidence/admission/)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0051",
+      "type": "task",
+      "title": "The pre-push check runs directly on Hemma and refuses a push it cannot verify",
+      "path": "docs/backlog/tasks/task-skript-rep-0051-the-pre-push-check-runs-directly-on-hemma-and-refuses-a-push-it-cannot-verify.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

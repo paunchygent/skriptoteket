@@ -45,8 +45,8 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                               |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | Every export and its Mina filer copy is named after the exam title without punctuation plus the extension; all formats share that base name, with no -qti or -examnet suffix (T14). Amended by user decision 2026-10-21: the three PDF variants of TASK-SKRIPT-40-04-07 carry a suffix after the base name: `<titel>.pdf`, `<titel> facit.pdf` and `<titel> Exam.net.pdf`; the QTI `.zip` and the `.docx` carry none. |
 
 ## Progress
@@ -61,3 +61,14 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 - User decision 2026-10-21 (relayed by the Mac orchestrator): the PDF variant suffixes stay as main names them; D1 is amended to match. No code change.
 - Mac staging walk wave 1b on `a8de9ae6` (app code equal to main `b9ad44a4`) passed: export names follow the title; a blank title and "???" both save, and export is refused with 422 `title_without_text` (Mac record `.artifacts/staging-walk-l1b-a8de9ae6/walk-record.md`).
 - Review f9239f80 (2026-10-21, changes_requested, two medium findings: titles long enough to overflow the 255-character Mina filer name column, and the size of `user_vault_file_repository.py`) is held for user triage (retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/reviews/task-skript-40-04-05-review-f9239f80.md`).
+
+### 2026-10-21 (repair owner, review f9239f80)
+
+- F1 repair on branch `codex/task-skript-40-04-05` per the user's 2026-10-21 triage (cap the export base name so every export file name, including the longest ` Exam.net.pdf` variant suffix and its extension, fits within 255 characters): `export_file_base_name` in `exam_workspace_exports.py` now caps the shared base at 242 characters, so the download name and the Mina filer name stay the same; the title itself and the schema are unchanged. Focused proof: new 252-character-title boundary test (fails before with a 256-character QTI name, passes after), the existing export-name and Content-Disposition tests, `pdm run lint` and `pdm run typecheck`.
+- The user's triage of 2026-10-21 accepted F2 (the 665-line `user_vault_file_repository.py`) unfixed; no decomposition was done here.
+
+### 2026-10-21 (Hemma orchestrator, admission and walk)
+
+- F1 admitted on focused proof and merged to main `3eb5742f`, with the trailing-space repair `9eb05ef0` (a cut just after a space leaves no trailing space). The full suite passed on `3eb5742f` (frontend 4392 tests, backend 7986 passed).
+- Staging walk at `aff7b005` by the Mac orchestrator: PASS. The proof user set a 270-character title through the UI, saved at revision 2. QTI, PDF, PDF med facit, DOCX and Exam.net PDF all returned 200, with file names of 246-255 characters that keep their suffix (facit 252, Exam.net 255). Record: Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, last addendum.
+- Note, not a finding: with å, ä and ö the longest names reach 271 UTF-8 bytes, which only a Linux filesystem with a 255-byte limit refuses; Windows and macOS accept them.

@@ -15,8 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-AssetReferenceKey = tuple[str, int]
-
 
 class DigiExamExamNetPdfStatus(StrEnum):
     """Renderer readiness state for the Exam.net-oriented PDF target."""
@@ -62,14 +60,6 @@ class DigiExamExamNetPdfAssetFile:
     relative_path: str
     media_type: str
     payload: bytes
-
-
-@dataclass(frozen=True)
-class DigiExamExamNetPdfPromptRender:
-    """Sanitized prompt HTML plus target-renderer warnings."""
-
-    html: str
-    warnings: tuple[DigiExamExamNetPdfWarning, ...]
 
 
 @dataclass(frozen=True)
