@@ -86,6 +86,7 @@ def aligned_native_item(
     *,
     chunks: Iterable[DocxChunk] = (),
     foreign_chunks: Sequence[DocxChunk],
+    released_chunks: Sequence[DocxChunk] = (),
     language: Language,
     formatting_observer: Callable[[str], None] | None = None,
 ) -> AlignedItem:
@@ -95,7 +96,9 @@ def aligned_native_item(
     alignment the source formatting made, never a second reading of the wording. A paragraph
     whose text is another question's source is not this item's content: ``foreign_chunks``
     holds the other questions' own chunks, and such a paragraph is rebuilt from this item's
-    source instead (TASK-SKRIPT-39-04-15 D4).
+    source instead (TASK-SKRIPT-39-04-15 D4). ``released_chunks`` holds the part lines admission
+    moved out of the reply's entries: a paragraph whose text is one of them is the part's source
+    and leaves the body (review F1, 2026-10-21).
 
     An asset segment becomes a native picture reference only when its id belongs to one of
     the provided source chunks; a model-invented id raises, so admission falls back to the
@@ -110,7 +113,9 @@ def aligned_native_item(
     if unresolved:
         raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
     known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
-    formatting = item_source_formatting(produced, chunk_list, foreign_chunks=foreign_chunks)
+    formatting = item_source_formatting(
+        produced, chunk_list, foreign_chunks=foreign_chunks, released_chunks=released_chunks
+    )
     choices = tuple(
         NativeChoice(choice_id=f"choice_{index:03d}", body=produced_entry_body(choice.text))
         for index, choice in enumerate(produced.choices, start=1)
