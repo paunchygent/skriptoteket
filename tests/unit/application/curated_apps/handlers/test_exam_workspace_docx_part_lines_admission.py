@@ -58,6 +58,7 @@ def _normalised_state(
         unplaced_anchors=(),
     )
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

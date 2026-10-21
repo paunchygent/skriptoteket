@@ -107,6 +107,7 @@ def _assembled() -> tuple[NativeExamDocument, dict[str, bytes], str, str]:
         _chunk("body:0004", "Facit: rätt svar är alpha.", _FACIT_PNG),
     )
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,
@@ -191,6 +192,7 @@ def test_global_pictured_heading_retains_original_wording_and_interior_position(
     heading = DocxChunk("body:0001", "heading", text, text, (image,))
     metadata = ProducedMetadata(text="Läs diagrammet", source_anchors=(heading.anchor,))
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,

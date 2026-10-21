@@ -142,6 +142,7 @@ def test_a_question_holding_only_its_points_heading_keeps_its_points() -> None:
     chunks = _chunks()
     normalised = _normalised(_grouped(chunks), chunks)
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

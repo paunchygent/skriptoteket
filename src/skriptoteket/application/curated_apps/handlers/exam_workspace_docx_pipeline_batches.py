@@ -123,6 +123,7 @@ def batch_state(run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildStat
         job.source_sha256,
         job.chunks,
         claimable=batch.claims - exam_wide,
+        origin_kind=job.origin_kind,
         header_anchors=run.state.header_anchors,
         context_anchors=batch.reads | exam_wide,
         allowed_kinds=batch.kinds,

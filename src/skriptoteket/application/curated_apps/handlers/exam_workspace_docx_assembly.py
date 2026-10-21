@@ -242,6 +242,7 @@ def provisional_result(
         filename=state.filename,
         source_sha256=state.source_sha256,
         chunks=tuple(c for c in state.chunks if c.anchor not in state.header_anchors),
+        origin_kind=state.origin_kind,
         accepted=(*state.accepted, *placeholders),
         review_reasons={
             chunk.anchor: state.reasons.get(chunk.anchor, NO_ITEM_REASON)

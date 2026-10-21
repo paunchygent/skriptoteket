@@ -39,6 +39,7 @@ def _chunk(anchor: str, text: str) -> DocxChunk:
 def _state(*texts: str) -> DocxBuildState:
     chunks = tuple(_chunk(f"body:{n:04d}", text) for n, text in enumerate(texts, start=1))
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

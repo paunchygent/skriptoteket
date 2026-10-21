@@ -238,6 +238,7 @@ def _build_with_heading(heading: str, points: int | float):
     )
     aligned = aligned_native_item(produced, language="sv", foreign_chunks=())
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,

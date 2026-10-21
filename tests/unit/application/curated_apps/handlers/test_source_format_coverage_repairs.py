@@ -100,6 +100,7 @@ def test_assembled_item_keeps_an_omitted_size_heading():
         foreign_chunks=(),
     )
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="heading.docx",
         source_sha256="a" * 64,

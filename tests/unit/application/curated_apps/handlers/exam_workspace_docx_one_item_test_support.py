@@ -48,6 +48,7 @@ def _state(
             own.append(anchor)
         grouped.append(tuple(own))
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

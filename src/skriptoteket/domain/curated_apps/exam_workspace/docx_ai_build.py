@@ -55,6 +55,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     title_without_answer_key,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    DocumentImportOriginKind,
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
@@ -116,6 +117,7 @@ def assemble_build_result(
     filename: str,
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
+    origin_kind: DocumentImportOriginKind,
     accepted: Accepted = (),
     review_reasons: dict[str, str],
     key_anchors: frozenset[str] = frozenset(),
@@ -222,9 +224,13 @@ def assemble_build_result(
     if title is not None:
         document_title = title.text
     else:
-        stem, extension = (
-            (filename[:-5], filename[-5:]) if filename.lower().endswith(".docx") else (filename, "")
-        )
+        lowered = filename.lower()
+        if lowered.endswith(".docx"):
+            stem, extension = filename[:-5], filename[-5:]
+        elif lowered.endswith(".pdf"):
+            stem, extension = filename[:-4], filename[-4:]
+        else:
+            stem, extension = filename, ""
         document_title = title_without_answer_key(stem, filename=True) + extension
     document = NativeExamDocument(
         document_id=document_id,
@@ -235,7 +241,7 @@ def assemble_build_result(
         parents=parents,
         assets=assets,
         origin=NativeExamDocumentOrigin(
-            kind="docx_import",
+            kind=origin_kind,
             source_filename=filename,
             source_sha256=source_sha256,
             extractor_version="docx_ai_build_v2",

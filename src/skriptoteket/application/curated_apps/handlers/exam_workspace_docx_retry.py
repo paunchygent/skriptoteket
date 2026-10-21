@@ -294,6 +294,9 @@ class RetryExamWorkspaceItemHandler:
             saved.origin.source_filename or "prov.docx",
             saved.origin.source_sha256 or "",
             (*pending, *context),
+            # The retry lifts only the item and never writes a document origin; like the
+            # placeholder filename, this kind only completes the build state.
+            origin_kind="pdf_import" if saved.origin.kind == "pdf_import" else "docx_import",
             claimable=frozenset(chunk.anchor for chunk in pending),
             context_anchors=frozenset(chunk.anchor for chunk in context),
             allowed_kinds=frozenset({kind}),
