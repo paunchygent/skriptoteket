@@ -38,6 +38,8 @@ import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
 import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
+import AiDailyLimitNote from "./AiDailyLimitNote.vue";
+import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
 
 const EXTENSION = ".provdokument.zip";
 
@@ -64,12 +66,15 @@ const emit = defineEmits<{
 
 const id = useId();
 const contentAiNoteId = `${id}-ai-note`;
+const contentLimitNoteId = `${id}-limit-note`;
 const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
+/** The door's daily limit disables the content button for the page session. */
+const limitReached = aiDailyLimitReached;
 const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);
 const myCourses = useExamWorkspaceMyCourses(store.shared);
 
@@ -171,6 +176,9 @@ async function handleToggleTag(event: Event, entryId: string, text: string): Pro
 }
 
 function handleSuggestContent(): void {
+  if (limitReached.value) {
+    return;
+  }
   if (isGuest.value) {
     requestSignIn(GUEST_AI_SIGN_IN);
     return;
@@ -325,9 +333,9 @@ function cites(entryId: string): string | null {
       <button
         type="button"
         class="xw-btn xw-btn--compact"
-        :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || adminOnly)"
-        :title="adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
-        :aria-describedby="adminOnly ? contentAiNoteId : undefined"
+        :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || adminOnly || limitReached)"
+        :title="limitReached ? AI_DAILY_LIMIT_NOTE : adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
+        :aria-describedby="limitReached ? contentLimitNoteId : adminOnly ? contentAiNoteId : undefined"
         data-test="exam-workspace-content-suggest"
         @click="handleSuggestContent"
       >
@@ -345,6 +353,10 @@ function cites(entryId: string): string | null {
     >
       {{ AI_ADMIN_ONLY_NOTE }}
     </p>
+    <AiDailyLimitNote
+      v-if="limitReached"
+      :id="contentLimitNoteId"
+    />
     <p
       v-if="!courseKey"
       class="xw-hint"

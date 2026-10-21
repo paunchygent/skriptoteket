@@ -1,0 +1,35 @@
+<script setup lang="ts">
+/**
+ * Exam workspace daily-limit note.
+ *
+ * Domain purpose:
+ *   The one inline note every drawer AI control shows once the LLM door has
+ *   refused an AI action for the day: exactly the door's own sentence. This
+ *   is presentation only; the page-session flag lives in `aiDailyLimit`.
+ *
+ * Relationships:
+ *   - Rendered by the export blockers, the details drawer and the import
+ *     box next to their disabled AI control. The header toolbar and the
+ *     Öppna drop zone keep their own wrappers for layout reasons and read
+ *     the same note constant directly.
+ */
+
+import { AI_DAILY_LIMIT_NOTE } from "./aiDailyLimit";
+
+withDefaults(
+  defineProps<{
+    /** Test hook for the note; one stable hook keeps every control's proof alike. */
+    testId?: string;
+  }>(),
+  { testId: "ai-daily-limit-note" },
+);
+</script>
+
+<template>
+  <p
+    class="xw-hint"
+    :data-test="testId"
+  >
+    {{ AI_DAILY_LIMIT_NOTE }}
+  </p>
+</template>

@@ -37,6 +37,13 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
+import {
+  AI_DAILY_LIMIT_NOTE,
+  aiDailyLimitReached,
+  hasAiDailyLimit,
+  isAiDailyLimitError,
+  markAiDailyLimit,
+} from "./aiDailyLimit";
 import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversionMerge";
 import { importQtiPackage, isDigiExamFile, isQtiPackageFile } from "./examWorkspaceConversionImport";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
@@ -319,6 +326,11 @@ export function useExamWorkspaceConversion(
   ): Promise<void> {
     if (pollGeneration !== generation) return;
     conversionStatus.value = status;
+    // The door's daily limit is terminal for the page session: the status
+    // message already says so, and the Word import disables on the flag.
+    if (hasAiDailyLimit(status)) {
+      markAiDailyLimit();
+    }
     const deferred = await applyRevision(status, pollGeneration);
     // Adopting the fetched revision may already have ended or replaced this poll chain.
     if (pollGeneration !== generation || !isConverting.value) return;
@@ -347,9 +359,15 @@ export function useExamWorkspaceConversion(
         pollFailures = 0;
         conversionError.value = null;
       }
-    } catch {
+    } catch (error) {
       if (pollGeneration !== generation) return;
-      conversionError.value = STATUS_FAILURE_COPY;
+      // No toast for the door's limit: the Öppna drawer names it inline.
+      if (isAiDailyLimitError(error)) {
+        markAiDailyLimit();
+        conversionError.value = AI_DAILY_LIMIT_NOTE;
+      } else {
+        conversionError.value = STATUS_FAILURE_COPY;
+      }
       pollFailures += 1;
       schedulePoll(pollGeneration);
     }
@@ -417,6 +435,12 @@ export function useExamWorkspaceConversion(
     // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
     // the Öppna drawer already shows the L3 note for the refused file.
     if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
+    // The door's daily limit stops Word imports for the page session; the
+    // Öppna drawer names the limit next to the import instead.
+    if (!isDigiExamFile(file) && !isQtiPackageFile(file) && aiDailyLimitReached.value) {
+      conversionError.value = AI_DAILY_LIMIT_NOTE;
+      return;
+    }
     const pollGeneration = ++generation;
     isImporting.value = true;
     conversionError.value = null;
@@ -455,12 +479,21 @@ export function useExamWorkspaceConversion(
         : teacher.importExamWorkspaceDocument;
       const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
+      if (hasAiDailyLimit(status)) {
+        markAiDailyLimit();
+      }
       binding.noteImportStarted(status.lineage_id);
       isConverting.value = true;
       conversionStatus.value = status;
       await refreshConversion(pollGeneration);
     } catch (error) {
       if (pollGeneration !== generation) return;
+      // No toast for the door's limit: the Öppna drawer names it inline.
+      if (isAiDailyLimitError(error)) {
+        markAiDailyLimit();
+        conversionError.value = AI_DAILY_LIMIT_NOTE;
+        return;
+      }
       const message = serverImportMessage(error) ?? IMPORT_FAILURE_COPY;
       conversionError.value = message;
       toast.failure(message);

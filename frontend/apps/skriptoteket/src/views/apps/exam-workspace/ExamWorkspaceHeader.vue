@@ -23,6 +23,7 @@ import { computed, nextTick, ref } from "vue";
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
+import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
@@ -66,6 +67,8 @@ const requestSignIn = useExamWorkspaceSignIn();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
+/** The door's daily limit disables the suggest-all button for the page session. */
+const limitReached = aiDailyLimitReached;
 
 const editingTitle = ref(false);
 const draft = ref("");
@@ -93,6 +96,9 @@ function cancelRename(): void {
 }
 
 function handleSuggestAll(): void {
+  if (limitReached.value) {
+    return;
+  }
   if (isGuest.value) {
     requestSignIn(GUEST_AI_SIGN_IN);
     return;
@@ -263,10 +269,10 @@ function handleSuggestAll(): void {
       <button
         type="button"
         class="xw-cmd"
-        :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only'"
-        :title="aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only' || limitReached"
+        :title="limitReached ? AI_DAILY_LIMIT_NOTE : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
-        :aria-description="aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
+        :aria-description="limitReached ? AI_DAILY_LIMIT_NOTE : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
         data-test="exam-workspace-suggest-all"
         @click="handleSuggestAll"
       >
@@ -276,6 +282,11 @@ function handleSuggestAll(): void {
           :class="{ 'xw-spin': suggestBusy }"
         />
       </button>
+      <span
+        v-if="limitReached"
+        class="ws-limit"
+        data-test="ai-daily-limit-note"
+      >{{ AI_DAILY_LIMIT_NOTE }}</span>
       <span class="ws-status-slot">
         <span
           v-if="title !== null"
@@ -328,6 +339,12 @@ function handleSuggestAll(): void {
 }
 .ws-status svg { flex: none; }
 .ws-status__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* The daily-limit note sits next to the suggest-all button for the page
+   session; two lines at most so the toolbar keeps its height. */
+.ws-limit {
+  max-width: 16rem; font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70);
+  line-height: 1.35;
+}
 
 @media (max-width: 1279px) {
   .ws-head { padding: 0 var(--huleedu-space-4); gap: var(--huleedu-space-3); }
@@ -336,6 +353,7 @@ function handleSuggestAll(): void {
 @media (max-width: 767px) {
   .ws-head { height: 52px; }
   .ws-tools { flex: 1; justify-content: flex-end; }
+  .ws-limit { max-width: 9rem; }
   /* Glyph only on a phone; the text stays for assistive technology and the tooltip. */
   .ws-status-slot { width: auto; margin-left: 0; }
   .ws-status__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
