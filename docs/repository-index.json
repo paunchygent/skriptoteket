@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db77419983c255c68c20298548adbe94506a3391a7e26b234327d854d4fd4d77",
+  "source_set_digest": "6e33d542c9b7f7cbd88d5da9db7ecacbd2d428515916a9694a0c78d69131e940",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6360,7 +6360,7 @@
       "type": "task",
       "title": "A PDF exam with text opens in the exam workspace through the Word import path",
       "path": "docs/backlog/tasks/task-skript-39-10-01-a-pdf-exam-with-text-opens-in-the-exam-workspace-through-the-word-import-path.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6371,7 +6371,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a1605d-572d-70b4-aa95-dc8d05125933 (evidence/reviews/review-39-10-01.md and the F1 rereview); the user chose the page-match rule with merge on proof on 2026-10-22. Merged as 08726f81, bb293251 and fd2d911c (W1). Mac staging walk at bb293251 passed (footer PDF and the bf26 corpus PDF, 53 questions and 59 p, guest prompt), and the W1 re-walk at fd2d911c passed (PDF label shows PDF, Word label shows Word)."
       }
     },
     {
