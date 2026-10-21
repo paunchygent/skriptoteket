@@ -59,6 +59,13 @@ is locally patched.
 | 3 | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules. |
 | 4 | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. On main `e9983e4f`; review and closeout owed. |
 
+## Progress
+
+- 2026-10-21 (Hemma orchestrator), story-level proof for closure readiness:
+  - Clean-state repeat sync: `repository-governance-frontend-catalog design-system sync` from skill-repository `5cbfeb7f` (the TASK-SKRIPT-40-01-04 D1 source) onto a clean copy of main `d9fab7e2` exited 0 and changed no file (retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/admission/st-40-01-repeat-sync-d9fab7e2/`).
+  - Story-wide frontend and backend proof on main `d9fab7e2`, run directly on Hemma with the pre-push hook's steps: `fe-build`, `typecheck`, frontend tests (639 files, 4391 tests) and backend tests (7983 passed, 59 skipped; the one governance pin failure was an out-of-date local environment and passed after `pdm install --frozen-lockfile`), plus migration tests (121 passed) (`evidence/admission/full-suite-d9fab7e24/`).
+  - Open: TASK-SKRIPT-40-01-04 (review changes_requested, two medium findings, held for the user's triage).
+
 ## Verification
 
 - Each task proves real sync, digest validation and a no-diff repeat sync from its parent-owned clean committed checkpoint. The design-system hook is active at delivery.
