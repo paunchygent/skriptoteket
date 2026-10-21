@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7033707f9bfc40e1e7326fdae065c54c807e1e8fe493c1b1c589a6cc56720a12",
+  "source_set_digest": "33d91fb148eea282b8277c808d4774d2149fd522cbd56711a8f5ca5bc6bdcd37",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7108,7 +7108,7 @@
       "type": "task",
       "title": "Signing out shows no saved-exam list error",
       "path": "docs/backlog/tasks/task-skript-40-04-22-signing-out-shows-no-saved-exam-list-error.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7120,8 +7120,10 @@
       "closeout_review": {
         "record": "inline",
         "status": "approved",
-        "reviewer": "ruthless-reviewer",
-        "decided_at": "2026-10-21"
+        "reviewer": "user",
+        "decided_at": "2026-10-21",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-21 (\"Close it\", relayed by the Mac orchestrator) after Pi ruthless-reviewer 4156e084 approved repair 7b6f17a7 with no findings (retained root 01a15f58-90ab-7006-b41e-b9d7ee5a13fc, evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json), merge 469cbaa7 verified by the full suite on main d9fab7e2 run on Hemma, and the Mac staging walk A at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
