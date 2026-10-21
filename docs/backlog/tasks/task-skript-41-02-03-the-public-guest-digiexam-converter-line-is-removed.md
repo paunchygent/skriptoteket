@@ -10,7 +10,9 @@ created: '2026-10-18'
 status: in_progress
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-21'
 task_kind: story
 acceptance_criteria:
   - The public guest DigiExam jobs table, routes, worker, artifacts, planner, PDF builder, QTI adapter and view are removed with no remaining reference
@@ -95,3 +97,9 @@ Stop and report if a removed module turns out to serve another caller, or if the
   fingerprint builders, the IR-specific answer-key payload builders and two
   orphaned PDF contracts; tests now assert workspace and intermediate-exam
   outcomes directly.
+
+### Admission 2026-10-21 (Hemma orchestrator)
+
+- Pi ruthless-reviewer `e81a0e99` reviewed `a7f61563..ef65d98d`: changes_requested, two medium findings F1 and F2, no runtime regression (retained root `01a15f53-3b1b-7dcd-8cae-f7e114f55406`, `evidence/reviews/review-ef65d98d.md`).
+- Repairs `c204d880` and `bd7a57a7` admitted by the Hemma orchestrator on focused proof without rereview: lint, typecheck, domain/application/web/infrastructure tests, app factory (255 routes) and the removed-name search pass (`evidence/validation/repair-ef65d98d/`).
+- Merged to main with `--no-ff` at `e6fee0d0`. Owed: the staging walk (signed-in and signed-out on `/apps/exam-converter`, guest on the `/public/...` converter URL) and the user's answer on where a signed-out visitor on `/apps/exam-converter` goes; then user closure.
