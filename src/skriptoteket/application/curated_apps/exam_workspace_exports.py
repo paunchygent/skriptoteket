@@ -10,8 +10,7 @@ Relationships:
       `domain.curated_apps.exam_workspace.examnet_qti_export` and the planner
       in `domain.curated_apps.exam_conversion.examnet_qti_package`.
     - Receives the deterministic writer through
-      `protocols.exam_conversion.ExamNetQtiPackageWriterProtocol`, mirroring
-      `application.curated_apps.exam_conversion_producers`.
+      `protocols.exam_conversion.ExamNetQtiPackageWriterProtocol`.
 """
 
 from __future__ import annotations

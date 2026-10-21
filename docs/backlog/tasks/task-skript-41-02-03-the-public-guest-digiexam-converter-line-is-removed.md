@@ -67,9 +67,9 @@ Stop and report if a removed module turns out to serve another caller, or if the
   the bundle store and protocol, `application/curated_apps/exam_conversion.py`,
   the writer's `build_bundle_bytes` and the `dxe`/`examnet_bundle` hub formats
   are gone.
-- Kept: `parse_source_exam` (now the only content of `exam_conversion_producers.py`)
+- Kept: `parse_source_exam` (moved with its module to `digiexam_source_parsing.py`)
   and `DigiExamDxeParser` for the workspace import; the Exam.net QTI writer and
-  PDF renderer providers in `di/exam_converter.py`, which workspace exports use;
+  PDF renderer providers, renamed to `di/examnet_export_writers.py`, which workspace exports use;
   the `exam_converter` public capability, which gates the public workspace. Its
   bootstrap now carries only scope, profile, frontend route, API namespace and
   runtime status, and takes title and summary from the registry.

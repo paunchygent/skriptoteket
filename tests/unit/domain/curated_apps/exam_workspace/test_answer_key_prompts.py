@@ -13,7 +13,7 @@ from uuid import uuid4
 import pytest
 from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
+from skriptoteket.application.curated_apps.digiexam_source_parsing import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
     choice_decision_output_spec,

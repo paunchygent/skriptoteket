@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
+from skriptoteket.application.curated_apps.digiexam_source_parsing import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,

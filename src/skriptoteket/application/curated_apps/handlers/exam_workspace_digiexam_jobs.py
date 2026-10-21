@@ -6,12 +6,12 @@ import hashlib
 
 import structlog
 
+from skriptoteket.application.curated_apps.digiexam_source_parsing import parse_source_exam
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     finish_enrichment_job,
 )
-from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
     ConversionProgress,

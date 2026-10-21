@@ -20,7 +20,7 @@ from skriptoteket.protocols.exam_conversion import (
 )
 
 
-class ExamConverterProvider(Provider):
+class ExamNetExportWritersProvider(Provider):
     """Provide Exam.net export writers for the exam workspace."""
 
     @provide(scope=Scope.APP)
