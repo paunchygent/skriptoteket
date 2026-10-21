@@ -33,7 +33,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_part_heading_fragment import (  # noqa: E501
+    _CHUNKS,
     _FREE_TEXT,
+    _HEADINGS,
+    _QUESTIONS,
+    _STEMS,
     _run,
 )
 
@@ -170,6 +174,25 @@ def test_own_stem_paragraph_the_part_line_repeats_stays_in_the_item():
     _, verb = sorted(document.items, key=lambda item: item.sequence)
     assert verb.plain_text_lines() == ("Verb", _VERB)
     assert [body_text_lines(p.instruction) for p in document.parents] == [("Del 2: Verb",)]
+
+
+@pytest.mark.parametrize("rendered", ["Part 3,", _HEADINGS[1]])
+def test_question_heading_line_listed_by_a_foreign_entry_heads_its_question_once(rendered: str):
+    # Chapter_4 shape: the first entry lists the second question's part heading; the second
+    # entry renders it, whole or as a fragment. The heading opens its own question once.
+    document = _published(
+        _CHUNKS,
+        _QUESTIONS,
+        [
+            _entry(["body:0001", "body:0002", "body:0003"], (_HEADINGS[0], _STEMS[0]), 1),
+            _entry(["body:0004"], (rendered, _STEMS[1]), 1),
+        ],
+    )
+
+    first, second = sorted(document.items, key=lambda item: item.sequence)
+    assert first.plain_text_lines() == ("Part 3, Question 1", _STEMS[0])
+    assert second.plain_text_lines() == ("Part 3, Question 2", _STEMS[1])
+    assert document.parents == ()
 
 
 @pytest.mark.parametrize("rendered", ["Del 4:", "Del 4: Textanalys (1 p)"])

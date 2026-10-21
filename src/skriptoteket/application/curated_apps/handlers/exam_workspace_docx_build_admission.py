@@ -182,7 +182,7 @@ def _admit_item(
     state: DocxBuildState,
     seen: set[str],
     item_held: frozenset[str],
-    moved: tuple[str, ...],
+    part_lines: tuple[str, ...],
 ) -> None:
     try:
         produced = ProducedItem.model_validate(raw)
@@ -313,7 +313,7 @@ def _admit_item(
         foreign_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in foreign)
         # A part line that left an entry is its part's source, never this item's content: the
         # reply's copy of it, whole or a fragment, leaves the body with its anchor (F1).
-        released = set(moved) - shown
+        released = set(part_lines) - shown
         released_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in released)
         scored = with_printed_points(
             with_accepted_forms(produced, context),
