@@ -2,7 +2,7 @@
  * Exam workspace source-file intake.
  *
  * Domain purpose:
- *   Accept one exam file, a Word .docx, a DigiExam .dxe or a QTI .zip
+ *   Accept one exam file, a Word .docx, a PDF .pdf, a DigiExam .dxe or a QTI .zip
  *   package, from the file picker or a drop and hand it to the import; any
  *   other file, or several exams in one drop, leaves the current state and
  *   shows Swedish guidance instead. While the import is
@@ -19,9 +19,9 @@
 import { ref } from "vue";
 import type { Ref } from "vue";
 
-const EXAM_FILE_EXTENSIONS = [".docx", ".dxe", ".zip"];
+const EXAM_FILE_EXTENSIONS = [".docx", ".pdf", ".dxe", ".zip"];
 const INVALID_FILE_COPY =
-  "Det gick inte att använda filen. Välj en Word-fil (.docx), en DigiExam-fil (.dxe) eller en QTI-fil (.zip).";
+  "Det gick inte att använda filen. Välj en Word-fil (.docx), en PDF-fil (.pdf), en DigiExam-fil (.dxe) eller en QTI-fil (.zip).";
 const MULTIPLE_FILES_COPY = "Välj en provfil åt gången.";
 
 function isExamFile(file: File): boolean {

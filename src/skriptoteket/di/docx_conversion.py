@@ -25,8 +25,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_u
 )
 from skriptoteket.application.curated_apps.item_type_labeling import TwoPassItemTypeLabeler
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_import_source import (  # noqa: E501
+    ImportLabelerSource,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
+    PdfPlumberLabelerMarkdown,
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
@@ -97,7 +103,9 @@ def build_docx_conversion_pipeline(
             uow=uow,
             clock=clock,
         ),
-        labeler_source=PythonDocxLabelerMarkdown(),
+        labeler_source=ImportLabelerSource(
+            docx=PythonDocxLabelerMarkdown(), pdf=PdfPlumberLabelerMarkdown()
+        ),
         exchange=exchange,
         profile=build_luna_docx_conversion_profile(settings),
         progress=progress,

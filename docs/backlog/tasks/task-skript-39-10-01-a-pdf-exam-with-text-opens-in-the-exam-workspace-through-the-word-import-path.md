@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -73,3 +73,11 @@ One Word corpus exam saved as PDF goes through the import box, is read into the 
 ### 2026-10-21 (Hemma orchestrator)
 
 - Scaffolded from the ST-SKRIPT-39-10 story terms. The story is `ready` by the user's grilling of 2026-10-21, relayed by the Mac orchestrator, and this task is `ready` with it. A lead session is assigned.
+
+### 2026-10-21 (implementation lead, branch `codex/task-skript-39-10-01`)
+
+- Mechanism: the PDF uses the Word import lane unchanged. The import handler admits a `.pdf` whose bytes start with `%PDF-` into an `ExamAnswerKeySourceKind.DOCX_IMPORT` job; the bytes travel in the existing `source_docx` field. The job's chunker and the pipeline's labeler source are format dispatchers (`exam_workspace_import_source`) that send PDF bytes to the new pdfplumber reader and Word bytes to the Word readers. The pipeline, job handler and validator are unchanged, and pdfplumber loads only when a PDF is read.
+- The reader (`exam_workspace_pdf_layout`, `exam_workspace_pdf_blocks`, `exam_workspace_pdf_chunker`) rebuilds the Word chunks: paragraphs from line pitch and wrap, soft line breaks, headings from font size, italic as the `<i>` facit cue, ruled and borderless tables, two-column pages, and underscore answer lines as their own chunks. It drops repeated headers, footers and page numbers. Drawn lines carry no text.
+- Real-producer proof: the Word-saved PDF of `bf26_english_1_unit_test_kap_1_2_med_facit` reads as the Word file's 136 chunks. Every table, heading level and italic span is equal. The only difference is six Word paragraphs that contain a blank soft-broken line; each reads as two chunks.
+- The import box accepts `.pdf`; the guest prompt reads "Logga in för att importera från DigiExam, Word eller PDF.". Access is the Word import's route gate. An import scan shows that the PDF modules import no AI client.
+- Owed: independent review and the staging walk (Validation), then closeout.

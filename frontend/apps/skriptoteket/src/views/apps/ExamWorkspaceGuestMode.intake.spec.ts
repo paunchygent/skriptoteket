@@ -96,17 +96,18 @@ describe("ExamWorkspaceView guest mode intake", () => {
 
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-empty"]').text()).toContain(
-      "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.",
+      "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word, PDF eller DigiExam.",
     );
     expect(wrapper.find('[data-test="exam-workspace-sign-in-prompt"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-new-exam"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("PDF (.pdf)");
     expect(wrapper.text()).toContain("DigiExam (.dxe)");
     expect(wrapper.text()).toContain("QTI (.zip)");
     expect(wrapper.get(".drop__formats").findAll(".xw-chip")).toHaveLength(0);
     expect(
       wrapper.get(".drop__formats").findAll(".drop__format").map((node) => node.text()),
-    ).toEqual(["Word (.docx)", "DigiExam (.dxe)", "QTI (.zip)"]);
+    ).toEqual(["Word (.docx)", "PDF (.pdf)", "DigiExam (.dxe)", "QTI (.zip)"]);
     expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(false);
     expect(document.querySelector("#exam-workspace-import-course")).toBeNull();
 
@@ -136,6 +137,31 @@ describe("ExamWorkspaceView guest mode intake", () => {
     await flushPromises();
 
     expect(promptText(wrapper)).toContain(GUEST_IMPORT_SIGN_IN);
+    expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
+    expect(publicMocks.importPublicExamWorkspaceQti).not.toHaveBeenCalled();
+    expectNoTeacherCalls(teacherMocks);
+    wrapper.unmount();
+  });
+
+  it("shows the import sign-in prompt naming PDF for a chosen or dropped .pdf without importing", async () => {
+    const { guest, publicMocks } = setupGuest();
+    const wrapper = await mountGuestView(guest.store);
+
+    await chooseGuestFile(wrapper, new File(["pdf"], "NO_Prov_HT25.pdf", { type: "application/pdf" }));
+    await flushPromises();
+
+    expect(promptText(wrapper)).toContain(
+      "Logga in för att importera från DigiExam, Word eller PDF.",
+    );
+
+    await wrapper.get('[data-test="exam-workspace-drop-zone"]').trigger("drop", {
+      dataTransfer: { files: [new File(["pdf"], "NO_Prov_HT25.pdf", { type: "application/pdf" })] },
+    });
+    await flushPromises();
+
+    expect(promptText(wrapper)).toContain(
+      "Logga in för att importera från DigiExam, Word eller PDF.",
+    );
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
     expect(publicMocks.importPublicExamWorkspaceQti).not.toHaveBeenCalled();
     expectNoTeacherCalls(teacherMocks);

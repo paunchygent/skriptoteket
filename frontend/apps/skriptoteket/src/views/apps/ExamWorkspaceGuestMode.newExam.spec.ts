@@ -104,7 +104,7 @@ installGuestModeObjectUrls();
 resetGuestModeTestState(teacherMocks);
 
 const EMPTY_STATE_COPY =
-  "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.";
+  "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word, PDF eller DigiExam.";
 const CONFIRM_COPY = "Det öppna provet ersätts av ett nytt. Exportera det först om du vill behålla det.";
 
 /** The true blank shape: no title and one question with nothing in it. */

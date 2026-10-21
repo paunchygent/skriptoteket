@@ -3,7 +3,7 @@
  * Exam workspace Öppna drawer.
  *
  * Domain purpose:
- *   Import an exam from Word (.docx), DigiExam (.dxe) or QTI (.zip),
+ *   Import an exam from Word (.docx), PDF (.pdf), DigiExam (.dxe) or QTI (.zip),
  *   optionally for a course, and open a saved exam. While a conversion runs,
  *   its progress replaces the drop zone; finished questions can be edited at
  *   once. The saved exams group by course (the teacher's own courses first)
@@ -77,8 +77,9 @@ const requestSignIn = useExamWorkspaceSignIn();
 const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog(store.shared);
 const { canUseAi } = useAiAccess();
 const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
-/** Guest import stays visible and asks for sign-in; signed-in Word import follows the admin gate. */
+/** Guest import stays visible and asks for sign-in; signed-in Word and PDF import follows the admin gate. */
 const isGuest = computed(() => store.teacher === null);
+/** PDF import is the Word import path: it shows wherever the Word import shows. */
 const showWordImport = computed(() => isGuest.value || canUseAi.value);
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
@@ -258,6 +259,10 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
           v-if="showWordImport"
           class="drop__format"
         >Word (.docx)</span>
+        <span
+          v-if="showWordImport"
+          class="drop__format"
+        >PDF (.pdf)</span>
         <span class="drop__format">DigiExam (.dxe)</span>
         <span class="drop__format">QTI (.zip)</span>
       </span>
@@ -265,7 +270,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         ref="fileInput"
         class="drop__input"
         type="file"
-        :accept="showWordImport ? '.docx,.dxe,.zip' : '.dxe,.zip'"
+        :accept="showWordImport ? '.docx,.pdf,.dxe,.zip' : '.dxe,.zip'"
         :disabled="importBlocked"
         tabindex="-1"
         aria-hidden="true"
