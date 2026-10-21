@@ -80,3 +80,4 @@ A teacher places the cursor in a question, clicks "Lägg till bild", chooses a P
 ### 2026-10-22 (lead)
 
 - The user reviewed mock v1 and did not approve it: the picture sat at the end of the text line, and the mock showed no real output. Decisions T3-T5 recorded. Mock v2, with real editor screenshots and real renders of every export, is in retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/mock/picture-control-mock-v2.html`; it proposes that a picture always gets its own paragraph and waits for the user's approval.
+- T2 met: the user approved mock v2 ("Approve, build it", 2026-10-22, relayed by the Hemma orchestrator). The build follows mock v2: each added picture gets its own paragraph. Accepted residuals: typing into a picture's paragraph puts the picture back into a text line, and imported inline pictures stay inline.
