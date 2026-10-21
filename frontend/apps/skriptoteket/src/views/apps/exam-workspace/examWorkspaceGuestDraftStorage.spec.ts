@@ -35,8 +35,12 @@ import {
   type ExamWorkspaceGuestDraftStoragePort,
   type StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
+import { GUEST_EDIT_LEASE_TTL_MS } from "./examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 
 const NOW = "2026-10-18T10:00:00.000Z";
+const TAB_A = "20000000-0000-4000-8000-00000000000a";
+const TAB_B = "20000000-0000-4000-8000-00000000000b";
 
 /** Any current-schema document; scenarios override only the title. */
 function exam(title = "Original"): NativeExamDocument {
@@ -109,30 +113,58 @@ describe("examWorkspaceGuestDraftStorage", () => {
     expect((await storage.load())?.draft.saved_document.title).toBe("Första");
   });
 
-  it("refuses a replaceIf whose writer's admission is gone even when its cursor still owns the slot", async () => {
-    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  it("replaces the whole slot only while the cursor, the lease and the writer's admission all hold", async () => {
+    const lease = createInMemoryGuestEditLeaseStorage();
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage({ lease });
     const first = storedDraft("Första");
     expect(await storage.replaceIf(null, first)).toBe(true);
-    const admit = vi.fn(() => false);
+    const admit = vi.fn(() => true);
+    const asA = { isLive: admit, tabId: TAB_A };
 
-    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Andra"), admit)).toBe(false);
+    // A stale cursor is the ordinary conflict; the admission is not consulted.
+    expect(await storage.replaceSlotIf(null, storedDraft("Andra"), asA)).toBe("conflict");
+    expect(admit).not.toHaveBeenCalled();
+    // Another tab's live lease refuses before the admission is consulted.
+    await lease.claim(TAB_B, Date.now());
+    expect(await storage.replaceSlotIf(first.draft.cursor, storedDraft("Andra"), asA)).toBe("lease-held");
+    expect(admit).not.toHaveBeenCalled();
+    // A retired writer refuses like a lost cursor, even holding the lease.
+    await lease.release(TAB_B);
+    await lease.claim(TAB_A, Date.now());
+    const retired = vi.fn(() => false);
+    expect(
+      await storage.replaceSlotIf(first.draft.cursor, storedDraft("Andra"), { isLive: retired, tabId: TAB_A }),
+    ).toBe("conflict");
+    expect(retired).toHaveBeenCalledOnce();
 
-    expect(admit).toHaveBeenCalledOnce();
     const kept = await storage.load();
     expect(kept?.draft.cursor).toBe(first.draft.cursor);
     expect(kept?.draft.saved_document.title).toBe("Första");
     expect(Object.keys(kept?.assets ?? {})).toEqual(["asset_001"]);
-    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Tredje"), () => true)).toBe(true);
+    expect(await storage.replaceSlotIf(first.draft.cursor, storedDraft("Tredje"), asA)).toBe("replaced");
+    expect(admit).toHaveBeenCalledOnce();
     expect((await storage.load())?.draft.saved_document.title).toBe("Tredje");
   });
 
-  it("forwards the writer's admission through the factory to the injected port", async () => {
+  it("lets a whole-slot replacement pass an expired lease of another tab", async () => {
+    const lease = createInMemoryGuestEditLeaseStorage();
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage({ lease });
+    await lease.claim(TAB_B, Date.now() - GUEST_EDIT_LEASE_TTL_MS - 1);
+
+    expect(await storage.replaceSlotIf(null, storedDraft("Första"), { isLive: () => true, tabId: TAB_A })).toBe(
+      "replaced",
+    );
+  });
+
+  it("forwards the whole-slot admission through the factory to the injected port", async () => {
     const inner = createInMemoryExamWorkspaceGuestDraftStorage();
     const storage = createExamWorkspaceGuestDraftStorage({ port: inner });
     const first = storedDraft("Första");
     expect(await storage.replaceIf(null, first)).toBe(true);
 
-    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Andra"), () => false)).toBe(false);
+    expect(
+      await storage.replaceSlotIf(first.draft.cursor, storedDraft("Andra"), { isLive: () => false, tabId: TAB_A }),
+    ).toBe("conflict");
 
     expect((await inner.load())?.draft.saved_document.title).toBe("Första");
   });
@@ -212,6 +244,7 @@ describe("examWorkspaceGuestDraftStorage", () => {
       clearIf: vi.fn<ExamWorkspaceGuestDraftStoragePort["clearIf"]>(async () => true),
       load: vi.fn<ExamWorkspaceGuestDraftStoragePort["load"]>(async () => null),
       replaceIf: vi.fn<ExamWorkspaceGuestDraftStoragePort["replaceIf"]>(async () => true),
+      replaceSlotIf: vi.fn<ExamWorkspaceGuestDraftStoragePort["replaceSlotIf"]>(async () => "replaced"),
     };
     const storage = createExamWorkspaceGuestDraftStorage({ port });
     const stored = storedDraft();

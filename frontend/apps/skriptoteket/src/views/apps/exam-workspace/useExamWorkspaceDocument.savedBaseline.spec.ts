@@ -40,7 +40,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       if (path === "reload") await state.reloadDocument();
@@ -73,7 +73,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(true);
@@ -90,7 +90,7 @@ describe("saved exam baseline", () => {
     api.getExamWorkspaceDocument.mockResolvedValue({ ...response, saved_document: response.document });
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       expect(state.isDirty.value).toBe(false);

@@ -6,9 +6,9 @@
  * through this module so the fixtures stay identical.
  */
 
-import { beforeAll, vi, type Mock } from "vitest";
+import { beforeAll, expect, vi, type Mock } from "vitest";
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
   createGuestExamWorkspaceStore,
@@ -19,8 +19,8 @@ import type { GuestSlotAdmission } from "./examWorkspaceStore";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import {
   createInMemoryGuestEditLeaseStorage,
-  type GuestEditLeaseStoragePort,
-} from "./examWorkspaceGuestEditLease";
+  type InMemoryGuestEditLeaseStorage,
+} from "./examWorkspaceGuestEditLeaseMemory";
 
 export type PublicApi = ExamWorkspaceGuestStoreDeps["api"];
 
@@ -137,15 +137,17 @@ export type GuestStoreSetup = {
   };
   onLimit: Mock<() => void>;
   storage: ReturnType<typeof createInMemoryExamWorkspaceGuestDraftStorage>;
-  leaseStorage: GuestEditLeaseStoragePort;
+  leaseStorage: InMemoryGuestEditLeaseStorage;
   store: ReturnType<typeof createGuestExamWorkspaceStore>;
 };
 
 export function setupGuestStore(overrides?: {
-  leaseStorage?: GuestEditLeaseStoragePort;
+  leaseStorage?: InMemoryGuestEditLeaseStorage;
 }): GuestStoreSetup {
-  const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  // The draft and the lease share one browser database, so the slot
+  // replacement reads the same lease slot the stores check.
   const leaseStorage = overrides?.leaseStorage ?? createInMemoryGuestEditLeaseStorage();
+  const storage = createInMemoryExamWorkspaceGuestDraftStorage({ lease: leaseStorage });
   const ids = createIds();
   const publicMocks = createGuestPublicApiMocks();
   const mocks: GuestStoreSetup["mocks"] = {
@@ -192,4 +194,63 @@ export async function startBlank(
   });
   const current = await setup.storage.load();
   return await setup.store.startBlank(current?.draft.cursor ?? null, liveAdmission());
+}
+
+/**
+ * Seed the slot with a retained draft C: a picture exam plus one stored
+ * history step, while `tabId` holds the lease. Returns C as it reads now.
+ */
+export async function seedRetainedPictureDraft(
+  context: GuestStoreSetup,
+  tabId = LEASE_TAB_ID,
+): Promise<{ lineageId: string; opened: ExamWorkspaceDocumentResponse }> {
+  await context.leaseStorage.claim(tabId, Date.now());
+  context.mocks.importQti.mockResolvedValueOnce({
+    assets: { asset_001: new Blob(["png!"], { type: "image/png" }) },
+    document: pictureExam("Keep this exam"),
+    notes: [],
+  });
+  const lineageId = await context.store.startFromQti(
+    new File(["zip"], "Prov.zip", { type: "application/zip" }),
+    null,
+    liveAdmission(tabId),
+  );
+  const loaded = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+  await context.store.store.shared.storeExamWorkspaceUndoStep(lineageId, {
+    afterStepId: null,
+    document: { ...loaded.document, title: "Keep this exam, edited" },
+    expectedCursor: loaded.history_cursor,
+    tabId,
+  });
+  const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+  return { lineageId, opened };
+}
+
+/**
+ * C is intact (lineage, cursor, history step and picture bytes), and the new
+ * owner `tabId` stores its first edit of `loaded` against the unchanged cursor.
+ */
+export async function expectRetainedAndNewOwnerStores(
+  context: GuestStoreSetup,
+  owner: { store: GuestStoreSetup["store"]; tabId: string },
+  lineageId: string,
+  loaded: ExamWorkspaceDocumentResponse,
+): Promise<void> {
+  const kept = await context.storage.load();
+  expect(kept?.draft.lineage_id).toBe(lineageId);
+  expect(kept?.draft.cursor).toBe(loaded.history_cursor);
+  expect(kept?.draft.saved_document.title).toBe("Keep this exam, edited");
+  expect(kept?.draft.steps).toHaveLength(1);
+  expect(Object.keys(kept?.assets ?? {})).toEqual(["asset_001"]);
+  const step = await owner.store.store.shared.storeExamWorkspaceUndoStep(lineageId, {
+    afterStepId: loaded.history_cursor,
+    document: { ...loaded.document, title: "B's first edit" },
+    expectedCursor: loaded.history_cursor,
+    tabId: owner.tabId,
+  });
+  const stored = await context.storage.load();
+  expect(stored?.draft.lineage_id).toBe(lineageId);
+  expect(stored?.draft.cursor).toBe(step.history.cursor);
+  expect(stored?.draft.saved_document.title).toBe("B's first edit");
+  expect(Object.keys(stored?.assets ?? {})).toEqual(["asset_001"]);
 }

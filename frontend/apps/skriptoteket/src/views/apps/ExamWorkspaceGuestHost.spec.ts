@@ -64,6 +64,13 @@ vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal
       storageMocks.stored = next;
       return true;
     },
+    async replaceSlotIf(expectedCursor: string | null, next: StoredGuestDraft) {
+      if ((storageMocks.stored?.draft.cursor ?? null) !== expectedCursor) {
+        return "conflict" as const;
+      }
+      storageMocks.stored = next;
+      return "replaced" as const;
+    },
     async clearIf(expectedCursor: string) {
       if ((storageMocks.stored?.draft.cursor ?? null) !== expectedCursor) {
         return false;

@@ -96,6 +96,7 @@ export function useExamWorkspaceEditing(
     onEdit: (structural, before) => noteEdit(structural, before),
     store,
     submitRoute: (lineageId) => requireGate().submitRoute(lineageId),
+    tabId: () => leaseHolder.session?.tabId ?? "",
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
 

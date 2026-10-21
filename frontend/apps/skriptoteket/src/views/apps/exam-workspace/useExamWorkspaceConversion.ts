@@ -67,6 +67,8 @@ export type ExamWorkspaceConversionBinding = {
   isSaving: () => boolean;
   /** The store the document reads and the import lifecycle run through. */
   store: ExamWorkspaceStore;
+  /** The edit-lease tab a guest QTI import writes the browser slot as. */
+  tabId: () => string;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
@@ -425,7 +427,13 @@ export function useExamWorkspaceConversion(
       // exam opens through the same `openDocument` path the Öppna list's
       // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
-        const lineageId = await importQtiPackage(binding.store, file, courseKey);
+        // The guest slot write is admitted only while this import is still
+        // the current one: a later import or the scope's disposal retires it
+        // before its late parse can replace the retained draft.
+        const lineageId = await importQtiPackage(binding.store, file, courseKey, {
+          isLive: () => pollGeneration === generation,
+          tabId: binding.tabId(),
+        });
         if (pollGeneration !== generation || lineageId === null) return;
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;

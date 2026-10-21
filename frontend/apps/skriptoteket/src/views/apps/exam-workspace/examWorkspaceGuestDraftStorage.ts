@@ -14,7 +14,9 @@
  *   - The record shape comes from `examWorkspaceGuestDraft.ts`; picture bytes
  *     stay here, keyed by the document's asset ids, never in the draft record.
  *   - Owns the `skriptoteket_exam_workspace_guest` database only; the shared
- *     classroom planner database is not opened or changed.
+ *     classroom planner database is not opened or changed. The draft and
+ *     the edit lease are two object stores of that one database, so a
+ *     whole-slot replacement decides on both in one transaction.
  */
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
@@ -27,7 +29,9 @@ import {
   type GuestEditLeaseRecord,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
+import type { InMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
+import type { GuestSlotAdmission } from "./examWorkspaceStore";
 
 export const EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME = "skriptoteket_exam_workspace_guest";
 export const EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION = 2;
@@ -42,6 +46,36 @@ export type StoredGuestDraft = {
   assets: Record<string, Blob>;
 };
 
+/**
+ * The outcome of one whole-slot replacement decision: written, refused
+ * because another writer owns the slot or the writer was retired
+ * (`conflict`), or refused because another tab holds a live edit lease.
+ */
+export type GuestSlotReplaceOutcome = "replaced" | "conflict" | "lease-held";
+
+/**
+ * The whole-slot replacement decision both adapters run inside one atomic
+ * step, on the cursor and lease read in that step: a cursor that no longer
+ * owns the slot is the ordinary conflict, a live lease of another tab
+ * refuses next (a missing, own or expired lease passes, as the claim rule
+ * decides), and the writer's own live authority is evaluated last,
+ * immediately before the write it admits.
+ */
+export function decideGuestSlotReplacement(
+  storedCursor: string | null,
+  lease: GuestEditLeaseRecord | null,
+  expectedCursor: string | null,
+  admission: GuestSlotAdmission,
+): GuestSlotReplaceOutcome {
+  if (storedCursor !== expectedCursor) {
+    return "conflict";
+  }
+  if (!decideGuestEditLeaseClaim(lease, admission.tabId, Date.now()).held) {
+    return "lease-held";
+  }
+  return admission.isLive() ? "replaced" : "conflict";
+}
+
 export type ExamWorkspaceGuestDraftStoragePort = {
   load(): Promise<StoredGuestDraft | null>;
   /**
@@ -50,18 +84,22 @@ export type ExamWorkspaceGuestDraftStoragePort = {
    * null). Reports whether the write happened; a false return means another
    * tab or store instance committed first and the caller must surface the
    * established conflict outcome instead of claiming a write it lost.
-   *
-   * `admit`, when given, is the writer's own authority: it is evaluated
-   * synchronously inside the same atomic compare, after the cursor matches
-   * and immediately before the write, and a false return refuses the write
-   * like a lost cursor. A retired operation therefore never replaces the
-   * slot, even when no other writer changed the cursor meanwhile.
    */
-  replaceIf(
+  replaceIf(expectedCursor: string | null, next: StoredGuestDraft): Promise<boolean>;
+  /**
+   * Replace the whole slot with a new exam, which deletes the stored draft,
+   * its history and its picture bytes. One atomic step reads the stored
+   * cursor and the edit lease and runs `decideGuestSlotReplacement`: the
+   * write happens only while `expectedCursor` owns the slot, no other tab
+   * holds a live edit lease, and `admission.isLive()` is still true. A tab
+   * that took the lease before this step therefore keeps the slot even when
+   * the writing tab has not yet seen its loss.
+   */
+  replaceSlotIf(
     expectedCursor: string | null,
     next: StoredGuestDraft,
-    admit?: () => boolean,
-  ): Promise<boolean>;
+    admission: GuestSlotAdmission,
+  ): Promise<GuestSlotReplaceOutcome>;
   /**
    * Delete the stored record only when its draft cursor equals
    * `expectedCursor`. Reports whether the delete happened; a false return
@@ -120,19 +158,48 @@ async function createIndexedDbPort(): Promise<ExamWorkspaceGuestDraftStoragePort
      * so the compare-and-write is atomic across tabs. Only IndexedDB calls
      * are awaited inside the transaction; anything else would auto-close it.
      */
-    async replaceIf(expectedCursor, next, admit) {
+    async replaceIf(expectedCursor, next) {
       const tx = db.transaction(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, "readwrite");
       const store = tx.store;
       const current = await store.get(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
-      // `admit` runs synchronously between the compare and the put: no await
-      // separates the writer's authority check from the write it admits.
-      if ((current?.draft.cursor ?? null) !== expectedCursor || (admit !== undefined && !admit())) {
+      if ((current?.draft.cursor ?? null) !== expectedCursor) {
         await tx.done;
         return false;
       }
       await store.put(next, EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
       await tx.done;
       return true;
+    },
+    /**
+     * One readwrite transaction over both object stores: read the lease and
+     * the cursor, decide, then put. IndexedDB runs readwrite transactions
+     * with overlapping scopes one after another, across tabs too, so no
+     * lease claim and no draft write of another tab lands between this
+     * decision and its put. `admission.isLive` runs synchronously inside the
+     * decision; only IndexedDB calls are awaited inside the transaction.
+     */
+    async replaceSlotIf(expectedCursor, next, admission) {
+      const tx = db.transaction(
+        [EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME],
+        "readwrite",
+      );
+      const drafts = tx.objectStore(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME);
+      const lease =
+        (await tx
+          .objectStore(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME)
+          .get(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY)) ?? null;
+      const current = await drafts.get(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      const outcome = decideGuestSlotReplacement(
+        current?.draft.cursor ?? null,
+        lease,
+        expectedCursor,
+        admission,
+      );
+      if (outcome === "replaced") {
+        await drafts.put(next, EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      }
+      await tx.done;
+      return outcome;
     },
     async clearIf(expectedCursor) {
       const tx = db.transaction(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, "readwrite");
@@ -156,8 +223,15 @@ async function createIndexedDbPort(): Promise<ExamWorkspaceGuestDraftStoragePort
  * spec that hands it a Vue reactive value fails the way the browser does.
  * Picture bytes stay by reference: jsdom Blobs do not survive a structured
  * clone, and the draft itself never holds bytes.
+ *
+ * `lease` is the in-memory lease slot of the same browser: a whole-slot
+ * replacement reads it synchronously inside its compare-and-write, as the
+ * IndexedDB adapter reads the lease store inside its transaction. Without
+ * it the lease slot reads as empty.
  */
-export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGuestDraftStoragePort {
+export function createInMemoryExamWorkspaceGuestDraftStorage(options?: {
+  lease?: Pick<InMemoryGuestEditLeaseStorage, "peek">;
+}): ExamWorkspaceGuestDraftStoragePort {
   let stored: StoredGuestDraft | null = null;
   return {
     async load() {
@@ -166,12 +240,26 @@ export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGue
       }
       return { assets: { ...stored.assets }, draft: structuredClone(stored.draft) };
     },
-    async replaceIf(expectedCursor, next, admit) {
-      if ((stored?.draft.cursor ?? null) !== expectedCursor || (admit !== undefined && !admit())) {
+    async replaceIf(expectedCursor, next) {
+      if ((stored?.draft.cursor ?? null) !== expectedCursor) {
         return false;
       }
       stored = { assets: { ...next.assets }, draft: structuredClone(next.draft) };
       return true;
+    },
+    async replaceSlotIf(expectedCursor, next, admission) {
+      // No await runs between the reads, the decision and the write.
+      const lease = options?.lease?.peek() ?? null;
+      const outcome = decideGuestSlotReplacement(
+        stored?.draft.cursor ?? null,
+        lease,
+        expectedCursor,
+        admission,
+      );
+      if (outcome === "replaced") {
+        stored = { assets: { ...next.assets }, draft: structuredClone(next.draft) };
+      }
+      return outcome;
     },
     async clearIf(expectedCursor) {
       if ((stored?.draft.cursor ?? null) !== expectedCursor) {
@@ -196,7 +284,8 @@ function snapshotStoredGuestDraft(next: StoredGuestDraft): StoredGuestDraft {
 
 /**
  * The guest storage: every port it returns, the IndexedDB adapter and an
- * injected port alike, receives a plain snapshot on `replaceIf`, so a stored
+ * injected port alike, receives a plain snapshot on `replaceIf` and
+ * `replaceSlotIf`, so a stored
  * draft is always serialisable. Importing this module never touches a
  * database: the IndexedDB adapter opens lazily on first use.
  */
@@ -215,8 +304,15 @@ export function createExamWorkspaceGuestDraftStorage(deps?: {
     async load() {
       return (await port()).load();
     },
-    async replaceIf(expectedCursor, next, admit) {
-      return await (await port()).replaceIf(expectedCursor, snapshotStoredGuestDraft(next), admit);
+    async replaceIf(expectedCursor, next) {
+      return await (await port()).replaceIf(expectedCursor, snapshotStoredGuestDraft(next));
+    },
+    async replaceSlotIf(expectedCursor, next, admission) {
+      return await (await port()).replaceSlotIf(
+        expectedCursor,
+        snapshotStoredGuestDraft(next),
+        admission,
+      );
     },
     async clearIf(expectedCursor) {
       return await (await port()).clearIf(expectedCursor);

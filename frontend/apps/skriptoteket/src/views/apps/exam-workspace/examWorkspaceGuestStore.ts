@@ -34,7 +34,7 @@ import {
   type ExamWorkspaceGuestDraftIdSource,
 } from "./examWorkspaceGuestDraft";
 import {
-  GUEST_EDIT_LEASE_TTL_MS,
+  decideGuestEditLeaseClaim,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
 import {
@@ -46,6 +46,7 @@ import {
   commitGuestCommand,
   loadGuestStored,
   persistGuestStored,
+  replaceGuestSlot,
   retainDeclaredAssets,
 } from "./examWorkspaceGuestStoreCommit";
 import {
@@ -84,13 +85,17 @@ export type ExamWorkspaceGuestStore = {
    * write commits only when `expectedCursor` still owns the browser slot
    * (null for an empty slot); a concurrent tab's newer draft is kept and
    * reported as the established conflict instead of being overwritten.
-   * The write also needs `admission`: no other tab may hold a live edit
-   * lease, and `admission.isLive` must still be true inside the atomic
-   * write, so a retired creation never replaces the retained draft.
+   * The write also needs `admission`: inside the atomic write no other tab
+   * may hold a live edit lease and `admission.isLive` must still be true,
+   * so neither a retired creation nor a tab that lost the lease before the
+   * write replaces the retained draft.
    */
   startBlank(expectedCursor: string | null, admission: GuestSlotAdmission): Promise<string>;
-  /** Start a guest exam from a QTI .zip through the public parse route. */
-  startFromQti(file: File, courseKey: string | null): Promise<string>;
+  /**
+   * Start a guest exam from a QTI .zip through the public parse route, under
+   * `admission` exactly like `startBlank`'s whole-slot write.
+   */
+  startFromQti(file: File, courseKey: string | null, admission: GuestSlotAdmission): Promise<string>;
   /**
    * Move the draft to a retained history step (guest Ångra and Gör om): the
    * position and the saved draft follow the step, and no new step is
@@ -125,13 +130,9 @@ export function createGuestExamWorkspaceStore(
     } catch {
       return;
     }
-    if (record === null || record.tabId === tabId) {
-      return;
+    if (!decideGuestEditLeaseClaim(record, tabId, Date.now()).held) {
+      throw editLeaseHeldError();
     }
-    if (Date.now() - record.renewedAt > GUEST_EDIT_LEASE_TTL_MS) {
-      return;
-    }
-    throw editLeaseHeldError();
   }
 
   /** The draft whose picture bytes currently have object URLs. */
@@ -165,12 +166,8 @@ export function createGuestExamWorkspaceStore(
     openLineageId = stored.draft.lineage_id;
   }
 
-  async function persist(
-    expectedCursor: string | null,
-    stored: StoredGuestDraft,
-    admit?: () => boolean,
-  ): Promise<void> {
-    await persistGuestStored(deps.storage, expectedCursor, stored, mountAssets, admit);
+  async function persist(expectedCursor: string | null, stored: StoredGuestDraft): Promise<void> {
+    await persistGuestStored(deps.storage, expectedCursor, stored, mountAssets);
   }
 
   async function loadStored(lineageId: string): Promise<StoredGuestDraft> {
@@ -440,7 +437,8 @@ export function createGuestExamWorkspaceStore(
   const { startBlank, startFromQti } = createGuestSlotStarts({
     api,
     ids: deps.ids,
-    persist,
+    replaceSlot: (expectedCursor, stored, admission) =>
+      replaceGuestSlot(deps.storage, expectedCursor, stored, admission, mountAssets),
     requireEditLease: requireGuestEditLease,
     storage: deps.storage,
   });

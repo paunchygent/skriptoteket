@@ -30,7 +30,7 @@ import {
 } from "./ExamWorkspaceGuestMode.specSupport";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
-import { createInMemoryGuestEditLeaseStorage } from "./exam-workspace/examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./exam-workspace/examWorkspaceGuestEditLeaseMemory";
 import { createIds } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 import { deferred } from "./exam-workspace/useExamWorkspaceSyncGate.specSupport";
 import { NEW_EXAM_FAILURE_COPY } from "./exam-workspace/examWorkspaceNewExam";

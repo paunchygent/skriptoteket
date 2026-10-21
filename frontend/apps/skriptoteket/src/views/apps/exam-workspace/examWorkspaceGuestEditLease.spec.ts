@@ -14,12 +14,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createGuestEditLeaseController,
-  createInMemoryGuestEditLeaseStorage,
   GUEST_EDIT_LEASE_HEARTBEAT_MS,
   GUEST_EDIT_LEASE_TTL_MS,
   type GuestEditLeaseChannel,
   type GuestEditLeaseMessage,
 } from "./examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 
 type ChannelListener = (event: { data: GuestEditLeaseMessage }) => void;

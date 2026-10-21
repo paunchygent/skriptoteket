@@ -24,12 +24,12 @@ import type {
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import {
-  createInMemoryGuestEditLeaseStorage,
   type GuestEditLeaseChannel,
   type GuestEditLeaseClaimResult,
   type GuestEditLeaseRenewResult,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import type { ExamWorkspaceEditLeaseServer } from "./examWorkspaceEditLeaseDrivers";

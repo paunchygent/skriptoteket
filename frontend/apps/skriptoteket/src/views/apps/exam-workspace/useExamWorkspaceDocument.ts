@@ -92,6 +92,8 @@ export type ExamWorkspaceDocumentOptions = {
    * selection's still-current generation as foreign.
    */
   noteInstallingCursor: (lineageId: string, cursor: string) => void;
+  /** The edit-lease tab a guest slot replacement writes as. */
+  tabId: () => string;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
@@ -189,6 +191,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       summary,
       workspaceDocument,
       store,
+      tabId: options.tabId,
     },
     (lineageId) => options.submitRoute(lineageId),
   );

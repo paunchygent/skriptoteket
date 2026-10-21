@@ -243,6 +243,8 @@ describe("runGuestHandoff", () => {
       clearIf,
       load: () => inner.load(),
       replaceIf: (expected, next) => inner.replaceIf(expected, next),
+      replaceSlotIf: (expected, next, admission) =>
+        inner.replaceSlotIf(expected, next, admission),
     };
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
@@ -270,6 +272,8 @@ describe("runGuestHandoff", () => {
       clearIf,
       load: () => inner.load(),
       replaceIf: (expected, next) => inner.replaceIf(expected, next),
+      replaceSlotIf: (expected, next, admission) =>
+        inner.replaceSlotIf(expected, next, admission),
     };
     let resolvePost!: (response: ExamWorkspaceDocumentResponse) => void;
     const post = new Promise<ExamWorkspaceDocumentResponse>((resolve) => {
@@ -397,6 +401,7 @@ describe("runGuestHandoff", () => {
       clearIf,
       load: () => Promise.reject(new Error("lagringen är blockerad")),
       replaceIf: () => Promise.reject(new Error("unreachable")),
+      replaceSlotIf: () => Promise.reject(new Error("unreachable")),
     };
     const teacher = teacherMock();
 

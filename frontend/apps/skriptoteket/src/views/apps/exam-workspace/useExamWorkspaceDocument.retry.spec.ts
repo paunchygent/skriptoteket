@@ -160,7 +160,7 @@ async function openRetryDocument(
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(responseWith(items, assets));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");

@@ -13,7 +13,7 @@
  *     intake returns opens through the coordinator's entrance.
  */
 
-import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceStore, GuestSlotAdmission } from "./examWorkspaceStore";
 
 /** A DigiExam export (.dxe) is read by its own importer and stays open to every role. */
 export function isDigiExamFile(file: File): boolean {
@@ -28,13 +28,15 @@ export function isQtiPackageFile(file: File): boolean {
 /**
  * Read one QTI package at once: through the signed-in importer when a
  * teacher side is present, through the guest store's browser draft
- * otherwise. Returns the opened lineage, or null when neither side can
- * import.
+ * otherwise. The guest write replaces the browser slot only under
+ * `admission`, the import's own live authority and edit-lease tab. Returns
+ * the opened lineage, or null when neither side can import.
  */
 export async function importQtiPackage(
   store: ExamWorkspaceStore,
   file: File,
   courseKey: string | null,
+  admission: GuestSlotAdmission,
 ): Promise<string | null> {
   const teacher = store.teacher;
   if (teacher) {
@@ -43,5 +45,5 @@ export async function importQtiPackage(
   }
   const guest = store.guest;
   if (!guest) return null;
-  return await guest.startFromQti(file, courseKey);
+  return await guest.startFromQti(file, courseKey, admission);
 }

@@ -9,7 +9,10 @@
  *   over the lease and the source generation retires, or the workspace is
  *   disposed), the late blank never reaches the slot: the retained draft,
  *   its history and its picture bytes stay, the old lineage still reads, and
- *   the new owner's first edit stores against the unchanged cursor.
+ *   the new owner's first edit stores against the unchanged cursor. The
+ *   same holds when A's own creation is still live but B took the lease
+ *   after A's lease check and before A's slot write (review rereview 3 F1):
+ *   the lease decision holds at the destructive write itself.
  *
  *   The spec runs the real replacement coordinator, save composable, guest
  *   store and sync fence over the in-memory draft and lease adapters. Only
@@ -28,11 +31,17 @@ import type {
 import type { PublicExamWorkspaceCommandResult } from "../../../api/publicExamWorkspace";
 import { createReplacementCoordinator } from "./examWorkspaceReplacementCoordinator";
 import type { ExamWorkspaceReplacementDeps } from "./examWorkspaceReplacementTypes";
+import { GUEST_EDIT_LEASE_TTL_MS } from "./examWorkspaceGuestEditLease";
+import {
+  createInMemoryGuestEditLeaseStorage,
+  type InMemoryGuestEditLeaseStorage,
+} from "./examWorkspaceGuestEditLeaseMemory";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import {
   exam,
   installGuestStoreObjectUrls,
   LEASE_TAB_ID,
+  liveAdmission,
   openSecondTab,
   pictureExam,
   setupGuestStore,
@@ -71,6 +80,7 @@ async function seedRetainedDraft(context: GuestStoreSetup): Promise<{
   const lineageId = await context.store.startFromQti(
     new File(["zip"], "Prov.zip", { type: "application/zip" }),
     null,
+    liveAdmission(TAB_A),
   );
   const loaded = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
   const edited: NativeExamDocument = { ...loaded.document, title: "Keep this exam, edited" };
@@ -264,6 +274,64 @@ describe("guest Nytt prov after its creation is retired", () => {
 
     expect(tabA.installed).toEqual([]);
     await expectRetainedDraft(context, lineageId, opened);
+  });
+
+  it("keeps the retained draft when tab B takes the lease after A's lease check, before A's slot write", async () => {
+    // The lease slot pauses after it answers A's lease check: in that window
+    // B claims A's stalled lease and loads the original, while A has not yet
+    // seen the loss, so A's creation is still live.
+    const lease = createInMemoryGuestEditLeaseStorage();
+    let afterLeaseRead: (() => Promise<void>) | null = null;
+    const leaseStorage: InMemoryGuestEditLeaseStorage = {
+      ...lease,
+      async load() {
+        const snapshot = await lease.load();
+        const pause = afterLeaseRead;
+        afterLeaseRead = null;
+        if (pause !== null) {
+          await pause();
+        }
+        return snapshot;
+      },
+    };
+    const context = setupGuestStore({ leaseStorage });
+    const { lineageId, opened } = await seedRetainedDraft(context);
+    const tabA = openTabA(context, opened);
+    const tabB = openSecondTab(context);
+    const blank = deferred<PublicExamWorkspaceCommandResult>();
+    context.mocks.createBlank.mockReturnValue(blank.promise);
+
+    const outcome = tabA.coordinator.submitNewExam(opened.history_cursor);
+    await flushPromises();
+    expect(context.mocks.createBlank).toHaveBeenCalledTimes(1);
+
+    let loadedByB: ExamWorkspaceDocumentResponse | null = null;
+    afterLeaseRead = async () => {
+      // A's heartbeat stalled past the lease lifetime, so B's claim succeeds
+      // without A answering a takeover; A's fence and selection stay current.
+      const claimed = await lease.claim(TAB_B, Date.now() + GUEST_EDIT_LEASE_TTL_MS + 1);
+      expect(claimed.held).toBe(true);
+      loadedByB = await tabB.store.shared.getExamWorkspaceDocument(lineageId);
+    };
+    blank.resolve(blankResponse());
+    await expect(outcome).resolves.toBe("failed");
+
+    expect(loadedByB).not.toBeNull();
+    const loaded = loadedByB as unknown as ExamWorkspaceDocumentResponse;
+    expect(loaded.history_cursor).toBe(opened.history_cursor);
+    expect(tabA.installed).toEqual([]);
+    await expectRetainedDraft(context, lineageId, opened);
+    const step = await tabB.store.shared.storeExamWorkspaceUndoStep(lineageId, {
+      afterStepId: loaded.history_cursor,
+      document: { ...loaded.document, title: "B's first edit" },
+      expectedCursor: loaded.history_cursor,
+      tabId: TAB_B,
+    });
+    const stored = await context.storage.load();
+    expect(stored?.draft.lineage_id).toBe(lineageId);
+    expect(stored?.draft.cursor).toBe(step.history.cursor);
+    expect(stored?.draft.saved_document.title).toBe("B's first edit");
+    expect(Object.keys(stored?.assets ?? {})).toEqual(["asset_001"]);
   });
 
   it("still replaces the slot when the creation keeps its authority until the blank arrives", async () => {

@@ -114,8 +114,9 @@ export type ExamWorkspaceTeacherServices = {
 /**
  * The authority a guest slot replacement writes under: the tab whose edit
  * lease the write checks, and whether the requesting operation still holds
- * live replacement authority. `isLive` is evaluated inside the atomic slot
- * write, so a retired operation never replaces the retained draft.
+ * live replacement authority. Both are decided inside the atomic slot
+ * write, so neither a retired operation nor a tab whose lease another tab
+ * took meanwhile replaces the retained draft.
  */
 export type GuestSlotAdmission = {
   tabId: string;
@@ -125,7 +126,7 @@ export type GuestSlotAdmission = {
 /** The guest-only actions on the shared exam workspace; null in signed-in mode. */
 export type ExamWorkspaceGuestServices = {
   startBlank(expectedCursor: string | null, admission: GuestSlotAdmission): Promise<string>;
-  startFromQti(file: File, courseKey: string | null): Promise<string>;
+  startFromQti(file: File, courseKey: string | null, admission: GuestSlotAdmission): Promise<string>;
 };
 
 export type ExamWorkspaceStore = {

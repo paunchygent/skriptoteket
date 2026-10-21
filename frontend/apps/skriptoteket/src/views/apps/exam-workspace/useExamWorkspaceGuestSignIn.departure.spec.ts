@@ -90,6 +90,8 @@ describe("guest sign-in departure under the editing lock", () => {
     const port: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (cursor) => backing.clearIf(cursor),
       load: () => backing.load(),
+      replaceSlotIf: (expectedCursor, next, admission) =>
+        backing.replaceSlotIf(expectedCursor, next, admission),
       async replaceIf(expectedCursor, next) {
         enteredResolve();
         await writeGate;
@@ -177,6 +179,8 @@ describe("guest sign-in departure under the editing lock", () => {
     const port: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (cursor) => backing.clearIf(cursor),
       load: () => backing.load(),
+      replaceSlotIf: (expectedCursor, next, admission) =>
+        backing.replaceSlotIf(expectedCursor, next, admission),
       async replaceIf() {
         throw new Error("The browser storage is unavailable.");
       },
@@ -201,6 +205,8 @@ describe("guest sign-in departure under the editing lock", () => {
     const port: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (cursor) => backing.clearIf(cursor),
       load: () => backing.load(),
+      replaceSlotIf: (expectedCursor, next, admission) =>
+        backing.replaceSlotIf(expectedCursor, next, admission),
       async replaceIf() {
         return false;
       },

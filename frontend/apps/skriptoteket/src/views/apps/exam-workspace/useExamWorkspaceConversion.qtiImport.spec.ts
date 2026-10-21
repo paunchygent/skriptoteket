@@ -21,7 +21,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
-import { serverExamWorkspaceStore, type ExamWorkspaceStore } from "./examWorkspaceStore";
+import { serverExamWorkspaceStore, type ExamWorkspaceStore, type GuestSlotAdmission } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceConversionBinding } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
@@ -59,6 +59,7 @@ function binding(): ExamWorkspaceConversionBinding {
     isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
     store: serverExamWorkspaceStore,
+    tabId: () => "20000000-0000-4000-8000-000000000001",
   };
 }
 
@@ -166,9 +167,9 @@ describe("guest-mode QTI .zip import dispatch", () => {
     setActivePinia(createPinia());
     const scope = effectScope();
     const busyWhileOpening: { isImporting: boolean | null } = { isImporting: null };
-    const startFromQti: Mock<(file: File, courseKey: string | null) => Promise<string>> = vi.fn(
-      async (_file: File, _courseKey: string | null) => "lineage-guest",
-    );
+    const startFromQti: Mock<
+      (file: File, courseKey: string | null, admission: GuestSlotAdmission) => Promise<string>
+    > = vi.fn(async (_file: File, _courseKey: string | null, _admission: GuestSlotAdmission) => "lineage-guest");
     const store: ExamWorkspaceStore = {
       guest: { startBlank: vi.fn(async () => "lineage-blank"), startFromQti },
       shared: serverExamWorkspaceStore.shared,
@@ -207,7 +208,10 @@ describe("guest-mode QTI .zip import dispatch", () => {
 
     await conversion.importDocument(zipFile(), "gy11:SVESVE01");
 
-    expect(startFromQti).toHaveBeenCalledWith(expect.any(File), "gy11:SVESVE01");
+    expect(startFromQti).toHaveBeenCalledWith(expect.any(File), "gy11:SVESVE01", {
+      isLive: expect.any(Function),
+      tabId: "20000000-0000-4000-8000-000000000001",
+    });
     expect(busyWhileOpening.isImporting).toBe(false);
     expect(conversion.isConverting.value).toBe(false);
   });

@@ -26,10 +26,10 @@ import type {
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import {
   createGuestEditLeaseController,
-  createInMemoryGuestEditLeaseStorage,
   type GuestEditLeaseChannel,
   type GuestEditLeaseMessage,
 } from "./examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";

@@ -16,11 +16,11 @@ import { effectScope } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  createInMemoryGuestEditLeaseStorage,
   type GuestEditLeaseChannel,
   type GuestEditLeaseMessage,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
+import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
 import {
   EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS,
   useExamWorkspaceEditLease,

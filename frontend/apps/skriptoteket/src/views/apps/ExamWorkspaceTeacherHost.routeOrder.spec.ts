@@ -110,6 +110,7 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
           // another open is pending, so the return path stays unused.
           submitRoute: (lineageId) => doc.openDocument(lineageId, fence.begin()),
           noteInstallingCursor: () => undefined,
+          tabId: () => "",
         });
         useExamWorkspaceAddress({
           currentAddress: () => doc.summary.value?.lineage_id ?? null,

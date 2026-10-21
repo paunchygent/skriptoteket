@@ -262,6 +262,11 @@ describe("guest departure across the sign-in redirect", () => {
     const port = {
       clearIf: (cursor: string) => backing.clearIf(cursor),
       load: () => backing.load(),
+      replaceSlotIf: (
+        cursor: string | null,
+        next: NonNullable<Awaited<ReturnType<typeof backing.load>>>,
+        admission: Parameters<NonNullable<typeof backing.replaceSlotIf>>[2],
+      ) => backing.replaceSlotIf(cursor, next, admission),
       async replaceIf(
         cursor: string | null,
         next: NonNullable<Awaited<ReturnType<typeof backing.load>>>,

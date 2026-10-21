@@ -56,7 +56,7 @@ async function openParentDocument() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
-    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
+    useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }),
   );
   if (!state) {
     throw new Error("expected the document state to be created");
@@ -130,7 +130,7 @@ describe("parents in useExamWorkspaceDocument", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
     const fence = createSyncFence();
     const state = effectScope().run(() =>
-      useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }),
+      useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }),
     )!;
     await state.openDocument("lineage-1", fence.begin());
     await flushPromises();
