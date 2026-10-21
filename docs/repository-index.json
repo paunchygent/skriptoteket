@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0d9f5d2450182a1d206752dfd114bfd399f4d8be23d69f5435aa3a6642290365",
+  "source_set_digest": "c7ebcbe44a0c9ff09932def454cf46dbda01f31df9249d37e9fa750836344b23",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6329,6 +6329,82 @@
         "decided_at": "2026-10-15",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "Fix b62c8a98 merged b0b090cc; 15 focused tests pass; recorded-corpus diff changes only svenska_2_kursavslutande (Del 1 opens its parent); staging walk document ab1682a6 and Exam.net import 5339836 show each heading once in its own group; user directed no review ceremony for small fixes."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-10-01",
+      "type": "task",
+      "title": "A PDF exam with text opens in the exam workspace through the Word import path",
+      "path": "docs/backlog/tasks/task-skript-39-10-01-a-pdf-exam-with-text-opens-in-the-exam-workspace-through-the-word-import-path.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-10",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-10-02",
+      "type": "task",
+      "title": "Embedded pictures and cut-out drawn figures from a PDF land in their questions",
+      "path": "docs/backlog/tasks/task-skript-39-10-02-embedded-pictures-and-cut-out-drawn-figures-from-a-pdf-land-in-their-questions.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-10",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-10-03",
+      "type": "task",
+      "title": "A PDF without readable text stops with a message, and skipped pages are named",
+      "path": "docs/backlog/tasks/task-skript-39-10-03-a-pdf-without-readable-text-stops-with-a-message-and-skipped-pages-are-named.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-10",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-10-04",
+      "type": "task",
+      "title": "The question editor inserts or replaces a picture from a file",
+      "path": "docs/backlog/tasks/task-skript-39-10-04-the-question-editor-inserts-or-replaces-a-picture-from-a-file.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-10",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
