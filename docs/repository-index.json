@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5d820d90ec79577afeecc53ba2aa09991877cb8c34ef888a8723f5ac2e9720f4",
+  "source_set_digest": "e8f169293eabaeb52dd0f7c6c1fff4dba67b400d60ee4f9882df99644cf8db14",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7124,6 +7124,25 @@
         "decided_at": "2026-10-21",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "The user closed the task on 2026-10-21 (\"Close it\", relayed by the Mac orchestrator) after Pi ruthless-reviewer 4156e084 approved repair 7b6f17a7 with no findings (retained root 01a15f58-90ab-7006-b41e-b9d7ee5a13fc, evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json), merge 469cbaa7 verified by the full suite on main d9fab7e2 run on Hemma, and the Mac staging walk A at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-23",
+      "type": "task",
+      "title": "After an import the question list warns about questions whose points differ from the source",
+      "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
