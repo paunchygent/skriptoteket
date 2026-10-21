@@ -63,12 +63,12 @@ A teacher places the cursor in a question, clicks "Lägg till bild", chooses a P
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                           |
-| --- | ------------------------------------------------------------------------------- |
-| T1  | ST-SKRIPT-39-10 P8 applies as written.                                          |
-| T2  | Mock first. The user approves it through the Mac orchestrator before any build. |
-| T3  | The control is in the instruction editors as well as the question text editors (user decision 2026-10-22, relayed by the Hemma orchestrator). |
-| T4  | Dropping or pasting a picture file onto the text also inserts it, in this task (user decision 2026-10-22, relayed by the Hemma orchestrator). |
+| ID  | Decided contract term                                                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | ST-SKRIPT-39-10 P8 applies as written.                                                                                                                                                                                |
+| T2  | Mock first. The user approves it through the Mac orchestrator before any build.                                                                                                                                       |
+| T3  | The control is in the instruction editors as well as the question text editors (user decision 2026-10-22, relayed by the Hemma orchestrator).                                                                         |
+| T4  | Dropping or pasting a picture file onto the text also inserts it, in this task (user decision 2026-10-22, relayed by the Hemma orchestrator).                                                                         |
 | T5  | A signed-in exam's autosave carries a new picture's bytes once, checked and saved together with the document; the separate upload route stays rejected (user decision 2026-10-22, relayed by the Hemma orchestrator). |
 
 ## Progress
@@ -81,3 +81,4 @@ A teacher places the cursor in a question, clicks "Lägg till bild", chooses a P
 
 - The user reviewed mock v1 and did not approve it: the picture sat at the end of the text line, and the mock showed no real output. Decisions T3-T5 recorded. Mock v2, with real editor screenshots and real renders of every export, is in retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/mock/picture-control-mock-v2.html`; it proposes that a picture always gets its own paragraph and waits for the user's approval.
 - T2 met: the user approved mock v2 ("Approve, build it", 2026-10-22, relayed by the Hemma orchestrator). The build follows mock v2: each added picture gets its own paragraph. Accepted residuals: typing into a picture's paragraph puts the picture back into a text line, and imported inline pictures stay inline.
+- Built on branch `codex/task-skript-39-10-04` (39a061e8b, c87ae4f49, 1176ef41e, 5e60a639f, 7911012f1): "Lägg till bild" / "Byt bild" in the question text (also Kort svar) and both instruction editors; drop and paste; each picture in its own paragraph (end, start, split at the caret, empty paragraph, replace in place); busy state and the refused-file inline notice; the signed-in autosave carries a new picture's bytes once (`new_assets_by_id`, verified by the server); guest pictures are stored with the draft. The 20 MB limit is one frontend constant, `EXAM_FILE_MAX_BYTES`, mirroring the backend's `VAULT_MAX_FILE_BYTES`, because the server sends no exam setting that carries it. Focused proof: backend pytest 455 passed; Vitest 178 files, 1100 tests passed; fe-type-check, fe-lint, lint, typecheck and docs-validate clean. Evidence: retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/build/proof/`. Waiting for independent review.
