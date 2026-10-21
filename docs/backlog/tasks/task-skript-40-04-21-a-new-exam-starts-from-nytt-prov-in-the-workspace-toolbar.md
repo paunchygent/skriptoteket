@@ -158,3 +158,7 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 - **Signed in, PASS:** Nytt prov creates "Namnlöst prov", which shows in the Prov list at once. A rename to "Vattnets kretslopp: prov 1" saved at rev 2, and after a reload the card and the file name "Vattnets kretslopp prov 1" are right.
 - **Guest, PASS:** on an empty draft, Nytt prov opens a blank draft with no confirm. On a draft with text, it shows the dialog with Avbryt and Ersätt; Avbryt keeps the text, and Ersätt opens a new blank draft and removes the old one.
 - **Finding W3, signed in:** after a title rename, the Prov list keeps the old title until a page reload. A reload fixes it, so no data is lost. It is a visible defect on every rename under D4 and D13, not a rare race, so it is routed as a 40-04-21 follow-up repair for the next free lead slot.
+
+### 2026-10-21 (repair owner, W3 Prov list title)
+
+- W3 repaired: a confirmed title save now carries the saved title onto the open summary and its Prov list entry at once (`useExamWorkspaceDocumentInstalls.noteStored` via the existing `recordSummary`; no extra request); proof logs in retained root `01a16066-477c-75b1-acc0-8c76298003b9` `evidence/w3/` (new `useExamWorkspaceSavedList.titleSave.spec.ts` fails before, passes after; full exam-workspace suite 298 files / 2248 tests; `fe-type-check`, `fe-lint`). Residual: the renamed file name and saved-at in the row meta refresh on the next list load. Owed: independent review.

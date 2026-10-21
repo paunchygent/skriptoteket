@@ -65,7 +65,11 @@ export function createDocumentInstalls(deps: ExamWorkspaceDocumentInstallsDeps) 
 
   /**
    * A store or a position move confirmed this document; the exam file holds
-   * it now. A stale token changes nothing.
+   * it now. A stale token changes nothing. A confirmed title save also
+   * carries the saved title onto the open summary and its Prov list entry at
+   * once (TASK-SKRIPT-40-04-21, W3): the step store answers with the document
+   * but no summary, so the entry would otherwise keep the old title until a
+   * reload. The renamed file name arrives with the next list load.
    */
   function noteStored(token: FenceToken, document: NativeExamDocument): void {
     if (!deps.isCurrent(token)) {
@@ -75,6 +79,12 @@ export function createDocumentInstalls(deps: ExamWorkspaceDocumentInstallsDeps) 
     const current = deps.workspaceDocument.value;
     if (current !== null && current.revision !== document.revision) {
       deps.workspaceDocument.value = { ...current, revision: document.revision };
+    }
+    const currentSummary = deps.summary.value;
+    if (currentSummary !== null && currentSummary.title !== document.title) {
+      const updated = { ...currentSummary, title: document.title };
+      deps.summary.value = updated;
+      deps.recordSummary(updated);
     }
   }
 
