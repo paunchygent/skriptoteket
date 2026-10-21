@@ -13,8 +13,8 @@
  *   - Uses the credential-omitting public API helpers of `api/client.ts`; a
  *     429 from the hourly limiter arrives as an `ApiError` exactly as any
  *     other public refusal does.
- *   - Mounts under the public Exam Converter namespace and its capability
- *     gate, next to `views/apps/exam-converter-public`.
+ *   - Mounts under the public exam workspace namespace and its capability
+ *     gate.
  *   - Wrapped into the guest store by `examWorkspaceGuestStore.ts`, which
  *     checks the local cursor/revision before calling here.
  */

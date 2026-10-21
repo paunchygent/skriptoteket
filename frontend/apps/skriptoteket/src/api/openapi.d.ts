@@ -3157,91 +3157,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Submit Public Exam Converter Job */
-        post: operations["submit_public_exam_converter_job_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Public Exam Converter Job Status */
-        get: operations["get_public_exam_converter_job_status_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/artifacts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Public Exam Converter Artifacts */
-        get: operations["get_public_exam_converter_artifacts_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__artifacts_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/artifacts/{artifact_key}/download": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Download Public Exam Converter Artifact */
-        get: operations["download_public_exam_converter_artifact_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__artifacts__artifact_key__download_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/result": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Public Exam Converter Job Result */
-        get: operations["get_public_exam_converter_job_result_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__result_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/public/apps/documents.conversion_hub/exam-converter/workspace/answer-misspellings": {
         parameters: {
             query?: never;
@@ -4119,15 +4034,6 @@ export interface components {
              */
             wait_seconds: number;
         };
-        /** Body_submit_public_exam_converter_job_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs_post */
-        Body_submit_public_exam_converter_job_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs_post: {
-            /** Graded Result Pdf */
-            graded_result_pdf?: string | null;
-            /** Source Dxe */
-            source_dxe: string;
-            /** Targets Json */
-            targets_json?: string | null;
-        };
         /** CatalogCuratedAppItem */
         CatalogCuratedAppItem: {
             /** App Id */
@@ -4498,7 +4404,7 @@ export interface components {
          * @description Output formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "examnet_bundle" | "transcript_bundle";
+        ConversionHubOutputFormatV2: "md" | "pdf" | "docx" | "transcript_bundle";
         /**
          * ConversionHubPdfLayoutV2
          * @description Typed PDF layout presets (mirrors Sir Convert-a-Lot v2 `conversion.pdf_layout`).
@@ -4618,7 +4524,7 @@ export interface components {
          * @description Uploaded source formats supported by Sir Convert-a-Lot v2 (mirrored).
          * @enum {string}
          */
-        ConversionHubSourceFormatV2: "audio" | "transcript_json" | "pdf" | "md" | "html" | "docx" | "dxe";
+        ConversionHubSourceFormatV2: "audio" | "transcript_json" | "pdf" | "md" | "html" | "docx";
         /** ConversionHubSubmitResult */
         ConversionHubSubmitResult: {
             /** Jobs */
@@ -8438,124 +8344,18 @@ export interface components {
             ui_mode: components["schemas"]["CuratedAppUiMode"];
         };
         /**
-         * PublicCapabilityActionAffordance
-         * @description Browser-visible public action metadata for a scoped capability.
-         */
-        PublicCapabilityActionAffordance: {
-            /**
-             * Action
-             * @enum {string}
-             */
-            action: "submit" | "poll" | "result" | "artifact_manifest" | "artifact_download";
-            /** Enabled */
-            enabled: boolean;
-            /**
-             * Method
-             * @enum {string}
-             */
-            method: "GET" | "POST";
-            /** Path Template */
-            path_template: string;
-        };
-        /**
-         * PublicCapabilityAuthorityBoundary
-         * @description Public-safe authority semantics for a scoped capability.
-         */
-        PublicCapabilityAuthorityBoundary: {
-            /**
-             * Account Authority
-             * @constant
-             */
-            account_authority: "ignored";
-            /**
-             * Artifact Reads
-             * @constant
-             */
-            artifact_reads: "server_mediated_artifact_download";
-            /** Blocked Exposure */
-            blocked_exposure: string[];
-            /**
-             * Browser Authority
-             * @constant
-             */
-            browser_authority: "opaque_public_handles_only";
-            /**
-             * Persistence
-             * @constant
-             */
-            persistence: "transient_public_only";
-            /**
-             * Upstream Calls
-             * @constant
-             */
-            upstream_calls: "none_local_execution";
-        };
-        /**
          * PublicCapabilityMetadata
          * @description Public-safe scoped capability metadata.
          */
         PublicCapabilityMetadata: {
-            /** Action Affordances */
-            action_affordances: components["schemas"]["PublicCapabilityActionAffordance"][];
-            /** Allowed Content Types */
-            allowed_content_types: string[];
-            /** Allowed File Suffixes */
-            allowed_file_suffixes: string[];
             /** Api Namespace */
             api_namespace: string;
-            /** Artifact Keys */
-            artifact_keys: string[];
-            /**
-             * Artifact Manifest Schema
-             * @constant
-             */
-            artifact_manifest_schema: "digiexam_migration_bundle_v3";
-            /** Artifact Ttl Seconds */
-            artifact_ttl_seconds: number;
-            authority_boundary: components["schemas"]["PublicCapabilityAuthorityBoundary"];
-            /** Blocked Affordances */
-            blocked_affordances: string[];
-            /** Concurrency Limit */
-            concurrency_limit: number;
             /** Frontend Route */
             frontend_route: string;
             profile: components["schemas"]["CuratedAppPublicAccessProfile"];
-            rate_limit: components["schemas"]["PublicCapabilityRateLimit"];
-            /** Reason Codes */
-            reason_codes: string[];
-            /** Request Time Budget Seconds */
-            request_time_budget_seconds: number;
             runtime_status: components["schemas"]["CuratedAppPublicRuntimeStatus"];
             /** Scope */
             scope: string;
-            /** Target Vocabulary */
-            target_vocabulary: string[];
-            /** Telemetry */
-            telemetry: string[];
-            /** Upload Limits */
-            upload_limits: components["schemas"]["PublicCapabilityUploadLimit"][];
-        };
-        /**
-         * PublicCapabilityRateLimit
-         * @description Public capability rate-limit metadata.
-         */
-        PublicCapabilityRateLimit: {
-            /** Max Requests */
-            max_requests: number;
-            /** Window Seconds */
-            window_seconds: number;
-        };
-        /**
-         * PublicCapabilityUploadLimit
-         * @description Public capability upload-size cap for one accepted input lane.
-         */
-        PublicCapabilityUploadLimit: {
-            /** Field */
-            field: string;
-            /** Max Bytes */
-            max_bytes: number;
-            /** Required */
-            required: boolean;
         };
         /**
          * PublicDraftHistoryStatusDto
@@ -8609,137 +8409,6 @@ export interface components {
              */
             export_blockers: components["schemas"]["NativeExportBlocker"][];
         };
-        /** PublicExamConverterArtifactEntry */
-        PublicExamConverterArtifactEntry: {
-            /** Artifact Key */
-            artifact_key: string;
-            /** Availability */
-            availability: string;
-            /** Content Type */
-            content_type?: string | null;
-            /** Download Url */
-            download_url?: string | null;
-            /** Filename */
-            filename?: string | null;
-            /** Sha256 */
-            sha256?: string | null;
-            /** Size Bytes */
-            size_bytes?: number | null;
-            /** Unavailable Code */
-            unavailable_code?: string | null;
-        };
-        /** PublicExamConverterArtifactManifestResponse */
-        PublicExamConverterArtifactManifestResponse: {
-            /** Artifacts */
-            artifacts: components["schemas"]["PublicExamConverterArtifactEntry"][];
-            /** Bundle Status */
-            bundle_status?: string | null;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Manual Follow Up */
-            manual_follow_up?: {
-                [key: string]: unknown;
-            } | null;
-            /** Public Job Id */
-            public_job_id: string;
-            /** Readiness */
-            readiness?: {
-                [key: string]: unknown;
-            } | null;
-            /**
-             * Schema Version
-             * @default digiexam_migration_bundle_v3
-             * @constant
-             */
-            schema_version: "digiexam_migration_bundle_v3";
-            /** Source Binding */
-            source_binding?: {
-                [key: string]: unknown;
-            } | null;
-            status: components["schemas"]["PublicExamConverterJobStatus"];
-            /** Warnings */
-            warnings?: {
-                [key: string]: unknown;
-            } | null;
-        };
-        /** PublicExamConverterJobResultResponse */
-        PublicExamConverterJobResultResponse: {
-            /** Artifact Manifest Url */
-            artifact_manifest_url?: string | null;
-            /** Error */
-            error?: string | null;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Public Job Id */
-            public_job_id: string;
-            /** Result */
-            result?: {
-                [key: string]: components["schemas"]["JsonValue"];
-            } | null;
-            status: components["schemas"]["PublicExamConverterJobStatus"];
-        };
-        /**
-         * PublicExamConverterJobStatus
-         * @description Public-facing job lifecycle for one transient local conversion.
-         * @enum {string}
-         */
-        PublicExamConverterJobStatus: "submitted" | "queued" | "processing" | "succeeded" | "failed" | "canceled" | "expired";
-        /** PublicExamConverterJobStatusResponse */
-        PublicExamConverterJobStatusResponse: {
-            /** Error */
-            error?: string | null;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Public Job Id */
-            public_job_id: string;
-            status: components["schemas"]["PublicExamConverterJobStatus"];
-            /**
-             * Submitted At
-             * Format: date-time
-             */
-            submitted_at: string;
-            /**
-             * Updated At
-             * Format: date-time
-             */
-            updated_at: string;
-        };
-        /** PublicExamConverterSubmitResponse */
-        PublicExamConverterSubmitResponse: {
-            /** Artifact Manifest Url */
-            artifact_manifest_url: string;
-            /** Artifact Ttl Seconds */
-            artifact_ttl_seconds: number;
-            /**
-             * Expires At
-             * Format: date-time
-             */
-            expires_at: string;
-            /** Poll Url */
-            poll_url: string;
-            /** Public Job Id */
-            public_job_id: string;
-            /** Requested Targets */
-            requested_targets: components["schemas"]["PublicExamConverterTarget"][];
-            /** Result Url */
-            result_url: string;
-            status: components["schemas"]["PublicExamConverterJobStatus"];
-        };
-        /**
-         * PublicExamConverterTarget
-         * @description Target artifacts available in the public Exam Converter lane.
-         * @enum {string}
-         */
-        PublicExamConverterTarget: "examnet_pdf" | "qti_package";
         /**
          * PublicExamCreatedPartResponse
          * @description One guest part creation; names the new part the UI opens in its editor.
@@ -17445,164 +17114,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RevokedPublicGuestShareDto"];
-                };
-            };
-        };
-    };
-    submit_public_exam_converter_job_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_submit_public_exam_converter_job_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicExamConverterSubmitResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_public_exam_converter_job_status_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicExamConverterJobStatusResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_public_exam_converter_artifacts_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__artifacts_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicExamConverterArtifactManifestResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    download_public_exam_converter_artifact_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__artifacts__artifact_key__download_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_job_id: string;
-                artifact_key: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_public_exam_converter_job_result_api_v1_public_apps_documents_conversion_hub_exam_converter_jobs__public_job_id__result_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                public_job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PublicExamConverterJobResultResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

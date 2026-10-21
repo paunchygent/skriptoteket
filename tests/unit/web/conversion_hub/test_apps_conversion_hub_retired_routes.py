@@ -44,6 +44,11 @@ def _full_matches(*, method: str, path: str) -> list[BaseRoute]:
         ("GET", f"{_APP}/exam-converter/jobs/{_JOB}/correction-session/intents"),
         ("PUT", f"{_APP}/exam-converter/jobs/{_JOB}/correction-session/intents"),
         ("DELETE", f"{_APP}/exam-converter/jobs/{_JOB}/correction-session/intents"),
+        ("POST", f"{_PUBLIC_APP}/exam-converter/jobs"),
+        ("GET", f"{_PUBLIC_APP}/exam-converter/jobs/{_JOB}"),
+        ("GET", f"{_PUBLIC_APP}/exam-converter/jobs/{_JOB}/result"),
+        ("GET", f"{_PUBLIC_APP}/exam-converter/jobs/{_JOB}/artifacts"),
+        ("GET", f"{_PUBLIC_APP}/exam-converter/jobs/{_JOB}/artifacts/qti_package/download"),
     ],
 )
 def test_retired_signed_in_exam_converter_path_is_unrouted(method: str, path: str) -> None:
@@ -58,8 +63,7 @@ def test_retired_signed_in_exam_converter_path_is_unrouted(method: str, path: st
         ("POST", f"{_APP}/jobs"),
         ("GET", f"{_APP}/jobs/{_JOB}"),
         ("GET", f"{_APP}/jobs/{_JOB}/artifact"),
-        ("POST", f"{_PUBLIC_APP}/exam-converter/jobs"),
     ],
 )
-def test_generic_and_public_exam_converter_routes_remain_registered(method: str, path: str) -> None:
+def test_generic_conversion_hub_routes_remain_registered(method: str, path: str) -> None:
     assert len(_full_matches(method=method, path=path)) == 1

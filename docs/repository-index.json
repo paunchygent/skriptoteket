@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4623014f92951bddfbd0c2b2871dd41ddf25ddc9eede9673fde59313d575e6f9",
+  "source_set_digest": "05cac0fa2f083ff59f7f03498c0322e1bac9181857e3d6d8fcb029d8636f6756",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -1666,7 +1666,7 @@
       "type": "story",
       "title": "Exam Converter source-only intake and export-owned formats",
       "path": "docs/backlog/stories/st-skript-21-10-exam-converter-source-only-intake-and-export-owned-formats.md",
-      "status": "ready",
+      "status": "canceled",
       "epic": "EPIC-SKRIPT-21",
       "owners": [
         {
@@ -1677,13 +1677,11 @@
       "retired_ids": [
         "ST-21-10"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User confirmed 2026-10-20 the removal of the public guest DigiExam converter line (ST-SKRIPT-41-02 term P6, user grilling 2026-10-18, retained root 01a14ee0-903e-7423-b969-30e3661e9006); P6 closes TASK-SKRIPT-21-10-01 and ST-SKRIPT-21-10 as superseded by TASK-SKRIPT-41-02-03."
       }
     },
     {
@@ -3373,7 +3371,7 @@
       "type": "task",
       "title": "ST-21-10 public Exam Converter source-only alignment",
       "path": "docs/backlog/tasks/task-skript-21-10-01-st-21-10-public-exam-converter-source-only-alignment.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-21-10",
       "owners": [
@@ -3382,13 +3380,11 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User confirmed 2026-10-20 the removal of the public guest DigiExam converter line (ST-SKRIPT-41-02 term P6, user grilling 2026-10-18, retained root 01a14ee0-903e-7423-b969-30e3661e9006); P6 closes TASK-SKRIPT-21-10-01 and ST-SKRIPT-21-10 as superseded by TASK-SKRIPT-41-02-03."
       }
     },
     {
@@ -7196,7 +7192,7 @@
       "type": "task",
       "title": "The public guest DigiExam converter line is removed",
       "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -9829,7 +9825,7 @@
       "type": "adr",
       "title": "Exam Converter public conversion exception for Conversion Hub",
       "path": "docs/decisions/adr-skript-0085-exam-converter-public-conversion-exception-for-conversion-hub.md",
-      "status": "accepted",
+      "status": "superseded",
       "owners": [
         {
           "kind": "service",
@@ -13534,7 +13530,7 @@
       {
         "id": "ADR-SKRIPT-0085",
         "title": "Exam Converter public conversion exception for Conversion Hub",
-        "status": "accepted",
+        "status": "superseded",
         "path": "docs/decisions/adr-skript-0085-exam-converter-public-conversion-exception-for-conversion-hub.md",
         "governing": [
           "EPIC-SKRIPT-21",

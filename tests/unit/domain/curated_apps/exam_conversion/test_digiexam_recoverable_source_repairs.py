@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-import zipfile
-from io import BytesIO
-from xml.etree import ElementTree
-
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
@@ -17,38 +13,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
     DigiExamWarningCode,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf import (
-    build_digiexam_examnet_pdf_document,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
-    DigiExamExamNetPdfStatus,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
     build_digiexam_ir_manifest,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
-    PROMPT_IMAGE_PLACEHOLDER_LINE,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
-    ExamNetQtiPackageStatus,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import (
-    build_examnet_qti_package_plan,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_validation import (
-    build_examnet_qti_validation_report,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
-    ExamNetQtiPackageWriter,
-)
 
 pytestmark = pytest.mark.unit
-
-_WRITER = ExamNetQtiPackageWriter()
 
 CANONICAL_TITLE_MESSAGE_FOR_QUESTION_1 = (
     "Fråga 1 saknade titel. "
@@ -123,12 +93,7 @@ def _missing_title_payload(*, blank: bool) -> dict[str, object]:
     return {"exams": [{"questions": [question]}]}
 
 
-def _item_xml(plan, item_filename: str) -> ElementTree.Element:
-    item_file = next(file for file in plan.files if file.relative_path == f"items/{item_filename}")
-    return ElementTree.fromstring(item_file.payload)
-
-
-def test_unresolved_prompt_image_positions_become_pdf_placeholder_without_blocking() -> None:
+def test_unresolved_prompt_image_positions_stay_non_blocking_in_parser_and_ir() -> None:
     result = DigiExamDxeParser().parse_payload(
         _missing_image_payload(), filename="missing-image.dxe"
     )
@@ -149,14 +114,8 @@ def test_unresolved_prompt_image_positions_become_pdf_placeholder_without_blocki
     assert manifest.renderer_ready is True
     assert manifest.warning_count >= 1
 
-    document = build_digiexam_examnet_pdf_document(exam)
-    assert document.status == DigiExamExamNetPdfStatus.SUCCESS
-    assert document.html.count(PROMPT_IMAGE_PLACEHOLDER_LINE) == 2
-    assert "missing-image-placeholder" in document.html
-    assert not any(warning.blocking for warning in document.warnings)
 
-
-def test_referenced_invalid_image_payload_becomes_placeholder_without_blocking() -> None:
+def test_referenced_invalid_image_payload_stays_non_blocking_in_parser() -> None:
     payload = _missing_image_payload()
     exams = payload["exams"]
     assert isinstance(exams, list)
@@ -179,8 +138,6 @@ def test_referenced_invalid_image_payload_becomes_placeholder_without_blocking()
         DigiExamWarningCode.MISSING_PROMPT_IMAGE
     ]
     assert result.items[0].warnings[0].message == CANONICAL_IMAGE_MESSAGE_FOR_QUESTION_1
-    document = build_digiexam_examnet_pdf_document(build_digiexam_intermediate_exam(result))
-    assert document.html.count(PROMPT_IMAGE_PLACEHOLDER_LINE) == 1
 
 
 def test_source_repairs_do_not_admit_an_additional_provider_candidate() -> None:
@@ -217,47 +174,6 @@ def test_source_repairs_do_not_admit_an_additional_provider_candidate() -> None:
         DigiExamWarningCode.MISSING_QUESTION_TITLE,
         DigiExamWarningCode.MISSING_PROMPT_IMAGE,
     }.issubset({warning.code for warning in repaired_exam.items[0].warnings})
-
-
-def test_unresolved_prompt_image_positions_become_qti_placeholder_without_resource() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_missing_image_payload(), filename="missing-image.dxe")
-    )
-    adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
-    plan = build_examnet_qti_package_plan(
-        package_name="missing-image",
-        assessment_title="missing-image",
-        items=adapter_result.items,
-    )
-    zip_bytes = _WRITER.build_package_bytes(plan)
-
-    assert adapter_result.manual_follow_ups == ()
-    assert plan.status == ExamNetQtiPackageStatus.PASSED
-    assert plan.warnings == ()
-    assert adapter_result.items[0].image_resources == ()
-    assert adapter_result.items[0].prompt_lines.count(PROMPT_IMAGE_PLACEHOLDER_LINE) == 2
-
-    with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:
-        names = set(archive.namelist())
-        assert not any(name.startswith("resources/") for name in names)
-        assert not any(name.startswith("items/images/") for name in names)
-        manifest = archive.read("imsmanifest.xml").decode("utf-8")
-        item_xml = archive.read("items/item_001.xml").decode("utf-8")
-
-    assert "resources/" not in manifest
-    assert "resources/" not in item_xml
-    assert "<img" not in item_xml
-    item = ElementTree.fromstring(item_xml.encode("utf-8"))
-    prompt_text = " ".join("".join(item.itertext()).split())
-    assert PROMPT_IMAGE_PLACEHOLDER_LINE in prompt_text
-
-    report = build_examnet_qti_validation_report(
-        plan=plan,
-        package_filename="qti-package.zip",
-        package_bytes=zip_bytes,
-    )
-    assert report.package_status == ExamNetQtiPackageStatus.PASSED
-    assert report.errors == ()
 
 
 def test_source_repair_messages_carry_real_question_numbers_and_no_literal_n() -> None:
@@ -299,7 +215,7 @@ def test_source_repair_messages_carry_real_question_numbers_and_no_literal_n() -
     assert first_result.items[2].warnings == second_result.items[2].warnings
 
 
-def test_missing_and_blank_titles_keep_question_n_fallback_in_pdf_and_qti() -> None:
+def test_missing_and_blank_titles_keep_question_n_fallback() -> None:
     for blank in (False, True):
         parse_result = DigiExamDxeParser().parse_payload(
             _missing_title_payload(blank=blank),
@@ -321,16 +237,3 @@ def test_missing_and_blank_titles_keep_question_n_fallback_in_pdf_and_qti() -> N
 
         exam = build_digiexam_intermediate_exam(parse_result)
         assert exam.items[0].title == "Question 1"
-
-        document = build_digiexam_examnet_pdf_document(exam)
-        assert document.status == DigiExamExamNetPdfStatus.SUCCESS
-
-        qti_result = build_examnet_qti_items_from_digiexam_ir(exam)
-        plan = build_examnet_qti_package_plan(
-            package_name=f"missing-title-{blank}",
-            assessment_title=f"missing-title-{blank}",
-            items=qti_result.items,
-        )
-        assert plan.status == ExamNetQtiPackageStatus.PASSED
-        item_root = _item_xml(plan, "item_001.xml")
-        assert item_root.attrib["title"] == "Question 1"

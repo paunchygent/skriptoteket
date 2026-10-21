@@ -1,40 +1,26 @@
-"""Exam Converter in-process conversion protocols.
+"""Exam.net export protocols for the exam workspace.
 
 Purpose:
-    Keep the in-process dxe -> Exam.net bundle lane protocol-first so the
-    conversion producer, deterministic QTI packaging, WeasyPrint rendering,
-    and local artifact storage can evolve independently of FastAPI and
-    concrete filesystem code.
+    Keep the exam workspace export lane protocol-first so deterministic QTI
+    packaging and WeasyPrint rendering can evolve independently of FastAPI
+    and concrete filesystem code.
 
 Relationships:
-    Used by ``application.curated_apps.exam_conversion_producers`` and
-    ``application.curated_apps.public_exam_converter_local_execution``;
+    Used by ``application.curated_apps.exam_workspace_exports`` and
+    ``application.curated_apps.handlers.exam_workspace_export_renderer``;
     implemented under ``infrastructure.curated_apps.apps.conversion_hub``.
 """
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol
-from uuid import UUID
+from typing import Protocol
 
-from skriptoteket.application.curated_apps.exam_conversion import (
-    ExamConversionNamedArtifact,
-    ExamConversionStoredArtifact,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfDocument,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
-    DigiExamResultPdfAnswerEvidence,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiPackagePlan,
 )
-
-if TYPE_CHECKING:
-    from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
-        ConversionHubUpload,
-    )
 
 
 class ExamNetQtiPackageWriterProtocol(Protocol):
@@ -50,46 +36,8 @@ class ExamNetQtiPackageWriterProtocol(Protocol):
         package_bytes: bytes | None,
     ) -> bytes: ...
 
-    def build_bundle_bytes(self, *, entries: tuple[tuple[str, bytes], ...]) -> bytes: ...
-
 
 class ExamNetPdfRendererProtocol(Protocol):
     """Render one successful Exam.net PDF document plan into PDF bytes."""
 
     def render_pdf(self, *, document: DigiExamExamNetPdfDocument) -> bytes: ...
-
-
-class PublicInProcessExamConverterProtocol(Protocol):
-    """Produce a public local conversion with optional graded-result evidence."""
-
-    async def convert(
-        self,
-        *,
-        job_id: UUID,
-        upload: "ConversionHubUpload",
-        answer_evidence: DigiExamResultPdfAnswerEvidence | None,
-        enrichment_failure_code: str | None,
-        correlation_id: str | None,
-    ) -> ExamConversionStoredArtifact: ...
-
-
-class ExamConversionArtifactStoreProtocol(Protocol):
-    """Store and read server-owned in-process Exam Converter artifacts."""
-
-    def store_artifact(
-        self,
-        *,
-        job_id: UUID,
-        artifact: ExamConversionStoredArtifact,
-    ) -> None: ...
-
-    def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact: ...
-
-    def read_named_artifact(
-        self,
-        *,
-        job_id: UUID,
-        artifact_key: str,
-    ) -> ExamConversionNamedArtifact: ...
-
-    def delete_artifact(self, *, job_id: UUID) -> None: ...

@@ -7,9 +7,8 @@ Purpose:
     deterministic and provider-free.
 
 Relationships:
-    - Consumed by `domain.digiexam_embedded_assets`,
-      `domain.digiexam_examnet_pdf_prompt`, and
-      `domain.digiexam_examnet_qti_adapter`.
+    - Consumed by `domain.digiexam_embedded_assets` and
+      `domain.digiexam_examnet_pdf_prompt`.
     - Carries no service, renderer, or provider coupling.
 """
 

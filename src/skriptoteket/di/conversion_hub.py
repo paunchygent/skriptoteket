@@ -28,7 +28,6 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
-from skriptoteket.protocols.exam_conversion import ExamConversionArtifactStoreProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -125,14 +124,12 @@ class ConversionHubProvider(Provider):
         self,
         jobs: ConversionHubJobRepositoryProtocol,
         client: SirConvertALotClientV2Protocol,
-        exam_artifacts: ExamConversionArtifactStoreProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> DownloadConversionHubArtifactHandler:
         return DownloadConversionHubArtifactHandler(
             jobs=jobs,
             client=client,
-            exam_artifacts=exam_artifacts,
             uow=uow,
             clock=clock,
         )

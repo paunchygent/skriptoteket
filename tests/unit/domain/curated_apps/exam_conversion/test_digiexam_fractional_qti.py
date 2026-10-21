@@ -7,13 +7,6 @@ from xml.etree import ElementTree
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    build_digiexam_intermediate_exam,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
@@ -29,29 +22,16 @@ pytestmark = pytest.mark.unit
 
 
 def test_positive_fractional_free_text_keeps_criterion_scoring() -> None:
-    result = DigiExamDxeParser().parse_payload(
-        {
-            "exams": [
-                {
-                    "questions": [
-                        {
-                            "id": 1,
-                            "title": "Kort svar",
-                            "about": "",
-                            "bodyHTML": "<p>Förklara kort.</p>",
-                            "images": [],
-                            "maxScore": 0.25,
-                            "type": 0,
-                        }
-                    ]
-                }
-            ]
-        },
-        filename="fractional-free-text.dxe",
+    item = ExamNetQtiItem(
+        item_id="item_001",
+        sequence=1,
+        title="Kort svar",
+        interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+        prompt_lines=("Förklara kort.",),
+        max_score=0.25,
+        free_text_criterion_points=0.25,
+        expected_lines=8,
     )
-    exam = build_digiexam_intermediate_exam(result)
-
-    item = build_examnet_qti_items_from_digiexam_ir(exam).items[0]
     root = ElementTree.fromstring(serialize_qti_assessment_item(item))
 
     assert item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC

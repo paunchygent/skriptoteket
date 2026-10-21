@@ -5,7 +5,8 @@ Purpose:
     already-rendered item sections.
 
 Relationships:
-    - Consumes item sections from `domain.digiexam_examnet_pdf_items`.
+    - Consumes item sections rendered by the Exam.net PDF item strategies
+      through the native-exam PDF export.
     - Feeds the in-process Exam.net PDF renderer seam through the thin
       document coordinator.
 """

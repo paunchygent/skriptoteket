@@ -13,8 +13,6 @@ import { createPinia, setActivePinia } from "pinia";
 import PublicAppHostView from "./PublicAppHostView.vue";
 import type { components } from "../api/openapi";
 
-const DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION = "digiexam_migration_bundle_v3";
-
 type PublicAppBootstrapResponse = components["schemas"]["PublicAppBootstrapResponse"];
 type PublicAppCapabilityBootstrapResponse =
   components["schemas"]["PublicAppCapabilityBootstrapResponse"];
@@ -112,72 +110,6 @@ function createScopedPublicBootstrap(
       frontend_route: "/public/apps/documents.conversion_hub/exam-converter",
       api_namespace: "/api/v1/public/apps/documents.conversion_hub/exam-converter",
       runtime_status: "active",
-      action_affordances: [
-        {
-          action: "submit",
-          method: "POST",
-          path_template: "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
-          enabled: true,
-        },
-        {
-          action: "poll",
-          method: "GET",
-          path_template:
-            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}",
-          enabled: true,
-        },
-        {
-          action: "result",
-          method: "GET",
-          path_template:
-            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/result",
-          enabled: true,
-        },
-        {
-          action: "artifact_manifest",
-          method: "GET",
-          path_template:
-            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/artifacts",
-          enabled: true,
-        },
-        {
-          action: "artifact_download",
-          method: "GET",
-          path_template:
-            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/{public_job_id}/artifacts/{artifact_key}/download",
-          enabled: true,
-        },
-      ],
-      authority_boundary: {
-        browser_authority: "opaque_public_handles_only",
-        upstream_calls: "none_local_execution",
-        artifact_reads: "server_mediated_artifact_download",
-        account_authority: "ignored",
-        persistence: "transient_public_only",
-        blocked_exposure: [
-          "raw_conversion_grant",
-          "raw_artifact_read_lease",
-          "huleedu_signing_material",
-          "sir_convert_credentials",
-          "direct_upstream_host",
-        ],
-      },
-      allowed_content_types: ["application/octet-stream", "application/pdf"],
-      allowed_file_suffixes: [".dxe", ".pdf"],
-      upload_limits: [
-        { field: "source_dxe", required: true, max_bytes: 20_000_000 },
-        { field: "graded_result_pdf", required: false, max_bytes: 20_000_000 },
-      ],
-      request_time_budget_seconds: 120,
-      concurrency_limit: 1,
-      rate_limit: { max_requests: 3, window_seconds: 60 },
-      artifact_ttl_seconds: 3600,
-      target_vocabulary: ["examnet_pdf", "qti_package"],
-      artifact_manifest_schema: DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-      artifact_keys: ["examnet_pdf", "manual_follow_up_report", "qti_package"],
-      reason_codes: ["public_exam_converter_rate_limited"],
-      blocked_affordances: ["authenticated_route_discovery", "vault_or_myfiles_save"],
-      telemetry: ["correlation_id", "no_account_or_owner_identifier"],
     },
     ...overrides,
   };

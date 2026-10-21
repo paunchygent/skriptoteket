@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=41 | story=336 | task=0 | review=137
-- open | epic=20 | story=68 | task=0
+- open | epic=20 | story=67 | task=0
 
 ## Lookup
 
@@ -537,7 +537,7 @@
 - EPIC-SKRIPT-15 | [User Profile & Settings](epics/epic-skript-15-user-profile-settings.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-16 | [Catalog discovery and personalization](epics/epic-skript-16-catalog-discovery-and-personalization.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-19 | [Runner I/O + file references foundations](epics/epic-skript-19-runner-i-o-file-references-foundations.md) | stories=ready=1 | tasks=none
-- EPIC-SKRIPT-21 | [Curated app: Conversion Hub (Sir Convert-a-Lot v2)](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | stories=active=2, ready=3 | tasks=none
+- EPIC-SKRIPT-21 | [Curated app: Conversion Hub (Sir Convert-a-Lot v2)](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | stories=active=2, ready=2, canceled=1 | tasks=none
 - EPIC-SKRIPT-25 | [Curated app family: competitive games foundations and Flunk-Out Frenzy](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | stories=active=2, ready=2 | tasks=none
 - EPIC-SKRIPT-26 | [Klassrumskartan — explicit exports and class-list import](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | stories=active=1, ready=4 | tasks=none
 - EPIC-SKRIPT-27 | [Klassrumskartan smart assignment v1](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | stories=active=1, ready=2 | tasks=none
@@ -598,7 +598,6 @@
 - ST-SKRIPT-20-03 | [Curated app: Reagent Prep Chef — SDS corpus gap fill (markdown-first)](stories/st-skript-20-03-curated-app-reagent-prep-chef-sds-corpus-gap-fill-markdown-first.md) | epic=[EPIC-SKRIPT-20](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-21-02 | [Migration: retire html-to-pdf-preview + update tests](stories/st-skript-21-02-migration-retire-html-to-pdf-preview-update-tests.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-21-04 | [Exam Converter durable teacher correction sessions](stories/st-skript-21-04-exam-converter-durable-teacher-correction-sessions.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-21-10 | [Exam Converter source-only intake and export-owned formats](stories/st-skript-21-10-exam-converter-source-only-intake-and-export-owned-formats.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-22-01 | [Textbook corpus cleanup pipeline and manual restoration workflow](stories/st-skript-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md) | epic=[EPIC-SKRIPT-22](epics/epic-skript-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-25-03 | [Competitive play lightweight score submission and typed leaderboards](stories/st-skript-25-03-competitive-play-lightweight-score-submission-and-typed-leaderboards.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-25-04 | [Competitive play lightweight leaderboard hardening and ruleset scoping](stories/st-skript-25-04-competitive-play-lightweight-leaderboard-hardening-and-ruleset-scoping.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=2 | dependents=0

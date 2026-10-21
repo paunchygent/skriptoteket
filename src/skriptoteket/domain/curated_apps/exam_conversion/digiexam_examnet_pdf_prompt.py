@@ -5,13 +5,10 @@ Purpose:
     Exam.net-oriented PDF renderer while resolving embedded image references.
 
 Relationships:
-    - Consumes asset reference paths prepared by
-      `domain.digiexam_examnet_pdf_assets`.
     - Binds every prompt image through the position that
       `domain.digiexam_prompt_repair.prompt_image_positions`, the single
       interpreter of prompt images, returns for that image's own start tag.
-    - Used by `domain.digiexam_examnet_pdf_items` before item sections are
-      assembled.
+    - Used by the native-exam PDF export before item sections are assembled.
 """
 
 from __future__ import annotations

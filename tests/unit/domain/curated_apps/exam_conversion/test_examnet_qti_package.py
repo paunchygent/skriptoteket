@@ -21,15 +21,7 @@ from xml.etree import ElementTree
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    build_digiexam_intermediate_exam,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
-    ExamNetQtiInteractionType,
     ExamNetQtiManualFollowUpReason,
     ExamNetQtiPackageStatus,
 )
@@ -186,34 +178,6 @@ def test_all_sample_packages_wire_assessment_test_into_manifest() -> None:
         assert all(item_ref.attrib["href"] in names for item_ref in item_refs)
 
 
-def test_digiexam_ir_adapter_feeds_reusable_qti_package_plan() -> None:
-    parse_result = DigiExamDxeParser().parse_payload(
-        _digiexam_renderable_payload(),
-        filename="qti-adapter.dxe",
-    )
-    exam = build_digiexam_intermediate_exam(parse_result)
-
-    adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
-    plan = build_examnet_qti_package_plan(
-        package_name="digiexam-adapter",
-        assessment_title="digiexam-adapter",
-        items=adapter_result.items,
-    )
-    zip_bytes = build_examnet_qti_zip_bytes(plan)
-
-    assert [item.interaction_type for item in adapter_result.items] == [
-        ExamNetQtiInteractionType.FREE_TEXT,
-        ExamNetQtiInteractionType.SINGLE_CHOICE,
-        ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
-    ]
-    assert adapter_result.manual_follow_ups == ()
-    assert plan.status == ExamNetQtiPackageStatus.PASSED
-    with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:
-        item_xml = archive.read("items/item_001.xml") + archive.read("items/item_002.xml")
-    assert b"choice_002" in item_xml
-    assert b"qti-extended-text-interaction" in item_xml
-
-
 def _validator_statuses(report: dict[str, object]) -> list[str]:
     value = report["validator_results"]
     assert isinstance(value, list)
@@ -228,50 +192,3 @@ def _validator_statuses(report: dict[str, object]) -> list[str]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def _digiexam_renderable_payload() -> dict[str, object]:
-    return {
-        "exams": [
-            {
-                "questions": [
-                    {
-                        "id": 1,
-                        "title": "Essay",
-                        "about": "",
-                        "bodyHTML": "<p>Explain the water cycle.</p>",
-                        "images": [],
-                        "maxScore": 3,
-                        "type": 0,
-                    },
-                    {
-                        "id": 2,
-                        "title": "Single",
-                        "about": "",
-                        "bodyHTML": "<p>Choose the Greek letter.</p>",
-                        "images": [],
-                        "maxScore": 2,
-                        "type": 1,
-                        "alternatives": [
-                            {"id": 1, "title": "Alpha", "about": "", "right": False},
-                            {"id": 2, "title": "Beta", "about": "", "right": True},
-                        ],
-                    },
-                    {
-                        "id": 3,
-                        "title": "Multiple",
-                        "about": "",
-                        "bodyHTML": "<p>Choose the ordinal words.</p>",
-                        "images": [],
-                        "maxScore": 4,
-                        "type": 2,
-                        "alternatives": [
-                            {"id": 1, "title": "First", "about": "", "right": True},
-                            {"id": 2, "title": "Between", "about": "", "right": False},
-                            {"id": 3, "title": "Third", "about": "", "right": True},
-                        ],
-                    },
-                ]
-            }
-        ]
-    }

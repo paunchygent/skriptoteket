@@ -34,7 +34,6 @@ class ConversionHubSourceFormatV2(StrEnum):
     MD = "md"
     HTML = "html"
     DOCX = "docx"
-    DIGIEXAM_DXE = "dxe"
 
 
 class ConversionHubOutputFormatV2(StrEnum):
@@ -43,7 +42,6 @@ class ConversionHubOutputFormatV2(StrEnum):
     MD = "md"
     PDF = "pdf"
     DOCX = "docx"
-    EXAMNET_BUNDLE = "examnet_bundle"
     TRANSCRIPT_BUNDLE = "transcript_bundle"
 
 

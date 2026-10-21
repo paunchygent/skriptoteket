@@ -50,15 +50,16 @@ describe("routes", () => {
     expect(resolved.params.publicCapabilitySlug).toBe("exam-converter");
   });
 
-  it("no longer has a protected Exam Converter app identity route", () => {
+  it("redirects the old signed-in Exam Converter URL to the exam workspace", async () => {
     const router = createTestRouter();
 
-    const resolved = router.resolve("/apps/exam-converter");
-
-    expect(resolved.name).not.toBe("exam-converter-authenticated");
-    expect(resolved.name).toBe("app-detail");
-    expect(resolved.params.appId).toBe("exam-converter");
     expect(router.hasRoute("exam-converter-authenticated")).toBe(false);
+
+    await router.push("/apps/exam-converter");
+    const current = router.currentRoute.value;
+
+    expect(current.name).toBe("exam-workspace");
+    expect(current.path).toBe("/apps/exam-workspace");
   });
 
   it("mounts the transcript host directly on Audio Transcription", async () => {
