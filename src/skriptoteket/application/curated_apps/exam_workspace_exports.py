@@ -42,10 +42,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_conversion import ExamNetQtiPackageWriterProtocol
 
-#: `user_vault_files.name` holds at most 255 characters, and the longest export
-#: file name adds " Exam.net.pdf" (D1) after the shared base. Cap the base so
-#: every variant, including that one, fits.
-_MAX_EXPORT_BASE_NAME_LENGTH = 255 - len(" Exam.net.pdf")
+#: `user_vault_files.name` holds at most 255 characters. The longest file name
+#: built from the shared base adds ".provdokument.zip" (D13) or " Exam.net.pdf"
+#: (D1) after the base. Cap the base so every variant, including those, fits.
+_MAX_EXPORT_BASE_NAME_LENGTH = 255 - max(len(" Exam.net.pdf"), len(".provdokument.zip"))
 
 
 def export_file_base_name(document: NativeExamDocument) -> str:

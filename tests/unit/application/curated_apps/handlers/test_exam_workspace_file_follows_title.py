@@ -8,6 +8,14 @@ from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDo
 from skriptoteket.application.curated_apps.handlers.exam_workspace_blank_document import (
     CreateBlankExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
+    ConversionProgress,
+    ConversionTarget,
+    merge_conversion,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_fields import (
+    digest_json,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
 from skriptoteket.domain.identity.models import User
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
@@ -152,3 +160,45 @@ async def test_save_overwrite_with_unchanged_title_keeps_current_file_name(env: 
         preserve_editor_position=True,
     )
     assert saved.name == "Spara som-namn.provdokument.zip"
+
+
+@pytest.mark.asyncio
+async def test_long_title_renames_to_the_capped_export_base_name(env: _Env) -> None:
+    actor, summary = await _blank_saved(env)
+    stored = env.vault_storage.stored[(actor.id, summary.vault_file_id)]
+    document = env.codec.parse(content=stored).document
+    long_title = "Prov med en mycket längre rubrik " * 9
+    await _store_step(
+        env,
+        actor,
+        summary.lineage_id,
+        with_next_revision(document.model_copy(update={"title": long_title})),
+    )
+
+    name = await _head_name(env, actor, summary.lineage_id)
+    stem = name.removesuffix(".provdokument.zip")
+    # 255 minus the longest ending (".provdokument.zip", 17 chars) caps the stem
+    # at 238 characters (TASK-SKRIPT-40-04-05, shared with the export base).
+    assert len(stem) == 238
+    assert stem.endswith("längre rubrik Prov me")
+
+
+@pytest.mark.asyncio
+async def test_conversion_title_change_after_first_save_renames(env: _Env) -> None:
+    """A Word-conversion title delivered after the first save renames the file."""
+    actor, summary = await _blank_saved(env)
+    stored = env.vault_storage.stored[(actor.id, summary.vault_file_id)]
+    head = env.codec.parse(content=stored).document
+    merged = merge_conversion(
+        head=head,
+        progress=ConversionProgress(units=(), revision=1, title_digest=digest_json(head.title)),
+        target=ConversionTarget(units=(), title="Konverterad titel 5!"),
+    )
+    assert merged.changed
+    assert merged.document.title == "Konverterad titel 5!"
+
+    await _store_step(env, actor, summary.lineage_id, merged.document)
+
+    assert await _head_name(env, actor, summary.lineage_id) == (
+        "Konverterad titel 5.provdokument.zip"
+    )

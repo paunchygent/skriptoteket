@@ -179,8 +179,16 @@ async def test_252_character_title_keeps_every_mina_filer_name_within_255(
     """A 252-character accepted title must still persist every Mina filer copy (F1)."""
     title = "Prov " + "a" * 247
     assert len(title) == 252
+    # The shared base cap (TASK-SKRIPT-40-04-05, longest ending ".provdokument.zip")
+    # holds the stem at 238 characters so the exam file fits too.
+    assert len(_base(title)) == 238
     actor, lineage_id, revision = await _retitled(env, title)
     handler = _export_handler(env)
+
+    head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage_id)
+    assert head is not None
+    assert head.name == f"{_base(title)}.provdokument.zip"
+    assert len(head.name) <= 255
 
     for target in ExamWorkspaceExportTarget:
         download = await handler.handle(
@@ -195,15 +203,16 @@ async def test_252_character_title_keeps_every_mina_filer_name_within_255(
 
 
 def test_cut_just_after_a_space_leaves_no_trailing_space_and_names_fit_255() -> None:
-    """The 242-char cap cut just after a space must not leave a trailing space (repair)."""
-    title = "a" * 241 + " " + "b" * 20
+    """The 238-char cap cut just after a space must not leave a trailing space (repair)."""
+    title = "a" * 237 + " " + "b" * 20
     base = _base(title)
     assert not base.endswith(" ")
-    assert base == "a" * 241
+    assert base == "a" * 237
     for suffix in _SUFFIXES.values():
         name = f"{base}{suffix}"
         assert len(name) <= 255
         assert "  " not in name
+    assert len(f"{base}.provdokument.zip") <= 255
 
 
 @pytest.mark.asyncio

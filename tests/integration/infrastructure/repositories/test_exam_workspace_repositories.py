@@ -20,6 +20,9 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     enqueue_workspace_enrichment_job,
 )
+from skriptoteket.application.curated_apps.exam_workspace_file_name import (
+    exam_document_file_name,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
@@ -350,6 +353,18 @@ async def test_overwriting_an_exam_keeps_the_row_and_adjusts_vault_usage(
     assert overwritten.id == first.id
     assert overwritten.document_version == 2
     assert overwritten.bytes == len(second_content)
+    # The 264-character title is capped to the shared 238-character base so the
+    # renamed exam file fits the 255-character Mina filer name column.
+    assert len(overwritten.name) <= 255
+    assert overwritten.name == exam_document_file_name(
+        NativeExamDocument(
+            document_id=lineage_id,
+            revision=2,
+            title="Prov med en mycket längre rubrik " * 8,
+            items=(placeholder("p:1", "A question"),),
+            origin=NativeExamDocumentOrigin(kind="created"),
+        )
+    )
     assert await storage.read_file(user_id=actor.id, file_id=first.id) == second_content
     assert not await storage.exists_file(user_id=actor.id, file_id=unused_id)
     async with session_factory() as session:
