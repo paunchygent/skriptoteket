@@ -224,7 +224,11 @@ export function useExamWorkspaceEditing(
   gate = useExamWorkspaceSyncGate({
     abandonAttempt: () => history.abandonAttempt(),
     beginCopy: (sourceLineageId, name) => document.beginCopy(sourceLineageId, name),
-    beginNewExam: (expectedCursor) => document.beginNewExam(expectedCursor),
+    beginNewExam: (expectedCursor, isLive) =>
+      document.beginNewExam(expectedCursor, {
+        isLive,
+        tabId: leaseHolder.session?.tabId ?? "",
+      }),
     claimSelectedLease: (nextLineageId) => {
       leaseHolder.session?.openLineage(nextLineageId);
     },

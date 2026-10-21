@@ -123,9 +123,14 @@ export type ExamWorkspaceReplacementDeps = {
    * Start creating the new exam and read it back as a document response;
    * null when its guards refuse (the source's history cursor is no longer
    * `expectedCursor`, or another operation holds the document). Holds the
-   * copy busy until retired or settled, exactly like `beginCopy`.
+   * copy busy until retired or settled, exactly like `beginCopy`. `isLive`
+   * reports whether this creation still holds live replacement authority;
+   * a guest creation replaces the browser slot only while it returns true.
    */
-  beginNewExam: (expectedCursor: string | null) => Promise<ExamWorkspaceDocumentResponse> | null;
+  beginNewExam: (
+    expectedCursor: string | null,
+    isLive: () => boolean,
+  ) => Promise<ExamWorkspaceDocumentResponse> | null;
   /** Report a current new-exam failure (`NEW_EXAM_FAILURE_COPY`). */
   notifyNewExamFailed: () => void;
   /** Report a current route-open failure (the existing open copy). */

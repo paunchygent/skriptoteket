@@ -6,6 +6,8 @@
  *   `replaceIf` stores only when the stored cursor still equals the expected
  *   one (or when nothing is stored and the expectation is null), so a second
  *   tab's write reports false instead of silently overwriting the winner.
+ *   A writer's `admit` is checked inside the same compare: once it reports
+ *   false the write is refused even though the cursor still matches.
  *   `clearIf` deletes only the snapshot it names, so a newer draft survives.
  *   The factory uses an injected port instead of opening IndexedDB.
  */
@@ -105,6 +107,34 @@ describe("examWorkspaceGuestDraftStorage", () => {
     expect(await storage.replaceIf("99999999-9999-4999-8999-999999999999", second)).toBe(false);
 
     expect((await storage.load())?.draft.saved_document.title).toBe("Första");
+  });
+
+  it("refuses a replaceIf whose writer's admission is gone even when its cursor still owns the slot", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const first = storedDraft("Första");
+    expect(await storage.replaceIf(null, first)).toBe(true);
+    const admit = vi.fn(() => false);
+
+    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Andra"), admit)).toBe(false);
+
+    expect(admit).toHaveBeenCalledOnce();
+    const kept = await storage.load();
+    expect(kept?.draft.cursor).toBe(first.draft.cursor);
+    expect(kept?.draft.saved_document.title).toBe("Första");
+    expect(Object.keys(kept?.assets ?? {})).toEqual(["asset_001"]);
+    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Tredje"), () => true)).toBe(true);
+    expect((await storage.load())?.draft.saved_document.title).toBe("Tredje");
+  });
+
+  it("forwards the writer's admission through the factory to the injected port", async () => {
+    const inner = createInMemoryExamWorkspaceGuestDraftStorage();
+    const storage = createExamWorkspaceGuestDraftStorage({ port: inner });
+    const first = storedDraft("Första");
+    expect(await storage.replaceIf(null, first)).toBe(true);
+
+    expect(await storage.replaceIf(first.draft.cursor, storedDraft("Andra"), () => false)).toBe(false);
+
+    expect((await inner.load())?.draft.saved_document.title).toBe("Första");
   });
 
   it("replaces the stored draft only for the winning expected cursor", async () => {

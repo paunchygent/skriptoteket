@@ -50,8 +50,18 @@ export type ExamWorkspaceGuestDraftStoragePort = {
    * null). Reports whether the write happened; a false return means another
    * tab or store instance committed first and the caller must surface the
    * established conflict outcome instead of claiming a write it lost.
+   *
+   * `admit`, when given, is the writer's own authority: it is evaluated
+   * synchronously inside the same atomic compare, after the cursor matches
+   * and immediately before the write, and a false return refuses the write
+   * like a lost cursor. A retired operation therefore never replaces the
+   * slot, even when no other writer changed the cursor meanwhile.
    */
-  replaceIf(expectedCursor: string | null, next: StoredGuestDraft): Promise<boolean>;
+  replaceIf(
+    expectedCursor: string | null,
+    next: StoredGuestDraft,
+    admit?: () => boolean,
+  ): Promise<boolean>;
   /**
    * Delete the stored record only when its draft cursor equals
    * `expectedCursor`. Reports whether the delete happened; a false return
@@ -110,11 +120,13 @@ async function createIndexedDbPort(): Promise<ExamWorkspaceGuestDraftStoragePort
      * so the compare-and-write is atomic across tabs. Only IndexedDB calls
      * are awaited inside the transaction; anything else would auto-close it.
      */
-    async replaceIf(expectedCursor, next) {
+    async replaceIf(expectedCursor, next, admit) {
       const tx = db.transaction(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, "readwrite");
       const store = tx.store;
       const current = await store.get(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
-      if ((current?.draft.cursor ?? null) !== expectedCursor) {
+      // `admit` runs synchronously between the compare and the put: no await
+      // separates the writer's authority check from the write it admits.
+      if ((current?.draft.cursor ?? null) !== expectedCursor || (admit !== undefined && !admit())) {
         await tx.done;
         return false;
       }
@@ -154,8 +166,8 @@ export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGue
       }
       return { assets: { ...stored.assets }, draft: structuredClone(stored.draft) };
     },
-    async replaceIf(expectedCursor, next) {
-      if ((stored?.draft.cursor ?? null) !== expectedCursor) {
+    async replaceIf(expectedCursor, next, admit) {
+      if ((stored?.draft.cursor ?? null) !== expectedCursor || (admit !== undefined && !admit())) {
         return false;
       }
       stored = { assets: { ...next.assets }, draft: structuredClone(next.draft) };
@@ -203,8 +215,8 @@ export function createExamWorkspaceGuestDraftStorage(deps?: {
     async load() {
       return (await port()).load();
     },
-    async replaceIf(expectedCursor, next) {
-      return await (await port()).replaceIf(expectedCursor, snapshotStoredGuestDraft(next));
+    async replaceIf(expectedCursor, next, admit) {
+      return await (await port()).replaceIf(expectedCursor, snapshotStoredGuestDraft(next), admit);
     },
     async clearIf(expectedCursor) {
       return await (await port()).clearIf(expectedCursor);

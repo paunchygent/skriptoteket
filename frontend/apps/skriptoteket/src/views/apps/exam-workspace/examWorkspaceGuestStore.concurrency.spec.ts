@@ -22,6 +22,7 @@ import {
   exam,
   installGuestStoreObjectUrls,
   LEASE_TAB_ID,
+  liveAdmission,
   openSecondTab,
   setupGuestStore,
   startBlank,
@@ -123,7 +124,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       storage: losing,
     });
 
-    const error = await loser.startBlank(null).catch((caught: unknown) => caught);
+    const error = await loser.startBlank(null, liveAdmission()).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
@@ -145,7 +146,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       },
     );
     context.mocks.createBlank.mockReturnValueOnce(pending);
-    const starting = context.store.startBlank(old.cursor);
+    const starting = context.store.startBlank(old.cursor, liveAdmission());
     await vi.waitFor(() => expect(context.mocks.createBlank).toHaveBeenCalledOnce());
 
     // Another tab replaces the slot while the public blank route is in flight.

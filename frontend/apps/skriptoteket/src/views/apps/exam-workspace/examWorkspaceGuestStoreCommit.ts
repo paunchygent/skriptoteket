@@ -89,16 +89,19 @@ export async function loadGuestStored(
 
 /**
  * Store `next` only when `expectedCursor` still owns the slot; a concurrent
- * tab's newer draft reports the server's 409. Notifies `onStored` once the
- * write commits so the caller can point its object URLs at the new bytes.
+ * tab's newer draft reports the server's 409. `admit`, when given, is
+ * checked inside the same atomic write (see `replaceIf`) and a refusal
+ * reports the same 409. Notifies `onStored` once the write commits so the
+ * caller can point its object URLs at the new bytes.
  */
 export async function persistGuestStored(
   storage: ExamWorkspaceGuestDraftStoragePort,
   expectedCursor: string | null,
   next: StoredGuestDraft,
   onStored: (stored: StoredGuestDraft) => void,
+  admit?: () => boolean,
 ): Promise<void> {
-  const written = await storage.replaceIf(expectedCursor, next);
+  const written = await storage.replaceIf(expectedCursor, next, admit);
   if (!written) {
     throw conflictError();
   }

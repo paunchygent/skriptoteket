@@ -119,3 +119,7 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 ### 2026-10-21 (repair owner, D13 shared-cap repair)
 
 - D13 shared cap is now 238 (`255 - max(len(" Exam.net.pdf"), len(".provdokument.zip"))`, computed from the endings) so the exam's `.provdokument.zip` file fits; trailing-space strip kept. Proof logs: retained root `01a15f95-9eca-7a87-b3b5-4cb77a0761c6` `evidence/d13-cap/`.
+
+### 2026-10-21 (repair owner, round-2 F1: a retired guest creation)
+
+- A guest Nytt prov now replaces the browser slot only under its live authority: the coordinator passes `() => isSelected(entry, token)` to `beginNewExam`, and `startBlank` checks the edit lease, then `replaceIf` evaluates that predicate inside the atomic cursor compare, just before the write. A creation retired by lease handover, pagehide or disposal keeps the retained draft, its history and its pictures. Spec `examWorkspaceGuestNewExam.retiredCreation.spec.ts`; logs in retained root `01a15f95-9eca-7a87-b3b5-4cb77a0761c6` `evidence/f1-retired/`. Guest QTI import (`startFromQti`) has the same replace-before-protection shape outside the coordinator; reported, not changed. Owed: F1 independent rereview.

@@ -15,6 +15,7 @@ import {
   type ExamWorkspaceGuestStoreDeps,
 } from "./examWorkspaceGuestStore";
 import type { ExamWorkspaceGuestDraftIdSource } from "./examWorkspaceGuestDraft";
+import type { GuestSlotAdmission } from "./examWorkspaceStore";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import {
   createInMemoryGuestEditLeaseStorage,
@@ -60,6 +61,11 @@ export const STALE_CURSOR = "99999999-9999-4999-8999-999999999999";
 /** The tab id the guest store specs write with; the lease slot starts empty. */
 export const LEASE_TAB_ID = "20000000-0000-4000-8000-000000000001";
 export const NOW = "2026-10-18T10:00:00.000Z";
+
+/** A creation that keeps its replacement authority, writing as the spec tab. */
+export function liveAdmission(tabId = LEASE_TAB_ID): GuestSlotAdmission {
+  return { isLive: () => true, tabId };
+}
 
 /** Any current-schema document; scenarios override only the title. */
 export function exam(title = "Original"): NativeExamDocument {
@@ -185,5 +191,5 @@ export async function startBlank(
     export_blockers: [],
   });
   const current = await setup.storage.load();
-  return await setup.store.startBlank(current?.draft.cursor ?? null);
+  return await setup.store.startBlank(current?.draft.cursor ?? null, liveAdmission());
 }

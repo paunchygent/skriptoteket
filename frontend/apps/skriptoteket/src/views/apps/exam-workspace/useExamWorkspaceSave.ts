@@ -31,7 +31,7 @@ import type {
   ExamWorkspaceDocumentSummary,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceStore, GuestSlotAdmission } from "./examWorkspaceStore";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 
 export const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
@@ -118,9 +118,13 @@ export function useExamWorkspaceSave(state: SaveState) {
    * is no longer `expectedCursor` (the draft the D9 check read changed
    * meanwhile). The hold belongs to this creation's own fence token, so a
    * retired creation's late settle never clears a newer creation's hold.
+   * A guest creation writes the browser slot under `admission`: the write
+   * happens only while the creation still holds live replacement authority
+   * and no other tab holds a live edit lease.
    */
   function beginNewExam(
     expectedCursor: string | null,
+    admission: GuestSlotAdmission,
   ): Promise<ExamWorkspaceDocumentResponse> | null {
     const teacher = state.store.teacher;
     const guest = state.store.guest;
@@ -139,7 +143,7 @@ export function useExamWorkspaceSave(state: SaveState) {
         return await state.store.shared.getExamWorkspaceDocument(created.lineage_id);
       }
       if (guest) {
-        const lineageId = await guest.startBlank(expectedCursor);
+        const lineageId = await guest.startBlank(expectedCursor, admission);
         return await state.store.shared.getExamWorkspaceDocument(lineageId);
       }
       throw new Error("No exam workspace store side can create a new exam.");

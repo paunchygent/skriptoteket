@@ -27,6 +27,7 @@ import type { StoredGuestDraft } from "./exam-workspace/examWorkspaceGuestDraftS
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
+import { liveAdmission } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 import { buildParentDocument } from "./exam-workspace/examWorkspaceParentDocument.specSupport";
 
 const DEPARTURE_FAILURE_COPY =
@@ -115,7 +116,7 @@ async function seedDraft(): Promise<StoredGuestDraft> {
     onLimit: () => undefined,
     storage: port,
   });
-  await seeder.startBlank(null);
+  await seeder.startBlank(null, liveAdmission());
   const stored = await port.load();
   if (stored === null) {
     throw new Error("Expected the seeder to store a guest draft.");
@@ -287,7 +288,7 @@ describe("ExamWorkspaceGuestHost", () => {
     });
     apiMocks.createBlank.mockRejectedValueOnce(limit);
     await guestStoreOf(wrapper)
-      .guest?.startBlank(null)
+      .guest?.startBlank(null, liveAdmission())
       .catch((caught: unknown) => caught);
     await flushPromises();
 
@@ -317,7 +318,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank(null)
+        .guest?.startBlank(null, liveAdmission())
         .catch((caught: unknown) => caught);
       await flushPromises();
 
@@ -355,7 +356,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank(null)
+        .guest?.startBlank(null, liveAdmission())
         .catch((caught: unknown) => caught);
       await flushPromises();
 

@@ -341,7 +341,10 @@ export function createReplacementCoordinator(deps: ExamWorkspaceReplacementDeps)
     const posting =
       entry.kind === "saveAs"
         ? deps.beginCopy(entry.intent.source, entry.intent.name)
-        : deps.beginNewExam(entry.intent.expectedCursor);
+        : // The guest slot write admits itself through this selection: once
+          // the creation is retired or terminated it never replaces the
+          // retained draft, even when no stored cursor changed meanwhile.
+          deps.beginNewExam(entry.intent.expectedCursor, () => isSelected(entry, token));
     if (posting === null) {
       // The begin guards refused: the copy busy was never held, so the
       // source stays editable with its work intact. A refused new exam

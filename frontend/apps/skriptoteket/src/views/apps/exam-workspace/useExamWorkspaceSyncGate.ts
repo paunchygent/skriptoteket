@@ -137,9 +137,11 @@ export type ExamWorkspaceSyncGateDeps = {
     sourceLineageId: string,
     name: string,
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
-  /** Start the new-exam creation; null when its guards refuse. */
+  /** Start the new-exam creation; null when its guards refuse. `isLive`
+   * reports whether the creation still holds live replacement authority. */
   beginNewExam: (
     expectedCursor: string | null,
+    isLive: () => boolean,
   ) => Promise<ExamWorkspaceDocumentResponse> | null;
   /** Report a current route-open failure (the existing open copy). */
   notifyRouteFailed: () => void;
@@ -237,7 +239,7 @@ export function useExamWorkspaceSyncGate(deps: ExamWorkspaceSyncGateDeps) {
     abandonAttempt: () => deps.abandonAttempt(),
     adoptSelectedOpening: (nextLineageId) => adoptSelectedOpening(nextLineageId),
     beginCopy: (sourceLineageId, name) => deps.beginCopy(sourceLineageId, name),
-    beginNewExam: (expectedCursor) => deps.beginNewExam(expectedCursor),
+    beginNewExam: (expectedCursor, isLive) => deps.beginNewExam(expectedCursor, isLive),
     captureKept: () => kept.captureKeptEdit(),
     claimSelectedLease: (nextLineageId) => deps.claimSelectedLease(nextLineageId),
     fence,
