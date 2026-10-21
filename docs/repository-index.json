@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6e33d542c9b7f7cbd88d5da9db7ecacbd2d428515916a9694a0c78d69131e940",
+  "source_set_digest": "64099adfc9281fa113651ad2a0706626d2c52946766beb11ee0e05f09ec4893b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7177,7 +7177,7 @@
       "type": "task",
       "title": "Two tabs that each hold an exam lock stop invalidating each other's CSRF token on every renew",
       "path": "docs/backlog/tasks/task-skript-40-04-19-two-tabs-that-each-hold-an-exam-lock-stop-invalidating-each-other-s-csrf-token-on-every-renew.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7188,7 +7188,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user narrowed the criterion to the two-tab fix and closed the task on 2026-10-22 (Mac AskUserQuestion, Drop it, close 40-04-19). Independent review approved with no findings (retained root 01a1605d-6338-78d7-b66c-a02947ac907a, evidence/reviews/review-40-04-19.md); merged at e2f12bcc; Mac two-tab staging walk at e2f12bcc passed with 16 renews, all 200 and no CSRF 403."
       }
     },
     {

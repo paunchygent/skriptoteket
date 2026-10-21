@@ -7,13 +7,17 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user narrowed the criterion to the two-tab fix and closed the task on 2026-10-22 (Mac AskUserQuestion, Drop it, close 40-04-19). Independent review approved with no findings (retained root 01a1605d-6338-78d7-b66c-a02947ac907a, evidence/reviews/review-40-04-19.md); merged at e2f12bcc; Mac two-tab staging walk at e2f12bcc passed with 16 renews, all 200 and no CSRF 403.'
 task_kind: story
 acceptance_criteria:
-  - With two tabs each holding an exam lock, lock renews pass on the first try with no CSRF 403; a stale or mismatched CSRF token gets a message that says so instead of 'CSRF token required'
+  - With two tabs each holding an exam lock, lock renews pass on the first try with no CSRF 403
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -27,7 +31,7 @@ Observed on staging at main f84eb85d (Mac .artifacts/staging-walk-e4d15c4a/walk-
 Behaviour:
 
 1. Two tabs that each hold an exam lock renew with no CSRF 403 on the first try.
-2. A browser-session write with a stale or mismatched CSRF token gets a 403 whose message says the token is stale or does not match, not that it is required.
+2. Dropped by the user on 2026-10-22: the 403 message for a stale or mismatched token stays "CSRF token required", with no HuleEdu follow-up.
 
 ## Contract Inputs
 
@@ -76,4 +80,4 @@ One two-tab lock renew on staging, recorded with the X-CSRF-Token header and the
 
 - Independent review approved with no findings (retained root `01a1605d-6338-78d7-b66c-a02947ac907a`, `evidence/reviews/review-40-04-19.md`). Merged at `e2f12bcc`; the Hemma pre-push suite passed.
 - Mac staging walk at `e2f12bcc`, PASS (Mac `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`): two tabs holding locks on two exams, measured for 40 s. Each tab sent 8 renews 5 s apart, all 200, with no CSRF 403 and no `/v1/auth/csrf` request; both tabs carry the `huleedu_csrf` cookie. One `/v1/auth/csrf` call came before the window, during page load.
-- Open: the 403 message half of the acceptance criterion needs a HuleEdu change; the user decides whether to narrow the criterion or split a HuleEdu follow-up.
+- The user dropped the 403 message half of the criterion on 2026-10-22, with no HuleEdu follow-up, and closed the task.
