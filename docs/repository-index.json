@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "30c6d04c87a70ec09901be65bae33959dafa9fb9b81149ae926231c4069c0bf3",
+  "source_set_digest": "b41da460af41cd8b10b70419c0e2d2808016fc782bb7db17db40cfb3fea9b9ba",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8488,6 +8488,24 @@
         "decided_at": "2026-10-21",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 321854a9 (retained session 01a15559-85c6-7d24-9a7f-4009457f671a, evidence/reviews/321854a9-01dc-4c81-853e-fbc3d9f2f9cb.md) reviewed e0ae15bb: changes requested, six medium findings F1-F6, no blocker or high. Repaired at b1f019e6 (one delta per finding) and merged to main 6a557b5d. Admitted by the Hemma orchestrator on focused proof without rereview, 2026-10-21 at main b9ad44a4: tests/unit/governance/test_pytest_execution_policy.py 23 passed, ruff check and format clean on the eleven repaired Python files, full pdm run typecheck passes (retained session 01a15f48-0f71-77ba-b7df-f48c8e838efb, evidence/admission/)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0051",
+      "type": "task",
+      "title": "The pre-push check runs directly on Hemma and refuses a push it cannot verify",
+      "path": "docs/backlog/tasks/task-skript-rep-0051-the-pre-push-check-runs-directly-on-hemma-and-refuses-a-push-it-cannot-verify.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
