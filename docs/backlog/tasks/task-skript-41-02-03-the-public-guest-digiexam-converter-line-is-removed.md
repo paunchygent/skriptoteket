@@ -108,4 +108,4 @@ Stop and report if a removed module turns out to serve another caller, or if the
   - Guest at `/public/apps/documents.conversion_hub/exam-converter`: the guest workspace opens; a `.dxe` import shows the sign-in notice with no server call (ST-SKRIPT-41-02 P1, 41-02-02 G4); a QTI import (200) and a PDF export (200) work.
   - Signed in: a DigiExam import completes (202, 7 questions); a document with answer keys exports QTI and PDF (200); the imported document's exports return the normal 422 `missing_answer_key`.
   - `POST .../exam-converter/jobs` returns 405, not a redirect (X1).
-  - Open with the user: whether a signed-out visitor on `/apps/exam-converter` goes to the guest workspace instead of login. Waits for user closure.
+  - User decision 2026-10-21 (through the Mac orchestrator: "Ja, behåll inloggningen för utloggade besökare på /apps/exam-converter."): a signed-out visit to `/apps/exam-converter` keeps going to HuleEdu login and then lands on `/apps/exam-workspace`, as built and walked. No code change. Waits for user closure.
