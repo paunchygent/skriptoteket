@@ -11,6 +11,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
+    NativeParseOrigin,
 )
 from tests.unit.domain.curated_apps.exam_workspace.docx_section_points_support import (
     _DEL_1,
@@ -432,3 +433,106 @@ def test_a_question_owned_plain_line_carries_no_read_number():
 
     assert _points(scored) == [3]
     assert list(scored.read_heading_points) == [None]
+
+
+def test_a_heading_value_joins_the_conflict_first_w1() -> None:
+    """W1: "Fråga 1 (4 p)" heads a question printing "(3 poäng)" → conflict (4, 3)."""
+    chunks, questions = _exam(
+        "# Fråga 1 (4 p)",
+        "Q Förklara skillnaden mellan subjekt och objekt. Ge ett eget exempel på varje. (3 poäng)",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (3,)))
+
+    assert scored.items[0].conflicting_source_points == (4, 3)
+    assert scored.items[0].source_points is None
+    assert scored.items[0].points == 3
+
+
+def test_a_heading_value_joins_the_conflict_for_a_source_fallback_item() -> None:
+    """W1 unconverted: a source-fallback review item keeps the same conflict (4, 3)."""
+    chunks, questions = _exam(
+        "# Fråga 1 (4 p)",
+        "Q Förklara skillnaden mellan subjekt och objekt. Ge ett eget exempel på varje. (3 poäng)",
+    )
+    (item,) = _items(chunks, questions, (3,))
+    fallback = item.model_copy(
+        update={
+            "review": item.review.model_copy(
+                update={
+                    "parse_origin": NativeParseOrigin.SOURCE_FALLBACK,
+                    "state": NativeItemReviewState.REVIEW_REQUIRED,
+                }
+            )
+        }
+    )
+
+    scored = _score(chunks, questions, (fallback,))
+
+    assert scored.items[0].conflicting_source_points == (4, 3)
+    assert scored.items[0].source_points is None
+    assert scored.items[0].points == 3
+
+
+def test_a_heading_value_heads_two_subpart_values_w2() -> None:
+    """W2: "Fråga 2 (4 p)" over "(2,5 p)" and "(3 p)" → conflict (4, 2.5, 3)."""
+    chunks, questions = _exam(
+        "# Fråga 2 (4 p)",
+        "Q a) Ange ordklassen för varje ord i meningen ”Den gamla hunden sov länge”. (2,5 p)",
+        "b) Motivera ditt svar för ordet ”länge”. (3 p)",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None,)))
+
+    assert scored.items[0].conflicting_source_points == (4, 2.5, 3)
+    assert scored.items[0].source_points is None
+
+
+def test_a_heading_only_question_keeps_no_conflicting_values() -> None:
+    """No regression: a heading total alone is one value, so no conflict; the part gives the
+    question its total, with no source points as before."""
+    chunks, questions = _exam("# Fråga 3 (2 p)", "Q Vad är ett predikat? Svara med en mening.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None,)))
+
+    assert scored.items[0].conflicting_source_points == ()
+    assert scored.items[0].source_points is None
+    assert scored.items[0].points == 2
+
+    chunks, questions = _exam("# Fråga 4 (2 p)", "Q Text (2 p)")
+    # The question's only chunk prints its total, so no question starts and the plan
+    # stays empty: the item keeps its model reading and its own chunk's source value.
+    scored = _score(chunks, questions, _items(chunks, questions, (2,)))
+
+    assert scored.items[0].conflicting_source_points == ()
+    assert scored.items[0].source_points == 2
+    assert scored.items[0].points == 2
+
+
+def test_all_walk_questions_together_cover_neighbouring_headings() -> None:
+    """W1, W2 and both no-regression questions in one exam."""
+    chunks, questions = _exam(
+        "# Fråga 1 (4 p)",
+        "Q Förklara skillnaden mellan subjekt och objekt. Ge ett eget exempel på varje. (3 poäng)",
+        "# Fråga 2 (4 p)",
+        "Q a) Ange ordklassen för varje ord i meningen ”Den gamla hunden sov länge”. (2,5 p)",
+        "b) Motivera ditt svar för ordet ”länge”. (3 p)",
+        "# Fråga 3 (2 p)",
+        "Q Vad är ett predikat? Svara med en mening.",
+        "# Fråga 4 (2 p)",
+        "Q Text (2 p)",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (3, None, None, 2)))
+
+    assert scored.items[0].conflicting_source_points == (4, 3)
+    assert scored.items[0].source_points is None
+    assert scored.items[0].points == 3
+    assert scored.items[1].conflicting_source_points == (4, 2.5, 3)
+    assert scored.items[1].source_points is None
+    assert scored.items[2].conflicting_source_points == ()
+    assert scored.items[2].source_points is None
+    assert scored.items[2].points == 2
+    assert scored.items[3].conflicting_source_points == ()
+    assert scored.items[3].source_points == 2
+    assert scored.items[3].points == 2

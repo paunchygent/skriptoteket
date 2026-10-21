@@ -90,3 +90,26 @@ A conversion finishes and its questions open in the workspace. The workspace com
 
 - Independent review of the whole task (Pi ruthless-reviewer `dd95a00e`, record `evidence/reviews/review-40-04-23.md` in retained root `01a15ff0-a322-73b4-83e9-d7209f112e84`): changes_requested with two medium findings, F1 (a retried question dropped its printed conflict) and F2 (two files above 500 lines). The rest of the task passed review. The lead's residuals were judged not blocking: no end-to-end two-value DOCX test, staging exams unreadable after the v11 bump, a possible false amber row, and the acceptance wording behind P8.
 - F1 and F2 were repaired in `5e4649b3a` and admitted by the Hemma orchestrator on the lead's focused proof (F1 fail-first logs; backend 4527 passed; frontend exam-workspace domain 2797 passed; lint, typecheck, fe-type-check, fe-lint and docs-validate clean). Medium repairs need no rereview. Next: merge to main, the staging walk by the Mac from a fresh DOCX import, then user closure.
+
+### 2026-10-21 (Hemma orchestrator, staging walk)
+
+- The Mac staging walk at `87ab4573`, repeated at `25c4ac01` with the proof admin and a fresh DOCX (Mac `.artifacts/staging-walk-40-04-23/walk-record.md`), passed these checks:
+  - the line "1 fråga avviker från provtexten";
+  - amber points on the differing row only;
+  - the hint "Provtexten: 2,5 p och 3 p";
+  - Visa frågorna stepping and wrapping;
+  - Avfärda clearing everything in one click;
+  - a reload ending the warning;
+  - later edits adding no line.
+- Open walk findings for a repair unit:
+  - W1, against P8: a question printing "(4 p)" in its heading and "(3 poäng)" in its text imported as "Ej konverterad" with 3 p. It had `source_points` 3 and `conflicting_source_points` [], kept the heading line in its body, and was neither counted nor hinted. A two-value question that fails conversion escapes the warning.
+  - W2, for the lead to judge against P8: a question printing heading "(4 p)" plus parts "(2,5 p)" and "(3 p)" has 4 p and `conflicting_source_points` [2.5, 3]. The heading value is missing from the conflict list and the hint.
+- Not exercised: the single-value hint, the three-value form, and a differing row that shows a problem text.
+
+### 2026-10-21 (implementation lead, walk repair W1 and W2)
+
+- One mechanism caused both findings. A Word heading such as "Fråga 1 (4 p)" carries no part, exam or question label, so `printed_points_plan` makes it a part over its one question. Its value was the part total and never reached the question's printed values: the walk's Fråga 1 had values (3) and Fråga 2 had (2,5, 3). W1's failed conversion did not cause the miss; a converted Fråga 1 missed the warning the same way.
+- W2 judgement: P8 settles it. P8's three-value example "Provtexten: 4 p, 2,5 p och 3 p" is the walk's Fråga 2, so the heading value belongs in the list. The other reading, that the heading is a total over the parts, was rejected.
+- Fix: `printed_points_plan` puts the own printed total of a heading that heads only one question first in that question's `values`. `prints`, `points`, `lines`, the part totals and the scoring stay as they were. The walk's questions now get `conflicting_source_points` (4, 3) and (4, 2,5, 3). A heading-only question keeps no conflict. No frontend change.
+- Proof (evidence under `evidence/walk-repair/` in retained root `01a1605f-1f41-723a-93c5-34da7477c9b1`): the staging document's items and a plan probe before and after; four walk-shape tests in `test_docx_section_points.py` fail before the fix and pass after (40 passed); exam-workspace domain 933 passed; DOCX handlers 1468 passed; lint and typecheck clean.
+- Residuals: a heading whose value equals the sum of its parts (5,5 over 2,5 and 3) still counts as three values, as P8 already did for parts; a question printing only its heading total keeps `source_points` null, as before; staging's Fråga 2 import record repeats its a) and b) lines, and its converted body drops the "a)" label.
