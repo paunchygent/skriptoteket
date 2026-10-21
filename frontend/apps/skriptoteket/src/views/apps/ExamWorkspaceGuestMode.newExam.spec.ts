@@ -15,6 +15,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { ref } from "vue";
 
 import type { NativeExamDocument } from "../../api/examWorkspace";
+import type { PublicExamWorkspaceCommandResult } from "../../api/publicExamWorkspace";
 import { useToastStore } from "../../stores/toast";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
@@ -31,6 +32,7 @@ import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGue
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { createInMemoryGuestEditLeaseStorage } from "./exam-workspace/examWorkspaceGuestEditLease";
 import { createIds } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
+import { deferred } from "./exam-workspace/useExamWorkspaceSyncGate.specSupport";
 import { NEW_EXAM_FAILURE_COPY } from "./exam-workspace/examWorkspaceNewExam";
 import {
   EXAM_WORKSPACE_LAYOUT_KEY,
@@ -274,13 +276,8 @@ describe("ExamWorkspaceView guest mode Nytt prov protected replacement", () => {
     await wrapper.get('[data-test="exam-workspace-row-item_001"]').trigger("click");
     await flushPromises();
 
-    let releaseBlank!: (value: { document: NativeExamDocument; export_blockers: never[] }) => void;
-    const pending = new Promise<{ document: NativeExamDocument; export_blockers: never[] }>(
-      (resolve) => {
-        releaseBlank = resolve;
-      },
-    );
-    publicMocks.createPublicExamWorkspaceBlank.mockReturnValueOnce(pending);
+    const blank = deferred<PublicExamWorkspaceCommandResult>();
+    publicMocks.createPublicExamWorkspaceBlank.mockReturnValueOnce(blank.promise);
     await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
     expect(publicMocks.createPublicExamWorkspaceBlank).toHaveBeenCalledTimes(2);
@@ -300,7 +297,7 @@ describe("ExamWorkspaceView guest mode Nytt prov protected replacement", () => {
       kept?.draft.saved_document.items.find((item) => item.item_id === "item_001")?.points,
     ).toBe(2);
 
-    releaseBlank({ document: emptyGuestDocument(), export_blockers: [] });
+    blank.resolve({ document: emptyGuestDocument(), export_blockers: [] });
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-new-exam-confirm"]').exists()).toBe(false);
@@ -323,13 +320,8 @@ describe("ExamWorkspaceView guest mode Nytt prov protected replacement", () => {
       throw new Error("expected the empty draft");
     }
 
-    let releaseBlank!: (value: { document: NativeExamDocument; export_blockers: never[] }) => void;
-    const pending = new Promise<{ document: NativeExamDocument; export_blockers: never[] }>(
-      (resolve) => {
-        releaseBlank = resolve;
-      },
-    );
-    publicMocks.createPublicExamWorkspaceBlank.mockReturnValueOnce(pending);
+    const blank = deferred<PublicExamWorkspaceCommandResult>();
+    publicMocks.createPublicExamWorkspaceBlank.mockReturnValueOnce(blank.promise);
     await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
     expect(publicMocks.createPublicExamWorkspaceBlank).toHaveBeenCalledTimes(2);
@@ -350,7 +342,7 @@ describe("ExamWorkspaceView guest mode Nytt prov protected replacement", () => {
       tabId: "other-tab",
     });
 
-    releaseBlank({ document: emptyGuestDocument(), export_blockers: [] });
+    blank.resolve({ document: emptyGuestDocument(), export_blockers: [] });
     await flushPromises();
 
     expect(failure).toHaveBeenCalledWith(NEW_EXAM_FAILURE_COPY);

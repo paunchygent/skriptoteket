@@ -32,6 +32,7 @@ import {
   createInMemoryExamWorkspaceGuestDraftStorage,
 } from "./examWorkspaceGuestDraftStorage";
 import { createIds } from "./examWorkspaceGuestStore.specSupport";
+import { deferred } from "./useExamWorkspaceSyncGate.specSupport";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 
 const CURSOR = "00000000-0000-4000-8000-000000000001";
@@ -143,15 +144,12 @@ describe("useExamWorkspaceNewExam teacher", () => {
 
   it("ignores a second click while the submit is in flight", async () => {
     const { flow, newExam } = arrange({ document: contentDraft() });
-    let release!: () => void;
-    const pending = new Promise<ExamWorkspaceNewExamOutcome>((run) => {
-      release = () => run("created");
-    });
-    newExam.mockReturnValueOnce(pending);
+    const submitted = deferred<ExamWorkspaceNewExamOutcome>();
+    newExam.mockReturnValueOnce(submitted.promise);
 
     const first = flow.start();
     await flow.start();
-    release();
+    submitted.resolve("created");
     await first;
 
     expect(newExam).toHaveBeenCalledTimes(1);

@@ -25,25 +25,11 @@ import type {
 } from "./examWorkspaceReplacementTypes";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
+import { deferred } from "./useExamWorkspaceSyncGate.specSupport";
 
 const SOURCE = "11111111-0000-4000-8000-000000000001";
 const CURSOR = "22222222-0000-4000-8000-000000000002";
 const TARGET = "33333333-0000-4000-8000-000000000003";
-
-/** A manually completed promise, so the spec orders settle, begin and install. */
-function deferred<T>(): {
-  promise: Promise<T>;
-  resolve: (value: T) => void;
-  reject: (error: unknown) => void;
-} {
-  let resolve!: (value: T) => void;
-  let reject!: (error: unknown) => void;
-  const promise = new Promise<T>((run, fail) => {
-    resolve = run;
-    reject = fail;
-  });
-  return { promise, reject, resolve };
-}
 
 type Harness = {
   coordinator: ReturnType<typeof createReplacementCoordinator>;
