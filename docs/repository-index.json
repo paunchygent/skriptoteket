@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b6f4320e51710b1a3f2ab4d2f7a1dfdd74171ac668ef750ea8820ad3fda4c9d5",
+  "source_set_digest": "395e2e9d949600a861efeb1589c42812ed7e2e1a8d4d2953a48eef016b88ae57",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5151,7 +5151,7 @@
       "type": "task",
       "title": "Printed point totals reach their questions through one owner per points line",
       "path": "docs/backlog/tasks/task-skript-39-04-11-printed-point-totals-reach-their-questions-through-one-owner-per-points-line.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5162,7 +5162,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed it on 2026-10-22 (Mac AskUserQuestion, Close all three). Mac staging walk at fd2d911c passed (Svenska 2 kursavslutande import 066da8de, 24 questions, 36 p, printed_total 36, 0 export blockers; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md). Focused Validation suites on main 41691447 passed, 127 tests, with lint and typecheck exit 0 (retained root 01a160d3-ed0d-7269-a098-9d5dd88eff0a, evidence/). R6-1 accepted unfixed by the user on 2026-10-21."
       }
     },
     {

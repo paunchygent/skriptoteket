@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed it on 2026-10-22 (Mac AskUserQuestion, Close all three). Mac staging walk at fd2d911c passed (Svenska 2 kursavslutande import 066da8de, 24 questions, 36 p, printed_total 36, 0 export blockers; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md). Focused Validation suites on main 41691447 passed, 127 tests, with lint and typecheck exit 0 (retained root 01a160d3-ed0d-7269-a098-9d5dd88eff0a, evidence/). R6-1 accepted unfixed by the user on 2026-10-21.'
 task_kind: story
 acceptance_criteria:
   - Replaying the recorded Svenska 2 conversion gives 24 questions and 36 points with the exam total 36, whether the grouping tags the Del 1 heading as a part total or an instruction and whether it tags the per-question points lines
@@ -152,3 +156,9 @@ Bounded units:
 - Independent tail review of `baa128a2..97d47894` (Pi ruthless-reviewer `f26e6d2b`, Hemma retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/reviews/task-skript-39-04-11-tail-review.md`): verdict `changes_requested`. R5-1 and R5-2 are cleared.
 - R6-1 (medium: an unowned repeated part heading still ends the continuing section, `docx_instruction_runs.py:212-218`) is accepted unfixed by the user's triage of 2026-10-21, relayed by the Mac orchestrator.
 - The review's non-authorizing question about conflicting question totals is resolved by the new task TASK-SKRIPT-40-04-23 (an import-time per-question points-mismatch warning, user decision 2026-10-21); 39-04-11's code does not change for it. Still owed before closeout: the Svenska 2 staging import and the Validation suites.
+
+### 2026-10-22 (Hemma orchestrator, closeout)
+
+- Mac staging walk at `fd2d911c` passed: the Svenska 2 kursavslutande import gave 24 questions and 36 p against printed_total 36, with 0 export blockers (Mac `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`).
+- Focused Validation suites on main `41691447`: 127 passed; `lint` and `typecheck` exit 0 (retained root `01a160d3-ed0d-7269-a098-9d5dd88eff0a`, `evidence/01-pytest-focused.log`, `02-lint.log`, `03-typecheck.log`).
+- Closed by the user's decision of 2026-10-22 (Close all three).
