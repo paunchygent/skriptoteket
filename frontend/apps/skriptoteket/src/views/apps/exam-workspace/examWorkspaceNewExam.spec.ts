@@ -121,4 +121,53 @@ describe("examWorkspaceDraftHasContent", () => {
       }),
     ).toBe(true);
   });
+
+  it("treats whitespace-only question bodies and instructions as empty", () => {
+    expect(
+      examWorkspaceDraftHasContent({ ...emptyDraft(), items: [{ ...emptyItem(), body: textBody("   ") }] }),
+    ).toBe(false);
+    expect(
+      examWorkspaceDraftHasContent({
+        ...emptyDraft(),
+        items: [{ ...emptyItem(), body: [...textBody("   "), ...textBody(""), ...textBody("\n")] }],
+      }),
+    ).toBe(false);
+    expect(
+      examWorkspaceDraftHasContent({
+        ...emptyDraft(),
+        instructions: [...textBody("   "), ...textBody("\n")],
+      }),
+    ).toBe(false);
+  });
+
+  it("keeps gaps, pictures and visible characters as content", () => {
+    expect(
+      examWorkspaceDraftHasContent({ ...emptyDraft(), items: [{ ...emptyItem(), body: textBody("x") }] }),
+    ).toBe(true);
+    expect(
+      examWorkspaceDraftHasContent({
+        ...emptyDraft(),
+        items: [
+          {
+            ...emptyItem(),
+            body: [{ heading_level: null, segments: [{ gap_id: "gap-1", kind: "gap" }] }],
+          },
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      examWorkspaceDraftHasContent({
+        ...emptyDraft(),
+        items: [
+          {
+            ...emptyItem(),
+            body: [{ heading_level: null, segments: [{ asset_id: "asset-1", kind: "asset" }] }],
+          },
+        ],
+      }),
+    ).toBe(true);
+    expect(
+      examWorkspaceDraftHasContent({ ...emptyDraft(), instructions: textBody("Läs noga.") }),
+    ).toBe(true);
+  });
 });

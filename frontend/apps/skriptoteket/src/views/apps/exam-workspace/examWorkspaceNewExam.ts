@@ -15,6 +15,7 @@
  */
 
 import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 /** The failure copy when the new exam could not be created. */
 export const NEW_EXAM_FAILURE_COPY = "Det gick inte att skapa ett nytt prov. Försök igen.";
@@ -22,7 +23,7 @@ export const NEW_EXAM_FAILURE_COPY = "Det gick inte att skapa ett nytt prov. Fö
 /** The one item's content the draft check reads; every other item field keeps its stored value. */
 function blankItemIsEmpty(item: NativeExamItem): boolean {
   return (
-    item.body.length === 0 &&
+    isEmptyBody(item.body) &&
     item.choices.length === 0 &&
     item.gaps.length === 0 &&
     item.kept_gaps.length === 0 &&
@@ -37,12 +38,16 @@ function blankItemIsEmpty(item: NativeExamItem): boolean {
  * True when the open draft holds anything worth keeping. False only when
  * every one of these holds; when in doubt this says "has content", because a
  * wrong "empty" would discard a guest's work.
+ *
+ * Body emptiness (the single question body and the exam instructions) uses
+ * the workspace's one body-emptiness owner `isEmptyBody`, so bodies of only
+ * spaces or line breaks count as empty while gaps and pictures stay content.
  */
 export function examWorkspaceDraftHasContent(document: NativeExamDocument): boolean {
   if (document.title.trim() !== "") return true;
   if (document.header.course !== null && document.header.course !== undefined) return true;
   if (document.header.tags.length !== 0) return true;
-  if (document.instructions.length !== 0) return true;
+  if (!isEmptyBody(document.instructions)) return true;
   if (document.parents.length !== 0) return true;
   if (document.assets.length !== 0) return true;
   const [only, ...rest] = document.items;
