@@ -50,7 +50,7 @@ call-site migration and removal of `lucide-vue-next`.
 
 | Story           | Slice                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ST-SKRIPT-40-01 | Active: TASK-SKRIPT-40-01-01 to -03 done (tokens, theme, logo, shared Vue subtree, toast adapter, action buttons); TASK-SKRIPT-40-01-04 (huleedu-integrated 0.1.34) on main, review owed. |
+| ST-SKRIPT-40-01 | Done 2026-10-22 (user closure): TASK-SKRIPT-40-01-01 to -04 done (tokens, theme, logo, shared Vue subtree, toast adapter, action buttons, huleedu-integrated 0.1.34); story-level proof on main `d9fab7e2`. |
 | ST-SKRIPT-40-02 | Active: TASK-SKRIPT-40-02-01 tranches 1-3 on main; the 13 exam-held wrappers and the `lucide-vue-next` removal remain. |
 | ST-SKRIPT-40-03 | Done 2026-10-20 (user closure): every screen outside the app shell and the exam workspace is on the shared visual direction through TASK-SKRIPT-40-03-01 to TASK-SKRIPT-40-03-10; the .codex/rules facts live in their owning skills. |
 | ST-SKRIPT-40-04 | Active: the prototype is approved and the app shell and exam workspace are rebuilt (40-04-01 to -03 done); follow-up workspace tasks continue in the story's task list. |
@@ -68,6 +68,7 @@ call-site migration and removal of `lucide-vue-next`.
 | Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
 | --- | --- | --- | --- | --- |
 | Every Skriptoteket screen on the shared visual direction | verified | ST-SKRIPT-40-03 closeout (user closure 2026-10-20); TASK-SKRIPT-40-03-01 to -10 closeout evidence | ST-SKRIPT-40-03 | None |
+| Tokens, components and action buttons converge onto the shared package | verified | ST-SKRIPT-40-01 closeout (user closure 2026-10-22); TASK-SKRIPT-40-01-01 to -04 closeout evidence; clean-state repeat sync and full suites on main `d9fab7e2` | ST-SKRIPT-40-01 | None |
 
 ## Decided Contract Terms
 

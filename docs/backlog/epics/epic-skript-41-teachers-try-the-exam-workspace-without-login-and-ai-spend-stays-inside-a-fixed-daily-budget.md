@@ -39,7 +39,7 @@ Non-goals: public AI (any later public AI is off by default and limited to one c
 | Story | Delivers |
 | ----- | -------- |
 | ST-SKRIPT-41-01 | Every paid call through the LLM provider door, the script editor on Sol 6.1 low, and capacity for 1,000 concurrent calls |
-| ST-SKRIPT-41-02 | QTI import, the public workspace without login, and removal of the guest DigiExam line |
+| ST-SKRIPT-41-02 | Done 2026-10-22 (user closure): QTI import, the public workspace without login, and removal of the guest DigiExam line; every guest start and export walked on staging at `4b321fa1`, the untitled-draft sign-in handoff at `ede1ea0d` |
 
 The two stories are built in parallel (user 2026-10-18).
 

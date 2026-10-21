@@ -35,7 +35,7 @@ backlog_document_profile: contract-derived
 
 ## Tasks
 
-- TASK-SKRIPT-06-18-01: repair target resolution (F1), separator handling (F2) and the include transport type (F3).
+- TASK-SKRIPT-06-18-01: repair target resolution (F1), separator handling (F2) and the include transport type (F3). Done 2026-10-22: main `44197733`, user closure.
 
 ## Verification
 

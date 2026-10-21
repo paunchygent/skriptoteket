@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=41 | story=337 | task=0 | review=137
-- open | epic=20 | story=68 | task=0
+- open | epic=20 | story=65 | task=0
 
 ## Lookup
 
@@ -546,9 +546,9 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=4, ready=1, done=5 | tasks=none
-- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=3, done=1 | tasks=none
-- EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=active=1, ready=1 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=3, ready=1, done=6 | tasks=none
+- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=2, done=2 | tasks=none
+- EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=1, done=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -562,11 +562,8 @@
 - ST-SKRIPT-39-01 | [Walking skeleton for Skriptoteket-owned exam conversion](stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-04 | [Redesign the app shell and the exam workspace from a fresh Opus prototype](stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-41-02 | [Guests open, edit and export exams in the workspace without login or AI](stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 

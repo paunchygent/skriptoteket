@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22: repair rounds 1 and 2 are merged, the user accepted the mid-paragraph fragment case as a known residual on 2026-10-21 ("Keep fixes, stop here"), and the 10-exam gold replay is unchanged. The user closed it without the planned staging grammar-exam import walk.'
 task_kind: story
 acceptance_criteria:
   - omprov_grammatik_sve2 and exempelprov_grammatik_sve2_v2_1 convert with each question's lead-in in its own question, exam-wide text in the exam instructions once, every grouped question as one item and every table in its question, and the gold corpus results are unchanged
@@ -92,3 +96,7 @@ Stop and report to the parent when a fix needs a product decision (for example C
 - Second rereview `task-skript-39-04-12-f1-rereview-2.md` (Pi `1232c3a2`, retained root `01a15fce-eac1-7e89-96c5-e9d8efdc3fc9`, `evidence/reviews/`): changes_requested. Repair rounds 1-2 (`82b7faee`, `56689d4f`, `e4422d04`) fix a released part line or fragment that forms a whole paragraph, a paragraph holding the whole line, and a fragment at a paragraph's start or end. A fragment in the middle of a paragraph still publishes as converted success, for example "Förklara vad som kännetecknar ett substantiv. Del 2: Verb Ge två exempel." The reviewer found no harm from the more conservative rebuild and source-review routing.
 - User decision 2026-10-21, relayed by the Mac orchestrator: "Keep fixes, stop here." Rounds 1-2 are kept and merged. The mid-paragraph fragment case is a user-accepted known residual. It has been seen only with synthetic replies through the production admission, merge and publication path, never in a real exam: the 10-exam gold replay is unchanged and holds no item build with a released part line. The third repair round was stopped; its uncommitted test edit is kept at `evidence/f1-anywhere/round3-stopped-uncommitted.patch`.
 - F1 is admitted on the user's acceptance of the remaining high case, so no further rereview. Status stays `in_progress` until user closure.
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). Repair rounds 1-2 merged; the user accepted the mid-paragraph fragment case as a known residual on 2026-10-21 ("Keep fixes, stop here"); the 10-exam gold replay is unchanged. Closed without the planned staging grammar-exam import walk.

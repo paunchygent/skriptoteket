@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22 after the Mac staging walks at 25c4ac01 (signed in and guest PASS) and at 18f045fc (W3 fix PASS: the Prov list shows a renamed title once the save finishes), and the D12 walk at ede1ea0d (an untitled guest draft moved to Mina filer as "Namnlöst prov" at sign-in) (Mac .artifacts/staging-walk-40-04-21/walk-record.md and .artifacts/staging-walk-closure-ede1ea0d/walk-record.md). Note, not a finding: the list entry Sparad time refreshes only on the next list load.'
 task_kind: story
 acceptance_criteria:
   - A "Nytt prov" button is the first action in the exam workspace header toolbar for signed-in teachers and guests, and one click opens a new untitled exam with one empty question, ready to edit
@@ -162,3 +166,7 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 ### 2026-10-21 (repair owner, W3 Prov list title)
 
 - W3 repaired: a confirmed title save now carries the saved title onto the open summary and its Prov list entry at once (`useExamWorkspaceDocumentInstalls.noteStored` via the existing `recordSummary`; no extra request); proof logs in retained root `01a16066-477c-75b1-acc0-8c76298003b9` `evidence/w3/` (new `useExamWorkspaceSavedList.titleSave.spec.ts` fails before, passes after; full exam-workspace suite 298 files / 2248 tests; `fe-type-check`, `fe-lint`). Residual: the renamed file name and saved-at in the row meta refresh on the next list load. Owed: independent review.
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). Mac staging walks at `25c4ac01` (signed in and guest PASS) and at `18f045fc` (W3 fix PASS: the Prov list shows a renamed title once the save finishes); D12 at `ede1ea0d` (an untitled guest draft moved to Mina filer as "Namnlöst prov" at sign-in). Records: Mac `.artifacts/staging-walk-40-04-21/walk-record.md` and `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`. Note, not a finding: the list entry's "Sparad" time refreshes only on the next list load.

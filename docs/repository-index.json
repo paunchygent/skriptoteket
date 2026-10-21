@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8c0969d1ef4cb9b2bf5f7541cdc89ad39257379e963b5ceecde7fad4a0be9768",
+  "source_set_digest": "d909937b5f3d1a02b56fc4a8ccee7fb47973730ab0cff2703b80d7b086baeee6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2369,7 +2369,7 @@
       "type": "story",
       "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
       "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2382,7 +2382,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: TASK-SKRIPT-39-07-01, TASK-SKRIPT-39-07-02 and TASK-SKRIPT-39-07-03 are done; the Mac staging walk at 4b321fa1 proved the in-app DigiExam import and editing, and TASK-SKRIPT-39-07-03 passed B1 to B5 with the old routes redirecting to the workspace (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
@@ -2459,7 +2463,7 @@
       "type": "story",
       "title": "Converge tokens, components and action buttons onto the shared package",
       "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2472,7 +2476,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: TASK-SKRIPT-40-01-01 to TASK-SKRIPT-40-01-04 are done, and the story-level proof on main d9fab7e2 (clean-state repeat sync with no change, frontend and backend suites, migration tests) is recorded in its progress section."
       }
     },
     {
@@ -2568,7 +2576,7 @@
       "type": "story",
       "title": "Guests open, edit and export exams in the workspace without login or AI",
       "path": "docs/backlog/stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-41",
       "owners": [
         {
@@ -2581,7 +2589,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: all six tasks TASK-SKRIPT-41-02-01 to TASK-SKRIPT-41-02-06 are done; every guest start and export was walked at 4b321fa1 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md), and the owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at ede1ea0d (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
       }
     },
     {
@@ -2679,7 +2691,7 @@
       "type": "task",
       "title": "Repair vitest-run target resolution, separator handling and the include transport type",
       "path": "docs/backlog/tasks/task-skript-06-18-01-repair-vitest-run-target-resolution-separator-handling-and-the-include-transport-type.md",
-      "status": "proposed",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-18",
       "owners": [
@@ -2690,7 +2702,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user approved readiness and closure together on 2026-10-22: merged at 44197733 (4e9d65e0), and rereview finding R1 admitted on focused proof."
       }
     },
     {
@@ -5154,7 +5170,7 @@
       "type": "task",
       "title": "Grammar exams convert with each lead-in, exam-wide text, question and table in its own place",
       "path": "docs/backlog/tasks/task-skript-39-04-12-grammar-exams-convert-with-each-lead-in-exam-wide-text-question-and-table-in-its-own-place.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5165,7 +5181,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: repair rounds 1 and 2 are merged, the user accepted the mid-paragraph fragment case as a known residual on 2026-10-21 (\"Keep fixes, stop here\"), and the 10-exam gold replay is unchanged. The user closed it without the planned staging grammar-exam import walk."
       }
     },
     {
@@ -5997,7 +6017,7 @@
       "type": "task",
       "title": "Retire the old exam converter routes, correction overlay and screens",
       "path": "docs/backlog/tasks/task-skript-39-07-03-retire-the-old-exam-converter-routes-correction-overlay-and-screens.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
@@ -6008,7 +6028,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: review b88ad1f4 findings F1 to F3 were repaired and merged at aff7b005 and admitted on focused proof and migration tests, and the Mac staging walk at 4b321fa1 passed B1 to B5 (the old routes redirect to the workspace) (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
@@ -6481,7 +6505,7 @@
       "type": "task",
       "title": "Adopt huleedu-integrated 0.1.34 through design-system sync",
       "path": "docs/backlog/tasks/task-skript-40-01-04-adopt-huleedu-integrated-0-1-34-through-design-system-sync.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -6492,7 +6516,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: merged at e9983e4f, review findings F1 and F2 fixed and merged at 3b91b792, and admitted on focused proof."
       }
     },
     {
@@ -7186,7 +7214,7 @@
       "type": "task",
       "title": "A new exam starts from Nytt prov in the workspace toolbar",
       "path": "docs/backlog/tasks/task-skript-40-04-21-a-new-exam-starts-from-nytt-prov-in-the-workspace-toolbar.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7197,7 +7225,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after the Mac staging walks at 25c4ac01 (signed in and guest PASS) and at 18f045fc (W3 fix PASS: the Prov list shows a renamed title once the save finishes), and the D12 walk at ede1ea0d (an untitled guest draft moved to Mina filer as \"Namnlöst prov\" at sign-in) (Mac .artifacts/staging-walk-40-04-21/walk-record.md and .artifacts/staging-walk-closure-ede1ea0d/walk-record.md). Note, not a finding: the list entry Sparad time refreshes only on the next list load."
       }
     },
     {
@@ -7228,7 +7260,7 @@
       "type": "task",
       "title": "After an import the question list warns about questions whose points differ from the source",
       "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7239,7 +7271,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after the Mac walk at 25c4ac01 (PASS with W1 and W2), the repair merged at ede1ea0d, and the Mac re-walk at ede1ea0d (PASS): Fråga 1 shows \"Provtexten: 4 p och 3 p\", Fråga 2 shows \"4 p, 2,5 p och 3 p\", and the line reads \"2 frågor avviker från provtexten\" (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
       }
     },
     {
@@ -8309,7 +8345,7 @@
       "type": "task",
       "title": "Resolve Mina filer app-export labels from the app id prefix",
       "path": "docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8319,7 +8355,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after seeing the labels: findings F1 and F2 were repaired, the Sol rereview approved at 0f17cc78, and the repair merged at 61cce3ac."
       }
     },
     {
