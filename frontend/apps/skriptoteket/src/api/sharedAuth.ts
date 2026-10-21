@@ -82,6 +82,7 @@ export const SHARED_AUTH_DEFAULT_PRODUCT_IDENTITY_REALM = "skriptoteket_standalo
 export const SHARED_AUTH_CALLBACK_PATH = "/auth/callback";
 export const SHARED_AUTH_SESSION_PATH = "/v1/auth/session";
 export const SHARED_AUTH_CSRF_PATH = "/v1/auth/csrf";
+export const SHARED_AUTH_CSRF_COOKIE_NAME = "huleedu_csrf";
 export const SHARED_AUTH_LOGOUT_PATH = "/v1/auth/logout";
 const SHARED_AUTH_LOGIN_PATH = "/auth/login";
 const SHARED_AUTH_REGISTER_PATH = "/auth/register";
@@ -142,11 +143,25 @@ function csrfRequiredResponse(): Response {
   });
 }
 
+/** Read the shared readable CSRF cookie without rotating it. */
+export function readSharedCsrfCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const cookie = document.cookie;
+  if (!cookie) return null;
+  for (const part of cookie.split(";")) {
+    const segment = part.trim();
+    if (!segment.startsWith(`${SHARED_AUTH_CSRF_COOKIE_NAME}=`)) continue;
+    const value = segment.slice(SHARED_AUTH_CSRF_COOKIE_NAME.length + 1);
+    return value ? value : null;
+  }
+  return null;
+}
+
 /** Send factories must recreate headers and supply a replayable body on each call. */
 export async function requestWithCsrfRecovery(params: {
   requireCurrent: () => void;
   ensureToken: () => Promise<string | null>;
-  recoverToken: () => Promise<string | null>;
+  recoverToken: (rejectedToken: string) => Promise<string | null>;
   invalidateToken: (rejectedToken: string | null) => void;
   send: (token: string | null) => Promise<Response>;
 }): Promise<Response> {
@@ -166,7 +181,7 @@ export async function requestWithCsrfRecovery(params: {
   const response = await run(() => params.send(token));
   if (!await run(() => isCsrfRejection(response))) return response;
   params.invalidateToken(token);
-  const freshToken = await run(params.recoverToken);
+  const freshToken = await run(() => params.recoverToken(token));
   // Preserve the original rejection if hydration or session continuity could not be established.
   if (!freshToken) return response;
   return run(() => params.send(freshToken));

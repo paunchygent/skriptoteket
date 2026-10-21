@@ -4,6 +4,7 @@ import {
   mapBrowserSessionToAuthSnapshot,
   sharedAuthCeremonyUrl,
   sharedAuthUrl,
+  readSharedCsrfCookie,
   SHARED_AUTH_CSRF_PATH,
   SHARED_AUTH_SESSION_PATH,
   type BrowserSessionResponse,
@@ -253,6 +254,31 @@ describe("sharedAuthCeremonyUrl", () => {
     );
     expect(url.searchParams.get("token")).toBe("verify-token");
     expect(url.searchParams.has("next")).toBe(false);
+  });
+});
+
+describe("readSharedCsrfCookie", () => {
+  afterEach(() => {
+    document.cookie = "huleedu_csrf=; max-age=0; path=/";
+    document.cookie = "huleedu_csrf_extra=; max-age=0; path=/";
+    document.cookie = "other=; max-age=0; path=/";
+  });
+
+  it("returns the shared cookie value without rotating it", () => {
+    document.cookie = "huleedu_csrf=token-abc; path=/";
+    expect(readSharedCsrfCookie()).toBe("token-abc");
+  });
+
+  it("returns null when the cookie is absent or empty", () => {
+    document.cookie = "huleedu_csrf=; max-age=0; path=/";
+    document.cookie = "other=1; path=/";
+    expect(readSharedCsrfCookie()).toBeNull();
+  });
+
+  it("ignores similarly prefixed cookie names", () => {
+    document.cookie = "huleedu_csrf=; max-age=0; path=/";
+    document.cookie = "huleedu_csrf_extra=nope; path=/";
+    expect(readSharedCsrfCookie()).toBeNull();
   });
 });
 
