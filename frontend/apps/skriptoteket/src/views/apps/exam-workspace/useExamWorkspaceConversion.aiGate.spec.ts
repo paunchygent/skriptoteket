@@ -69,6 +69,7 @@ function binding(): ExamWorkspaceConversionBinding {
     getFence: () => fence,
     isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
+    noteImportStarted: vi.fn(),
     store: serverExamWorkspaceStore,
   };
 }

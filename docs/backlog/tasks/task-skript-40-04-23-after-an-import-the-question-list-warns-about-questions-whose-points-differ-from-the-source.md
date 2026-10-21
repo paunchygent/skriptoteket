@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -65,3 +65,11 @@ A conversion finishes and its questions open in the workspace. The workspace com
 ### 2026-10-21 (Hemma orchestrator)
 
 - The user approved the mock (Mac `.artifacts/mock-points-mismatch-warning/`) with shorter copy ("Approve, shorter text", relayed by the Mac orchestrator): P1 copy, P2 amber row meta and the "Provtexten: {n} p" hint, P3 close glyph. The task is ready and a lead is assigned; the staging walk goes to the Mac orchestrator after merge.
+
+### 2026-10-21 (implementation lead, branch `codex/task-skript-40-04-23`)
+
+- Started from main 99b86291; status in_progress. Retained root `01a15ff0-a322-73b4-83e9-d7209f112e84`, evidence under `evidence/lead-40-04-23/`.
+- Stop condition 1 reached: a DOCX question whose own lines print two different values gets `PrintedQuestion(prints=True, points=None)` and never passes `with_question_points`, so its `source_points` stays the model's reading (a single number or null), the same as a one-value print or no print; no review reason or build event marks it (probe `evidence/lead-40-04-23/probe_two_value_source_points.log`). Reported to the parent; the two-value case is blocked, the one-value cases proceed.
+- P7 decisions (lead): the import line is the first line of the existing floating stack (T11), so the printed-total lines keep their place right above Totalt and neither the list nor its end room changes; "Avfärda" uses the catalogue's one close glyph `close` (lucide X), as `ExamWorkspaceInlineNotice` does.
+- Built for single-value prints: `examWorkspaceSourcePointsDiffer` (shared with the 40-04-10 rule, which is unchanged), `examWorkspaceImportPoints` (ids in list order, wrap-around stepping, copy), `useExamWorkspaceImportPoints` (in-memory state: an import started here shows once its exam is open and no import or conversion runs; any open, Avfärda or a reload ends it), the list line and amber row points (unit A), the "Provtexten: {n} p" hint by injection (unit B). The count follows the open copy, so a corrected question leaves the count.
+- Proof: fail-first and passing logs per unit under `evidence/lead-40-04-23/`; view slice `ExamWorkspaceImportPointsSlice.spec.ts` fails 9/9 without the view wiring and catches a removed open-clear; exam-workspace domain 335 files, 2527 tests passed; fe-type-check and fe-lint clean.

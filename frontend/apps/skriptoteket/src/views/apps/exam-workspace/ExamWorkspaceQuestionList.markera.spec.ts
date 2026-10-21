@@ -75,6 +75,7 @@ function mountList(entries: ExamWorkspaceListEntry[] = ENTRIES, disabled = false
     props: {
       handle,
       mismatches: [],
+      importPointsIds: [],
       canAdd: true,
       disabled,
       entries,

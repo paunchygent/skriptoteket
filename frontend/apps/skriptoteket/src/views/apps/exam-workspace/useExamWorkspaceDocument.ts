@@ -48,6 +48,7 @@ import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields
 import { useExamWorkspaceDocumentOpen } from "./useExamWorkspaceDocumentOpen";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
+import { useExamWorkspaceImportPoints } from "./useExamWorkspaceImportPoints";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -162,7 +163,12 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     selectedItemId,
     store,
   });
-  const { beginDocumentRead, isOpenReading, openDocument } = openScope;
+  const { beginDocumentRead, isOpenReading } = openScope;
+  /** Every open ends the import-time points check; an import's own open keeps it pending. */
+  function openDocument(lineageId: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
+    importPoints.noteOpening(lineageId);
+    return openScope.openDocument(lineageId, token);
+  }
   const {
     adoptConversion,
     conversionError,
@@ -189,10 +195,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       summary,
       workspaceDocument,
       store,
+      noteImportStarted: (lineageId) => importPoints.noteImportStarted(lineageId),
     },
     (lineageId) => options.submitRoute(lineageId),
   );
   adoptConversionHolder = adoptConversion;
+  const importPoints = useExamWorkspaceImportPoints({
+    lineageId: () => summary.value?.lineage_id ?? null,
+    settled: () => !isImporting.value && !isConverting.value,
+  });
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
@@ -454,6 +465,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     retryConversionStatus,
     importBlocked,
     importDocument,
+    /** Right after an import here, its points check shows until Avfärda or the next open (TASK-SKRIPT-40-04-23). */
+    importPointsShown: importPoints.shown,
+    dismissImportPoints: importPoints.dismiss,
     isBusy,
     isDirty,
     isOpenBlockedByOtherOperation,

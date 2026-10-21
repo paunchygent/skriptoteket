@@ -48,6 +48,7 @@ import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
+import { EXAM_WORKSPACE_IMPORT_POINTS_KEY, examWorkspaceImportPointsItemIds } from "./exam-workspace/examWorkspaceImportPoints";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
@@ -234,6 +235,17 @@ const { courseLabel, examInstructionsPreview, formattedSavedExports, zeroPoints 
 const printedMismatches = computed(() =>
   workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
 );
+/**
+ * Right after an import here, the questions whose points differ from the
+ * source's, in list order (TASK-SKRIPT-40-04-23); empty otherwise or after
+ * Avfärda. The list shows their line and marks, the Poäng field its hint.
+ */
+const importPointsIds = computed(() =>
+  editing.importPointsShown.value && workspaceDocument.value
+    ? examWorkspaceImportPointsItemIds(itemEntries.value.map((entry) => entry.id), workspaceDocument.value.items)
+    : [],
+);
+provide(EXAM_WORKSPACE_IMPORT_POINTS_KEY, computed(() => new Set(importPointsIds.value)));
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
 /**
@@ -386,6 +398,7 @@ onMounted(() => void loadSavedDocuments());
         :question-count="itemEntries.length"
         :total="total"
         :mismatches="printedMismatches"
+        :import-points-ids="importPointsIds"
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
@@ -395,6 +408,7 @@ onMounted(() => void loadSavedDocuments());
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
         @clear-printed-total="editing.clearPrintedTotal"
+        @dismiss-import-points="editing.dismissImportPoints"
         @close="listOpen = false"
         @set="setListWidth"
         @reset="resetWidth('list')"

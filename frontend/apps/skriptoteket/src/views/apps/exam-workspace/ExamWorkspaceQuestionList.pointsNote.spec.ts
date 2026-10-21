@@ -90,6 +90,7 @@ function mountList(
       disabled: options.disabled ?? false,
       entries,
       examInstructionsPreview: null,
+      importPointsIds: [],
       mismatches: options.mismatches ?? examWorkspacePrintedTotalMismatches(document),
       overlay: false,
       questionCount: entries.filter((entry) => entry.kind === "item").length,
