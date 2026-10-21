@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b6f4320e51710b1a3f2ab4d2f7a1dfdd74171ac668ef750ea8820ad3fda4c9d5",
+  "source_set_digest": "d4228c15b6bdda8bb2169431ad3a3dca94cadd5c9fea8e3b72954308f5170fe7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6871,7 +6871,7 @@
       "type": "task",
       "title": "Exported files are named after the exam title",
       "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6882,7 +6882,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after review f9239f80 (F1 repaired with the shared 238-character cap, admitted on focused proof and merged at 3eb5742f; F2 accepted unfixed by the user on 2026-10-21) and the Mac staging walk at aff7b005 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md, last addendum); the 2026-10-22 walk at fd2d911c shows the title-based names again (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
@@ -7022,7 +7026,7 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7033,7 +7037,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after merge 8d51a6ba, the K11 staging walk (Mac .artifacts/staging-walk-40-04-12/walk-record.md) and the K7 walk at fd2d911c: neither the student PDF nor the PDF med facit holds a line with only \"/\" under omprov Fråga 1c (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
