@@ -200,7 +200,10 @@ export function createGuestExamWorkspaceStore(
       }
       await requireGuestEditLease(params.tabId);
       await persist(stored.draft.cursor, {
-        assets: retainDeclaredAssets(stored, outcome.draft),
+        assets: retainDeclaredAssets(
+          { ...stored, assets: { ...stored.assets, ...params.newPictures } },
+          outcome.draft,
+        ),
         draft: outcome.draft,
       });
       return outcome.step;

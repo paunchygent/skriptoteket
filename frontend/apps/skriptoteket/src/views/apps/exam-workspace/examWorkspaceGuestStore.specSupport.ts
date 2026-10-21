@@ -221,6 +221,7 @@ export async function seedRetainedPictureDraft(
     document: { ...loaded.document, title: "Keep this exam, edited" },
     expectedCursor: loaded.history_cursor,
     tabId,
+    newPictures: {},
   });
   const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
   return { lineageId, opened };
@@ -247,6 +248,7 @@ export async function expectRetainedAndNewOwnerStores(
     document: { ...loaded.document, title: "B's first edit" },
     expectedCursor: loaded.history_cursor,
     tabId: owner.tabId,
+    newPictures: {},
   });
   const stored = await context.storage.load();
   expect(stored?.draft.lineage_id).toBe(lineageId);

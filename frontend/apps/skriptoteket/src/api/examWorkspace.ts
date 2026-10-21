@@ -80,6 +80,8 @@ export type ExamWorkspaceUndoStepParams = {
   document: NativeExamDocument;
   afterStepId: string | null;
   tabId: string;
+  /** Pictures the document declares whose bytes the server may not hold yet; `{}` when none. */
+  newPictures: Record<string, Blob>;
 };
 
 export type MoveExamWorkspaceHistoryPositionParams = {
@@ -290,15 +292,36 @@ export async function requestExamWorkspaceAnswerMisspellings(
   );
 }
 
+/**
+ * Encode a Blob in the standard base64 alphabet, without a data-URL prefix.
+ * The binary string is built in chunks, so a 20 MB picture never overflows
+ * the call stack; the backend's `ser_json_bytes="base64"` reads this alphabet.
+ */
+async function blobToBase64(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const chunks: string[] = [];
+  const CHUNK_SIZE = 0x8000;
+  for (let offset = 0; offset < bytes.length; offset += CHUNK_SIZE) {
+    chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + CHUNK_SIZE)));
+  }
+  return btoa(chunks.join(""));
+}
+
 /** Store the editor's document as the newest undo step; `afterStepId` branches after an undo. */
 export async function storeExamWorkspaceUndoStep(
   lineageId: string,
   params: ExamWorkspaceUndoStepParams,
 ): Promise<ExamWorkspaceUndoStep> {
+  const encoded = await Promise.all(
+    Object.entries(params.newPictures).map(
+      async ([assetId, blob]) => [assetId, await blobToBase64(blob)] as const,
+    ),
+  );
   const body: Schemas["StoreExamWorkspaceUndoStepRequest"] = {
     after_step_id: params.afterStepId,
     document: params.document,
     expected_cursor: params.expectedCursor,
+    new_assets_by_id: Object.fromEntries(encoded),
     tab_id: params.tabId,
   };
   return await apiPost<ExamWorkspaceUndoStep>(`${documentPath(lineageId)}/autosaves`, body);

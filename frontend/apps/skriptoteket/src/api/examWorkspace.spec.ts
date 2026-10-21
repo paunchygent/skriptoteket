@@ -23,6 +23,7 @@ import {
   releaseExamWorkspaceEditLease,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
+  storeExamWorkspaceUndoStep,
 } from "./examWorkspace";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
@@ -306,5 +307,54 @@ describe("examWorkspace transport", () => {
       method: "POST",
     });
     expect(result).toBe(response);
+  });
+
+  it("posts new picture bytes as standard base64 new_assets_by_id", async () => {
+    apiPostMock.mockResolvedValueOnce({ document: buildDocument(1), history: {} });
+    const bytes = new Uint8Array([0, 1, 2, 250, 251, 252, 253, 254, 255, 72, 101, 106]);
+    const blob = new Blob([bytes]);
+    // jsdom's Blob has no arrayBuffer; equip this blob with the production Web API.
+    Object.defineProperty(blob, "arrayBuffer", {
+      value: async () => Uint8Array.from(bytes).buffer as ArrayBuffer,
+    });
+    const empty = new Blob([]);
+    Object.defineProperty(empty, "arrayBuffer", { value: async () => new ArrayBuffer(0) });
+
+    await storeExamWorkspaceUndoStep("lineage-1", {
+      afterStepId: null,
+      document: buildDocument(1),
+      expectedCursor: "00000000-0000-4000-8000-000000000001",
+      newPictures: { asset_001: blob, asset_002: empty },
+      tabId: "00000000-0000-4000-8000-000000000002",
+    });
+
+    expect(apiPostMock).toHaveBeenCalledTimes(1);
+    const [path, body] = apiPostMock.mock.calls[0] as [
+      string,
+      { after_step_id?: unknown; new_assets_by_id?: unknown; tab_id?: unknown },
+    ];
+    expect(path).toBe(`${DOCUMENTS_ROOT}/lineage-1/autosaves`);
+    // The standard-base64 encoding of [0, 1, 2, 250, 251, 252, 253, 254, 255, 72, 101, 106].
+    expect(body["new_assets_by_id"]).toEqual({ asset_001: "AAEC+vv8/f7/SGVq", asset_002: "" });
+    expect(String((body["new_assets_by_id"] as Record<string, string>)["asset_001"])).toMatch(
+      /^[A-Za-z0-9+/=]+$/,
+    );
+    expect(body["after_step_id"]).toBeNull();
+    expect(body["tab_id"]).toBe("00000000-0000-4000-8000-000000000002");
+  });
+
+  it("posts an empty new_assets_by_id when the store carries no new pictures", async () => {
+    apiPostMock.mockResolvedValueOnce({ document: buildDocument(1), history: {} });
+
+    await storeExamWorkspaceUndoStep("lineage-1", {
+      afterStepId: "step-1",
+      document: buildDocument(1),
+      expectedCursor: "00000000-0000-4000-8000-000000000001",
+      newPictures: {},
+      tabId: "00000000-0000-4000-8000-000000000002",
+    });
+
+    const [, body] = apiPostMock.mock.calls[0] as [string, { new_assets_by_id?: unknown }];
+    expect(body["new_assets_by_id"]).toEqual({});
   });
 });

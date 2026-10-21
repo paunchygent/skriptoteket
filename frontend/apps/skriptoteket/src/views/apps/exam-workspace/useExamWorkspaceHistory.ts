@@ -107,6 +107,15 @@ export type ExamWorkspaceHistoryDeps = {
   noteExportBlockers: ExamWorkspaceTitleVerdict;
   /** Another undo, redo or server command replaced the copy; the gate reloads. */
   onConflict: () => Promise<void>;
+  /**
+   * The new-picture registry: `bytesFor` names the unsent picture bytes the
+   * next store must carry, and `noteSent` marks them sent once a committed
+   * answer carried them.
+   */
+  newPictures: {
+    bytesFor: (document: NativeExamDocument) => Record<string, Blob>;
+    noteSent: (assetIds: readonly string[]) => void;
+  };
 };
 
 export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {

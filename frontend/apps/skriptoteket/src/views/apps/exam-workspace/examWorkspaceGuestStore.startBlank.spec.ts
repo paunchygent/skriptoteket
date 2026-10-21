@@ -61,6 +61,7 @@ describe("examWorkspaceGuestStore startBlank", () => {
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     const before = JSON.stringify(await context.storage.load());
     context.mocks.createBlank.mockResolvedValue({

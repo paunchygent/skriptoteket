@@ -46,6 +46,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
         document: exam(title),
         expectedCursor: opened.history_cursor,
         tabId: LEASE_TAB_ID,
+        newPictures: {},
       });
 
     const outcomes = await Promise.allSettled([write(context.store, "Flik A"), write(second, "Flik B")]);
@@ -94,6 +95,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     resolveCommand({ document: exam("Förlorare"), export_blockers: [] });
@@ -207,6 +209,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     // This tab still stands on the old snapshot: its write loses the slot.
@@ -216,6 +219,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
         document: exam("Äldre"),
         expectedCursor: opened.history_cursor,
         tabId: LEASE_TAB_ID,
+        newPictures: {},
       })
       .catch((caught: unknown) => caught);
 
