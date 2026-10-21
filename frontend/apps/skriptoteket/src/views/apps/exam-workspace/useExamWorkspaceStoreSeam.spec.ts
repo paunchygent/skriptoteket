@@ -47,7 +47,7 @@ describe("teacher actions in guest mode", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
     const fence = createSyncFence();
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: guestStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: guestStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       await state.openDocument("lineage-1", fence.begin());
       await flushPromises();

@@ -22,7 +22,6 @@ import { freeTextWritingLines, type FreeTextWritingLines } from "./examWorkspace
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
-import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -59,8 +58,6 @@ defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
-const store = useInjectedExamWorkspaceStore();
-const isGuest = computed(() => store.teacher === null);
 
 /** Every free-text question with its display label and writing-line count, for the Skrivyta popover. */
 const freeTextWritingLinesSummary = computed<FreeTextWritingLines[]>(() =>
@@ -100,7 +97,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
       data-test="exam-workspace-empty"
     >
       <h2>Inget prov öppet</h2>
-      <p>{{ isGuest ? "Börja med ett tomt prov." : "Importera ett prov från Word eller DigiExam, eller öppna ett sparat prov." }}</p>
+      <p>Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.</p>
       <button
         v-if="!openDrawerShown"
         type="button"

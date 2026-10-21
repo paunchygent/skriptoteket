@@ -67,6 +67,10 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 - F1 repair on branch `codex/task-skript-40-04-05` per the user's 2026-10-21 triage (cap the export base name so every export file name, including the longest ` Exam.net.pdf` variant suffix and its extension, fits within 255 characters): `export_file_base_name` in `exam_workspace_exports.py` now caps the shared base at 242 characters, so the download name and the Mina filer name stay the same; the title itself and the schema are unchanged. Focused proof: new 252-character-title boundary test (fails before with a 256-character QTI name, passes after), the existing export-name and Content-Disposition tests, `pdm run lint` and `pdm run typecheck`.
 - The user's triage of 2026-10-21 accepted F2 (the 665-line `user_vault_file_repository.py`) unfixed; no decomposition was done here.
 
+### 2026-10-21 (Hemma orchestrator, D13 shared-cap repair on TASK-SKRIPT-40-04-21)
+
+- The shared cap is now 238 characters (`255 - max(len(" Exam.net.pdf"), len(".provdokument.zip"))`, computed from the endings), so the exam's `.provdokument.zip` file fits too.
+
 ### 2026-10-21 (Hemma orchestrator, admission and walk)
 
 - F1 admitted on focused proof and merged to main `3eb5742f`, with the trailing-space repair `9eb05ef0` (a cut just after a space leaves no trailing space). The full suite passed on `3eb5742f` (frontend 4392 tests, backend 7986 passed).

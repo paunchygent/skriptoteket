@@ -14,9 +14,10 @@
  *   - Pure; the difference rule is `examWorkspaceSourcePointsDiffer` in
  *     `examWorkspaceTotals`, shared with the printed-total lines, plus the
  *     two-value rule `examWorkspaceSourcePointsConflict` used only here.
- *   - `ExamWorkspaceView` provides the marked ids under
+ *   - `useExamWorkspaceListNotes` provides the marked ids under
  *     `EXAM_WORKSPACE_IMPORT_POINTS_KEY` for the Poäng field's hint, and
- *     passes them to `ExamWorkspaceQuestionList` for the line and row marks.
+ *     `ExamWorkspaceView` passes them to `ExamWorkspaceQuestionList` for
+ *     the line and row marks.
  */
 
 import type { InjectionKey, Ref } from "vue";

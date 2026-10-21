@@ -22,6 +22,7 @@ import { inject, type InjectionKey } from "vue";
 
 import {
   copyExamWorkspaceDocument,
+  createExamWorkspaceBlank,
   examWorkspaceAssetUrl,
   findExamWorkspaceAnswerKeySuggestions,
   getExamCourseCatalog,
@@ -89,6 +90,7 @@ export type ExamWorkspaceSharedStore = {
 
 /** The actions that need a signed-in teacher; null in guest mode. */
 export type ExamWorkspaceTeacherServices = {
+  createExamWorkspaceBlank: typeof createExamWorkspaceBlank;
   listExamWorkspaceDocuments: typeof listExamWorkspaceDocuments;
   importExamWorkspaceDocument: typeof importExamWorkspaceDocument;
   getExamWorkspaceConversionStatus: typeof getExamWorkspaceConversionStatus;
@@ -109,10 +111,22 @@ export type ExamWorkspaceTeacherServices = {
   fetchExamWorkspacePrintPreview: typeof fetchExamWorkspacePrintPreview;
 };
 
+/**
+ * The authority a guest slot replacement writes under: the tab whose edit
+ * lease the write checks, and whether the requesting operation still holds
+ * live replacement authority. Both are decided inside the atomic slot
+ * write, so neither a retired operation nor a tab whose lease another tab
+ * took meanwhile replaces the retained draft.
+ */
+export type GuestSlotAdmission = {
+  tabId: string;
+  isLive: () => boolean;
+};
+
 /** The guest-only actions on the shared exam workspace; null in signed-in mode. */
 export type ExamWorkspaceGuestServices = {
-  startBlank(): Promise<string>;
-  startFromQti(file: File, courseKey: string | null): Promise<string>;
+  startBlank(expectedCursor: string | null, admission: GuestSlotAdmission): Promise<string>;
+  startFromQti(file: File, courseKey: string | null, admission: GuestSlotAdmission): Promise<string>;
 };
 
 export type ExamWorkspaceStore = {
@@ -146,6 +160,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     examWorkspaceAssetUrl: (...args) => examWorkspaceAssetUrl(...args),
   },
   teacher: {
+    createExamWorkspaceBlank: (...args) => createExamWorkspaceBlank(...args),
     listExamWorkspaceDocuments: (...args) => listExamWorkspaceDocuments(...args),
     importExamWorkspaceDocument: (...args) => importExamWorkspaceDocument(...args),
     getExamWorkspaceConversionStatus: (...args) => getExamWorkspaceConversionStatus(...args),

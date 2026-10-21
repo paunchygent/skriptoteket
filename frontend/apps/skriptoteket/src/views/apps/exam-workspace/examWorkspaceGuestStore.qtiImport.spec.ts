@@ -20,6 +20,7 @@ import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDra
 import {
   exam,
   installGuestStoreObjectUrls,
+  liveAdmission,
   pictureExam,
   setupGuestStore,
   startBlank,
@@ -79,7 +80,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
     const png = pngBlob();
     context.mocks.importQti.mockResolvedValue({ assets: { asset_001: png }, document, notes: [] });
 
-    const lineageId = await context.store.startFromQti(zipFile(), null);
+    const lineageId = await context.store.startFromQti(zipFile(), null, liveAdmission());
 
     expect(context.mocks.importQti).toHaveBeenCalledTimes(1);
     const [file, courseKey] = context.mocks.importQti.mock.calls[0]!;
@@ -113,7 +114,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
       importPublicExamWorkspaceQti(file, courseKey),
     );
 
-    const lineageId = await context.store.startFromQti(zipFile(), null);
+    const lineageId = await context.store.startFromQti(zipFile(), null, liveAdmission());
 
     expect(lineageId).toBe(document.document_id);
     const stored = await context.storage.load();
@@ -128,7 +129,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
     const document = exam("QTI-prov");
     context.mocks.importQti.mockResolvedValue({ assets: {}, document, notes: [] });
 
-    await context.store.startFromQti(zipFile(), "SVESVE02");
+    await context.store.startFromQti(zipFile(), "SVESVE02", liveAdmission());
 
     expect(context.mocks.importQti).toHaveBeenCalledWith(expect.any(File), "SVESVE02");
   });
@@ -142,7 +143,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
       notes: ["Fråga 3 hoppades över."],
     });
 
-    const lineageId = await context.store.startFromQti(zipFile(), null);
+    const lineageId = await context.store.startFromQti(zipFile(), null, liveAdmission());
 
     const stored = await context.storage.load();
     expect(stored?.draft.notes).toEqual(["Fråga 3 hoppades över."]);
@@ -169,7 +170,8 @@ describe("examWorkspaceGuestStore QTI start", () => {
     const losing: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (expected) => context.storage.clearIf(expected),
       load: () => context.storage.load(),
-      replaceIf: vi.fn(async () => false),
+      replaceIf: (expected, next) => context.storage.replaceIf(expected, next),
+      replaceSlotIf: vi.fn(async () => "conflict" as const),
     };
     const loser = createGuestExamWorkspaceStore({
       api: context.api,
@@ -178,11 +180,11 @@ describe("examWorkspaceGuestStore QTI start", () => {
       storage: losing,
     });
 
-    const error = await loser.startFromQti(zipFile(), null).catch((caught: unknown) => caught);
+    const error = await loser.startFromQti(zipFile(), null, liveAdmission()).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
-    expect(losing.replaceIf).toHaveBeenCalledTimes(1);
+    expect(losing.replaceSlotIf).toHaveBeenCalledTimes(1);
     expect(await context.storage.load()).toBeNull();
   });
 
@@ -201,7 +203,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
       },
     );
     context.mocks.importQti.mockReturnValueOnce(pending);
-    const importing = context.store.startFromQti(zipFile(), null);
+    const importing = context.store.startFromQti(zipFile(), null, liveAdmission());
     await vi.waitFor(() => expect(context.mocks.importQti).toHaveBeenCalledOnce());
 
     // Another tab replaces the slot while the public parse is in flight.
@@ -237,7 +239,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
     );
 
     const error = await context.store
-      .startFromQti(zipFile(), null)
+      .startFromQti(zipFile(), null, liveAdmission())
       .catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);

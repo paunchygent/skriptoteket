@@ -22,7 +22,8 @@
  *     stores the pending edit, then releases; its observer claims the freed
  *     lease and reloads the newest draft.
  *   - No I/O and no IndexedDB here: the port, the clock and the channel are
- *     injected, and the specs run them in memory with a channel double.
+ *     injected, and the specs run them in memory with a channel double and
+ *     the in-memory port of `examWorkspaceGuestEditLeaseMemory.ts`.
  */
 
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
@@ -161,50 +162,6 @@ export function ownsGuestEditLease(
   tabId: string,
 ): boolean {
   return current !== null && current.tabId === tabId;
-}
-
-/** One in-memory lease slot, shared by every controller that receives it, like two tabs. */
-export function createInMemoryGuestEditLeaseStorage(): GuestEditLeaseStoragePort {
-  let record: GuestEditLeaseRecord | null = null;
-  return {
-    async load() {
-      return record === null ? null : { ...record };
-    },
-    async claim(tabId, at) {
-      // No await runs between the read and the write below, so concurrent
-      // claims against this slot decide one after another, like IndexedDB
-      // serializes one readwrite transaction per tab.
-      const decided = decideGuestEditLeaseClaim(record, tabId, at);
-      if (decided.held) {
-        record = { ...decided.record };
-      }
-      return { held: decided.held, record: { ...decided.record } };
-    },
-    async renew(tabId, at) {
-      const decided = decideGuestEditLeaseRenew(record, tabId, at);
-      if (decided.held && decided.record !== null) {
-        record = { ...decided.record };
-      }
-      return {
-        held: decided.held,
-        record: decided.record === null ? null : { ...decided.record },
-      };
-    },
-    async release(tabId) {
-      if (!ownsGuestEditLease(record, tabId)) {
-        return false;
-      }
-      record = null;
-      return true;
-    },
-    async requestTakeover(tabId, at) {
-      const decided = decideGuestEditLeaseTakeover(record, tabId, at);
-      if (decided.outcome !== "own") {
-        record = { ...decided.record };
-      }
-      return { outcome: decided.outcome, record: { ...decided.record } };
-    },
-  };
 }
 
 export type GuestEditLeaseMessage =

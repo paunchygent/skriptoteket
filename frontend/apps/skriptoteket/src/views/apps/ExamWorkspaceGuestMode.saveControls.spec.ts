@@ -85,7 +85,7 @@ describe("ExamWorkspaceView guest mode save controls", () => {
   it("has no Spara button and no save menu while a stored step saves to the browser store", async () => {
     const { guest, storage } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     expect(wrapper.find('[data-test="exam-workspace-save-as-command"]').exists()).toBe(false);

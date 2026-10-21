@@ -43,6 +43,7 @@ import { readStepList } from "./useExamWorkspaceHistoryLoader";
 import type { FenceToken } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceRouteProjection } from "./examWorkspaceRouteProjection";
 import { createSyncGateTimer } from "./examWorkspaceSyncGateTimer";
+import { NEW_EXAM_FAILURE_COPY } from "./examWorkspaceNewExam";
 import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { RELOAD_FAILURE_COPY, SAVE_AS_FAILURE_COPY } from "./useExamWorkspaceSave";
@@ -95,6 +96,7 @@ export function useExamWorkspaceEditing(
     onEdit: (structural, before) => noteEdit(structural, before),
     store,
     submitRoute: (lineageId) => requireGate().submitRoute(lineageId),
+    tabId: () => leaseHolder.session?.tabId ?? "",
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
 
@@ -223,6 +225,11 @@ export function useExamWorkspaceEditing(
   gate = useExamWorkspaceSyncGate({
     abandonAttempt: () => history.abandonAttempt(),
     beginCopy: (sourceLineageId, name) => document.beginCopy(sourceLineageId, name),
+    beginNewExam: (expectedCursor, isLive) =>
+      document.beginNewExam(expectedCursor, {
+        isLive,
+        tabId: leaseHolder.session?.tabId ?? "",
+      }),
     claimSelectedLease: (nextLineageId) => {
       leaseHolder.session?.openLineage(nextLineageId);
     },
@@ -240,6 +247,7 @@ export function useExamWorkspaceEditing(
     },
     isVisibleDirty: () => document.isDirty.value,
     notifyCopyFailed: () => toast.failure(SAVE_AS_FAILURE_COPY),
+    notifyNewExamFailed: () => toast.failure(NEW_EXAM_FAILURE_COPY),
     notifyRouteFailed: () => toast.failure(OPEN_FAILURE_COPY),
     notifyRouteUnreadable: (lineage) => {
       void noteRouteUnreadable(lineage);
@@ -319,6 +327,14 @@ export function useExamWorkspaceEditing(
     return requireGate().submitSaveAs(name);
   }
 
+  /** Nytt prov: register the new-exam intent with the coordinator before its
+   * first await, sharing the source barrier; the coordinator admits the
+   * blank response only while its intent is still desired and its token is
+   * current. */
+  async function newExam(expectedCursor: string | null) {
+    return requireGate().submitNewExam(expectedCursor);
+  }
+
   /**
    * The drawer's busy state: a gate fresh load locks inputs through
    * `editingLocked` but never blocks the Öppna drawer, so the replacing lock
@@ -353,6 +369,7 @@ export function useExamWorkspaceEditing(
     isOpenBlockedByOtherOperation,
     save,
     saveAs,
+    newExam,
     selectedParentId,
     structure,
     /** The lease notice reads only this, so `loading` never shows the lease message. */

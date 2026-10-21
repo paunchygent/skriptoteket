@@ -22,7 +22,8 @@
  *     map stays in `examWorkspaceGuestStore.ts`, notified via `onStored`.
  *   - Consumed by `examWorkspaceGuestStore.ts` for the structural commands;
  *     the undo-step and position-move paths share `loadGuestStored`,
- *     `persistGuestStored` and `retainDeclaredAssets` directly.
+ *     `persistGuestStored` and `retainDeclaredAssets` directly, and the slot
+ *     starts write through `replaceGuestSlot`.
  */
 
 import type {
@@ -39,7 +40,13 @@ import type {
   ExamWorkspaceGuestDraftStoragePort,
   StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
-import { conflictError, notFoundError, refusalError } from "./examWorkspaceGuestStoreErrors";
+import {
+  conflictError,
+  editLeaseHeldError,
+  notFoundError,
+  refusalError,
+} from "./examWorkspaceGuestStoreErrors";
+import type { GuestSlotAdmission } from "./examWorkspaceStore";
 
 export type PublicCommandResult = {
   document: NativeExamDocument;
@@ -100,6 +107,29 @@ export async function persistGuestStored(
 ): Promise<void> {
   const written = await storage.replaceIf(expectedCursor, next);
   if (!written) {
+    throw conflictError();
+  }
+  onStored(next);
+}
+
+/**
+ * Replace the whole slot with a new exam under `admission` (see
+ * `replaceSlotIf`): a stale cursor or a retired writer reports the server's
+ * 409 conflict, and another tab's live edit lease reports the server's
+ * `EDIT_LEASE_HELD` 409. Notifies `onStored` once the write commits.
+ */
+export async function replaceGuestSlot(
+  storage: ExamWorkspaceGuestDraftStoragePort,
+  expectedCursor: string | null,
+  next: StoredGuestDraft,
+  admission: GuestSlotAdmission,
+  onStored: (stored: StoredGuestDraft) => void,
+): Promise<void> {
+  const outcome = await storage.replaceSlotIf(expectedCursor, next, admission);
+  if (outcome === "lease-held") {
+    throw editLeaseHeldError();
+  }
+  if (outcome === "conflict") {
     throw conflictError();
   }
   onStored(next);

@@ -95,6 +95,8 @@ export type ExamWorkspaceDocumentOptions = {
    * selection's still-current generation as foreign.
    */
   noteInstallingCursor: (lineageId: string, cursor: string) => void;
+  /** The edit-lease tab a guest slot replacement writes as. */
+  tabId: () => string;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
@@ -196,6 +198,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       summary,
       workspaceDocument,
       store,
+      tabId: options.tabId,
       noteImportStarted: (lineageId) => importPoints.noteImportStarted(lineageId),
     },
     (lineageId) => options.submitRoute(lineageId),
@@ -349,9 +352,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
   replayHeldHolder = () => replacingScope.replayHeld();
 
-  const { beginCopy } = useExamWorkspaceSave({
+  const { beginCopy, beginNewExam } = useExamWorkspaceSave({
     copyBusy,
     getFence: () => resolveFence(),
+    historyCursor,
     isBusy,
     summary,
     store,
@@ -450,6 +454,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     restoreItemSuggestion,
     retryItem,
     beginCopy,
+    beginNewExam,
     installReplacementDocument,
     releaseCopyBusy: () => {
       copyBusy.value = false;

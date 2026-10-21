@@ -124,7 +124,7 @@ export function composeWorkspace() {
   const scope = effectScope();
   const fence = createSyncFence();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined });
+    const document = useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,

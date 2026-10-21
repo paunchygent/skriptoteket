@@ -51,7 +51,7 @@ describe("openDocument with a file the app cannot read", () => {
     );
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
@@ -73,7 +73,7 @@ describe("openDocument with a file the app cannot read", () => {
     );
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
@@ -95,7 +95,7 @@ describe("openDocument with a file the app cannot read", () => {
     );
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 
@@ -111,7 +111,7 @@ describe("openDocument with a file the app cannot read", () => {
     api.getExamWorkspaceDocument.mockRejectedValue(new Error("network down"));
     const scope = effectScope();
     const fence = createSyncFence();
-    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined }))!;
+    const state = scope.run(() => useExamWorkspaceDocument({ getFence: () => fence, store: serverExamWorkspaceStore, submitRoute: () => Promise.resolve("failed"), noteInstallingCursor: () => undefined, tabId: () => "" }))!;
     try {
       const opened = await state.openDocument("lineage-1", fence.begin());
 

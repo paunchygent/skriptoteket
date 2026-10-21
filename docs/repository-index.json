@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1d6f7777d0fe2615dca0445e9ec2dc1cc9c544f2e02dc1eb8d5ad89d137e3d42",
+  "source_set_digest": "8e6f155ff9be2a8d70f7b3a84e482721a8f99c63934dc408a2d4056fcdaa4ad8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7110,7 +7110,7 @@
       "type": "task",
       "title": "A new exam starts from Nytt prov in the workspace toolbar",
       "path": "docs/backlog/tasks/task-skript-40-04-21-a-new-exam-starts-from-nytt-prov-in-the-workspace-toolbar.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

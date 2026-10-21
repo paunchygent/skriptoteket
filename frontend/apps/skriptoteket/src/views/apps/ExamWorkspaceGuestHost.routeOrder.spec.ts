@@ -81,6 +81,7 @@ vi.mock("./ExamWorkspaceView.vue", async () => {
         const document = useExamWorkspaceDocument({
           getFence: () => fence,
           noteInstallingCursor: () => undefined,
+          tabId: () => "",
           store: props.store,
           submitRoute: (lineageId) => document.openDocument(lineageId, fence.begin()),
         });

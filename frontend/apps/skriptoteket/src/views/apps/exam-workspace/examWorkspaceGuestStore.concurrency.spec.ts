@@ -22,6 +22,7 @@ import {
   exam,
   installGuestStoreObjectUrls,
   LEASE_TAB_ID,
+  liveAdmission,
   openSecondTab,
   setupGuestStore,
   startBlank,
@@ -114,7 +115,8 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
     const losing: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (expected) => context.storage.clearIf(expected),
       load: () => context.storage.load(),
-      replaceIf: vi.fn(async () => false),
+      replaceIf: (expected, next) => context.storage.replaceIf(expected, next),
+      replaceSlotIf: vi.fn(async () => "conflict" as const),
     };
     const loser = createGuestExamWorkspaceStore({
       api: context.api,
@@ -123,11 +125,11 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       storage: losing,
     });
 
-    const error = await loser.startBlank().catch((caught: unknown) => caught);
+    const error = await loser.startBlank(null, liveAdmission()).catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
-    expect(losing.replaceIf).toHaveBeenCalledTimes(1);
+    expect(losing.replaceSlotIf).toHaveBeenCalledTimes(1);
   });
 
   it("reports the conflict and keeps the newer draft when another tab writes during a blank start", async () => {
@@ -145,7 +147,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       },
     );
     context.mocks.createBlank.mockReturnValueOnce(pending);
-    const starting = context.store.startBlank();
+    const starting = context.store.startBlank(old.cursor, liveAdmission());
     await vi.waitFor(() => expect(context.mocks.createBlank).toHaveBeenCalledOnce());
 
     // Another tab replaces the slot while the public blank route is in flight.
@@ -176,6 +178,8 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       clearIf: vi.fn(async () => false),
       load: () => context.storage.load(),
       replaceIf: (expected, next) => context.storage.replaceIf(expected, next),
+      replaceSlotIf: (expected, next, admission) =>
+        context.storage.replaceSlotIf(expected, next, admission),
     };
     const store = createGuestExamWorkspaceStore({
       api: context.api,

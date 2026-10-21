@@ -90,7 +90,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
   it("shows the AI sign-in prompt from the header control without calling", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     const suggest = wrapper.get('[data-test="exam-workspace-suggest-all"]');
@@ -106,7 +106,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
   it("shows the AI sign-in prompt from both export-blocker controls without calling", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
@@ -134,7 +134,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
   it("shows the AI sign-in prompt from Föreslå innehåll without calling", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
@@ -153,7 +153,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
   it("shows the AI sign-in prompt from Konvertera igen without calling", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     await wrapper.get('[data-test="exam-workspace-row-item_003"]').trigger("click");
@@ -174,7 +174,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
   it("renders no admin-only note and leaves every AI control enabled", async () => {
     const { guest } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     expect(wrapper.text()).not.toContain(AI_ADMIN_ONLY_NOTE);

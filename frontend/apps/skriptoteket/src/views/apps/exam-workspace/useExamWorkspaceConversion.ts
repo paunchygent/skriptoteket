@@ -67,12 +67,26 @@ export type ExamWorkspaceConversionBinding = {
   isSaving: () => boolean;
   /** The store the document reads and the import lifecycle run through. */
   store: ExamWorkspaceStore;
+  /** The edit-lease tab a guest QTI import writes the browser slot as. */
+  tabId: () => string;
   /** An import started here names its exam, for the import-time points check (TASK-SKRIPT-40-04-23). */
   noteImportStarted: (lineageId: string) => void;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
 export type ConflictSync = "merged" | "unrelated" | "unknown";
+
+/**
+ * The server's Swedish refusal of an import, or null when the failure
+ * carries no server message to show (the generic 422 envelope or an
+ * HTTP-level fault). Shared with the new-exam flow, whose create failure
+ * follows the same message rule.
+ */
+export function serverImportMessage(error: unknown): string | null {
+  return isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
+    ? error.message
+    : null;
+}
 
 export function useExamWorkspaceConversion(
   isBusy: () => boolean,
@@ -398,17 +412,6 @@ export function useExamWorkspaceConversion(
     return conversionRevision > expectedRevision ? "unknown" : "unrelated";
   }
 
-  /**
-   * The server's Swedish refusal of an import, or null when the failure
-   * carries no server message to show (the generic 422 envelope or an
-   * HTTP-level fault).
-   */
-  function serverImportMessage(error: unknown): string | null {
-    return isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
-      ? error.message
-      : null;
-  }
-
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
     // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
@@ -426,7 +429,17 @@ export function useExamWorkspaceConversion(
       // exam opens through the same `openDocument` path the Öppna list's
       // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
-        const lineageId = await importQtiPackage(binding.store, file, courseKey);
+        // The guest slot write is admitted only while this import is still
+        // the current one and the sync gate generation it started in is
+        // still current: a later import, the scope's disposal, a lost lease
+        // or pagehide retires it before its late parse can replace the
+        // retained draft, and a lease that frees or expires afterwards does
+        // not revive it.
+        const authority = binding.getFence().begin();
+        const lineageId = await importQtiPackage(binding.store, file, courseKey, {
+          isLive: () => pollGeneration === generation && binding.isCurrent(authority),
+          tabId: binding.tabId(),
+        });
         if (pollGeneration !== generation || lineageId === null) return;
         binding.noteImportStarted(lineageId);
         // `openImported` refuses while this import still counts as busy.

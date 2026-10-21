@@ -1,8 +1,9 @@
 """Exam workspace API routes (ST-SKRIPT-39-04 walking skeleton).
 
 Purpose:
-  Expose DOCX and QTI package import, listing, reopen, save, history and copy for the
-  native editable exam workspace under the Conversion Hub curated app.
+  Expose DOCX and QTI package import, blank creation, listing, reopen, save,
+  history and copy for the native editable exam workspace under the Conversion
+  Hub curated app.
 
 Relationships:
   - Shares Conversion Hub app access with `apps_conversion_hub`.
@@ -51,6 +52,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
+    CreateBlankExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
@@ -227,6 +229,20 @@ async def import_exam_workspace_qti_document(
         content=await file.read(),
         course_key=course_key or None,
     )
+
+
+@router.post(
+    "/exam-workspace/blank",
+    response_model=ExamWorkspaceDocumentSummary,
+    status_code=201,
+)
+async def create_blank_exam_workspace_document(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[CreateBlankExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentSummary:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user)
 
 
 @router.get(

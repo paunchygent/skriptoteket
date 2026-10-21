@@ -40,6 +40,7 @@ function props(overrides: Partial<HeaderProps> = {}): HeaderProps {
     suggestDisabled: false,
     isPhone: false,
     previewOpen: false,
+    newExamBusy: false,
     ...overrides,
   };
 }

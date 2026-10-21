@@ -6,6 +6,9 @@ from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 from uuid import UUID, uuid4
 
+from skriptoteket.application.curated_apps.exam_workspace_file_name import (
+    exam_document_file_name,
+)
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryCursor,
     ExamWorkspaceHistoryResponse,
@@ -174,11 +177,21 @@ class ExamWorkspaceDocumentStore:
                     },
                 )
             if head is not None:
+                head_name = (
+                    await self._head_file_name(
+                        actor=actor,
+                        lineage_id=lineage_id,
+                        head=head,
+                        document=document,
+                    )
+                    if export_format is None
+                    else name
+                )
                 vault_file = await self._overwrite_head_file(
                     actor=actor,
                     lineage_id=lineage_id,
                     head=head,
-                    name=head.name if export_format is None else name,
+                    name=head_name,
                     content=content,
                     document=document,
                     version=version,
@@ -237,6 +250,26 @@ class ExamWorkspaceDocumentStore:
                     head=head_row.model_copy(update={"cursor": uuid4()}),
                 )
         return vault_file
+
+    async def _head_file_name(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        head: VaultFile,
+        document: NativeExamDocument | None,
+    ) -> str:
+        """Return the head file name after this write: the title-owned name on a title change.
+
+        A save without a title change keeps the file name, so a Spara som name
+        stands until the next title change. Export-format files keep their own names.
+        """
+        if document is None:
+            return head.name
+        indexed = await self._index.get(owner_user_id=actor.id, lineage_id=lineage_id)
+        if indexed is not None and indexed.title == document.title:
+            return head.name
+        return exam_document_file_name(document)
 
     async def _overwrite_head_file(
         self,
@@ -327,7 +360,9 @@ class ExamWorkspaceDocumentStore:
             actor=actor,
             lineage_id=lineage_id,
             head=head,
-            name=head.name,
+            name=await self._head_file_name(
+                actor=actor, lineage_id=lineage_id, head=head, document=document
+            ),
             content=content,
             document=document,
             version=version,

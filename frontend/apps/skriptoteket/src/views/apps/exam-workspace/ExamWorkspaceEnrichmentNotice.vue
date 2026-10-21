@@ -3,51 +3,49 @@
  * Exam workspace enrichment notice.
  *
  * Domain purpose:
- *   The enrichment's status and lookup-failure line: the running status
- *   message while enriching, or the failed lookup message with a
- *   `Försök igen` action that runs the lookup again.
+ *   The one notice row under the workspace header for AI answer-key
+ *   suggestions: the current enrichment message, or the failed lost-job
+ *   lookup with its `Försök igen` retry. It renders nothing while neither
+ *   a message nor a lookup error is set.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` where it already shows notices; the
  *     styling follows the view's notice pattern.
- *   - `useExamWorkspaceEnrichment` owns the state, this is presentation only.
+ *   - The enrichment session (`useExamWorkspaceEnrichment`) owns the message,
+ *     the lookup error and the retry; this is presentation only.
  */
 
-const props = defineProps<{
-  /** The running enrichment status message; null when there is none. */
-  message: string | null;
-  /** The failed lookup message; null when the lookup did not fail. */
-  lookupError: string | null;
-}>();
+import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 
-const emit = defineEmits<{
-  /** The teacher asked to run the failed lookup again. */
-  retry: [];
+const props = defineProps<{
+  /** The enrichment session whose message, lookup error and retry this shows. */
+  enrichment: ReturnType<typeof useExamWorkspaceEnrichment>;
 }>();
 </script>
 
 <template>
   <div
+    v-if="props.enrichment.enrichmentMessage.value || props.enrichment.enrichmentLookupError.value"
     class="xw-notice xw-notice--info ws__bar"
     role="status"
     data-test="exam-workspace-enrichment"
   >
     <span
-      v-if="props.lookupError"
+      v-if="props.enrichment.enrichmentLookupError.value"
       class="xw-grow"
       data-test="exam-workspace-enrichment-lookup-error"
-    >{{ props.lookupError }}</span>
+    >{{ props.enrichment.enrichmentLookupError.value }}</span>
     <span
       v-else
       class="xw-grow"
       data-test="exam-workspace-enrichment-message"
-    >{{ props.message }}</span>
+    >{{ props.enrichment.enrichmentMessage.value }}</span>
     <button
-      v-if="props.lookupError"
+      v-if="props.enrichment.enrichmentLookupError.value"
       type="button"
       class="xw-btn xw-btn--compact"
       data-test="exam-workspace-enrichment-lookup-retry"
-      @click="emit('retry')"
+      @click="props.enrichment.retryEnrichmentLookup"
     >
       Försök igen
     </button>

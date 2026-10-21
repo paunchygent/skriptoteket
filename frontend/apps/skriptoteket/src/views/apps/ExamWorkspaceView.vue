@@ -26,6 +26,7 @@
  *   - Selection and navigation, the save flow and the keyboard shortcuts
  *     come from their own composables; the editor column and the open
  *     drawer are `ExamWorkspaceEditorPane` and `ExamWorkspaceDrawers`.
+ *   - The enrichment notice row is `ExamWorkspaceEnrichmentNotice`.
  *   - Composes them and holds only presentation state: the drawer, the
  *     phone list and the Import box.
  */
@@ -35,28 +36,29 @@ import { computed, onMounted, provide, ref } from "vue";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditLeaseNotice from "./exam-workspace/ExamWorkspaceEditLeaseNotice.vue";
-import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceEnrichmentNotice from "./exam-workspace/ExamWorkspaceEnrichmentNotice.vue";
+import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
 import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vue";
 import ExamWorkspacePrintPreviewPanel from "./exam-workspace/ExamWorkspacePrintPreviewPanel.vue";
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceNewExamConfirmDialog from "./exam-workspace/ExamWorkspaceNewExamConfirmDialog.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
 import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
-import { EXAM_WORKSPACE_IMPORT_POINTS_KEY, examWorkspaceImportPointsItemIds } from "./exam-workspace/examWorkspaceImportPoints";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
-import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceViewPanels";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
+import { useExamWorkspaceListNotes } from "./exam-workspace/useExamWorkspaceListNotes";
+import { useExamWorkspaceNewExam } from "./exam-workspace/useExamWorkspaceNewExam";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
@@ -210,6 +212,13 @@ const saveFlow = useExamWorkspaceSaveFlow({
   isGuest: props.store.guest !== null,
   openDetails: () => { drawer.value = "details"; },
 });
+
+/** One click on Nytt prov opens a new untitled exam; a guest with content in the draft confirms first. */
+const newExam = useExamWorkspaceNewExam({
+  editing,
+  store: props.store,
+  toast: useToast(),
+});
 const { fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState, saveText, saveTitle } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
@@ -232,21 +241,12 @@ const { courseLabel, examInstructionsPreview, formattedSavedExports, zeroPoints 
     savedExports: exports.savedExports,
     workspaceDocument,
   });
-/** One entry per printed total that differs from its questions' sum, for the list's note lines. */
-const printedMismatches = computed(() =>
-  workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
-);
-/**
- * Right after an import here, the questions whose points differ from the
- * source's, in list order (TASK-SKRIPT-40-04-23); empty otherwise or after
- * Avfärda. The list shows their line and marks, the Poäng field its hint.
- */
-const importPointsIds = computed(() =>
-  editing.importPointsShown.value && workspaceDocument.value
-    ? examWorkspaceImportPointsItemIds(itemEntries.value.map((entry) => entry.id), workspaceDocument.value.items)
-    : [],
-);
-provide(EXAM_WORKSPACE_IMPORT_POINTS_KEY, computed(() => new Set(importPointsIds.value)));
+/** The list's printed-total lines and import-time points marks (`useExamWorkspaceListNotes`). */
+const { importPointsIds, printedMismatches } = useExamWorkspaceListNotes({
+  importPointsShown: editing.importPointsShown,
+  document: workspaceDocument,
+  itemEntries,
+});
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
 /**
@@ -294,8 +294,10 @@ onMounted(() => void loadSavedDocuments());
       :suggest-disabled="workspaceDocument === null || disabled"
       :is-phone="isPhone"
       :preview-open="previewOpen"
+      :new-exam-busy="newExam.busy.value"
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
+      @new-exam="newExam.start"
       @save-as="openSaveAs"
       @import-file="requestImportPick"
       @rename-title="editing.setTitle"
@@ -336,12 +338,7 @@ onMounted(() => void loadSavedDocuments());
       :waiting="takeoverWaiting"
       @takeover="requestTakeover"
     />
-    <ExamWorkspaceEnrichmentNotice
-      v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
-      :message="enrichment.enrichmentMessage.value"
-      :lookup-error="enrichment.enrichmentLookupError.value"
-      @retry="enrichment.retryEnrichmentLookup"
-    />
+    <ExamWorkspaceEnrichmentNotice :enrichment="enrichment" />
 
     <ExamWorkspacePhoneStrip
       v-if="isPhone && workspaceDocument"
@@ -476,6 +473,11 @@ onMounted(() => void loadSavedDocuments());
       :taken-name="saveAsTaken"
       @save="handleSaveAs"
       @close="saveAsOpen = false"
+    />
+    <ExamWorkspaceNewExamConfirmDialog
+      v-if="newExam.confirmOpen.value"
+      @replace="newExam.confirmReplace"
+      @cancel="newExam.cancelReplace"
     />
   </main>
 </template>

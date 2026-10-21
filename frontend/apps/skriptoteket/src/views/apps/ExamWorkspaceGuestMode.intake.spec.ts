@@ -3,7 +3,7 @@
  *
  * Expected behavior:
  *   With a guest store (teacher null, guest startBlank present) the same view
- *   starts a blank exam through "Tomt prov" and a QTI .zip through the file
+ *   starts a blank exam through "Nytt prov" and a QTI .zip through the file
  *   picker or a drop; the DigiExam/Word import shows the sign-in prompt instead
  *   of calling. With the server store nothing changes (covered by the frame,
  *   saveAs, exports, enrichment, retry and conversion slices).
@@ -90,14 +90,16 @@ installGuestModeObjectUrls();
 resetGuestModeTestState(teacherMocks);
 
 describe("ExamWorkspaceView guest mode intake", () => {
-  it("starts blank through Tomt prov and keeps the teacher-only list and course choice hidden", async () => {
+  it("starts blank through Nytt prov and keeps the teacher-only list and course choice hidden", async () => {
     const { guest, publicMocks } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
 
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-empty"]').text()).toContain("Börja med ett tomt prov.");
+    expect(wrapper.find('[data-test="exam-workspace-empty"]').text()).toContain(
+      "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.",
+    );
     expect(wrapper.find('[data-test="exam-workspace-sign-in-prompt"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-guest-blank"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-new-exam"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Word (.docx)");
     expect(wrapper.text()).toContain("DigiExam (.dxe)");
     expect(wrapper.text()).toContain("QTI (.zip)");
@@ -108,7 +110,7 @@ describe("ExamWorkspaceView guest mode intake", () => {
     expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(false);
     expect(document.querySelector("#exam-workspace-import-course")).toBeNull();
 
-    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
     expect(publicMocks.createPublicExamWorkspaceBlank).toHaveBeenCalledTimes(1);

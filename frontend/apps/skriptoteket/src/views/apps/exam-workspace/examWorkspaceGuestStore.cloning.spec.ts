@@ -26,6 +26,7 @@ import {
   exam,
   installGuestStoreObjectUrls,
   LEASE_TAB_ID,
+  liveAdmission,
   type GuestStoreSetup,
 } from "./examWorkspaceGuestStore.specSupport";
 
@@ -75,7 +76,7 @@ async function startBlank(context: CloningStoreSetup): Promise<void> {
     document: exam("Original"),
     export_blockers: [],
   });
-  await context.store.startBlank();
+  await context.store.startBlank(null, liveAdmission());
 }
 
 describe("examWorkspaceGuestStore reactive snapshots", () => {

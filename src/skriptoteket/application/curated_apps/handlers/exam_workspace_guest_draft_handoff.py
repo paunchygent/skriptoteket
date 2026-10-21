@@ -25,6 +25,9 @@ from collections.abc import Mapping
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
+from skriptoteket.application.curated_apps.exam_workspace_file_name import (
+    exam_document_file_name,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
@@ -41,7 +44,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_title_numbering import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.vault_names import rename_vault_filename
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
@@ -52,8 +54,6 @@ from skriptoteket.protocols.exam_workspace_guest_drafts import (
     ExamGuestDraftHandoffRepositoryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-
-_COPY_EXTENSION = ".provdokument.zip"
 
 
 class ImportGuestExamDraftHandler:
@@ -108,7 +108,7 @@ class ImportGuestExamDraftHandler:
             return await self._create(
                 actor=actor,
                 lineage_id=lineage_id,
-                name=rename_vault_filename(stem=numbered.title, extension=_COPY_EXTENSION),
+                name=exam_document_file_name(numbered),
                 document=numbered,
                 assets_by_id=assets_by_id,
                 notes=notes,
@@ -117,7 +117,13 @@ class ImportGuestExamDraftHandler:
     async def _with_unique_title(
         self, *, actor: User, document: NativeExamDocument
     ) -> NativeExamDocument:
-        """Number the draft title against the owner's taken titles under the lock."""
+        """Number the draft title against the owner's taken titles under the lock.
+
+        An empty title stays empty: it is never numbered (numbered_exam_title
+        would give " (2)") and its file name falls back to the untitled name.
+        """
+        if not document.title.strip():
+            return document
         await self._index.lock_owner_titles(owner_user_id=actor.id)
         taken = await self._index.titles_like(
             owner_user_id=actor.id, base=exam_title_base(document.title)

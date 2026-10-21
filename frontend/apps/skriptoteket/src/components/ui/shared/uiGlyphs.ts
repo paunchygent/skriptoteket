@@ -40,6 +40,7 @@ import {
   FileArchive,
   FileHeadphone,
   FileInput,
+  FilePlus,
   FileMinus,
   FileSpreadsheet,
   FileText,
@@ -169,7 +170,8 @@ export type UiGlyphActionMeaning =
   | "convert-type"
   | "export-checklist"
   | "send"
-  | "file-import";
+  | "file-import"
+  | "file-new";
 
 export type UiGlyphUtilityMeaning =
   | "info"
@@ -320,6 +322,7 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   "export-checklist": lucide(ListChecks),
   send: lucide(SendHorizontal),
   "file-import": lucide(FileInput),
+  "file-new": lucide(FilePlus),
 };
 
 const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {

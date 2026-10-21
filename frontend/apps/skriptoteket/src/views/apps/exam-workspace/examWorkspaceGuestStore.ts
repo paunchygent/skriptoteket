@@ -14,6 +14,8 @@
  * Relationships:
  *   - Built on `examWorkspaceGuestDraft.ts` (draft and history state machine)
  *     and `examWorkspaceGuestDraftStorage.ts` (its browser storage).
+ *   - Starting a new exam in the slot (blank or QTI) lives in
+ *     `examWorkspaceGuestSlotStarts.ts`.
  *   - The conditional-persistence and command commit machinery lives in
  *     `examWorkspaceGuestStoreCommit.ts`, the server-shaped refusals in
  *     `examWorkspaceGuestStoreErrors.ts`, and the limit-reporting API wrapper
@@ -28,12 +30,11 @@ import {
   guestHistory,
   guestHistoryStep,
   moveGuestHistoryPosition,
-  newGuestDraft,
   storeGuestUndoStep,
   type ExamWorkspaceGuestDraftIdSource,
 } from "./examWorkspaceGuestDraft";
 import {
-  GUEST_EDIT_LEASE_TTL_MS,
+  decideGuestEditLeaseClaim,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
 import {
@@ -45,6 +46,7 @@ import {
   commitGuestCommand,
   loadGuestStored,
   persistGuestStored,
+  replaceGuestSlot,
   retainDeclaredAssets,
 } from "./examWorkspaceGuestStoreCommit";
 import {
@@ -52,8 +54,13 @@ import {
 } from "./examWorkspaceGuestStoreErrors";
 import { isGuestDraftReadable } from "./examWorkspaceGuestDraftReadability";
 import type { GuestPublicApi } from "./examWorkspaceGuestLimitApi";
+import { createGuestSlotStarts } from "./examWorkspaceGuestSlotStarts";
 import { wrapGuestPublicApiForLimit } from "./examWorkspaceGuestLimitApi";
-import type { ExamWorkspaceSharedStore, ExamWorkspaceStore } from "./examWorkspaceStore";
+import type {
+  ExamWorkspaceSharedStore,
+  ExamWorkspaceStore,
+  GuestSlotAdmission,
+} from "./examWorkspaceStore";
 
 export { isGuestLimitError } from "./examWorkspaceGuestStoreErrors";
 
@@ -73,10 +80,22 @@ export type ExamWorkspaceGuestStoreDeps = {
 
 export type ExamWorkspaceGuestStore = {
   store: ExamWorkspaceStore;
-  /** Start a fresh blank exam through the public route and store it. */
-  startBlank(): Promise<string>;
-  /** Start a guest exam from a QTI .zip through the public parse route. */
-  startFromQti(file: File, courseKey: string | null): Promise<string>;
+  /**
+   * Start a fresh blank exam through the public route and store it. The
+   * write commits only when `expectedCursor` still owns the browser slot
+   * (null for an empty slot); a concurrent tab's newer draft is kept and
+   * reported as the established conflict instead of being overwritten.
+   * The write also needs `admission`: inside the atomic write no other tab
+   * may hold a live edit lease and `admission.isLive` must still be true,
+   * so neither a retired creation nor a tab that lost the lease before the
+   * write replaces the retained draft.
+   */
+  startBlank(expectedCursor: string | null, admission: GuestSlotAdmission): Promise<string>;
+  /**
+   * Start a guest exam from a QTI .zip through the public parse route, under
+   * `admission` exactly like `startBlank`'s whole-slot write.
+   */
+  startFromQti(file: File, courseKey: string | null, admission: GuestSlotAdmission): Promise<string>;
   /**
    * Move the draft to a retained history step (guest Ångra and Gör om): the
    * position and the saved draft follow the step, and no new step is
@@ -111,13 +130,9 @@ export function createGuestExamWorkspaceStore(
     } catch {
       return;
     }
-    if (record === null || record.tabId === tabId) {
-      return;
+    if (!decideGuestEditLeaseClaim(record, tabId, Date.now()).held) {
+      throw editLeaseHeldError();
     }
-    if (Date.now() - record.renewedAt > GUEST_EDIT_LEASE_TTL_MS) {
-      return;
-    }
-    throw editLeaseHeldError();
   }
 
   /** The draft whose picture bytes currently have object URLs. */
@@ -419,45 +434,14 @@ export function createGuestExamWorkspaceStore(
     },
   };
 
-  /**
-   * Replace the whole browser slot with the draft `produce` builds. The slot
-   * cursor is captured before awaiting `produce`, so a concurrent tab that
-   * commits while the public route is in flight owns the slot afterwards and
-   * this write reports the established 409 instead of overwriting its draft.
-   */
-  async function replaceSlotWith(produce: () => Promise<StoredGuestDraft>): Promise<string> {
-    const current = await deps.storage.load();
-    const expectedCursor = current?.draft.cursor ?? null;
-    const next = await produce();
-    await persist(expectedCursor, next);
-    return next.draft.lineage_id;
-  }
-
-  /**
-   * Start a fresh blank exam through the public route and store it. A
-   * concurrent tab's newer draft is kept and reported as the conflict.
-   */
-  async function startBlank(): Promise<string> {
-    return await replaceSlotWith(async () => {
-      const response = await api.createPublicExamWorkspaceBlank();
-      const draft = newGuestDraft(response.document, deps.ids, []);
-      return { assets: {}, draft };
-    });
-  }
-
-  /**
-   * Start a guest exam from a QTI .zip through the public parse route: the
-   * returned document becomes the draft and its picture bytes stay beside
-   * it in the browser. A concurrent tab's newer draft is kept, like a lost
-   * blank start, and a limit hit reports through `onLimit`.
-   */
-  async function startFromQti(file: File, courseKey: string | null): Promise<string> {
-    return await replaceSlotWith(async () => {
-      const response = await api.importPublicExamWorkspaceQti(file, courseKey);
-      const draft = newGuestDraft(response.document, deps.ids, response.notes);
-      return { assets: response.assets, draft };
-    });
-  }
+  const { startBlank, startFromQti } = createGuestSlotStarts({
+    api,
+    ids: deps.ids,
+    replaceSlot: (expectedCursor, stored, admission) =>
+      replaceGuestSlot(deps.storage, expectedCursor, stored, admission, mountAssets),
+    requireEditLease: requireGuestEditLease,
+    storage: deps.storage,
+  });
 
   return {
     store: { shared, teacher: null, guest: { startBlank, startFromQti } },

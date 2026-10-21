@@ -27,6 +27,7 @@ import type { StoredGuestDraft } from "./exam-workspace/examWorkspaceGuestDraftS
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
+import { liveAdmission } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 import { buildParentDocument } from "./exam-workspace/examWorkspaceParentDocument.specSupport";
 
 const DEPARTURE_FAILURE_COPY =
@@ -62,6 +63,13 @@ vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal
       }
       storageMocks.stored = next;
       return true;
+    },
+    async replaceSlotIf(expectedCursor: string | null, next: StoredGuestDraft) {
+      if ((storageMocks.stored?.draft.cursor ?? null) !== expectedCursor) {
+        return "conflict" as const;
+      }
+      storageMocks.stored = next;
+      return "replaced" as const;
     },
     async clearIf(expectedCursor: string) {
       if ((storageMocks.stored?.draft.cursor ?? null) !== expectedCursor) {
@@ -115,7 +123,7 @@ async function seedDraft(): Promise<StoredGuestDraft> {
     onLimit: () => undefined,
     storage: port,
   });
-  await seeder.startBlank();
+  await seeder.startBlank(null, liveAdmission());
   const stored = await port.load();
   if (stored === null) {
     throw new Error("Expected the seeder to store a guest draft.");
@@ -287,7 +295,7 @@ describe("ExamWorkspaceGuestHost", () => {
     });
     apiMocks.createBlank.mockRejectedValueOnce(limit);
     await guestStoreOf(wrapper)
-      .guest?.startBlank()
+      .guest?.startBlank(null, liveAdmission())
       .catch((caught: unknown) => caught);
     await flushPromises();
 
@@ -317,7 +325,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank()
+        .guest?.startBlank(null, liveAdmission())
         .catch((caught: unknown) => caught);
       await flushPromises();
 
@@ -355,7 +363,7 @@ describe("ExamWorkspaceGuestHost", () => {
       });
       apiMocks.createBlank.mockRejectedValueOnce(limit);
       await guestStoreOf(wrapper)
-        .guest?.startBlank()
+        .guest?.startBlank(null, liveAdmission())
         .catch((caught: unknown) => caught);
       await flushPromises();
 
