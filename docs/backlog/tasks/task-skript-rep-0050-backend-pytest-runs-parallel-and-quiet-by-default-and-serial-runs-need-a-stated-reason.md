@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-21'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer 321854a9 (retained session 01a15559-85c6-7d24-9a7f-4009457f671a, evidence/reviews/321854a9-01dc-4c81-853e-fbc3d9f2f9cb.md) reviewed e0ae15bb: changes requested, six medium findings F1-F6, no blocker or high. Repaired at b1f019e6 (one delta per finding) and merged to main 6a557b5d. Admitted by the Hemma orchestrator on focused proof without rereview, 2026-10-21 at main b9ad44a4: tests/unit/governance/test_pytest_execution_policy.py 23 passed, ruff check and format clean on the eleven repaired Python files, full pdm run typecheck passes (retained session 01a15f48-0f71-77ba-b7df-f48c8e838efb, evidence/admission/).'
 task_kind: repository
 acceptance_criteria:
   - Every pytest run (`pdm run pytest`, `pdm run test`, the governance backend-test producer, the pre-commit targeted runner, the Hemma pre-push check) runs under xdist with no `-s`, `-v` or live log streaming; captured INFO logs and stdout print only for failing tests

@@ -5,7 +5,12 @@
 - TASK-SKRIPT-40-04-19 `proposed` (user, 2026-10-20): two tabs holding exam
   locks invalidate each other's CSRF token on every renew. Not started.
 
-- Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
+- Closeout owed: TASK-SKRIPT-06-18-01 is merged on main but still `proposed`;
+  its readiness and closure go to the user through the Mac orchestrator.
+
+- Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
+  all 82 Hemma task and verify worktrees hold no work missing from main
+  (survey in that root's `evidence/admission/`); removal waits on user approval.
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
@@ -13,6 +18,7 @@
   `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
   The 22 rule files are deleted on main by TASK-SKRIPT-40-03-09 (facts folded into
   skills). Next: the REP-0038 owner reconciles its remaining D1-D2 scope against that.
+  The branch is absent on Hemma (2026-10-21), so the owner pointer is stale.
 
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
   `in_progress`; owner Claude parent. `fix/retire-convert-references` at
@@ -110,17 +116,11 @@
   stay approved; ADR-0091 (`proposed`) narrows the authoring-UI non-decision.
   Active story/task pointers above hold the current DOCX and QTI state.
 
-- [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md)
-  `in_progress` on `codex/backend-test-parallel` (worktree
-  `skriptoteket-backend-test-parallel`, not pushed). Pytest runs parallel and
-  quiet by default, workers sized to the selection, serial runs need
-  `--serial-reason`, pooled Postgres per worker; full `tests/unit` about 100 s
-  under load (was 3m50s). Worker cap 12 (user 2026-10-19).
-  Next: Hemma orchestrator routes review and merge.
-
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-21 `done` on main: [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md) parallel and quiet pytest (merge `6a557b5d`; review 321854a9 F1-F6 medium repaired `b1f019e6`, admitted on focused proof).
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-40-04-20 print keeps imported formatting (`43f47eda`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Unreadable-notice wrap fix merged `a8de9ae6` (Pi review `ec4f5dae` approved; walk PASS).
 
@@ -151,7 +151,7 @@
 ## Facts
 
 - Session Date: 2026-10-15
-- Last Refreshed: 2026-10-19
+- Last Refreshed: 2026-10-21
 - Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.

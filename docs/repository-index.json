@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4276ae60001c31ec70ad7aaf89042f2d39ea1682e82dbb9ad21b6d9e06b8fd62",
+  "source_set_digest": "4623014f92951bddfbd0c2b2871dd41ddf25ddc9eede9673fde59313d575e6f9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8431,7 +8431,7 @@
       "type": "task",
       "title": "Backend pytest runs parallel and quiet by default and serial runs need a stated reason",
       "path": "docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8441,7 +8441,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-21",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 321854a9 (retained session 01a15559-85c6-7d24-9a7f-4009457f671a, evidence/reviews/321854a9-01dc-4c81-853e-fbc3d9f2f9cb.md) reviewed e0ae15bb: changes requested, six medium findings F1-F6, no blocker or high. Repaired at b1f019e6 (one delta per finding) and merged to main 6a557b5d. Admitted by the Hemma orchestrator on focused proof without rereview, 2026-10-21 at main b9ad44a4: tests/unit/governance/test_pytest_execution_policy.py 23 passed, ruff check and format clean on the eleven repaired Python files, full pdm run typecheck passes (retained session 01a15f48-0f71-77ba-b7df-f48c8e838efb, evidence/admission/)."
       }
     },
     {
