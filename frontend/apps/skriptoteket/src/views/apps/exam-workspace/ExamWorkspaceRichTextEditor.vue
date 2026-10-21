@@ -41,6 +41,15 @@
  *   so the owner closes a popover first and
  *   the tool second.
  *
+ *   With the optional `pictures` prop the surface also takes pictures: a
+ *   dropped or pasted PNG or JPEG file goes to the picture service with this
+ *   surface as its target, a drag shows the drop line, and the target's
+ *   `placePicture` puts the new picture alone in its own paragraph at the
+ *   caret or replaces the selected picture in place, in one undo step.
+ *   `pictureSelected` says whether a whole picture is selected, so the
+ *   toolbar offers "Byt bild". Without the prop nothing about drop, paste or
+ *   the drop line changes.
+ *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
  *     `examWorkspaceRichTextDocument` maps the body to and from them.
@@ -56,6 +65,7 @@
 
 import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { NodeSelection, TextSelection } from "@tiptap/pm/state";
+import type { EditorProps, EditorView } from "@tiptap/pm/view";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Ref } from "vue";
 
@@ -63,6 +73,8 @@ import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 import { BODY_MARKS } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { useExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
+import { picturePlacement } from "./examWorkspacePicturePlacement";
+import { useExamWorkspacePictures } from "./examWorkspacePictureService";
 import {
   bodyFromEditor,
   editorContentFrom,
@@ -73,6 +85,7 @@ import { isDiscreteEdit } from "./examWorkspaceRichTextEditKind";
 import {
   ATOM_STATE_KEY,
   EXAM_GAP_NODE,
+  EXAM_PICTURE_NODE,
   examRichTextExtensions,
 } from "./examWorkspaceRichTextSchema";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
@@ -106,6 +119,8 @@ const props = withDefaults(
     nextGapId?: string | null;
     /** While true, a word click or a drag selection becomes a gap at once. */
     gapTool?: boolean;
+    /** While true, the surface takes dropped and pasted pictures and draws the drop line. */
+    pictures?: boolean;
   }>(),
   {
     disabled: false,
@@ -118,6 +133,7 @@ const props = withDefaults(
     gapsInteractive: false,
     nextGapId: undefined,
     gapTool: false,
+    pictures: false,
   },
 );
 
@@ -144,6 +160,7 @@ const UNKNOWN_GAP: ExamGapState = { label: "Lucka", accessibleLabel: "Lucka", em
 
 const registry = useRichTextTargetRegistry();
 const historyKeys = useExamWorkspaceHistoryKeys();
+const pictureService = useExamWorkspacePictures();
 
 /** Gap ids and picture ids in body order, as one comparable key. */
 function atomKey(body: readonly NativeExamBodyParagraph[]): string {
@@ -156,10 +173,78 @@ let knownAtoms = atomKey(props.body);
 let toolbarEdit = false;
 
 const marks: Ref<BodyMark[]> = ref([]);
+/** True while the selection is a whole picture, so the toolbar offers "Byt bild". */
+const pictureSelected = ref(false);
 
 /** Gap creation is available only while gaps are interactive and the editor is enabled. */
 function canMakeGap(): boolean {
   return props.gapsInteractive && !props.disabled;
+}
+
+/** Picture files on a paste: PNG, JPEG, or a file whose type the intake must sniff from its bytes. */
+function pastedPictureFiles(event: ClipboardEvent): File[] {
+  const files = event.clipboardData?.files;
+  if (!files) {
+    return [];
+  }
+  return Array.from(files).filter(
+    (file) => file.type === "image/png" || file.type === "image/jpeg" || file.type === "",
+  );
+}
+
+/** The files one drag carries, in order. */
+function droppedFiles(event: DragEvent): File[] {
+  const files = event.dataTransfer?.files;
+  return files ? Array.from(files) : [];
+}
+
+/** Move the caret to the point the pointer dropped on, so the picture lands there. */
+function moveCaretToDropPoint(view: EditorView, event: DragEvent): void {
+  try {
+    const point = view.posAtCoords({ left: event.clientX, top: event.clientY });
+    if (point === null) {
+      return;
+    }
+    // A drop between two blocks lands in the nearest text, never outside one.
+    const caret = TextSelection.near(view.state.doc.resolve(point.pos));
+    view.dispatch(view.state.tr.setSelection(caret));
+  } catch {
+    // Without layout there are no coordinates: the picture keeps the caret's place.
+  }
+}
+
+/**
+ * Drop and paste of picture files, on a surface that takes pictures only.
+ * Both hand the files to the picture service with this surface as the target,
+ * and the service, not the editor, decides which files it accepts.
+ */
+function pictureEditorProps(): Pick<EditorProps, "handlePaste" | "handleDrop"> {
+  if (!props.pictures) {
+    return {};
+  }
+  return {
+    handlePaste: (_view, event) => {
+      const files = pastedPictureFiles(event);
+      if (files.length === 0) {
+        // Any other paste stays a text paste.
+        return false;
+      }
+      void pictureService?.add(target, files);
+      return true;
+    },
+    handleDrop: (view, event, _slice, moved) => {
+      if (moved) {
+        return false;
+      }
+      const files = droppedFiles(event);
+      if (files.length === 0) {
+        return false;
+      }
+      moveCaretToDropPoint(view, event);
+      void pictureService?.add(target, files);
+      return true;
+    },
+  };
 }
 
 const editor = useEditor({
@@ -178,9 +263,11 @@ const editor = useEditor({
       emit("toggleGapTool");
       return true;
     },
+    dropCursor: props.pictures,
   }),
   editorProps: {
     attributes: surfaceAttributes(),
+    ...pictureEditorProps(),
     handleClickOn: (view, _pos, node, nodePos, event) => {
       if (node.type.name !== EXAM_GAP_NODE || !props.gapsInteractive || props.disabled) {
         return false;
@@ -283,6 +370,9 @@ const editor = useEditor({
   },
   onTransaction: ({ editor: current }) => {
     marks.value = BODY_MARKS.filter((mark) => current.isActive(mark));
+    const { selection } = current.state;
+    pictureSelected.value =
+      selection instanceof NodeSelection && selection.node.type.name === EXAM_PICTURE_NODE;
   },
   onFocus: () => {
     registry.activate(target);
@@ -343,6 +433,10 @@ function asToolbarEdit(run: () => void): void {
 
 const target: RichTextTarget = {
   marks,
+  get acceptsPictures(): boolean {
+    return props.pictures;
+  },
+  pictureSelected,
   headingLevel: currentHeadingLevel,
   toggleMark: (mark) => {
     asToolbarEdit(() => editor.value?.chain().focus().toggleMark(mark).run());
@@ -359,6 +453,20 @@ const target: RichTextTarget = {
   },
   makeGap: (gapId) => {
     makeGap(gapId);
+  },
+  placePicture: (assetId) => {
+    asToolbarEdit(() => {
+      const current = editor.value;
+      if (!current) {
+        return;
+      }
+      const transaction = picturePlacement(current.state, assetId);
+      if (transaction === null) {
+        return;
+      }
+      current.view.dispatch(transaction);
+      current.view.focus();
+    });
   },
   // ProseMirror keeps its own selection while the toolbar has focus.
   release: () => undefined,
@@ -423,6 +531,8 @@ const wrapperClass = computed(() =>
 );
 
 defineExpose({
+  /** This surface as the formatting toolbar and the picture service see it. */
+  target,
   focus(): void {
     editor.value?.commands.focus("end");
   },

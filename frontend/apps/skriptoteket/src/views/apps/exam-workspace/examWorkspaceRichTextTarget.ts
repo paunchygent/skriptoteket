@@ -15,6 +15,9 @@
  *     the toolbars dispatch to the active target.
  *   - A component subtree mounted without a provider creates and provides
  *     its own registry, so a standalone editor keeps working.
+ *   - A target that accepts pictures is also the surface the picture service
+ *     places a chosen, dropped or pasted file on, and it reports whether the
+ *     selection is a whole picture so the toolbar offers "Byt bild".
  */
 
 import { inject, provide, shallowRef } from "vue";
@@ -39,6 +42,16 @@ export type RichTextTarget = {
    * change as one `createGap` event, never as an `update`.
    */
   makeGap(gapId: string): void;
+  /** True while this surface takes pictures: its `pictures` prop. */
+  acceptsPictures: boolean;
+  /** True while the selection is a whole picture atom, so the toolbar offers "Byt bild". */
+  pictureSelected: Ref<boolean>;
+  /**
+   * Place the picture `assetId` alone in its own paragraph at the caret, or
+   * replace the picture the selection covers in place. One toolbar edit, so
+   * one undo step.
+   */
+  placePicture(assetId: string): void;
   /** Drop the target's saved selection; the registry calls it when another surface takes over. */
   release(): void;
 };

@@ -21,6 +21,10 @@
  *   the options, in either letter case so Caps Lock keeps working, and is
  *   left alone when this editor has no gap tool.
  *
+ *   A drag over a surface that accepts pictures shows the drop line a
+ *   dropped file lands on (`@tiptap/pm/dropcursor`, class `xw-dropcursor`),
+ *   through the options; a surface without pictures has no drop line.
+ *
  *   Neither atom parses from HTML, so a paste or a drop never carries a gap
  *   or a picture, even one cut from the same editor: a gap id must stay
  *   placed once and its record leaves the item with the cut, and only the
@@ -49,6 +53,7 @@ import Superscript from "@tiptap/extension-superscript";
 import Text from "@tiptap/extension-text";
 import Underline from "@tiptap/extension-underline";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
+import { dropCursor } from "@tiptap/pm/dropcursor";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
@@ -76,6 +81,8 @@ export type ExamRichTextOptions = {
   onRedo: () => void;
   /** Ctrl+Alt+G, Cmd+Option+G on macOS: turn the gap tool on or off; false when this editor has no gap tool, so the key is left alone. */
   onToggleGapTool: () => boolean;
+  /** While true, a drag over the surface shows the drop line a dropped picture lands on. */
+  dropCursor?: boolean;
 };
 
 /** Visible label of a picture whose protected URL is not loaded. */
@@ -270,6 +277,23 @@ function gapToolKeys(options: ExamRichTextOptions) {
   });
 }
 
+/**
+ * The drop line a dragged picture lands on. Only a surface that accepts
+ * pictures draws it, and CSS gives it the action colour through its class.
+ */
+function pictureDropCursor(options: ExamRichTextOptions) {
+  return Extension.create({
+    name: "examPictureDropCursor",
+
+    addProseMirrorPlugins() {
+      if (!options.dropCursor) {
+        return [];
+      }
+      return [dropCursor({ class: "xw-dropcursor", width: 2, color: false })];
+    },
+  });
+}
+
 /** One glyph cannot sit both above and below the baseline, so the two marks exclude each other. */
 const ExamSuperscript = Superscript.extend({ excludes: "subscript" });
 const ExamSubscript = Subscript.extend({ excludes: "superscript" });
@@ -315,5 +339,6 @@ export function examRichTextExtensions(options: ExamRichTextOptions) {
     atomState(options),
     workspaceHistoryKeys(options),
     gapToolKeys(options),
+    pictureDropCursor(options),
   ];
 }

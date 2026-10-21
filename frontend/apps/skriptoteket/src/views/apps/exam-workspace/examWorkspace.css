@@ -378,6 +378,8 @@ Relationships:
 }
 .xw-picture__image { display: block; height: auto; max-width: 100%; }
 .xw-richtext__surface .ProseMirror-selectednode { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
+/* The line a dragged picture lands on; only surfaces that take pictures draw it. */
+.xw-dropcursor { background-color: var(--huleedu-action); border-radius: 1px; }
 
 /* Spin for busy glyphs */
 @keyframes xw-spin { to { transform: rotate(360deg); } }

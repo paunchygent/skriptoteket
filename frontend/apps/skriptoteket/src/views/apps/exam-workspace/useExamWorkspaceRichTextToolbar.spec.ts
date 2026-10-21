@@ -22,10 +22,13 @@ import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolb
 function fakeTarget(marks: BodyMark[], heading: RichTextHeadingLevel | null): RichTextTarget {
   return {
     marks: ref<BodyMark[]>(marks),
+    acceptsPictures: false,
+    pictureSelected: ref(false),
     headingLevel: () => heading,
     toggleMark: vi.fn(),
     toggleHeading: vi.fn(),
     makeGap: vi.fn(),
+    placePicture: vi.fn(),
     release: vi.fn(),
   };
 }
