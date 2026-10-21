@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "37c46b2bd06e706e9c5014da283ed9406049fa1a289ec1a6f8ba01b11b75f6cc",
+  "source_set_digest": "3cb680455543ca389223ea70b3fc8df336d081092f29c69e7a5afc1eef48eebe",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7283,7 +7283,7 @@
       "type": "task",
       "title": "A Word import whose question has only a points heading converts instead of crashing",
       "path": "docs/backlog/tasks/task-skript-40-04-24-a-word-import-whose-question-has-only-a-points-heading-converts-instead-of-crashing.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7294,7 +7294,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Admitted on focused proof under the user's light-route rule of 2026-10-21. Fail-first unit test for a question holding only its points heading passed after fix ff578404, merged as 73e76a57; the Hemma pre-push suite passed on main 57ecd182."
       }
     },
     {
@@ -7302,7 +7306,7 @@
       "type": "task",
       "title": "The Import view shows a question's Word source lines once",
       "path": "docs/backlog/tasks/task-skript-40-04-25-the-import-view-shows-a-question-s-word-source-lines-once.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7313,7 +7317,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Admitted on focused proof under the user's light-route rule of 2026-10-21. Fail-first unit test for repeated subpart anchors passed after fix b904c59f, merged as 57ecd182; the Hemma pre-push suite passed on main 57ecd182."
       }
     },
     {

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Admitted on focused proof under the user''s light-route rule of 2026-10-21. Fail-first unit test for a question holding only its points heading passed after fix ff578404, merged as 73e76a57; the Hemma pre-push suite passed on main 57ecd182.'
 task_kind: story
 acceptance_criteria:
   - When the grouping gives a question only a points-bearing heading, the DOCX import converts the exam, with that question kept, instead of raising IndexError in question_families
