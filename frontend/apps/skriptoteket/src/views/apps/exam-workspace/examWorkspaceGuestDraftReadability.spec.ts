@@ -31,10 +31,10 @@ const IDS: ExamWorkspaceGuestDraftIdSource = {
   uuid: () => "10000000-0000-4000-8000-000000000001",
 };
 
-const CURRENT_TOKEN = '"native_exam_document_v10"';
-const OLD_TOKEN = '"native_exam_document_v9"';
+const CURRENT_TOKEN = '"native_exam_document_v11"';
+const OLD_TOKEN = '"native_exam_document_v10"';
 
-/** Downgrade every stored document version token, like a draft saved before v10. */
+/** Downgrade every stored document version token, like a draft saved before v11. */
 function downgradeAll(draft: ExamWorkspaceGuestDraft): ExamWorkspaceGuestDraft {
   const downgraded: ExamWorkspaceGuestDraft = JSON.parse(
     JSON.stringify(draft).replaceAll(CURRENT_TOKEN, OLD_TOKEN),
@@ -81,7 +81,7 @@ describe("isGuestDraftReadable", () => {
   it("refuses a draft saved in an unknown future version", () => {
     const serialized = JSON.stringify(newGuestDraft(buildParentDocument(), IDS, [])).replaceAll(
       CURRENT_TOKEN,
-      '"native_exam_document_v11"',
+      '"native_exam_document_v12"',
     );
     const draft: ExamWorkspaceGuestDraft = JSON.parse(serialized);
 

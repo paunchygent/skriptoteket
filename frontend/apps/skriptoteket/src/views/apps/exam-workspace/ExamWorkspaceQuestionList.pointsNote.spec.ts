@@ -64,7 +64,7 @@ function mockupDocument(): NativeExamDocument {
       instruction: [paragraph("Del 3: Satslösning")],
     }],
     revision: 1,
-    schema_version: "native_exam_document_v10",
+    schema_version: "native_exam_document_v11",
     title: "Prov",
   };
 }

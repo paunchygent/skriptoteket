@@ -83,6 +83,14 @@ export function examWorkspaceSourcePointsDiffer(item: NativeExamItem): boolean {
   return item.points == null || !withinPrintedTolerance(source, item.points, 1);
 }
 
+/**
+ * The question's own lines printed two or more different values
+ * (TASK-SKRIPT-40-04-23 P8): it counts as differing whatever its points are.
+ */
+export function examWorkspaceSourcePointsConflict(item: NativeExamItem): boolean {
+  return item.conflicting_source_points.length > 1;
+}
+
 /** A question that carries a difference: its points are missing, or the source printed another number. */
 function printedQuestionDiffers(item: NativeExamItem): boolean {
   return item.points == null || examWorkspaceSourcePointsDiffer(item);

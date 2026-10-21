@@ -23,7 +23,7 @@ _SAMPLE = (
     Path(__file__).resolve().parents[1]
     / "fixtures"
     / "exam_workspace"
-    / "document_versions"
+    / "migration_74adf10e2441"
     / "native_exam_document_v10.json"
 )
 

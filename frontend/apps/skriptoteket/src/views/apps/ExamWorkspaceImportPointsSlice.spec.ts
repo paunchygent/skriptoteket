@@ -74,6 +74,11 @@ function question(sequence: number, points: number | null, source: number | null
   return { ...buildFreeTextItem(sequence), points, source_points: source };
 }
 
+/** A question whose own lines printed two different values: no single source value, both in print order. */
+function conflictQuestion(sequence: number, points: number | null, conflicting: number[]): NativeExamItem {
+  return { ...question(sequence, points, null), conflicting_source_points: conflicting };
+}
+
 function examOf(printed: number | null, points: (number | null)[], sources: (number | null)[]): NativeExamDocument {
   return {
     ...buildDocument(),
@@ -218,6 +223,21 @@ describe("the import-time points line", () => {
     expect(wrapper.find('[data-test="exam-workspace-row-item_001"]').exists()).toBe(true);
     expect(wrapper.find(IMPORT_LINE).exists()).toBe(false);
     expect(wrapper.find(ROW_MARK).exists()).toBe(false);
+  });
+
+  it("counts a two-value question in the line, marks its row amber and names both values (TASK-SKRIPT-40-04-23 P8)", async () => {
+    const document = examOf(null, [5, 3], [null, null]);
+    document.items = [conflictQuestion(1, 5, [4, 5]), question(2, 3, null)];
+    const { wrapper } = await importExam(document);
+    expect(lineText(wrapper)).toBe("1 fråga avviker från provtexten");
+    const marked = wrapper.findAll(ROW_MARK);
+    expect(marked).toHaveLength(1);
+    expect(wrapper.get('[data-test="exam-workspace-row-item_001"]').find(ROW_MARK).exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').find(ROW_MARK).exists()).toBe(false);
+
+    await selectItemRow(wrapper, "item_001");
+    await flushPromises();
+    expect(wrapper.get(SOURCE_HINT).text()).toBe("Provtexten: 4 p och 5 p");
   });
 
   it("leaves the exam and part total lines as they were and sits first in the floating stack", async () => {

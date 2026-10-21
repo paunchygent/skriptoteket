@@ -37,7 +37,7 @@ function documentWith(items: NativeExamItem[], overrides: Partial<NativeExamDocu
     origin: { kind: "created" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v10",
+    schema_version: "native_exam_document_v11",
     title: "Original",
     ...overrides,
   };
@@ -212,7 +212,7 @@ describe("diffPieces", () => {
       document_id: "00000000-0000-4000-8000-000000000002",
       origin: { kind: "docx_import" },
       revision: 9,
-      schema_version: "native_exam_document_v10",
+      schema_version: "native_exam_document_v11",
     };
     expect(diffPieces(base, meta).size).toBe(0);
   });

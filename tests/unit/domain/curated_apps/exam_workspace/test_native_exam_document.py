@@ -53,7 +53,7 @@ class TestSerializationRoundTrip:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_document_declares_the_current_schema(self) -> None:
-        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v10"
+        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v11"
 
     def test_saved_v1_payload_reports_an_outdated_schema(self) -> None:
         document = make_document(make_free_text_item())
@@ -117,6 +117,39 @@ class TestSerializationRoundTrip:
         assert parsed.items[0].leftover_points_text == "(3 poäng)"
         assert parsed.items[1].leftover_points_text is None
 
+    def test_saved_v10_payload_without_conflicting_source_points_reports_an_outdated_schema(
+        self,
+    ) -> None:
+        document = make_document(
+            make_free_text_item(sequence=1, item_id="item_001"),
+            make_free_text_item(sequence=2, item_id="item_002"),
+        )
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v10"
+        for item in payload["items"]:
+            del item["conflicting_source_points"]
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
+        assert exc_info.value.details == {"schema_version": "native_exam_document_v10"}
+
+    def test_conflicting_source_points_round_trip(self) -> None:
+        document = make_document(
+            make_free_text_item(sequence=1, item_id="item_001").model_copy(
+                update={"source_points": None, "conflicting_source_points": (4, 5)}
+            ),
+            make_free_text_item(sequence=2, item_id="item_002"),
+        )
+
+        parsed = parse_native_exam_document(native_exam_document_json_bytes(document))
+
+        assert parsed == document
+        assert parsed.items[0].conflicting_source_points == (4, 5)
+        assert parsed.items[0].source_points is None
+        assert parsed.items[1].conflicting_source_points == ()
+
     def test_missing_schema_version_stays_a_validation_error(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
@@ -127,7 +160,7 @@ class TestSerializationRoundTrip:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
-    def test_v10_header_with_dismissed_mark_is_refused(self) -> None:
+    def test_v11_header_with_dismissed_mark_is_refused(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         assert isinstance(payload["header"], dict)
@@ -229,7 +262,7 @@ class TestApiOutputSchema:
 
 class TestUntrustedDecodeContainment:
     def test_huge_integer_in_document_is_a_validation_error(self) -> None:
-        payload = b'{"schema_version": "native_exam_document_v10", "probe": ' + b"9" * 5000 + b"}"
+        payload = b'{"schema_version": "native_exam_document_v11", "probe": ' + b"9" * 5000 + b"}"
 
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(payload)

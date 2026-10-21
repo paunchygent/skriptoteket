@@ -56,6 +56,44 @@ describe("ExamWorkspacePointsField import-time source-points hint", () => {
     expect(hint.classes()).toContain("xw-warn");
   });
 
+  it("shows 'Provtexten: 4 p och 5 p' for a marked two-value question (TASK-SKRIPT-40-04-23 P8)", () => {
+    const item = {
+      ...buildFreeTextItem(1),
+      points: 5,
+      source_points: null,
+      conflicting_source_points: [4, 5],
+    };
+    const wrapper = mountField(item, new Set([item.item_id]));
+
+    const hint = wrapper.get(SOURCE);
+    expect(hint.text()).toBe("Provtexten: 4 p och 5 p");
+    expect(hint.classes()).toContain("xw-warn");
+  });
+
+  it("joins three printed values with comma and 'och', formatting decimals in Swedish", () => {
+    const item = {
+      ...buildFreeTextItem(1),
+      points: 5,
+      source_points: null,
+      conflicting_source_points: [4, 2.5, 3],
+    };
+    const wrapper = mountField(item, new Set([item.item_id]));
+
+    expect(wrapper.get(SOURCE).text()).toBe("Provtexten: 4 p, 2,5 p och 3 p");
+  });
+
+  it("shows nothing for an unmarked two-value question", () => {
+    const item = {
+      ...buildFreeTextItem(1),
+      points: 5,
+      source_points: null,
+      conflicting_source_points: [4, 5],
+    };
+    const wrapper = mountField(item, new Set(["item_999"]));
+
+    expect(wrapper.find(SOURCE).exists()).toBe(false);
+  });
+
   it("shows nothing when the id is not in the set", () => {
     const item = { ...buildFreeTextItem(1), points: 5, source_points: 4 };
     const wrapper = mountField(item, new Set(["item_999"]));

@@ -28,6 +28,10 @@ function question(itemId: string, points: number | null, source: number | null):
   return { ...newTeacherItem(itemId, 1, "free_text"), points, source_points: source };
 }
 
+function conflictQuestion(itemId: string, points: number | null, conflicting: number[]): NativeExamItem {
+  return { ...question(itemId, points, null), conflicting_source_points: conflicting };
+}
+
 describe("examWorkspaceSourcePointsDiffer", () => {
   it("counts another number and missing points against a printed value", () => {
     expect(examWorkspaceSourcePointsDiffer(question("a", 5, 4))).toBe(true);
@@ -58,6 +62,22 @@ describe("examWorkspaceImportPointsItemIds", () => {
 
   it("skips a listed id that names no question", () => {
     expect(examWorkspaceImportPointsItemIds(["part-1", "q1"], [question("q1", 5, 4)])).toEqual(["q1"]);
+  });
+
+  it("counts a two-value question whatever its points are (TASK-SKRIPT-40-04-23 P8)", () => {
+    const items = [
+      conflictQuestion("q1", 4, [4, 5]),
+      conflictQuestion("q2", 5, [4, 5]),
+      conflictQuestion("q3", null, [4, 5]),
+    ];
+
+    expect(examWorkspaceImportPointsItemIds(["q1", "q2", "q3"], items)).toEqual(["q1", "q2", "q3"]);
+  });
+
+  it("does not count an item with no conflicting values and no printed value", () => {
+    const items = [conflictQuestion("q1", 5, [])];
+
+    expect(examWorkspaceImportPointsItemIds(["q1"], items)).toEqual([]);
   });
 });
 
