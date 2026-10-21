@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b53ffe536de0da4379f2e5a716b0e5daddec4f43209ced5ff6f25a5a0e729f89",
+  "source_set_digest": "bf9589c708f722240b283e506d5311ac1c08de0055c88ae153403efc1324b3d5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7283,6 +7283,25 @@
       "type": "task",
       "title": "A Word import whose question has only a points heading converts instead of crashing",
       "path": "docs/backlog/tasks/task-skript-40-04-24-a-word-import-whose-question-has-only-a-points-heading-converts-instead-of-crashing.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-25",
+      "type": "task",
+      "title": "The Import view shows a question's Word source lines once",
+      "path": "docs/backlog/tasks/task-skript-40-04-25-the-import-view-shows-a-question-s-word-source-lines-once.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
