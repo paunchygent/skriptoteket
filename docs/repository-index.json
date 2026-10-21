@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7808fc8f98ba752703eff8c546e795473456b08afb34b9aa52d4e18c9f8404b0",
+  "source_set_digest": "9a819ae1e7d58aca03e39fe6fcf4293414880caf5c046fe73cc6f724a747f270",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7232,7 +7232,7 @@
       "type": "task",
       "title": "The public guest DigiExam converter line is removed",
       "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7244,8 +7244,10 @@
       "closeout_review": {
         "record": "inline",
         "status": "approved",
-        "reviewer": "ruthless-reviewer",
-        "decided_at": "2026-10-21"
+        "reviewer": "user",
+        "decided_at": "2026-10-21",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-21 (\"close 41-02-03 and keep working\", relayed by the Mac orchestrator) after Pi ruthless-reviewer e81a0e99 (changes_requested; medium F1-F2 repaired at c204d880 and bd7a57a7 and admitted on focused proof, retained root 01a15f53-3b1b-7dcd-8cae-f7e114f55406, evidence/reviews/review-ef65d98d.md), merge e6fee0d0 with the Hemma pre-push suite passing, and the Mac staging walk at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
