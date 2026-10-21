@@ -34,9 +34,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
     DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION,
-    DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
     DigiExamIntermediateExamSchemaVersion,
-    DigiExamIrManifestSchemaVersion,
 )
 
 DIGIEXAM_IR_SCHEMA_VERSION = DIGIEXAM_INTERMEDIATE_EXAM_SCHEMA_VERSION
@@ -107,54 +105,6 @@ class DigiExamIntermediateExam:
     manual_follow_ups: tuple[DigiExamIrManualFollowUp, ...]
 
 
-@dataclass(frozen=True)
-class DigiExamIrManifestAssetSummary:
-    """Deterministic asset summary for parity consumers."""
-
-    item_id: str
-    asset_id: str
-    source_image_index: int
-    sha256: str
-    media_type: str
-    byte_length: int
-    width_px: int
-    height_px: int
-    reference_count: int
-    reference_orders: tuple[int, ...]
-
-
-@dataclass(frozen=True)
-class DigiExamIrManifestItemSummary:
-    """Deterministic item summary for parity and audit manifests."""
-
-    item_id: str
-    sequence: int
-    title: str
-    item_type: DigiExamItemType
-    source_item_fingerprint: str
-    answer_key_provenance: DigiExamAnswerKeyProvenance
-    manual_follow_up_required: bool
-    asset_summaries: tuple[DigiExamIrManifestAssetSummary, ...]
-
-
-@dataclass(frozen=True)
-class DigiExamIrManifest:
-    """Deterministic renderer-neutral DigiExam manifest summary."""
-
-    schema_version: DigiExamIrManifestSchemaVersion
-    exam_schema_version: DigiExamIntermediateExamSchemaVersion
-    source_filename: str
-    source_producer: str | None
-    parse_status: DigiExamParseStatus
-    renderer_ready: bool
-    item_count: int
-    asset_count: int
-    asset_summaries: tuple[DigiExamIrManifestAssetSummary, ...]
-    warning_count: int
-    manual_follow_up_count: int
-    item_summaries: tuple[DigiExamIrManifestItemSummary, ...]
-
-
 def build_digiexam_intermediate_exam(parse_result: DigiExamParseResult) -> DigiExamIntermediateExam:
     """Build a renderer-neutral IR from one DigiExam parser result."""
 
@@ -212,48 +162,6 @@ def build_digiexam_intermediate_exam(parse_result: DigiExamParseResult) -> DigiE
     )
 
 
-def build_digiexam_ir_manifest(exam: DigiExamIntermediateExam) -> DigiExamIrManifest:
-    """Build a deterministic manifest summary from a DigiExam IR exam."""
-
-    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
-        source_item_fingerprint,
-    )
-
-    manual_item_ids = {follow_up.item_id for follow_up in exam.manual_follow_ups}
-    item_summaries = tuple(
-        DigiExamIrManifestItemSummary(
-            item_id=item.item_id,
-            sequence=item.sequence,
-            title=item.title,
-            item_type=item.item_type,
-            source_item_fingerprint=source_item_fingerprint(item),
-            answer_key_provenance=item.answer_key.provenance,
-            manual_follow_up_required=item.item_id in manual_item_ids,
-            asset_summaries=_asset_summaries(item),
-        )
-        for item in exam.items
-    )
-    asset_summaries = tuple(
-        asset_summary
-        for item_summary in item_summaries
-        for asset_summary in item_summary.asset_summaries
-    )
-    return DigiExamIrManifest(
-        schema_version=DIGIEXAM_IR_MANIFEST_SCHEMA_VERSION,
-        exam_schema_version=exam.schema_version,
-        source_filename=exam.source_filename,
-        source_producer=exam.source_producer,
-        parse_status=exam.parse_status,
-        renderer_ready=exam.renderer_ready,
-        item_count=len(exam.items),
-        asset_count=len(asset_summaries),
-        asset_summaries=asset_summaries,
-        warning_count=len(exam.warnings),
-        manual_follow_up_count=len(exam.manual_follow_ups),
-        item_summaries=item_summaries,
-    )
-
-
 def _item_manual_follow_ups(
     item_id: str, source_item: DigiExamItem
 ) -> tuple[DigiExamIrManualFollowUp, ...]:
@@ -303,31 +211,6 @@ def _item_manual_follow_ups(
 
 def _item_id(sequence: int) -> str:
     return f"item-{sequence:03d}"
-
-
-def _asset_summaries(item: DigiExamIrItem) -> tuple[DigiExamIrManifestAssetSummary, ...]:
-    summaries: list[DigiExamIrManifestAssetSummary] = []
-    for asset in item.embedded_assets:
-        reference_orders = tuple(
-            reference.reference_order
-            for reference in item.embedded_asset_references
-            if reference.asset_id == asset.asset_id
-        )
-        summaries.append(
-            DigiExamIrManifestAssetSummary(
-                item_id=item.item_id,
-                asset_id=asset.asset_id,
-                source_image_index=asset.source_image_index,
-                sha256=asset.sha256,
-                media_type=asset.media_type,
-                byte_length=asset.byte_length,
-                width_px=asset.width_px,
-                height_px=asset.height_px,
-                reference_count=len(reference_orders),
-                reference_orders=reference_orders,
-            )
-        )
-    return tuple(summaries)
 
 
 _MACHINE_MARKED_ITEM_TYPES = frozenset(

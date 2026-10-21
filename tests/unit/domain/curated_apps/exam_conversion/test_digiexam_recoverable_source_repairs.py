@@ -11,7 +11,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
-    build_digiexam_ir_manifest,
 )
 
 pytestmark = pytest.mark.unit
@@ -106,9 +105,8 @@ def test_unresolved_prompt_image_positions_stay_non_blocking_in_parser_and_ir() 
     assert image_warnings[0].message == CANONICAL_IMAGE_MESSAGE_FOR_QUESTION_1
 
     exam = build_digiexam_intermediate_exam(result)
-    manifest = build_digiexam_ir_manifest(exam)
-    assert manifest.renderer_ready is True
-    assert manifest.warning_count >= 1
+    assert exam.renderer_ready is True
+    assert len(exam.warnings) >= 1
 
 
 def test_referenced_invalid_image_payload_stays_non_blocking_in_parser() -> None:

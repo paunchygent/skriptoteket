@@ -69,7 +69,7 @@ Stop and report if a removed module turns out to serve another caller, or if the
   are gone.
 - Kept: `parse_source_exam` (moved with its module to `digiexam_source_parsing.py`)
   and `DigiExamDxeParser` for the workspace import; the Exam.net QTI writer and
-  PDF renderer providers, renamed to `di/examnet_export_writers.py`, which workspace exports use;
+  PDF renderer implementations, which `ExamWorkspacePublicProvider.export_renderer` builds for both export paths;
   the `exam_converter` public capability, which gates the public workspace. Its
   bootstrap now carries only scope, profile, frontend route, API namespace and
   runtime status, and takes title and summary from the registry.
@@ -86,3 +86,12 @@ Stop and report if a removed module turns out to serve another caller, or if the
   planner test are deleted.
 - Closed as superseded: TASK-SKRIPT-21-10-01 and ST-SKRIPT-21-10 (migrated to the
   current backlog profile); ADR-SKRIPT-0085 marked superseded by EPIC-SKRIPT-41.
+
+### Review repair 2026-10-21 (review `evidence/reviews/review-ef65d98d.md`, retained root 01a15f53)
+
+- F1: removed the unused `ExamNetExportWritersProvider`; the shared export
+  renderer is the only composition path for the Exam.net writers.
+- F2: removed the result-PDF answer-evidence path, the IR manifest and source
+  fingerprint builders, the IR-specific answer-key payload builders and two
+  orphaned PDF contracts; tests now assert workspace and intermediate-exam
+  outcomes directly.

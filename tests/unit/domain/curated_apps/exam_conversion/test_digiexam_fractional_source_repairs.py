@@ -3,13 +3,13 @@
 Purpose:
     Prove on synthetic fixtures only that valid positive fractional point
     values pass unchanged through parser, neutral IR,
-    fingerprints/JSON artifacts, and QTI scoring and
+    and QTI scoring and
     gap allocation without warnings or rounding; and that missing/blank
     titles keep the deterministic `Question N` fallback with item-bound
     non-blocking Swedish review information.
 
 Relationships:
-    - Exercises the parser, IR, QTI, and fingerprint boundaries
+    - Exercises the parser, IR, and QTI boundaries
       owned by `domain.curated_apps.exam_conversion`.
     - Copies no teacher-supplied `.dxe` files.
 """
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 import zipfile
-from dataclasses import asdict, replace
+from dataclasses import asdict
 from io import BytesIO
 from xml.etree import ElementTree
 
@@ -30,10 +30,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
-    build_digiexam_ir_manifest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
-    source_item_fingerprint,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_test_xml import (
     EXAMNET_QTI_ASSESSMENT_TEST_PATH,
@@ -133,7 +129,7 @@ def _find(root: ElementTree.Element, xpath: str) -> ElementTree.Element:
     return found
 
 
-def test_fractional_scores_survive_parser_ir_json_and_fingerprints() -> None:
+def test_fractional_scores_survive_parser_and_ir() -> None:
     result = DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
 
     assert result.status == DigiExamParseStatus.SUCCESS
@@ -161,35 +157,7 @@ def test_fractional_scores_survive_parser_ir_json_and_fingerprints() -> None:
     assert '"max_score": 10.5' in serialized
     assert '"max_score": 7.5' in serialized
 
-    first_fingerprint = source_item_fingerprint(exam.items[1])
-    second_fingerprint = source_item_fingerprint(
-        build_digiexam_intermediate_exam(
-            DigiExamDxeParser().parse_payload(
-                _fractional_payload(), filename="fractional-again.dxe"
-            )
-        ).items[1]
-    )
-    assert first_fingerprint == second_fingerprint
-    assert first_fingerprint.startswith("sha256:")
-
-    manifest = build_digiexam_ir_manifest(exam)
-    assert manifest.renderer_ready is True
-
-
-def test_fingerprints_distinguish_materially_different_fractional_scores() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
-    )
-    baseline = source_item_fingerprint(exam.items[1])
-
-    assert source_item_fingerprint(exam.items[1]) == baseline
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(exam.items[0])
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(
-        replace(exam.items[1], max_score=10.75)
-    )
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(
-        replace(exam.items[1], max_score=0.25)
-    )
+    assert exam.renderer_ready is True
 
 
 def test_small_fractional_score_survives_parser_to_neutral_ir_without_warnings() -> None:
