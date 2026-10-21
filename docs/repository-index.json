@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d909937b5f3d1a02b56fc4a8ccee7fb47973730ab0cff2703b80d7b086baeee6",
+  "source_set_digest": "b53ffe536de0da4379f2e5a716b0e5daddec4f43209ced5ff6f25a5a0e729f89",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7226,10 +7226,10 @@
       "closeout_review": {
         "record": "inline",
         "status": "approved",
-        "reviewer": "user",
+        "reviewer": "independent ruthless-reviewer",
         "decided_at": "2026-10-22",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "The user closed the task on 2026-10-22 after the Mac staging walks at 25c4ac01 (signed in and guest PASS) and at 18f045fc (W3 fix PASS: the Prov list shows a renamed title once the save finishes), and the D12 walk at ede1ea0d (an untitled guest draft moved to Mina filer as \"Namnlöst prov\" at sign-in) (Mac .artifacts/staging-walk-40-04-21/walk-record.md and .artifacts/staging-walk-closure-ede1ea0d/walk-record.md). Note, not a finding: the list entry Sparad time refreshes only on the next list load."
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent rereview approved F1-F5 (retained root 01a15f95-9eca-7a87-b3b5-4cb77a0761c6, evidence/reviews/review-40-04-21-f5-rereview5.md); merged at a8dd8fa4. Mac staging walk at 25c4ac01 passed signed in and as a guest and found W3; W3 was repaired on the light route (2585d641, focused proof in retained root 01a16066-477c-75b1-acc0-8c76298003b9 evidence/w3/), merged at 18f045fc with the Hemma pre-push suite passing, and the Mac re-walk at 18f045fc passed (Mac .artifacts/staging-walk-40-04-21/walk-record.md)."
       }
     },
     {
@@ -7276,6 +7276,25 @@
         "decided_at": "2026-10-22",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "The user closed the task on 2026-10-22 after the Mac walk at 25c4ac01 (PASS with W1 and W2), the repair merged at ede1ea0d, and the Mac re-walk at ede1ea0d (PASS): Fråga 1 shows \"Provtexten: 4 p och 3 p\", Fråga 2 shows \"4 p, 2,5 p och 3 p\", and the line reads \"2 frågor avviker från provtexten\" (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-24",
+      "type": "task",
+      "title": "A Word import whose question has only a points heading converts instead of crashing",
+      "path": "docs/backlog/tasks/task-skript-40-04-24-a-word-import-whose-question-has-only-a-points-heading-converts-instead-of-crashing.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
