@@ -1,14 +1,11 @@
-"""DigiExam `.dxe` source parser and result-answer enrichment rules.
+"""DigiExam `.dxe` source parser.
 
 Purpose:
-    Parse DigiExam `.dxe` JSON exports into the shared DigiExam parser contract
-    and optionally enrich machine-marked answer keys from sanitized graded
-    result-PDF text evidence.
+    Parse DigiExam `.dxe` JSON exports into the shared DigiExam parser contract,
+    preserving populated machine-marked answer keys from the `.dxe` source.
 
 Relationships:
     - Uses `domain.digiexam_contracts` for renderer-neutral parser output.
-    - Can consume typed result-PDF answer evidence when a caller provides it
-      without depending on PyMuPDF or renderer/import concerns.
 """
 
 from __future__ import annotations
@@ -37,16 +34,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_answer_enrichment import (
     dxe_gap_answers,
-    match_result_pdf_answers,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_embedded_assets import (
     extract_digiexam_embedded_assets,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
     missing_question_title_message,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
-    DigiExamResultPdfAnswerEvidence,
 )
 from skriptoteket.domain.errors import validation_error
 
@@ -71,8 +64,6 @@ class DigiExamDxeParser:
     def parse_file(
         self,
         path: Path,
-        *,
-        answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
     ) -> DigiExamParseResult:
         """Parse a `.dxe` file from disk."""
 
@@ -80,14 +71,13 @@ class DigiExamDxeParser:
             text = path.read_text(encoding="utf-8")
         except OSError as exc:
             return _blocked_parse(path.name, f"Could not read `.dxe` file: {exc}")
-        return self.parse_text(text, filename=path.name, answer_evidence=answer_evidence)
+        return self.parse_text(text, filename=path.name)
 
     def parse_text(
         self,
         text: str,
         *,
         filename: str,
-        answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
     ) -> DigiExamParseResult:
         """Parse `.dxe` JSON text without raising untyped JSON or shape errors."""
 
@@ -95,14 +85,13 @@ class DigiExamDxeParser:
             payload: object = json.loads(text)
         except JSONDecodeError as exc:
             return _blocked_parse(filename, f"Invalid `.dxe` JSON: {exc.msg}")
-        return self.parse_payload(payload, filename=filename, answer_evidence=answer_evidence)
+        return self.parse_payload(payload, filename=filename)
 
     def parse_payload(
         self,
         payload: object,
         *,
         filename: str,
-        answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
     ) -> DigiExamParseResult:
         """Parse a decoded `.dxe` JSON payload into the shared parser result."""
 
@@ -135,7 +124,7 @@ class DigiExamDxeParser:
                     )
                 )
                 continue
-            parsed = self._parse_question(index, question, answer_evidence)
+            parsed = self._parse_question(index, question)
             items.append(parsed.item)
             warnings.extend(parsed.warnings)
 
@@ -157,7 +146,6 @@ class DigiExamDxeParser:
         self,
         index: int,
         question: Mapping[str, object],
-        answer_evidence: DigiExamResultPdfAnswerEvidence | None,
     ) -> _QuestionParse:
         warnings: list[DigiExamWarning] = []
         span = _json_span(index)
@@ -222,39 +210,20 @@ class DigiExamDxeParser:
         )
         warnings.extend(embedded_assets.warnings)
 
-        evidence_item = answer_evidence.item_for_title(fallback_title) if answer_evidence else None
         dxe_correct_alternative_ids = tuple(
             alternative.id for alternative in alternatives if alternative.right
         )
         dxe_gap_values = tuple(
             validation for gap in gaps for validation in gap.validations if validation
         )
-        result_answer_match = match_result_pdf_answers(
-            alternatives=alternatives,
-            gaps=gaps,
-            evidence_item=evidence_item,
-            source_span=span,
-        )
-        warnings.extend(result_answer_match.warnings)
-        result_gap_values = tuple(
-            answer.value for answer in result_answer_match.correct_gap_answers
-        )
 
-        correct_alternative_ids = (
-            dxe_correct_alternative_ids
-            if dxe_correct_alternative_ids
-            else result_answer_match.correct_alternative_ids
-        )
-        correct_gap_values = dxe_gap_values if dxe_gap_values else result_gap_values
-        correct_gap_answers = (
-            dxe_gap_answers(gaps) if dxe_gap_values else result_answer_match.correct_gap_answers
-        )
+        correct_alternative_ids = dxe_correct_alternative_ids
+        correct_gap_values = dxe_gap_values
+        correct_gap_answers = dxe_gap_answers(gaps) if dxe_gap_values else ()
         provenance = _answer_key_provenance(
             item_type=item_type,
             dxe_correct_alternative_ids=dxe_correct_alternative_ids,
             dxe_gap_values=dxe_gap_values,
-            result_correct_alternative_ids=result_answer_match.correct_alternative_ids,
-            result_gap_values=result_gap_values,
         )
         if provenance == DigiExamAnswerKeyProvenance.ABSENT:
             warning_title = fallback_title
@@ -464,15 +433,11 @@ def _answer_key_provenance(
     item_type: DigiExamItemType,
     dxe_correct_alternative_ids: tuple[int, ...],
     dxe_gap_values: tuple[str, ...],
-    result_correct_alternative_ids: tuple[int, ...],
-    result_gap_values: tuple[str, ...],
 ) -> DigiExamAnswerKeyProvenance:
     if item_type == DigiExamItemType.OPEN_ENDED:
         return DigiExamAnswerKeyProvenance.NOT_APPLICABLE
     if dxe_correct_alternative_ids or dxe_gap_values:
         return DigiExamAnswerKeyProvenance.DXE_POPULATED_KEY
-    if result_correct_alternative_ids or result_gap_values:
-        return DigiExamAnswerKeyProvenance.GRADED_RESULT_PDF_CORRECT_LABELS
     if item_type in {
         DigiExamItemType.SINGLE_CHOICE,
         DigiExamItemType.MULTIPLE_RESPONSE,

@@ -23,9 +23,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIntermediateExam,
     build_digiexam_intermediate_exam,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
-    DigiExamResultPdfAnswerEvidence,
-)
 from skriptoteket.domain.errors import validation_error
 
 if TYPE_CHECKING:
@@ -39,7 +36,6 @@ _INVALID_DXE_MESSAGE = "Filen kunde inte tolkas som en DigiExam-export (.dxe)."
 def parse_source_exam(
     *,
     upload: "ConversionHubUpload",
-    answer_evidence: DigiExamResultPdfAnswerEvidence | None = None,
 ) -> DigiExamIntermediateExam:
     """Parse one uploaded `.dxe` export into the renderer-neutral IR."""
     try:
@@ -49,7 +45,6 @@ def parse_source_exam(
     parse_result = DigiExamDxeParser().parse_text(
         text,
         filename=upload.filename,
-        answer_evidence=answer_evidence,
     )
     if parse_result.status is DigiExamParseStatus.BLOCKED and not parse_result.items:
         raise validation_error(_INVALID_DXE_MESSAGE)

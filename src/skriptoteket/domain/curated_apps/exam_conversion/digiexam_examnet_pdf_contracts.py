@@ -12,7 +12,6 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -66,15 +65,6 @@ class DigiExamExamNetPdfAssetFile:
 
 
 @dataclass(frozen=True)
-class DigiExamExamNetPdfAssetPreparation:
-    """Asset materialization plan plus item/image reference lookup."""
-
-    asset_files: tuple[DigiExamExamNetPdfAssetFile, ...]
-    asset_paths_by_reference: Mapping[AssetReferenceKey, str]
-    warnings: tuple[DigiExamExamNetPdfWarning, ...]
-
-
-@dataclass(frozen=True)
 class DigiExamExamNetPdfPromptRender:
     """Sanitized prompt HTML plus target-renderer warnings."""
 
@@ -87,14 +77,6 @@ class DigiExamExamNetPdfItemRender:
     """One rendered Exam.net PDF-converter item section."""
 
     html: str
-
-
-@dataclass(frozen=True)
-class DigiExamExamNetPdfItemRenderResult:
-    """Rendered item sections plus target-renderer warnings."""
-
-    items: tuple[DigiExamExamNetPdfItemRender, ...]
-    warnings: tuple[DigiExamExamNetPdfWarning, ...]
 
 
 @dataclass(frozen=True)
