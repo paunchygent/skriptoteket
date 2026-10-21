@@ -40,8 +40,8 @@ import {
 import type { Router } from "vue-router";
 import { createMemoryHistory, createRouter } from "vue-router";
 
-const CURRENT_TOKEN = "native_exam_document_v10";
-const OLD_TOKEN = "native_exam_document_v9";
+const CURRENT_TOKEN = "native_exam_document_v11";
+const OLD_TOKEN = "native_exam_document_v10";
 
 const slot = vi.hoisted((): { stored: StoredGuestDraft | null } => ({ stored: null }));
 

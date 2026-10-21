@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e76bc2e6a65012a636626a4d5ade110c67279a729e339676c16e1f35f0f83cb2",
+  "source_set_digest": "94195ded5f1fea8041749f9bb3cc03f299bb8817c8bd7bd0092111eb2b48d2f4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7152,7 +7152,7 @@
       "type": "task",
       "title": "After an import the question list warns about questions whose points differ from the source",
       "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

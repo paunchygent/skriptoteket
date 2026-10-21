@@ -67,6 +67,8 @@ export type ExamWorkspaceConversionBinding = {
   isSaving: () => boolean;
   /** The store the document reads and the import lifecycle run through. */
   store: ExamWorkspaceStore;
+  /** An import started here names its exam, for the import-time points check (TASK-SKRIPT-40-04-23). */
+  noteImportStarted: (lineageId: string) => void;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
@@ -426,6 +428,7 @@ export function useExamWorkspaceConversion(
       if (isQtiPackageFile(file)) {
         const lineageId = await importQtiPackage(binding.store, file, courseKey);
         if (pollGeneration !== generation || lineageId === null) return;
+        binding.noteImportStarted(lineageId);
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;
         await openImported(lineageId);
@@ -439,6 +442,7 @@ export function useExamWorkspaceConversion(
         : teacher.importExamWorkspaceDocument;
       const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
+      binding.noteImportStarted(status.lineage_id);
       isConverting.value = true;
       conversionStatus.value = status;
       await refreshConversion(pollGeneration);

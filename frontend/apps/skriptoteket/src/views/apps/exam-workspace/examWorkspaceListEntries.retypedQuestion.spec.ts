@@ -35,7 +35,7 @@ function documentWith(item: NativeExamItem): NativeExamDocument {
     origin: { kind: "created" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v10",
+    schema_version: "native_exam_document_v11",
     title: "Prov",
   };
 }

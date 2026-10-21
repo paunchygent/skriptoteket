@@ -22,10 +22,12 @@
  *     one-question retries through their own composables.
  *   - The open lifecycle (token-held read, rename reconciliation) in
  *     `useExamWorkspaceDocumentOpen`.
+ *   - Conflict reload reads in `useExamWorkspaceDocumentReload`, which owns
+ *     the busy wait, the fence and lineage guards, and the failure toast.
  *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
  */
 
-import { computed, ref, shallowRef, watch } from "vue";
+import { computed, ref, shallowRef } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
@@ -34,7 +36,6 @@ import type {
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
-import { useToast } from "../../../composables/useToast";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
@@ -46,13 +47,15 @@ import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
 import { useExamWorkspaceDocumentOpen } from "./useExamWorkspaceDocumentOpen";
+import { useExamWorkspaceDocumentReload } from "./useExamWorkspaceDocumentReload";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
+import { useExamWorkspaceImportPoints } from "./useExamWorkspaceImportPoints";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
-import { RELOAD_FAILURE_COPY, useExamWorkspaceSave } from "./useExamWorkspaceSave";
+import { useExamWorkspaceSave } from "./useExamWorkspaceSave";
 import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
 import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
@@ -96,7 +99,6 @@ export type ExamWorkspaceDocumentOptions = {
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
   const fallbackFence = createSyncFence();
-  const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
   const isReadOnly = options.isReadOnly ?? (() => false);
   const store = options.store;
@@ -162,7 +164,12 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     selectedItemId,
     store,
   });
-  const { beginDocumentRead, isOpenReading, openDocument } = openScope;
+  const { beginDocumentRead, isOpenReading } = openScope;
+  /** Every open ends the import-time points check; an import's own open keeps it pending. */
+  function openDocument(lineageId: string, token: FenceToken): Promise<ExamWorkspaceRouteOpenOutcome> {
+    importPoints.noteOpening(lineageId);
+    return openScope.openDocument(lineageId, token);
+  }
   const {
     adoptConversion,
     conversionError,
@@ -189,10 +196,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       summary,
       workspaceDocument,
       store,
+      noteImportStarted: (lineageId) => importPoints.noteImportStarted(lineageId),
     },
     (lineageId) => options.submitRoute(lineageId),
   );
   adoptConversionHolder = adoptConversion;
+  const importPoints = useExamWorkspaceImportPoints({
+    lineageId: () => summary.value?.lineage_id ?? null,
+    settled: () => !isImporting.value && !isConverting.value,
+  });
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
@@ -238,57 +250,19 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     return openExam.value === opening;
   }
 
-  /**
-   * Read the exam again, also the conflict recovery of undo and the server
-   * commands. A 409 during an operation waits for it to end; a retired
-   * answer installs nothing. The initiating context must still own the
-   * install: when another exam replaced the captured one while this reload
-   * waited or read, the reload drops instead of seizing the newer target.
-   */
-  async function reloadDocument(): Promise<void> {
-    const currentSummary = summary.value;
-    if (!currentSummary) return;
-    const lineageId = currentSummary.lineage_id;
-    const fence = resolveFence();
-    const token = fence.begin();
-    if (isOperationBusy.value) {
-      // A busy-time 409 waits for the operation instead of skipping the
-      // reload; the watch resolves when the operation clears without a timer.
-      await new Promise<void>((resolve) => {
-        const stop = watch(isOperationBusy, (busy) => {
-          if (!busy) { stop(); resolve(); }
-        }, { immediate: true });
-      });
-    }
-    if (!fence.isCurrent(token)) {
-      // The wait outlived the generation: no independent handoff may seize a
-      // newer target, so the retired reload drops without installing anything.
-      return;
-    }
-    if (summary.value?.lineage_id !== lineageId) {
-      return;
-    }
-    operationBusy.value = true;
-    try {
-      const reconcile = beginDocumentRead();
-      const response = reconcile(
-        await store.shared.getExamWorkspaceDocument(lineageId),
-      );
-      if (!fence.isCurrent(token)) {
-        return;
-      }
-      if (summary.value?.lineage_id !== lineageId) {
-        return;
-      }
-      applyResponse(token, response);
-      keying.invalidateCopy();
-      replacingScope.replayArrivalsAfterReload();
-    } catch {
-      toast.failure(RELOAD_FAILURE_COPY);
-    } finally {
-      operationBusy.value = false;
-    }
-  }
+  // Conflict reload reads; later-defined keying and arrival replay arrive
+  // as closures, as the open scope already does with `keying`.
+  const { reloadDocument } = useExamWorkspaceDocumentReload({
+    summary,
+    resolveFence,
+    isOperationBusy,
+    operationBusy,
+    beginDocumentRead,
+    store,
+    applyResponse,
+    invalidateCopy: () => keying.invalidateCopy(),
+    replayArrivalsAfterReload: () => replacingScope.replayArrivalsAfterReload(),
+  });
 
   function selectItem(itemId: string): void {
     selectedItemId.value = itemId;
@@ -454,6 +428,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     retryConversionStatus,
     importBlocked,
     importDocument,
+    /** Right after an import here, its points check shows until Avfärda or the next open (TASK-SKRIPT-40-04-23). */
+    importPointsShown: importPoints.shown,
+    dismissImportPoints: importPoints.dismiss,
     isBusy,
     isDirty,
     isOpenBlockedByOtherOperation,

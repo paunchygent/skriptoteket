@@ -47,7 +47,9 @@ def apply_printed_points(
     """Give every question's one item its printed points or its share of its part, in that
     order.
 
-    A question that prints its points keeps them. Inner parts score first. In each part, the
+    A question that prints its points keeps them. A question whose own lines print two
+    different values keeps those values on its item instead, with no source points
+    (TASK-SKRIPT-40-04-23 P8). Inner parts score first. In each part, the
     total less the points of its other questions goes to the questions that print none: one
     such question takes the exact remainder. An outer part ("Del 1") shares its total only
     over its questions that print no points and lie in no inner part ("Uppgift 1.2 (3 p)"):
@@ -97,6 +99,12 @@ def apply_printed_points(
     for number, question in enumerate(printed.questions):
         if question.points is not None and (item := member(number)) is not None:
             score(item, question, question.points, estimated=False)
+    for number, question in enumerate(printed.questions):
+        if len(question.values) > 1 and (item := member(number)) is not None:
+            conflict = item.model_copy(
+                update={"source_points": None, "conflicting_source_points": question.values}
+            )
+            scored = [conflict if entry.item_id == item.item_id else entry for entry in scored]
     # Inner parts (no part label) score their questions before an outer part shares its total,
     # and an outer part's total checks a parent after an inner part over the same items.
     inner_first = sorted(printed.parts, key=lambda p: p.identity is not None)

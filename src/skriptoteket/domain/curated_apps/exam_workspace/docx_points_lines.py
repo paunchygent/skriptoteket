@@ -58,6 +58,7 @@ class PrintedQuestion:
 
     ``prints`` is true when its span prints points; ``points`` is their one distinct value,
     such as a heading's "(4 p)" with its "/4 p" line, and None when the lines differ.
+    ``values`` holds the distinct values those lines print, in print order.
     ``lines`` holds the anchors of exactly those own lines (``lines[number]`` minus
     ``closers``), heading lines included, that set ``prints`` and ``points``.
     """
@@ -66,6 +67,7 @@ class PrintedQuestion:
     prints: bool
     points: int | float | None
     lines: tuple[str, ...] = ()
+    values: tuple[int | float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -264,6 +266,7 @@ def printed_points_plan(
             prints=bool(own_lines := [i for i in lines.get(number, ()) if i not in closers]),
             points=_one_value(totals[i] for i in own_lines),
             lines=tuple(chunks[i].anchor for i in own_lines),
+            values=tuple(dict.fromkeys(totals[i] for i in own_lines)),
         )
         for number, own in enumerate(questions)
     )

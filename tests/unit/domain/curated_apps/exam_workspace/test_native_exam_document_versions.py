@@ -213,7 +213,7 @@ class TestReaderVersions:
         document = make_document(make_free_text_item())
         assert parse_native_exam_document(native_exam_document_json_bytes(document)) == document
 
-    @pytest.mark.parametrize("version", [9, 11])
+    @pytest.mark.parametrize("version", [10, 12])
     def test_below_oldest_and_above_current_are_outdated(self, version: int) -> None:
         raw = f"native_exam_document_v{version}"
         with pytest.raises(DomainError) as exc_info:
@@ -248,6 +248,6 @@ class TestReaderVersions:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_readability_matches_oldest_to_current(self) -> None:
-        assert is_readable_native_exam_document_version(10) is True
-        assert is_readable_native_exam_document_version(9) is False
-        assert is_readable_native_exam_document_version(11) is False
+        assert is_readable_native_exam_document_version(11) is True
+        assert is_readable_native_exam_document_version(10) is False
+        assert is_readable_native_exam_document_version(12) is False

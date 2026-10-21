@@ -55,6 +55,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
     sequence,
     source_anchor: null,
     source_points: null,
+    conflicting_source_points: [],
     suggested_kind: null,
     tick_points: null,
   };
@@ -82,7 +83,7 @@ function document(
     origin: { kind: "docx_import" },
     parents,
     revision,
-    schema_version: "native_exam_document_v10",
+    schema_version: "native_exam_document_v11",
     title: "Prov",
   };
 }

@@ -77,6 +77,9 @@ class NativeExamItem(BaseModel):
     # The points the source printed for this question; None when it printed none, for
     # a share of a part total, and for teacher-created and split questions.
     source_points: int | float | None = None
+    # The different points the question's own lines print, in print order, when they
+    # print more than one value (TASK-SKRIPT-40-04-23 P8); source_points is then None.
+    conflicting_source_points: tuple[int | float, ...] = ()
     # Trailing points wording whose number differs from points (D7)
     leftover_points_text: str | None = None
     choices: tuple[NativeChoice, ...] = ()
@@ -141,6 +144,10 @@ class NativeExamItem(BaseModel):
                 raise ValueError("suggested kind must match the retry source's label kind")
         if self.points_estimated and self.points is None:
             raise ValueError("estimated points require points")
+        if self.conflicting_source_points and (
+            len(set(self.conflicting_source_points)) < 2 or self.source_points is not None
+        ):
+            raise ValueError("conflicting source points need two values and no source points")
         choice_ids = [choice.choice_id for choice in self.choices]
         gap_ids = [gap.gap_id for gap in self.gaps]
         if len(set(choice_ids)) != len(choice_ids):

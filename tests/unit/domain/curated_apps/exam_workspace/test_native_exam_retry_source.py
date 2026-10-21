@@ -467,3 +467,58 @@ def test_a_source_picture_without_a_declared_asset_is_rejected():
             items=(item,),
             origin=NativeExamDocumentOrigin(kind="created"),
         )
+
+
+def test_replacement_item_keeps_a_saved_printed_points_conflict():
+    original = _item("item_002", 2, anchor="body:0002")
+    original = original.model_copy(
+        update={
+            "retry_source": _source(own=("body:0002",)),
+            "source_points": None,
+            "conflicting_source_points": (4, 5),
+        }
+    )
+    produced = _item("item_001", 1, anchor="body:0009", text="Omskriven fråga?")
+    produced = produced.model_copy(update={"source_points": 2})
+
+    replacement = replacement_item(original=original, produced=produced)
+
+    assert replacement.conflicting_source_points == (4, 5)
+    assert replacement.source_points is None
+
+
+def test_replacement_item_keeps_a_single_printed_value_unchanged():
+    original = _item("item_002", 2, anchor="body:0002")
+    original = original.model_copy(
+        update={"retry_source": _source(own=("body:0002",)), "source_points": 4}
+    )
+    produced = _item("item_001", 1, anchor="body:0009", text="Omskriven fråga?")
+    produced = produced.model_copy(update={"source_points": 2})
+
+    replacement = replacement_item(original=original, produced=produced)
+
+    assert replacement.conflicting_source_points == ()
+    assert replacement.source_points == 2
+
+
+def test_source_review_item_keeps_a_saved_printed_points_conflict():
+    original = _item("item_002", 2, anchor="body:0002", text="Gammal text")
+    original = original.model_copy(
+        update={
+            "retry_source": _source(own=("body:0002",)),
+            "source_points": None,
+            "conflicting_source_points": (4, 5),
+        }
+    )
+    source = _source(own=("body:0002",))
+
+    review = source_review_item(
+        original=original,
+        source=source,
+        assets={},
+        payloads={},
+        reason="Kunde inte tolkas.",
+    )
+
+    assert review.conflicting_source_points == (4, 5)
+    assert review.source_points is None

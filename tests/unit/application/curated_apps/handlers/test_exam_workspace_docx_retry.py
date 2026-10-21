@@ -16,6 +16,9 @@ import pytest
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundFailure,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
@@ -249,3 +252,61 @@ async def test_the_replacement_keeps_the_draft_items_place(env: Env) -> None:
     assert response.item.item_id == "item_002"
     assert response.item.sequence == 2
     assert response.item.source_anchor == "body:0002"
+
+
+async def test_retry_success_keeps_a_saved_printed_points_conflict(env: Env) -> None:
+    lineage_id = uuid4()
+    saved = make_item("item_001", 1, anchor="body:0001", source=make_source())
+    saved = saved.model_copy(update={"source_points": None, "conflicting_source_points": (4, 5)})
+    document = make_document(lineage_id=lineage_id, items=(saved,))
+    await env.seed(document)
+    env.exchange.reply = make_retry_reply(text="Förklara vattnets kretslopp kortfattat.")
+
+    response = await env.retry(document)
+
+    item = response.item
+    assert item.conflicting_source_points == (4, 5)
+    assert item.source_points is None
+    NativeExamItem.model_validate(item.model_dump())
+    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert "Förklara vattnets kretslopp kortfattat." in item.plain_text_lines()
+
+
+async def test_a_disabled_ai_keeps_a_saved_printed_points_conflict() -> None:
+    env = Env(enabled=False)
+    lineage_id = uuid4()
+    saved = make_item("item_001", 1, anchor="body:0001", source=make_source())
+    saved = saved.model_copy(update={"source_points": None, "conflicting_source_points": (4, 5)})
+    document = make_document(lineage_id=lineage_id, items=(saved,))
+    await env.seed(document)
+
+    response = await env.retry(document)
+
+    item = response.item
+    assert item.conflicting_source_points == (4, 5)
+    assert item.source_points is None
+    assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+
+
+async def test_a_provider_failure_keeps_a_saved_printed_points_conflict(env: Env) -> None:
+    lineage_id = uuid4()
+    saved = make_item("item_001", 1, anchor="body:0001", source=make_source())
+    saved = saved.model_copy(update={"source_points": None, "conflicting_source_points": (4, 5)})
+    document = make_document(lineage_id=lineage_id, items=(saved,))
+    await env.seed(document)
+    env.exchange.failure = DocxBuildRoundFailure(
+        "AI-tjänsten är inte tillgänglig. Kontrollera källtexten manuellt.",
+        code="provider_unavailable",
+    )
+
+    response = await env.retry(document)
+
+    item = response.item
+    assert item.conflicting_source_points == (4, 5)
+    assert item.source_points is None
+    assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert item.review.reasons == (
+        "AI-tjänsten är inte tillgänglig. Kontrollera källtexten manuellt.",
+    )

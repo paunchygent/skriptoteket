@@ -18,7 +18,8 @@
  *   followed by two compact glyph-only buttons: confirm ("Godta frågornas
  *   summa, {sum} p", clears that line's own stored printed total) and
  *   continue ("Visa frågorna", selects the line's target, hidden when the
- *   line has none).
+ *   line has none). Right after an import, one more line names the
+ *   questions whose points differ from the source, first in the stack.
  *   A line goes as soon as its level agrees. Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
@@ -52,6 +53,7 @@ import ExamWorkspaceQuestionListHead from "./ExamWorkspaceQuestionListHead.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
+import { examWorkspaceNextImportPointsTarget } from "./examWorkspaceImportPoints";
 import { buildExamWorkspaceNoteLines } from "./examWorkspaceNoteLines";
 import type { ExamWorkspaceNoteLine as NoteLine } from "./examWorkspaceNoteLines";
 import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
@@ -69,6 +71,8 @@ const props = withDefaults(
     total: number;
     /** One entry per printed total that differs from its questions' sum: the exam first, then parts in order. */
     mismatches: PrintedTotalMismatch[];
+    /** The differing questions' ids in list order; a non-empty list shows the import line first. */
+    importPointsIds: string[];
     canAdd: boolean;
     /** The workspace is busy: the lines' buttons wait like the list's other actions. */
     disabled: boolean;
@@ -91,6 +95,8 @@ const emit = defineEmits<{
   add: [kind: TeacherItemKind | "instruction" | "part"];
   group: [itemIds: string[]];
   clearPrintedTotal: [parentId: string | null];
+  /** The teacher hides the import line and every mark. */
+  dismissImportPoints: [];
   close: [];
   /** The resize handle reports a dragged or stepped width in px. */
   set: [px: number];
@@ -100,12 +106,22 @@ const emit = defineEmits<{
   "toggle-collapse": [];
 }>();
 
-/** The footer note lines in order, named with the list's part numbers. */
-const lines = computed<NoteLine[]>(() => buildExamWorkspaceNoteLines(props.mismatches, props.entries));
+/** The footer note lines in order: the import line first, then the printed-total lines. */
+const lines = computed<NoteLine[]>(() =>
+  buildExamWorkspaceNoteLines(props.mismatches, props.entries, props.importPointsIds),
+);
 
-/** Each line's glyph-only actions; a second line kind adds its branch here. */
+/** The differing ids for the row marks. */
+const importPointsIdSet = computed(() => new Set(props.importPointsIds));
+
+/** Each line's glyph-only actions; a further line kind adds its branch here. */
 function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
   switch (line.kind) {
+    case "import-points":
+      return [
+        { dataTest: "exam-workspace-import-points-show", key: "show", label: "Visa frågorna", meaning: "continue" },
+        { dataTest: "exam-workspace-import-points-dismiss", key: "dismiss", label: "Avfärda", meaning: "close" },
+      ];
     case "printed-total": {
       const changeLabel = `Godta frågornas summa, ${examWorkspaceFormatExactPoints(line.sum)} p`;
       const actions: ExamWorkspaceNoteLineAction[] = [
@@ -117,7 +133,7 @@ function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
       return actions;
     }
     default: {
-      const exhaustive: never = line.kind;
+      const exhaustive: never = line;
       return exhaustive;
     }
   }
@@ -125,6 +141,20 @@ function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
 
 function handleNoteAction(line: NoteLine, key: string): void {
   switch (line.kind) {
+    case "import-points": {
+      if (key === "show") {
+        const target = examWorkspaceNextImportPointsTarget(line.itemIds, props.selectedId);
+        if (target !== null) {
+          emit("select", target);
+        }
+        return;
+      }
+      if (key === "dismiss") {
+        emit("dismissImportPoints");
+        return;
+      }
+      return;
+    }
     case "printed-total":
       if (key === "change") {
         emit("clearPrintedTotal", line.parentId);
@@ -136,7 +166,7 @@ function handleNoteAction(line: NoteLine, key: string): void {
       }
       return;
     default: {
-      const exhaustive: never = line.kind;
+      const exhaustive: never = line;
       return exhaustive;
     }
   }
@@ -280,6 +310,7 @@ async function expandFromGlyph(): Promise<void> {
               :disabled="disabled"
               :marking="marking"
               :marked="marked.has(entry.id)"
+              :points-differ="importPointsIdSet.has(entry.id)"
               @select="emit('select', $event)"
               @toggle-mark="toggleMark"
             />
@@ -298,7 +329,7 @@ async function expandFromGlyph(): Promise<void> {
           <ExamWorkspaceNoteLine
             v-for="line in lines"
             :key="line.key"
-            data-test="exam-workspace-printed-total-line"
+            :data-test="line.kind === 'import-points' ? 'exam-workspace-import-points-line' : 'exam-workspace-printed-total-line'"
             :text="line.text"
             :actions="actionsFor(line)"
             :disabled="disabled"
