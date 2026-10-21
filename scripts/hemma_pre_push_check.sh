@@ -46,7 +46,17 @@ fi
 # routes. Args: $1 = commit sha, $2 = run_migrations flag (0/1). Keep it
 # self-contained (no outer locals) so the ssh route can send it with declare -f.
 run_verify_steps() {
-  local target_sha="$1" want_migrations="$2"
+  local target_sha="$1" want_migrations="$2" name
+  # The hook runs inside pre-commit's pre-push environment, so PRE_COMMIT_*
+  # and GIT_* variables from the outer push leak in here. The ssh route runs
+  # in a fresh login shell and never sees them, so strip every such variable
+  # (names computed from the environment, not a hard-coded list) to give both
+  # routes the same clean environment for the verification steps.
+  while IFS= read -r name; do
+    case "$name" in
+      PRE_COMMIT_* | GIT_*) unset "$name" ;;
+    esac
+  done < <(compgen -e)
   git checkout -q --detach "$target_sha" &&
     pdm sync -q --clean &&
     pdm run fe-install --frozen-lockfile --silent &&
