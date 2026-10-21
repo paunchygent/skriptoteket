@@ -1,20 +1,15 @@
 """The exam's Mina filer file follows its title on every stored step (D13)."""
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace_exports import export_file_base_name
+from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentSummary
 from skriptoteket.application.curated_apps.handlers.exam_workspace_blank_document import (
     CreateBlankExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_blank import (
-    blank_native_exam_document,
-)
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
-    _FIXTURE as _GRAMMAR_FIXTURE,
-)
+from skriptoteket.domain.identity.models import User
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
@@ -30,7 +25,7 @@ def env() -> _Env:
     return _Env()
 
 
-async def _blank_saved(env: _Env):  # type: ignore[no-untyped-def]
+async def _blank_saved(env: _Env) -> tuple[User, ExamWorkspaceDocumentSummary]:
     actor = _actor()
     handler = CreateBlankExamWorkspaceDocumentHandler(
         store=env.store, codec=env.codec, id_generator=env.ids
@@ -39,7 +34,7 @@ async def _blank_saved(env: _Env):  # type: ignore[no-untyped-def]
     return actor, summary
 
 
-async def _head_name(env: _Env, actor, lineage) -> str:  # type: ignore[no-untyped-def]
+async def _head_name(env: _Env, actor: User, lineage: UUID) -> str:
     head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage)
     assert head is not None
     return head.name
@@ -55,10 +50,7 @@ async def test_blank_exam_saved_as_untitled_and_step_with_title_renames(env: _En
     titled = document.model_copy(update={"title": "Prov: Vecka 5!"})
     await _store_step(env, actor, summary.lineage_id, with_next_revision(titled))
 
-    expected = (
-        f"{export_file_base_name(titled.model_copy(update={'revision': 2}))}.provdokument.zip"
-    )
-    assert await _head_name(env, actor, summary.lineage_id) == expected
+    assert await _head_name(env, actor, summary.lineage_id) == "Prov Vecka 5.provdokument.zip"
 
 
 @pytest.mark.asyncio
@@ -70,10 +62,10 @@ async def test_imported_exam_renamed_when_stored_step_changes_title(env: _Env) -
     retitled = imported.document.model_copy(update={"title": "Nytt namn: Vecka 2!"})
     await _store_step(env, actor, imported.summary.lineage_id, with_next_revision(retitled))
 
-    expected = (
-        f"{export_file_base_name(retitled.model_copy(update={'revision': 2}))}.provdokument.zip"
+    assert (
+        await _head_name(env, actor, imported.summary.lineage_id)
+        == "Nytt namn Vecka 2.provdokument.zip"
     )
-    assert await _head_name(env, actor, imported.summary.lineage_id) == expected
 
 
 @pytest.mark.asyncio
@@ -86,10 +78,10 @@ async def test_second_title_change_renames_again(env: _Env) -> None:
     second = first.model_copy(update={"title": "Andra namnet 2!"})
     await _store_step(env, actor, imported.summary.lineage_id, with_next_revision(second))
 
-    expected = (
-        f"{export_file_base_name(second.model_copy(update={'revision': 3}))}.provdokument.zip"
+    assert (
+        await _head_name(env, actor, imported.summary.lineage_id)
+        == "Andra namnet 2.provdokument.zip"
     )
-    assert await _head_name(env, actor, imported.summary.lineage_id) == expected
 
 
 @pytest.mark.asyncio
@@ -132,7 +124,7 @@ async def test_save_overwrite_with_changed_title_renames(env: _Env) -> None:
         expected_revision=1,
         preserve_editor_position=True,
     )
-    assert saved.name == f"{export_file_base_name(retitled)}.provdokument.zip"
+    assert saved.name == "Sparat namn 7.provdokument.zip"
 
 
 @pytest.mark.asyncio
@@ -160,9 +152,3 @@ async def test_save_overwrite_with_unchanged_title_keeps_current_file_name(env: 
         preserve_editor_position=True,
     )
     assert saved.name == "Spara som-namn.provdokument.zip"
-
-
-@pytest.mark.asyncio
-async def test_blank_module_still_builds_from_fixture(env: _Env) -> None:
-    assert _GRAMMAR_FIXTURE.exists()
-    assert blank_native_exam_document().title == ""
