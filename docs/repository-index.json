@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8c0969d1ef4cb9b2bf5f7541cdc89ad39257379e963b5ceecde7fad4a0be9768",
+  "source_set_digest": "1c5436b781b36abceb0755213f7b828ea6bbd146a35b1911a8c0d4df30ecc794",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7186,7 +7186,7 @@
       "type": "task",
       "title": "A new exam starts from Nytt prov in the workspace toolbar",
       "path": "docs/backlog/tasks/task-skript-40-04-21-a-new-exam-starts-from-nytt-prov-in-the-workspace-toolbar.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7197,7 +7197,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "independent ruthless-reviewer",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent rereview approved F1-F5 (retained root 01a15f95-9eca-7a87-b3b5-4cb77a0761c6, evidence/reviews/review-40-04-21-f5-rereview5.md); merged at a8dd8fa4. Mac staging walk at 25c4ac01 passed signed in and as a guest and found W3; W3 was repaired on the light route (2585d641, focused proof in retained root 01a16066-477c-75b1-acc0-8c76298003b9 evidence/w3/), merged at 18f045fc with the Hemma pre-push suite passing, and the Mac re-walk at 18f045fc passed (Mac .artifacts/staging-walk-40-04-21/walk-record.md)."
       }
     },
     {

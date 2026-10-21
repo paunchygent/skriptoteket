@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: independent ruthless-reviewer
+  decided_at: '2026-10-22'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent rereview approved F1-F5 (retained root 01a15f95-9eca-7a87-b3b5-4cb77a0761c6, evidence/reviews/review-40-04-21-f5-rereview5.md); merged at a8dd8fa4. Mac staging walk at 25c4ac01 passed signed in and as a guest and found W3; W3 was repaired on the light route (2585d641, focused proof in retained root 01a16066-477c-75b1-acc0-8c76298003b9 evidence/w3/), merged at 18f045fc with the Hemma pre-push suite passing, and the Mac re-walk at 18f045fc passed (Mac .artifacts/staging-walk-40-04-21/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - A "Nytt prov" button is the first action in the exam workspace header toolbar for signed-in teachers and guests, and one click opens a new untitled exam with one empty question, ready to edit
@@ -162,3 +166,8 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 ### 2026-10-21 (repair owner, W3 Prov list title)
 
 - W3 repaired: a confirmed title save now carries the saved title onto the open summary and its Prov list entry at once (`useExamWorkspaceDocumentInstalls.noteStored` via the existing `recordSummary`; no extra request); proof logs in retained root `01a16066-477c-75b1-acc0-8c76298003b9` `evidence/w3/` (new `useExamWorkspaceSavedList.titleSave.spec.ts` fails before, passes after; full exam-workspace suite 298 files / 2248 tests; `fe-type-check`, `fe-lint`). Residual: the renamed file name and saved-at in the row meta refresh on the next list load. Owed: independent review.
+
+### 2026-10-22 (Hemma orchestrator, closeout)
+
+- Mac re-walk at `18f045fc`, PASS: after a rename from "Vattnets kretslopp: prov 1" to "prov 2", the Prov list entry showed the new title as soon as the save finished, with no reload. The entry's "Sparad" time and file name update on the next list load, as before; this is accepted and not a finding.
+- Closed: independent review approved, W3 admitted on focused proof under the user's light-route rule, and both walks passed.
