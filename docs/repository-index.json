@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "12d17cfbd580248fff44e62651de5b7acf5c18fb10677547981893076d0d5e31",
+  "source_set_digest": "af1fac7f7d835cba292ac90773816bf378cb0d60089b74ae446fe93fbbdfff80",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7082,6 +7082,46 @@
         "decided_at": "2026-10-20",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User closed 40-04-20 on 2026-10-20 in the Hemma orchestrator session. Pi ruthless-reviewer 1b2189ee (root 01a15992 evidence/reviews/task-skript-40-04-20-717a8628-review.md) ended changes_requested with mediums F1-F4 only, repaired at 00f540c1 and admitted by the parent on focused proof (541 passed). Domain suite at 5dc5b835: 5730 backend, 3 docker integration, 2095 Vitest. Merged on main 43f47eda; pre-push suite passed. Mac staging walk PASS at a8de9ae6 on the user's imported exam: bold runs and paragraph space in the editor and Forhandsgranska (Mac .artifacts/staging-walk-e4d15c4a/walk-record.md, last section). The DOCX student copy was not walked; unit tests cover it. Empty imported paragraphs go to a separate fix."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-21",
+      "type": "task",
+      "title": "A signed-in teacher starts a blank exam from Tomt prov",
+      "path": "docs/backlog/tasks/task-skript-40-04-21-a-signed-in-teacher-starts-a-blank-exam-from-tomt-prov.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-22",
+      "type": "task",
+      "title": "Signing out shows no saved-exam list error",
+      "path": "docs/backlog/tasks/task-skript-40-04-22-signing-out-shows-no-saved-exam-list-error.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-21"
       }
     },
     {

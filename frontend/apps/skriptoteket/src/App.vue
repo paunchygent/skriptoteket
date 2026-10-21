@@ -4,11 +4,13 @@
  *
  * This component hosts the global layouts and auth-reactive route recovery so
  * protected curated-app routes keep their entry contracts intact through the
- * dedicated `/auth/login` page contract.
+ * dedicated `/auth/login` page contract. The signed-out frame never renders a
+ * route that needs sign-in: sign-out and session expiry clear the user before
+ * the shell leaves the route, and the page must not mount again signed out.
  */
 
 import { computed, defineAsyncComponent, nextTick, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, type RouteLocationNormalizedLoaded } from "vue-router";
 
 import AuthLayout from "./components/layout/AuthLayout.vue";
 import LandingLayout from "./components/layout/LandingLayout.vue";
@@ -54,14 +56,16 @@ onMounted(() => {
   void auth.bootstrap();
 });
 
-const isProtectedRoute = computed(() => {
-  return route.matched.some((record) => {
+function requiresSignIn(target: RouteLocationNormalizedLoaded): boolean {
+  return target.matched.some((record) => {
     if (record.meta.requiresAuth) {
       return true;
     }
     return typeof record.meta.minRole === "string";
   });
-});
+}
+
+const isProtectedRoute = computed(() => requiresSignIn(route));
 
 watch(
   () => route.fullPath,
@@ -133,7 +137,10 @@ async function onLogout(): Promise<void> {
               :key="viewRoute.path"
               class="route-stage-item"
             >
-              <component :is="Component" />
+              <component
+                :is="Component"
+                v-if="!requiresSignIn(viewRoute)"
+              />
             </div>
           </Transition>
         </RouterView>
