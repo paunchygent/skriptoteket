@@ -312,6 +312,50 @@ def test_a_question_numbered_like_its_page_with_space_below_is_kept() -> None:
     ]
 
 
+def _title_page_then(pages: str) -> str:
+    """A title page whose text starts well below the top margin, then ``pages``."""
+    return '<p style="margin-top: 80pt">Prov i engelska</p>' + pages
+
+
+@pytest.mark.parametrize(
+    "heading", ["Uppgift {page}", "{page}"], ids=["uppgift-heading", "bare-number"]
+)
+def test_a_body_size_line_numbered_like_its_page_with_a_gap_after_it_is_kept(
+    heading: str,
+) -> None:
+    pages = "".join(
+        '<section style="page-break-before: always">'
+        f'<p style="margin-bottom: 40pt">{heading.format(page=page)}</p>'
+        "<p>Beskriv ett val som huvudpersonen gör.</p></section>"
+        for page in range(2, 5)
+    )
+    chunks = _chunks(_title_page_then(pages), css="body { margin: 0; }")
+
+    assert _texts(chunks) == [
+        "Prov i engelska",
+        *(
+            text
+            for page in range(2, 5)
+            for text in (heading.format(page=page), "Beskriv ett val som huvudpersonen gör.")
+        ),
+    ]
+
+
+def test_a_body_size_page_counter_set_off_from_the_body_is_dropped() -> None:
+    pages = "".join(
+        '<section style="page-break-before: always">'
+        f'<p style="margin-bottom: 40pt">Engelska 1 – sida {page}</p>'
+        f"<p>Fråga {10 + page}. Svara på frågan.</p></section>"
+        for page in range(2, 5)
+    )
+    chunks = _chunks(_title_page_then(pages), css="body { margin: 0; }")
+
+    assert _texts(chunks) == [
+        "Prov i engelska",
+        *(f"Fråga {10 + page}. Svara på frågan." for page in range(2, 5)),
+    ]
+
+
 def test_two_columns_read_left_column_then_right_after_the_full_width_heading() -> None:
     paragraphs = "".join(
         f"<p>Kolumnstycke {index} med lite text som fyller ut kolumnen ordentligt.</p>"

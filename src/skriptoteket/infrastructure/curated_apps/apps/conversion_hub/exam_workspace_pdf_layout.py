@@ -43,6 +43,12 @@ _DIGITS = re.compile(r"\d+")
 # the reader cannot tell, it keeps the line: a stray header in a question is harmless, a
 # dropped question is lost.
 _SMALLER_POINTS = 0.6
+# At body size, a page-matching number is a page counter only in pagination wording: after
+# "sida", "s.", "page" or "p.", or as the N of "N av M" / "N of M". A bare number, as in
+# "Uppgift 3" or a lone "3", stays text: a stray page number is harmless, a lost heading
+# is not.
+_COUNTER_BEFORE = re.compile(r"(?:\bsida|\bs\.|\bpage|\bp\.)\s*$", re.IGNORECASE)
+_COUNTER_AFTER = re.compile(r"^\s*(?:av|of)\s+\d", re.IGNORECASE)
 _DEFAULT_PITCH_RATIO = 1.35
 
 # Page-furniture band: the outer share of the page height where headers and footers sit,
@@ -477,10 +483,17 @@ def _set_apart(
     if edges is None:
         return False
     top_edge, bottom_edge = edges
+    changing = [
+        position
+        for position in range(len(seen[0][2]))
+        if len({numbers[position] for _, _, numbers, _ in seen}) > 1
+    ]
     for page, _, _, line in seen:
         height = heights[page - 1]
         if line.size < body - _SMALLER_POINTS:
             continue
+        if not all(_counter_form(line, position) for position in changing):
+            return False
         if line.top < height / 2:
             if top_edge * height - line.bottom <= pitch:
                 return False
@@ -489,12 +502,25 @@ def _set_apart(
     return True
 
 
-def _is_page_number(line: PdfLine, page: int, page_count: int) -> bool:
-    """A lone page number ("3", "Sida 3 av 5") that names the page it sits on."""
+def _counter_form(line: PdfLine, position: int) -> bool:
+    """The line's ``position``-th number stands in pagination wording."""
+    text = " ".join(line.text.split())
+    match = list(_DIGITS.finditer(text))[position]
+    return (
+        _COUNTER_BEFORE.search(text[: match.start()]) is not None
+        or _COUNTER_AFTER.match(text[match.end() :]) is not None
+    )
+
+
+def _is_page_number(line: PdfLine, page: int, page_count: int, body: float) -> bool:
+    """A lone page number ("3", "Sida 3 av 5") that names the page it sits on, in a
+    smaller font than the body text or, at body size, in pagination wording."""
     if _PAGE_NUMBER.fullmatch(line.text.strip()) is None:
         return False
     numbers = _line_numbers(line)
-    return numbers[0] == page and all(number == page_count for number in numbers[1:])
+    if numbers[0] != page or any(number != page_count for number in numbers[1:]):
+        return False
+    return line.size < body - _SMALLER_POINTS or _counter_form(line, 0)
 
 
 def _furniture_candidates(items: Sequence[PdfItem], height: float) -> list[PdfLine]:
@@ -533,10 +559,11 @@ def _without_page_furniture(
         and _numbers_match_pages(seen)
         and _set_apart(seen, pages, heights)
     }
+    body, _ = _body_size_and_pitch(pages, frozenset())
     dropped = {
         id(line)
         for page, lines in enumerate(candidates, start=1)
         for line in lines
-        if _line_shape(line) in repeated or _is_page_number(line, page, len(pages))
+        if _line_shape(line) in repeated or _is_page_number(line, page, len(pages), body)
     }
     return [[item for item in items if id(item) not in dropped] for items in pages]
