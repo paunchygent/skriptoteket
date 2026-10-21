@@ -245,3 +245,36 @@ async def test_handoff_stores_the_posted_notes_in_the_created_container() -> Non
     vault_file = next(iter(env.vault_files.files.values()))
     container = env.codec.parse(content=await env.store.load(actor=actor, vault_file=vault_file))
     assert container.notes == ("Fråga 3 hoppades över.",)
+
+
+async def test_handoff_names_an_empty_title_namnlos_prov_and_keeps_it_empty() -> None:
+    env = _Env()
+    actor = _actor()
+    handler = _handler(env, FakeUow())
+
+    created = await handler.handle(
+        actor=actor, draft_id=uuid4(), document=_guest_document(""), assets_by_id={}, notes=()
+    )
+
+    assert created.document.title == ""
+    assert created.saved_document.title == ""
+    assert created.summary.name == "Namnlöst prov.provdokument.zip"
+
+
+async def test_handoff_never_numbers_an_empty_title() -> None:
+    env = _Env()
+    actor = _actor()
+    handler = _handler(env, FakeUow())
+
+    first = await handler.handle(
+        actor=actor, draft_id=uuid4(), document=_guest_document(""), assets_by_id={}, notes=()
+    )
+    second = await handler.handle(
+        actor=actor, draft_id=uuid4(), document=_guest_document(""), assets_by_id={}, notes=()
+    )
+
+    assert first.document.title == ""
+    assert second.document.title == ""
+    assert first.summary.name == "Namnlöst prov.provdokument.zip"
+    assert second.summary.name == "Namnlöst prov.provdokument.zip"
+    assert env.index.locks == []

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-04-21
 title: A new exam starts from Nytt prov in the workspace toolbar
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-21'
 status: ready
 closeout_review:
@@ -13,11 +13,9 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A "Nytt prov" button is the first action in the exam workspace header toolbar for
-  signed-in teachers and guests, and one click opens a new untitled exam with one
-  empty question, ready to edit
-- A signed-in teacher's new exam is saved at once and appears in the Prov list
-- The import drawer has no new-exam control, and the guest "Tomt prov" button is gone
+  - A "Nytt prov" button is the first action in the exam workspace header toolbar for signed-in teachers and guests, and one click opens a new untitled exam with one empty question, ready to edit
+  - A signed-in teacher's new exam is saved at once and appears in the Prov list
+  - The import drawer has no new-exam control, and the guest "Tomt prov" button is gone
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -60,29 +58,29 @@ One click on "Nytt prov" as a signed-in teacher: the open exam, if any, is saved
 
 The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21; the decided terms below close them.
 
-| ID | Question | Closed by |
-| --- | --- | --- |
-| U1 | Wording and placement | D1, D2 |
-| U2 | Empty-state text | D7 |
-| U3 | When the new exam is saved | D4 |
-| U4 | Course | D5 |
+| ID  | Question                   | Closed by |
+| --- | -------------------------- | --------- |
+| U1  | Wording and placement      | D1, D2    |
+| U2  | Empty-state text           | D7        |
+| U3  | When the new exam is saved | D4        |
+| U4  | Course                     | D5        |
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | A "Nytt prov" button is the first action in the exam workspace header toolbar, before Öppna: Nytt prov, Öppna, Spara som, Exportera, Importera. It has the same button style as its neighbours and a document-plus icon. The wording is "nytt", not "tomt". |
-| D2  | The import drawer is unchanged apart from D8: it has no new-exam control. |
-| D3  | A click opens a new untitled exam with one empty question, ready to edit. |
-| D4  | A signed-in teacher's new exam is saved at once and appears in the Prov list. The existing rule that export needs a title still applies. |
-| D5  | Course and other details are set in "Uppgifter" as for any other exam. The import drawer's "Kurs (valfritt)" stays tied to imports. |
-| D6  | If another exam is open, it is saved first, as when switching with Öppna today. There is no confirm dialog. |
-| D7  | The empty-state text when no exam is open is "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam." |
-| D8  | Guests get the same "Nytt prov" toolbar button, backed by the existing public blank route. The guest "Tomt prov" button in the import drawer is removed, with no old wording or alias kept. This replaces the earlier term B1 ("guest path unchanged"). |
-| D9  | Guests only: when the open browser draft has content, "Nytt prov" first shows a confirm, "Det öppna provet ersätts av ett nytt. Exportera det först om du vill behålla det.", with Ersätt and Avbryt. Avbryt keeps the draft unchanged. A guest with an empty draft gets no confirm. Signed-in teachers get no dialog; D6 stands for them. User decision 2026-10-21. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A "Nytt prov" button is the first action in the exam workspace header toolbar, before Öppna: Nytt prov, Öppna, Spara som, Exportera, Importera. It has the same button style as its neighbours and a document-plus icon. The wording is "nytt", not "tomt".                                                                                                                                                                 |
+| D2  | The import drawer is unchanged apart from D8: it has no new-exam control.                                                                                                                                                                                                                                                                                                                                                   |
+| D3  | A click opens a new untitled exam with one empty question, ready to edit.                                                                                                                                                                                                                                                                                                                                                   |
+| D4  | A signed-in teacher's new exam is saved at once and appears in the Prov list. The existing rule that export needs a title still applies.                                                                                                                                                                                                                                                                                    |
+| D5  | Course and other details are set in "Uppgifter" as for any other exam. The import drawer's "Kurs (valfritt)" stays tied to imports.                                                                                                                                                                                                                                                                                         |
+| D6  | If another exam is open, it is saved first, as when switching with Öppna today. There is no confirm dialog.                                                                                                                                                                                                                                                                                                                 |
+| D7  | The empty-state text when no exam is open is "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam."                                                                                                                                                                                                                                                                                         |
+| D8  | Guests get the same "Nytt prov" toolbar button, backed by the existing public blank route. The guest "Tomt prov" button in the import drawer is removed, with no old wording or alias kept. This replaces the earlier term B1 ("guest path unchanged").                                                                                                                                                                     |
+| D9  | Guests only: when the open browser draft has content, "Nytt prov" first shows a confirm, "Det öppna provet ersätts av ett nytt. Exportera det först om du vill behålla det.", with Ersätt and Avbryt. Avbryt keeps the draft unchanged. A guest with an empty draft gets no confirm. Signed-in teachers get no dialog; D6 stands for them. User decision 2026-10-21.                                                        |
 | D10 | The document-plus icon is a new `file-new` glyph meaning (Lucide FilePlus) in the shared design-system glyph set in skill-repository (`resources/frontend-design-system/huleedu-integrated/`), added through that repository's change route as this task's first unit and synced into the Skriptoteket mirror, as TASK-SKRIPT-40-04-17 added its glyphs. Components never import Lucide directly. User decision 2026-10-21. |
-| D11 | An untitled exam's file name in Mina filer, and its label in the Prov list while it has no title, is "Namnlöst prov". The title itself stays empty until the teacher sets it in Uppgifter; once it has a title, the title is shown. User decision 2026-10-21. |
-| D12 | The guest sign-in draft move (`exam_workspace_guest_draft_handoff.py`) names a draft with an empty title "Namnlöst prov" under D11. A failing test first proves the current rejection of an empty title, then the fix makes it pass. User decision 2026-10-21. |
+| D11 | An untitled exam's file name in Mina filer, and its label in the Prov list while it has no title, is "Namnlöst prov". The title itself stays empty until the teacher sets it in Uppgifter; once it has a title, the title is shown. User decision 2026-10-21.                                                                                                                                                               |
+| D12 | The guest sign-in draft move (`exam_workspace_guest_draft_handoff.py`) names a draft with an empty title "Namnlöst prov" under D11. A failing test first proves the current rejection of an empty title, then the fix makes it pass. User decision 2026-10-21.                                                                                                                                                              |
 
 ## Progress
 

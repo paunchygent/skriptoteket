@@ -170,6 +170,10 @@ class ImportExamWorkspaceQtiDocumentHandlerProtocol(Protocol):
     ) -> ExamWorkspaceDocumentSummary: ...
 
 
+class CreateBlankExamWorkspaceDocumentHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User) -> ExamWorkspaceDocumentSummary: ...
+
+
 class GetExamCourseCatalogHandlerProtocol(Protocol):
     async def handle(self, *, actor: User) -> ExamCourseCatalogResponse: ...
 

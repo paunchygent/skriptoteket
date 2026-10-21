@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from dishka import Provider, Scope, provide
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_blank_document import (
+    CreateBlankExamWorkspaceDocumentHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
 )
@@ -31,6 +34,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_pa
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
+    CreateBlankExamWorkspaceDocumentHandlerProtocol,
     ExamNetQtiPackageReaderProtocol,
     ExamWorkspaceContainerCodecProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
@@ -126,4 +130,16 @@ class ExamWorkspaceImportProvider(Provider):
         """Provide the signed-in QTI import handler."""
         return ImportExamWorkspaceQtiDocumentHandler(
             parse=parse, store=store, codec=codec, id_generator=id_generator
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def create_blank_handler(
+        self,
+        store: ExamWorkspaceDocumentStore,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        id_generator: IdGeneratorProtocol,
+    ) -> CreateBlankExamWorkspaceDocumentHandlerProtocol:
+        """Provide the signed-in blank exam handler."""
+        return CreateBlankExamWorkspaceDocumentHandler(
+            store=store, codec=codec, id_generator=id_generator
         )
