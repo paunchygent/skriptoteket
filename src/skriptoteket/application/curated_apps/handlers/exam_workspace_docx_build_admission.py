@@ -22,7 +22,8 @@ every entry when it opens a parent (``parent_openers``: DEL 4 over one question 
 ruling 2026-10-18), and every entry for a question outside its part when it heads its one
 question (review-2 F1, review-3 N1). An entry holding no question anchor is
 no item (review-3 N2). Every moved line is recorded once; unless an item of its part lists it,
-it stands as an instruction, which placement puts at its part's parent or question. Building
+it stands as an instruction, which placement puts at its part's parent or question. The reply's
+copy of a moved line leaves the item body with its anchor (review F1, 2026-10-21). Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A context the grouping gives a question as its owner
 that no entry holds joins that question's item as its source paragraphs, and joins its review
@@ -176,7 +177,12 @@ def _built(
 
 
 def _admit_item(
-    index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
+    index: int,
+    raw: JsonValue,
+    state: DocxBuildState,
+    seen: set[str],
+    item_held: frozenset[str],
+    part_lines: tuple[str, ...],
 ) -> None:
     try:
         produced = ProducedItem.model_validate(raw)
@@ -305,6 +311,10 @@ def _admit_item(
             - state.context_anchors
         )
         foreign_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in foreign)
+        # A part line that left an entry is its part's source, never this item's content: the
+        # reply's copy of it, whole or a fragment, leaves the body with its anchor (F1).
+        released = set(part_lines) - shown
+        released_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in released)
         scored = with_printed_points(
             with_accepted_forms(produced, context),
             (chunk for chunk in own if chunk.kind != "heading"),
@@ -313,6 +323,7 @@ def _admit_item(
             scored,
             chunks=own,
             foreign_chunks=foreign_chunks,
+            released_chunks=released_chunks,
             language=state.language,
             formatting_observer=lambda path: state.record_formatting(
                 path, item=index, anchors=anchors
@@ -426,7 +437,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         for raw in items
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
-    items, moved = _without_part_lines(items, state)
+    items, part_lines = _without_part_lines(items, state)
     # An entry listing another question's owned context is its questions' source-review
     # item, and the context joins its owner's item (review-3 N5, parent ruling 2026-10-18 a).
     foreign = without_foreign_contexts(items, state)
@@ -453,7 +464,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         admit_metadata(raw, "instructions", state, seen, item_held)
     # Every moved part line is recorded; one no item of its part lists is an instruction,
     # which placement places.
-    if moved := free_anchors(moved, state, seen):
+    if moved := free_anchors(part_lines, state, seen):
         state.record("admission", "part_heading_moved", anchors=moved)
     if unheld := tuple(a for a in moved if a not in item_held):
         seen.update(unheld)
@@ -461,7 +472,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         moved_lines = (ProducedMetadata(text=by[a].text, source_anchors=(a,)) for a in unheld)
         state.instructions = (*state.instructions, *moved_lines)
     for index, raw in enumerate(items):
-        _admit_item(index, raw, state, seen, item_held)
+        _admit_item(index, raw, state, seen, item_held, part_lines)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}
     state.claimed.update(seen - conflicted)
     # A governing chunk with text becomes its section parent's instruction (D40).

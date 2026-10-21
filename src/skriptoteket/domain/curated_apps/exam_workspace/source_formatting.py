@@ -38,7 +38,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import 
     visible_intervals,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_misplaced_paragraph import (
+    holds_released,
     is_misplaced,
+    is_released,
     rebuild_misplaced,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
@@ -59,10 +61,15 @@ class SourceFormatting(SourceIndex):
         ignored: tuple[str, ...] = (),
         excluded: tuple[tuple[int, int], ...] = (),
         foreign: tuple[str, ...],
+        released: tuple[str, ...] = (),
     ) -> None:
         super().__init__(chunks, ignored=ignored, excluded=excluded)
         self.foreign_normalized = tuple(
             normalized_source_index(chunk_text)[0] for chunk_text in foreign
+        )
+        # Part lines moved out of the reply's entries: their copy is no paragraph of the item.
+        self.released_normalized = tuple(
+            normalized_source_index(chunk_text)[0] for chunk_text in released
         )
         self.cursor = 0
         self.path = "exact"
@@ -157,7 +164,8 @@ class SourceFormatting(SourceIndex):
         answers: dict[str, tuple[str, ...]] | None = None,
     ) -> tuple[NativeParagraph, ...]:
         """Project the reply's body; a paragraph whose text is another question's source is
-        not this item's content, so it is rebuilt from this item's own source (D4)."""
+        not this item's content, so it is rebuilt from this item's own source (D4). A paragraph
+        whose text is a released part line is its part's source and leaves the body (F1)."""
         result: list[NativeParagraph] = []
         for paragraph in body:
             checkpoint = self.cursor
@@ -173,7 +181,14 @@ class SourceFormatting(SourceIndex):
                 self.cursor = checkpoint
                 self.covered = coverage_before
                 self.projected = projected_before
-                if is_misplaced(self, paragraph):
+                if is_released(self, paragraph):
+                    produced = []
+                elif holds_released(self, paragraph):
+                    # The part line and the question's text share one reply paragraph, which
+                    # no alignment separates: the item's body is rebuilt from its own source,
+                    # or the question stays for source review when it cannot be (F1).
+                    raise FormattingTransferError("released part line inside a reply paragraph")
+                elif is_misplaced(self, paragraph):
                     produced = rebuild_misplaced(self)
                 else:
                     aligned = self._aligned(paragraph, answers or {})

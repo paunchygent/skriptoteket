@@ -38,6 +38,42 @@ def is_misplaced(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
     never a match straddling the boundary between two chunks. Ownership is a property of
     this item's whole own source, never of the rendering cursor: text occurring anywhere in
     this item's own normalized source is owned even when the cursor has consumed its span."""
+    return _repeats(source, paragraph, source.foreign_normalized)
+
+
+def is_released(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
+    """Whether a text-only reply paragraph is a part line admission moved out of the reply's
+    entries (review F1, user ruling 2026-10-18 DEL 4): its whole text is one released line's
+    source span, whole or a fragment, and no text of this item's own source. Such a paragraph
+    is the part's source, which its parent shows, so it leaves the body without a rebuild."""
+    return _repeats(source, paragraph, source.released_normalized)
+
+
+def holds_released(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
+    """Whether a reply paragraph holds released part-line source beside other text, where this
+    item's own source holds no such text: the part's source shares the paragraph with the
+    question's, and no source alignment separates them (review F1). The released source is a
+    whole released line anywhere in the paragraph, or a fragment of one that opens or closes
+    the paragraph at a word boundary."""
+    text = "".join(segment.text for segment in paragraph.segments if segment.kind == "text")
+    wanted, _ = normalized_source_index(text)
+    lines = tuple(line for line in source.released_normalized if line)
+    if any(line in wanted and line not in source.normalized for line in lines):
+        return True
+    words = wanted.split(" ")
+    edges = (
+        edge
+        for cut in range(1, len(words))
+        for edge in (" ".join(words[:cut]), " ".join(words[cut:]))
+    )
+    return any(
+        edge not in source.normalized and any(edge in line for line in lines) for edge in edges
+    )
+
+
+def _repeats(source: SourceFormatting, paragraph: NativeParagraph, others: tuple[str, ...]) -> bool:
+    """Whether the paragraph's whole text lies inside one of ``others`` and nowhere in this
+    item's own normalized source."""
     if any(segment.kind != "text" for segment in paragraph.segments):
         return False
     text = "".join(segment.text for segment in paragraph.segments if segment.kind == "text")
@@ -46,7 +82,7 @@ def is_misplaced(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
         return False
     if wanted in source.normalized:
         return False
-    return any(wanted in chunk for chunk in source.foreign_normalized)
+    return any(wanted in chunk for chunk in others)
 
 
 def rebuild_misplaced(source: SourceFormatting) -> list[tuple[NativeParagraph, int]]:
