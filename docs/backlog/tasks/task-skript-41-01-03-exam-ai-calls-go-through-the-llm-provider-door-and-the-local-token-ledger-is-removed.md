@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-41-01-03
-title: Exam AI calls go through the LLM provider door and the local token ledger is
-  removed
+title: Exam AI calls go through the LLM provider door and the local token ledger is removed
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: ready
 closeout_review:
@@ -14,10 +13,10 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Answer keys, DOCX conversion, labeling and content tags call the LLM provider door with the internal key and the teacher's user id, on GPT-6 Luna low
-- The token lease, the OpenAI key settings and the GLM failover are removed, and a guard test fails when a paid call bypasses the door client
-- A door limit 429 shows the limit note with no toast; admin users are sent exempt; the paid-overage override is one call at a time
-- A staging walk shows an answer-key suggestion through the door
+  - Answer keys, DOCX conversion, labeling and content tags call the LLM provider door with the internal key and the teacher's user id, on GPT-6 Luna low
+  - The token lease, the OpenAI key settings and the GLM failover are removed, and a guard test fails when a paid call bypasses the door client
+  - A door limit 429 shows the limit note with no toast; admin users are sent exempt; the paid-overage override is one call at a time
+  - A staging walk shows an answer-key suggestion through the door
 story: ST-SKRIPT-41-01
 backlog_document_profile: contract-derived
 ---
@@ -47,11 +46,13 @@ Units: 1. door client and settings; 2. each exam provider through it, Luna 6 low
 
 ## Stop Conditions
 
-Stop and report if TASK-HULE-14-03-01 is not deployed for staging, or if a recorded replay cannot be served at the door client boundary.
+Stop and report if a recorded replay cannot be served at the door client boundary. Build and test every unit now; only the staging walk waits until the HuleEdu door is reachable from Skriptoteket staging and HuleEdu staging serves the door from real OpenAI (C4).
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| C1  | ST-SKRIPT-41-01 B1-B6 apply as written. |
-| C2  | One door client owns the internal key, the user id, the exempt flag and the override; providers keep their request bodies. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | ST-SKRIPT-41-01 B1-B6 apply as written.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| C2  | One door client owns the internal key, the user id, the exempt flag and the override; providers keep their request bodies.                                                                                                                                                                                                                                                                                                                   |
+| C3  | Network: HuleEdu staging attaches `llm_provider_service` to `hule-network`, the shared cross-app network; Skriptoteket stays off HuleEdu's internal network. This task joins Skriptoteket's worker to `hule-network` (the web is already on it). One `HULEEDU_INTERNAL_API_KEY` goes into both staging `.env` files, set by the HuleEdu attach. Production needs the same attach when ST-SKRIPT-41-01 ships. (Mac orchestrator, 2026-10-22.) |
+| C4  | The staging walk uses real OpenAI: HuleEdu staging switches the door off its mock for the walk. (User, 2026-10-22, relayed by the Mac orchestrator.)                                                                                                                                                                                                                                                                                         |
