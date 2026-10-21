@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a0058fa9041ea4be51db155edd73345d29853fa3f7d354c11f0c5a79a8fd29da",
+  "source_set_digest": "5f5b59b3db8a257de8b7970724a46a315838ef01630a0321a7c32fe3a25b16ff",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7094,6 +7094,25 @@
       "title": "A signed-in teacher starts a blank exam from Tomt prov",
       "path": "docs/backlog/tasks/task-skript-40-04-21-a-signed-in-teacher-starts-a-blank-exam-from-tomt-prov.md",
       "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-22",
+      "type": "task",
+      "title": "Signing out shows no saved-exam list error",
+      "path": "docs/backlog/tasks/task-skript-40-04-22-signing-out-shows-no-saved-exam-list-error.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
