@@ -182,7 +182,7 @@ async def test_handoff_numbers_a_taken_title_and_derives_the_vault_name() -> Non
 
     assert created.document.title == "Prov (2)"
     assert created.saved_document.title == "Prov (2)"
-    assert created.summary.name == "Prov (2).provdokument.zip"
+    assert created.summary.name == "Prov 2.provdokument.zip"
     assert env.index.locks == [actor.id]
     reopened = await env.get_handler.handle(actor=actor, lineage_id=created.summary.lineage_id)
     assert reopened.document.title == "Prov (2)"
@@ -204,7 +204,7 @@ async def test_handoff_numbers_from_a_draft_title_that_already_ends_in_a_suffix(
     )
 
     assert created.document.title == "Prov (3)"
-    assert created.summary.name == "Prov (3).provdokument.zip"
+    assert created.summary.name == "Prov 3.provdokument.zip"
 
 
 async def test_handoff_replay_keeps_the_original_exam_despite_a_taken_title() -> None:

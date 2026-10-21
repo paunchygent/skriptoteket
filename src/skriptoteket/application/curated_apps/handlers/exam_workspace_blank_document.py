@@ -8,7 +8,8 @@ Purpose:
 Relationships:
     - Builds the document with ``domain.exam_workspace.native_exam_blank``,
       which owns the valid empty shape (empty title, one empty question).
-    - Names the file with ``exam_document_file_name`` so an untitled exam
+    - Names the file with ``exam_document_file_name`` from
+      ``application.curated_apps.exam_workspace_file_name`` so an untitled exam
       saves as "Namnlöst prov.provdokument.zip" while the title stays empty.
     - Reuses ``document_summary`` and ``ExamWorkspaceDocumentStore.save``
       inside a store transaction so a reopen sees the same revision-one
@@ -18,6 +19,9 @@ Relationships:
 from __future__ import annotations
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentSummary
+from skriptoteket.application.curated_apps.exam_workspace_file_name import (
+    exam_document_file_name,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
@@ -26,9 +30,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.exam_document_file_name import (
-    exam_document_file_name,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_blank import (
     blank_native_exam_document,
@@ -60,7 +61,7 @@ class CreateBlankExamWorkspaceDocumentHandler:
             vault_file = await self._store.save(
                 actor=actor,
                 file_id=self._id_generator.new_uuid(),
-                name=exam_document_file_name(document.title),
+                name=exam_document_file_name(document),
                 content=encoded,
                 lineage_id=lineage_id,
                 version=1,

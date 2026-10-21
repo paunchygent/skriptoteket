@@ -25,6 +25,9 @@ from collections.abc import Mapping
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
+from skriptoteket.application.curated_apps.exam_workspace_file_name import (
+    exam_document_file_name,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
@@ -34,9 +37,6 @@ from skriptoteket.application.curated_apps.handlers.public_exam_workspace_export
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.exam_document_file_name import (
-    exam_document_file_name,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_title_numbering import (
     exam_title_base,
@@ -108,7 +108,7 @@ class ImportGuestExamDraftHandler:
             return await self._create(
                 actor=actor,
                 lineage_id=lineage_id,
-                name=exam_document_file_name(numbered.title),
+                name=exam_document_file_name(numbered),
                 document=numbered,
                 assets_by_id=assets_by_id,
                 notes=notes,

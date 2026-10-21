@@ -221,7 +221,7 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     assert response.summary.course_key == "ENGENG05"
     assert response.summary.vault_file_id == file.id
     assert response.summary.version == 2
-    assert response.summary.name == "Filename differs from title.provdokument.zip"
+    assert response.summary.name == "Changed title.provdokument.zip"
     # Clearing a course must clear the persisted metadata, not retain the previous key.
     cleared = changed.model_copy(update={"header": NativeExamHeader()})
     history = await env.save_handler.history(actor=actor, lineage_id=document.document_id)

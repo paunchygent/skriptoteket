@@ -143,7 +143,7 @@ async def test_concurrent_handoffs_with_the_same_taken_title_get_two_and_three(
             (await world.opened(actor, document.document_id)).summary.name
             for document in (first, second)
         }
-        assert names == {"Prov (2).provdokument.zip", "Prov (3).provdokument.zip"}
+        assert names == {"Prov 2.provdokument.zip", "Prov 3.provdokument.zip"}
 
 
 async def test_handoff_takes_the_title_lock_inside_its_transaction(

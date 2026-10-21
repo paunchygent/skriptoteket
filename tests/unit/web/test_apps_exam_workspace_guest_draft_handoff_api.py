@@ -267,13 +267,13 @@ async def test_first_post_creates_one_vault_file_and_returns_the_posted_content(
         assert created["document"]["title"] == "Omprov: grammatik"
         assert created["document"]["revision"] == 1
         assert UUID(created["document"]["document_id"]) == UUID(created["summary"]["lineage_id"])
-        assert created["summary"]["name"] == "Omprov: grammatik.provdokument.zip"
+        assert created["summary"]["name"] == "Omprov grammatik.provdokument.zip"
         assert created["summary"]["version"] == 1
         assert created["notes"] == []
 
         assert len(env.vault_files.files) == 1
         vault_file = next(iter(env.vault_files.files.values()))
-        assert vault_file.name == "Omprov: grammatik.provdokument.zip"
+        assert vault_file.name == "Omprov grammatik.provdokument.zip"
         assert vault_file.document_lineage_id == UUID(created["summary"]["lineage_id"])
         container = env.codec.parse(
             content=await env.store.load(actor=actor, vault_file=vault_file)
