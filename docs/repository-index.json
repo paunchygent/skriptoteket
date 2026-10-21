@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "64099adfc9281fa113651ad2a0706626d2c52946766beb11ee0e05f09ec4893b",
+  "source_set_digest": "b6f4320e51710b1a3f2ab4d2f7a1dfdd74171ac668ef750ea8820ad3fda4c9d5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6383,7 +6383,7 @@
       "type": "task",
       "title": "Embedded pictures and cut-out drawn figures from a PDF land in their questions",
       "path": "docs/backlog/tasks/task-skript-39-10-02-embedded-pictures-and-cut-out-drawn-figures-from-a-pdf-land-in-their-questions.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -8665,7 +8665,7 @@
       "type": "task",
       "title": "A converted item never drops a sentence from its own source paragraph",
       "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
