@@ -14,17 +14,8 @@ Relationships:
 from __future__ import annotations
 
 import base64
-import json
 from dataclasses import dataclass
-from pathlib import Path
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    build_digiexam_intermediate_exam,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiEvaluationMode,
@@ -40,9 +31,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 
 _ONE_PIXEL_PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
-)
-_MANUAL_UNKEYED_DXE_FIXTURE = Path(
-    "tests/fixtures/exam_conversion/1772718003-test-samma-prov-i-digiexam.dxe"
 )
 
 
@@ -99,21 +87,21 @@ def _single_choice_sample() -> ExamNetQtiSamplePackage:
 def _unkeyed_single_choice_sample() -> ExamNetQtiSamplePackage:
     return _sample(
         "unkeyed-single-choice-preserved",
-        _manual_unkeyed_dxe_item("item-002"),
+        _handbuilt_unkeyed_single_choice_item(),
     )
 
 
 def _unkeyed_multiple_response_sample() -> ExamNetQtiSamplePackage:
     return _sample(
         "unkeyed-multiple-response-preserved",
-        _manual_unkeyed_dxe_item("item-004"),
+        _handbuilt_unkeyed_multiple_response_item(),
     )
 
 
 def _manual_gap_fill_preservation_sample() -> ExamNetQtiSamplePackage:
     return _sample(
         "manual-gap-fill-preserved-as-free-text",
-        _manual_unkeyed_dxe_item("item-007"),
+        _handbuilt_unkeyed_gap_fill_item(),
     )
 
 
@@ -144,14 +132,95 @@ def _manual_matching_preservation_sample() -> ExamNetQtiSamplePackage:
     )
 
 
-def _manual_unkeyed_dxe_item(item_id: str) -> ExamNetQtiItem:
-    payload = json.loads(_MANUAL_UNKEYED_DXE_FIXTURE.read_text(encoding="utf-8"))
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(payload, filename=_MANUAL_UNKEYED_DXE_FIXTURE.name)
+def _handbuilt_unkeyed_single_choice_item() -> ExamNetQtiItem:
+    """Hand-built item_002 shape: automatic single choice without an answer key."""
+
+    return ExamNetQtiItem(
+        item_id="item_002",
+        sequence=2,
+        title="Flervalsfråga typ 1",
+        interaction_type=ExamNetQtiInteractionType.SINGLE_CHOICE,
+        prompt_lines=(
+            'Så här ser en flervalsfråga (MCQ) av typen "flera val" i Digiexam.'
+            "Det går bara att välja ett alternativ som rätt svar "
+            "(Jag valde andra alternativet). "
+            "Väljer eleven det får den 2 poäng.",
+        ),
+        max_score=2,
+        evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
+        source_item_type="single_choice",
+        choices=(
+            ExamNetQtiChoice("choice_001", "Första alternativet"),
+            ExamNetQtiChoice("choice_002", "Andra alternativet"),
+            ExamNetQtiChoice("choice_003", "Tredje alternativet"),
+            ExamNetQtiChoice("choice_004", "Fjärde alternativet"),
+            ExamNetQtiChoice(
+                "choice_005",
+                "Ytterligare ett alternativ. Man kan lägga till hur många man vill",
+            ),
+        ),
     )
-    adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
-    items = {item.item_id: item for item in adapter_result.items}
-    return items[item_id.replace("-", "_")]
+
+
+def _handbuilt_unkeyed_multiple_response_item() -> ExamNetQtiItem:
+    """Hand-built item_004 shape: automatic multiple response without an answer key."""
+
+    return ExamNetQtiItem(
+        item_id="item_004",
+        sequence=4,
+        title="Flera rätta svar (flervalsfråga)",
+        interaction_type=ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
+        prompt_lines=(
+            'Så här ser en annan flervalsfråga (MCQ) av typen "flera rätta svar" '
+            "i Digiexam. Det går att välja flera alternativ som rätt svar "
+            "(Jag valde första och andra alternativet). "
+            "Väljer eleven de rätta alternativen får 2 päng. Ingen egen anteckning."
+            'Det finns tre olika poängregler. Jag valde\xa0"Allt eller inget": '
+            "Eleven måste svara alla rätt för att få maxpoängen. "
+            "Om eleven missar att svara på något eller svarar felaktigt på något, "
+            "tilldelas eleven noll poäng.",
+        ),
+        max_score=2,
+        evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
+        source_item_type="multiple_response",
+        choices=(
+            ExamNetQtiChoice("choice_001", "Första alternativet"),
+            ExamNetQtiChoice("choice_002", "Andra alternativet"),
+            ExamNetQtiChoice("choice_003", "Tredje alternativet"),
+        ),
+    )
+
+
+def _handbuilt_unkeyed_gap_fill_item() -> ExamNetQtiItem:
+    """Hand-built item_007 shape: automatic gap fill with empty accepted values."""
+
+    return ExamNetQtiItem(
+        item_id="item_007",
+        sequence=7,
+        title="Lucktext",
+        interaction_type=ExamNetQtiInteractionType.GAP_FILL,
+        prompt_lines=(
+            "Här är en _____ med tre luckor i texten. "
+            "Hela _____ kan göras hur\xa0_____ som helst"
+            "Samma regler som flera rätta svar gäller: allt eller inget, rätt minus fel. "
+            "Jag valde poäng per svar. Eleven får pluspoäng för varje rätt svar. "
+            "Varje rätt svar är värt maxpoängen för frågan delat på antalet potentiellt "
+            "rätta alternativ. Inga poäng dras av för fel svar. "
+            "Den lägsta poängen som tilldelas är noll.Maxpoäng: 3.\xa0"
+            "Luckorna innehåller följande ord: lucktext, texten, lång",
+        ),
+        max_score=3,
+        evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
+        source_item_type="gap_fill",
+        text_entry_gaps=tuple(
+            ExamNetQtiTextEntryGap(
+                response_identifier=f"RESPONSE_gap_{index:03d}",
+                label=f"Lucka {index}",
+                accepted_values=(),
+            )
+            for index in range(1, 4)
+        ),
+    )
 
 
 def _multiple_response_sample() -> ExamNetQtiSamplePackage:

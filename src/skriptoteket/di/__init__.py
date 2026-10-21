@@ -28,7 +28,6 @@ from skriptoteket.di.conversion_hub_transcripts import ConversionHubTranscriptPr
 from skriptoteket.di.document_converter import DocumentConverterProvider
 from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
-from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
 from skriptoteket.di.exam_workspace_guest_drafts import ExamWorkspaceGuestDraftsProvider
@@ -65,7 +64,6 @@ __all__ = [
     "ConversionHubTranscriptProvider",
     "DocumentConverterProvider",
     "ExamAnswerKeyProvider",
-    "ExamConverterProvider",
     "FlunkOutFrenzyProvider",
     "ReagentPrepChefProvider",
     "EditorProvider",
@@ -112,7 +110,6 @@ def build_providers(settings: Settings) -> tuple[Provider, ...]:
         ConversionHubTranscriptProvider(),
         DocumentConverterProvider(),
         ExamAnswerKeyProvider(),
-        ExamConverterProvider(),
         FlunkOutFrenzyProvider(),
         ReagentPrepChefProvider(),
         ClassroomPlannerRosterProvider(),

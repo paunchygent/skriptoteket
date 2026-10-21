@@ -69,9 +69,6 @@ from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionModel,
 )
 from skriptoteket.infrastructure.db.models.password_reset_token import PasswordResetTokenModel
-from skriptoteket.infrastructure.db.models.public_exam_converter_job import (
-    PublicExamConverterJobModel,
-)
 from skriptoteket.infrastructure.db.models.public_request_window import (
     PublicRequestWindowModel,
 )
@@ -102,7 +99,6 @@ __all__ = [
     "IdentityProjectionModel",
     "PlanDraftModel",
     "PasswordResetTokenModel",
-    "PublicExamConverterJobModel",
     "PublicRequestWindowModel",
     "RosterFixedSeatRuleModel",
     "RosterRelationshipRuleModel",

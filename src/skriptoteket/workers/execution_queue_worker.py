@@ -30,9 +30,6 @@ from skriptoteket.workers.exam_answer_key_enrichment import (
     process_next_answer_key_enrichment_job,
 )
 from skriptoteket.workers.execution_queue.processor import process_claim
-from skriptoteket.workers.public_exam_converter import (
-    process_next_public_exam_converter_job,
-)
 
 logger = structlog.get_logger(__name__)
 
@@ -109,16 +106,6 @@ async def run_execution_queue_worker(
                     )
                 next_reaper_at = loop.time() + reaper_interval
 
-            processed_public_exam = await process_next_public_exam_converter_job(
-                container=container,
-                worker_id=effective_worker_id,
-                now=clock.now(),
-                lease_ttl=lease_ttl,
-                clock=clock,
-            )
-            if processed_public_exam and once:
-                return
-
             processed_enrichment = await process_next_answer_key_enrichment_job(
                 container=container,
                 worker_id=effective_worker_id,
@@ -140,7 +127,7 @@ async def run_execution_queue_worker(
             if claim is None:
                 if once:
                     return
-                if not processed_public_exam and not processed_enrichment:
+                if not processed_enrichment:
                     await sleeper.sleep(poll_interval)
                 continue
 

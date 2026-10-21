@@ -79,9 +79,6 @@ from skriptoteket.web.api.v1 import (
     public_apps_classroom_planner_smart as api_v1_public_apps_classroom_planner_smart,
 )
 from skriptoteket.web.api.v1 import (
-    public_apps_exam_converter as api_v1_public_apps_exam_converter,
-)
-from skriptoteket.web.api.v1 import (
     public_apps_exam_workspace_commands as api_v1_public_apps_exam_workspace_commands,
 )
 from skriptoteket.web.api.v1 import (
@@ -110,7 +107,6 @@ router.include_router(api_v1_public_apps_classroom_planner.router)
 router.include_router(api_v1_public_apps_classroom_planner_exports.router)
 router.include_router(api_v1_public_apps_classroom_planner_shares.router)
 router.include_router(api_v1_public_apps_classroom_planner_smart.router)
-router.include_router(api_v1_public_apps_exam_converter.router)
 router.include_router(api_v1_public_apps_exam_workspace_exports.router)
 router.include_router(api_v1_public_apps_exam_workspace_commands.router)
 router.include_router(api_v1_apps_classroom_planner.router)

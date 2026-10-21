@@ -1,4 +1,4 @@
-"""Adversarial HTML families: parser, PDF renderer and QTI adapter agree on prompt images."""
+"""Adversarial HTML families: parser and PDF renderer agree on prompt images."""
 
 from __future__ import annotations
 
@@ -14,14 +14,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_prompt import (
     render_examnet_prompt_html,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
-    PROMPT_IMAGE_PLACEHOLDER_LINE,
     PromptImagePosition,
     prompt_image_positions,
 )
@@ -170,9 +166,6 @@ def test_html_family_is_classified_identically_by_parser_pdf_and_qti(family: _Fa
     pdf_prompt = render_examnet_prompt_html(item=ir_item, asset_paths_by_reference=asset_paths)
     assert pdf_prompt.html.count("missing-image-placeholder") == family.placeholders
     assert pdf_prompt.html.count('class="prompt-image"') == family.rendered_images
-
-    qti_item = build_examnet_qti_items_from_digiexam_ir(exam).items[0]
-    assert qti_item.prompt_lines.count(PROMPT_IMAGE_PLACEHOLDER_LINE) == family.placeholders
 
 
 @pytest.mark.parametrize(

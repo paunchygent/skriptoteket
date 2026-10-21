@@ -3,15 +3,13 @@
 Purpose:
     Prove on synthetic fixtures only that valid positive fractional point
     values pass unchanged through parser, neutral IR,
-    fingerprints/JSON artifacts, PDF, and QTI scoring and
-    gap allocation without warnings or rounding; that unresolved visible
-    prompt image positions become visible PDF/QTI placeholders with one
-    item-bound non-blocking Swedish warning and no QTI resource/manifest
-    entry; and that missing/blank titles keep the deterministic `Question N`
-    fallback with item-bound non-blocking Swedish review information.
+    and QTI scoring and
+    gap allocation without warnings or rounding; and that missing/blank
+    titles keep the deterministic `Question N` fallback with item-bound
+    non-blocking Swedish review information.
 
 Relationships:
-    - Exercises the parser, IR, PDF, QTI, and fingerprint boundaries
+    - Exercises the parser, IR, and QTI boundaries
       owned by `domain.curated_apps.exam_conversion`.
     - Copies no teacher-supplied `.dxe` files.
 """
@@ -20,7 +18,7 @@ from __future__ import annotations
 
 import json
 import zipfile
-from dataclasses import asdict, replace
+from dataclasses import asdict
 from io import BytesIO
 from xml.etree import ElementTree
 
@@ -30,27 +28,18 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
     DigiExamParseStatus,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf import (
-    build_digiexam_examnet_pdf_document,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
-    DigiExamExamNetPdfStatus,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
-    build_digiexam_ir_manifest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
-    source_item_fingerprint,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_test_xml import (
     EXAMNET_QTI_ASSESSMENT_TEST_PATH,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
+    ExamNetQtiChoice,
+    ExamNetQtiInteractionType,
+    ExamNetQtiItem,
     ExamNetQtiPackageStatus,
+    ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import (
     build_examnet_qti_package_plan,
@@ -140,7 +129,7 @@ def _find(root: ElementTree.Element, xpath: str) -> ElementTree.Element:
     return found
 
 
-def test_fractional_scores_survive_parser_ir_json_and_fingerprints() -> None:
+def test_fractional_scores_survive_parser_and_ir() -> None:
     result = DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
 
     assert result.status == DigiExamParseStatus.SUCCESS
@@ -168,35 +157,7 @@ def test_fractional_scores_survive_parser_ir_json_and_fingerprints() -> None:
     assert '"max_score": 10.5' in serialized
     assert '"max_score": 7.5' in serialized
 
-    first_fingerprint = source_item_fingerprint(exam.items[1])
-    second_fingerprint = source_item_fingerprint(
-        build_digiexam_intermediate_exam(
-            DigiExamDxeParser().parse_payload(
-                _fractional_payload(), filename="fractional-again.dxe"
-            )
-        ).items[1]
-    )
-    assert first_fingerprint == second_fingerprint
-    assert first_fingerprint.startswith("sha256:")
-
-    manifest = build_digiexam_ir_manifest(exam)
-    assert manifest.renderer_ready is True
-
-
-def test_fingerprints_distinguish_materially_different_fractional_scores() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
-    )
-    baseline = source_item_fingerprint(exam.items[1])
-
-    assert source_item_fingerprint(exam.items[1]) == baseline
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(exam.items[0])
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(
-        replace(exam.items[1], max_score=10.75)
-    )
-    assert source_item_fingerprint(exam.items[1]) != source_item_fingerprint(
-        replace(exam.items[1], max_score=0.25)
-    )
+    assert exam.renderer_ready is True
 
 
 def test_small_fractional_score_survives_parser_to_neutral_ir_without_warnings() -> None:
@@ -229,35 +190,76 @@ def test_small_fractional_score_survives_parser_to_neutral_ir_without_warnings()
     assert '"max_score": 0.25' in serialized
 
 
-def test_fractional_scores_survive_pdf_semantics_without_warnings() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
-    )
-
-    document = build_digiexam_examnet_pdf_document(exam)
-
-    assert document.status == DigiExamExamNetPdfStatus.SUCCESS
-    assert "Poängvärde: 10.5" in document.html
-    assert "Poängvärde: 7.5" in document.html
-    assert "Poängvärde: 10.5" in document.html
-    assert not any(warning.blocking for warning in document.warnings)
-
-
 def test_fractional_scores_survive_qti_mapping_maximum_and_gap_allocation() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
+    items = (
+        ExamNetQtiItem(
+            item_id="item_001",
+            sequence=1,
+            title="Fritext med decimalpoäng",
+            interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+            prompt_lines=("Skriv ett svar.",),
+            max_score=10.5,
+            free_text_criterion_points=10.5,
+            expected_lines=8,
+        ),
+        ExamNetQtiItem(
+            item_id="item_002",
+            sequence=2,
+            title="Flerval med decimalpoäng",
+            interaction_type=ExamNetQtiInteractionType.SINGLE_CHOICE,
+            prompt_lines=("Välj rätt bokstav.",),
+            max_score=10.5,
+            choices=(
+                ExamNetQtiChoice("choice_001", "Alfa"),
+                ExamNetQtiChoice("choice_002", "Beta"),
+            ),
+            correct_choice_identifiers=("choice_002",),
+        ),
+        ExamNetQtiItem(
+            item_id="item_003",
+            sequence=3,
+            title="Flerval flera svar",
+            interaction_type=ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
+            prompt_lines=("Välj alla rätta.",),
+            max_score=7.5,
+            choices=(
+                ExamNetQtiChoice("choice_001", "Först"),
+                ExamNetQtiChoice("choice_002", "Mellan"),
+                ExamNetQtiChoice("choice_003", "Sist"),
+            ),
+            correct_choice_identifiers=("choice_001", "choice_003"),
+        ),
+        ExamNetQtiItem(
+            item_id="item_004",
+            sequence=4,
+            title="Lucktext med decimalpoäng",
+            interaction_type=ExamNetQtiInteractionType.GAP_FILL,
+            prompt_lines=("Fyll i ___ ___ ___.",),
+            max_score=10.5,
+            text_entry_gaps=(
+                ExamNetQtiTextEntryGap(
+                    response_identifier="RESPONSE_gap_001",
+                    label="Lucka 1",
+                    accepted_values=("ett",),
+                ),
+                ExamNetQtiTextEntryGap(
+                    response_identifier="RESPONSE_gap_002",
+                    label="Lucka 2",
+                    accepted_values=("två",),
+                ),
+                ExamNetQtiTextEntryGap(
+                    response_identifier="RESPONSE_gap_003",
+                    label="Lucka 3",
+                    accepted_values=("tre",),
+                ),
+            ),
+        ),
     )
-    adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
     plan = build_examnet_qti_package_plan(
         package_name="fractional",
         assessment_title="fractional",
-        items=adapter_result.items,
+        items=items,
     )
-
-    assert adapter_result.manual_follow_ups == ()
-    assert plan.status == ExamNetQtiPackageStatus.PASSED
-    assert [item.max_score for item in adapter_result.items] == [10.5, 10.5, 7.5, 10.5]
-    assert adapter_result.items[0].free_text_criterion_points == 10.5
 
     zip_bytes = _WRITER.build_package_bytes(plan)
     with zipfile.ZipFile(BytesIO(zip_bytes)) as archive:

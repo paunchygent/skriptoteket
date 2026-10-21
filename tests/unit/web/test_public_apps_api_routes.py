@@ -6,9 +6,6 @@ from unittest.mock import Mock
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
-    DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION,
-)
 from skriptoteket.domain.curated_apps.models import (
     CuratedAppDefinition,
     CuratedAppPlacement,
@@ -139,7 +136,8 @@ async def test_get_public_app_capability_bootstrap_returns_active_exam_converter
     )
 
     assert response.app_id == "documents.conversion_hub"
-    assert response.title == "Exam Converter"
+    assert response.title == app.title
+    assert response.summary == app.summary
     assert response.public_access_profile is CuratedAppPublicAccessProfile.AUTHENTICATED_ONLY
     assert response.public_capability.scope == "exam_converter"
     assert (
@@ -154,35 +152,13 @@ async def test_get_public_app_capability_bootstrap_returns_active_exam_converter
         == "/api/v1/public/apps/documents.conversion_hub/exam-converter"
     )
     assert response.public_capability.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE
-    assert [affordance.action for affordance in response.public_capability.action_affordances] == [
-        "submit",
-        "poll",
-        "result",
-        "artifact_manifest",
-        "artifact_download",
-    ]
-    assert {affordance.enabled for affordance in response.public_capability.action_affordances} == {
-        True
+    assert set(type(response.public_capability).model_fields) == {
+        "scope",
+        "profile",
+        "frontend_route",
+        "api_namespace",
+        "runtime_status",
     }
-    assert (
-        response.public_capability.authority_boundary.browser_authority
-        == "opaque_public_handles_only"
-    )
-    assert response.public_capability.authority_boundary.upstream_calls == "none_local_execution"
-    assert response.public_capability.authority_boundary.blocked_exposure == [
-        "server_artifact_storage"
-    ]
-    assert response.public_capability.target_vocabulary == ["examnet_pdf", "qti_package"]
-    assert (
-        response.public_capability.artifact_manifest_schema
-        == DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION
-    )
-    assert "manual_follow_up_report" in response.public_capability.artifact_keys
-    assert "target_readiness_report" in response.public_capability.artifact_keys
-    assert "public_exam_converter_rate_limited" in response.public_capability.reason_codes
-    assert "vault_or_myfiles_save" in response.public_capability.blocked_affordances
-    assert "authenticated_route_discovery" in response.public_capability.blocked_affordances
-    assert "no_account_or_owner_identifier" in response.public_capability.telemetry
 
 
 @pytest.mark.asyncio
@@ -210,7 +186,7 @@ async def test_get_public_app_capability_bootstrap_fails_closed_for_unsupported_
     assert exc_info.value.code is ErrorCode.NOT_FOUND
 
 
-def test_exam_converter_metadata_states_control_action_affordances() -> None:
+def test_exam_converter_capability_metadata_keeps_only_the_shrunk_shape() -> None:
     contract_only = public_apps_api._build_exam_converter_capability_metadata(
         capability=CuratedAppPublicCapability(
             scope="exam_converter",
@@ -226,6 +202,12 @@ def test_exam_converter_metadata_states_control_action_affordances() -> None:
     )
 
     assert contract_only.runtime_status is CuratedAppPublicRuntimeStatus.CONTRACT_ONLY
-    assert contract_only.action_affordances == []
     assert active.runtime_status is CuratedAppPublicRuntimeStatus.ACTIVE
-    assert {affordance.enabled for affordance in active.action_affordances} == {True}
+    for metadata in (contract_only, active):
+        assert set(type(metadata).model_fields) == {
+            "scope",
+            "profile",
+            "frontend_route",
+            "api_namespace",
+            "runtime_status",
+        }

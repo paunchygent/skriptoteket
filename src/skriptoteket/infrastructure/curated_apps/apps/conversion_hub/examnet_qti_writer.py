@@ -1,12 +1,12 @@
 """Deterministic materialization for Exam.net-oriented QTI packages.
 
 Purpose:
-    Build deterministic QTI zip package bytes, validation-report bytes, and
-    bundle zip bytes from the filesystem-free exam-conversion domain plans.
+    Build deterministic QTI zip package bytes and validation-report bytes
+    from the filesystem-free exam-conversion domain plans.
 
 Relationships:
-    Implements ``ExamNetQtiPackageWriterProtocol`` for the in-process Exam
-    Converter producer. Ports the Sir Convert-a-Lot package writer at revision
+    Implements ``ExamNetQtiPackageWriterProtocol`` for the exam workspace
+    exports. Ports the Sir Convert-a-Lot package writer at revision
     41be61a6 without its filesystem artifact orchestration.
 """
 
@@ -56,10 +56,6 @@ class ExamNetQtiPackageWriter(ExamNetQtiPackageWriterProtocol):
         report_data = examnet_qti_validation_report_to_json_data(report)
         text = json.dumps(report_data, ensure_ascii=False, indent=2, sort_keys=True)
         return f"{text}\n".encode("utf-8")
-
-    def build_bundle_bytes(self, *, entries: tuple[tuple[str, bytes], ...]) -> bytes:
-        """Return deterministic zip bytes for the downloadable bundle."""
-        return _deterministic_zip_bytes(entries=entries)
 
 
 def _deterministic_zip_bytes(*, entries: tuple[tuple[str, bytes], ...]) -> bytes:

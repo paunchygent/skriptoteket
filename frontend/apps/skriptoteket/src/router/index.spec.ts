@@ -1,4 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { createMemoryHistory, createRouter } from "vue-router";
+
+import { routes } from "./routes";
 
 const mockUseAuthStore = vi.fn();
 const availabilityMocks = vi.hoisted(() => ({
@@ -476,6 +479,57 @@ describe("router guards", () => {
     });
 
     expect(auth.bootstrap).not.toHaveBeenCalled();
+    expect(result).toBe(true);
+  });
+
+  it("sends signed-out visitors on the old exam converter URL to login with workspace continuation", async () => {
+    const probe = createRouter({ history: createMemoryHistory(), routes });
+    await probe.push("/apps/exam-converter");
+    const target = probe.currentRoute.value;
+    expect(target.name).toBe("exam-workspace");
+
+    const auth = createAuth();
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: target.name,
+      path: target.path,
+      fullPath: target.fullPath,
+      meta: { ...target.meta },
+      query: { ...target.query },
+    }, {
+      name: "home",
+    });
+
+    expect(result).toEqual({
+      name: "auth-login",
+      query: { next: "/apps/exam-workspace" },
+    });
+  });
+
+  it("lets signed-in visitors on the old exam converter URL through to the exam workspace", async () => {
+    const probe = createRouter({ history: createMemoryHistory(), routes });
+    await probe.push("/apps/exam-converter");
+    const target = probe.currentRoute.value;
+    expect(target.path).toBe("/apps/exam-workspace");
+
+    const auth = createAuth({ isAuthenticated: true });
+    mockUseAuthStore.mockReturnValue(auth);
+
+    const guard = registeredGuard;
+    if (!guard) throw new Error("Router guard not registered");
+    const result = await guard({
+      name: target.name,
+      path: target.path,
+      fullPath: target.fullPath,
+      meta: { ...target.meta },
+      query: { ...target.query },
+    }, {
+      name: "home",
+    });
+
     expect(result).toBe(true);
   });
 });

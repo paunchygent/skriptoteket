@@ -7,7 +7,7 @@ Purpose:
 
 Relationships:
     - Exercises `domain.examnet_qti_xml` through `domain.examnet_qti_item_xml`.
-    - Drives the native export and the DigiExam adapter producers.
+    - Drives the native export producer.
 """
 
 from __future__ import annotations
@@ -16,16 +16,6 @@ from xml.etree import ElementTree
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import DigiExamDxeParser
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
-    build_examnet_qti_items_from_digiexam_ir,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    build_digiexam_intermediate_exam,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
-    DEFAULT_WRITING_LINES,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
@@ -104,34 +94,3 @@ def test_free_text_without_expected_lines_fails_closed() -> None:
 
     with pytest.raises(ValueError, match="need expected_lines"):
         serialize_qti_assessment_item(item)
-
-
-def test_digiexam_free_text_uses_the_house_default_writing_lines() -> None:
-    parse_result = DigiExamDxeParser().parse_payload(
-        {
-            "exams": [
-                {
-                    "questions": [
-                        {
-                            "id": 1,
-                            "title": "Short explanation",
-                            "about": "",
-                            "bodyHTML": "<p>Explain your reasoning.</p>",
-                            "images": [],
-                            "maxScore": 2,
-                            "type": 0,
-                        }
-                    ]
-                }
-            ]
-        },
-        filename="expected-lines.dxe",
-    )
-    exam = build_digiexam_intermediate_exam(parse_result)
-
-    item = build_examnet_qti_items_from_digiexam_ir(exam).items[0]
-    root = ElementTree.fromstring(serialize_qti_assessment_item(item))
-
-    assert item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
-    assert item.expected_lines == DEFAULT_WRITING_LINES == 8
-    assert _extended_text(root).attrib["expected-lines"] == "8"

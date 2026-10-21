@@ -3,16 +3,16 @@
 Purpose:
     Build item-local structured-output requests from neutral
     ``AnswerKeyItemView`` projections, reusing the DigiExam answer-key
-    completion line verbatim where it is shared: the same system prompts,
+    prompt line verbatim where it is shared: the same system prompts,
     prompt-template versions, and structured output specs. Only the user
     payload assembly is view-based; the decision schemas are not forked.
+    The choice and gap-fill decision specs live here.
 
 Relationships:
     - Consumed by the workspace branch of
       ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
-    - Reuses ``digiexam_answer_key_prompts`` and
-      ``digiexam_answer_key_completion`` exports; gap numbering mirrors the
-      ``<span dx-wg-id>`` numbering those modules derive from prompt HTML.
+    - Reuses ``digiexam_answer_key_prompts`` exports; gap numbering mirrors
+      the ``<span dx-wg-id>`` numbering that module derives from prompt HTML.
 """
 
 from __future__ import annotations
@@ -22,10 +22,6 @@ from dataclasses import dataclass
 
 from pydantic import JsonValue
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    choice_decision_output_spec,
-    numbered_gap_fill_output_spec,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
@@ -49,6 +45,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 
 MATCHING_PROMPT_TEMPLATE_VERSION = "workspace_matching_answer_key_prompt_v2"
 MATCHING_ANSWER_KEY_DECISION_SCHEMA_VERSION = "workspace_matching_answer_key_decision_v1"
+CHOICE_ANSWER_KEY_DECISION_SCHEMA_VERSION = "digiexam_choice_answer_key_decision_v1"
+GAP_FILL_ANSWER_KEY_DECISION_SCHEMA_VERSION = "digiexam_gap_fill_answer_key_decision_v1"
 MATCHING_ITEM_TYPE = "matching"
 
 MATCHING_ANSWER_KEY_SYSTEM_PROMPT = (
@@ -79,6 +77,42 @@ def prompt_item_type_for_view(view: AnswerKeyItemView) -> DigiExamItemType:
     """Return the shared prompt item type one choice or gap-fill view maps onto."""
 
     return _ITEM_TYPE_BY_VIEW_KIND[view.kind]
+
+
+def choice_decision_output_spec() -> StructuredOutputSpec:
+    """Return the provider-neutral choice decision JSON Schema spec."""
+
+    return StructuredOutputSpec(
+        schema_name=CHOICE_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        schema_version=CHOICE_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        json_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "correct_alternative_ids": {"type": "array", "items": {"type": "integer"}},
+            },
+            "required": ["correct_alternative_ids"],
+        },
+    )
+
+
+def numbered_gap_fill_output_spec(gap_count: int) -> StructuredOutputSpec:
+    """Return a numbered gap-fill facit JSON Schema spec."""
+
+    if gap_count <= 0:
+        raise ValueError("Numbered gap-fill output spec requires at least one gap.")
+    answer_keys = tuple(str(index) for index in range(1, gap_count + 1))
+    properties: dict[str, JsonValue] = {key: {"type": "string"} for key in answer_keys}
+    return StructuredOutputSpec(
+        schema_name=GAP_FILL_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        schema_version=GAP_FILL_ANSWER_KEY_DECISION_SCHEMA_VERSION,
+        json_schema={
+            "type": "object",
+            "additionalProperties": False,
+            "properties": properties,
+            "required": [*answer_keys],
+        },
+    )
 
 
 def matching_decision_output_spec(left_count: int) -> StructuredOutputSpec:

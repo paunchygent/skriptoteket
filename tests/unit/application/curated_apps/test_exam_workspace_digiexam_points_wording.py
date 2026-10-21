@@ -10,7 +10,7 @@ from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
 
-from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
+from skriptoteket.application.curated_apps.digiexam_source_parsing import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.domain.curated_apps.exam_workspace.digiexam_import import (
     build_native_exam_from_digiexam,

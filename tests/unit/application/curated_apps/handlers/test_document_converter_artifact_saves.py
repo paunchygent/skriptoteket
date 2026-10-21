@@ -160,9 +160,9 @@ def _exam_job(*, job_id: UUID, owner_user_id: UUID) -> ConversionHubJob:
         owner_user_id=owner_user_id,
     ).model_copy(
         update={
-            "input_filename": "exam.dxe",
-            "source_format": ConversionHubSourceFormatV2.DIGIEXAM_DXE,
-            "output_format": ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
+            "input_filename": "meeting.m4a",
+            "source_format": ConversionHubSourceFormatV2.AUDIO,
+            "output_format": ConversionHubOutputFormatV2.TRANSCRIPT_BUNDLE,
         }
     )
 

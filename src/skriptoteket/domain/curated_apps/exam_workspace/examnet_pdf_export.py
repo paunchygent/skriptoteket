@@ -16,8 +16,6 @@ Relationships:
       `domain.curated_apps.exam_conversion.exam_pdf_item_semantics`, the
       default strategy registry in `examnet_pdf_item_registry`, and the
       document assembly in `digiexam_examnet_pdf_html`.
-    - Mirrors the fail-closed coordination of
-      `domain.curated_apps.exam_conversion.digiexam_examnet_pdf`.
 """
 
 from __future__ import annotations

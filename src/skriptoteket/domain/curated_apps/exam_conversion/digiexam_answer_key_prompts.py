@@ -1,26 +1,22 @@
-"""Model-facing DigiExam answer-key completion prompt projections.
+"""Shared DigiExam answer-key prompt line for workspace payloads.
 
 Purpose:
-    Convert source-bound DigiExam IR items into readable, item-local prompt
-    payloads for machine answer-key proposals, ported from sir-convert-a-lot
-    `76983339` without changing parser provenance or renderer input.
+    Provide the shared system prompts, prompt-template versions, and
+    choice/gap-fill guidance text that the native workspace answer-key
+    prompt builders reuse verbatim.
 
 Relationships:
-    - Consumed by the workspace answer-key prompts and the answer-key
-      providers before provider request construction.
-    - Uses DigiExam gap IDs from source HTML so gap-fill output can bind back
-      to the source item contract.
+    - Consumed by the workspace answer-key prompts before provider
+      request construction.
+    - Gap-fill labels bind to the numbered ``[n]`` markers in workspace
+      cloze text.
 """
 
 from __future__ import annotations
 
 import re
-from html.parser import HTMLParser
-
-from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import DigiExamItemType
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
 
 CHOICE_PROMPT_TEMPLATE_VERSION = "digiexam_choice_answer_key_prompt_v1"
 GAP_FILL_PROMPT_TEMPLATE_VERSION = "digiexam_gap_fill_answer_key_prompt_v2"
@@ -68,88 +64,6 @@ def system_prompt_for_answer_key_item(item_type: DigiExamItemType) -> str:
     if item_type == DigiExamItemType.GAP_FILL:
         return GAP_FILL_ANSWER_KEY_SYSTEM_PROMPT
     return BASE_ANSWER_KEY_SYSTEM_PROMPT
-
-
-def choice_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonValue]:
-    """Build the model-facing payload for a choice-style DigiExam item."""
-
-    alternative_ids = tuple(alternative.id for alternative in item.alternatives)
-    maximum_answers = (
-        len(alternative_ids) if item.item_type == DigiExamItemType.MULTIPLE_RESPONSE else 1
-    )
-    return {
-        "task": {
-            "name": "select_teacher_intended_choice_answer_key",
-            "item_type": item.item_type.value,
-            "instruction": _choice_user_instruction(item.item_type),
-        },
-        "item": {
-            "item_id": item.item_id,
-            "title": item.title,
-            "stem": _prompt_text(item),
-        },
-        "choices": [
-            {
-                "choice_value": str(alternative.id),
-                "alternative_id": alternative.id,
-                "text": alternative.title,
-            }
-            for alternative in item.alternatives
-        ],
-        "selection_rules": {"min_choices": 1, "max_choices": maximum_answers},
-        "output": {
-            "provider_output_mode": "json_schema",
-            "answer_shape": _choice_answer_shape(item.item_type),
-        },
-    }
-
-
-def gap_fill_answer_key_model_payload(item: DigiExamIrItem) -> dict[str, JsonValue]:
-    """Build the model-facing payload for a gap-fill DigiExam item."""
-
-    cloze_text = _numbered_gap_prompt_text(item)
-    gap_entries: list[JsonValue] = [
-        {"gap_number": number, "label": label}
-        for number, label in enumerate(numbered_gap_labels(cloze_text, len(item.gaps)), start=1)
-    ]
-    return {
-        "task": {
-            "name": "complete_teacher_intended_gap_fill_answer_key",
-            "item_type": item.item_type.value,
-            "instruction": (
-                "Read the cloze item as a teacher-authored exam question. "
-                "Each [number] marker is one blank. Choose the "
-                "teacher-intended accepted value for every numbered blank."
-            ),
-        },
-        "item": {
-            "item_id": item.item_id,
-            "title": item.title,
-            "cloze_text": cloze_text,
-        },
-        "gaps": gap_entries,
-        "output": {
-            "provider_output_mode": "json_schema",
-            "json_shape": (
-                'Return one JSON object. Use string keys "1" through '
-                f'"{len(gap_entries)}" for the numbered blanks.'
-            ),
-            "accepted_values": (
-                "Each numbered key value must be exactly one short answer "
-                "string matching what the student is expected to place in the "
-                "blank. When a visible word bank or candidate list provides the "
-                "intended answers, use only the exact candidate value from that "
-                "bank or list. If candidates are labeled with short labels such "
-                "as A, B, C, D, E, 1, 2, 3, or similar and the longer text "
-                "explains each label, return only the label, not the explanation. "
-                "If the question says to write the correct number, letter, or "
-                "other label type, use that requested label type and do not copy "
-                "the surrounding row label for the blank. "
-                "Use a full precise term only when no word bank, candidate list, "
-                "or candidate label is visible."
-            ),
-        },
-    }
 
 
 def numbered_gap_labels(cloze_text: str, gap_count: int) -> tuple[str, ...]:
@@ -203,82 +117,3 @@ def _choice_answer_shape(item_type: DigiExamItemType) -> str:
         "containing exactly one integer id, using only the listed "
         "alternative_id values."
     )
-
-
-def _prompt_text(item: DigiExamIrItem) -> str:
-    lines = tuple(line.strip() for line in item.prompt_lines if line.strip())
-    if lines:
-        return "\n".join(lines)
-    if item.prompt_html:
-        return _html_text(item.prompt_html)
-    return item.title
-
-
-def _numbered_gap_prompt_text(item: DigiExamIrItem) -> str:
-    if item.prompt_html:
-        gap_numbers = {gap.guid: index for index, gap in enumerate(item.gaps, start=1)}
-        return _html_text(item.prompt_html, gap_numbers=gap_numbers)
-    return _prompt_text(item)
-
-
-def _html_text(html: str, *, gap_numbers: dict[str, int] | None = None) -> str:
-    parser = _TextProjectionParser(gap_numbers=gap_numbers)
-    parser.feed(html)
-    return parser.text()
-
-
-class _TextProjectionParser(HTMLParser):
-    """Extract readable text while preserving DigiExam gap bindings."""
-
-    _BLOCK_TAGS = frozenset({"br", "div", "li", "ol", "p", "tr", "ul"})
-
-    def __init__(self, *, gap_numbers: dict[str, int] | None = None) -> None:
-        super().__init__(convert_charrefs=True)
-        self._chunks: list[str] = []
-        self._gap_numbers = gap_numbers
-        self._gap_span_depth = 0
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if self._gap_span_depth:
-            if tag == "span":
-                self._gap_span_depth += 1
-            return
-        attributes = {name: value for name, value in attrs if value is not None}
-        gap_id = attributes.get("dx-wg-id")
-        if tag == "span" and gap_id is not None and gap_id.strip():
-            self._gap_span_depth = 1
-            if self._gap_numbers is None:
-                self._chunks.append(f" [[gap:{gap_id.strip()}]] ")
-            else:
-                gap_number = self._gap_numbers.get(gap_id.strip())
-                if gap_number is not None:
-                    self._chunks.append(f" [{gap_number}] ")
-            return
-        if tag in self._BLOCK_TAGS:
-            self._chunks.append("\n")
-
-    def handle_endtag(self, tag: str) -> None:
-        if self._gap_span_depth:
-            if tag == "span":
-                self._gap_span_depth -= 1
-            return
-        if tag in self._BLOCK_TAGS:
-            self._chunks.append("\n")
-
-    def handle_data(self, data: str) -> None:
-        if self._gap_span_depth:
-            return
-        self._chunks.append(data)
-
-    def text(self) -> str:
-        raw = "".join(self._chunks).replace("\xa0", " ")
-        lines = [" ".join(line.split()) for line in raw.splitlines()]
-        text = "\n".join(line for line in lines if line)
-        return _remove_space_before_punctuation(text)
-
-
-def _remove_space_before_punctuation(text: str) -> str:
-    result = text
-    for mark in (".", ",", ":", ";", "?", "!"):
-        result = result.replace(f" {mark}", mark)
-    return result

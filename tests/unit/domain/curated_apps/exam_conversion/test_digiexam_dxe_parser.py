@@ -2,14 +2,12 @@
 
 Purpose:
     Prove fixture-backed `.dxe` parsing, canonical structure extraction, and
-    fail-closed enrichment rules, ported from Sir Convert-a-Lot at revision
-    41be61a6.
+    fail-closed rules for populated `.dxe` answer keys, ported from
+    Sir Convert-a-Lot at revision 41be61a6.
 
 Relationships:
     - Exercises `domain.curated_apps.exam_conversion.digiexam_dxe_parser` as
       the `.dxe` parser boundary.
-    - Result-PDF text extraction (pymupdf) stays deferred in this walking
-      skeleton; evidence-path rules are exercised with typed evidence values.
 """
 
 from __future__ import annotations
@@ -29,10 +27,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import (
     DigiExamDxeParser,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
-    DigiExamResultPdfAnswerEvidence,
-    DigiExamResultPdfAnswerItem,
 )
 
 pytestmark = pytest.mark.unit
@@ -303,83 +297,6 @@ def test_ambiguous_embedded_asset_binding_fails_closed_with_typed_warning() -> N
     assert result.renderer_ready is False
     assert result.items[0].embedded_asset_references == ()
     assert DigiExamWarningCode.AMBIGUOUS_EMBEDDED_ASSET_BINDING in {
-        warning.code for warning in result.warnings
-    }
-
-
-def test_typed_evidence_duplicate_alternative_labels_fail_closed() -> None:
-    payload = json.loads(_DXE.read_text(encoding="utf-8"))
-    payload["exams"][0]["questions"][1]["alternatives"][0]["title"] = "Andra alternativet"
-
-    result = DigiExamDxeParser().parse_payload(
-        payload,
-        filename="duplicate-answer-label.dxe",
-        answer_evidence=DigiExamResultPdfAnswerEvidence(
-            items=(
-                DigiExamResultPdfAnswerItem(
-                    title="Flervalsfråga typ 1",
-                    correct_alternative_texts=("Andra alternativet",),
-                    correct_gap_values=(),
-                ),
-            )
-        ),
-    )
-
-    item = result.items[1]
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
-    assert item.correct_alternative_ids == ()
-    assert item.answer_key_provenance == DigiExamAnswerKeyProvenance.ABSENT
-    assert DigiExamWarningCode.UNSUPPORTED_STRUCTURE in {
-        warning.code for warning in result.warnings
-    }
-
-
-def test_typed_evidence_unmatched_alternative_label_fails_closed() -> None:
-    result = DigiExamDxeParser().parse_file(
-        _DXE,
-        answer_evidence=DigiExamResultPdfAnswerEvidence(
-            items=(
-                DigiExamResultPdfAnswerItem(
-                    title="Flervalsfråga typ 1",
-                    correct_alternative_texts=("Inte korrekt label",),
-                    correct_gap_values=(),
-                ),
-            )
-        ),
-    )
-
-    item = result.items[1]
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
-    assert item.correct_alternative_ids == ()
-    assert item.answer_key_provenance == DigiExamAnswerKeyProvenance.ABSENT
-    assert DigiExamWarningCode.UNSUPPORTED_STRUCTURE in {
-        warning.code for warning in result.warnings
-    }
-
-
-def test_result_pdf_gap_answer_count_mismatch_fails_closed_without_enrichment() -> None:
-    evidence = DigiExamResultPdfAnswerEvidence(
-        items=(
-            DigiExamResultPdfAnswerItem(
-                title="Lucktext",
-                correct_alternative_texts=(),
-                correct_gap_values=("lucktext",),
-            ),
-        )
-    )
-
-    result = DigiExamDxeParser().parse_file(_DXE, answer_evidence=evidence)
-
-    item = result.items[-1]
-    assert result.status == DigiExamParseStatus.BLOCKED
-    assert result.renderer_ready is False
-    assert item.header == "Lucktext"
-    assert item.correct_gap_values == ()
-    assert item.correct_gap_answers == ()
-    assert item.answer_key_provenance == DigiExamAnswerKeyProvenance.ABSENT
-    assert DigiExamWarningCode.UNSUPPORTED_STRUCTURE in {
         warning.code for warning in result.warnings
     }
 

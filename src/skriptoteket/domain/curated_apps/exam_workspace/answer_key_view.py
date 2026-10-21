@@ -13,8 +13,8 @@ Relationships:
     - Consumed by ``domain.curated_apps.exam_workspace.answer_key_prompts``
       and by the workspace branch of
       ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
-    - Mirrors the decision-validation semantics of
-      ``domain.curated_apps.exam_conversion.digiexam_answer_key_completion``.
+    - Mirrors the decision-validation semantics of the workspace
+      ``domain.curated_apps.exam_workspace.answer_key_prompts`` output specs.
 """
 
 from __future__ import annotations

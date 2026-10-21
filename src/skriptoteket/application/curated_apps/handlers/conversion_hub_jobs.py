@@ -29,12 +29,10 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     RegisterTranscriptConversionHubJobRequest,
     RegisterTranscriptConversionHubJobResult,
 )
-from skriptoteket.application.curated_apps.exam_conversion import is_exam_conversion_job
 from skriptoteket.domain.errors import DomainError, not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
-from skriptoteket.protocols.exam_conversion import ExamConversionArtifactStoreProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.sir_convert_a_lot_v2 import (
     SirConvertALotClientV2Protocol,
@@ -363,12 +361,10 @@ class DownloadConversionHubArtifactHandler(_BaseConversionHubJobHandler):
         *,
         jobs: ConversionHubJobRepositoryProtocol,
         client: SirConvertALotClientV2Protocol,
-        exam_artifacts: ExamConversionArtifactStoreProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> None:
         super().__init__(jobs=jobs, client=client, uow=uow, clock=clock)
-        self._exam_artifacts = exam_artifacts
 
     async def handle(
         self,
@@ -386,14 +382,6 @@ class DownloadConversionHubArtifactHandler(_BaseConversionHubJobHandler):
             if refreshed.status is ConversionHubJobStatus.CANCELED:
                 raise validation_error("Konverteringen avbröts innan filen blev klar.")
             raise validation_error("Konverteringen är inte klar ännu.")
-        if is_exam_conversion_job(refreshed):
-            local_artifact = self._exam_artifacts.read_artifact(job_id=refreshed.id)
-            return (
-                local_artifact.filename,
-                local_artifact.content_type,
-                local_artifact.content,
-            )
-
         if refreshed.upstream_job_id is None:
             raise validation_error("Konverteringen saknar nedladdningsbar artefakt.")
 

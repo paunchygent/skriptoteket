@@ -4,23 +4,35 @@ id: ADR-SKRIPT-0085
 title: Exam Converter public conversion exception for Conversion Hub
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: accepted
+status: superseded
 links:
   governing:
-  - ADR-SKRIPT-0079
-  - ADR-SKRIPT-0066
-  - EPIC-SKRIPT-21
-  - ST-SKRIPT-21-03
+    - ADR-SKRIPT-0079
+    - ADR-SKRIPT-0066
+    - EPIC-SKRIPT-21
+    - ST-SKRIPT-21-03
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0085
+  - ADR-0085
 ---
 
 ## Context
+
+### 2026-10-21 Superseded
+
+Superseded by EPIC-SKRIPT-41. TASK-SKRIPT-41-02-03 removes the public guest
+DigiExam converter lane this ADR authorized (ST-SKRIPT-41-02 term P6, user
+decision 2026-10-20): its `public_exam_converter_jobs` table, job routes,
+worker, artifacts, answer-key planner use, Exam.net PDF builder, QTI adapter
+and view. The `exam_converter` public capability scope of
+`documents.conversion_hub` stays: since TASK-SKRIPT-41-02-02 it gates the
+public exam workspace, which opens at the old guest converter URL with
+browser-only storage and no AI. DigiExam parsing is reached only through the
+exam workspace import.
 
 ### Source: Context
 

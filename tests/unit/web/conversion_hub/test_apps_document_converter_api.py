@@ -175,7 +175,6 @@ async def test_document_converter_routes_return_only_document_mvp_routes() -> No
         route.source_format
         not in {
             ConversionHubSourceFormatV2.AUDIO,
-            ConversionHubSourceFormatV2.DIGIEXAM_DXE,
             ConversionHubSourceFormatV2.TRANSCRIPT_JSON,
         }
         for route in result.routes

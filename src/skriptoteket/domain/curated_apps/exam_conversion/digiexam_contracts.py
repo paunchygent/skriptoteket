@@ -7,8 +7,6 @@ Purpose:
 
 Relationships:
     - Used by `domain.digiexam_dxe_parser` for canonical `.dxe` parser output.
-    - Source-line and metadata value objects also describe result-PDF
-      handoff from PyMuPDF extraction.
 """
 
 from __future__ import annotations
@@ -57,19 +55,9 @@ class DigiExamAnswerKeyProvenance(StrEnum):
 
     ABSENT = "absent"
     DXE_POPULATED_KEY = "dxe_populated_key"
-    GRADED_RESULT_PDF_CORRECT_LABELS = "graded_result_pdf_correct_labels"
     MANUAL_TEACHER_KEY = "manual_teacher_key"
     MACHINE_PROPOSED_KEY = "machine_proposed_key"
     NOT_APPLICABLE = "not_applicable"
-
-
-@dataclass(frozen=True)
-class DigiExamSourceLine:
-    """One layout-extracted source line with stable page/line evidence."""
-
-    page_number: int
-    line_number: int
-    text: str
 
 
 @dataclass(frozen=True)
