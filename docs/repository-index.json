@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5f5b59b3db8a257de8b7970724a46a315838ef01630a0321a7c32fe3a25b16ff",
+  "source_set_digest": "6bd446ac5362ab29a11127902990c8f2776eb77f44f908b15a37402d90dce751",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7123,7 +7123,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-21"
       }
     },
     {
