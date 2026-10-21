@@ -344,6 +344,15 @@ export async function importExamWorkspaceQti(
   return await apiPost<ExamWorkspaceDocumentSummary>(`${ROOT}/import-qti`, form);
 }
 
+/**
+ * Start a new blank exam: one untitled native document with a single empty
+ * question, saved at once as the teacher's exam. The response is its summary,
+ * which the caller opens like a document from the Öppna list.
+ */
+export async function createExamWorkspaceBlank(): Promise<ExamWorkspaceDocumentSummary> {
+  return await apiPost<ExamWorkspaceDocumentSummary>(`${ROOT}/blank`);
+}
+
 /** Import a DigiExam export (.dxe); conversion runs in the background like a Word import. */
 export async function importExamWorkspaceDigiExam(
   file: File,

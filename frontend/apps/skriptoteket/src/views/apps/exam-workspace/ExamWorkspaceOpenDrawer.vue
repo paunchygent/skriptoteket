@@ -151,13 +151,6 @@ function handleDrop(event: DragEvent): void {
   emit("dropFiles", files, courseKey.value);
 }
 
-async function startBlankExam(): Promise<void> {
-  const guest = store.guest;
-  if (!guest) return;
-  const lineageId = await guest.startBlank();
-  emit("open", lineageId);
-}
-
 function openEntry(entry: ExamWorkspaceDocumentSummary): void {
   if (entry.lineage_id === props.currentLineageId) {
     return;
@@ -178,15 +171,6 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     data-test="exam-workspace-files-source"
   >
     <h3>Importera prov</h3>
-    <button
-      v-if="isGuest"
-      type="button"
-      class="xw-btn"
-      data-test="exam-workspace-guest-blank"
-      @click="startBlankExam"
-    >
-      Tomt prov
-    </button>
     <template v-if="!isGuest">
       <label
         class="xw-label sect__first"

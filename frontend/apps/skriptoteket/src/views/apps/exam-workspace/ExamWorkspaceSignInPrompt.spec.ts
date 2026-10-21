@@ -230,7 +230,7 @@ describe("ExamWorkspaceSignInPrompt", () => {
         });
         await flushPromises();
 
-        await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+        await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
         await flushPromises();
         await wrapper.get('[data-test="exam-workspace-row-item_001"]').trigger("click");
         await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
@@ -277,7 +277,7 @@ describe("ExamWorkspaceSignInPrompt", () => {
         });
         await flushPromises();
 
-        await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+        await wrapper.get('[data-test="exam-workspace-new"]').trigger("click");
         await flushPromises();
 
         // Fail every undo-step write the departure flush attempts.

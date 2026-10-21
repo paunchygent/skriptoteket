@@ -72,6 +72,18 @@ export type ExamWorkspaceConversionBinding = {
 /** What a save conflict turned out to be, once the conversion revision was checked. */
 export type ConflictSync = "merged" | "unrelated" | "unknown";
 
+/**
+ * The server's Swedish refusal of an import, or null when the failure
+ * carries no server message to show (the generic 422 envelope or an
+ * HTTP-level fault). Shared with the new-exam flow, whose create failure
+ * follows the same message rule.
+ */
+export function serverImportMessage(error: unknown): string | null {
+  return isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
+    ? error.message
+    : null;
+}
+
 export function useExamWorkspaceConversion(
   isBusy: () => boolean,
   binding: ExamWorkspaceConversionBinding,
@@ -394,17 +406,6 @@ export function useExamWorkspaceConversion(
     if (isConverting.value && pollTimer === null) schedulePoll(pollGeneration);
     if ((binding.summary.value?.version ?? 0) > expectedRevision) return "merged";
     return conversionRevision > expectedRevision ? "unknown" : "unrelated";
-  }
-
-  /**
-   * The server's Swedish refusal of an import, or null when the failure
-   * carries no server message to show (the generic 422 envelope or an
-   * HTTP-level fault).
-   */
-  function serverImportMessage(error: unknown): string | null {
-    return isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
-      ? error.message
-      : null;
   }
 
   async function importDocument(file: File, courseKey: string | null): Promise<void> {

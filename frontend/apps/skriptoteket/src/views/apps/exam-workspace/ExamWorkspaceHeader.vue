@@ -5,7 +5,7 @@
  * Domain purpose:
  *   One row above every question: the title block (title, pencil and the
  *   plain course and points line), the Uppgifter command that opens Provets
- *   uppgifter, the file commands (Öppna, Spara som …, Exportera, Importera),
+ *   uppgifter, the file commands (Nytt prov, Öppna, Spara som …, Exportera, Importera),
  *   PDF, the AI glyph and the fixed-width autosave status slot (Sparat, Sparar …, Inte sparat). Clicking
  *   the title or the pencil renames the exam in place: Enter or blur commits,
  *   Escape restores. On a phone the title block moves into the shell's top bar
@@ -45,6 +45,8 @@ const props = defineProps<{
   suggestBusy: boolean;
   suggestDisabled: boolean;
   isPhone: boolean;
+  /** A new exam is being created; the Nytt prov command locks while it runs. */
+  newExamBusy: boolean;
   /** The Förhandsgranska panel is open beside the editor. */
   previewOpen: boolean;
 }>();
@@ -52,6 +54,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   toggleDetails: [];
   toggleOpen: [];
+  newExam: [];
   saveAs: [];
   importFile: [];
   suggestAll: [];
@@ -183,6 +186,20 @@ function handleSuggestAll(): void {
         </button>
         <span class="xw-toolsep" />
       </template>
+      <button
+        type="button"
+        class="xw-cmd"
+        aria-label="Nytt prov"
+        title="Skapa ett nytt prov"
+        data-test="exam-workspace-new"
+        :disabled="newExamBusy"
+        @click="emit('newExam')"
+      >
+        <UiGlyph
+          meaning="file-new"
+          :size="20"
+        /><span class="ws-word">Nytt prov</span>
+      </button>
       <button
         type="button"
         class="xw-cmd"

@@ -2,12 +2,13 @@
  * Exam workspace header structure (TASK-SKRIPT-40-04-17, T2, T5, T6).
  *
  * Expected behavior:
- *   The header reads title block, Uppgifter, a separator, Öppna, Spara som …,
- *   Exportera, Importera, a separator, PDF, the AI glyph and the status slot.
+ *   The header reads title block, Uppgifter, a separator, Nytt prov, Öppna,
+ *   Spara som …, Exportera, Importera, a separator, PDF, the AI glyph and the
+ *   status slot.
  *   Uppgifter opens Provets uppgifter and is the only way in from the header;
- *   the course and points line is plain text. Spara som … and Importera emit
- *   their intents directly, PDF is a pressed toggle, and neither Ångra nor Gör
- *   om is in the header.
+ *   the course and points line is plain text. Nytt prov, Spara som … and
+ *   Importera emit their intents directly, PDF is a pressed toggle, and
+ *   neither Ångra nor Gör om is in the header.
  */
 
 import { describe, expect, it } from "vitest";
@@ -15,11 +16,11 @@ import { describe, expect, it } from "vitest";
 import { mountHeader } from "./ExamWorkspaceHeader.specSupport";
 
 describe("ExamWorkspaceHeader layout", () => {
-  it("keeps the order title, meta, Uppgifter, Öppna, Spara som, Exportera, Importera, PDF, AI, status", () => {
+  it("keeps the order title, meta, Uppgifter, Nytt prov, Öppna, Spara som, Exportera, Importera, PDF, AI, status", () => {
     const wrapper = mountHeader();
     const order = [
       "exam-workspace-title", "exam-workspace-rename", "exam-workspace-meta", "exam-workspace-details",
-      "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
+      "exam-workspace-new", "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
       "exam-workspace-import", "exam-workspace-print-preview-toggle", "exam-workspace-suggest-all",
       "exam-workspace-save-state",
     ];
@@ -102,7 +103,7 @@ describe("ExamWorkspaceHeader layout", () => {
     const command = closed.get('[data-test="exam-workspace-details"]');
     expect(closed.get('[role="toolbar"]').find("button").element).toBe(command.element);
     expect(command.element.nextElementSibling?.classList.contains("xw-toolsep")).toBe(true);
-    expect(command.element.nextElementSibling?.nextElementSibling).toBe(closed.get('[data-test="exam-workspace-open"]').element);
+    expect(command.element.nextElementSibling?.nextElementSibling).toBe(closed.get('[data-test="exam-workspace-new"]').element);
     expect(command.text()).toBe("Uppgifter");
     expect(command.attributes("title")).toBe("Provets uppgifter");
     expect(command.attributes("aria-label")).toBe("Provets uppgifter");

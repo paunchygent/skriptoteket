@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -98,3 +98,10 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 ### 2026-10-21 (Hemma orchestrator, decisions)
 
 - The user answered the three gaps through the Mac orchestrator ("Q1-Q2: go with your recommendations", "Q3: Yes, I agree: Namnlöst prov"): D9 settles the guest discard, D10 the glyph route, D11 the untitled name, and D12 adds the guest sign-in draft move with an empty title. The lead resumes.
+
+### 2026-10-21 (implementation lead, delivery)
+
+- D10: skill-repository `TASK-SKILL-REP-0363` added `file-new` (Lucide FilePlus) and released huleedu-integrated 0.1.35 (skill-repository main `4dba3e77`, not pushed); synced here in `b1dff8da`.
+- D3, D4, D11, D12 (`9192be9d`): `POST /exam-workspace/blank` saves `blank_native_exam_document()` as the teacher's exam named "Namnlöst prov.provdokument.zip" (201, summary). The guest sign-in draft move names an empty-title draft "Namnlöst prov" and never numbers it; `d12-red.log` proves the old rejection first.
+- D1, D2, D5-D9: the "Nytt prov" toolbar button (first file command, `file-new` glyph) for teachers and guests goes through the Öppna gate (`useExamWorkspaceOpenBlocking`), so an unsaved open exam is saved first; a teacher's new exam reloads the Prov list and opens; a guest draft with content gets the D9 confirm (Ersätt, Avbryt); the empty state reads the D7 text; the guest "Tomt prov" button is gone.
+- Proof logs: retained root `01a15f95-9eca-7a87-b3b5-4cb77a0761c6` `evidence/u1/`, `evidence/u2/`, `evidence/u3/`, `evidence/lead/`. Owed: independent review and the Mac staging walk (signed in and as a guest).

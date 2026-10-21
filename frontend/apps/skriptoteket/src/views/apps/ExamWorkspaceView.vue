@@ -42,6 +42,7 @@ import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vu
 import ExamWorkspacePrintPreviewPanel from "./exam-workspace/ExamWorkspacePrintPreviewPanel.vue";
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceNewExamConfirmDialog from "./exam-workspace/ExamWorkspaceNewExamConfirmDialog.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
 import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue";
 import "./exam-workspace/examWorkspace.css";
@@ -55,6 +56,7 @@ import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceViewPanels";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
+import { useExamWorkspaceNewExam } from "./exam-workspace/useExamWorkspaceNewExam";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { createRouteProjection } from "./exam-workspace/examWorkspaceRouteProjection";
@@ -208,6 +210,14 @@ const saveFlow = useExamWorkspaceSaveFlow({
   isGuest: props.store.guest !== null,
   openDetails: () => { drawer.value = "details"; },
 });
+
+/** One click on Nytt prov opens a new untitled exam; a guest with content in the draft confirms first. */
+const newExam = useExamWorkspaceNewExam({
+  editing,
+  store: props.store,
+  openRoutedDocument,
+  toast: useToast(),
+});
 const { fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState, saveText, saveTitle } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
@@ -281,8 +291,10 @@ onMounted(() => void loadSavedDocuments());
       :suggest-disabled="workspaceDocument === null || disabled"
       :is-phone="isPhone"
       :preview-open="previewOpen"
+      :new-exam-busy="newExam.busy.value"
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
+      @new-exam="newExam.start"
       @save-as="openSaveAs"
       @import-file="requestImportPick"
       @rename-title="editing.setTitle"
@@ -481,6 +493,11 @@ onMounted(() => void loadSavedDocuments());
       :taken-name="saveAsTaken"
       @save="handleSaveAs"
       @close="saveAsOpen = false"
+    />
+    <ExamWorkspaceNewExamConfirmDialog
+      v-if="newExam.confirmOpen.value"
+      @replace="newExam.confirmReplace"
+      @cancel="newExam.cancelReplace"
     />
   </main>
 </template>

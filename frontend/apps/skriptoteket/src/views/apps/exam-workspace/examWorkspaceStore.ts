@@ -22,6 +22,7 @@ import { inject, type InjectionKey } from "vue";
 
 import {
   copyExamWorkspaceDocument,
+  createExamWorkspaceBlank,
   examWorkspaceAssetUrl,
   findExamWorkspaceAnswerKeySuggestions,
   getExamCourseCatalog,
@@ -89,6 +90,7 @@ export type ExamWorkspaceSharedStore = {
 
 /** The actions that need a signed-in teacher; null in guest mode. */
 export type ExamWorkspaceTeacherServices = {
+  createExamWorkspaceBlank: typeof createExamWorkspaceBlank;
   listExamWorkspaceDocuments: typeof listExamWorkspaceDocuments;
   importExamWorkspaceDocument: typeof importExamWorkspaceDocument;
   getExamWorkspaceConversionStatus: typeof getExamWorkspaceConversionStatus;
@@ -146,6 +148,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     examWorkspaceAssetUrl: (...args) => examWorkspaceAssetUrl(...args),
   },
   teacher: {
+    createExamWorkspaceBlank: (...args) => createExamWorkspaceBlank(...args),
     listExamWorkspaceDocuments: (...args) => listExamWorkspaceDocuments(...args),
     importExamWorkspaceDocument: (...args) => importExamWorkspaceDocument(...args),
     getExamWorkspaceConversionStatus: (...args) => getExamWorkspaceConversionStatus(...args),
