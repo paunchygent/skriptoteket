@@ -4,6 +4,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.unit.scripts.pre_push_hook_env import hook_env
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 HELPER = REPOSITORY_ROOT / "scripts" / "pre_push_touches_migrations.sh"
 HOOK = REPOSITORY_ROOT / "scripts" / "hemma_pre_push_check.sh"
@@ -197,7 +199,7 @@ def _run_adapter(
     remote_ref: str,
     remote_sha: str,
 ) -> subprocess.CompletedProcess[str]:
-    env = dict(os.environ)
+    env = hook_env()
     env["PATH"] = f"{bindir}{os.pathsep}{env['PATH']}"
     return subprocess.run(
         [

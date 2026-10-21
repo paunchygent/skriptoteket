@@ -3,6 +3,8 @@ import shutil
 import subprocess
 from pathlib import Path
 
+from tests.unit.scripts.pre_push_hook_env import hook_env
+
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 HELPER = REPOSITORY_ROOT / "scripts" / "pre_push_touches_migrations.sh"
 HOOK = REPOSITORY_ROOT / "scripts" / "hemma_pre_push_check.sh"
@@ -88,15 +90,21 @@ def _run_hook(
     frm: str,
     to: str,
 ) -> subprocess.CompletedProcess[str]:
-    env = dict(os.environ)
-    env["PATH"] = f"{bindir}{os.pathsep}{env['PATH']}"
-    env["HOME"] = str(fake_home)
-    env["DOUBLE_LOG_DIR"] = str(logdir)
-    env["REAL_GIT"] = real_git
-    env["STUB_HOSTNAME"] = hostname_value
-    env["PRE_COMMIT_REMOTE_BRANCH"] = "refs/heads/main"
-    env["PRE_COMMIT_FROM_REF"] = frm
-    env["PRE_COMMIT_TO_REF"] = to
+    env = hook_env(
+        {
+            "PATH": f"{bindir}{os.pathsep}{os.environ['PATH']}",
+            "HOME": str(fake_home),
+            "DOUBLE_LOG_DIR": str(logdir),
+            "REAL_GIT": real_git,
+            "STUB_HOSTNAME": hostname_value,
+            "PRE_COMMIT_REMOTE_BRANCH": "refs/heads/main",
+            "PRE_COMMIT_FROM_REF": frm,
+            "PRE_COMMIT_TO_REF": to,
+            # Sentinel: git ignores unknown GIT_* names, but the verify steps
+            # must still strip it, proving GIT_* names are removed wholesale.
+            "GIT_SENTINEL_FOR_TEST": "leak-check",
+        }
+    )
     return subprocess.run(
         ["bash", "scripts/hemma_pre_push_check.sh"],
         cwd=repo,
@@ -158,3 +166,24 @@ def test_unverifiable_push_is_refused(tmp_path: Path) -> None:
     assert "push blocked" in combined
     assert "UNVERIFIED" not in combined
     assert not (repo / ".git" / "hemma-verified-sha").exists()
+
+
+def test_on_hemma_steps_see_no_pre_commit_or_git_env(tmp_path: Path) -> None:
+    frm, to, repo, bindir, logdir, fake_home, real_git = _prepare(
+        tmp_path, "noenvleak", ssh_exit="255", hostname_value=HOSTNAME_HEMMA
+    )
+    (bindir / "pdm").write_text(
+        "#!/usr/bin/env bash\n"
+        'compgen -e | grep "^PRE_COMMIT_" >"$DOUBLE_LOG_DIR/pre_commit_vars.log" || true\n'
+        'compgen -e | grep "^GIT_" >"$DOUBLE_LOG_DIR/git_vars.log" || true\n'
+        'echo "pdm $*" >>"$DOUBLE_LOG_DIR/pdm.log"\n'
+        "exit 0\n",
+        encoding="utf-8",
+    )
+    result = _run_hook(repo, bindir, logdir, fake_home, real_git, HOSTNAME_HEMMA, frm, to)
+    combined = result.stdout + result.stderr
+    assert result.returncode == 0, combined
+    pre_commit_vars = (logdir / "pre_commit_vars.log").read_text(encoding="utf-8")
+    assert pre_commit_vars == "", f"PRE_COMMIT_* leaked into verify steps:\n{pre_commit_vars}"
+    git_vars = (logdir / "git_vars.log").read_text(encoding="utf-8")
+    assert git_vars == "", f"GIT_* leaked into verify steps:\n{git_vars}"
