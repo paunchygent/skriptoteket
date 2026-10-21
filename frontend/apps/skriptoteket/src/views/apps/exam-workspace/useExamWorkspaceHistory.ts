@@ -150,6 +150,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     {
       flushNewer: (token) => {
         if (deps.isCurrent(token)) {
+          // A running typing pause owns newer typing: leave it until the
+          // pause, so a store acknowledgement never closes the burst early.
+          if (timer !== null) {
+            return;
+          }
           void flush();
         }
       },
@@ -253,9 +258,13 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * The raw flush body, run inside one queue slot. The newer-typing
    * follow-up and undo call this directly: they already hold a queue slot,
    * so queuing again would wait on itself. A retired token stores nothing
-   * and schedules no retry.
+   * and schedules no retry. A structural flush leaves a working copy whose
+   * typing pause still runs until the pause: the burst keeps its pause and
+   * its one-step undo grouping, while owed snapshots are still stored at
+   * once. Every other caller forces the working-copy store, so explicit
+   * flush, undo, departure and retry semantics are unchanged.
    */
-  async function flushOutcomeInner(token: FenceToken, settle = false): Promise<StoreOutcome> {
+  async function flushOutcomeInner(token: FenceToken, settle = false, structural = false): Promise<StoreOutcome> {
     if (!deps.isCurrent(token)) {
       return "failed";
     }
@@ -267,6 +276,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         status.scheduleRetry(() => void flush());
       }
       return "failed";
+    }
+    if (structural && !settle && timer !== null && pending.value) {
+      // Newer typing arrived while owed snapshots drained and its pause
+      // still runs: leave the working copy until the pause fires.
+      return "stored";
     }
     // Storing the working copy ends its pause; owed snapshots keep it running.
     clearTimer();
@@ -327,7 +341,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (after !== null) {
         storeHandler.pushOwed(after);
       }
-      void deps.enqueueWrite((token) => flushOutcomeInner(token), "failed");
+      void deps.enqueueWrite((token) => flushOutcomeInner(token, false, true), "failed");
     } else {
       schedule();
     }
