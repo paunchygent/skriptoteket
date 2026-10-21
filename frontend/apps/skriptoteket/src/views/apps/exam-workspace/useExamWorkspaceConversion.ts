@@ -428,10 +428,14 @@ export function useExamWorkspaceConversion(
       // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
         // The guest slot write is admitted only while this import is still
-        // the current one: a later import or the scope's disposal retires it
-        // before its late parse can replace the retained draft.
+        // the current one and the sync gate generation it started in is
+        // still current: a later import, the scope's disposal, a lost lease
+        // or pagehide retires it before its late parse can replace the
+        // retained draft, and a lease that frees or expires afterwards does
+        // not revive it.
+        const authority = binding.getFence().begin();
         const lineageId = await importQtiPackage(binding.store, file, courseKey, {
-          isLive: () => pollGeneration === generation,
+          isLive: () => pollGeneration === generation && binding.isCurrent(authority),
           tabId: binding.tabId(),
         });
         if (pollGeneration !== generation || lineageId === null) return;
