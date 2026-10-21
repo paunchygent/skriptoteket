@@ -53,3 +53,12 @@ A push of `main` from the Hemma checkout runs the same steps as the remote route
 | D3  | The docs-only reuse of the last verified commit, the migration stage rule and the lock stay as they are.                                                                             |
 | D4  | The handoff Facts line about the pre-push check is updated to the new behaviour.                                                                                                     |
 | D5  | Medium, admitted by the Hemma orchestrator on focused proof (user decision 2026-10-21).                                                                                              |
+
+## Progress
+
+### Implementation 2026-10-21 (worktree skriptoteket-task-skript-rep-0051)
+
+- `scripts/hemma_pre_push_check.sh`: on Hemma (hostname `paunchygent-server`) the check runs the verification steps directly in `~/apps/skriptoteket-verify-main` under the same `flock` lock with no `ssh`; the steps live in one shared `run_verify_steps` function used by both the direct and the `ssh hemma` routes (remote route additionally clears `refs/verify/<sha>`). Off Hemma with unreachable Hemma the check exits 1 with the reason; no UNVERIFIED pass remains. Docs-only reuse, migration rule and lock unchanged.
+- Tests: new `tests/unit/scripts/test_hemma_pre_push_check.py` (both cases, command doubles for `hostname`/`ssh`/`git`/`pdm`/`flock`, fake HOME; fails before, passes after). Updated the three adapter tests in `test_pre_push_touches_migrations.py` to the refusal behaviour plus a non-Hemma `hostname` double.
+- Proof: focused pytest 14 passed, `pdm run lint` exit 0 (ShellCheck clean), `pdm run docs-validate` exit 0. Logs in the session `evidence/` root.
+- Handoff Facts pre-push line updated to the new behaviour.

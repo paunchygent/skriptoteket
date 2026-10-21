@@ -70,6 +70,7 @@
   session, cwd ~/apps/skriptoteket) runs leads. Leads Opus 5.5, reviews Pi Sol 6.1,
   explorers Haiku. Exam.net has no QTI export; QTI is the Exam.net route and the print
   PDF renders the DOCX house template (user 2026-10-18).
+
   - On main, closeout owed (user or orchestrator closes):
     - 40-04-12: K11 passed; K7 "/" check owed, shared with 39-04-20 (f7eeada5).
     - 40-01-04: review owed.
@@ -152,7 +153,7 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-21
-- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
+- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, on Hemma the steps run directly with no ssh, an unverifiable push is blocked, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;
