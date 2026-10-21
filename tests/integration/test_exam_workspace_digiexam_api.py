@@ -29,6 +29,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps im
     StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -195,6 +198,7 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                     clock=clock,
                     id_generator=ids,
                     codec=codec,
+                    image_decodability=PillowEmbeddedImageDecodability(),
                 ).handle(job=job)
                 assert finished.status.value == "succeeded"
                 response = await client.get(_BASE + "/conversion-jobs/" + queued["job_id"])

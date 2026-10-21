@@ -48,6 +48,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_validation imp
     build_examnet_qti_validation_report,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
@@ -130,7 +133,9 @@ def _find(root: ElementTree.Element, xpath: str) -> ElementTree.Element:
 
 
 def test_fractional_scores_survive_parser_and_ir() -> None:
-    result = DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        _fractional_payload(), filename="fractional.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -172,7 +177,9 @@ def test_small_fractional_score_survives_parser_to_neutral_ir_without_warnings()
     assert isinstance(question, dict)
     question["maxScore"] = 0.25
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="small-fraction.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="small-fraction.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True

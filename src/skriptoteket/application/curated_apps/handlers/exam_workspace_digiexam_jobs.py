@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_conversion import EmbeddedImageDecodabilityProtocol
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
@@ -50,6 +51,7 @@ class ProcessExamWorkspaceDigiExamJobHandler:
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
+        image_decodability: EmbeddedImageDecodabilityProtocol,
     ) -> None:
         self._jobs = jobs
         self._store = store
@@ -57,6 +59,7 @@ class ProcessExamWorkspaceDigiExamJobHandler:
         self._clock = clock
         self._ids = id_generator
         self._codec = codec
+        self._image_decodability = image_decodability
 
     def _owns(
         self, current: ExamAnswerKeyEnrichmentJob | None, job: ExamAnswerKeyEnrichmentJob
@@ -96,7 +99,8 @@ class ProcessExamWorkspaceDigiExamJobHandler:
                     filename=job.input_filename,
                     content_type="application/octet-stream",
                     file_bytes=job.source_dxe,
-                )
+                ),
+                image_decodability=self._image_decodability,
             )
             container = build_native_exam_from_digiexam(
                 exam=exam,

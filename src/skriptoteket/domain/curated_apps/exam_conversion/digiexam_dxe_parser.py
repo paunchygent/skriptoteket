@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair imp
     missing_question_title_message,
 )
 from skriptoteket.domain.errors import validation_error
+from skriptoteket.protocols.exam_conversion import EmbeddedImageDecodabilityProtocol
 
 
 @dataclass(frozen=True)
@@ -60,6 +61,9 @@ _DXE_ITEM_TYPES: dict[int, DigiExamItemType] = {
 
 class DigiExamDxeParser:
     """Parse DigiExam `.dxe` JSON exports into renderer-neutral domain items."""
+
+    def __init__(self, *, image_decodability: EmbeddedImageDecodabilityProtocol) -> None:
+        self._image_decodability = image_decodability
 
     def parse_file(
         self,
@@ -207,6 +211,7 @@ class DigiExamDxeParser:
             prompt_html=prompt_html,
             item_sequence=index,
             source_span=span,
+            image_decodability=self._image_decodability,
         )
         warnings.extend(embedded_assets.warnings)
 

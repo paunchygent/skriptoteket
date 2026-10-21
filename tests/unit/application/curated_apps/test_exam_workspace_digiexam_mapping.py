@@ -21,6 +21,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 _FIXTURES = Path("tests/fixtures/exam_conversion")
 
@@ -43,7 +46,8 @@ def test_real_parser_output_preserves_question_semantics_and_wording(filename):
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     mapped = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -120,7 +124,8 @@ def test_source_choice_key_keeps_exact_wording_independent_of_later_edits(has_ke
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     source = exam.items[1]
     source = replace(
@@ -171,7 +176,8 @@ def test_source_max_score_is_recorded_as_source_points():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     mapped = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -195,7 +201,8 @@ def test_real_fixture_score_mutation_preserves_finite_nonnegative_points(score):
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     document = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -220,7 +227,8 @@ def test_real_fixture_invalid_supplied_score_refuses_entire_import(score, questi
                 filename=fixture.name,
                 file_bytes=content,
                 content_type="application/octet-stream",
-            )
+            ),
+            image_decodability=PillowEmbeddedImageDecodability(),
         )
     assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
     assert exc_info.value.details == {
@@ -238,7 +246,8 @@ def test_real_fixture_absent_score_stays_absent():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     document = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -253,7 +262,8 @@ def test_real_ak7_review_followups_do_not_make_converted_questions_unbuilt():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     document = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -281,7 +291,8 @@ def test_real_question_families_and_formatting_are_not_flattened():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     native = build_native_exam_from_digiexam(
         exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
@@ -305,7 +316,8 @@ def test_rich_source_runs_keep_their_order_and_native_marks():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     source = replace(
         exam.items[0],
@@ -341,7 +353,8 @@ def test_source_image_and_gap_stay_between_their_surrounding_words():
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     source = replace(
         exam.items[0],

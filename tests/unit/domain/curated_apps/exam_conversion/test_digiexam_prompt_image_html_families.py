@@ -21,6 +21,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair imp
     PromptImagePosition,
     prompt_image_positions,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -132,7 +135,7 @@ def _parse_family(family: _Family):
         "maxScore": 1,
         "type": 0,
     }
-    return DigiExamDxeParser().parse_payload(
+    return DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         {"exams": [{"questions": [question]}]}, filename=f"{family.name}.dxe"
     )
 

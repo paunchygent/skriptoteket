@@ -19,6 +19,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 _FIXTURE = Path("tests/fixtures/exam_conversion/1772718003-test-samma-prov-i-digiexam.dxe")
 _VOLT = (
@@ -32,7 +35,8 @@ def _imported(prompt: tuple[str, ...], max_score: int | float | None) -> NativeE
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=_FIXTURE.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     source = replace(exam.items[0], prompt_html=None, prompt_lines=prompt, max_score=max_score)
     document = build_native_exam_from_digiexam(
@@ -114,7 +118,8 @@ def test_real_fixture_sentence_prompts_keep_their_text_and_record_nothing() -> N
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=_FIXTURE.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     document = build_native_exam_from_digiexam(
         exam=exam,

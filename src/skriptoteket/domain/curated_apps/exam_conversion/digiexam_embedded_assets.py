@@ -33,6 +33,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair imp
     prompt_image_positions,
     unresolved_prompt_image_positions,
 )
+from skriptoteket.protocols.exam_conversion import EmbeddedImageDecodabilityProtocol
 
 
 @dataclass(frozen=True)
@@ -57,6 +58,7 @@ def extract_digiexam_embedded_assets(
     prompt_html: str | None,
     item_sequence: int,
     source_span: DigiExamSourceSpan,
+    image_decodability: EmbeddedImageDecodabilityProtocol,
 ) -> DigiExamEmbeddedAssetParse:
     """Extract and bind `.dxe` embedded images for one item."""
 
@@ -94,7 +96,7 @@ def extract_digiexam_embedded_assets(
                     )
                 )
             continue
-        metadata = _image_metadata(decoded)
+        metadata = _image_metadata(decoded, image_decodability)
         if metadata is None:
             if image_index not in referenced_indexes:
                 warnings.append(
@@ -189,15 +191,17 @@ def _decode_base64(payload: str) -> bytes | None:
     return decoded
 
 
-def _image_metadata(payload: bytes) -> _ImageMetadata | None:
+def _image_metadata(
+    payload: bytes, image_decodability: EmbeddedImageDecodabilityProtocol
+) -> _ImageMetadata | None:
     if payload.startswith(b"\x89PNG\r\n\x1a\n") and len(payload) >= 24:
         width = int.from_bytes(payload[16:20], byteorder="big")
         height = int.from_bytes(payload[20:24], byteorder="big")
-        if width > 0 and height > 0:
+        if width > 0 and height > 0 and image_decodability.is_fully_decodable(payload):
             return _ImageMetadata(media_type="image/png", width_px=width, height_px=height)
     if payload.startswith(b"\xff\xd8"):
         jpeg_size = _jpeg_size(payload)
-        if jpeg_size is not None:
+        if jpeg_size is not None and image_decodability.is_fully_decodable(payload):
             width, height = jpeg_size
             return _ImageMetadata(media_type="image/jpeg", width_px=width, height_px=height)
     return None

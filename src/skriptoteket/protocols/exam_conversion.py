@@ -41,3 +41,14 @@ class ExamNetPdfRendererProtocol(Protocol):
     """Render one successful Exam.net PDF document plan into PDF bytes."""
 
     def render_pdf(self, *, document: DigiExamExamNetPdfDocument) -> bytes: ...
+
+
+class EmbeddedImageDecodabilityProtocol(Protocol):
+    """Decide whether one embedded image payload fully decodes.
+
+    Header recognition is not enough: a truncated or corrupt stream renders as
+    nothing downstream, so the extraction owner asks here before admitting a
+    payload into the usable asset collection.
+    """
+
+    def is_fully_decodable(self, payload: bytes) -> bool: ...

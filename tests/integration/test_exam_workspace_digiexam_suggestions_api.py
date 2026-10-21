@@ -36,6 +36,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
@@ -145,6 +148,7 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
                     clock=clock,
                     id_generator=Ids(),
                     codec=world.codec,
+                    image_decodability=PillowEmbeddedImageDecodability(),
                 ).handle(job=job)
                 assert finished.status.value == "succeeded"
                 document = await world.open(actor, lineage_id)
