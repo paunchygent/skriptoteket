@@ -42,6 +42,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_conversion import ExamNetQtiPackageWriterProtocol
 
+#: `user_vault_files.name` holds at most 255 characters, and the longest export
+#: file name adds " Exam.net.pdf" (D1) after the shared base. Cap the base so
+#: every variant, including that one, fits.
+_MAX_EXPORT_BASE_NAME_LENGTH = 255 - len(" Exam.net.pdf")
+
 
 def export_file_base_name(document: NativeExamDocument) -> str:
     """The base name every export of this exam shares: its title without punctuation.
@@ -63,7 +68,7 @@ def export_file_base_name(document: NativeExamDocument) -> str:
         for char in unicodedata.normalize("NFC", document.title)
         if char.isalnum() or char.isspace() or unicodedata.category(char).startswith("M")
     )
-    return " ".join(kept.split())
+    return " ".join(kept.split())[:_MAX_EXPORT_BASE_NAME_LENGTH].rstrip()
 
 
 def build_native_examnet_qti_package(
