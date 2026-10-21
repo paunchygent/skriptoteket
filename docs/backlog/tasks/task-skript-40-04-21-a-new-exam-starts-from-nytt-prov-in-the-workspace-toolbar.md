@@ -30,7 +30,7 @@ Today only guests can start an empty exam: the Öppna drawer shows "Tomt prov" u
 
 This task adds the toolbar button, adds a signed-in route that creates the blank exam through `blank_native_exam_document()` and saves it as the teacher's exam, points the guest button at the existing public blank route, and removes the guest "Tomt prov" button from the import drawer with no old wording or alias kept.
 
-Non-goals: a confirm dialog when another exam is open; a course or title prompt on creation; any change to the import drawer other than removing "Tomt prov".
+Non-goals: a confirm dialog for a signed-in teacher when another exam is open (guests get one only under D9); a course or title prompt on creation; any change to the import drawer other than removing "Tomt prov".
 
 ## Contract Inputs
 
@@ -53,7 +53,7 @@ One click on "Nytt prov" as a signed-in teacher: the open exam, if any, is saved
 
 ## Stop Conditions
 
-- Stop and report if the guest workspace cannot save or keep its open exam before switching the way Öppna does, so that D6 would discard a guest's open exam.
+- The guest condition (D6 would discard a guest's open exam) triggered on 2026-10-21 and is settled by D9.
 - Stop and report if the blank document cannot be created through `blank_native_exam_document()` for both paths.
 
 ## Resolved Questions
@@ -79,9 +79,24 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 | D6  | If another exam is open, it is saved first, as when switching with Öppna today. There is no confirm dialog. |
 | D7  | The empty-state text when no exam is open is "Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam." |
 | D8  | Guests get the same "Nytt prov" toolbar button, backed by the existing public blank route. The guest "Tomt prov" button in the import drawer is removed, with no old wording or alias kept. This replaces the earlier term B1 ("guest path unchanged"). |
+| D9  | Guests only: when the open browser draft has content, "Nytt prov" first shows a confirm, "Det öppna provet ersätts av ett nytt. Exportera det först om du vill behålla det.", with Ersätt and Avbryt. Avbryt keeps the draft unchanged. A guest with an empty draft gets no confirm. Signed-in teachers get no dialog; D6 stands for them. User decision 2026-10-21. |
+| D10 | The document-plus icon is a new `file-new` glyph meaning (Lucide FilePlus) in the shared design-system glyph set in skill-repository (`resources/frontend-design-system/huleedu-integrated/`), added through that repository's change route as this task's first unit and synced into the Skriptoteket mirror, as TASK-SKRIPT-40-04-17 added its glyphs. Components never import Lucide directly. User decision 2026-10-21. |
+| D11 | An untitled exam's file name in Mina filer, and its label in the Prov list while it has no title, is "Namnlöst prov". The title itself stays empty until the teacher sets it in Uppgifter; once it has a title, the title is shown. User decision 2026-10-21. |
+| D12 | The guest sign-in draft move (`exam_workspace_guest_draft_handoff.py`) names a draft with an empty title "Namnlöst prov" under D11. A failing test first proves the current rejection of an empty title, then the fix makes it pass. User decision 2026-10-21. |
 
 ## Progress
 
 ### 2026-10-21 (Hemma orchestrator)
 
 - The user approved the decided terms D1-D8 as written and asked for the feature (relayed by the Mac orchestrator); the task is ready and a lead is assigned.
+
+### 2026-10-21 (implementation lead)
+
+- Stopped before writing code on three gaps, reported to the Hemma orchestrator:
+  (1) the guest stop condition holds: a guest has one browser draft slot, and `startBlank` replaces it through `replaceSlotWith` (`examWorkspaceGuestStore.ts:428-446`), and a guest has no saved-exam list to switch with Öppna, so D6 would discard a guest's open exam;
+  (2) the document-plus icon needs a new meaning in the shared `uiGlyphs.ts`, a sha-pinned mirror of the skill-repository design-system package (TASK-SKRIPT-40-04-17 T14 route);
+  (3) an untitled exam needs a Mina filer file name: `rename_vault_filename` refuses an empty name, and the Prov list shows the file name when the title is empty.
+
+### 2026-10-21 (Hemma orchestrator, decisions)
+
+- The user answered the three gaps through the Mac orchestrator ("Q1-Q2: go with your recommendations", "Q3: Yes, I agree: Namnlöst prov"): D9 settles the guest discard, D10 the glyph route, D11 the untitled name, and D12 adds the guest sign-in draft move with an empty title. The lead resumes.
