@@ -107,6 +107,7 @@ def _assemble(
         for produced in items
     )
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="synthetic.docx",
         source_sha256="0" * 64,
@@ -129,6 +130,7 @@ def _admit(
     exam_wide: frozenset[str] = frozenset(),
 ) -> DocxBuildResult:
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="synthetic.docx",

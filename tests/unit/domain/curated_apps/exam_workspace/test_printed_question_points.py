@@ -147,6 +147,7 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
         )
     questions = tuple(q.anchors for q in manifest.questions)
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="tempus.docx",

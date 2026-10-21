@@ -49,6 +49,7 @@ def _assembled_item(heading: str, prompt: str, body_text: str) -> NativeExamItem
     # in the answer-line case, and the prompt otherwise. No wording-based alignment.
     aligned = replace(aligned, chunks=("body:0001" if prompt == "__________" else "body:0002",))
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="tempus.docx",
         source_sha256="0" * 64,

@@ -114,6 +114,7 @@ def _assemble(
         for produced in items
     )
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="synthetic.docx",
         source_sha256="0" * 64,
@@ -145,6 +146,7 @@ def _assemble_with_foreign(
         for produced in items
     )
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="synthetic.docx",
         source_sha256="0" * 64,
@@ -162,6 +164,7 @@ def _admit(
     questions: tuple[tuple[str, ...], ...],
 ) -> DocxBuildResult:
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="synthetic.docx",

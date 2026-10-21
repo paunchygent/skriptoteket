@@ -89,6 +89,7 @@ _FREE_TEXT = frozenset({NativeExamItemKind.FREE_TEXT})
 
 def _run() -> DocxConversionRun:
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=UUID(int=1),
         worker_id="worker",
         document_id=UUID(int=2),

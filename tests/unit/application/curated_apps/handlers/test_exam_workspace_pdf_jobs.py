@@ -30,6 +30,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
     PdfPlumberExamChunker,
 )
+from tests.fixtures.docx_corpus import corpus_docx
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
@@ -104,6 +105,33 @@ async def pdf_claim(env: PdfJobEnvironment) -> ExamAnswerKeyEnrichmentJob:
     return running
 
 
+async def _claim(
+    env: PdfJobEnvironment, *, filename: str, content: bytes
+) -> ExamAnswerKeyEnrichmentJob:
+    status = await env.importer.handle(
+        actor=env.actor, filename=filename, content=content, course_key=None
+    )
+    assert status.state == "queued"
+    queued = env.jobs.jobs[status.job_id]
+    running = queued.model_copy(
+        update={
+            "status": ExamAnswerKeyEnrichmentJobStatus.RUNNING,
+            "locked_by": "worker",
+            "locked_until": _NOW + timedelta(minutes=10),
+        }
+    )
+    env.jobs.jobs[running.id] = running
+    return running
+
+
+async def _open_finished(env: PdfJobEnvironment, running: ExamAnswerKeyEnrichmentJob):
+    finished = await env.processor.handle(job=running)
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert finished.source_docx is None
+    assert running.workspace_lineage_id is not None
+    return await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
+
+
 @pytest.mark.asyncio
 async def test_pdf_import_runs_the_word_job_and_opens_version_one():
     env = pdf_environment()
@@ -132,3 +160,40 @@ async def test_pdf_import_runs_the_word_job_and_opens_version_one():
             assert full in item.import_record.original_wording.question_text
             stripped += 1
     assert 0 < stripped < len(items)
+
+
+@pytest.mark.asyncio
+async def test_a_pdf_import_records_a_pdf_origin():
+    env = pdf_environment()
+    running = await _claim(
+        env,
+        filename="sidfot-lasforstaelse.pdf",
+        content=PDF_CORPUS.read_bytes(),
+    )
+    opened = await _open_finished(env, running)
+    assert opened.document.origin.kind == "pdf_import"
+    assert opened.document.origin.source_filename == "sidfot-lasforstaelse.pdf"
+    assert opened.document.origin.extractor_version == "docx_ai_build_v2"
+
+
+@pytest.mark.asyncio
+async def test_a_word_import_keeps_a_word_origin():
+    env = pdf_environment()
+    content = corpus_docx("chapter_4_poetry_and_lyrics_quiz_med_facit")
+    running = await _claim(env, filename="prov.docx", content=content)
+    opened = await _open_finished(env, running)
+    assert opened.document.origin.kind == "docx_import"
+    assert opened.document.origin.source_filename == "prov.docx"
+    assert opened.document.origin.extractor_version == "docx_ai_build_v2"
+
+
+@pytest.mark.asyncio
+async def test_a_pdf_without_a_printed_title_takes_its_title_from_the_filename():
+    env = pdf_environment()
+    running = await _claim(
+        env,
+        filename="Engelska 1 - facit.pdf",
+        content=PDF_CORPUS.read_bytes(),
+    )
+    opened = await _open_finished(env, running)
+    assert opened.document.title == "Engelska 1.pdf"

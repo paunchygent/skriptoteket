@@ -32,6 +32,7 @@ SA24 = "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit"
 def _fallback(filename: str, corpus_stem: str = SA24) -> NativeExamDocument:
     chunks = tuple(chunks_by_anchor(corpus_stem).values())
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename=filename,
         source_sha256=gold_exam(corpus_stem).source_sha256,

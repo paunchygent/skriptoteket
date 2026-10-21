@@ -41,6 +41,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language impo
     Language,
     infer_exam_document_language,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    DocumentImportOriginKind,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -81,6 +84,7 @@ class DocxBuildState:
     filename: str
     source_sha256: str
     chunks: tuple[DocxChunk, ...]
+    origin_kind: DocumentImportOriginKind
     claimable: frozenset[str] | None = None
     context_anchors: frozenset[str] = frozenset()
     allowed_kinds: frozenset[NativeExamItemKind] | None = None
@@ -428,6 +432,7 @@ class DocxBuildState:
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
+            origin_kind=self.origin_kind,
             accepted=(*self.accepted, *omitted),
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors - removed),

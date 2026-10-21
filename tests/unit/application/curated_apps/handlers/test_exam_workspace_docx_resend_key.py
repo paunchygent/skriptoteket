@@ -29,6 +29,7 @@ def _chunk(anchor: str) -> DocxChunk:
 def test_conflicted_family_releases_its_answer_key_chunks_for_the_resend() -> None:
     chunks = tuple(_chunk(f"body:000{number}") for number in range(1, 6))
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

@@ -74,6 +74,7 @@ def _item(anchors: tuple[str, ...], label: str, *body_texts: str) -> dict[str, J
 def test_an_item_repeating_another_questions_stem_shows_its_own_stem_without_a_left_out_mark():
     chunks = (_chunk("body:0001", _Q1), _chunk("body:0002", _Q2))
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -113,6 +114,7 @@ def test_points_in_the_middle_of_a_stem_leaves_the_whole_stem_rebuilt():
         _chunk("body:0003", "Use a diagram."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -150,6 +152,7 @@ def test_points_in_a_table_cell_leaves_the_whole_cell_rebuilt():
         _table_chunk("body:0002", "2. Describe (2 p) the rock cycle.", "Use a diagram."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -188,6 +191,7 @@ def test_points_right_after_the_label_leaves_the_whole_stem_rebuilt():
         _chunk("body:0003", "Use a diagram."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -232,6 +236,7 @@ def test_an_unrenderable_own_picture_paragraph_goes_to_source_review():
     picture_chunk = DocxChunk("body:0002", "paragraph", picture_text, picture_text, images=(image,))
     chunks = (_chunk("body:0001", _FOREIGN), picture_chunk)
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -287,6 +292,7 @@ def test_an_unrenderable_inline_answer_key_paragraph_goes_to_source_review():
     own = "2. What is the capital? Svar: Paris."
     chunks = (_chunk("body:0001", _FOREIGN), _chunk("body:0002", own))
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",
@@ -331,6 +337,7 @@ def test_a_consumed_shared_paragraph_is_not_rebuilt_from_the_next_own_paragraph(
         _chunk("body:0003", "Describe the rock cycle."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

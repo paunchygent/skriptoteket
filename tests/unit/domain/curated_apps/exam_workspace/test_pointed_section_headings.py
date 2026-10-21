@@ -125,6 +125,7 @@ def test_heading_family_keeps_structure_metadata_and_native_scores_coherent(
         for prompt in prompts
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="sprakprov.docx",

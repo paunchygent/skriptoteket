@@ -138,6 +138,7 @@ async def test_no_fresh_recorded_gap_fill_item_is_sent_to_review_for_gapped_mate
         assert isinstance(anchors, list)
         question = tuple(str(anchor) for anchor in anchors)
         state = DocxBuildState(
+            origin_kind="docx_import",
             job_id=uuid4(),
             document_id=uuid4(),
             filename=f"{exam}.docx",
