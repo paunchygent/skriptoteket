@@ -12,11 +12,10 @@ misspellings, shared renderer, guest export and command handlers) lives in
 
 from __future__ import annotations
 
-import httpx
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_assets import (
     GetExamWorkspaceAssetHandler,
@@ -132,15 +131,13 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def content_classifier(
         self,
-        client: httpx.AsyncClient,
+        door: LlmDoorClientProtocol,
         settings: Settings,
         sleeper: SleeperProtocol,
-    ) -> MeteredExamContentTagClassifier:
-        return MeteredExamContentTagClassifier(
+    ) -> ExamContentTagSuggester:
+        return ExamContentTagSuggester(
             classifier=OpenAIDecisionsItemTypeLabeler(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
                 sleeper=sleeper,
                 max_attempts=1,
@@ -170,13 +167,14 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def process_content_suggestions(
         self,
-        classifier: MeteredExamContentTagClassifier,
+        classifier: ExamContentTagSuggester,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        users: UserRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> ProcessExamContentSuggestionsHandler:
         return ProcessExamContentSuggestionsHandler(
-            classifier=classifier, jobs=jobs, uow=uow, clock=clock
+            classifier=classifier, jobs=jobs, users=users, uow=uow, clock=clock
         )
 
     @provide(scope=Scope.APP)
@@ -187,7 +185,6 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def docx_pipeline(
         self,
-        client: httpx.AsyncClient,
         uow: UnitOfWorkProtocol,
         settings: Settings,
         sleeper: SleeperProtocol,
@@ -196,7 +193,7 @@ class ExamWorkspaceProvider(Provider):
     ) -> DocxConversionPipeline:
         """Concurrent tasks share the request UoW one transaction at a time."""
         return build_docx_conversion_pipeline(
-            client=client,
+            door=door,
             provider=OpenAIAnswerKeyStructuredProvider(
                 door=door,
                 timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),

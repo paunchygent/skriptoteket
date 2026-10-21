@@ -5,11 +5,10 @@ These replies prove parsing and request construction, not live model accuracy.
 
 from __future__ import annotations
 
-import json
 from dataclasses import replace
+from typing import Any
 from uuid import uuid4
 
-import httpx
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
@@ -25,7 +24,9 @@ from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabelerError,
     LabelingItem,
 )
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.unit.infrastructure.llm.decisions_item_labeler_support import Harness
+from tests.unit.llm_door_fakes import DoorSent, fixture_caller, json_reply
 
 pytestmark = pytest.mark.unit
 
@@ -58,10 +59,11 @@ def _request(count: int = 2, *, content=_CONTENT) -> ContentTagClassificationReq
             for index in range(count)
         ),
         content_items=tuple(content),
+        caller=fixture_caller(),
     )
 
 
-def _answer(question: dict, *, choice_index: int = 0) -> dict:
+def _answer(question: Any, *, choice_index: int = 0) -> dict:
     choices = question["choices"]
     return {
         "type": "choice",
@@ -83,18 +85,19 @@ async def test_content_choices_keep_every_course_bullet_and_none_for_every_quest
         ExamContentItem(id=f"course:bullet-{i}", text=f"Innehåll {i}") for i in range(80)
     )
 
-    def respond(request: httpx.Request) -> httpx.Response:
-        sent = json.loads(request.content)
-        assert len(sent["questions"]) == 2
-        for question in sent["questions"]:
+    def respond(sent: DoorSent) -> DoorReply:
+        assert sent.operation is DoorOperation.DECISIONS
+        payload: Any = sent.payload
+        assert len(payload["questions"]) == 2
+        for question in payload["questions"]:
             assert len(question["choices"]) == 81, "Never silently truncate course content"
             descriptions = [choice["description"] for choice in question["choices"]]
             assert descriptions[:-1] == [item.text for item in content]
             assert "Inget av dessa" in descriptions[-1]
-        assert "Källtext 0: åäö" in str(sent["input"])
-        assert "Källtext 1: åäö" in str(sent["input"])
-        assert "reasoning" not in sent
-        return httpx.Response(200, json={"answers": [_answer(q) for q in sent["questions"]]})
+        assert "Källtext 0: åäö" in str(payload["input"])
+        assert "Källtext 1: åäö" in str(payload["input"])
+        assert "reasoning" not in payload
+        return json_reply({"answers": [_answer(q) for q in payload["questions"]]})
 
     result = await Harness(respond).labeler().classify_content(request=_request(content=content))
     assert [choice.item_id for choice in result.results] == [
@@ -106,14 +109,14 @@ async def test_content_choices_keep_every_course_bullet_and_none_for_every_quest
 
 @pytest.mark.asyncio
 async def test_out_of_order_answers_keep_question_citations_and_none_stays_none() -> None:
-    def respond(request: httpx.Request) -> httpx.Response:
-        questions = json.loads(request.content)["questions"]
-        return httpx.Response(
-            200,
-            json={
+    def respond(sent: DoorSent) -> DoorReply:
+        questions: Any = sent.payload["questions"]
+        assert isinstance(questions, list)
+        return json_reply(
+            {
                 "answers": [_answer(questions[1], choice_index=-1), _answer(questions[0])],
                 "usage": {"input_tokens": 73},
-            },
+            }
         )
 
     result = await Harness(respond).labeler().classify_content(request=_request())
@@ -126,21 +129,21 @@ async def test_out_of_order_answers_keep_question_citations_and_none_stays_none(
 
 @pytest.mark.asyncio
 async def test_201_questions_split_without_losing_sources_choices_or_usage() -> None:
-    def respond(request: httpx.Request) -> httpx.Response:
-        questions = json.loads(request.content)["questions"]
-        return httpx.Response(
-            200,
-            json={
+    def respond(sent: DoorSent) -> DoorReply:
+        questions: Any = sent.payload["questions"]
+        assert isinstance(questions, list)
+        return json_reply(
+            {
                 "answers": [_answer(q) for q in questions],
                 "usage": {"input_tokens": len(questions)},
-            },
+            }
         )
 
     harness = Harness(respond)
     result = await harness.labeler().classify_content(request=_request(201))
     question_counts = []
     for sent in harness.requests:
-        questions = sent["questions"]
+        questions: Any = sent["questions"]
         assert isinstance(questions, list)
         question_counts.append(len(questions))
     assert sorted(question_counts) == [1, 200]
@@ -149,7 +152,8 @@ async def test_201_questions_split_without_losing_sources_choices_or_usage() -> 
     assert result.usage.requests == 2
     assert result.usage.attempts == 2
     for sent in harness.requests:
-        for question in sent["questions"]:
+        sent_questions: Any = sent["questions"]
+        for question in sent_questions:
             choices = question["choices"]
             assert isinstance(choices, list)
             assert len(choices) == 3
@@ -158,7 +162,7 @@ async def test_201_questions_split_without_losing_sources_choices_or_usage() -> 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("empty", ["questions", "content"])
 async def test_empty_inputs_never_call_decisions(empty: str) -> None:
-    def unexpected(_request: httpx.Request) -> httpx.Response:
+    def unexpected(_sent: DoorSent) -> DoorReply:
         pytest.fail("An exam without questions or course content must not call the model")
 
     request = _request(0) if empty == "questions" else _request(content=())
@@ -183,9 +187,11 @@ async def test_empty_inputs_never_call_decisions(empty: str) -> None:
     ],
 )
 async def test_invalid_answers_fail_closed_instead_of_manufacturing_tags(defect: str) -> None:
-    def respond(request: httpx.Request) -> httpx.Response:
-        questions = json.loads(request.content)["questions"]
-        answers = [_answer(q) for q in questions]
+    def respond(sent: DoorSent) -> DoorReply:
+        payload: Any = sent.payload
+        assert isinstance(payload["questions"], list)
+        questions = payload["questions"]
+        answers: list[Any] = [_answer(q) for q in questions]
         if defect == "missing":
             answers.pop()
         elif defect == "duplicate":
@@ -206,15 +212,15 @@ async def test_invalid_answers_fail_closed_instead_of_manufacturing_tags(defect:
                 "negative": -0.1,
                 "above_one": 1.01,
             }[defect]
-        return httpx.Response(200, json={"answers": answers})
+        return json_reply({"answers": answers})
 
     with pytest.raises(ItemTypeLabelerError):
         await Harness(respond).labeler().classify_content(request=_request())
 
 
 def test_image_budget_is_not_proportional_to_base64_encoded_file_size() -> None:
-    def unexpected(_request: httpx.Request) -> httpx.Response:
-        pytest.fail("Estimating a lease must not call the network")
+    def unexpected(_sent: DoorSent) -> DoorReply:
+        pytest.fail("Estimating must not call the door")
 
     adapter = Harness(unexpected).labeler()
     request = _request(1)

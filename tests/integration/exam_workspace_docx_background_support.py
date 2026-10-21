@@ -135,8 +135,8 @@ class RecordedTransport:
         self.responses_requests = 0
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
-        if request.url.path.endswith("/decisions"):
-            assert request.headers["Authorization"] == f"Bearer {API_KEY}"
+        if request.url.path == "/internal/v1/openai/decisions":
+            assert request.headers["X-Internal-API-Key"] == API_KEY
             self.decisions_requests += 1
             if len(self.served_decisions) >= len(self._decisions):
                 return self._unmatched("more Decisions requests than recordings")
@@ -217,7 +217,7 @@ def build_pipeline(
         job_overage_cap_usd_micros=1_000_000,
     )
     return build_docx_conversion_pipeline(
-        client=client,
+        door=door,
         provider=OpenAIAnswerKeyStructuredProvider(
             door=door,
             timeout_seconds=30,

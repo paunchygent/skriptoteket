@@ -21,7 +21,6 @@ from pathlib import Path
 from types import TracebackType
 from uuid import UUID, uuid4
 
-import httpx
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
@@ -48,9 +47,10 @@ from skriptoteket.protocols.docx_conversion_progress import (
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
-from tests.unit.llm_door_fakes import fixture_caller
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, fixture_caller, json_reply
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 RECORDINGS = FIXTURES / "docx_key_provenance_v14"
@@ -174,23 +174,22 @@ def _claimed(reply: Mapping[str, JsonValue]) -> set[str]:
     return anchors(dict(reply))
 
 
-def decisions_client(exam: str, root: Path = RECORDINGS) -> httpx.AsyncClient:
-    """Serve ``decisions_N.json`` in request order to POST .../decisions."""
+def decisions_door(exam: str, root: Path = RECORDINGS) -> RecordingDoor:
+    """Serve ``decisions_N.json`` in request order at the provider-door seam."""
     bodies = sorted(
         (root / exam).glob("decisions_*.json"),
         key=lambda path: int(path.stem.rsplit("_", 1)[1]),
     )
-    served = iter(bodies)
+    remaining = [json.loads(path.read_text()) for path in bodies]
 
-    def handle(request: httpx.Request) -> httpx.Response:
-        if request.method != "POST" or not request.url.path.endswith("/decisions"):
-            raise MissingRecording(f"{exam}: unexpected request {request.method} {request.url}")
-        path = next(served, None)
-        if path is None:
+    def respond(sent: DoorSent) -> DoorReply:
+        if sent.operation is not DoorOperation.DECISIONS:
+            raise MissingRecording(f"{exam}: unexpected door operation {sent.operation.value}")
+        if not remaining:
             raise MissingRecording(f"{exam}: more Decisions requests than {len(bodies)} recordings")
-        return httpx.Response(200, json=json.loads(path.read_text()))
+        return json_reply(remaining.pop(0))
 
-    return httpx.AsyncClient(transport=httpx.MockTransport(handle))
+    return RecordingDoor(respond)
 
 
 class NoTransaction:
@@ -305,13 +304,12 @@ def build_replay(
     provider = provider or ReplayProvider(exam, failures, root)
     progress = progress or RecordingProgress()
     pipeline = build_docx_conversion_pipeline(
-        client=decisions_client(exam, root),
+        door=decisions_door(exam, root),
         provider=provider,
         sleeper=NoSleep(),
         uow=SerializedUnitOfWork(NoTransaction()),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=enabled,
-            OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",
             LLM_DOCX_BATCH_FAMILIES=families_per_batch,
         ),
         progress=progress,

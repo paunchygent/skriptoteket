@@ -22,7 +22,6 @@ import inspect
 import pkgutil
 import typing
 
-import httpx
 import pytest
 from dishka import Provider, Scope, provide
 from fastapi import APIRouter, Depends, FastAPI
@@ -44,6 +43,7 @@ from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRep
 from skriptoteket.protocols.identity import HuleEduInternalIdentityVerifierProtocol
 from skriptoteket.protocols.item_type_labeler import ExamContentTagClassifierProtocol
 from skriptoteket.protocols.llm import InlineCompletionHandlerProtocol
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.web.app import create_app
 from skriptoteket.web.auth.huleedu_app_projection import (
@@ -84,14 +84,12 @@ class ContentOnlyProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def content_only_client(
         self,
-        client: httpx.AsyncClient,
+        door: LlmDoorClientProtocol,
         settings: Settings,
         sleeper: SleeperProtocol,
     ) -> ExamContentTagClassifierProtocol:
         return decisions_item_labeler.OpenAIDecisionsItemTypeLabeler(
-            client=client,
-            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-            api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+            door=door,
             timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
             sleeper=sleeper,
             max_attempts=1,

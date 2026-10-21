@@ -13,7 +13,6 @@ import time
 from collections.abc import Mapping
 from uuid import uuid4
 
-import httpx
 import pytest
 from docx import Document
 from docx.document import Document as DocxDocument
@@ -62,12 +61,13 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxExamChunker,
 )
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     NoSleep,
     NoTransaction,
     RecordingProgress,
 )
-from tests.unit.llm_door_fakes import fixture_caller
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, fixture_caller, json_reply
 
 pytestmark = pytest.mark.unit
 
@@ -231,21 +231,21 @@ async def _convert(
 ) -> tuple[list[_DecisionsBody], _Provider, DocxConversionOutcome]:
     decisions: list[_DecisionsBody] = []
 
-    def answer(request: httpx.Request) -> httpx.Response:
-        body = _DecisionsBody.model_validate_json(request.content)
+    def answer(sent: DoorSent) -> DoorReply:
+        assert sent.operation is DoorOperation.DECISIONS
+        body = _DecisionsBody.model_validate(sent.payload)
         decisions.append(body)
-        answers = [_free_text(question.name) for question in body.questions]
-        return httpx.Response(200, json={"answers": answers})
+        answers: list[JsonValue] = [_free_text(question.name) for question in body.questions]
+        return json_reply({"answers": answers})
 
     provider = _Provider(grouping, items)
     pipeline = build_docx_conversion_pipeline(
-        client=httpx.AsyncClient(transport=httpx.MockTransport(answer)),
+        door=RecordingDoor(answer),
         provider=provider,
         sleeper=NoSleep(),
         uow=SerializedUnitOfWork(NoTransaction()),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=True,
-            OPENAI_LLM_ANSWER_KEY_API_KEY="test-key",
             LLM_DOCX_BATCH_FAMILIES=families_per_batch,
         ),
         progress=RecordingProgress(),

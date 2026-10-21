@@ -23,7 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import Na
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
-from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 
 
@@ -33,6 +33,7 @@ class DocxConversionOutcome:
 
     result: DocxBuildResult
     update: ConversionUpdate
+    ai_limit: AiDailyLimit | None = None
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,10 @@ class DocxConversionRun:
     def __init__(self, job: DocxConversionJob, started: float) -> None:
         self.job = job
         self.started = started
+        self.ai_limit: AiDailyLimit | None = None
+        """The door limit of the job's first refusal; later steps take failure paths."""
+        self.limit_code: str | None = None
+        """The failure/state code of the first refusal: ai_daily_limit or ai_overage_cap."""
         self.state = DocxBuildState(
             job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
         )

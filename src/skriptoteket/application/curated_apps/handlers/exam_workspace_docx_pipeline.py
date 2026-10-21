@@ -38,7 +38,7 @@ from dataclasses import replace
 import structlog
 
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     merge_batch,
@@ -56,6 +56,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline
     BatchPart,
     batch_state,
     failed,
+    limited,
     reviewed,
     source_parts,
     source_reviewed,
@@ -105,6 +106,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiJobOverageCapReached,
+)
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
@@ -134,9 +140,23 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
+_GROUPING_LIMIT_REASON = "Provets struktur kunde inte läsas ut. Kontrollera källtexten manuellt."
 UNLABELED_REASON = "Frågetypen kunde inte avgöras. Välj frågetyp och kontrollera källtexten."
 
 logger = structlog.get_logger(__name__)
+
+
+def _note_limit(run: DocxConversionRun, exc: AiDailyLimitReached | AiJobOverageCapReached) -> str:
+    """Record the job's first refusal; return its failure/state code."""
+
+    if isinstance(exc, AiJobOverageCapReached):
+        code, limit = "ai_overage_cap", AiDailyLimit.POOL
+    else:
+        code, limit = "ai_daily_limit", exc.limit
+    if run.ai_limit is None:
+        run.ai_limit = limit
+        run.limit_code = code
+    return code
 
 
 def _labeling_item(
@@ -170,7 +190,7 @@ class DocxConversionPipeline:
         uow: SerializedUnitOfWork,
         families_per_batch: int,
         enabled: bool,
-        content_classifier: MeteredExamContentTagClassifier | None = None,
+        content_classifier: ExamContentTagSuggester | None = None,
     ) -> None:
         self._grouper = grouper
         self._labeler = labeler
@@ -199,6 +219,11 @@ class DocxConversionPipeline:
             grouping = await self._grouper.group(
                 job_id=job.job_id, chunks=job.chunks, caller=job.caller
             )
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = _note_limit(run, exc)
+            run.state.record("grouping", code, detail=type(exc).__name__)
+            run.state.fail_all_pending(_GROUPING_LIMIT_REASON)
+            return final_publication(run, None)
         except ExamGroupingError as error:
             run.state.record("grouping", error.code, detail=error.detail)
             run.state.fail_all_pending(str(error))
@@ -301,6 +326,13 @@ class DocxConversionPipeline:
             run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
         if unlabeled:
             self._dispatch(run, unlabeled, "wi-", tasks)
+        if run.ai_limit is not None and run.limit_code is not None:
+            run.state.record("labeling", run.limit_code, detail="limit_already_recorded")
+            run.state.fail_all_pending(_LABELING_REASON)
+            return
+
+        def _note_run_limit(exc: AiDailyLimitReached | AiJobOverageCapReached) -> None:
+            _note_limit(run, exc)
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
             if not results:
@@ -334,7 +366,12 @@ class DocxConversionPipeline:
                 tasks.create_task(self._unlabeled(run, unlabeled, f"{prefix}u", tasks))
 
         try:
-            await self._labeler.label(request=request, on_results=settle)
+            await self._labeler.label(request=request, on_results=settle, on_limit=_note_run_limit)
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = _note_limit(run, exc)
+            run.state.record("labeling", code, detail=type(exc).__name__)
+            run.state.fail_all_pending(_LABELING_REASON)
+            return
         except ItemTypeLabelerError as error:
             run.state.record("labeling", error.code, detail=str(error.status_code or ""))
             run.state.fail_all_pending(_LABELING_REASON)
@@ -344,6 +381,8 @@ class DocxConversionPipeline:
     async def _suggest_content(
         self, run: DocxConversionRun, manifest: ExamManifest, request: LabelingRequest
     ) -> None:
+        if run.ai_limit is not None:
+            return
         try:
             course_anchors = {entry.anchor for entry in manifest.header if entry.kind == "course"}
             hint = " ".join(
@@ -359,8 +398,11 @@ class DocxConversionPipeline:
                     job_id=request.job_id,
                     items=request.items,
                     content_items=load_exam_content_catalog()[course.key],
+                    caller=run.job.caller,
                 )
             )
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            _note_limit(run, exc)
         except Exception:
             logger.exception(
                 "Import content suggestions failed; conversion continues",
@@ -436,6 +478,8 @@ class DocxConversionPipeline:
         their admitted and contract-checked items."""
         if part.missing:
             return source_reviewed(run, part)
+        if run.ai_limit is not None and run.limit_code is not None:
+            return limited(run, part.batch, run.limit_code)
         try:
             outcome = await convert_batch(
                 state=batch_state(run, part.batch),
@@ -451,6 +495,17 @@ class DocxConversionPipeline:
             )
             with_type_check_mark(outcome.state)
             validated(outcome.state)
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = _note_limit(run, exc)
+            # One refused batch never fails the conversion (D25): its items fail as for
+            # a DocxBuildRoundFailure.
+            logger.warning(
+                "DOCX conversion batch refused at the door",
+                job_id=str(run.job.job_id),
+                batch=part.batch.batch_id,
+                code=code,
+            )
+            return failed(run, part.batch, code, exc)
         except Exception as error:
             # One batch's failure never fails the conversion (D25).
             logger.exception(

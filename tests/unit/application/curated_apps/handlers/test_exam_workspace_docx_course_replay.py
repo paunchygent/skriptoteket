@@ -6,7 +6,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
 )
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
@@ -29,7 +29,7 @@ async def test_picked_course_reaches_every_published_header_and_saved_document(
     content_requests: list[ContentTagClassificationRequest] = []
 
     async def no_content_tags(
-        self: MeteredExamContentTagClassifier,
+        self: ExamContentTagSuggester,
         *,
         request: ContentTagClassificationRequest,
         fail_open: bool = True,
@@ -39,7 +39,7 @@ async def test_picked_course_reaches_every_published_header_and_saved_document(
 
     # These live recordings predate content tagging. Stub only that optional
     # lane so it cannot consume the type labeler's recorded Decisions reply.
-    monkeypatch.setattr(MeteredExamContentTagClassifier, "suggest", no_content_tags)
+    monkeypatch.setattr(ExamContentTagSuggester, "suggest", no_content_tags)
     env = environment(enabled=enabled)
     running = await claim(env)
     running = running.model_copy(update={"workspace_course_key": "SVESVE02"})

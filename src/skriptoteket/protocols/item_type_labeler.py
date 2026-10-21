@@ -26,7 +26,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
-from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+)
 
 
 class ItemTypeLabel(StrEnum):
@@ -139,15 +143,23 @@ LabelSink = Callable[[tuple[ItemTypeLabelResult, ...]], None]
 """Receives settled labels as they arrive: the accepted first-pass labels at once, then each
 second-pass label as its call returns."""
 
+LimitSink = Callable[[AiDailyLimitReached | AiJobOverageCapReached], None]
+"""Receives an AI action's refused door call, so the job records the limit."""
+
 
 class ItemTypeLabelerProtocol(Protocol):
     """Label every item of a request, in request order.
 
     ``on_results`` receives each settled label once, as soon as it is settled.
+    ``on_limit`` receives the door limit of a refused call, so the job records it.
     """
 
     async def label(
-        self, *, request: LabelingRequest, on_results: LabelSink | None = None
+        self,
+        *,
+        request: LabelingRequest,
+        on_results: LabelSink | None = None,
+        on_limit: LimitSink | None = None,
     ) -> ItemTypeLabeling: ...
 
 
@@ -179,6 +191,7 @@ class ContentTagClassificationRequest:
     job_id: UUID
     items: tuple[LabelingItem, ...]
     content_items: tuple[ExamContentItem, ...]
+    caller: AiDoorCaller
 
     def __post_init__(self) -> None:
         if len({item.item_id for item in self.items}) != len(self.items):

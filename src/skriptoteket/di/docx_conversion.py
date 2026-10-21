@@ -6,10 +6,8 @@ so both run the same grouping, labeling, batching and assembly.
 
 from __future__ import annotations
 
-import httpx
-
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
@@ -43,12 +41,13 @@ from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgre
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
 )
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
 
 def build_docx_conversion_pipeline(
     *,
-    client: httpx.AsyncClient,
+    door: LlmDoorClientProtocol,
     provider: AnswerKeyStructuredProviderProtocol,
     sleeper: SleeperProtocol,
     uow: SerializedUnitOfWork,
@@ -57,7 +56,7 @@ def build_docx_conversion_pipeline(
 ) -> DocxConversionPipeline:
     """Grouping, the second label pass and batch conversion share one Responses provider.
 
-    The Decisions first pass calls its own endpoint on ``client``.
+    The Decisions first pass and content tags call the door directly.
     """
     exchange = DocxBuildRoundExchange(provider)
     return DocxConversionPipeline(
@@ -66,9 +65,7 @@ def build_docx_conversion_pipeline(
         ),
         labeler=TwoPassItemTypeLabeler(
             first_pass=OpenAIDecisionsItemTypeLabeler(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
                 sleeper=sleeper,
             ),
@@ -76,11 +73,9 @@ def build_docx_conversion_pipeline(
                 provider=provider, profile=build_luna_item_label_profile(settings), sleeper=sleeper
             ),
         ),
-        content_classifier=MeteredExamContentTagClassifier(
+        content_classifier=ExamContentTagSuggester(
             classifier=OpenAIDecisionsItemTypeLabeler(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
                 sleeper=sleeper,
                 max_attempts=1,

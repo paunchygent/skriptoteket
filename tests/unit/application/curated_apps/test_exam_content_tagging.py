@@ -8,7 +8,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
 from skriptoteket.protocols.item_type_labeler import (
@@ -19,6 +19,7 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelingItem,
     LabelingUsage,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 _CONTENT = (
@@ -37,11 +38,12 @@ class _Setup:
                 usage=LabelingUsage(input_tokens=67, requests=1, attempts=1),
             )
         )
-        self.service = MeteredExamContentTagClassifier(classifier=self.classifier)
+        self.service = ExamContentTagSuggester(classifier=self.classifier)
         self.request = ContentTagClassificationRequest(
             job_id=uuid4(),
             items=(LabelingItem(item_id="q1", source_text="Analysera meningen."),),
             content_items=_CONTENT,
+            caller=fixture_caller(),
         )
 
 

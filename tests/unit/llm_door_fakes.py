@@ -10,8 +10,9 @@ door (B6).
 
 from __future__ import annotations
 
+import inspect
 import json
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID
@@ -41,7 +42,7 @@ class DoorSent:
     allow_paid_overage: bool
 
 
-DoorResponder = Callable[[DoorSent], DoorReply]
+DoorResponder = Callable[[DoorSent], DoorReply | Awaitable[DoorReply]]
 
 
 def json_reply(
@@ -107,6 +108,8 @@ class RecordingDoor(LlmDoorClientProtocol):
         )
         self.sent.append(sent)
         reply = self._responder(sent)
+        if inspect.isawaitable(reply):
+            reply = await reply
         if reply.is_success:
             caller.admit()
         record_door_charge(caller, reply.headers)

@@ -21,7 +21,11 @@ from uuid import UUID
 
 import structlog
 
-from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+)
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
     ItemTypeLabel,
@@ -35,6 +39,7 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelPass,
     LabelRoute,
     LabelSink,
+    LimitSink,
     MeteredItemTypeLabelerProtocol,
     SecondPassItemTypeLabelerProtocol,
     SecondPassLabel,
@@ -109,7 +114,11 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         self._second = second_pass
 
     async def label(
-        self, *, request: LabelingRequest, on_results: LabelSink | None = None
+        self,
+        *,
+        request: LabelingRequest,
+        on_results: LabelSink | None = None,
+        on_limit: LimitSink | None = None,
     ) -> ItemTypeLabeling:
         if not request.items:
             return ItemTypeLabeling(results=())
@@ -124,7 +133,9 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         ]
         decided = await asyncio.gather(
             *(
-                self._second_pass(request.job_id, item, first[index], on_results, request.caller)
+                self._second_pass(
+                    request.job_id, item, first[index], on_results, request.caller, on_limit
+                )
                 for index, item in escalated
             )
         )
@@ -165,11 +176,32 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         first: ItemTypeLabelResult,
         on_results: LabelSink | None,
         caller: AiDoorCaller,
+        on_limit: LimitSink | None,
     ) -> tuple[ItemTypeLabelResult, int | None]:
         decided: SecondPassLabel | None = None
         failure: str | None = None
         try:
             decided = await self._second.label_one(job_id=job_id, item=item, caller=caller)
+        except AiDailyLimitReached as exc:
+            failure = "ai_daily_limit"
+            if on_limit is not None:
+                on_limit(exc)
+            logger.warning(
+                "Item-type second pass refused for the daily limit; "
+                "the question takes the first pass's top label",
+                job_id=str(job_id),
+                code=failure,
+            )
+        except AiJobOverageCapReached as exc:
+            failure = "ai_overage_cap"
+            if on_limit is not None:
+                on_limit(exc)
+            logger.warning(
+                "Item-type second pass stopped at the overage cap; "
+                "the question takes the first pass's top label",
+                job_id=str(job_id),
+                code=failure,
+            )
         except ItemTypeLabelerError as error:
             failure = error.code
             logger.warning(

@@ -23,7 +23,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.errors import DomainError
-from skriptoteket.domain.llm_door import door_caller_for
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiJobOverageCapReached,
+    door_caller_for,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
@@ -33,6 +38,8 @@ from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
+
+_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 _Diagnostics = tuple[dict[str, JsonValue], ...]
 
@@ -99,6 +106,7 @@ class ProcessExamWorkspaceDocxJobHandler:
             result = outcome.result
             observed = tuple(event.as_json() for event in result.events)
             file_id = self._ids.new_uuid()
+            ai_limit = outcome.ai_limit
             async with self._store.transaction(
                 user_id=actor.id, lineage_id=job.workspace_lineage_id
             ):
@@ -106,6 +114,8 @@ class ProcessExamWorkspaceDocxJobHandler:
                 if not self._owns(current, job):
                     return current or job
                 assert current is not None
+                if ai_limit is not None:
+                    current = current.model_copy(update={"ai_limit": ai_limit})
                 await self._progress.publish_final(
                     worker_id=job.locked_by,
                     job_id=job.id,
@@ -137,6 +147,20 @@ class ProcessExamWorkspaceDocxJobHandler:
             return await self._fail(
                 job, error.message, _job_failure("domain_error", error.code.value, observed)
             )
+        except AiJobOverageCapReached:
+            return await self._fail(
+                job,
+                _LIMIT_MESSAGE,
+                _job_failure("ai_overage_cap", "AiJobOverageCapReached", observed),
+                ai_limit=AiDailyLimit.POOL,
+            )
+        except AiDailyLimitReached as error:
+            return await self._fail(
+                job,
+                _LIMIT_MESSAGE,
+                _job_failure("ai_daily_limit", type(error).__name__, observed),
+                ai_limit=error.limit,
+            )
         except Exception as error:
             logger.exception("DOCX conversion job crashed", job_id=str(job.id))
             return await self._fail(
@@ -157,7 +181,11 @@ class ProcessExamWorkspaceDocxJobHandler:
         )
 
     async def _fail(
-        self, job: ExamAnswerKeyEnrichmentJob, message: str, diagnostics: _Diagnostics
+        self,
+        job: ExamAnswerKeyEnrichmentJob,
+        message: str,
+        diagnostics: _Diagnostics,
+        ai_limit: AiDailyLimit | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
         logger.warning(
             "DOCX conversion job failed",
@@ -173,6 +201,8 @@ class ProcessExamWorkspaceDocxJobHandler:
             if not self._owns(current, job):
                 return current or job
             assert current is not None
+            if ai_limit is not None:
+                current = current.model_copy(update={"ai_limit": ai_limit})
             if job.locked_by is not None:
                 await self._progress.abandon(worker_id=job.locked_by, job_id=job.id, reason=message)
             finished = finish_enrichment_job(

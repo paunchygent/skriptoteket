@@ -8,6 +8,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
     aggregate_content_tags,
 )
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiJobOverageCapReached
 from skriptoteket.protocols.item_type_labeler import (
     ContentTagClassificationRequest,
     ExamContentTagClassifierProtocol,
@@ -16,7 +17,7 @@ from skriptoteket.protocols.item_type_labeler import (
 logger = structlog.get_logger(__name__)
 
 
-class MeteredExamContentTagClassifier:
+class ExamContentTagSuggester:
     """Optional suggestions never turn a successful conversion into a failure."""
 
     def __init__(self, *, classifier: ExamContentTagClassifierProtocol) -> None:
@@ -39,6 +40,8 @@ class MeteredExamContentTagClassifier:
                 request.content_items,
                 [(r.item_id, r.content_id, r.probability) for r in classification.results],
             )
+        except (AiDailyLimitReached, AiJobOverageCapReached):
+            raise
         except Exception:
             if not fail_open:
                 raise
