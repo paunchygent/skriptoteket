@@ -179,6 +179,9 @@ def _adapter_repo(tmp_path: Path) -> tuple[Path, Path]:
     stub = bindir / "ssh"
     stub.write_text("#!/usr/bin/env bash\nexit 255\n", encoding="utf-8")
     stub.chmod(0o755)
+    hostname_stub = bindir / "hostname"
+    hostname_stub.write_text("#!/usr/bin/env bash\necho not-hemma-laptop\n", encoding="utf-8")
+    hostname_stub.chmod(0o755)
     hook_dir = repo / ".git" / "hooks"
     hook_dir.mkdir(parents=True, exist_ok=True)
     _git(repo, "add", ".")
@@ -223,9 +226,10 @@ def test_adapter_first_push_runs_migrations(tmp_path: Path) -> None:
     local_sha = _git(repo, "rev-parse", "HEAD")
     result = _run_adapter(repo, bindir, "refs/heads/main", local_sha, "refs/heads/main", ZEROES)
     combined = result.stdout + result.stderr
-    assert result.returncode == 0
+    assert result.returncode != 0
     assert "docker migration tests will run" in combined
-    assert "Hemma unreachable" in combined
+    assert "push blocked" in combined
+    assert "UNVERIFIED" not in combined
 
 
 def test_adapter_docs_only_push_skips_migrations(tmp_path: Path) -> None:
@@ -239,9 +243,10 @@ def test_adapter_docs_only_push_skips_migrations(tmp_path: Path) -> None:
     _git(repo, "update-ref", "refs/remotes/origin/main", first)
     result = _run_adapter(repo, bindir, "refs/heads/main", second, "refs/heads/main", first)
     combined = result.stdout + result.stderr
-    assert result.returncode == 0
+    assert result.returncode != 0
     assert "docker migration tests will run" not in combined
-    assert "Hemma unreachable" in combined
+    assert "push blocked" in combined
+    assert "UNVERIFIED" not in combined
 
 
 def test_adapter_migration_push_runs_migrations(tmp_path: Path) -> None:
@@ -256,6 +261,7 @@ def test_adapter_migration_push_runs_migrations(tmp_path: Path) -> None:
     _git(repo, "update-ref", "refs/remotes/origin/main", first)
     result = _run_adapter(repo, bindir, "refs/heads/main", second, "refs/heads/main", first)
     combined = result.stdout + result.stderr
-    assert result.returncode == 0
+    assert result.returncode != 0
     assert "docker migration tests will run" in combined
-    assert "Hemma unreachable" in combined
+    assert "push blocked" in combined
+    assert "UNVERIFIED" not in combined
