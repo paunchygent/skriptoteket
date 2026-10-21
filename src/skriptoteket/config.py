@@ -325,6 +325,11 @@ class Settings(BaseSettings):
     # backup; it shares the context/output/timeout/temperature settings and
     # draws from the same daily token lease.
     LLM_ANSWER_KEY_ENABLED: bool = False
+    # HuleEdu's LLM provider door (ST-SKRIPT-41-01 B1, C3): every paid AI call
+    # goes to llm_provider_service on the shared hule-network with this internal
+    # key; the door meters the daily pools, shares and USD ceiling.
+    HULEEDU_LLM_PROVIDER_BASE_URL: str = "http://huleedu_llm_provider_service:8080"
+    HULEEDU_INTERNAL_API_KEY: str = ""
     LLM_ANSWER_KEY_BASE_URL: str = "https://api.openai.com"
     OPENAI_LLM_ANSWER_KEY_API_KEY: str = ""
     LLM_ANSWER_KEY_MODEL: str = "gpt-5.6-luna"
@@ -419,25 +424,20 @@ class Settings(BaseSettings):
         return self
 
     @model_validator(mode="after")
-    def _require_answer_key_provider_credentials(self) -> Settings:
+    def _require_llm_door_credentials(self) -> Settings:
         if not self.LLM_ANSWER_KEY_ENABLED:
             return self
-
-        missing_keys = [
-            key
-            for key, value in (
-                ("OPENAI_LLM_ANSWER_KEY_API_KEY", self.OPENAI_LLM_ANSWER_KEY_API_KEY),
-                (
-                    "OPENROUTER_LLM_ANSWER_KEY_API_KEY",
-                    self.OPENROUTER_LLM_ANSWER_KEY_API_KEY,
-                ),
+        missing = [
+            name
+            for name, value in (
+                ("HULEEDU_LLM_PROVIDER_BASE_URL", self.HULEEDU_LLM_PROVIDER_BASE_URL),
+                ("HULEEDU_INTERNAL_API_KEY", self.HULEEDU_INTERNAL_API_KEY),
             )
             if value.strip() == ""
         ]
-        if missing_keys:
-            joined_keys = ", ".join(missing_keys)
+        if missing:
             raise ValueError(
-                f"LLM answer-key completion requires configured provider credentials: {joined_keys}"
+                f"LLM answer-key completion requires the LLM provider door: {', '.join(missing)}"
             )
         return self
 

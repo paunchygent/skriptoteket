@@ -29,6 +29,7 @@ from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInF
 from skriptoteket.infrastructure.llm.chat_ops_budget_resolver import (
     SettingsBasedChatOpsBudgetResolver,
 )
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIChatOpsProvider,
     OpenAIChatStreamProvider,
@@ -67,6 +68,7 @@ from skriptoteket.protocols.llm import (
     InlineCompletionProvidersProtocol,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
@@ -100,6 +102,18 @@ class LlmProvider(Provider):
         timeout = httpx.Timeout(settings.LLM_COMPLETION_TIMEOUT_SECONDS)
         async with httpx.AsyncClient(timeout=timeout) as client:
             yield client
+
+    @provide(scope=Scope.APP)
+    def llm_door_client(
+        self,
+        settings: Settings,
+        client: httpx.AsyncClient,
+    ) -> LlmDoorClientProtocol:
+        return HuleEduLlmDoorClient(
+            client=client,
+            base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
+            internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+        )
 
     @provide(scope=Scope.APP)
     def inline_completion_providers(

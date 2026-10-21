@@ -114,33 +114,27 @@ def test_public_app_base_url_defaults_to_canonical_launch_host() -> None:
     assert settings.PUBLIC_APP_BASE_URL == "https://skriptoteket.hule.education"
 
 
-def test_answer_key_completion_requires_both_provider_credentials_when_enabled() -> None:
-    with pytest.raises(ValidationError, match="OPENAI_LLM_ANSWER_KEY_API_KEY"):
+def test_answer_key_completion_requires_the_llm_door_when_enabled() -> None:
+    with pytest.raises(ValidationError, match="HULEEDU_INTERNAL_API_KEY"):
+        Settings(_env_file=None, LLM_ANSWER_KEY_ENABLED=True, HULEEDU_INTERNAL_API_KEY="")
+
+    with pytest.raises(ValidationError, match="HULEEDU_LLM_PROVIDER_BASE_URL"):
         Settings(
             _env_file=None,
             LLM_ANSWER_KEY_ENABLED=True,
-            OPENAI_LLM_ANSWER_KEY_API_KEY="",
-            OPENROUTER_LLM_ANSWER_KEY_API_KEY="configured-failover",
-        )
-
-    with pytest.raises(ValidationError, match="OPENROUTER_LLM_ANSWER_KEY_API_KEY"):
-        Settings(
-            _env_file=None,
-            LLM_ANSWER_KEY_ENABLED=True,
-            OPENAI_LLM_ANSWER_KEY_API_KEY="configured-primary",
-            OPENROUTER_LLM_ANSWER_KEY_API_KEY="",
+            HULEEDU_LLM_PROVIDER_BASE_URL=" ",
+            HULEEDU_INTERNAL_API_KEY="configured-internal-key",
         )
 
 
-def test_answer_key_completion_accepts_configured_provider_credentials() -> None:
+def test_answer_key_completion_accepts_a_configured_llm_door() -> None:
     settings = Settings(
         _env_file=None,
         LLM_ANSWER_KEY_ENABLED=True,
-        OPENAI_LLM_ANSWER_KEY_API_KEY="configured-primary",
-        OPENROUTER_LLM_ANSWER_KEY_API_KEY="configured-failover",
+        HULEEDU_INTERNAL_API_KEY="configured-internal-key",
     )
 
-    assert settings.LLM_ANSWER_KEY_ENABLED is True
+    assert settings.HULEEDU_LLM_PROVIDER_BASE_URL == "http://huleedu_llm_provider_service:8080"
 
 
 def test_docx_conversion_defaults_to_sixteen_families_per_batch_at_low_effort() -> None:
