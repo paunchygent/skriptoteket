@@ -9870,6 +9870,13 @@ export interface components {
              */
             expected_cursor: string;
             /**
+             * New Assets By Id
+             * @description Bytes of pictures this document declares that the server may not hold yet, sent once by the editor that added them.
+             */
+            new_assets_by_id?: {
+                [key: string]: string;
+            };
+            /**
              * Tab Id
              * Format: uuid
              */

@@ -270,16 +270,26 @@ export function examWorkspaceIsOnlyQuestion(document: NativeExamDocument, itemId
 }
 
 /**
+ * Every picture id something still cites (an item's body or retry source,
+ * the exam instruction, a part instruction): the one walk
+ * `withReferencedAssetsOnly` prunes by, shared with the new-pictures
+ * registry so a placed picture is declared by the same rule.
+ */
+export function examWorkspaceReferencedAssetIds(document: NativeExamDocument): Set<string> {
+  return new Set<string>([
+    ...document.items.flatMap(itemAssetIds),
+    ...bodyAssetIds(document.instructions),
+    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
+  ]);
+}
+
+/**
  * Keep only the pictures something still references (an item's body or retry
  * source, the exam instruction, a part instruction), as the server's rebuild
  * does; a picture an edit removed takes its asset record with it.
  */
 export function withReferencedAssetsOnly(document: NativeExamDocument): NativeExamDocument {
-  const referenced = new Set<string>([
-    ...document.items.flatMap(itemAssetIds),
-    ...bodyAssetIds(document.instructions),
-    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
-  ]);
+  const referenced = examWorkspaceReferencedAssetIds(document);
   const assets = document.assets.filter((asset) => referenced.has(asset.asset_id));
   return assets.length === document.assets.length ? document : { ...document, assets };
 }
