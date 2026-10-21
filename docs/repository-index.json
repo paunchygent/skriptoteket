@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ec9248a6d121cae8e1a0bfd9e5c6211862c24af1f16c5fa786154a2aa2483df3",
+  "source_set_digest": "8c0969d1ef4cb9b2bf5f7541cdc89ad39257379e963b5ceecde7fad4a0be9768",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7145,7 +7145,7 @@
       "type": "task",
       "title": "Two tabs that each hold an exam lock stop invalidating each other's CSRF token on every renew",
       "path": "docs/backlog/tasks/task-skript-40-04-19-two-tabs-that-each-hold-an-exam-lock-stop-invalidating-each-other-s-csrf-token-on-every-renew.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

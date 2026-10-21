@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -63,3 +63,11 @@ One two-tab lock renew on staging, recorded with the X-CSRF-Token header and the
 ### 2026-10-21 (Hemma orchestrator)
 
 - The user moved the task from `proposed` to `ready` ("Build it now"). It is sequenced after the TASK-SKRIPT-40-04-21 merge (D4).
+
+### 2026-10-21 (implementation lead)
+
+- Set `in_progress`. Root cause, with evidence in the retained root `01a1605d-6338-78d7-b66c-a02947ac907a` (`evidence/root-cause.md`): HuleEdu's `GET /v1/auth/csrf` issues a new token and rewrites the shared `huleedu_csrf` cookie on every call; each Skriptoteket tab caches its own copy in the Pinia auth store and, after the gateway's cookie-equals-header 403, recovers by calling that endpoint again. Each tab's recovery therefore makes the other tab's cached copy stale, so both tabs pay a 403 on every renew.
+- Fix (D3, shared token): a tab takes its token from the readable shared cookie, as HuleEdu's own SPA does, and calls `/v1/auth/csrf` only when no usable cookie value exists. The session-continuity check still runs before any new token is cached (D2: no exemption, no added retry).
+- Behaviour 2 (a stale or mismatched token gets its own message) is blocked by the stop condition: the message is the HuleEdu gateway guard's text (`browser_write_guard.py`) and identity routes, which send one message for missing and mismatched tokens. Skriptoteket's recovery string-matches that exact message (`api/sharedAuth.ts`), so a HuleEdu change must be coordinated with it.
+- Proof: the fail-first spec `src/stores/auth.csrfTwoTabs.spec.ts` (two tab stores, one shared cookie, a rotating `/auth/csrf`, a guard that checks the header against the cookie) failed with 8 CSRF 403s across 8 renews before the fix and passes after it with 0 403s and 0 `/auth/csrf` calls; its continuity case shows that an outdated tab still sends no write after the shared session changes. Focused specs (310 files), `fe-type-check`, `fe-lint`, `lint`, `typecheck` and `docs-validate` pass; logs are in the retained root's `evidence/`. The Mac's two-tab staging re-walk is still open.
+- Residual: a tab that reads the cookie between another tab's `/auth/csrf` response and its own send can still pay one 403 and recover; no data is lost.
