@@ -242,7 +242,22 @@ def test_a_question_numbered_like_its_page_at_body_size_is_kept(margin: str) -> 
     ]
 
 
-def test_a_body_size_header_set_off_from_the_body_is_dropped() -> None:
+def test_a_body_size_header_beyond_the_body_edge_of_the_title_page_is_dropped() -> None:
+    body = "".join(
+        f'<p style="page-break-before: {"auto" if page == 1 else "always"}">'
+        f"Fråga {10 + page}. Svara på frågan.</p>"
+        for page in range(1, 4)
+    )
+    chunks = _chunks(
+        body,
+        css='@page { @top-left { content: "Engelska 1 – sida " counter(page); font-size: 11pt; } }'
+        " @page :first { @top-left { content: none; } }",
+    )
+
+    assert _texts(chunks) == [f"Fråga {10 + page}. Svara på frågan." for page in range(1, 4)]
+
+
+def test_a_body_size_header_on_every_page_is_kept_when_no_page_shows_the_body_edge() -> None:
     body = "".join(
         f'<p style="page-break-before: {"auto" if page == 1 else "always"}">'
         f"Fråga {10 + page}. Svara på frågan.</p>"
@@ -253,7 +268,48 @@ def test_a_body_size_header_set_off_from_the_body_is_dropped() -> None:
         css='@page { @top-left { content: "Engelska 1 – sida " counter(page); font-size: 11pt; } }',
     )
 
-    assert _texts(chunks) == [f"Fråga {10 + page}. Svara på frågan." for page in range(1, 4)]
+    assert _texts(chunks) == [
+        text
+        for page in range(1, 4)
+        for text in (f"Engelska 1 – sida {page}", f"Fråga {10 + page}. Svara på frågan.")
+    ]
+
+
+def test_a_repeated_instruction_at_body_size_in_the_body_flow_is_kept() -> None:
+    body = "".join(
+        f'<section style="page-break-before: {"auto" if page == 1 else "always"}">'
+        "<p>Skriv ditt namn på varje sida.</p>"
+        f"<p>Fråga {10 + page}. Svara på frågan.</p></section>"
+        for page in range(1, 4)
+    )
+    chunks = _chunks(body, css="body { margin: 0; }")
+
+    assert _texts(chunks) == [
+        text
+        for page in range(1, 4)
+        for text in ("Skriv ditt namn på varje sida.", f"Fråga {10 + page}. Svara på frågan.")
+    ]
+
+
+def test_a_question_numbered_like_its_page_with_space_below_is_kept() -> None:
+    body = "".join(
+        f'<section style="page-break-before: {"auto" if page == 1 else "always"}">'
+        f'<p style="margin-bottom: 60pt">Uppgift {page}</p>'
+        "<p>Beskriv ett val som huvudpersonen gör.</p></section>"
+        for page in range(1, 4)
+    )
+    chunks = _chunks(
+        body,
+        css="body { margin: 0; }"
+        '@page { @bottom-center { content: "Sida " counter(page) " av " counter(pages);'
+        " font-size: 9pt; } }",
+    )
+
+    assert _texts(chunks) == [
+        text
+        for page in range(1, 4)
+        for text in (f"Uppgift {page}", "Beskriv ett val som huvudpersonen gör.")
+    ]
 
 
 def test_two_columns_read_left_column_then_right_after_the_full_width_heading() -> None:

@@ -36,10 +36,12 @@ _PAGE_NUMBER = re.compile(
 _DIGITS = re.compile(r"\d+")
 # A repeated line's changing number reads as pagination only when it matches the page
 # the line sits on: the 1-based page index, wherever in the line the number sits. Every
-# other number stays significant, so a prompt naming another page is ordinary text. Such
-# a line must also sit apart from the body text: in a font smaller than the body text by
-# more than this many points, or separated from the body block by more white space than
-# one body line step. "Uppgift 2" at body size at the top of page 2 is a question.
+# other number stays significant, so a prompt naming another page is ordinary text. A
+# repeated line is furniture only when it is also clearly set apart from the body text:
+# in a font smaller than the body text by more than this many points, or in the page
+# margin, beyond the body text's edge by more white space than one body line step. When
+# the reader cannot tell, it keeps the line: a stray header in a question is harmless, a
+# dropped question is lost.
 _SMALLER_POINTS = 0.6
 _DEFAULT_PITCH_RATIO = 1.35
 
@@ -442,51 +444,57 @@ def _body_size_and_pitch(
     return body, pitch
 
 
-def _apart_from_body(
-    line: PdfLine,
-    page: Sequence[PdfItem],
-    height: float,
-    body: float,
-    pitch: float,
-) -> bool:
-    """A smaller font than the body text, or more than a body line step of white space
-    between the line and the nearest text toward the middle of the page. Text in the
-    opposite band is no body text, so a page with no body between keeps the line."""
-    if body == 0.0:
-        return False
-    if line.size < body - _SMALLER_POINTS:
-        return True
-    others = [item for item in page if item is not line]
-    if line.top < height / 2:
-        below = [
-            _item_top(item)
-            for item in others
-            if line.top < _item_top(item) < height * (1 - _FURNITURE_BAND)
-        ]
-        return bool(below) and min(below) - line.bottom > pitch
-    above = [
-        _item_bottom(item)
-        for item in others
-        if height * _FURNITURE_BAND < _item_bottom(item) and _item_top(item) < line.top
-    ]
-    return bool(above) and line.top - max(above) > pitch
+def _body_edges(
+    pages: Sequence[Sequence[PdfItem]], heights: Sequence[float], skip: set[int]
+) -> tuple[float, float] | None:
+    """The body text's top and bottom edge relative to the page height, read from the
+    pages in ``skip``'s complement, or None when every page carries the judged line."""
+    tops: list[float] = []
+    bottoms: list[float] = []
+    for page, (items, height) in enumerate(zip(pages, heights, strict=True), start=1):
+        if page in skip or not items:
+            continue
+        tops.append(min(_item_top(item) for item in items) / height)
+        bottoms.append(max(_item_bottom(item) for item in items) / height)
+    if not tops:
+        return None
+    return min(tops), max(bottoms)
 
 
-def _apart_on_every_page(
+def _set_apart(
     seen: Sequence[tuple[int, float, tuple[int, ...], PdfLine]],
     pages: Sequence[Sequence[PdfItem]],
     heights: Sequence[float],
 ) -> bool:
+    """Every occurrence is in a smaller font than the body text, or lies in the margin
+    beyond the body text's edge, as the pages without the line show it."""
     body, pitch = _body_size_and_pitch(pages, frozenset(id(line) for _, _, _, line in seen))
-    return all(
-        _apart_from_body(line, pages[page - 1], heights[page - 1], body, pitch)
-        for page, _, _, line in seen
-    )
+    if body == 0.0:
+        return False
+    if all(line.size < body - _SMALLER_POINTS for _, _, _, line in seen):
+        return True
+    edges = _body_edges(pages, heights, {page for page, _, _, _ in seen})
+    if edges is None:
+        return False
+    top_edge, bottom_edge = edges
+    for page, _, _, line in seen:
+        height = heights[page - 1]
+        if line.size < body - _SMALLER_POINTS:
+            continue
+        if line.top < height / 2:
+            if top_edge * height - line.bottom <= pitch:
+                return False
+        elif line.top - bottom_edge * height <= pitch:
+            return False
+    return True
 
 
-def _numbers_constant(seen: Sequence[tuple[int, float, tuple[int, ...], PdfLine]]) -> bool:
-    """The occurrences carry the same numbers, so the line repeats word for word."""
-    return len({numbers for _, _, numbers, _ in seen}) == 1
+def _is_page_number(line: PdfLine, page: int, page_count: int) -> bool:
+    """A lone page number ("3", "Sida 3 av 5") that names the page it sits on."""
+    if _PAGE_NUMBER.fullmatch(line.text.strip()) is None:
+        return False
+    numbers = _line_numbers(line)
+    return numbers[0] == page and all(number == page_count for number in numbers[1:])
 
 
 def _furniture_candidates(items: Sequence[PdfItem], height: float) -> list[PdfLine]:
@@ -505,8 +513,8 @@ def _without_page_furniture(
     """Drop repeated headers and footers and page numbers at the top and bottom of pages.
 
     A repeated line is page furniture only when every number position either holds the
-    same value on every page or matches the page the line sits on; any other changing
-    number keeps the line as ordinary text on every page.
+    same value on every page or matches the page the line sits on, and the line is set
+    apart from the body text (``_set_apart``). Any other line stays text.
     """
     candidates = [_furniture_candidates(items, h) for items, h in zip(pages, heights, strict=True)]
     occurrences: dict[str, list[tuple[int, float, tuple[int, ...], PdfLine]]] = {}
@@ -523,12 +531,12 @@ def _without_page_furniture(
         and max(top for _, top, _, _ in seen) - min(top for _, top, _, _ in seen)
         <= _FURNITURE_PLACE_POINTS
         and _numbers_match_pages(seen)
-        and (_numbers_constant(seen) or _apart_on_every_page(seen, pages, heights))
+        and _set_apart(seen, pages, heights)
     }
     dropped = {
         id(line)
-        for lines in candidates
+        for page, lines in enumerate(candidates, start=1)
         for line in lines
-        if _line_shape(line) in repeated or _PAGE_NUMBER.fullmatch(line.text.strip())
+        if _line_shape(line) in repeated or _is_page_number(line, page, len(pages))
     }
     return [[item for item in items if id(item) not in dropped] for items in pages]
