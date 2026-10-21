@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f336dc4e5225877f0421e1a2fce31e435be4d167cae075e687722a65a9a36acc",
+  "source_set_digest": "5098bd83a9ea3b55c9fd385476b3beda485a1f2dc8004222a7f571f5731fd17c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7087,8 +7087,8 @@
     {
       "id": "TASK-SKRIPT-40-04-21",
       "type": "task",
-      "title": "A signed-in teacher starts a blank exam from Tomt prov",
-      "path": "docs/backlog/tasks/task-skript-40-04-21-a-signed-in-teacher-starts-a-blank-exam-from-tomt-prov.md",
+      "title": "A new exam starts from Nytt prov in the workspace toolbar",
+      "path": "docs/backlog/tasks/task-skript-40-04-21-a-new-exam-starts-from-nytt-prov-in-the-workspace-toolbar.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
