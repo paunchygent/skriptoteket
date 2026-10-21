@@ -136,6 +136,48 @@ def test_a_questions_lines_print_their_one_distinct_value(
     assert _marked(scored) == [False, False]
 
 
+@pytest.mark.parametrize("model_reading", [4, None])
+def test_a_question_printing_two_values_keeps_both_and_no_source_points(
+    model_reading: int | None,
+) -> None:
+    """TASK-SKRIPT-40-04-23 P8: "(4 p)" with "Poäng: 5 poäng" keeps (4, 5)."""
+    chunks, questions = _exam(
+        "Q Fråga 1 om satsdelar (4 p)", "Poäng: 5 poäng", "Q Fråga 2", "(3 p)"
+    )
+    items = _items(chunks, questions, (model_reading, 3))
+    items = (
+        items[0].model_copy(update={"source_points": model_reading}),
+        items[1].model_copy(update={"source_points": 3}),
+    )
+
+    scored = _score(chunks, questions, items)
+
+    assert scored.items[0].conflicting_source_points == (4, 5)
+    assert scored.items[0].source_points is None
+    assert scored.items[0].points == model_reading
+    assert scored.items[1].source_points == 3
+    assert scored.items[1].conflicting_source_points == ()
+
+
+def test_a_question_printing_one_value_keeps_it_as_source_points() -> None:
+    chunks, questions = _exam("Q Fråga 1 om satsdelar (4 p)", "Poäng: 4 poäng")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None,)))
+
+    assert scored.items[0].source_points == 4
+    assert scored.items[0].conflicting_source_points == ()
+    assert scored.items[0].points == 4
+
+
+def test_a_question_printing_nothing_keeps_no_conflicting_values() -> None:
+    chunks, questions = _exam("Q Fråga 1", "Q Fråga 2")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, 2)))
+
+    assert scored.items[0].conflicting_source_points == ()
+    assert scored.items[0].source_points is None
+
+
 def test_a_printed_point_beats_a_reply_of_seven():
     chunks, questions = _exam(
         "# Del 3: kortsvar, 5 poäng",

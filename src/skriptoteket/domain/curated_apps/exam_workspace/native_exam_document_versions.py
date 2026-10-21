@@ -33,7 +33,7 @@ CURRENT_NATIVE_EXAM_DOCUMENT_VERSION: Final[int] = _current_version()
 
 # Every stored document below this version cannot be read. Raising it is one
 # deliberate edit; nothing is deleted automatically.
-OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION: Final[int] = 10
+OLDEST_READABLE_NATIVE_EXAM_DOCUMENT_VERSION: Final[int] = 11
 
 # Reads the JSON object of version N and returns the JSON object of version N+1.
 NativeExamDocumentUpgradeStep = Callable[[dict[str, object]], dict[str, object]]

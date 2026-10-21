@@ -30,8 +30,8 @@ import { newGuestDraft, type ExamWorkspaceGuestDraft } from "./exam-workspace/ex
 import { GUEST_BROWSER_ONLY_NOTICE } from "./exam-workspace/examWorkspaceGuestCopy";
 import { pictureExam } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 
-const CURRENT_TOKEN = '"native_exam_document_v10"';
-const OLD_TOKEN = '"native_exam_document_v9"';
+const CURRENT_TOKEN = '"native_exam_document_v11"';
+const OLD_TOKEN = '"native_exam_document_v10"';
 
 const routeMocks = vi.hoisted(() => ({
   query: {} as Record<string, string | undefined>,

@@ -100,6 +100,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     sequence: 1,
     source_anchor: "body:0001",
     source_points: null,
+    conflicting_source_points: [],
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,

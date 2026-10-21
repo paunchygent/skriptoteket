@@ -36,6 +36,7 @@ import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditLeaseNotice from "./exam-workspace/ExamWorkspaceEditLeaseNotice.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
+import ExamWorkspaceEnrichmentNotice from "./exam-workspace/ExamWorkspaceEnrichmentNotice.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
 import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vue";
@@ -48,6 +49,7 @@ import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
+import { EXAM_WORKSPACE_IMPORT_POINTS_KEY, examWorkspaceImportPointsItemIds } from "./exam-workspace/examWorkspaceImportPoints";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
@@ -234,6 +236,17 @@ const { courseLabel, examInstructionsPreview, formattedSavedExports, zeroPoints 
 const printedMismatches = computed(() =>
   workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
 );
+/**
+ * Right after an import here, the questions whose points differ from the
+ * source's, in list order (TASK-SKRIPT-40-04-23); empty otherwise or after
+ * Avfärda. The list shows their line and marks, the Poäng field its hint.
+ */
+const importPointsIds = computed(() =>
+  editing.importPointsShown.value && workspaceDocument.value
+    ? examWorkspaceImportPointsItemIds(itemEntries.value.map((entry) => entry.id), workspaceDocument.value.items)
+    : [],
+);
+provide(EXAM_WORKSPACE_IMPORT_POINTS_KEY, computed(() => new Set(importPointsIds.value)));
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
 /**
@@ -323,32 +336,12 @@ onMounted(() => void loadSavedDocuments());
       :waiting="takeoverWaiting"
       @takeover="requestTakeover"
     />
-    <div
+    <ExamWorkspaceEnrichmentNotice
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
-      class="xw-notice xw-notice--info ws__bar"
-      role="status"
-      data-test="exam-workspace-enrichment"
-    >
-      <span
-        v-if="enrichment.enrichmentLookupError.value"
-        class="xw-grow"
-        data-test="exam-workspace-enrichment-lookup-error"
-      >{{ enrichment.enrichmentLookupError.value }}</span>
-      <span
-        v-else
-        class="xw-grow"
-        data-test="exam-workspace-enrichment-message"
-      >{{ enrichment.enrichmentMessage.value }}</span>
-      <button
-        v-if="enrichment.enrichmentLookupError.value"
-        type="button"
-        class="xw-btn xw-btn--compact"
-        data-test="exam-workspace-enrichment-lookup-retry"
-        @click="enrichment.retryEnrichmentLookup"
-      >
-        Försök igen
-      </button>
-    </div>
+      :message="enrichment.enrichmentMessage.value"
+      :lookup-error="enrichment.enrichmentLookupError.value"
+      @retry="enrichment.retryEnrichmentLookup"
+    />
 
     <ExamWorkspacePhoneStrip
       v-if="isPhone && workspaceDocument"
@@ -386,6 +379,7 @@ onMounted(() => void loadSavedDocuments());
         :question-count="itemEntries.length"
         :total="total"
         :mismatches="printedMismatches"
+        :import-points-ids="importPointsIds"
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
@@ -395,6 +389,7 @@ onMounted(() => void loadSavedDocuments());
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
         @clear-printed-total="editing.clearPrintedTotal"
+        @dismiss-import-points="editing.dismissImportPoints"
         @close="listOpen = false"
         @set="setListWidth"
         @reset="resetWidth('list')"

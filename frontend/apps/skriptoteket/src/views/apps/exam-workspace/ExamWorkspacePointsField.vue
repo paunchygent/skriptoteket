@@ -13,6 +13,10 @@
  *   value is invalid the last valid value stays in the document and the field
  *   is marked.
  *
+ *   Right after an import, a question whose points differ from the source
+ *   shows "Provtexten: {n} p" next to the field, naming every printed value
+ *   when its own lines printed two different ones (TASK-SKRIPT-40-04-23).
+ *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` at the bottom of every
  *     question, for every item kind.
@@ -21,11 +25,12 @@
  *   - Emits the typed value; `useExamWorkspaceItemEdits` owns the state.
  */
 
-import { computed, ref, useId } from "vue";
+import { computed, inject, ref, useId } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
+import { EXAM_WORKSPACE_IMPORT_POINTS_KEY, examWorkspaceSourcePointsHintText } from "./examWorkspaceImportPoints";
 
 /** A tick value is a number of at least 0 with at most 2 decimals (Q10). */
 const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
@@ -54,6 +59,17 @@ const pointsNegative = computed(() => hasNegativePoints(props.item));
 const pointsEstimated = computed(
   () => props.item.points_estimated && !pointsMissing.value && !pointsNegative.value && !isGrid.value && !hasCriteria.value,
 );
+const importPoints = inject(EXAM_WORKSPACE_IMPORT_POINTS_KEY, null);
+/** The source's printed points while this question is marked by the import line; shown as a nonblocking cue. */
+const sourcePointsHint = computed(() => {
+  if (props.converting) {
+    return null;
+  }
+  if (importPoints?.value.has(props.item.item_id) !== true) {
+    return null;
+  }
+  return examWorkspaceSourcePointsHintText(props.item);
+});
 
 function handlePointsInput(event: Event): void {
   const target = event.target;
@@ -126,6 +142,11 @@ function handleTickPointsInput(event: Event): void {
       data-test="exam-workspace-item-points-input"
       @input="handlePointsInput"
     >
+    <span
+      v-if="sourcePointsHint !== null"
+      class="xw-warn pts__msg"
+      data-test="exam-workspace-points-source"
+    >{{ sourcePointsHint }}</span>
     <span
       v-if="pointsNegative"
       :id="pointsMessageId"

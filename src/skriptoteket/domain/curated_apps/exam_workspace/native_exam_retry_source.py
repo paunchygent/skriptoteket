@@ -356,22 +356,31 @@ def context_chunks(
     )
 
 
+def _kept_from_original(original: NativeExamItem) -> dict[str, object]:
+    """What a retried question keeps of the original: identity, place, source, provenance,
+    and the printed points conflict its source holds (TASK-SKRIPT-40-04-23 P8)."""
+    kept: dict[str, object] = {
+        "item_id": original.item_id,
+        "sequence": original.sequence,
+        "source_anchor": original.source_anchor,
+        "import_record": original.import_record,
+        "ai_suggestion": None,
+    }
+    if original.conflicting_source_points:
+        kept["conflicting_source_points"] = original.conflicting_source_points
+        kept["source_points"] = None
+    return kept
+
+
 def replacement_item(*, original: NativeExamItem, produced: NativeExamItem) -> NativeExamItem:
     """The conversion's item as the replacement for ``original``.
 
-    Identity, place, source and provenance stay the original item's; the conversion's content
-    replaces the rest. A stale answer-key suggestion never survives: after a kind change its
-    key may be invalid, so the teacher's retry starts without it.
+    Identity, place, source, provenance and a saved printed points conflict stay the
+    original item's; the conversion's content replaces the rest. A stale answer-key
+    suggestion never survives: after a kind change its key may be invalid, so the
+    teacher's retry starts without it.
     """
-    replacement = produced.model_copy(
-        update={
-            "item_id": original.item_id,
-            "sequence": original.sequence,
-            "source_anchor": original.source_anchor,
-            "import_record": original.import_record,
-            "ai_suggestion": None,
-        }
-    )
+    replacement = produced.model_copy(update=_kept_from_original(original))
     if original.retry_source is None:
         return replacement.model_copy(update={"retry_source": None, "suggested_kind": None})
     return _attach_source(replacement, original.retry_source)
@@ -386,17 +395,9 @@ def source_review_item(
     reason: str,
 ) -> NativeExamItem:
     """The question's source text, the contexts it owns included, as a review item that keeps
-    the original's identity."""
+    the original's identity, and its saved printed points conflict with it."""
     review = review_source_item(own_chunks(source, assets=assets, payloads=payloads), reason)
     return _attach_source(
-        review.model_copy(
-            update={
-                "item_id": original.item_id,
-                "sequence": original.sequence,
-                "source_anchor": original.source_anchor,
-                "import_record": original.import_record,
-                "ai_suggestion": None,
-            }
-        ),
+        review.model_copy(update=_kept_from_original(original)),
         source,
     )

@@ -156,8 +156,8 @@ function seatOutdatedDraft(): StoredGuestDraft {
   const seated = seatStoredDraft();
   const downgraded: StoredGuestDraft = JSON.parse(
     JSON.stringify(seated).replaceAll(
+      '"native_exam_document_v11"',
       '"native_exam_document_v10"',
-      '"native_exam_document_v9"',
     ),
   );
   storageMocks.stored = downgraded;
