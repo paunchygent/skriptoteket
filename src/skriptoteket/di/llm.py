@@ -113,6 +113,7 @@ class LlmProvider(Provider):
             client=client,
             base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
             internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+            job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
         )
 
     @provide(scope=Scope.APP)

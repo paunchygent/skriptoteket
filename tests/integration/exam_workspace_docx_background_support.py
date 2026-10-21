@@ -2,8 +2,8 @@
 
 ``RecordedTransport`` serves the live replies recorded in
 ``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/`` to the real HTTP adapters, so the
-job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue, token
-ledger, vault storage and QTI validators run unchanged around it. Each ``label_b`` recording
+job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue,
+vault storage and QTI validators run unchanged around it. Each ``label_b`` recording
 carries its capture-time request key in ``label_b_<qid>.request.txt``, followed by one final
 newline.
 """
@@ -56,7 +56,6 @@ from skriptoteket.protocols.docx_conversion_progress import (
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
@@ -204,9 +203,7 @@ def build_pipeline(
     client: httpx.AsyncClient,
     *,
     settings: Settings,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol,
     uow: UnitOfWorkProtocol,
-    clock: ClockProtocol,
     progress: DocxConversionProgressProtocol,
     sleeper: SleeperProtocol,
 ) -> DocxConversionPipeline:
@@ -220,9 +217,7 @@ def build_pipeline(
             timeout_seconds=30,
         ),
         sleeper=sleeper,
-        leases=leases,
         uow=SerializedUnitOfWork(uow),
-        clock=clock,
         settings=settings,
         progress=progress,
     )

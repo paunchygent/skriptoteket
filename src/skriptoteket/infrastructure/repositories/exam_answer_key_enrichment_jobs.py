@@ -64,6 +64,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             locked_by=job.locked_by,
             locked_until=job.locked_until,
             last_error=job.last_error,
+            ai_limit=job.ai_limit.value if job.ai_limit is not None else None,
             diagnostics=list(job.diagnostics),
             created_at=job.created_at,
             updated_at=job.updated_at,
@@ -100,6 +101,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         model.locked_by = job.locked_by
         model.locked_until = job.locked_until
         model.last_error = job.last_error
+        model.ai_limit = job.ai_limit.value if job.ai_limit is not None else None
         model.diagnostics = list(job.diagnostics)
         # conversion_progress is written only by set_conversion_progress.
         model.updated_at = job.updated_at
@@ -127,6 +129,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             ExamAnswerKeyEnrichmentJobModel.status,
             ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
             ExamAnswerKeyEnrichmentJobModel.last_error,
+            ExamAnswerKeyEnrichmentJobModel.ai_limit,
             ExamAnswerKeyEnrichmentJobModel.conversion_progress,
         ).where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
         row = (await self._session.execute(stmt)).one_or_none()
@@ -147,6 +150,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
                 ExamAnswerKeyEnrichmentJobModel.status,
                 ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id,
                 ExamAnswerKeyEnrichmentJobModel.last_error,
+                ExamAnswerKeyEnrichmentJobModel.ai_limit,
                 ExamAnswerKeyEnrichmentJobModel.conversion_progress,
             )
             .where(

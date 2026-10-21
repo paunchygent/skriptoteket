@@ -80,7 +80,6 @@ from tests.fixtures.application_fixtures import FakeUow
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     FixedClock,
     InMemoryEnrichmentJobRepository,
-    InMemoryLeaseRepository,
     StubProvider,
     _route,
     docx_job_handler,
@@ -131,16 +130,9 @@ def unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
 
 
 class WorkspaceHarness:
-    def __init__(
-        self,
-        *,
-        provider: StubProvider,
-        document: NativeExamDocument,
-        daily_token_limit: int = 1_000_000,
-    ) -> None:
+    def __init__(self, *, provider: StubProvider, document: NativeExamDocument) -> None:
         self.owner_user_id = uuid4()
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
-        self.leases = InMemoryLeaseRepository(daily_token_limit=daily_token_limit)
         self.provider = provider
         self.document = document
 
@@ -149,7 +141,6 @@ class WorkspaceHarness:
         codec = ExamWorkspaceContainerCodec()
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
-            leases=self.leases,
             provider=provider,
             provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
             uow=FakeUow(),
@@ -158,7 +149,6 @@ class WorkspaceHarness:
             content_tags_handler=AsyncMock(spec=ProcessExamContentSuggestionsHandler),
             docx_handler=docx_job_handler(
                 enrichment_jobs=self.enrichment_jobs,
-                leases=self.leases,
                 provider=provider,
                 vault_files=vault_files,
                 vault_storage=vault_storage,

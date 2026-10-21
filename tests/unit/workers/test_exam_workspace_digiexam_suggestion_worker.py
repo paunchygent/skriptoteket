@@ -21,11 +21,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import answer_key_fingerprint
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-    InMemoryLeaseRepository,
     StubProvider,
 )
 from tests.unit.application.curated_apps.handlers.workspace_enrichment_job_support import (
-    NOW,
     WorkspaceHarness,
 )
 from tests.unit.application.curated_apps.test_exam_workspace_digiexam_suggestions import (
@@ -41,13 +39,10 @@ class CapturingModel(StubProvider):
     def __init__(self) -> None:
         super().__init__(content={}, usage=StructuredLLMUsage(total_tokens=17))
         self.requests: list[StructuredLLMRequest] = []
-        self.leases: InMemoryLeaseRepository | None = None
 
     async def complete_structured(
         self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
     ) -> StructuredLLMResponse:
-        if self.leases is not None:
-            assert any(lease.state.value == "reserved" for lease in self.leases.leases.values())
         self.requests.append(request)
         self.call_count += 1
         payload = json.loads(request.user_payload)
@@ -96,12 +91,11 @@ def assert_item_local_suggestions(
 
 
 @pytest.mark.parametrize("source_key,zero_points", [(False, False), (True, False), (False, True)])
-async def test_digiexam_worker_keeps_item_identity_review_and_daily_lease(source_key, zero_points):
+async def test_digiexam_worker_keeps_item_identity_and_review(source_key, zero_points):
     document = imported_document(uuid4(), source_key=source_key, zero_points=zero_points)
     before = document.model_dump(mode="json")
     model = CapturingModel()
     harness = WorkspaceHarness(provider=model, document=document)
-    model.leases = harness.leases
     job = await harness.seed_claimed_job()
     finished = await harness.handler.handle(job=job)
     assert finished.status.value == "succeeded"
@@ -118,22 +112,4 @@ async def test_digiexam_worker_keeps_item_identity_review_and_daily_lease(source
     if source_key:
         assert "item_002" not in {request.item_id for request in model.requests}
         assert all("Indragen veckopeng" not in request.user_payload for request in model.requests)
-    leases = list(harness.leases.leases.values())
-    assert len(leases) == len(eligible)
-    assert all(lease.state.value == "reconciled" and lease.actual_tokens == 17 for lease in leases)
-    usage = await harness.leases.day_usage(utc_day=NOW.date())
-    assert usage.charged_tokens == 17 * len(eligible)
     assert document.model_dump(mode="json") == before
-
-
-async def test_digiexam_worker_refuses_exhausted_daily_lease_before_any_model_call():
-    model = CapturingModel()
-    harness = WorkspaceHarness(
-        provider=model, document=imported_document(uuid4()), daily_token_limit=1
-    )
-    job = await harness.seed_claimed_job()
-    finished = await harness.handler.handle(job=job)
-    assert finished.status.value == "failed"
-    assert finished.last_error == "daily_token_lease_exhausted"
-    assert model.requests == []
-    assert finished.workspace_suggestions_json is None

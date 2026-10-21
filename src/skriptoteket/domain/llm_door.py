@@ -2,9 +2,9 @@
 
 Purpose:
     Name who a paid AI call is made for and which daily limit refused it
-    (ST-SKRIPT-41-01 B1, B4, B5). Every paid AI call carries one
+    (ST-SKRIPT-41-01 B1, B4, B5). Every paid AI call carries its action's
     ``AiDoorCaller``; a door refusal for a pool, user share or USD ceiling
-    becomes ``AiDailyLimitReached`` and ends the AI action's remaining calls.
+    becomes ``AiDailyLimitReached``.
 
 Relationships:
     Built by the application handlers that run AI jobs from the job owner;
@@ -13,7 +13,6 @@ Relationships:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from enum import StrEnum
 from uuid import UUID
 
@@ -21,26 +20,66 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import has_at_least_role
 
 
-@dataclass(frozen=True, slots=True)
 class AiDoorCaller:
-    """The teacher a paid AI call is made for, and the authority it carries.
+    """The teacher one AI action's paid calls are made for, and their authority.
 
-    ``exempt`` users meet only the door's pools (B5). ``allow_paid_overage``
-    is set only for the one AI action an admin approved past an exhausted pool.
+    Create one per AI action (a job or one synchronous request) and never share
+    it: the action is admitted when its first door call succeeds, and every
+    later call of the same action then runs as paid overage so a started job
+    finishes (B4, C7) until its overage passes the per-job cap. ``exempt`` users
+    meet only the door's pools (B5). ``overage_approved`` is set only by
+    agent-run tooling after the user's yes (C6); such a run has no per-job cap.
     """
 
-    user_id: UUID
-    exempt: bool
-    allow_paid_overage: bool
+    __slots__ = ("_admitted", "_overage_usd_micros", "exempt", "overage_approved", "user_id")
+
+    def __init__(self, *, user_id: UUID, exempt: bool, overage_approved: bool) -> None:
+        self.user_id = user_id
+        self.exempt = exempt
+        self.overage_approved = overage_approved
+        self._admitted = False
+        self._overage_usd_micros = 0
+
+    @property
+    def admitted(self) -> bool:
+        return self._admitted
+
+    @property
+    def allow_paid_overage(self) -> bool:
+        return self.overage_approved or self._admitted
+
+    @property
+    def overage_usd_micros(self) -> int:
+        """USD micros the door charged this action as paid overage so far."""
+
+        return self._overage_usd_micros
+
+    def admit(self) -> None:
+        """Record that the action's first door call succeeded."""
+
+        self._admitted = True
+
+    def require_within_overage_cap(self, *, cap_usd_micros: int) -> None:
+        """Refuse a further call once this action's overage passed the cap (C7)."""
+
+        if not self.overage_approved and self._overage_usd_micros > cap_usd_micros:
+            raise AiJobOverageCapReached(
+                overage_usd_micros=self._overage_usd_micros, cap_usd_micros=cap_usd_micros
+            )
+
+    def charge_overage(self, usd_micros: int) -> None:
+        if usd_micros < 0:
+            raise ValueError("A door overage charge cannot be negative.")
+        self._overage_usd_micros += usd_micros
 
 
-def door_caller_for(*, user: User, allow_paid_overage: bool) -> AiDoorCaller:
-    """Build the door caller for ``user``; admins and superusers are exempt."""
+def door_caller_for(*, user: User, overage_approved: bool = False) -> AiDoorCaller:
+    """Start the door caller of one AI action for ``user``; admins are exempt."""
 
     return AiDoorCaller(
         user_id=user.id,
         exempt=has_at_least_role(user=user, role=Role.ADMIN),
-        allow_paid_overage=allow_paid_overage,
+        overage_approved=overage_approved,
     )
 
 
@@ -55,9 +94,20 @@ class AiDailyLimit(StrEnum):
 class AiDailyLimitReached(Exception):
     """The door refused a call for a daily limit; no provider call was made.
 
-    Never retried: the AI action stops sending and records ``limit``.
+    Never retried; the AI action records ``limit`` and shows the limit note.
     """
 
     def __init__(self, *, limit: AiDailyLimit) -> None:
         super().__init__(f"AI daily limit reached: {limit.value}")
         self.limit = limit
+
+
+class AiJobOverageCapReached(Exception):
+    """A started action's paid overage passed the per-job cap (C7); stop the job."""
+
+    def __init__(self, *, overage_usd_micros: int, cap_usd_micros: int) -> None:
+        super().__init__(
+            f"AI job overage {overage_usd_micros} USD micros passed the cap {cap_usd_micros}"
+        )
+        self.overage_usd_micros = overage_usd_micros
+        self.cap_usd_micros = cap_usd_micros

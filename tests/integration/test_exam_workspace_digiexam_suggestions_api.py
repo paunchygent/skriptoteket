@@ -42,9 +42,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_rea
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
-    PostgreSQLAnswerKeyTokenLeaseRepository,
-)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -182,9 +179,6 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
                 assert duplicate.json()["job_id"] == single_id
 
                 model = CapturingModel()
-                leases = PostgreSQLAnswerKeyTokenLeaseRepository(
-                    session, daily_token_limit=1_000_000
-                )
                 lane = ExamAnswerKeyEnrichmentWorkspaceLane(
                     enrichment_jobs=world.jobs,
                     provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
@@ -192,13 +186,7 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
                     clock=clock,
                     ledger=AnswerKeyAttemptLedger(
                         enrichment_jobs=world.jobs,
-                        leases=leases,
-                        attempts=AnswerKeyProviderAttemptRunner(
-                            provider=model,
-                            leases=leases,
-                            uow=world.uow,
-                            clock=clock,
-                        ),
+                        attempts=AnswerKeyProviderAttemptRunner(provider=model),
                         uow=world.uow,
                         clock=clock,
                     ),
@@ -229,8 +217,6 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
                             document.items[1].item_id
                         ]
                 assert model.call_count == 7
-                usage = await leases.day_usage(utc_day=clock.now().date())
-                assert usage.charged_tokens == 7 * 17
                 # The persisted document still has absent keys; worker results need teacher review.
                 assert await world.open(actor, lineage_id) == document
                 revision_two = await world.teacher_save(actor, document)

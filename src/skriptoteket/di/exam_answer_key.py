@@ -1,8 +1,7 @@
 """DI bindings for exam answer-key enrichment.
 
-Enrichment job and token lease repositories, provider
-selection, the structured provider, and the enrichment job and workspace
-handlers.
+Enrichment job repository, provider selection, the structured provider, and
+the enrichment job and workspace handlers.
 """
 
 from __future__ import annotations
@@ -13,9 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
-    GetAnswerKeyLeaseStatusHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
     ProcessExamContentSuggestionsHandler,
@@ -54,15 +50,10 @@ from skriptoteket.infrastructure.llm.openrouter.answer_key_profiles import (
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
-    PostgreSQLAnswerKeyTokenLeaseRepository,
-)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyLeaseStatusHandlerProtocol,
     AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamWorkspaceSuggestionJobQueryProtocol,
 )
@@ -92,25 +83,6 @@ class ExamAnswerKeyProvider(Provider):
         return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
 
     @provide(scope=Scope.REQUEST)
-    def exam_answer_key_token_lease_repository(
-        self,
-        session: AsyncSession,
-        settings: Settings,
-    ) -> AnswerKeyTokenLeaseRepositoryProtocol:
-        return PostgreSQLAnswerKeyTokenLeaseRepository(
-            session,
-            daily_token_limit=settings.LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def answer_key_lease_status_handler(
-        self,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        clock: ClockProtocol,
-    ) -> AnswerKeyLeaseStatusHandlerProtocol:
-        return GetAnswerKeyLeaseStatusHandler(leases=leases, clock=clock)
-
-    @provide(scope=Scope.APP)
     def answer_key_provider_selector(self, settings: Settings) -> AnswerKeyProviderSelectorProtocol:
         return FixedRouteAnswerKeyProviderSelector(
             route=AnswerKeyProviderRoute(
@@ -145,7 +117,6 @@ class ExamAnswerKeyProvider(Provider):
     def process_exam_answer_key_enrichment_job_handler(
         self,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
         provider: AnswerKeyStructuredProviderProtocol,
         provider_selector: AnswerKeyProviderSelectorProtocol,
         uow: UnitOfWorkProtocol,
@@ -156,7 +127,6 @@ class ExamAnswerKeyProvider(Provider):
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
-            leases=leases,
             provider=provider,
             provider_selector=provider_selector,
             uow=uow,

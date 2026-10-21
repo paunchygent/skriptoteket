@@ -93,7 +93,6 @@ from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
@@ -135,9 +134,6 @@ class ExamWorkspaceProvider(Provider):
         client: httpx.AsyncClient,
         settings: Settings,
         sleeper: SleeperProtocol,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
     ) -> MeteredExamContentTagClassifier:
         return MeteredExamContentTagClassifier(
             classifier=OpenAIDecisionsItemTypeLabeler(
@@ -148,9 +144,6 @@ class ExamWorkspaceProvider(Provider):
                 sleeper=sleeper,
                 max_attempts=1,
             ),
-            leases=leases,
-            uow=uow,
-            clock=clock,
         )
 
     @provide(scope=Scope.REQUEST)
@@ -194,9 +187,7 @@ class ExamWorkspaceProvider(Provider):
     def docx_pipeline(
         self,
         client: httpx.AsyncClient,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
         uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
         settings: Settings,
         sleeper: SleeperProtocol,
         progress: DocxConversionProgressProtocol,
@@ -211,9 +202,7 @@ class ExamWorkspaceProvider(Provider):
                 timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
             ),
             sleeper=sleeper,
-            leases=leases,
             uow=SerializedUnitOfWork(uow),
-            clock=clock,
             settings=settings,
             progress=progress,
         )
@@ -282,9 +271,6 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
         settings: Settings,
     ) -> RetryExamWorkspaceItemHandlerProtocol:
         """Provide the one-question retry handler; its one converter call rides the exchange."""
@@ -299,9 +285,6 @@ class ExamWorkspaceProvider(Provider):
                     api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
                     timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
                 ),
-                leases=leases,
-                uow=uow,
-                clock=clock,
             ),
             profile=build_luna_docx_conversion_profile(settings),
             enabled=settings.LLM_ANSWER_KEY_ENABLED,

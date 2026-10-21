@@ -2,12 +2,12 @@
 
 Purpose:
     Complete one claimed workspace suggestion job on the answer-key views
-    the editor sent with the request (TASK-SKRIPT-39-04-07): reserve the
-    daily token leases with the recorded attempt, collect one suggestion
-    per requested question (one GLM failover per item after a transient
-    outage), and store the suggestions on the job itself. This lane never
-    reads a saved document revision and writes no overlay; any failure
-    finishes the job as FAILED with a typed ``last_error``.
+    the editor sent with the request (TASK-SKRIPT-39-04-07): record the
+    attempt, collect one suggestion per requested question (one GLM
+    failover per item after a transient outage), and store the suggestions
+    on the job itself. This lane never reads a saved document revision and
+    writes no overlay; any failure finishes the job as FAILED with a typed
+    ``last_error``.
 
 Relationships:
     Dispatched by
@@ -45,9 +45,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLeaseRefused,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     WorkspaceAnswerKeyCandidatePlan,
@@ -110,23 +107,13 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         attempt_candidates = tuple(
             _workspace_attempt_candidate(job_id=job.id, plan=plan) for plan in plans
         )
-        try:
-            job, leases_by_item = await self._ledger.record_attempt_and_reserve(
-                job=job,
-                requests=tuple(
-                    (candidate.item_id, candidate.request) for candidate in attempt_candidates
-                ),
-                profile=route.primary,
-            )
-        except AnswerKeyTokenLeaseRefused:
-            return await self.fail(job=job, last_error="daily_token_lease_exhausted")
+        job = await self._ledger.record_attempt(job=job)
 
         collected = await self._ledger.collect_valid_proposals(
             job=job,
             route=route,
             plans=plans,
             attempt_candidates=attempt_candidates,
-            leases_by_item=leases_by_item,
             proposal_from=_workspace_suggestion,
         )
         suggestions = collected.proposals

@@ -171,7 +171,7 @@ class TestStatus:
             harness.jobs.jobs[job.id] = job.model_copy(
                 update={
                     "status": ExamAnswerKeyEnrichmentJobStatus.FAILED,
-                    "last_error": "daily_token_lease_exhausted",
+                    "last_error": "llm_output_invalid",
                 }
             )
         return job.id
@@ -220,7 +220,7 @@ class TestStatus:
 
         assert response.state is ExamWorkspaceEnrichmentState.FAILED
         assert response.message is not None
-        assert "AI-budget" in response.message
+        assert "tolkas" in response.message
 
     async def test_status_is_hidden_from_other_teachers(self) -> None:
         harness = SuggestionHandlerHarness()

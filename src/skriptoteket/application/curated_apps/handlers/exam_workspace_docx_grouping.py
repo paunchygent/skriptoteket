@@ -7,7 +7,7 @@ measured in the feasibility step (2026-10-11). A failed call or an unusable mani
 retried; three failures stop the grouping.
 
 Relationships:
-    Implements ``protocols.exam_grouping.ExamGrouperProtocol`` over the leased
+    Implements ``protocols.exam_grouping.ExamGrouperProtocol`` over the
     ``DocxBuildRoundExchange``; ``domain.curated_apps.exam_workspace.docx_manifest``
     validates the output against the chunk anchors.
 """
@@ -192,7 +192,7 @@ def build_grouping_request(
 
 
 class ResponsesExamGrouper(ExamGrouperProtocol):
-    """Group an exam's chunks with at most three leased Responses calls."""
+    """Group an exam's chunks with at most three Responses calls."""
 
     def __init__(
         self, *, exchange: DocxBuildRoundExchange, profile: StructuredLLMProviderProfile
@@ -213,7 +213,7 @@ class ResponsesExamGrouper(ExamGrouperProtocol):
             try:
                 reply = await self._exchange.exchange(request, self._profile)
             except DocxBuildRoundFailure as error:
-                if error.code in {"lease_refused", "text_budget_exceeded"}:
+                if error.code == "text_budget_exceeded":
                     raise ExamGroupingError(
                         str(error), code=error.code, detail=error.detail
                     ) from error

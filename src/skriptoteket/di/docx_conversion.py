@@ -39,11 +39,9 @@ from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
 from skriptoteket.infrastructure.llm.openai.responses_item_labeler import (
     ResponsesSecondPassItemTypeLabeler,
 )
-from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
@@ -53,18 +51,15 @@ def build_docx_conversion_pipeline(
     client: httpx.AsyncClient,
     provider: AnswerKeyStructuredProviderProtocol,
     sleeper: SleeperProtocol,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol,
     uow: SerializedUnitOfWork,
-    clock: ClockProtocol,
     settings: Settings,
     progress: DocxConversionProgressProtocol,
 ) -> DocxConversionPipeline:
     """Grouping, the second label pass and batch conversion share one Responses provider.
 
-    The Decisions first pass calls its own endpoint on ``client``. Every call is leased on
-    the serialized unit of work.
+    The Decisions first pass calls its own endpoint on ``client``.
     """
-    exchange = DocxBuildRoundExchange(provider, leases, uow, clock)
+    exchange = DocxBuildRoundExchange(provider)
     return DocxConversionPipeline(
         grouper=ResponsesExamGrouper(
             exchange=exchange, profile=build_luna_docx_grouping_profile(settings)
@@ -80,9 +75,6 @@ def build_docx_conversion_pipeline(
             second_pass=ResponsesSecondPassItemTypeLabeler(
                 provider=provider, profile=build_luna_item_label_profile(settings), sleeper=sleeper
             ),
-            leases=leases,
-            uow=uow,
-            clock=clock,
         ),
         content_classifier=MeteredExamContentTagClassifier(
             classifier=OpenAIDecisionsItemTypeLabeler(
@@ -93,9 +85,6 @@ def build_docx_conversion_pipeline(
                 sleeper=sleeper,
                 max_attempts=1,
             ),
-            leases=leases,
-            uow=uow,
-            clock=clock,
         ),
         labeler_source=PythonDocxLabelerMarkdown(),
         exchange=exchange,

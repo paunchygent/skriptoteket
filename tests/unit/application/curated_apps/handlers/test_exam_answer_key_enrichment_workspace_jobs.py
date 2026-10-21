@@ -2,12 +2,11 @@
 
 Purpose:
     Prove the workspace branch of the enrichment processor runs on the
-    answer-key views sent with the job (TASK-SKRIPT-39-04-07), never on a
-    saved revision: the same lease discipline runs (reserve before the
-    call, reconcile from usage), the suggestions are stored on the job
-    itself with their fingerprints and provider lineage, no overlay is
-    written, and the conversion producer is never called. Failure paths
-    finish the job without touching conversion jobs.
+    answer-key views sent with the job (TASK-SKRIPT-39-04-07): the provider
+    is called once per item, the suggestions are stored on the job itself
+    with their fingerprints and provider lineage, no overlay is written, and
+    the conversion producer is never called. Failure paths finish the job
+    without touching conversion jobs.
 
 Relationships:
     - Exercises `application.curated_apps.handlers.exam_answer_key_enrichment_jobs`
@@ -29,9 +28,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLeaseState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_fingerprint,
@@ -66,10 +62,6 @@ async def test_workspace_job_stores_suggestions_on_the_job_without_an_overlay() 
 
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert harness.provider.call_count == 1
-    leases = list(harness.leases.leases.values())
-    assert len(leases) == 1
-    assert leases[0].state is AnswerKeyTokenLeaseState.RECONCILED
-    assert leases[0].actual_tokens == 190
 
     payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
         finished.workspace_suggestions_json
@@ -82,22 +74,6 @@ async def test_workspace_job_stores_suggestions_on_the_job_without_an_overlay() 
     assert arrived.suggestion.model == "gpt-5.6-luna"
     assert arrived.suggestion.prompt_template_version == "digiexam_choice_answer_key_prompt_v1"
     assert arrived.suggestion.fingerprint == answer_key_fingerprint(document.items[0], None)
-
-
-async def test_workspace_lease_refusal_fails_closed_with_zero_provider_calls() -> None:
-    document = unkeyed_choice_document(document_id=uuid4())
-    provider = StubProvider(
-        content={"correct_alternative_ids": [2]},
-        usage=StructuredLLMUsage(total_tokens=190),
-    )
-    harness = WorkspaceHarness(provider=provider, document=document, daily_token_limit=10)
-    job = await harness.seed_claimed_job()
-
-    finished = await harness.handler.handle(job=job)
-
-    assert provider.call_count == 0
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
-    assert finished.last_error == "daily_token_lease_exhausted"
 
 
 async def test_workspace_job_without_sent_content_fails_closed() -> None:
@@ -133,8 +109,6 @@ async def test_invalid_workspace_model_output_fails_without_a_suggestion() -> No
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "llm_output_invalid"
     assert finished.workspace_suggestions_json is None
-    leases = list(harness.leases.leases.values())
-    assert leases[0].state is AnswerKeyTokenLeaseState.RECONCILED
 
 
 async def test_matching_workspace_job_stores_pairs_for_recorded_unkeyed_items() -> None:

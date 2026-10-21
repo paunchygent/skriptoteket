@@ -16,7 +16,7 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 from uuid import UUID, uuid4
@@ -41,21 +41,14 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseDayUsage,
-    AnswerKeyTokenLeaseState,
-)
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
-from tests.fixtures.time_fixtures import FixedClock
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 RECORDINGS = FIXTURES / "docx_key_provenance_v14"
@@ -194,29 +187,6 @@ def decisions_client(exam: str, root: Path = RECORDINGS) -> httpx.AsyncClient:
     return httpx.AsyncClient(transport=httpx.MockTransport(handle))
 
 
-class GrantingLeases:
-    """Grant every reservation."""
-
-    async def reserve(
-        self,
-        *,
-        now: datetime,
-        requested_tokens: int,
-        job_id: UUID,
-        item_id: str,
-        provider_profile_id: str,
-    ) -> AnswerKeyTokenLease:
-        return AnswerKeyTokenLease(
-            uuid4(), now.date(), requested_tokens, AnswerKeyTokenLeaseState.RESERVED
-        )
-
-    async def reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
-        return None
-
-    async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage:
-        raise NotImplementedError("The DOCX converter never reads daily usage.")
-
-
 class NoTransaction:
     """A transaction that does nothing, for lease bookkeeping."""
 
@@ -318,7 +288,6 @@ def build_replay(
     *,
     progress: RecordingProgress | None = None,
     failures: Mapping[str, Exception] | None = None,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol | None = None,
     enabled: bool = True,
     root: Path = RECORDINGS,
     corpus: Path | None = None,
@@ -332,9 +301,7 @@ def build_replay(
         client=decisions_client(exam, root),
         provider=provider,
         sleeper=NoSleep(),
-        leases=leases or GrantingLeases(),
         uow=SerializedUnitOfWork(NoTransaction()),
-        clock=FixedClock(_NOW),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=enabled,
             OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",

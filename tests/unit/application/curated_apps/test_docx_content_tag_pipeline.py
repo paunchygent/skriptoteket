@@ -28,10 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import ExamCourseChoice
-from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    _NOW,
-    GrantingLeases,
     NoSleep,
     NoTransaction,
     RecordingProgress,
@@ -111,9 +108,7 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
             client=client,
             provider=provider,
             sleeper=NoSleep(),
-            leases=GrantingLeases(),
             uow=SerializedUnitOfWork(NoTransaction()),
-            clock=FixedClock(_NOW),
             settings=Settings.model_construct(
                 LLM_ANSWER_KEY_ENABLED=True,
                 OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",

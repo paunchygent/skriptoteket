@@ -1,8 +1,11 @@
 """Fake LLM provider door for unit tests and deterministic replays.
 
 ``RecordingDoor`` implements ``LlmDoorClientProtocol``: it records each
-operation, payload and caller and answers from a responder, so replays serve
-recorded OpenAI bodies at the door seam and never reach the door (B6).
+operation, payload, caller and the paid-overage mode sent, answers from a
+responder, and admits the caller, counts its overage charge and enforces the
+per-job cap as the real client does,
+so replays serve recorded OpenAI bodies at the door seam and never reach the
+door (B6).
 """
 
 from __future__ import annotations
@@ -17,13 +20,16 @@ from pydantic import JsonValue
 
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
+from skriptoteket.infrastructure.llm.door.client import record_door_charge
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply, LlmDoorClientProtocol
 
-FIXTURE_CALLER = AiDoorCaller(
-    user_id=UUID("00000000-0000-0000-0000-00000000a11e"),
-    exempt=True,
-    allow_paid_overage=False,
-)
+FIXTURE_USER_ID = UUID("00000000-0000-0000-0000-00000000a11e")
+
+
+def fixture_caller(*, exempt: bool = True, overage_approved: bool = False) -> AiDoorCaller:
+    """A fresh caller for one AI action (callers carry per-action admission)."""
+
+    return AiDoorCaller(user_id=FIXTURE_USER_ID, exempt=exempt, overage_approved=overage_approved)
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,17 +38,26 @@ class DoorSent:
     payload: dict[str, JsonValue]
     caller: AiDoorCaller
     timeout_seconds: float
+    allow_paid_overage: bool
 
 
 DoorResponder = Callable[[DoorSent], DoorReply]
 
 
-def json_reply(body: JsonValue, *, status_code: int = 200) -> DoorReply:
-    return DoorReply(
-        status_code=status_code,
-        headers={"content-type": "application/json"},
-        body=json.dumps(body).encode(),
-    )
+def json_reply(
+    body: JsonValue, *, status_code: int = 200, overage_usd_micros: int | None = None
+) -> DoorReply:
+    """A door reply; ``overage_usd_micros`` marks it as a paid-overage charge."""
+
+    headers = {
+        "content-type": "application/json",
+        "X-HuleEdu-Charge-Kind": "complimentary",
+        "X-HuleEdu-Charge-USD-Micros": "0",
+    }
+    if overage_usd_micros is not None:
+        headers["X-HuleEdu-Charge-Kind"] = "overage"
+        headers["X-HuleEdu-Charge-USD-Micros"] = str(overage_usd_micros)
+    return DoorReply(status_code=status_code, headers=headers, body=json.dumps(body).encode())
 
 
 def replies_in_order(bodies: Iterable[JsonValue]) -> DoorResponder:
@@ -69,9 +84,10 @@ def limit_refusal(limit: AiDailyLimit) -> DoorResponder:
 
 
 class RecordingDoor(LlmDoorClientProtocol):
-    def __init__(self, responder: DoorResponder) -> None:
+    def __init__(self, responder: DoorResponder, *, cap_usd_micros: int = 1_000_000) -> None:
         self.sent: list[DoorSent] = []
         self._responder = responder
+        self._cap_usd_micros = cap_usd_micros
 
     async def send(
         self,
@@ -81,14 +97,20 @@ class RecordingDoor(LlmDoorClientProtocol):
         caller: AiDoorCaller,
         timeout_seconds: float,
     ) -> DoorReply:
+        caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
         sent = DoorSent(
             operation=operation,
             payload=dict(payload),
             caller=caller,
             timeout_seconds=timeout_seconds,
+            allow_paid_overage=caller.allow_paid_overage,
         )
         self.sent.append(sent)
-        return self._responder(sent)
+        reply = self._responder(sent)
+        if reply.is_success:
+            caller.admit()
+        record_door_charge(caller, reply.headers)
+        return reply
 
 
 def user_with_role(role: Role, *, user_id: UUID) -> User:

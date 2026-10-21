@@ -11,7 +11,6 @@ from __future__ import annotations
 import io
 import time
 from collections.abc import Mapping
-from datetime import UTC, datetime
 from uuid import uuid4
 
 import httpx
@@ -62,9 +61,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxExamChunker,
 )
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
-from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    GrantingLeases,
     NoSleep,
     NoTransaction,
     RecordingProgress,
@@ -239,9 +236,7 @@ async def _convert(
         client=httpx.AsyncClient(transport=httpx.MockTransport(answer)),
         provider=provider,
         sleeper=NoSleep(),
-        leases=GrantingLeases(),
         uow=SerializedUnitOfWork(NoTransaction()),
-        clock=FixedClock(datetime(2026, 10, 11, tzinfo=UTC)),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=True,
             OPENAI_LLM_ANSWER_KEY_API_KEY="test-key",

@@ -5,9 +5,8 @@ Purpose:
     answers it already obtained when a later question returns an invalid
     answer or the provider fails (F1 of TASK-SKRIPT-39-04-07): an invalid
     answer skips only its own question and later questions still run, a
-    provider failure or a refused failover lease fails the job while the
-    earlier valid suggestions stay stored on it, and a failure on the first
-    question stores no suggestions.
+    provider failure fails the job while the earlier valid suggestions stay
+    stored on it, and a failure on the first question stores no suggestions.
 
 Relationships:
     - Exercises `application.curated_apps.handlers.exam_answer_key_enrichment_jobs`
@@ -109,22 +108,20 @@ async def test_valid_answer_survives_an_invalid_answer_then_a_provider_error() -
     assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
 
 
-async def test_valid_answer_survives_a_failover_lease_refusal() -> None:
+async def test_valid_answer_survives_a_failed_failover() -> None:
     three = three_unkeyed_choice_document(document_id=uuid4())
     document = three.model_copy(update={"items": three.items[:2]})
     timeout = provider_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)
     provider = ScriptedProvider([{"correct_alternative_ids": [2]}, timeout, timeout])
-    # The upfront reservations for both attempted questions fit the day, but
-    # the failover's second lease for question 2 does not.
-    harness = WorkspaceHarness(provider=provider, document=document, daily_token_limit=8_840)
+    harness = WorkspaceHarness(provider=provider, document=document)
     job = await harness.seed_claimed_job()
 
     finished = await harness.handler.handle(job=job)
 
-    # The failover provider is never called once its lease is refused.
-    assert provider.call_count == 2
+    # Question 1 answered; question 2 times out on primary and on failover.
+    assert provider.call_count == 3
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
-    assert finished.last_error == "daily_token_lease_exhausted"
+    assert finished.last_error == "provider_timeout"
     payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
         finished.workspace_suggestions_json
     )

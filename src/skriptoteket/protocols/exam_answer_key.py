@@ -2,9 +2,8 @@
 
 Purpose:
     Keep the machine answer-key lane protocol-first: structured provider
-    execution, provider selection, the Postgres daily token lease, the
-    and enrichment job ledger all sit behind
-    protocols so infrastructure can evolve independently.
+    execution, provider selection, and the enrichment job ledger all sit
+    behind protocols so infrastructure can evolve independently.
 
 Relationships:
     Implemented under ``infrastructure.llm.openai`` and
@@ -16,7 +15,7 @@ Relationships:
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
@@ -33,11 +32,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseDayUsage,
-)
-from skriptoteket.domain.identity.models import User
 
 
 class AnswerKeyStructuredProviderProtocol(Protocol):
@@ -55,41 +49,6 @@ class AnswerKeyProviderSelectorProtocol(Protocol):
     """Select the ordered primary/failover provider route for one job."""
 
     def select_route(self) -> AnswerKeyProviderRoute: ...
-
-
-class AnswerKeyTokenLeaseRepositoryProtocol(Protocol):
-    """Own the single Postgres daily token-lease table through the UoW.
-
-    ``reserve`` raises ``AnswerKeyTokenLeaseRefused`` when the UTC day's
-    remaining allowance cannot cover ``requested_tokens``. Leases are never
-    refunded: an unreconciled lease keeps charging its reserved amount.
-    """
-
-    async def reserve(
-        self,
-        *,
-        now: datetime,
-        requested_tokens: int,
-        job_id: UUID,
-        item_id: str,
-        provider_profile_id: str,
-    ) -> AnswerKeyTokenLease: ...
-
-    async def reconcile(
-        self,
-        *,
-        lease_id: UUID,
-        actual_tokens: int,
-        now: datetime,
-    ) -> None: ...
-
-    async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage: ...
-
-
-class AnswerKeyLeaseStatusHandlerProtocol(Protocol):
-    """Read the current UTC day's answer-key lease balance for operators."""
-
-    async def handle(self, *, actor: User) -> AnswerKeyTokenLeaseDayUsage: ...
 
 
 class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):

@@ -122,7 +122,7 @@ class TestFind:
             harness,
             job_id,
             status=ExamAnswerKeyEnrichmentJobStatus.FAILED,
-            last_error="daily_token_lease_exhausted",
+            last_error="provider_timeout",
         )
 
         found = await harness.find_handler.handle(
@@ -131,7 +131,7 @@ class TestFind:
 
         assert found is not None
         assert found.state is ExamWorkspaceEnrichmentState.FAILED
-        assert found.message is not None and "AI-budget" in found.message
+        assert found.message is not None and "Försök igen senare" in found.message
         assert [entry.item_id for entry in found.suggestions] == ["item_001"]
 
     async def test_job_on_an_older_saved_version_is_never_found(self) -> None:

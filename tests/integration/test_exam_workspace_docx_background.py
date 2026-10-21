@@ -63,17 +63,11 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
-from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
-    ExamAnswerKeyTokenLeaseModel,
-)
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
-)
-from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
-    PostgreSQLAnswerKeyTokenLeaseRepository,
 )
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
@@ -96,7 +90,6 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDED_FAMILIES_PER_BATCH,
     RECORDINGS,
-    GrantingLeases,
     NoSleep,
     NoTransaction,
     RecordingProgress,
@@ -196,11 +189,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
             pipeline = build_pipeline(
                 client,
                 settings=settings,
-                leases=PostgreSQLAnswerKeyTokenLeaseRepository(
-                    session, daily_token_limit=50_000_000
-                ),
                 uow=uow,
-                clock=clock,
                 progress=progress_port,
                 sleeper=AsyncioSleeper(),
             )
@@ -254,22 +243,6 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
         assert [v.document_version for v in live] == [stored.revision]
         assert stored.revision == max(v.document_version or 0 for v in versions)
 
-        leases = (
-            await reader.scalars(
-                select(ExamAnswerKeyTokenLeaseModel).where(
-                    ExamAnswerKeyTokenLeaseModel.job_id == queued.job_id
-                )
-            )
-        ).all()
-        # One lease per provider call: every Responses call and every Decisions request.
-        assert len(leases) == transport.responses_requests + transport.decisions_requests
-        assert all(lease.reserved_tokens > 0 for lease in leases)
-        # Recorded Decisions replies carry usage, so those reservations are reconciled;
-        # recorded Responses replies carry none, so no measured tokens are invented.
-        reconciled = [lease for lease in leases if lease.actual_tokens is not None]
-        assert len(reconciled) == transport.decisions_requests
-        assert all(lease.reserved_tokens > (lease.actual_tokens or 0) for lease in reconciled)
-
     opened = await open_head()
     document = opened.document
     formatting = [DocxBuildEvent.model_validate(event) for event in finished.diagnostics]
@@ -310,9 +283,7 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
                 OPENAI_LLM_ANSWER_KEY_API_KEY=API_KEY,
                 LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
             ),
-            leases=GrantingLeases(),
             uow=NoTransaction(),
-            clock=FixedClock(datetime(2026, 10, 11, tzinfo=UTC)),
             progress=progress,
             sleeper=NoSleep(),
         )

@@ -330,6 +330,9 @@ class Settings(BaseSettings):
     # key; the door meters the daily pools, shares and USD ceiling.
     HULEEDU_LLM_PROVIDER_BASE_URL: str = "http://huleedu_llm_provider_service:8080"
     HULEEDU_INTERNAL_API_KEY: str = ""
+    # A started AI job finishes as paid overage until the door has charged it
+    # this much overage (TASK-SKRIPT-41-01-03 C7); then the job stops.
+    LLM_JOB_OVERAGE_CAP_USD: float = Field(default=1.0, ge=0.0)
     LLM_ANSWER_KEY_BASE_URL: str = "https://api.openai.com"
     OPENAI_LLM_ANSWER_KEY_API_KEY: str = ""
     LLM_ANSWER_KEY_MODEL: str = "gpt-5.6-luna"

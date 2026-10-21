@@ -3,7 +3,9 @@
 Purpose:
     Send exam OpenAI request bodies unchanged to the door's internal routes
     (ST-HULE-14-03 D1-D5) with Skriptoteket's internal key, service id, the
-    teacher's user id, the exempt flag and the paid-overage mode, and turn a
+    teacher's user id, the exempt flag and the paid-overage mode, admit the
+    caller's AI action on its first successful call, count its paid overage from
+    the door's charge headers and stop it past the per-job cap (C7), and turn a
     limit 429 into ``AiDailyLimitReached``.
 
 Relationships:
@@ -17,9 +19,14 @@ import json
 from collections.abc import Mapping
 
 import httpx
+import structlog
 from pydantic import JsonValue
 
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+)
 from skriptoteket.protocols.llm_door import (
     DoorOperation,
     DoorReply,
@@ -28,7 +35,12 @@ from skriptoteket.protocols.llm_door import (
     LlmDoorClientProtocol,
 )
 
+logger = structlog.get_logger(__name__)
+
 SERVICE_ID = "skriptoteket"
+_CHARGE_KIND_HEADER = "X-HuleEdu-Charge-Kind"
+_CHARGE_MICROS_HEADER = "X-HuleEdu-Charge-USD-Micros"
+_OVERAGE = "overage"
 _DOOR_PATH = "/internal/v1/openai"
 _FREE_ALLOWANCE_ONLY = "free_allowance_only"
 _ALLOW_PAID_OVERAGE = "allow_paid_overage"
@@ -48,12 +60,16 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
         client: httpx.AsyncClient,
         base_url: str,
         internal_api_key: str,
+        job_overage_cap_usd_micros: int,
     ) -> None:
         if not base_url.strip():
             raise ValueError("LLM provider door base_url must be non-empty.")
+        if job_overage_cap_usd_micros < 0:
+            raise ValueError("The per-job overage cap cannot be negative.")
         self._client = client
         self._base_url = base_url.strip().rstrip("/")
         self._internal_api_key = internal_api_key.strip()
+        self._cap_usd_micros = job_overage_cap_usd_micros
 
     async def send(
         self,
@@ -63,6 +79,7 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
         caller: AiDoorCaller,
         timeout_seconds: float,
     ) -> DoorReply:
+        caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
         try:
             response = await self._client.post(
                 f"{self._base_url}{_DOOR_PATH}/{operation.value}",
@@ -78,6 +95,9 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
             limit = _limit_of(response.content)
             if limit is not None:
                 raise AiDailyLimitReached(limit=limit)
+        if response.is_success:
+            caller.admit()
+        record_door_charge(caller, response.headers)
         return DoorReply(
             status_code=response.status_code,
             headers=dict(response.headers),
@@ -113,3 +133,23 @@ def _limit_of(body: bytes) -> AiDailyLimit | None:
         return None
     code = error.get("code")
     return _LIMIT_BY_CODE.get(code) if isinstance(code, str) else None
+
+
+def record_door_charge(caller: AiDoorCaller, headers: Mapping[str, str]) -> None:
+    """Add the door's overage charge for one call to the caller's action."""
+
+    charge = httpx.Headers(headers)
+    kind = charge.get(_CHARGE_KIND_HEADER)
+    raw_micros = charge.get(_CHARGE_MICROS_HEADER)
+    if kind is None or raw_micros is None:
+        logger.warning("llm_door_charge_headers_missing", user_id=str(caller.user_id))
+        return
+    if kind != _OVERAGE:
+        return
+    try:
+        micros = int(raw_micros)
+    except ValueError:
+        logger.warning("llm_door_charge_header_invalid", value=raw_micros)
+        return
+    if micros > 0:
+        caller.charge_overage(micros)
