@@ -58,6 +58,7 @@ function binding(): ExamWorkspaceConversionBinding {
     getFence: () => fence,
     isCurrent: (token) => fence.isCurrent(token),
     isSaving: () => false,
+    noteImportStarted: vi.fn(),
     store: serverExamWorkspaceStore,
     tabId: () => "20000000-0000-4000-8000-000000000001",
   };
@@ -66,6 +67,7 @@ function binding(): ExamWorkspaceConversionBinding {
 function setup() {
   setActivePinia(createPinia());
   const scope = effectScope();
+  const conversionBinding = binding();
   const busyWhileOpening: { isImporting: boolean | null } = { isImporting: null };
   const openImported = vi.fn(async () => {
     busyWhileOpening.isImporting = conversion?.isImporting.value ?? null;
@@ -73,10 +75,10 @@ function setup() {
   });
   let conversion: ReturnType<typeof useExamWorkspaceConversion> | null = null;
   conversion = scope.run(() =>
-    useExamWorkspaceConversion(() => false, binding(), openImported)
+    useExamWorkspaceConversion(() => false, conversionBinding, openImported)
   ) ?? null;
   if (!conversion) throw new Error("expected the composable");
-  return { busyWhileOpening, conversion, openImported, scope };
+  return { busyWhileOpening, conversion, noteImportStarted: conversionBinding.noteImportStarted as Mock, openImported, scope };
 }
 
 function toastMessages(): string[] {
@@ -110,6 +112,16 @@ describe("QTI .zip import dispatch", () => {
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
     expect(openImported).toHaveBeenCalledWith("lineage-9");
+  });
+
+  it("names the imported exam for the import-time points check before opening it (TASK-SKRIPT-40-04-23)", async () => {
+    apiMocks.importExamWorkspaceQti.mockResolvedValue(QTI_SUMMARY);
+    const { conversion, noteImportStarted, openImported } = setup();
+
+    await conversion.importDocument(zipFile(), null);
+
+    expect(noteImportStarted).toHaveBeenCalledExactlyOnceWith("lineage-9");
+    expect(noteImportStarted.mock.invocationCallOrder[0]).toBeLessThan(openImported.mock.invocationCallOrder[0] ?? 0);
   });
 
   it("opens the saved exam only once the import is no longer busy, and never polls a conversion", async () => {

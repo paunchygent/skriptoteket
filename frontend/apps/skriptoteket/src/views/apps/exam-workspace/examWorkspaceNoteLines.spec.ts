@@ -17,7 +17,7 @@ describe("buildExamWorkspaceNoteLines", () => {
     const mismatches: PrintedTotalMismatch[] = [
       { level: "exam", printed: 70, sum: 67, target: "item_001" },
     ];
-    expect(buildExamWorkspaceNoteLines(mismatches, [])).toEqual([
+    expect(buildExamWorkspaceNoteLines(mismatches, [], [])).toEqual([
       {
         key: "exam",
         kind: "printed-total",
@@ -34,7 +34,7 @@ describe("buildExamWorkspaceNoteLines", () => {
       { level: "part", parentId: "parent_001", printed: 22, sum: 20, target: "item_003" },
     ];
     const entries = [parentEntry("parent_001", "1")];
-    expect(buildExamWorkspaceNoteLines(mismatches, entries)).toEqual([
+    expect(buildExamWorkspaceNoteLines(mismatches, entries, [])).toEqual([
       {
         key: "part-parent_001",
         kind: "printed-total",
@@ -50,14 +50,14 @@ describe("buildExamWorkspaceNoteLines", () => {
     const mismatches: PrintedTotalMismatch[] = [
       { level: "part", parentId: "parent_999", printed: 8, sum: 5, target: null },
     ];
-    expect(buildExamWorkspaceNoteLines(mismatches, [])).toEqual([]);
+    expect(buildExamWorkspaceNoteLines(mismatches, [], [])).toEqual([]);
   });
 
   it("prints a third decimal instead of two equal numbers", () => {
     const mismatches: PrintedTotalMismatch[] = [
       { level: "exam", printed: 12.001, sum: 12, target: "item_001" },
     ];
-    expect(buildExamWorkspaceNoteLines(mismatches, [])[0]!.text).toBe(
+    expect(buildExamWorkspaceNoteLines(mismatches, [], [])[0]!.text).toBe(
       "Provtexten säger 12,001 p, frågorna ger 12 p.",
     );
   });
@@ -69,7 +69,7 @@ describe("buildExamWorkspaceNoteLines", () => {
       { level: "part", parentId: "parent_002", printed: 12, sum: 10, target: "item_003" },
     ];
     const entries = [parentEntry("parent_001", "1"), parentEntry("parent_002", "2")];
-    expect(buildExamWorkspaceNoteLines(mismatches, entries).map((line) => line.key)).toEqual([
+    expect(buildExamWorkspaceNoteLines(mismatches, entries, []).map((line) => line.key)).toEqual([
       "exam",
       "part-parent_001",
       "part-parent_002",
@@ -81,11 +81,10 @@ describe("buildExamWorkspaceNoteLines", () => {
       { level: "part", parentId: "parent_001", printed: 8, sum: 0, target: null },
     ];
     const entries = [parentEntry("parent_001", "")];
-    expect(buildExamWorkspaceNoteLines(mismatches, entries)).toEqual([]);
+    expect(buildExamWorkspaceNoteLines(mismatches, entries, [])).toEqual([]);
   });
 
-  it("renders no line for a deleted last child while keeping a neighbouring part line", () => {
-    const document: NativeExamDocument = {
+  it("renders no line for a deleted last child while keeping a neighbouring part line", () => {    const document: NativeExamDocument = {
       assets: [],
       document_id: "00000000-0000-4000-8000-000000000001",
       header: { printed_total: 30, tags: [] },
@@ -107,19 +106,63 @@ describe("buildExamWorkspaceNoteLines", () => {
         },
       ],
       revision: 1,
-      schema_version: "native_exam_document_v10",
+      schema_version: "native_exam_document_v11",
       title: "Prov",
     };
 
     const mismatches = examWorkspacePrintedTotalMismatches(document);
     const entries = examWorkspaceListEntries(document, {}, new Set());
-    const lines = buildExamWorkspaceNoteLines(mismatches, entries);
+    const lines = buildExamWorkspaceNoteLines(mismatches, entries, []);
 
     expect(mismatches.some((entry) => entry.level === "part" && entry.parentId === "parent_001")).toBe(
       false,
     );
     expect(lines.map((line) => line.key)).toEqual(["exam", "part-parent_002"]);
-    expect(lines[0]!.target).toBe("parent_002");
+    const first = lines[0]!;
+    if (first.kind !== "printed-total") {
+      throw new Error("expected the exam line first");
+    }
+    expect(first.target).toBe("parent_002");
     expect(lines[1]!.text).toBe("Del 2 i provtexten säger 12 p, frågorna ger 10 p.");
+  });
+});
+
+describe("buildExamWorkspaceNoteLines import-points line", () => {
+  it("puts the import line first, then the exam line, then part lines", () => {
+    const mismatches: PrintedTotalMismatch[] = [
+      { level: "exam", printed: 70, sum: 30, target: "item_002" },
+      { level: "part", parentId: "parent_001", printed: 22, sum: 20, target: "item_001" },
+    ];
+    const entries = [parentEntry("parent_001", "1")];
+    const lines = buildExamWorkspaceNoteLines(mismatches, entries, ["item_001", "item_003"]);
+
+    expect(lines.map((line) => line.key)).toEqual(["import-points", "exam", "part-parent_001"]);
+    expect(lines[0]).toEqual({
+      key: "import-points",
+      kind: "import-points",
+      text: "2 frågor avviker från provtexten",
+      itemIds: ["item_001", "item_003"],
+    });
+  });
+
+  it("names one differing question in the singular", () => {
+    const lines = buildExamWorkspaceNoteLines([], [], ["item_001"]);
+    expect(lines).toEqual([
+      {
+        key: "import-points",
+        kind: "import-points",
+        text: "1 fråga avviker från provtexten",
+        itemIds: ["item_001"],
+      },
+    ]);
+  });
+
+  it("renders no import line for an empty id list", () => {
+    const mismatches: PrintedTotalMismatch[] = [
+      { level: "exam", printed: 70, sum: 67, target: "item_001" },
+    ];
+    const lines = buildExamWorkspaceNoteLines(mismatches, [], []);
+    expect(lines.map((line) => line.key)).toEqual(["exam"]);
+    expect(buildExamWorkspaceNoteLines([], [], [])).toEqual([]);
   });
 });

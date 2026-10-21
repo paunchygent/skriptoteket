@@ -123,8 +123,8 @@ export async function equipStoredPictureBytes(
   }
 }
 
-const OLD_TOKEN = '"native_exam_document_v10"';
-const V9_TOKEN = '"native_exam_document_v9"';
+const OLD_TOKEN = '"native_exam_document_v11"';
+const PREV_TOKEN = '"native_exam_document_v10"';
 
 /**
  * Replace every current format token in the stored draft with the previous
@@ -140,7 +140,7 @@ export async function seatOlderFormat(storage: {
     throw new Error("expected a seeded draft to downgrade");
   }
   const draft: ExamWorkspaceGuestDraft = JSON.parse(
-    JSON.stringify(stored.draft).replaceAll(OLD_TOKEN, V9_TOKEN),
+    JSON.stringify(stored.draft).replaceAll(OLD_TOKEN, PREV_TOKEN),
   );
   // Picture bytes stay by reference: the draft is JSON data, the assets are not.
   const downgraded: StoredGuestDraft = { assets: stored.assets, draft };

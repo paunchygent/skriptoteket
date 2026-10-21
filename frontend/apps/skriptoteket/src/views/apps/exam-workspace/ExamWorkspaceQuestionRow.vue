@@ -35,6 +35,8 @@ const props = defineProps<{
   marking: boolean;
   /** The teacher has ticked this row. */
   marked: boolean;
+  /** The question's points differ from the source: its points show amber. */
+  pointsDiffer: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -123,6 +125,10 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
         <template v-if="entry.kind === 'item' && entry.problem && entry.status !== 'converting'">
           {{ entry.typeLabel }} · <span class="xw-bad row__problem">{{ entry.problem }}</span>
         </template>
+        <template v-else-if="entry.kind === 'item' && entry.status !== 'converting' && entry.points !== null">{{ entry.typeLabel }} · <span
+          :class="{ 'xw-warn': pointsDiffer }"
+          :data-test="pointsDiffer ? 'exam-workspace-row-points-differ' : undefined"
+        >{{ examWorkspaceFormatPoints(entry.points) }} p</span></template>
         <template v-else>{{ meta }}</template>
       </span>
       <span

@@ -150,7 +150,7 @@ class TestStoredContentContainment:
     def test_huge_integer_in_document_is_unreadable(self) -> None:
         document = _document()
         bad_document = (
-            b'{"schema_version": "native_exam_document_v10", "probe": ' + b"9" * 5000 + b"}"
+            b'{"schema_version": "native_exam_document_v11", "probe": ' + b"9" * 5000 + b"}"
         )
         content = _container_with_document_bytes(
             bad_document,

@@ -14,8 +14,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
 import { setupGuestStore, startBlank, type GuestStoreSetup } from "./examWorkspaceGuestStore.specSupport";
 
-const CURRENT_TOKEN = '"native_exam_document_v10"';
-const OLD_TOKEN = '"native_exam_document_v9"';
+const CURRENT_TOKEN = '"native_exam_document_v11"';
+const OLD_TOKEN = '"native_exam_document_v10"';
 
 /**
  * Rewrite the seeded record's version tokens: every token for a fully old
@@ -45,7 +45,7 @@ describe("examWorkspaceGuestStore unreadable drafts", () => {
     setup = setupGuestStore();
   });
 
-  it("refuses a stored v9 draft with the outdated-format refusal", async () => {
+  it("refuses a stored v10 draft with the outdated-format refusal", async () => {
     const lineageId = await seatVersions(setup, "all");
 
     await expect(setup.store.store.shared.getExamWorkspaceDocument(lineageId)).rejects.toMatchObject({
@@ -62,14 +62,14 @@ describe("examWorkspaceGuestStore unreadable drafts", () => {
     ).rejects.toMatchObject({ code: "DOCUMENT_SCHEMA_OUTDATED" });
     const stored = await setup.storage.load();
     expect(stored?.draft.lineage_id).toBe(lineageId);
-    expect(stored?.draft.saved_document.schema_version).toBe("native_exam_document_v9");
+    expect(stored?.draft.saved_document.schema_version).toBe("native_exam_document_v10");
   });
 
-  it("still opens a current v10 draft", async () => {
+  it("still opens a current v11 draft", async () => {
     const lineageId = await startBlank(setup);
 
     const response = await setup.store.store.shared.getExamWorkspaceDocument(lineageId);
-    expect(response.document.schema_version).toBe("native_exam_document_v10");
+    expect(response.document.schema_version).toBe("native_exam_document_v11");
   });
 
   it("refuses a draft with one older document among current ones", async () => {

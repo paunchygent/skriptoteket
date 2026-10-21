@@ -52,12 +52,12 @@ import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from ".
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
-import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceViewPanels } from "./exam-workspace/useExamWorkspaceViewPanels";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
+import { useExamWorkspaceListNotes } from "./exam-workspace/useExamWorkspaceListNotes";
 import { useExamWorkspaceNewExam } from "./exam-workspace/useExamWorkspaceNewExam";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -241,10 +241,12 @@ const { courseLabel, examInstructionsPreview, formattedSavedExports, zeroPoints 
     savedExports: exports.savedExports,
     workspaceDocument,
   });
-/** One entry per printed total that differs from its questions' sum, for the list's note lines. */
-const printedMismatches = computed(() =>
-  workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
-);
+/** The list's printed-total lines and import-time points marks (`useExamWorkspaceListNotes`). */
+const { importPointsIds, printedMismatches } = useExamWorkspaceListNotes({
+  importPointsShown: editing.importPointsShown,
+  document: workspaceDocument,
+  itemEntries,
+});
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
 /**
@@ -374,6 +376,7 @@ onMounted(() => void loadSavedDocuments());
         :question-count="itemEntries.length"
         :total="total"
         :mismatches="printedMismatches"
+        :import-points-ids="importPointsIds"
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
@@ -383,6 +386,7 @@ onMounted(() => void loadSavedDocuments());
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
         @clear-printed-total="editing.clearPrintedTotal"
+        @dismiss-import-points="editing.dismissImportPoints"
         @close="listOpen = false"
         @set="setListWidth"
         @reset="resetWidth('list')"

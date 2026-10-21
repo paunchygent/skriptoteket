@@ -70,13 +70,30 @@ function withinPrintedTolerance(a: number, b: number, count: number): boolean {
   return Math.abs(a - b) <= tolerance;
 }
 
+/**
+ * The source printed a value for the question (`source_points`) and its
+ * points are missing or another number (TASK-SKRIPT-40-04-23). A question
+ * whose source printed nothing never differs.
+ */
+export function examWorkspaceSourcePointsDiffer(item: NativeExamItem): boolean {
+  const source = item.source_points ?? null;
+  if (source === null) {
+    return false;
+  }
+  return item.points == null || !withinPrintedTolerance(source, item.points, 1);
+}
+
+/**
+ * The question's own lines printed two or more different values
+ * (TASK-SKRIPT-40-04-23 P8): it counts as differing whatever its points are.
+ */
+export function examWorkspaceSourcePointsConflict(item: NativeExamItem): boolean {
+  return item.conflicting_source_points.length > 1;
+}
+
 /** A question that carries a difference: its points are missing, or the source printed another number. */
 function printedQuestionDiffers(item: NativeExamItem): boolean {
-  if (item.points == null) {
-    return true;
-  }
-  const source = item.source_points ?? null;
-  return source !== null && !withinPrintedTolerance(source, item.points, 1);
+  return item.points == null || examWorkspaceSourcePointsDiffer(item);
 }
 
 /**

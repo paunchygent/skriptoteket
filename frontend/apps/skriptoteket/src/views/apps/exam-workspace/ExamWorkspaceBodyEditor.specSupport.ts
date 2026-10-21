@@ -59,6 +59,7 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     sequence: 1,
     source_anchor: null,
     source_points: null,
+    conflicting_source_points: [],
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,

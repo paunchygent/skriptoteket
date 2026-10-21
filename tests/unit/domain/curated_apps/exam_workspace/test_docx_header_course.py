@@ -93,7 +93,7 @@ def test_document_roundtrip_preserves_the_chosen_name_snapshot_and_rejects_v3() 
     )
     document = _document().model_copy(update={"header": header})
     payload = document.model_dump(mode="json")
-    assert payload["schema_version"] == "native_exam_document_v10"
+    assert payload["schema_version"] == "native_exam_document_v11"
     assert NativeExamDocument.model_validate(payload).header == header
     assert header.course is not None
     with pytest.raises(ValidationError):

@@ -141,3 +141,13 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
   - a retired but living tab shows a failure toast when its write is refused;
   - cross-store atomicity is established by reading the code and the idb documentation, not in a browser.
 - Next: merge to main with the D13 shared 238-character cap, the staging walk by the Mac (signed in, as a guest and through a rename), then user closure.
+
+### 2026-10-21 (implementation lead, merge of main with TASK-SKRIPT-40-04-23)
+
+- Merged local `main` (`87ab45736`) into this branch with `git merge --no-ff`; the five conflicts were resolved as follows, keeping every reviewed behaviour of both tasks and adding none:
+  - `docs/repository-index.json`: took main's side; `pdm run docs-validate` regenerated it.
+  - `ExamWorkspaceEnrichmentNotice.vue` (both tasks added it): kept this task's component (one `enrichment` prop, the notice renders nothing while neither a message nor a lookup error is set) because its spec covers it; main's props-and-emit version had no spec and only the view called it. The rendered markup, `data-test` names and `Försök igen` retry are identical on both sides.
+  - `ExamWorkspaceView.vue`: kept the one-line notice call, Nytt prov and main's import-points line. To stay under 500 lines, main's printed-total mismatches and import-points ids (with the `EXAM_WORKSPACE_IMPORT_POINTS_KEY` provide) moved unchanged into the new `useExamWorkspaceListNotes`.
+  - `useExamWorkspaceConversion.ts`: the binding carries both this task's `tabId` (guest QTI admission with the gate fence token and conversion generation) and main's `noteImportStarted`; the auto-merged import body keeps the guest admission and calls `noteImportStarted` after a live QTI import and after a Word or DigiExam import starts. The two guest-QTI retirement specs gained `noteImportStarted: vi.fn()` in their bindings.
+  - `useExamWorkspaceDocument.ts`: passes both `tabId` and `noteImportStarted` to the conversion. This task never changed `reloadDocument`, so main's move into `useExamWorkspaceDocumentReload.ts` needed no change.
+- No production code or fixture of this task builds a v10 document; the blank document uses the domain model's current version (v11). The remaining v10 literals are main's historical migration fixtures and outdated-version tokens.

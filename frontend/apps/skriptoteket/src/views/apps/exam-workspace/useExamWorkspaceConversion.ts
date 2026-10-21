@@ -69,6 +69,8 @@ export type ExamWorkspaceConversionBinding = {
   store: ExamWorkspaceStore;
   /** The edit-lease tab a guest QTI import writes the browser slot as. */
   tabId: () => string;
+  /** An import started here names its exam, for the import-time points check (TASK-SKRIPT-40-04-23). */
+  noteImportStarted: (lineageId: string) => void;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
@@ -439,6 +441,7 @@ export function useExamWorkspaceConversion(
           tabId: binding.tabId(),
         });
         if (pollGeneration !== generation || lineageId === null) return;
+        binding.noteImportStarted(lineageId);
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;
         await openImported(lineageId);
@@ -452,6 +455,7 @@ export function useExamWorkspaceConversion(
         : teacher.importExamWorkspaceDocument;
       const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
+      binding.noteImportStarted(status.lineage_id);
       isConverting.value = true;
       conversionStatus.value = status;
       await refreshConversion(pollGeneration);

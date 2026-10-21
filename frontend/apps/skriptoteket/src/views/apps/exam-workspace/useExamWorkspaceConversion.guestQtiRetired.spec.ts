@@ -57,6 +57,7 @@ function guestBinding(context: GuestStoreSetup): ExamWorkspaceConversionBinding 
     isCurrent: (token) => fence.isCurrent(token),
     isDirty: ref(false),
     isSaving: () => false,
+    noteImportStarted: vi.fn(),
     serverDocument: ref<NativeExamDocument | null>(null),
     store: context.store.store,
     summary: ref(null) as Ref<ExamWorkspaceDocumentSummary | null>,

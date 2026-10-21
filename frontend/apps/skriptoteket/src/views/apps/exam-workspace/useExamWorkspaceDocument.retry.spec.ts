@@ -122,6 +122,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     sequence: 1,
     source_anchor: "body:0001",
     source_points: null,
+    conflicting_source_points: [],
     retry_source: retrySource("gap_fill"),
     suggested_kind: null,
     tick_points: null,

@@ -7267,10 +7267,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v10
+             * @default native_exam_document_v11
              * @constant
              */
-            schema_version: "native_exam_document_v10";
+            schema_version: "native_exam_document_v11";
             /** Title */
             title: string;
         };
@@ -7309,10 +7309,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v10
+             * @default native_exam_document_v11
              * @constant
              */
-            schema_version: "native_exam_document_v10";
+            schema_version: "native_exam_document_v11";
             /** Title */
             title: string;
         };
@@ -7379,6 +7379,11 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice-Input"][];
+            /**
+             * Conflicting Source Points
+             * @default []
+             */
+            conflicting_source_points: (number)[];
             /**
              * Criteria
              * @default []
@@ -7451,6 +7456,11 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice-Output"][];
+            /**
+             * Conflicting Source Points
+             * @default []
+             */
+            conflicting_source_points: (number)[];
             /**
              * Criteria
              * @default []
@@ -7972,6 +7982,11 @@ export interface components {
              * @default []
              */
             choices: components["schemas"]["NativeChoice-Input"][];
+            /**
+             * Conflicting Source Points
+             * @default []
+             */
+            conflicting_source_points: (number)[];
             /**
              * Criteria
              * @default []

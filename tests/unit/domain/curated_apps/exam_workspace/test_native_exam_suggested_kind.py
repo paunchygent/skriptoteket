@@ -179,7 +179,7 @@ def test_v7_document_round_trip_stores_suggested_kind(
     restored = parse_native_exam_document(encoded)
 
     assert restored == document
-    assert restored.schema_version == "native_exam_document_v10"
+    assert restored.schema_version == "native_exam_document_v11"
     assert restored.items[0].suggested_kind is suggestion
     assert restored.model_dump(mode="json")["items"][0]["suggested_kind"] == (
         suggestion.value if suggestion is not None else None

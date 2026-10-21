@@ -27,6 +27,7 @@ export function buildFreeTextItem(sequence: number, overrides: Partial<NativeExa
     sequence,
     source_anchor: null,
     source_points: null,
+    conflicting_source_points: [],
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,

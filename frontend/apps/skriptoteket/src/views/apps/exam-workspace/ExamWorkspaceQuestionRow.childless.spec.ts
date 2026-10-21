@@ -25,7 +25,7 @@ const mounted: Array<VueWrapper> = [];
 
 function mountRow(entry: ExamWorkspaceListEntry): VueWrapper {
   const wrapper = mount(ExamWorkspaceQuestionRow, {
-    props: { disabled: false, entry, marked: false, marking: false, selected: false },
+    props: { disabled: false, entry, marked: false, marking: false, pointsDiffer: false, selected: false },
   });
   mounted.push(wrapper);
   return wrapper;
