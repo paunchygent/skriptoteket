@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22: merged at e9983e4f, review findings F1 and F2 fixed and merged at 3b91b792, and admitted on focused proof.'
 task_kind: story
 acceptance_criteria:
 - Running repository-governance-frontend-catalog design-system sync from skill-repository main 5cbfeb7f sets design-system-map.json and the mirror to 0.1.34, and the diff holds only what 0.1.34 changed
@@ -107,3 +111,7 @@ presentation change.
   disconnect assertions retained.
 - Corrected the alias sentences above: the alias is retained as the guard's
   narrow type. Task status unchanged.
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). Merged `e9983e4f`; review findings F1/F2 fixed and merged `3b91b792`, admitted on focused proof.

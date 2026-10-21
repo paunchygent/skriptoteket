@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22: review b88ad1f4 findings F1 to F3 were repaired and merged at aff7b005 and admitted on focused proof and migration tests, and the Mac staging walk at 4b321fa1 passed B1 to B5 (the old routes redirect to the workspace) (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - After the redesigned workspace offers the DigiExam import, the signed-in old exam converter routes, its correction sessions, correction overlay and screens are removed, the public guest exam converter stays, and no route or test refers to the removed code
@@ -253,3 +257,7 @@ behave as before.
   exit 0. `pdm run typecheck` frontend phase fails on missing `@tiptap/*` and
   `fflate` type declarations in this worktree (no frontend files touched;
   environmental, pre-existing).
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). Review `b88ad1f4` F1-F3 repaired and merged `aff7b005`, admitted on focused proof and migration tests; Mac walk at `4b321fa1` B1-B5 (old routes redirect to the workspace; Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`).

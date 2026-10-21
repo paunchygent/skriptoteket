@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22 after the Mac walk at 25c4ac01 (PASS with W1 and W2), the repair merged at ede1ea0d, and the Mac re-walk at ede1ea0d (PASS): Fråga 1 shows "Provtexten: 4 p och 3 p", Fråga 2 shows "4 p, 2,5 p och 3 p", and the line reads "2 frågor avviker från provtexten" (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - 'Right after an import, when one or more questions'' points differ from the points the source printed for them, the question-list panel shows one line: "{N} frågor avviker från provtexten" (singular "1 fråga avviker från provtexten")'
@@ -113,3 +117,7 @@ A conversion finishes and its questions open in the workspace. The workspace com
 - Fix: `printed_points_plan` puts the own printed total of a heading that heads only one question first in that question's `values`. `prints`, `points`, `lines`, the part totals and the scoring stay as they were. The walk's questions now get `conflicting_source_points` (4, 3) and (4, 2,5, 3). A heading-only question keeps no conflict. No frontend change.
 - Proof (evidence under `evidence/walk-repair/` in retained root `01a1605f-1f41-723a-93c5-34da7477c9b1`): the staging document's items and a plan probe before and after; four walk-shape tests in `test_docx_section_points.py` fail before the fix and pass after (40 passed); exam-workspace domain 933 passed; DOCX handlers 1468 passed; lint and typecheck clean.
 - Residuals: a heading whose value equals the sum of its parts (5,5 over 2,5 and 3) still counts as three values, as P8 already did for parts; a question printing only its heading total keeps `source_points` null, as before; staging's Fråga 2 import record repeats its a) and b) lines, and its converted body drops the "a)" label.
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). Mac walk at `25c4ac01` PASS with W1/W2; repair merged `ede1ea0d`; Mac re-walk at `ede1ea0d` PASS: Fråga 1 shows "Provtexten: 4 p och 3 p", Fråga 2 shows "4 p, 2,5 p och 3 p", and the line reads "2 frågor avviker från provtexten" (Mac `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`).

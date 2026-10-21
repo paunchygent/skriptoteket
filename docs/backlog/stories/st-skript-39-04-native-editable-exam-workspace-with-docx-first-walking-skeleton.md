@@ -112,7 +112,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    In progress: on main, staging import and closeout owed.
    DOCX conversion repairs that followed, each its own task:
    - `TASK-SKRIPT-39-04-12`: grammar exams place each lead-in, exam-wide text,
-     question and table (in progress: on main, walk and closeout owed).
+     question and table (done 2026-10-22: rounds 1-2 on main, user closure; the mid-paragraph fragment case is an accepted residual).
    - `TASK-SKRIPT-39-04-13` to `TASK-SKRIPT-39-04-19`: section instructions,
      governing chunks, body paragraphs, gap paragraphs, inline answer keys
      and left-out marks follow source alignment, never wording. Done.

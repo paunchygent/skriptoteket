@@ -171,3 +171,4 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
 
 - Mac re-walk at `18f045fc`, PASS: after a rename from "Vattnets kretslopp: prov 1" to "prov 2", the Prov list entry showed the new title as soon as the save finished, with no reload. The entry's "Sparad" time and file name update on the next list load, as before; this is accepted and not a finding.
 - Closed: independent review approved, W3 admitted on focused proof under the user's light-route rule, and both walks passed.
+- D12 walked at `ede1ea0d`, PASS: an untitled guest draft moved to Mina filer as "Namnlöst prov" at sign-in (Mac `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). The user also confirmed closure on 2026-10-22.

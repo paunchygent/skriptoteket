@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user approved readiness and closure together on 2026-10-22: merged at 44197733 (4e9d65e0), and rereview finding R1 admitted on focused proof.'
 task_kind: story
 acceptance_criteria:
 - Review ecea35b6 findings F1-F3 are repaired with real-collection proof; default
@@ -74,3 +78,9 @@ Stop and report to the orchestrator if a fix needs a change to Vitest's own conf
 | D8  | Lead-found repairs of returned work: U3 moves `vitest.config.ts` into `tsconfig.node.json` because adding it to the browser project leaked Node `Timeout` types; U4 lets a `statSync` failure stop the run instead of dropping the match, and narrows D6 to file targets; U5 type-checks the two Node-environment wrapper specs in the Node project. |
 | D9  | Rereview ed8a6e7b (2026-10-19) cleared F1 and found R1 (medium): the hand-kept glob character list missed extglobs `@(...)` and `+(...)`. U6 deletes `isGlob` so `fs.globSync` alone classifies, and adds the prefixed unreadable-match failure. R1 is admitted on focused proof without rereview. |
 | D7  | The repaired F1 (high) returns to reviewer ecea35b6 for rereview through the orchestrator; F2 and F3 return with focused proof. |
+
+## Progress
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure); the user approved readiness and closure together. Merged `44197733` (`4e9d65e0`); rereview R1 admitted on focused proof.

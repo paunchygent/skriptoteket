@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the story on 2026-10-22: TASK-SKRIPT-40-01-01 to TASK-SKRIPT-40-01-04 are done, and the story-level proof on main d9fab7e2 (clean-state repeat sync with no change, frontend and backend suites, migration tests) is recorded in its progress section.'
 epic: EPIC-SKRIPT-40
 acceptance_criteria:
 - The root map adopts tokens, tailwind-theme, horizontal logo, dense-tool-primitives, dense action/icon/status components, dense spinner, segmented toggle, SystemMessage, ToastHost, Vue barrel, ui-glyphs, ui-glyph, ui-symbol and action-buttons; only brand and auth-lifecycle remain null, and clean-state repeat sync changes no file
@@ -57,7 +61,7 @@ is locally patched.
 | 1 | TASK-SKRIPT-40-01-01 | Done 2026-10-12: three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook; Hemma staging walk passed at fc42b918. |
 | 2 | TASK-SKRIPT-40-01-02 | Complete shared Vue subtree, glyph peer/runtime, import migration, message adaptation and toast adapter. |
 | 3 | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules. |
-| 4 | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. On main `e9983e4f`; review and closeout owed. |
+| 4 | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. Done 2026-10-22: main `e9983e4f`, F1/F2 fixed `3b91b792`, user closure. |
 
 ## Progress
 
@@ -65,6 +69,7 @@ is locally patched.
   - Clean-state repeat sync: `repository-governance-frontend-catalog design-system sync` from skill-repository `5cbfeb7f` (the TASK-SKRIPT-40-01-04 D1 source) onto a clean copy of main `d9fab7e2` exited 0 and changed no file (retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/admission/st-40-01-repeat-sync-d9fab7e2/`).
   - Story-wide frontend and backend proof on main `d9fab7e2`, run directly on Hemma with the pre-push hook's steps: `fe-build`, `typecheck`, frontend tests (639 files, 4391 tests) and backend tests (7983 passed, 59 skipped; the one governance pin failure was an out-of-date local environment and passed after `pdm install --frozen-lockfile`), plus migration tests (121 passed) (`evidence/admission/full-suite-d9fab7e24/`).
   - Open: TASK-SKRIPT-40-01-04 (review changes_requested, two medium findings, held for the user's triage).
+- 2026-10-22: done (user closure). TASK-SKRIPT-40-01-01 to -04 are done (40-01-04: merged `e9983e4f`, F1/F2 fixed `3b91b792`); the open item above is closed. Story-level proof on main `d9fab7e2` stands.
 
 ## Verification
 
