@@ -49,7 +49,10 @@ describe("shared segmented toggle consumer", () => {
     expect(LabelResizeObserver.instances).toHaveLength(0);
     expect(measure).not.toHaveBeenCalled();
     expect(wrapper.get('[role="radio"]').text()).toBe("Kort");
-    await wrapper.findAll('[role="radio"]')[1]!.trigger("click");
+    const target = wrapper.findAll('[role="radio"]')
+      .find((button) => button.text() === "Längre alternativ");
+    if (!target) throw new Error('Missing radio with label "Längre alternativ"');
+    await target.trigger("click");
     expect(wrapper.emitted("update:modelValue")).toEqual([["long"]]);
     wrapper.unmount();
   });
@@ -69,9 +72,17 @@ describe("shared segmented toggle consumer", () => {
     await nextTick();
 
     function minimumLabelWidths(): string[] {
-      return wrapper.findAll('[role="radio"]').map((button) => {
-        const label = button.element.firstElementChild as HTMLElement;
-        return label.style.minWidth;
+      return options.map((option) => {
+        const button = wrapper.findAll('[role="radio"]')
+          .find((candidate) => candidate.text() === option.label);
+        if (!button) throw new Error(`Missing radio with label "${option.label}"`);
+        const label = button.find("span");
+        if (!label.exists()) throw new Error(`Missing label element for "${option.label}"`);
+        const element = label.element;
+        if (!(element instanceof HTMLElement)) {
+          throw new Error(`Label element for "${option.label}" is not measurable`);
+        }
+        return element.style.minWidth;
       });
     }
     // Geometry is supplied by the host observer double: jsdom does not lay out text.

@@ -17,7 +17,11 @@ const emit = defineEmits<{
   (event: "select", mode: EditorWorkspaceMode): void;
 }>();
 
-const options = computed<UiSegmentedToggleOption[]>(() => [
+type EditorWorkspaceModeOption = UiSegmentedToggleOption & {
+  value: EditorWorkspaceMode;
+};
+
+const options = computed<EditorWorkspaceModeOption[]>(() => [
   { value: "source", label: "Källkod" },
   {
     value: "diff",
@@ -29,8 +33,22 @@ const options = computed<UiSegmentedToggleOption[]>(() => [
   { value: "test", label: "Testkör" },
 ]);
 
+function isEditorWorkspaceMode(value: string): value is EditorWorkspaceMode {
+  switch (value) {
+    case "source":
+    case "diff":
+    case "metadata":
+    case "test":
+      return true;
+    default:
+      return false;
+  }
+}
+
 function onSelect(value: string): void {
-  emit("select", value as EditorWorkspaceMode);
+  if (isEditorWorkspaceMode(value)) {
+    emit("select", value);
+  }
 }
 </script>
 
