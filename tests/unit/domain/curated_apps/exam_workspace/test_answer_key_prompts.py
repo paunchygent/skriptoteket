@@ -15,10 +15,6 @@ from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.digiexam_source_parsing import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    choice_decision_output_spec,
-    numbered_gap_fill_output_spec,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMEndpointKind,
     StructuredLLMProviderProfile,
@@ -33,7 +29,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompt
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import DigiExamItemType
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     choice_answer_key_model_payload_from_view,
+    choice_decision_output_spec,
     gap_fill_answer_key_model_payload_from_view,
+    numbered_gap_fill_output_spec,
     plan_workspace_answer_key_candidates,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
@@ -306,3 +304,37 @@ class TestGapFillLabels:
 
     def test_gap_prompt_template_version_is_bumped_for_labels(self) -> None:
         assert GAP_FILL_PROMPT_TEMPLATE_VERSION == "digiexam_gap_fill_answer_key_prompt_v2"
+
+
+def test_profile_rejects_output_budget_at_or_above_context_window() -> None:
+    with pytest.raises(ValueError):
+        StructuredLLMProviderProfile(
+            provider_id="openai-gpt-5.6-luna",
+            model="gpt-5.6-luna",
+            endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
+            is_remote=True,
+            context_window_tokens=4_096,
+            max_output_tokens=4_096,
+        )
+
+
+class TestOutputSpecShapes:
+    def test_choice_spec_shape(self) -> None:
+        spec = choice_decision_output_spec()
+
+        assert spec.schema_name == "digiexam_choice_answer_key_decision_v1"
+        assert spec.schema_version == "digiexam_choice_answer_key_decision_v1"
+        assert spec.json_schema["required"] == ["correct_alternative_ids"]
+        assert spec.json_schema["properties"] == {
+            "correct_alternative_ids": {"type": "array", "items": {"type": "integer"}}
+        }
+
+    def test_numbered_gap_fill_spec_shape(self) -> None:
+        spec = numbered_gap_fill_output_spec(2)
+
+        assert spec.schema_name == "digiexam_gap_fill_answer_key_decision_v1"
+        assert spec.schema_version == "digiexam_gap_fill_answer_key_decision_v1"
+        assert spec.json_schema["required"] == ["1", "2"]
+        assert spec.json_schema["properties"] == {"1": {"type": "string"}, "2": {"type": "string"}}
+        with pytest.raises(ValueError):
+            numbered_gap_fill_output_spec(0)

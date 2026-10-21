@@ -80,9 +80,9 @@ Stop and report if a removed module turns out to serve another caller, or if the
   with continuation to the workspace. The guest URL
   `/public/apps/documents.conversion_hub/exam-converter` still mounts the public
   workspace.
-- Held for the overseer: `digiexam_answer_key_completion.py` serves the
-  workspace answer-key prompts (`choice_decision_output_spec`,
-  `numbered_gap_fill_output_spec`); only its planner half was guest-only. The
-  file is unchanged.
+- Stop condition resolved (overseer decision B, 2026-10-21): the two answer-key
+  output specs moved into `exam_workspace/answer_key_prompts.py`, their only
+  caller; `digiexam_answer_key_completion.py`, its test and the last guest
+  planner test are deleted.
 - Closed as superseded: TASK-SKRIPT-21-10-01 and ST-SKRIPT-21-10 (migrated to the
   current backlog profile); ADR-SKRIPT-0085 marked superseded by EPIC-SKRIPT-41.

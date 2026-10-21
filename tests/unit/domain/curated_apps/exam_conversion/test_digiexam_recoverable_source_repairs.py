@@ -4,10 +4,6 @@ from __future__ import annotations
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    AnswerKeyEnrichmentPlanState,
-    plan_answer_key_enrichment,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamParseStatus,
     DigiExamWarningCode,
@@ -138,42 +134,6 @@ def test_referenced_invalid_image_payload_stays_non_blocking_in_parser() -> None
         DigiExamWarningCode.MISSING_PROMPT_IMAGE
     ]
     assert result.items[0].warnings[0].message == CANONICAL_IMAGE_MESSAGE_FOR_QUESTION_1
-
-
-def test_source_repairs_do_not_admit_an_additional_provider_candidate() -> None:
-    payload = {
-        "exams": [
-            {
-                "questions": [
-                    {
-                        "id": 1,
-                        "title": "  ",
-                        "about": "Välj ett svar.",
-                        "bodyHTML": '<p>Välj ett svar.</p><img data-image-id="0" />',
-                        "images": [],
-                        "maxScore": 2,
-                        "type": 1,
-                        "alternatives": [
-                            {"id": 1, "title": "Alfa", "about": "", "right": False},
-                            {"id": 2, "title": "Beta", "about": "", "right": False},
-                        ],
-                    }
-                ]
-            }
-        ]
-    }
-    repaired_exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(payload, filename="repair-provider-free.dxe")
-    )
-
-    plan = plan_answer_key_enrichment(repaired_exam)
-
-    assert plan.state == AnswerKeyEnrichmentPlanState.BLOCKED
-    assert plan.unkeyed_items == ()
-    assert {
-        DigiExamWarningCode.MISSING_QUESTION_TITLE,
-        DigiExamWarningCode.MISSING_PROMPT_IMAGE,
-    }.issubset({warning.code for warning in repaired_exam.items[0].warnings})
 
 
 def test_source_repair_messages_carry_real_question_numbers_and_no_literal_n() -> None:
