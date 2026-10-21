@@ -52,6 +52,8 @@ type TabA = {
   copyBusy: { value: boolean };
   fence: ReturnType<typeof createSyncFence>;
   installed: ExamWorkspaceDocumentResponse[];
+  /** The workspace scope ends, as `isDisposed` reports to the coordinator. */
+  markDisposed: () => void;
 };
 
 /** Seed the slot with a picture exam plus one stored history step; A holds the lease. */
@@ -133,13 +135,15 @@ function openTabA(context: GuestStoreSetup, opened: ExamWorkspaceDocumentRespons
     settleEdit: () => Promise.resolve(true),
     waitForRouterIdle: () => Promise.resolve(),
   };
-  const coordinator = createReplacementCoordinator(deps);
-  const dispose = coordinator.dispose;
-  coordinator.dispose = () => {
-    disposed = true;
-    dispose();
+  return {
+    coordinator: createReplacementCoordinator(deps),
+    copyBusy,
+    fence,
+    installed,
+    markDisposed: () => {
+      disposed = true;
+    },
   };
-  return { coordinator, copyBusy, fence, installed };
 }
 
 function blankResponse(): PublicExamWorkspaceCommandResult {
@@ -225,6 +229,7 @@ describe("guest Nytt prov after its creation is retired", () => {
 
     // Disposal terminates the creation without bumping the fence and while
     // A still holds the lease: only the creation's own authority can refuse.
+    tabA.markDisposed();
     tabA.coordinator.dispose();
     await expect(outcome).resolves.toBe("failed");
 
@@ -235,6 +240,30 @@ describe("guest Nytt prov after its creation is retired", () => {
     await expectRetainedDraft(context, lineageId, opened);
     const reread = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
     expect(reread.history_cursor).toBe(opened.history_cursor);
+  });
+
+  it("keeps the retained draft when the page is hidden before the blank arrives", async () => {
+    const context = setupGuestStore();
+    const { lineageId, opened } = await seedRetainedDraft(context);
+    const tabA = openTabA(context, opened);
+    const blank = deferred<PublicExamWorkspaceCommandResult>();
+    context.mocks.createBlank.mockReturnValue(blank.promise);
+
+    const outcome = tabA.coordinator.submitNewExam(opened.history_cursor);
+    await flushPromises();
+    expect(context.mocks.createBlank).toHaveBeenCalledTimes(1);
+
+    // pagehide retires the generation and terminates silently; A still
+    // holds the lease, so only the creation's own authority can refuse.
+    tabA.fence.retire();
+    tabA.coordinator.notifyPageHidden();
+    await expect(outcome).resolves.toBe("failed");
+
+    blank.resolve(blankResponse());
+    await flushPromises();
+
+    expect(tabA.installed).toEqual([]);
+    await expectRetainedDraft(context, lineageId, opened);
   });
 
   it("still replaces the slot when the creation keeps its authority until the blank arrives", async () => {
