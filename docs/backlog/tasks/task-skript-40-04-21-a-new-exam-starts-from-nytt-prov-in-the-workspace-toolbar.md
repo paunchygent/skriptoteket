@@ -151,3 +151,10 @@ The proposed answers to U1-U4 were replaced by the user's decision of 2026-10-21
   - `useExamWorkspaceConversion.ts`: the binding carries both this task's `tabId` (guest QTI admission with the gate fence token and conversion generation) and main's `noteImportStarted`; the auto-merged import body keeps the guest admission and calls `noteImportStarted` after a live QTI import and after a Word or DigiExam import starts. The two guest-QTI retirement specs gained `noteImportStarted: vi.fn()` in their bindings.
   - `useExamWorkspaceDocument.ts`: passes both `tabId` and `noteImportStarted` to the conversion. This task never changed `reloadDocument`, so main's move into `useExamWorkspaceDocumentReload.ts` needed no change.
 - No production code or fixture of this task builds a v10 document; the blank document uses the domain model's current version (v11). The remaining v10 literals are main's historical migration fixtures and outdated-version tokens.
+
+### 2026-10-21 (Hemma orchestrator, staging walk)
+
+- Mac staging walk at `25c4ac01` (Mac `.artifacts/staging-walk-40-04-21/walk-record.md`).
+- **Signed in, PASS:** Nytt prov creates "Namnlöst prov", which shows in the Prov list at once. A rename to "Vattnets kretslopp: prov 1" saved at rev 2, and after a reload the card and the file name "Vattnets kretslopp prov 1" are right.
+- **Guest, PASS:** on an empty draft, Nytt prov opens a blank draft with no confirm. On a draft with text, it shows the dialog with Avbryt and Ersätt; Avbryt keeps the text, and Ersätt opens a new blank draft and removes the old one.
+- **Finding W3, signed in:** after a title rename, the Prov list keeps the old title until a page reload. A reload fixes it, so no data is lost. It is a visible defect on every rename under D4 and D13, not a rare race, so it is routed as a 40-04-21 follow-up repair for the next free lead slot.
