@@ -414,7 +414,7 @@ export function useExamWorkspaceConversion(
 
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
-    // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
+    // A Word or PDF import is a paid AI conversion and stays admin-only until the spend cap ships;
     // the Öppna drawer already shows the L3 note for the refused file.
     if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
     const pollGeneration = ++generation;

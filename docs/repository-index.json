@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3cb680455543ca389223ea70b3fc8df336d081092f29c69e7a5afc1eef48eebe",
+  "source_set_digest": "546c2eb52f8ba768d28435f4c20efb20f666b041bfb25dec302e346d7be818bd",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6360,7 +6360,7 @@
       "type": "task",
       "title": "A PDF exam with text opens in the exam workspace through the Word import path",
       "path": "docs/backlog/tasks/task-skript-39-10-01-a-pdf-exam-with-text-opens-in-the-exam-workspace-through-the-word-import-path.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [

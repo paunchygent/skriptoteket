@@ -19,7 +19,7 @@ const keys: [string, string][] = [
     @back="showIndex"
   >
     <ul class="list-disc pl-5 space-y-2 text-sm text-navy">
-      <li>Öppna importerar ett prov från Word (.docx), DigiExam (.dxe) eller QTI (.zip) och öppnar sparade prov.</li>
+      <li>Öppna importerar ett prov från Word (.docx), PDF (.pdf), DigiExam (.dxe) eller QTI (.zip) och öppnar sparade prov.</li>
       <li>
         Ändringar sparas automatiskt som utkast, och Ångra och Gör om går igenom dem. Spara skriver
         över provet i Mina filer; Spara som gör en kopia med ett nytt namn.

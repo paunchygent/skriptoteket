@@ -81,6 +81,12 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_import_source import (  # noqa: E501
+    ImportSourceChunker,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
+    PdfPlumberExamChunker,
+)
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -187,8 +193,8 @@ class ExamWorkspaceProvider(Provider):
 
     @provide(scope=Scope.APP)
     def docx_chunker(self) -> DocxExamChunkerProtocol:
-        """Provide ordered source segmentation without item interpretation."""
-        return PythonDocxExamChunker()
+        """Provide ordered source segmentation of Word or PDF bytes without item interpretation."""
+        return ImportSourceChunker(docx=PythonDocxExamChunker(), pdf=PdfPlumberExamChunker())
 
     @provide(scope=Scope.REQUEST)
     def docx_pipeline(

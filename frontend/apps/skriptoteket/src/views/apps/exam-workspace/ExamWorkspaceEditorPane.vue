@@ -97,7 +97,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
       data-test="exam-workspace-empty"
     >
       <h2>Inget prov öppet</h2>
-      <p>Skapa ett nytt prov, öppna ett sparat prov eller importera från Word eller DigiExam.</p>
+      <p>Skapa ett nytt prov, öppna ett sparat prov eller importera från Word, PDF eller DigiExam.</p>
       <button
         v-if="!openDrawerShown"
         type="button"
