@@ -12,6 +12,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxMissingImage,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_import_records import (
+    with_docx_import_records,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
@@ -522,3 +525,47 @@ def test_source_review_item_keeps_a_saved_printed_points_conflict():
 
     assert review.conflicting_source_points == (4, 5)
     assert review.source_points is None
+
+
+def test_repeated_subpart_anchors_keep_each_source_line_once():
+    """Grouping repeats a question's anchors in subpart_anchors; the stored source and the
+    Import view's wording keep each line once (TASK-SKRIPT-40-04-25)."""
+    chunks = (
+        _chunk("body:0005", "Fråga 2 (4 p)"),
+        _chunk("body:0006", "a) Ange ordklassen."),
+        _chunk("body:0007", "b) Motivera ditt svar."),
+    )
+    families = (
+        QuestionFamily(
+            question_id="q2",
+            position=1,
+            question_anchors=("body:0005", "body:0006", "body:0007"),
+            claims=frozenset({"body:0005", "body:0006", "body:0007"}),
+            reads=frozenset(),
+        ),
+    )
+
+    sources = retry_sources_by_anchor(
+        families=families,
+        own_anchors={"q2": ("body:0005", "body:0006", "body:0007", "body:0006", "body:0007")},
+        owned_contexts={},
+        key_anchors={},
+        chunks=chunks,
+        label_kinds={},
+    )
+
+    assert [record.anchor for record in sources["body:0005"].chunks] == [
+        "body:0005",
+        "body:0006",
+        "body:0007",
+    ]
+    recorded = with_docx_import_records(
+        with_retry_sources(_document((_item("item_001", 1, anchor="body:0005"),)), sources),
+        chunks=chunks,
+        events=(),
+    )
+    record = recorded.items[0].import_record
+    assert record is not None
+    assert record.original_wording.question_text == (
+        "Fråga 2 (4 p)\na) Ange ordklassen.\nb) Motivera ditt svar."
+    )
