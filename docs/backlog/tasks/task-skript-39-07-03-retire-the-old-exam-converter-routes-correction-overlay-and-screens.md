@@ -221,3 +221,35 @@ behave as before.
 
 - Work on main through merge `fc5b317d` (2026-10-18, guest converter polling and the missing-key notice `aff91a7e`, `31bd9b62`). No review verdict is recorded here.
 - Owed: the Validation suites and the Hemma staging walk are not recorded as run; then closeout. The public guest converter that this task kept is removed by TASK-SKRIPT-41-02-03 (user ruling 2026-10-20).
+
+### Progress 2026-10-21: review b88ad1f4 findings F1, F2, F3 (user decision 2026-10-21)
+
+- F1: migration `015a3af12871` deletes the retired signed-in converter rows
+  from `conversion_hub_jobs` (`source_format = 'dxe'` or
+  `output_format = 'examnet_bundle'`) with their transcript dependents
+  (`conversion_hub_transcript_formatter_export_states`,
+  `conversion_hub_transcript_formatter_artifacts`,
+  `conversion_hub_saved_transcripts`), keeping document-converter and
+  transcript rows. Downgrade restores no rows, per convention. No enum
+  readers, aliases or compatibility branches come back.
+- F2: removed `render_examnet_prompt_html`, `_PromptHtmlRenderer` and the
+  exclusive prompt helpers from `digiexam_examnet_pdf_prompt.py`,
+  `AssetReferenceKey` and `DigiExamExamNetPdfPromptRender` from
+  `digiexam_examnet_pdf_contracts.py`, the now-unused
+  `PROMPT_IMAGE_PLACEHOLDER_HTML`, and the renderer-only tests in
+  `test_digiexam_prompt_image_html_families.py`. `prompt_has_renderable_content`,
+  the parser/image-binding coverage and every live caller are kept; a
+  reference search proves nothing live used what was removed.
+- F3: removed `retry_identity` from the answer-key enrichment job model, the
+  enqueue argument and its callers, and the repository/DB-model mapping; the
+  same `015a3af12871` migration drops the column (downgrade re-adds it
+  nullable). Historical migration tests stay at their own revisions.
+- Proof: new migration test fails before the migration exists
+  (`ResolutionError: No such revision or branch '015a3af12871'`) and passes
+  with it (rows deleted, other rows kept, column gone, round-trip);
+  `pdm run test-migrations` 123 passed; focused conversion-hub, enrichment
+  and DigiExam PDF/prompt/parser unit tests passed (65 + 43); `pdm run lint`
+  passed; backend mypy clean on all touched files; `pdm run docs-validate`
+  exit 0. `pdm run typecheck` frontend phase fails on missing `@tiptap/*` and
+  `fflate` type declarations in this worktree (no frontend files touched;
+  environmental, pre-existing).
