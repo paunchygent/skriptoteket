@@ -58,7 +58,8 @@ class PrintedQuestion:
 
     ``prints`` is true when its span prints points; ``points`` is their one distinct value,
     such as a heading's "(4 p)" with its "/4 p" line, and None when the lines differ.
-    ``values`` holds the distinct values those lines print, in print order.
+    ``values`` holds the distinct values those lines print, in print order, with the total
+    of the heading part line that heads only this question first.
     ``lines`` holds the anchors of exactly those own lines (``lines[number]`` minus
     ``closers``), heading lines included, that set ``prints`` and ``points``.
     """
@@ -260,13 +261,24 @@ def printed_points_plan(
             if last_start < index < end and line_points(chunks[index]) == total
         )
         parts.append(PrintedPart(total, members, chunks[opener].anchor, named_part[opener]))
+    heading_value: dict[int, tuple[int | float, ...]] = {}
+    for part in parts:
+        # A heading that heads only one question (``assign_points_lines`` joins it to
+        # that question) prints first among that question's values. The part opener's
+        # own printed total counts; a total that only a summary gives does not.
+        if len(part.questions) == 1 and part.identity is None:
+            opener = positions[part.opener]
+            if opener in totals:
+                heading_value[part.questions[0]] = (totals[opener],)
     printed = tuple(
         PrintedQuestion(
             anchors=own,
             prints=bool(own_lines := [i for i in lines.get(number, ()) if i not in closers]),
             points=_one_value(totals[i] for i in own_lines),
             lines=tuple(chunks[i].anchor for i in own_lines),
-            values=tuple(dict.fromkeys(totals[i] for i in own_lines)),
+            values=tuple(
+                dict.fromkeys([*heading_value.get(number, ()), *(totals[i] for i in own_lines)])
+            ),
         )
         for number, own in enumerate(questions)
     )
