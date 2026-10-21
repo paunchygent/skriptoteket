@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1c5436b781b36abceb0755213f7b828ea6bbd146a35b1911a8c0d4df30ecc794",
+  "source_set_digest": "4ab86e8b439f46eb7c7247a4fc6db2b23e45126e8f1c190b75f77178339f6a43",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7233,6 +7233,25 @@
       "title": "After an import the question list warns about questions whose points differ from the source",
       "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-24",
+      "type": "task",
+      "title": "A Word import whose question has only a points heading converts instead of crashing",
+      "path": "docs/backlog/tasks/task-skript-40-04-24-a-word-import-whose-question-has-only-a-points-heading-converts-instead-of-crashing.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
