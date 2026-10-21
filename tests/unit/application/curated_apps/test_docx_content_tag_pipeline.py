@@ -42,6 +42,7 @@ from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_supp
     conversion_update,
     placeholder,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 _EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
@@ -126,6 +127,7 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
             source_docx=source,
             chunks=corpus_chunks(_EXAM),
             course_key=None if outcome == "unknown_course" else "SVESVE02",
+            caller=fixture_caller(),
         )
         conversion = asyncio.create_task(pipeline.convert(job=job))
         if outcome == "cancelled":

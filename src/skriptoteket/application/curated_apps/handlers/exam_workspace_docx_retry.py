@@ -95,6 +95,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import door_caller_for
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
@@ -232,6 +233,7 @@ class RetryExamWorkspaceItemHandler:
             )
         else:
             item = await self._reconvert(
+                actor=actor,
                 saved=saved,
                 assets=assets,
                 payloads=payloads,
@@ -257,6 +259,7 @@ class RetryExamWorkspaceItemHandler:
     async def _reconvert(
         self,
         *,
+        actor: User,
         saved: NativeExamDocument,
         assets: Mapping[str, NativeExamAsset],
         payloads: Mapping[str, bytes],
@@ -308,6 +311,7 @@ class RetryExamWorkspaceItemHandler:
             families={family.question_id: family},
             exchange=self._exchange,
             profile=self._profile,
+            caller=door_caller_for(user=actor),
         )
         admitted = _single_item(state, outcome)
         if admitted is not None:

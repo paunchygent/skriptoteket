@@ -116,6 +116,7 @@ from skriptoteket.protocols.exam_workspace_history import (
 from skriptoteket.protocols.exam_workspace_parents import ExamWorkspaceParentsHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -191,14 +192,13 @@ class ExamWorkspaceProvider(Provider):
         settings: Settings,
         sleeper: SleeperProtocol,
         progress: DocxConversionProgressProtocol,
+        door: LlmDoorClientProtocol,
     ) -> DocxConversionPipeline:
         """Concurrent tasks share the request UoW one transaction at a time."""
         return build_docx_conversion_pipeline(
             client=client,
             provider=OpenAIAnswerKeyStructuredProvider(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
             ),
             sleeper=sleeper,
@@ -267,11 +267,11 @@ class ExamWorkspaceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def retry_item_handler(
         self,
-        client: httpx.AsyncClient,
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         settings: Settings,
+        door: LlmDoorClientProtocol,
     ) -> RetryExamWorkspaceItemHandlerProtocol:
         """Provide the one-question retry handler; its one converter call rides the exchange."""
         return RetryExamWorkspaceItemHandler(
@@ -280,9 +280,7 @@ class ExamWorkspaceProvider(Provider):
             store=store,
             exchange=DocxBuildRoundExchange(
                 provider=OpenAIAnswerKeyStructuredProvider(
-                    client=client,
-                    base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                    api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                    door=door,
                     timeout_seconds=float(settings.LLM_DOCX_CONVERSION_TIMEOUT_SECONDS),
                 ),
             ),

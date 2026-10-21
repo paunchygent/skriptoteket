@@ -23,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import Na
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 
 
@@ -36,7 +37,7 @@ class DocxConversionOutcome:
 
 @dataclass(frozen=True)
 class DocxConversionJob:
-    """Identity and source of one conversion."""
+    """Identity, source and door caller of one conversion."""
 
     job_id: UUID
     worker_id: str
@@ -46,6 +47,7 @@ class DocxConversionJob:
     source_docx: bytes
     chunks: tuple[DocxChunk, ...]
     course_key: str | None
+    caller: AiDoorCaller
 
 
 class DocxConversionRun:

@@ -22,6 +22,7 @@ from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     split_items,
 )
 from skriptoteket.protocols.item_type_labeler import LabelingItem, LabelingRequest
+from tests.unit.llm_door_fakes import fixture_caller
 
 FIXTURES = Path("tests/fixtures/item_type_labeler")
 CORPUS_24 = "corpus_exam_24_questions.json"
@@ -93,6 +94,7 @@ def load(name: str) -> Recording:
 def request_for(fixture: Recording) -> LabelingRequest:
     return LabelingRequest(
         job_id=uuid4(),
+        caller=fixture_caller(),
         items=tuple(
             LabelingItem(
                 item_id=item["item_id"],

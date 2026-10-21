@@ -14,6 +14,7 @@ import pytest
 from skriptoteket.application.curated_apps.item_type_labeling import (
     TwoPassItemTypeLabeler,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
     ItemTypeLabel,
@@ -36,6 +37,7 @@ from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     unavailable,
     with_mutated_body,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -57,7 +59,9 @@ class _FakeSecondPass:
     def estimate_tokens(self, *, item: LabelingItem) -> int:
         return 4_000 + len(item.source_text)
 
-    async def label_one(self, *, job_id: UUID, item: LabelingItem) -> SecondPassLabel:
+    async def label_one(
+        self, *, job_id: UUID, item: LabelingItem, caller: AiDoorCaller
+    ) -> SecondPassLabel:
         self.asked.append(item.item_id)
         outcome = self.outcomes.get(
             item.item_id, SecondPassLabel(_B_LABEL, _B_INPUT_TOKENS, _B_OUTPUT_TOKENS)
@@ -319,7 +323,7 @@ async def test_failed_first_pass_with_failing_second_pass_leaves_every_question_
 async def test_empty_request_makes_no_calls() -> None:
     setup = _recorded_setup()
 
-    labeling = await setup.label(LabelingRequest(job_id=uuid4(), items=()))
+    labeling = await setup.label(LabelingRequest(job_id=uuid4(), items=(), caller=fixture_caller()))
 
     assert labeling.results == ()
     assert setup.http.requests == []

@@ -43,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -171,6 +172,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
             source_docx=b"",
             chunks=chunks,
             course_key=None,
+            caller=fixture_caller(),
         )
         run = DocxConversionRun(job, time.monotonic())
         run.state = state

@@ -23,6 +23,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.llm_door import door_caller_for
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
@@ -91,6 +92,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     source_docx=job.source_docx,
                     chunks=self._chunker.chunk(content=job.source_docx),
                     course_key=job.workspace_course_key,
+                    caller=door_caller_for(user=actor),
                 ),
                 fallback_reason=fallback_reason,
             )

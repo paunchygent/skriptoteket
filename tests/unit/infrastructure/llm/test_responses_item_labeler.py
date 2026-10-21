@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
     estimate_prompt_tokens,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     build_answer_key_responses_payload,
 )
@@ -40,6 +41,7 @@ from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabelerError,
     LabelingItem,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 JOB_ID = UUID("00000000-0000-0000-0000-0000000000aa")
 ITEM = LabelingItem(item_id="q7", source_text="Fråga 7\nVälj ett alternativ.")
@@ -69,7 +71,11 @@ class FakeProvider:
         self.requests: list[StructuredLLMRequest] = []
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         outcome = self.outcomes.pop(0)
@@ -94,7 +100,7 @@ def _labeler(provider: FakeProvider, sleeper: RecordingSleeper):
 
 def test_profile_matches_measured_pass_b() -> None:
     profile = _profile()
-    assert profile.reasoning_effort is StructuredLLMReasoningEffort.MEDIUM
+    assert profile.reasoning_effort is StructuredLLMReasoningEffort.LOW
     assert profile.text_verbosity is StructuredLLMTextVerbosity.LOW
     assert profile.max_output_tokens == 4000
 
@@ -141,7 +147,9 @@ def test_estimate_tokens_adds_output_allowance() -> None:
 @pytest.mark.asyncio
 async def test_label_returned_with_usage() -> None:
     provider = FakeProvider(_ok({"label": "gap_fill"}))
-    result = await _labeler(provider, RecordingSleeper()).label_one(job_id=JOB_ID, item=ITEM)
+    result = await _labeler(provider, RecordingSleeper()).label_one(
+        job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+    )
     assert result.label is ItemTypeLabel.GAP_FILL
     assert (result.input_tokens, result.output_tokens, result.refused) == (120, 9, False)
 
@@ -153,7 +161,9 @@ async def test_transient_error_retries_once_and_sleeps() -> None:
         _ok({"label": "matching"}),
     )
     sleeper = RecordingSleeper()
-    result = await _labeler(provider, sleeper).label_one(job_id=JOB_ID, item=ITEM)
+    result = await _labeler(provider, sleeper).label_one(
+        job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+    )
     assert result.label is ItemTypeLabel.MATCHING
     assert sleeper.delays == [1.0]
     assert len(provider.requests) == 2
@@ -164,7 +174,9 @@ async def test_transient_error_exhausts_attempts() -> None:
     provider = FakeProvider(*[_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)] * 3)
     sleeper = RecordingSleeper()
     with pytest.raises(ItemTypeLabelerError) as caught:
-        await _labeler(provider, sleeper).label_one(job_id=JOB_ID, item=ITEM)
+        await _labeler(provider, sleeper).label_one(
+            job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+        )
     assert caught.value.code == "provider_timeout"
     assert sleeper.delays == [1.0, 2.0]
 
@@ -172,7 +184,9 @@ async def test_transient_error_exhausts_attempts() -> None:
 @pytest.mark.asyncio
 async def test_refusal_maps_to_unresolved_refused() -> None:
     provider = FakeProvider(_error(StructuredLLMBackendFailureCode.PROVIDER_REFUSAL))
-    result = await _labeler(provider, RecordingSleeper()).label_one(job_id=JOB_ID, item=ITEM)
+    result = await _labeler(provider, RecordingSleeper()).label_one(
+        job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+    )
     assert result.label is ItemTypeLabel.UNRESOLVED
     assert result.refused is True
     assert result.input_tokens is None and result.output_tokens is None
@@ -183,7 +197,9 @@ async def test_non_transient_error_raises_without_retry() -> None:
     provider = FakeProvider(_error(StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR, 400))
     sleeper = RecordingSleeper()
     with pytest.raises(ItemTypeLabelerError) as caught:
-        await _labeler(provider, sleeper).label_one(job_id=JOB_ID, item=ITEM)
+        await _labeler(provider, sleeper).label_one(
+            job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+        )
     assert (caught.value.code, caught.value.status_code) == ("provider_http_error", 400)
     assert sleeper.delays == []
     assert len(provider.requests) == 1
@@ -202,7 +218,7 @@ async def test_non_transient_error_raises_without_retry() -> None:
 async def test_invalid_responses_raise(response: StructuredLLMResponse, code: str) -> None:
     with pytest.raises(ItemTypeLabelerError) as caught:
         await _labeler(FakeProvider(response), RecordingSleeper()).label_one(
-            job_id=JOB_ID, item=ITEM
+            job_id=JOB_ID, item=ITEM, caller=fixture_caller()
         )
     assert caught.value.code == code
 

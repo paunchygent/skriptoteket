@@ -136,13 +136,18 @@ def _limit_of(body: bytes) -> AiDailyLimit | None:
 
 
 def record_door_charge(caller: AiDoorCaller, headers: Mapping[str, str]) -> None:
-    """Add the door's overage charge for one call to the caller's action."""
+    """Add the door's overage charge for one call to the caller's action.
+
+    A call without charge headers counts no overage. The door sends none for
+    exempt callers, so only a non-exempt caller's missing headers are logged.
+    """
 
     charge = httpx.Headers(headers)
     kind = charge.get(_CHARGE_KIND_HEADER)
     raw_micros = charge.get(_CHARGE_MICROS_HEADER)
     if kind is None or raw_micros is None:
-        logger.warning("llm_door_charge_headers_missing", user_id=str(caller.user_id))
+        if not caller.exempt:
+            logger.warning("llm_door_charge_headers_missing", user_id=str(caller.user_id))
         return
     if kind != _OVERAGE:
         return

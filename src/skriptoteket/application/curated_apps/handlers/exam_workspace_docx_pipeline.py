@@ -196,7 +196,9 @@ class DocxConversionPipeline:
             return final_publication(run, None)
         started = time.monotonic()
         try:
-            grouping = await self._grouper.group(job_id=job.job_id, chunks=job.chunks)
+            grouping = await self._grouper.group(
+                job_id=job.job_id, chunks=job.chunks, caller=job.caller
+            )
         except ExamGroupingError as error:
             run.state.record("grouping", error.code, detail=error.detail)
             run.state.fail_all_pending(str(error))
@@ -282,7 +284,9 @@ class DocxConversionPipeline:
                 unlabeled.append(family.question_id)
             else:
                 items.append(_labeling_item(family.question_id, source, anchors))
-        return LabelingRequest(job_id=run.job.job_id, items=tuple(items)), unlabeled
+        return LabelingRequest(
+            job_id=run.job.job_id, items=tuple(items), caller=run.job.caller
+        ), unlabeled
 
     async def _label_and_convert(
         self,
@@ -443,6 +447,7 @@ class DocxConversionPipeline:
                 },
                 exchange=self._exchange,
                 profile=self._profile,
+                caller=run.job.caller,
             )
             with_type_check_mark(outcome.state)
             validated(outcome.state)

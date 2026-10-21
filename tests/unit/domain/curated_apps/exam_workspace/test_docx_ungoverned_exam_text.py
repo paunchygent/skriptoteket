@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -88,6 +89,7 @@ def _run(overview_kind: str) -> DocxConversionRun:
         source_docx=b"",
         chunks=chunks,
         course_key=None,
+        caller=fixture_caller(),
     )
     run = DocxConversionRun(job, 0.0)
     run.contexts = (

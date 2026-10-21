@@ -50,6 +50,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import pr
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -102,6 +103,7 @@ def _run(
         source_docx=b"",
         chunks=chunks,
         course_key=None,
+        caller=fixture_caller(),
     )
     run = DocxConversionRun(job, 0.0)
     total = (SharedContext("body:0000", "other", "exam", ("q1", "q2")),) if exam_wide_total else ()

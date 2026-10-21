@@ -37,6 +37,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     ExamWorkspaceContainerCodec,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -134,15 +135,16 @@ class RecordedTransport:
         self.responses_requests = 0
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
-        assert request.headers["Authorization"] == f"Bearer {API_KEY}"
         if request.url.path.endswith("/decisions"):
+            assert request.headers["Authorization"] == f"Bearer {API_KEY}"
             self.decisions_requests += 1
             if len(self.served_decisions) >= len(self._decisions):
                 return self._unmatched("more Decisions requests than recordings")
             path = self._decisions[len(self.served_decisions)]
             self.served.append(path.stem)
             return httpx.Response(200, json=json.loads(path.read_text()))
-        assert request.url.path == "/v1/responses"
+        assert request.url.path == "/internal/v1/openai/responses"
+        assert request.headers["X-Internal-API-Key"] == API_KEY
         self.responses_requests += 1
         payload = _ResponsesRequest.model_validate_json(request.content)
         assert payload.text.format.strict is True and "tools" not in (payload.model_extra or {})
@@ -207,13 +209,17 @@ def build_pipeline(
     progress: DocxConversionProgressProtocol,
     sleeper: SleeperProtocol,
 ) -> DocxConversionPipeline:
-    """The production composition over real Responses and Decisions adapters."""
+    """The production composition over the door client and the Decisions adapter."""
+    door = HuleEduLlmDoorClient(
+        client=client,
+        base_url="https://door.test",
+        internal_api_key=API_KEY,
+        job_overage_cap_usd_micros=1_000_000,
+    )
     return build_docx_conversion_pipeline(
         client=client,
         provider=OpenAIAnswerKeyStructuredProvider(
-            client=client,
-            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-            api_key=API_KEY,
+            door=door,
             timeout_seconds=30,
         ),
         sleeper=sleeper,

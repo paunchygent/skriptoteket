@@ -48,6 +48,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     build_replay,
     corpus_chunks,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -79,6 +80,7 @@ def _run(
         source_docx=b"",
         chunks=chunks,
         course_key=None,
+        caller=fixture_caller(),
     )
     run = DocxConversionRun(job, 0.0)
     run.contexts = ()

@@ -96,6 +96,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     corpus_docx,
     recorded_exams,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 _EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
@@ -274,6 +275,7 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
         source_docx=content,
         chunks=PythonDocxExamChunker().chunk(content=content),
         course_key=None,
+        caller=fixture_caller(),
     )
     async with httpx.AsyncClient(transport=httpx.MockTransport(transport)) as client:
         pipeline = build_pipeline(
@@ -297,8 +299,8 @@ def _labeler_request(text: str) -> httpx.Request:
     """A second-pass item_type_label request carrying ``text`` as its rendered source."""
     return httpx.Request(
         "POST",
-        "https://api.openai.com/v1/responses",
-        headers={"Authorization": f"Bearer {API_KEY}"},
+        "https://door.test/internal/v1/openai/responses",
+        headers={"X-Internal-API-Key": API_KEY},
         json={
             "text": {"format": {"name": "item_type_label", "strict": True}},
             "input": [{"content": [{"text": text}]}],

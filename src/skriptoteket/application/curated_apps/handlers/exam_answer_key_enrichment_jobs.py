@@ -3,10 +3,10 @@
 Purpose:
     Complete one claimed enrichment job by dispatching on ``source_kind``:
     the native exam workspace lane, the content-tags processor, the DOCX
-    import processor, or the DigiExam import processor. Each lane calls the
-    Luna profile once per unkeyed item with at most one GLM failover attempt
-    per item after a transient outage, and persists the machine-proposed
-    result. The web request never blocks on any of this.
+    import processor, or the DigiExam import processor. The workspace lane
+    calls the Luna profile once per unkeyed item through the provider door
+    and persists the machine-proposed result. The web request never blocks
+    on any of this.
 
     This handler also fail-closes one RUNNING job whose worker lease
     expired, routed to the same source lane.
@@ -48,12 +48,15 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMProviderProfile,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -65,7 +68,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         *,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
         provider: AnswerKeyStructuredProviderProtocol,
-        provider_selector: AnswerKeyProviderSelectorProtocol,
+        users: UserRepositoryProtocol,
+        answer_key_profile: StructuredLLMProviderProfile,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
@@ -86,7 +90,8 @@ class ProcessExamAnswerKeyEnrichmentJobHandler:
         )
         self._workspace_lane = ExamAnswerKeyEnrichmentWorkspaceLane(
             enrichment_jobs=enrichment_jobs,
-            provider_selector=provider_selector,
+            users=users,
+            profile=answer_key_profile,
             uow=uow,
             clock=clock,
             ledger=ledger,

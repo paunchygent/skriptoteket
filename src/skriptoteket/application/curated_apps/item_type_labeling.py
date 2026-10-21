@@ -21,6 +21,7 @@ from uuid import UUID
 
 import structlog
 
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
     ItemTypeLabel,
@@ -123,7 +124,7 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         ]
         decided = await asyncio.gather(
             *(
-                self._second_pass(request.job_id, item, first[index], on_results)
+                self._second_pass(request.job_id, item, first[index], on_results, request.caller)
                 for index, item in escalated
             )
         )
@@ -163,11 +164,12 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         item: LabelingItem,
         first: ItemTypeLabelResult,
         on_results: LabelSink | None,
+        caller: AiDoorCaller,
     ) -> tuple[ItemTypeLabelResult, int | None]:
         decided: SecondPassLabel | None = None
         failure: str | None = None
         try:
-            decided = await self._second.label_one(job_id=job_id, item=item)
+            decided = await self._second.label_one(job_id=job_id, item=item, caller=caller)
         except ItemTypeLabelerError as error:
             failure = error.code
             logger.warning(

@@ -2,15 +2,14 @@
 
 Purpose:
     Keep the machine answer-key lane protocol-first: structured provider
-    execution, provider selection, and the enrichment job ledger all sit
-    behind protocols so infrastructure can evolve independently.
+    execution and the enrichment job ledger sit behind protocols so
+    infrastructure can evolve independently.
 
 Relationships:
     Implemented under ``infrastructure.llm.openai`` and
     ``infrastructure.repositories``; consumed by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs`` and
-    the execution worker. The provider-selection protocol yields the ordered
-    Luna-primary/GLM-failover route decided by TASK-SKRIPT-39-02-02.
+    the execution worker. The Luna profile is the only provider route.
 """
 
 from __future__ import annotations
@@ -27,11 +26,11 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamWorkspaceConversionJobView,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 
 
 class AnswerKeyStructuredProviderProtocol(Protocol):
@@ -42,13 +41,8 @@ class AnswerKeyStructuredProviderProtocol(Protocol):
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse: ...
-
-
-class AnswerKeyProviderSelectorProtocol(Protocol):
-    """Select the ordered primary/failover provider route for one job."""
-
-    def select_route(self) -> AnswerKeyProviderRoute: ...
 
 
 class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):

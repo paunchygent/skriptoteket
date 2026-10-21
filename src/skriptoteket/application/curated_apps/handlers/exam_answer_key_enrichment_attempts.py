@@ -2,7 +2,7 @@
 
 Purpose:
     Record the enrichment attempt in one Unit of Work transaction, then
-    collect one proposal per candidate: call the provider (with failover)
+    collect one proposal per candidate: call the provider through the door
     and let the lane turn the model output into its proposal. The source
     lanes run exactly this bookkeeping and loop, so it lives here once.
     Also holds the teacher-facing message the lanes use when the model
@@ -12,7 +12,7 @@ Relationships:
     Constructed once by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs`` and
     handed to ``exam_answer_key_enrichment_workspace_lane``. The per-item provider call
-    and failover live in ``exam_answer_key_provider_attempts``.
+    lives in ``exam_answer_key_provider_attempts``.
 """
 
 from __future__ import annotations
@@ -31,9 +31,9 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_att
     ProviderAttempt,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMProviderProfile,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -94,30 +94,29 @@ class AnswerKeyAttemptLedger:
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
-        route: AnswerKeyProviderRoute,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
         plans: tuple[P, ...],
         attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
         proposal_from: Callable[[P, ProviderAttempt], R | None],
     ) -> tuple[tuple[R, ...], StructuredLLMProviderProfile] | EnrichmentFailure:
         """Collect one proposal per candidate plan, in plan order.
 
-        Returns the proposals with the profile that served them (the failover
-        once any item fell over), or the first failure: a provider failure, or
-        ``llm_output_invalid`` when ``proposal_from`` rejects the model output.
+        Returns the proposals with the profile that served them, or the
+        first failure: a provider failure, or ``llm_output_invalid`` when
+        ``proposal_from`` rejects the model output.
         """
 
         proposals: list[R] = []
-        serving_profile = route.primary
         for plan, candidate in zip(plans, attempt_candidates, strict=True):
-            attempt = await self._attempts.attempt_with_failover(
+            attempt = await self._attempts.attempt(
                 job=job,
                 candidate=candidate,
-                route=route,
+                profile=profile,
+                caller=caller,
             )
             if isinstance(attempt, EnrichmentFailure):
                 return attempt
-            if attempt.profile is route.failover:
-                serving_profile = route.failover
             proposal = proposal_from(plan, attempt)
             if proposal is None:
                 return EnrichmentFailure(
@@ -125,13 +124,14 @@ class AnswerKeyAttemptLedger:
                     last_error="llm_output_invalid",
                 )
             proposals.append(proposal)
-        return tuple(proposals), serving_profile
+        return tuple(proposals), profile
 
     async def collect_valid_proposals[P, R](
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
-        route: AnswerKeyProviderRoute,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
         plans: tuple[P, ...],
         attempt_candidates: tuple[AnswerKeyAttemptCandidate, ...],
         proposal_from: Callable[[P, ProviderAttempt], R | None],
@@ -148,23 +148,21 @@ class AnswerKeyAttemptLedger:
         """
 
         proposals: list[tuple[str, R]] = []
-        serving_profile = route.primary
         saw_invalid_output = False
         for plan, candidate in zip(plans, attempt_candidates, strict=True):
-            attempt = await self._attempts.attempt_with_failover(
+            attempt = await self._attempts.attempt(
                 job=job,
                 candidate=candidate,
-                route=route,
+                profile=profile,
+                caller=caller,
             )
             if isinstance(attempt, EnrichmentFailure):
                 return ValidProposalCollection(
                     proposals=tuple(proposals),
-                    serving_profile=serving_profile,
+                    serving_profile=profile,
                     failure=attempt,
                     saw_invalid_output=saw_invalid_output,
                 )
-            if attempt.profile is route.failover:
-                serving_profile = route.failover
             proposal = proposal_from(plan, attempt)
             if proposal is None:
                 saw_invalid_output = True
@@ -172,7 +170,7 @@ class AnswerKeyAttemptLedger:
             proposals.append((candidate.item_id, proposal))
         return ValidProposalCollection(
             proposals=tuple(proposals),
-            serving_profile=serving_profile,
+            serving_profile=profile,
             failure=None,
             saw_invalid_output=saw_invalid_output,
         )

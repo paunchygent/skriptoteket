@@ -70,18 +70,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from tests.fixtures.application_fixtures import FakeUow
+from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     FixedClock,
     InMemoryEnrichmentJobRepository,
     StubProvider,
-    _route,
+    _profile,
     docx_job_handler,
 )
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
@@ -91,6 +91,7 @@ from tests.unit.application.curated_apps.handlers.vault_file_repository_test_sup
     InMemoryVaultFileRepository,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
+from tests.unit.llm_door_fakes import user_with_role
 
 NOW = datetime(2026, 10, 13, 12, 0, 0, tzinfo=UTC)
 
@@ -130,11 +131,21 @@ def unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
 
 
 class WorkspaceHarness:
-    def __init__(self, *, provider: StubProvider, document: NativeExamDocument) -> None:
+    def __init__(
+        self,
+        *,
+        provider: StubProvider,
+        document: NativeExamDocument,
+        users: UserRepositoryStub | None = None,
+        owner_role: Role = Role.USER,
+    ) -> None:
         self.owner_user_id = uuid4()
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
         self.provider = provider
         self.document = document
+        self.users = users or UserRepositoryStub()
+        if self.users.user is None:
+            self.users.user = user_with_role(owner_role, user_id=self.owner_user_id)
 
         vault_files = InMemoryVaultFileRepository()
         vault_storage = InMemoryVaultStorage()
@@ -142,7 +153,8 @@ class WorkspaceHarness:
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
             provider=provider,
-            provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+            users=self.users,
+            answer_key_profile=_profile(),
             uow=FakeUow(),
             clock=FixedClock(NOW),
             digiexam_handler=AsyncMock(spec=ProcessExamWorkspaceDigiExamJobHandler),
@@ -193,8 +205,9 @@ class SequenceProvider(StubProvider):
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        del request, profile
+        del request, profile, caller
         self.call_count += 1
         return StructuredLLMResponse(
             content=self._contents[self.call_count - 1],
@@ -225,8 +238,9 @@ class ScriptedProvider(StubProvider):
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        del request, profile
+        del request, profile, caller
         self.call_count += 1
         outcome = self._outcomes[self.call_count - 1]
         if isinstance(outcome, StructuredLLMProviderError):

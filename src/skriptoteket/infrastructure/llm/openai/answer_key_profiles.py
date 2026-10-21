@@ -1,9 +1,8 @@
 """GPT-5.6 Luna answer-key provider profile.
 
 Purpose:
-    Pin the GPT-5.6 Luna low-reasoning-effort profile as the primary provider
-    path for the answer-key lane; the GLM failover profile lives in
-    ``infrastructure.llm.openrouter.answer_key_profiles``.
+    Pin the GPT-5.6 Luna low-reasoning-effort profile as the provider path
+    for the answer-key lane.
 
 Relationships:
     Model identifier `gpt-5.6-luna` verified against current OpenAI docs

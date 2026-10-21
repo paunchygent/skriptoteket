@@ -64,18 +64,18 @@ async def test_one_invalid_answer_keeps_valid_answers_and_continues_to_later_que
     assert payload.suggestions[1].suggestion.correct_choice_ids == ("choice_001",)
 
 
-async def test_valid_answer_survives_a_later_provider_timeout_with_failover() -> None:
+async def test_valid_answer_survives_a_later_provider_timeout() -> None:
     document = three_unkeyed_choice_document(document_id=uuid4())
     timeout = provider_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)
-    provider = ScriptedProvider([{"correct_alternative_ids": [2]}, timeout, timeout])
+    provider = ScriptedProvider([{"correct_alternative_ids": [2]}, timeout])
     harness = WorkspaceHarness(provider=provider, document=document)
     job = await harness.seed_claimed_job()
 
     finished = await harness.handler.handle(job=job)
 
-    # Question 1 answered, question 2 times out on primary and failover,
+    # Question 1 answered, question 2 times out once with no failover,
     # question 3 is never attempted after the terminal failure.
-    assert provider.call_count == 3
+    assert provider.call_count == 2
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "provider_timeout"
     payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
@@ -102,26 +102,6 @@ async def test_valid_answer_survives_an_invalid_answer_then_a_provider_error() -
     assert provider.call_count == 3
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "provider_refusal"
-    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
-        finished.workspace_suggestions_json
-    )
-    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
-
-
-async def test_valid_answer_survives_a_failed_failover() -> None:
-    three = three_unkeyed_choice_document(document_id=uuid4())
-    document = three.model_copy(update={"items": three.items[:2]})
-    timeout = provider_error(StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT)
-    provider = ScriptedProvider([{"correct_alternative_ids": [2]}, timeout, timeout])
-    harness = WorkspaceHarness(provider=provider, document=document)
-    job = await harness.seed_claimed_job()
-
-    finished = await harness.handler.handle(job=job)
-
-    # Question 1 answered; question 2 times out on primary and on failover.
-    assert provider.call_count == 3
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
-    assert finished.last_error == "provider_timeout"
     payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
         finished.workspace_suggestions_json
     )

@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import ma
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorCaller, AiJobOverageCapReached
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
 )
@@ -57,7 +58,10 @@ class DocxBuildExchangeProtocol(Protocol):
     """
 
     async def exchange(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> DocxRoundReply: ...
 
 
@@ -128,11 +132,16 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
         self._provider = provider
 
     async def exchange(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> DocxRoundReply:
         """Call the provider once; a failure stops the batch with a review reason."""
         try:
-            response = await self._provider.complete_structured(request=request, profile=profile)
+            response = await self._provider.complete_structured(
+                request=request, profile=profile, caller=caller
+            )
         except StructuredLLMProviderError as error:
             reason = (
                 "AI-tjänsten avböjde tolkningen. Kontrollera källtexten manuellt."
@@ -145,6 +154,8 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
                 code=error.failure_code.value,
                 detail=f"provider={error.provider_id} status={error.status_code}",
             ) from error
+        except (AiDailyLimitReached, AiJobOverageCapReached):
+            raise
         except Exception as error:
             logger.exception("DOCX build provider unavailable", job_id=request.job_id)
             raise DocxBuildRoundFailure(

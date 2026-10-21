@@ -65,6 +65,8 @@ NOT_ELIGIBLE_MESSAGE = (
 _DEFAULT_FAILURE_MESSAGE = "Facitförslaget kunde inte hämtas just nu. Försök igen senare."
 
 _FAILURE_MESSAGES: dict[str, str] = {
+    "ai_daily_limit": "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon.",
+    "ai_overage_cap": "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon.",
     "llm_output_invalid": "Facitförslaget kunde inte tolkas. Komplettera facit manuellt.",
     "workspace_no_enrichable_items": "Dokumentet har inga frågor som saknar facit.",
     "workspace_request_missing": _DEFAULT_FAILURE_MESSAGE,

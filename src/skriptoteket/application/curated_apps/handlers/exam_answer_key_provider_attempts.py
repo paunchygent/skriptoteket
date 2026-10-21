@@ -1,35 +1,36 @@
-"""Per-item provider-attempt orchestration for answer-key enrichment.
+"""Per-item provider attempt for answer-key enrichment.
 
 Purpose:
     Run one candidate's provider attempt for the enrichment job processor:
-    call the primary profile once and, only after a transient outage, make
-    exactly one failover attempt.
+    call the Luna profile once through the provider door. Door limit and
+    overage-cap refusals become a terminal per-job failure carrying the door
+    limit; every other provider failure becomes the generic provider message.
 
 Relationships:
     Consumed by
-    ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``;
-    the transient-outage gate lives in
-    ``domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts``.
-    Candidates are source-neutral: each carries its planned request plus a
-    builder that re-plans the same item's request for the failover profile.
+    ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
+    Candidates are source-neutral: each carries its planned request.
 """
 
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
 from dataclasses import dataclass
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
     StructuredLLMResponse,
-    allows_answer_key_provider_failover,
+)
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
 )
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
@@ -38,8 +39,7 @@ from skriptoteket.protocols.exam_answer_key import (
 logger = logging.getLogger(__name__)
 
 _PROVIDER_FAILURE_MESSAGE = "Facitförslaget kunde inte hämtas just nu. Försök igen senare."
-
-RequestForProfileBuilder = Callable[[StructuredLLMProviderProfile], StructuredLLMRequest]
+_LIMIT_FAILURE_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 
 @dataclass(frozen=True)
@@ -48,6 +48,7 @@ class EnrichmentFailure:
 
     teacher_message: str
     last_error: str
+    ai_limit: AiDailyLimit | None = None
 
 
 @dataclass(frozen=True)
@@ -60,57 +61,45 @@ class ProviderAttempt:
 
 @dataclass(frozen=True)
 class AnswerKeyAttemptCandidate:
-    """One item-local attempt: the planned request plus profile rebinding."""
+    """One item-local attempt: the planned request."""
 
     item_id: str
     request: StructuredLLMRequest
-    build_request_for_profile: RequestForProfileBuilder
 
 
 class AnswerKeyProviderAttemptRunner:
-    """Execute one candidate's primary attempt with the single failover."""
+    """Execute one candidate's single provider attempt."""
 
     def __init__(self, *, provider: AnswerKeyStructuredProviderProtocol) -> None:
         self._provider = provider
 
-    async def attempt_with_failover(
+    async def attempt(
         self,
         *,
         job: ExamAnswerKeyEnrichmentJob,
         candidate: AnswerKeyAttemptCandidate,
-        route: AnswerKeyProviderRoute,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> ProviderAttempt | EnrichmentFailure:
-        """Call the primary once; fail over exactly once on a transient outage."""
+        """Call the provider once; a door limit ends the job with the limit note."""
 
         try:
             response = await self._provider.complete_structured(
                 request=candidate.request,
-                profile=route.primary,
+                profile=profile,
+                caller=caller,
             )
-        except StructuredLLMProviderError as exc:
-            _log_provider_failure(item_id=candidate.item_id, error=exc)
-            if not allows_answer_key_provider_failover(exc):
-                return EnrichmentFailure(
-                    teacher_message=_PROVIDER_FAILURE_MESSAGE,
-                    last_error=exc.failure_code.value,
-                )
-            return await self._attempt_failover(job=job, candidate=candidate, route=route)
-        return ProviderAttempt(response=response, profile=route.primary)
-
-    async def _attempt_failover(
-        self,
-        *,
-        job: ExamAnswerKeyEnrichmentJob,
-        candidate: AnswerKeyAttemptCandidate,
-        route: AnswerKeyProviderRoute,
-    ) -> ProviderAttempt | EnrichmentFailure:
-        """Attempt the failover profile once."""
-
-        request = candidate.build_request_for_profile(route.failover)
-        try:
-            response = await self._provider.complete_structured(
-                request=request,
-                profile=route.failover,
+        except AiDailyLimitReached as exc:
+            return EnrichmentFailure(
+                teacher_message=_LIMIT_FAILURE_MESSAGE,
+                last_error="ai_daily_limit",
+                ai_limit=exc.limit,
+            )
+        except AiJobOverageCapReached:
+            return EnrichmentFailure(
+                teacher_message=_LIMIT_FAILURE_MESSAGE,
+                last_error="ai_overage_cap",
+                ai_limit=AiDailyLimit.POOL,
             )
         except StructuredLLMProviderError as exc:
             _log_provider_failure(item_id=candidate.item_id, error=exc)
@@ -118,7 +107,7 @@ class AnswerKeyProviderAttemptRunner:
                 teacher_message=_PROVIDER_FAILURE_MESSAGE,
                 last_error=exc.failure_code.value,
             )
-        return ProviderAttempt(response=response, profile=route.failover)
+        return ProviderAttempt(response=response, profile=profile)
 
 
 def _log_provider_failure(*, item_id: str, error: StructuredLLMProviderError) -> None:

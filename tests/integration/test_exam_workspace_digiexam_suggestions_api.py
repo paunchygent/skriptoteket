@@ -39,9 +39,6 @@ from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
     PillowEmbeddedImageDecodability,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -57,7 +54,9 @@ from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_conversion_support import SETTINGS, ConversionWorld, Ids
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
-from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import _route
+from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
+    _profile,
+)
 from tests.unit.application.curated_apps.test_exam_workspace_digiexam_suggestions import FIXTURE
 from tests.unit.web.test_apps_exam_workspace_answer_key_suggestions_api import FakeRegistry
 from tests.unit.workers.test_exam_workspace_digiexam_suggestion_worker import (
@@ -181,7 +180,8 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
                 model = CapturingModel()
                 lane = ExamAnswerKeyEnrichmentWorkspaceLane(
                     enrichment_jobs=world.jobs,
-                    provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+                    users=PostgreSQLUserRepository(session),
+                    profile=_profile(),
                     uow=world.uow,
                     clock=clock,
                     ledger=AnswerKeyAttemptLedger(

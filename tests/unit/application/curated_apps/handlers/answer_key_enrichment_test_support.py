@@ -35,7 +35,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMEndpointKind,
     StructuredLLMProviderProfile,
     StructuredLLMReasoningEffort,
@@ -43,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -221,6 +221,7 @@ class StubProvider:
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.call_count += 1
         return StructuredLLMResponse(
@@ -240,21 +241,6 @@ def _profile() -> StructuredLLMProviderProfile:
         max_output_tokens=4_096,
         reasoning_effort=StructuredLLMReasoningEffort.LOW,
     )
-
-
-def _failover_profile() -> StructuredLLMProviderProfile:
-    return StructuredLLMProviderProfile(
-        provider_id="openrouter-glm-5.3-flash",
-        model="z-ai/glm-5.3-flash",
-        endpoint_kind=StructuredLLMEndpointKind.CHAT_COMPLETIONS,
-        is_remote=True,
-        context_window_tokens=32_768,
-        max_output_tokens=4_096,
-    )
-
-
-def _route() -> AnswerKeyProviderRoute:
-    return AnswerKeyProviderRoute(primary=_profile(), failover=_failover_profile())
 
 
 DEFAULT_REPLAYED_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"

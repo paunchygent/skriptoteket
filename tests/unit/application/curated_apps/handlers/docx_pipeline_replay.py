@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
@@ -49,6 +50,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
 )
 from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
+from tests.unit.llm_door_fakes import fixture_caller
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 RECORDINGS = FIXTURES / "docx_key_provenance_v14"
@@ -96,7 +98,11 @@ class ReplayProvider:
         return [request.item_id for request in self.requests]
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         if request.item_id in self._failures:
@@ -269,7 +275,7 @@ class Replay:
     progress: RecordingProgress
     corpus: Path | None = None
 
-    def job(self) -> DocxConversionJob:
+    def job(self, *, caller: AiDoorCaller | None = None) -> DocxConversionJob:
         content = corpus_docx(self.exam, self.corpus)
         return DocxConversionJob(
             job_id=uuid4(),
@@ -280,6 +286,7 @@ class Replay:
             source_docx=content,
             chunks=corpus_chunks(self.exam, self.corpus),
             course_key=None,
+            caller=caller or fixture_caller(),
         )
 
 

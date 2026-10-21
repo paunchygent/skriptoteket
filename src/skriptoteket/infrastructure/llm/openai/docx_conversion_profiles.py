@@ -1,10 +1,10 @@
 """GPT-6 Luna DOCX exam-conversion provider profiles.
 
 Purpose:
-    Pin the GPT-6 Luna medium-reasoning-effort profile as the primary
-    Responses profile for DOCX exam conversion, the low-effort grouping pass and
-    the label-only second pass (TASK-SKRIPT-39-05-04 D23: medium effort, low
-    verbosity); answer-key enrichment keeps
+    Pin the GPT-6 Luna medium-reasoning-effort profile as the Responses
+    profile for DOCX exam conversion, the low-effort grouping pass and the
+    label-only second pass (TASK-SKRIPT-39-05-04 D23: low effort, low
+    verbosity for labeling); answer-key enrichment keeps
     ``infrastructure.llm.openai.answer_key_profiles``.
 
 Relationships:
@@ -81,6 +81,6 @@ def build_luna_item_label_profile(settings: Settings) -> StructuredLLMProviderPr
         is_remote=True,
         context_window_tokens=settings.LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS,
         max_output_tokens=settings.LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS,
-        reasoning_effort=StructuredLLMReasoningEffort.MEDIUM,
+        reasoning_effort=StructuredLLMReasoningEffort.LOW,
         text_verbosity=StructuredLLMTextVerbosity.LOW,
     )

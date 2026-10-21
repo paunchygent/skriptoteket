@@ -43,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -55,6 +56,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     NoTransaction,
     RecordingProgress,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -243,7 +245,11 @@ class _Provider:
         self.requests: list[StructuredLLMRequest] = []
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         content: Mapping[str, JsonValue] = (
@@ -336,6 +342,7 @@ async def _convert(
             source_docx=content,
             chunks=PythonDocxExamChunker().chunk(content=content),
             course_key=None,
+            caller=fixture_caller(),
         )
     )
     return decisions, provider, outcome

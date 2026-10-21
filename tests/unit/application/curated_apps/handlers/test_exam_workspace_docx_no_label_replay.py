@@ -29,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from tests.unit.application.curated_apps.handlers import docx_pipeline_replay
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
@@ -66,9 +67,15 @@ class _UnresolvedLabel(ReplayProvider):
     """Serve the fresh recordings with q21's second-pass label rewritten to unresolved."""
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await super().complete_structured(request=request, profile=profile)
+        response = await super().complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         if request.item_id != "label_b:q21":
             return response
         return StructuredLLMResponse(

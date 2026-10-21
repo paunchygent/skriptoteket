@@ -32,6 +32,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
@@ -98,11 +99,17 @@ async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
         families: dict[str, QuestionFamily],
         exchange: DocxBuildRoundExchange,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> BatchOutcome:
         if batch.batch_id == "w1-02":
             raise RuntimeError("unexpected failure inside the batch")
         return await convert_batch(
-            state=state, batch=batch, families=families, exchange=exchange, profile=profile
+            state=state,
+            batch=batch,
+            families=families,
+            exchange=exchange,
+            profile=profile,
+            caller=caller,
         )
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "convert_batch", failing_batch)

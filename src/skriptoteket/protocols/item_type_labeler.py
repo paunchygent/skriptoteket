@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
+from skriptoteket.domain.llm_door import AiDoorCaller
 
 
 class ItemTypeLabel(StrEnum):
@@ -78,10 +79,11 @@ class LabelingItem:
 
 @dataclass(frozen=True)
 class LabelingRequest:
-    """Questions of one conversion job; ``job_id`` keys the token lease."""
+    """Questions of one conversion job and the door caller its calls run as."""
 
     job_id: UUID
     items: tuple[LabelingItem, ...]
+    caller: AiDoorCaller
 
     def __post_init__(self) -> None:
         ids = [item.item_id for item in self.items]
@@ -219,4 +221,6 @@ class SecondPassItemTypeLabelerProtocol(Protocol):
         """Estimated input tokens plus the output allowance of one call."""
         ...
 
-    async def label_one(self, *, job_id: UUID, item: LabelingItem) -> SecondPassLabel: ...
+    async def label_one(
+        self, *, job_id: UUID, item: LabelingItem, caller: AiDoorCaller
+    ) -> SecondPassLabel: ...

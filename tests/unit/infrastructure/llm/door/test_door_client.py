@@ -17,6 +17,7 @@ from skriptoteket.domain.llm_door import (
     AiJobOverageCapReached,
     door_caller_for,
 )
+from skriptoteket.infrastructure.llm.door import client as door_client
 from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.protocols.llm_door import DoorOperation, DoorRequestFailed, DoorTimeout
 from tests.unit.llm_door_fakes import user_with_role
@@ -268,4 +269,23 @@ async def test_missing_or_invalid_charge_headers_count_no_overage(headers: dict[
         operation=DoorOperation.RESPONSES, payload=PAYLOAD, caller=caller, timeout_seconds=5
     )
 
+    assert caller.overage_usd_micros == 0
+
+
+@pytest.mark.parametrize(("exempt", "warned"), [(True, False), (False, True)])
+def test_missing_charge_headers_are_logged_only_for_a_non_exempt_caller(
+    monkeypatch: pytest.MonkeyPatch, exempt: bool, warned: bool
+) -> None:
+    events: list[str] = []
+
+    class _Logger:
+        def warning(self, event: str, **_: object) -> None:
+            events.append(event)
+
+    monkeypatch.setattr(door_client, "logger", _Logger())
+    caller = AiDoorCaller(user_id=TEACHER, exempt=exempt, overage_approved=False)
+
+    door_client.record_door_charge(caller, {})
+
+    assert (events == ["llm_door_charge_headers_missing"]) is warned
     assert caller.overage_usd_micros == 0

@@ -1,7 +1,7 @@
 """Responses adapter for the second item-type labeling pass B (TASK-SKRIPT-39-05-04).
 
 Purpose:
-    Decide one question's label alone (D23 pass B): gpt-6-luna at medium
+    Decide one question's label alone (D23 pass B): gpt-6-luna at low
     reasoning effort and low verbosity answers a label-only schema object whose
     ``label`` property carries the label descriptions. Ported from variant B of
     the hard-item experiment, measured 2026-10-11. Timeouts, 429 and 5xx retry
@@ -33,6 +33,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredOutputSpec,
     estimate_prompt_tokens,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     LABEL_DESCRIPTIONS,
     layout_items,
@@ -132,14 +133,16 @@ class ResponsesSecondPassItemTypeLabeler(SecondPassItemTypeLabelerProtocol):
         request = build_second_pass_request(job_id=UUID(int=0), item=item, profile=self._profile)
         return request.estimated_input_tokens + self._profile.max_output_tokens
 
-    async def label_one(self, *, job_id: UUID, item: LabelingItem) -> SecondPassLabel:
+    async def label_one(
+        self, *, job_id: UUID, item: LabelingItem, caller: AiDoorCaller
+    ) -> SecondPassLabel:
         request = build_second_pass_request(job_id=job_id, item=item, profile=self._profile)
         attempt = 0
         while True:
             attempt += 1
             try:
                 response = await self._provider.complete_structured(
-                    request=request, profile=self._profile
+                    request=request, profile=self._profile, caller=caller
                 )
             except StructuredLLMProviderError as error:
                 if error.failure_code is StructuredLLMBackendFailureCode.PROVIDER_REFUSAL:
