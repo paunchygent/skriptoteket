@@ -416,7 +416,9 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
     "Uppgift 2: Verb (2 p)", joins that question's anchors as its own points line does and
     leaves every other placement, so the heading has one owner whatever the reply lists.
     Every part line scores its questions whatever its placement. Run after question headings
-    join their questions.
+    join their questions. A heading that is a question's only anchor stays with that
+    question instead of joining the part it opens, so the question keeps its place
+    (TASK-SKRIPT-40-04-24).
     """
     plan = printed_points_plan(chunks, manifest_questions(manifest))
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
@@ -435,6 +437,17 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
             if len(part.questions) == 1 and part.identity is None
         },
     }
+    # A heading that is a question's only anchor never joins another question: the part it
+    # opens would otherwise take the question's last anchor, and the family builder would
+    # fail on the anchorless question. The anchor stays with its question by leaving
+    # ``placed``.
+    lone = {
+        anchor: question.question_id
+        for question in manifest.questions
+        if len(question.anchors) == 1
+        for anchor in question.anchors
+    }
+    joins = {anchor: owner for anchor, owner in joins.items() if lone.get(anchor, owner) == owner}
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     placed = set(joins) | plan.metadata | sections
     questions = tuple(
