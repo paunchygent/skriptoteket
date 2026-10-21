@@ -47,7 +47,7 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 
 | ID  | Decided contract term                                                                                                                                                               |
 | --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Every export and its Mina filer copy is named after the exam title without punctuation plus the extension; all formats share that base name, with no -qti or -examnet suffix (T14). |
+| D1  | Every export and its Mina filer copy is named after the exam title without punctuation plus the extension; all formats share that base name, with no -qti or -examnet suffix (T14). Amended by user decision 2026-10-21: the three PDF variants of TASK-SKRIPT-40-04-07 carry a suffix after the base name: `<titel>.pdf`, `<titel> facit.pdf` and `<titel> Exam.net.pdf`; the QTI `.zip` and the `.docx` carry none. |
 
 ## Progress
 
@@ -55,3 +55,9 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 
 - Work on main through merge `2b5dcb94` (2026-10-18): export names from the exam title (`6ebfc01b`, merged at `8ad14147`) and the blank-title repair `c7226069` (a blank title saves and autosaves; only export refuses it). No review or staging walk is recorded.
 - Owed: review, a staging walk of the export names, then closeout.
+
+### 2026-10-21 (Hemma orchestrator)
+
+- User decision 2026-10-21 (relayed by the Mac orchestrator): the PDF variant suffixes stay as main names them; D1 is amended to match. No code change.
+- Mac staging walk wave 1b on `a8de9ae6` (app code equal to main `b9ad44a4`) passed: export names follow the title; a blank title and "???" both save, and export is refused with 422 `title_without_text` (Mac record `.artifacts/staging-walk-l1b-a8de9ae6/walk-record.md`).
+- Review f9239f80 (2026-10-21, changes_requested, two medium findings: titles long enough to overflow the 255-character Mina filer name column, and the size of `user_vault_file_repository.py`) is held for user triage (retained root `01a15f48-0f71-77ba-b7df-f48c8e838efb`, `evidence/reviews/task-skript-40-04-05-review-f9239f80.md`).
