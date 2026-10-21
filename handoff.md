@@ -86,8 +86,9 @@
     - 41-02-03: removes the old guest DigiExam converter (user 2026-10-20).
     - 39-06-09: waits on 39-06-08.
     - 41-01-02, -03, -04: wait on HuleEdu TASK-HULE-14-03-01 on staging.
-  - Planned, no story yet: EPIC-SKRIPT-39 item 06, digital-PDF import (scanned
-    deferred).
+  - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
+    in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
+    one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
