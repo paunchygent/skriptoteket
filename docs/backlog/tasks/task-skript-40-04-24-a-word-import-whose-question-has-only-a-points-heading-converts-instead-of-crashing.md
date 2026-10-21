@@ -50,3 +50,9 @@ Stop and report if keeping the question needs a prompt change, a manifest schema
 | --- | --------------------------------------------------------------------------------------------------------------------------------- |
 | R1  | Light route (user rule 2026-10-21): one junior unit with a focused fail-first test, admitted on that proof with no review rounds. |
 | R2  | The question is kept and placed at its points heading; the import never fails on this shape.                                      |
+
+## Progress
+
+### Repair 2026-10-21 (branch codex/task-skript-40-04-24)
+
+- Kept the heading-only question: `assign_points_lines` no longer joins a question's only anchor to another question, so the question stays at its points heading and `question_families` converts instead of raising `IndexError`. Proof: `test_docx_points_heading_only_question.py` (fail-first `IndexError` at `docx_batches.py:84`, then 2 passed), 172 neighbouring domain plus 230 handler/application tests passed, lint/typecheck/docs-validate exit 0.
