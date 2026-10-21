@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=41 | story=336 | task=0 | review=137
-- open | epic=20 | story=67 | task=0
+- total | epic=41 | story=337 | task=0 | review=137
+- open | epic=20 | story=68 | task=0
 
 ## Lookup
 
@@ -380,6 +380,7 @@
 - story | ST-SKRIPT-39-07 | [Bring DigiExam conversion into the exam workspace as a secondary input mode](stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md)
 - story | ST-SKRIPT-39-08 | [Course and tag metadata for saved exams](stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
 - story | ST-SKRIPT-39-09 | [QTI 3.0 native export for Exam.net](stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
+- story | ST-SKRIPT-39-10 | [Teachers import exams from PDF files that contain text into the exam workspace](stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md)
 - story | ST-SKRIPT-40-01 | [Converge tokens, components and action buttons onto the shared package](stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md)
 - story | ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md)
 - story | ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md)
@@ -545,7 +546,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=4, done=5 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=4, proposed=1, done=5 | tasks=none
 - EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=3, done=1 | tasks=none
 - EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=active=1, ready=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
@@ -619,6 +620,7 @@
 
 - ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-18 | [The SPA Vitest wrapper runs exactly the spec files its targets name](stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-39-10 | [Teachers import exams from PDF files that contain text into the exam workspace](stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked
 

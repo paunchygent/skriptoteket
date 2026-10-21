@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "779c6c158515448293cb2c5e790a2b39382703466ec1dd405b88c761693116a2",
+  "source_set_digest": "d2255b1b75b2b39240681d6278b754e388520bc19d54c72b0062b48bbd8b96b6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2431,6 +2431,27 @@
         "decided_at": "2026-10-15",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "All eight tasks done (TASK-SKRIPT-39-09-01..08), each proven by a Hemma staging walk and an Exam.net import read back through /api/exams/automarked; task reviews recorded per task, task 8 review waived by the user 2026-10-15."
+      }
+    },
+    {
+      "id": "ST-SKRIPT-39-10",
+      "type": "story",
+      "title": "Teachers import exams from PDF files that contain text into the exam workspace",
+      "path": "docs/backlog/stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-39",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
