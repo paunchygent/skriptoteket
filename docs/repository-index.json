@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8e6f155ff9be2a8d70f7b3a84e482721a8f99c63934dc408a2d4056fcdaa4ad8",
+  "source_set_digest": "0d9f5d2450182a1d206752dfd114bfd399f4d8be23d69f5435aa3a6642290365",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2438,7 +2438,7 @@
       "type": "story",
       "title": "Teachers import exams from PDF files that contain text into the exam workspace",
       "path": "docs/backlog/stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {

@@ -143,7 +143,8 @@ closes the epic and is not on the critical path.
 06. PDF ingestion: digital PDFs with embedded text parse locally; scanned
     or layout-hard handling is deferred (undecided) while the Sir generic
     extraction capability is preserved as-is without selecting a
-    scanned-PDF product route.
+    scanned-PDF product route. Digital PDFs are `ST-SKRIPT-39-10` (`ready`
+    2026-10-21), which also cuts drawn figures out as pictures.
 07. QTI import: a reader for the proven subset into the authoring IR, making
     export-import-export round-trip a writer regression gate.
 08. QTI 3.0 native export convergence (user-decided 2026-10-09; sequenced
