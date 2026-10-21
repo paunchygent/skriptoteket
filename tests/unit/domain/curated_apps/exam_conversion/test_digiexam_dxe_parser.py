@@ -28,6 +28,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import (
     DigiExamDxeParser,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -42,7 +45,9 @@ _PNG_BASE64 = (
 
 
 def test_dxe_fixture_preserves_exact_observed_structure_without_answer_synthesis() -> None:
-    result = DigiExamDxeParser().parse_file(_DXE)
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_file(
+        _DXE
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -81,7 +86,9 @@ def test_dxe_fixture_preserves_exact_observed_structure_without_answer_synthesis
 
 
 def test_dxe_fixture_preserves_alternatives_gaps_and_grading_policy() -> None:
-    result = DigiExamDxeParser().parse_file(_DXE)
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_file(
+        _DXE
+    )
     items = {item.header: item for item in result.items}
 
     first_mcq = items["Flervalsfråga typ 1"]
@@ -117,7 +124,7 @@ def test_dxe_fixture_preserves_alternatives_gaps_and_grading_policy() -> None:
 
 
 def test_duplicate_dxe_fixture_proves_same_question_shape() -> None:
-    parser = DigiExamDxeParser()
+    parser = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability())
     primary = parser.parse_file(_DXE)
     duplicate = parser.parse_file(_DUPLICATE_DXE)
 
@@ -134,7 +141,9 @@ def test_duplicate_dxe_fixture_proves_same_question_shape() -> None:
 
 
 def test_dxe_embedded_image_fixture_binds_renderer_neutral_asset_to_body_html() -> None:
-    result = DigiExamDxeParser().parse_file(_EMBEDDED_IMAGE_DXE)
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_file(
+        _EMBEDDED_IMAGE_DXE
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -163,7 +172,9 @@ def test_repeated_dxe_embedded_image_references_are_valid_ordered_references() -
         '<p><img data-image-id="0" /></p><p><img data-image-id="0" /></p>'
     )
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="repeated-image.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="repeated-image.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert len(result.items[0].embedded_assets) == 1
@@ -182,7 +193,9 @@ def test_referenced_invalid_embedded_asset_stays_exportable_with_placeholder_war
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][0]["images"][0] = invalid_payload
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="invalid-image.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="invalid-image.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -206,7 +219,9 @@ def test_missing_embedded_asset_reference_stays_exportable_with_item_warning() -
     payload["exams"][0]["questions"][0]["images"] = []
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="1" /></p>'
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="missing-image-ref.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="missing-image-ref.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -232,7 +247,9 @@ def test_empty_embedded_asset_payloads_with_body_reference_stay_exportable() -> 
     payload["exams"][0]["questions"][0]["images"] = []
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="0" /></p>'
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="empty-images-ref.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="empty-images-ref.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -246,7 +263,9 @@ def test_missing_embedded_asset_payloads_with_body_reference_stay_exportable() -
     del payload["exams"][0]["questions"][0]["images"]
     payload["exams"][0]["questions"][0]["bodyHTML"] = '<p><img data-image-id="0" /></p>'
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="missing-images-ref.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="missing-images-ref.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -262,7 +281,9 @@ def test_orphan_prompt_image_position_stays_exportable_with_item_warning() -> No
         '<p><img class="fr-fic"/></p><p>Rests of the prompt.</p>'
     )
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="orphan-image.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="orphan-image.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -275,7 +296,9 @@ def test_unused_embedded_asset_payload_fails_closed_with_typed_warning() -> None
     payload = json.loads(_EMBEDDED_IMAGE_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][0]["bodyHTML"] = "<p>No image reference.</p>"
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="unused-image.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="unused-image.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.BLOCKED
     assert result.renderer_ready is False
@@ -291,7 +314,9 @@ def test_ambiguous_embedded_asset_binding_fails_closed_with_typed_warning() -> N
         '<p><img data-image-id="0" data-image-id="1" /></p>'
     )
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="ambiguous-image-ref.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="ambiguous-image-ref.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.BLOCKED
     assert result.renderer_ready is False
@@ -305,7 +330,9 @@ def test_populated_dxe_right_flags_are_treated_as_dxe_answer_key_provenance() ->
     payload = json.loads(_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][1]["alternatives"][1]["right"] = True
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="populated.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="populated.dxe"
+    )
 
     item = result.items[1]
     assert item.answer_key_provenance == DigiExamAnswerKeyProvenance.DXE_POPULATED_KEY
@@ -316,7 +343,9 @@ def test_unsupported_dxe_question_type_fails_closed() -> None:
     payload = json.loads(_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][0]["type"] = 99
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="unknown-type.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="unknown-type.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.BLOCKED
     assert result.renderer_ready is False
@@ -325,7 +354,9 @@ def test_unsupported_dxe_question_type_fails_closed() -> None:
 
 
 def test_malformed_dxe_payload_fails_closed_without_untyped_exception() -> None:
-    result = DigiExamDxeParser().parse_text("{", filename="broken.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_text(
+        "{", filename="broken.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.BLOCKED
     assert result.renderer_ready is False
@@ -334,7 +365,7 @@ def test_malformed_dxe_payload_fails_closed_without_untyped_exception() -> None:
 
 
 def test_missing_required_dxe_sections_fail_closed_without_untyped_exception() -> None:
-    result = DigiExamDxeParser().parse_payload(
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         {"exams": [{"title": "Broken"}]}, filename="missing.dxe"
     )
 

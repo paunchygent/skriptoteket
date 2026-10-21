@@ -21,6 +21,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceConversionStatusHandler,
 )
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
@@ -58,6 +61,7 @@ def _environment():
         clock=FixedClock(_NOW),
         id_generator=env.ids,
         codec=env.codec,
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     return env, actor, users, importer, processor
 

@@ -26,6 +26,9 @@ from docx.oxml.xmlchemy import BaseOxmlElement
 from PIL import Image
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxImage, DocxMissingImage
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    probe_image_payload,
+)
 
 _PIC = qn("pic:pic")
 _BLIP_FILL = qn("pic:blipFill")
@@ -138,17 +141,15 @@ def picture_from_relationship(
 
 def _probe(payload: bytes) -> _Raster | None:
     """A payload's actual Pillow format and first-frame size, or None when unreadable."""
-    try:
-        with Image.open(io.BytesIO(payload)) as image:
-            image.load()
-            return _Raster(
-                format=image.format or "",
-                width=image.width,
-                height=image.height,
-                animated=bool(getattr(image, "is_animated", False)),
-            )
-    except (OSError, ValueError, Image.DecompressionBombError):
+    probed = probe_image_payload(payload)
+    if probed is None:
         return None
+    return _Raster(
+        format=probed.format,
+        width=probed.width,
+        height=probed.height,
+        animated=probed.animated,
+    )
 
 
 def _transform(element: BaseOxmlElement | None) -> _Transform | str:

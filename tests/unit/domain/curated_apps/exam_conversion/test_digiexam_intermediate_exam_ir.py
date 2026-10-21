@@ -30,6 +30,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIrManualFollowUpReason,
     build_digiexam_intermediate_exam,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -39,7 +42,9 @@ _EMBEDDED_IMAGE_DXE = _DXE_FIXTURE_DIR / "sanitized-embedded-image.dxe"
 
 
 def test_dxe_parser_output_maps_to_renderer_neutral_ir_without_answer_synthesis() -> None:
-    parse_result = DigiExamDxeParser().parse_file(_DXE)
+    parse_result = DigiExamDxeParser(
+        image_decodability=PillowEmbeddedImageDecodability()
+    ).parse_file(_DXE)
 
     exam = build_digiexam_intermediate_exam(parse_result)
 
@@ -86,7 +91,9 @@ def test_dxe_embedded_assets_map_to_ir() -> None:
     payload["exams"][0]["questions"][0]["bodyHTML"] = (
         '<p><img data-image-id="0" /></p><p><img data-image-id="0" /></p>'
     )
-    parse_result = DigiExamDxeParser().parse_payload(payload, filename=_EMBEDDED_IMAGE_DXE.name)
+    parse_result = DigiExamDxeParser(
+        image_decodability=PillowEmbeddedImageDecodability()
+    ).parse_payload(payload, filename=_EMBEDDED_IMAGE_DXE.name)
 
     exam = build_digiexam_intermediate_exam(parse_result)
     item = exam.items[0]
@@ -110,7 +117,9 @@ def test_dxe_embedded_assets_map_to_ir() -> None:
 def test_blocked_parser_output_remains_blocked_in_ir() -> None:
     payload = json.loads(_DXE.read_text(encoding="utf-8"))
     payload["exams"][0]["questions"][0]["type"] = 99
-    parse_result = DigiExamDxeParser().parse_payload(payload, filename="unknown-type.dxe")
+    parse_result = DigiExamDxeParser(
+        image_decodability=PillowEmbeddedImageDecodability()
+    ).parse_payload(payload, filename="unknown-type.dxe")
 
     exam = build_digiexam_intermediate_exam(parse_result)
 

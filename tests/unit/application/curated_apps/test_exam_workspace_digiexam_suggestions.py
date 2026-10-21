@@ -17,6 +17,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.digiexam_import import (
     build_native_exam_from_digiexam,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 from tests.unit.application.curated_apps.handlers.workspace_suggestion_handler_support import (
     SuggestionHandlerHarness,
 )
@@ -42,7 +45,8 @@ def imported_document(
     exam = parse_source_exam(
         upload=ConversionHubUpload(
             filename=FIXTURE.name, file_bytes=content, content_type="application/octet-stream"
-        )
+        ),
+        image_decodability=PillowEmbeddedImageDecodability(),
     )
     return build_native_exam_from_digiexam(
         exam=exam, document_id=document_id, source_sha256=hashlib.sha256(content).hexdigest()

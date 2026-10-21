@@ -14,6 +14,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     build_digiexam_intermediate_exam,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_image_readability import (
+    PillowEmbeddedImageDecodability,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -91,7 +94,7 @@ def _missing_title_payload(*, blank: bool) -> dict[str, object]:
 
 
 def test_unresolved_prompt_image_positions_stay_non_blocking_in_parser_and_ir() -> None:
-    result = DigiExamDxeParser().parse_payload(
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         _missing_image_payload(), filename="missing-image.dxe"
     )
 
@@ -124,7 +127,9 @@ def test_referenced_invalid_image_payload_stays_non_blocking_in_parser() -> None
     question["bodyHTML"] = '<p><img data-image-id="0" /></p>'
     question["images"] = ["invalid"]
 
-    result = DigiExamDxeParser().parse_payload(payload, filename="invalid-image.dxe")
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
+        payload, filename="invalid-image.dxe"
+    )
 
     assert result.status == DigiExamParseStatus.SUCCESS
     assert result.renderer_ready is True
@@ -150,8 +155,12 @@ def test_source_repair_messages_carry_real_question_numbers_and_no_literal_n() -
     third["bodyHTML"] = '<p>Välj alla rätta.</p><p><img class="fr-fic"/></p>'
     third["images"] = []
 
-    first_result = DigiExamDxeParser().parse_payload(payload, filename="repair-numbers.dxe")
-    second_result = DigiExamDxeParser().parse_payload(payload, filename="repair-numbers.dxe")
+    first_result = DigiExamDxeParser(
+        image_decodability=PillowEmbeddedImageDecodability()
+    ).parse_payload(payload, filename="repair-numbers.dxe")
+    second_result = DigiExamDxeParser(
+        image_decodability=PillowEmbeddedImageDecodability()
+    ).parse_payload(payload, filename="repair-numbers.dxe")
 
     title_warnings = [
         warning
@@ -177,7 +186,9 @@ def test_source_repair_messages_carry_real_question_numbers_and_no_literal_n() -
 
 def test_missing_and_blank_titles_keep_question_n_fallback() -> None:
     for blank in (False, True):
-        parse_result = DigiExamDxeParser().parse_payload(
+        parse_result = DigiExamDxeParser(
+            image_decodability=PillowEmbeddedImageDecodability()
+        ).parse_payload(
             _missing_title_payload(blank=blank),
             filename="missing-title.dxe",
         )
@@ -240,7 +251,7 @@ def _image_reference_payload(image_base64: str) -> dict[str, object]:
 
 
 def test_truncated_png_reference_becomes_placeholder_without_blocking() -> None:
-    result = DigiExamDxeParser().parse_payload(
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         _image_reference_payload(TRUNCATED_PNG_BASE64), filename="truncated-png.dxe"
     )
 
@@ -256,7 +267,7 @@ def test_truncated_png_reference_becomes_placeholder_without_blocking() -> None:
 
 
 def test_truncated_jpeg_reference_becomes_placeholder_without_blocking() -> None:
-    result = DigiExamDxeParser().parse_payload(
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         _image_reference_payload(TRUNCATED_JPEG_BASE64), filename="truncated-jpeg.dxe"
     )
 
@@ -272,7 +283,7 @@ def test_truncated_jpeg_reference_becomes_placeholder_without_blocking() -> None
 
 
 def test_valid_png_reference_stays_usable_without_warning() -> None:
-    result = DigiExamDxeParser().parse_payload(
+    result = DigiExamDxeParser(image_decodability=PillowEmbeddedImageDecodability()).parse_payload(
         _image_reference_payload(VALID_PNG_BASE64), filename="valid-png.dxe"
     )
 

@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     build_digiexam_intermediate_exam,
 )
 from skriptoteket.domain.errors import validation_error
+from skriptoteket.protocols.exam_conversion import EmbeddedImageDecodabilityProtocol
 
 if TYPE_CHECKING:
     from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
@@ -36,13 +37,14 @@ _INVALID_DXE_MESSAGE = "Filen kunde inte tolkas som en DigiExam-export (.dxe)."
 def parse_source_exam(
     *,
     upload: "ConversionHubUpload",
+    image_decodability: EmbeddedImageDecodabilityProtocol,
 ) -> DigiExamIntermediateExam:
     """Parse one uploaded `.dxe` export into the renderer-neutral IR."""
     try:
         text = upload.file_bytes.decode("utf-8")
     except UnicodeDecodeError as exc:
         raise validation_error(_INVALID_DXE_MESSAGE) from exc
-    parse_result = DigiExamDxeParser().parse_text(
+    parse_result = DigiExamDxeParser(image_decodability=image_decodability).parse_text(
         text,
         filename=upload.filename,
     )
