@@ -47,6 +47,7 @@ from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
@@ -108,9 +109,15 @@ class InMemoryEnrichmentJobRepository:
             and current.locked_by != expected_worker_id
         ):
             raise AssertionError("worker lease is no longer owned")
-        # Like the PostgreSQL repository, update never writes the conversion progress.
+        # Like the PostgreSQL repository, update never writes the conversion progress or phase.
         self.jobs[job.id] = job.model_copy(
-            update={"conversion_progress": current.conversion_progress if current else None}
+            update={
+                "conversion_progress": current.conversion_progress if current else None,
+                "conversion_phase": current.conversion_phase if current else None,
+                "conversion_phase_started_at": (
+                    current.conversion_phase_started_at if current else None
+                ),
+            }
         )
         return self.jobs[job.id]
 
@@ -118,6 +125,13 @@ class InMemoryEnrichmentJobRepository:
         self, *, job_id: UUID, progress: dict[str, JsonValue]
     ) -> None:
         self.jobs[job_id] = self.jobs[job_id].model_copy(update={"conversion_progress": progress})
+
+    async def set_conversion_phase(
+        self, *, job_id: UUID, phase: ConversionPhase, started_at: datetime
+    ) -> None:
+        self.jobs[job_id] = self.jobs[job_id].model_copy(
+            update={"conversion_phase": phase, "conversion_phase_started_at": started_at}
+        )
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         job = self.jobs.get(job_id)

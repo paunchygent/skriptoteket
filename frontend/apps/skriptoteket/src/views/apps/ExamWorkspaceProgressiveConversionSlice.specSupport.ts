@@ -75,6 +75,8 @@ export function status(
     error_message: null,
     summary: null,
     document_revision: documentRevision,
+    phase: null,
+    phase_started_at: null,
     questions_total: 3,
     questions_done: units.filter((unit) => unit !== "converting").length,
     units: units.map((unitState, index) => ({

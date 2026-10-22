@@ -22,6 +22,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
 from skriptoteket.domain.llm_door import AiDailyLimit
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 
 
 class ExamAnswerKeyEnrichmentJobStatus(StrEnum):
@@ -71,6 +72,8 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     ai_limit: AiDailyLimit | None = None
     diagnostics: tuple[dict[str, JsonValue], ...] = ()
     conversion_progress: dict[str, JsonValue] | None = None
+    conversion_phase: ConversionPhase | None = None
+    conversion_phase_started_at: datetime | None = None
 
     created_at: datetime
     updated_at: datetime
@@ -132,6 +135,8 @@ class ExamWorkspaceConversionJobView(BaseModel):
     last_error: str | None
     ai_limit: AiDailyLimit | None = None
     conversion_progress: dict[str, JsonValue] | None = None
+    conversion_phase: ConversionPhase | None = None
+    conversion_phase_started_at: datetime | None = None
 
 
 def enqueue_workspace_enrichment_job(

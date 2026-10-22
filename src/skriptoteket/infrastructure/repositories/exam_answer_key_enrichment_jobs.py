@@ -30,6 +30,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamWorkspaceSuggestionJobQueryProtocol,
@@ -116,7 +117,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         model.last_error = job.last_error
         model.ai_limit = job.ai_limit.value if job.ai_limit is not None else None
         model.diagnostics = list(job.diagnostics)
-        # conversion_progress is written only by set_conversion_progress.
+        # conversion_progress is written only by set_conversion_progress, the phase only
+        # by set_conversion_phase.
         model.updated_at = job.updated_at
         model.started_at = job.started_at
         model.finished_at = job.finished_at
@@ -134,6 +136,17 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         model.conversion_progress = progress
         await self._session.flush()
 
+    async def set_conversion_phase(
+        self, *, job_id: UUID, phase: ConversionPhase, started_at: datetime
+    ) -> None:
+        """Replace the job's current conversion phase and its start time; never commits."""
+        model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job_id)
+        if model is None:
+            raise not_found("ExamAnswerKeyEnrichmentJob", str(job_id))
+        model.conversion_phase = phase.value
+        model.conversion_phase_started_at = started_at
+        await self._session.flush()
+
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:
         stmt = select(
             ExamAnswerKeyEnrichmentJobModel.id,
@@ -144,6 +157,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             ExamAnswerKeyEnrichmentJobModel.last_error,
             ExamAnswerKeyEnrichmentJobModel.ai_limit,
             ExamAnswerKeyEnrichmentJobModel.conversion_progress,
+            ExamAnswerKeyEnrichmentJobModel.conversion_phase,
+            ExamAnswerKeyEnrichmentJobModel.conversion_phase_started_at,
         ).where(ExamAnswerKeyEnrichmentJobModel.id == job_id)
         row = (await self._session.execute(stmt)).one_or_none()
         return (
@@ -165,6 +180,8 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
                 ExamAnswerKeyEnrichmentJobModel.last_error,
                 ExamAnswerKeyEnrichmentJobModel.ai_limit,
                 ExamAnswerKeyEnrichmentJobModel.conversion_progress,
+                ExamAnswerKeyEnrichmentJobModel.conversion_phase,
+                ExamAnswerKeyEnrichmentJobModel.conversion_phase_started_at,
             )
             .where(
                 ExamAnswerKeyEnrichmentJobModel.source_kind.in_(

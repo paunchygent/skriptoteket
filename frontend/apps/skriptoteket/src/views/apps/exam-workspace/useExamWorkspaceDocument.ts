@@ -175,6 +175,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
   const {
     adoptConversion,
+    conversionElapsed,
     conversionError,
     conversionMessage,
     conversionProgress,
@@ -452,6 +453,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     listOrdering,
     applyArrivingSuggestions,
     assetUrls,
+    conversionElapsed,
     conversionError,
     conversionMessage,
     conversionProgress,

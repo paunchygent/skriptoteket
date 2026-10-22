@@ -35,6 +35,22 @@ import {
   stopConversionPolling,
 } from "./examWorkspaceConversionShared";
 
+/** What the import is doing before it converts question by question; one place for the copy. */
+export const CONVERSION_PHASE_COPY = {
+  reading: "Läser filen",
+  finding: "Hittar frågorna",
+  sorting: "Sorterar frågorna efter typ",
+  converting: "Konverterar frågorna",
+} as const;
+
+/** m:ss for the time since the phase began; the server's clock may run ahead of the browser's, so it never goes negative. */
+export function formatConversionElapsed(startedAt: string, nowMs: number): string | null {
+  const started = Date.parse(startedAt);
+  if (Number.isNaN(started)) return null;
+  const seconds = Math.floor(Math.max(0, nowMs - started) / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
 export const STATUS_FAILURE_COPY =
   "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 
@@ -51,11 +67,20 @@ export function createConversionStatusPoll(
   const conversionProgress = computed(() => {
     const status = runtime.conversionStatus.value;
     if (!runtime.isConverting.value || !status || status.questions_total === 0) return null;
+    // Before the converting phase the count is not shown: the phase line names the work.
+    if (status.phase !== null && status.phase !== "converting") return null;
     return { done: status.questions_done, total: status.questions_total };
   });
 
   const conversionMessage = computed(() => {
     const progress = conversionProgress.value;
+    const phase = runtime.isConverting.value ? runtime.conversionStatus.value?.phase : null;
+    if (phase === "converting") {
+      return progress
+        ? `${CONVERSION_PHASE_COPY.converting}: ${progress.done} av ${progress.total} klara`
+        : CONVERSION_PHASE_COPY.converting;
+    }
+    if (phase) return CONVERSION_PHASE_COPY[phase];
     if (progress) {
       return `Konverterar provet: ${progress.done} av ${progress.total} frågor klara.`;
     }
@@ -64,6 +89,13 @@ export function createConversionStatusPoll(
       return runtime.conversionStatus.value.error_message ?? IMPORT_FAILURE_COPY;
     }
     return runtime.conversionError.value;
+  });
+
+  /** Time in the current phase as m:ss; null while no phase is known or nothing converts. */
+  const conversionElapsed = computed(() => {
+    const status = runtime.conversionStatus.value;
+    if (!runtime.isConverting.value || !status?.phase || !status.phase_started_at) return null;
+    return formatConversionElapsed(status.phase_started_at, runtime.now.value);
   });
 
   /** The open document is the followed import's, so the teacher may edit it while batches arrive. */
@@ -209,6 +241,7 @@ export function createConversionStatusPoll(
 
   return {
     adoptConversion,
+    conversionElapsed,
     conversionMessage,
     conversionProgress,
     convertingItemIds,

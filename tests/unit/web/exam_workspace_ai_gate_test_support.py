@@ -182,6 +182,8 @@ def _conversion_status(lineage_id: UUID) -> ExamWorkspaceConversionStatus:
         document_revision=None,
         questions_total=0,
         questions_done=0,
+        phase=None,
+        phase_started_at=None,
         units=(),
         summary=None,
     )

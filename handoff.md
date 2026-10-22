@@ -2,6 +2,11 @@
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
+- [TASK-SKRIPT-39-04-23](docs/backlog/tasks/task-skript-39-04-23-the-exam-import-shows-each-phase-and-a-live-signal-while-it-works.md)
+  `in_progress`: import phase text plus ticking elapsed time on branch
+  `codex/task-skript-39-04-23` (migration `aa30c309b36c`; retained `01a1639f`).
+  Next: Hemma orchestrator review, merge, Mac walk of Word and PDF import (D6).
+
 - Hemma orchestrator 2026-10-22:
 
   - Production runs `73952bcb` (07:19 UTC after verified backup

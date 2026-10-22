@@ -43,7 +43,11 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.docx_conversion_progress import ConversionOutline, ConversionUpdate
+from skriptoteket.protocols.docx_conversion_progress import (
+    ConversionOutline,
+    ConversionPhase,
+    ConversionUpdate,
+)
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -95,6 +99,14 @@ class ExamWorkspaceConversionProgress:
         self._uow = uow
         self._clock = clock
         self._ids = id_generator
+
+    async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        async with self._uow:
+            if await self._owned_job(job_id=job_id, worker_id=worker_id) is None:
+                return
+            await self._jobs.set_conversion_phase(
+                job_id=job_id, phase=phase, started_at=self._clock.now()
+            )
 
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:
         async with self._uow:

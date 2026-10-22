@@ -59,7 +59,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 
 const succeeded: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
-  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+  document_revision: 1, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [],
 };
 let history: ReturnType<typeof resetSliceApiMocks>;
 const IMPORT_LINE = '[data-test="exam-workspace-import-points-line"]';

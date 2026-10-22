@@ -111,7 +111,7 @@ function frameOf(wrapper: ViewWrapper): HTMLElement {
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
-  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+  document_revision: 1, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [],
 };
 
 afterEach(() => {
@@ -144,7 +144,7 @@ beforeEach(() => {
       saved_document: document,
     });
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
-      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
   });
 });
 

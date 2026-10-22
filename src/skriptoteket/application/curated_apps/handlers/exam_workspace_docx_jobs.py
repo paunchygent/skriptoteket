@@ -34,7 +34,10 @@ from skriptoteket.domain.llm_door import (
     door_caller_for,
 )
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
+from skriptoteket.protocols.docx_conversion_progress import (
+    ConversionPhase,
+    DocxConversionProgressProtocol,
+)
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -93,6 +96,12 @@ class ProcessExamWorkspaceDocxJobHandler:
                     "Kontot för provdokumentet finns inte längre.",
                     _job_failure("owner_missing", str(job.owner_user_id)),
                 )
+            # Chunking reads the Word or PDF file; a reclaimed job reports the phase again
+            # under its new worker id. The phase write opens its own unit of work.
+            await self._progress.phase(
+                worker_id=job.locked_by, job_id=job.id, phase=ConversionPhase.READING
+            )
+            chunks = self._chunker.chunk(content=job.source_docx)
             outcome = await self._pipeline.convert(
                 job=DocxConversionJob(
                     job_id=job.id,
@@ -101,7 +110,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     filename=job.input_filename,
                     source_sha256=hashlib.sha256(job.source_docx).hexdigest(),
                     source_docx=job.source_docx,
-                    chunks=self._chunker.chunk(content=job.source_docx),
+                    chunks=chunks,
                     course_key=job.workspace_course_key,
                     caller=door_caller_for(user=actor),
                     origin_kind=import_origin_kind(job.source_docx),

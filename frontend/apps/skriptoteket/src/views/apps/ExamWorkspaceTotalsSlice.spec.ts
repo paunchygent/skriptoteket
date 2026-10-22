@@ -55,7 +55,7 @@ vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 const succeeded: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
-  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
+  document_revision: 1, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [],
 };
 const mounted: ViewWrapper[] = [];
 let history: ReturnType<typeof resetSliceApiMocks>;

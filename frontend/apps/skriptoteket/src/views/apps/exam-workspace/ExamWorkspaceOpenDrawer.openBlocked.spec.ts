@@ -68,6 +68,7 @@ function mountDrawer(options: {
     props: {
       conversionError: null,
       conversionMessage: null,
+      conversionElapsed: null,
       conversionProgress: null,
       currentExports: [],
       currentLineageId: options.currentLineageId,
@@ -265,6 +266,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
       props: {
         conversionError: null,
         conversionMessage: null,
+        conversionElapsed: null,
         conversionProgress: null,
         currentExports: [],
         currentLineageId: null,
@@ -302,6 +304,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
       props: {
         conversionError: null,
         conversionMessage: null,
+        conversionElapsed: null,
         conversionProgress: null,
         currentExports: [],
         currentLineageId: null,
@@ -338,6 +341,7 @@ describe("ExamWorkspaceOpenDrawer unreadable saved exams", () => {
       props: {
         conversionError: null,
         conversionMessage: null,
+        conversionElapsed: null,
         conversionProgress: null,
         currentExports: [],
         currentLineageId: null,

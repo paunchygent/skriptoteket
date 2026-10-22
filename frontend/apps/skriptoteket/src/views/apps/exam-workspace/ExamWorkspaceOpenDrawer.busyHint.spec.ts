@@ -116,6 +116,7 @@ function mountFromEditing(editing: Editing) {
     props: {
       conversionError: editing.conversionError.value,
       conversionMessage: editing.conversionMessage.value,
+      conversionElapsed: editing.conversionElapsed.value,
       conversionProgress: editing.conversionProgress.value,
       currentExports: [],
       currentLineageId: editing.summary.value?.lineage_id ?? null,
@@ -144,6 +145,8 @@ function runningStatus(lineageId: string): ExamWorkspaceConversionStatus {
     job_id: "job-1",
     lineage_id: lineageId,
     questions_done: 1,
+    phase: null,
+    phase_started_at: null,
     questions_total: 4,
     state: "running",
     summary: null,

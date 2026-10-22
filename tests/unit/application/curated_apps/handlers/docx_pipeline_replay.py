@@ -44,6 +44,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
+    ConversionPhase,
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
@@ -89,6 +90,7 @@ class ReplayProvider:
         self._failures = dict(failures or {})
         self._label_keys = label_b_request_keys(root / exam)
         self.requests: list[StructuredLLMRequest] = []
+        self.trace: list[str] | None = None
         self.recording_ids: dict[str, str] = {}
         self.served: list[tuple[str, str]] = []
         self._served: set[str] = set()
@@ -105,6 +107,8 @@ class ReplayProvider:
         caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
+        if self.trace is not None:
+            self.trace.append(f"provider:{request.output_spec.schema_name}")
         if request.item_id in self._failures:
             raise self._failures[request.item_id]
         name = request.item_id.replace(":", "_")
@@ -174,8 +178,11 @@ def _claimed(reply: Mapping[str, JsonValue]) -> set[str]:
     return anchors(dict(reply))
 
 
-def decisions_door(exam: str, root: Path = RECORDINGS) -> RecordingDoor:
-    """Serve ``decisions_N.json`` in request order at the provider-door seam."""
+def decisions_door(
+    exam: str, root: Path = RECORDINGS, trace: list[str] | None = None
+) -> RecordingDoor:
+    """Serve ``decisions_N.json`` in request order at the provider-door seam; ``trace`` gets
+    one ``door:decisions`` entry per request."""
     bodies = sorted(
         (root / exam).glob("decisions_*.json"),
         key=lambda path: int(path.stem.rsplit("_", 1)[1]),
@@ -183,6 +190,8 @@ def decisions_door(exam: str, root: Path = RECORDINGS) -> RecordingDoor:
     remaining = [json.loads(path.read_text()) for path in bodies]
 
     def respond(sent: DoorSent) -> DoorReply:
+        if trace is not None:
+            trace.append(f"door:{sent.operation.value}")
         if sent.operation is not DoorOperation.DECISIONS:
             raise MissingRecording(f"{exam}: unexpected door operation {sent.operation.value}")
         if not remaining:
@@ -218,18 +227,31 @@ class RecordingProgress:
 
     inner: DocxConversionProgressProtocol | None = None
     calls: list[str] = field(default_factory=list)
+    phases: list[ConversionPhase] = field(default_factory=list)
+    trace: list[str] = field(default_factory=list)
+    """Phase reports, outline and batch deliveries in call order, with the provider and door
+    requests of the same run once ``build_replay`` shares this list with them."""
     outlines: list[ConversionOutline] = field(default_factory=list)
     updates: list[ConversionUpdate] = field(default_factory=list)
     finals: list[ConversionUpdate] = field(default_factory=list)
 
+    async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        # Phases stay out of ``calls``, which pins the document-delivering port calls.
+        self.phases.append(phase)
+        self.trace.append(f"phase:{phase.value}")
+        if self.inner is not None:
+            await self.inner.phase(worker_id=worker_id, job_id=job_id, phase=phase)
+
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:
         self.calls.append("outline")
+        self.trace.append("outline")
         self.outlines.append(outline)
         if self.inner is not None:
             await self.inner.outline(worker_id=worker_id, job_id=job_id, outline=outline)
 
     async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
         self.calls.append("batch_ready")
+        self.trace.append("batch_ready")
         self.updates.append(update)
         if self.inner is not None:
             await self.inner.batch_ready(worker_id=worker_id, job_id=job_id, update=update)
@@ -304,8 +326,9 @@ def build_replay(
     """Build the production pipeline over ``exam``'s recordings at their batch size."""
     provider = provider or ReplayProvider(exam, failures, root)
     progress = progress or RecordingProgress()
+    provider.trace = progress.trace
     pipeline = build_docx_conversion_pipeline(
-        door=decisions_door(exam, root),
+        door=decisions_door(exam, root, progress.trace),
         provider=provider,
         sleeper=NoSleep(),
         uow=SerializedUnitOfWork(NoTransaction()),

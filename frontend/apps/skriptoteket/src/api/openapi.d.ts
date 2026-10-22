@@ -4652,6 +4652,13 @@ export interface components {
             updated_at?: string | null;
         };
         /**
+         * ConversionPhase
+         * @description The step of an import a job is in: reading the file, finding the questions,
+         *     sorting them by type (first-pass labelling), converting them.
+         * @enum {string}
+         */
+        ConversionPhase: "reading" | "finding" | "sorting" | "converting";
+        /**
          * CreateClassroomPlannerShareRequest
          * @description Deserialize an authenticated share creation request.
          */
@@ -5769,6 +5776,9 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+            phase: components["schemas"]["ConversionPhase"] | null;
+            /** Phase Started At */
+            phase_started_at: string | null;
             /** Questions Done */
             questions_done: number;
             /** Questions Total */

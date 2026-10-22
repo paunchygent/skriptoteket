@@ -87,6 +87,7 @@ defineEmits<{
 }>();
 
 const {
+  conversionElapsed,
   conversionError,
   conversionMessage,
   conversionProgress,
@@ -151,6 +152,7 @@ const openSaveDetail = computed(() =>
       :save-state="openSaveState"
       :save-detail="openSaveDetail"
       :source-file-error="sourceFileError"
+      :conversion-elapsed="conversionElapsed"
       :conversion-message="conversionMessage"
       :conversion-error="conversionError"
       :conversion-progress="conversionProgress"

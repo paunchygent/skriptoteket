@@ -46,7 +46,7 @@ _QUESTION = "q21"
 _OWN = ("body:0093", "body:0094", "body:0096")
 
 
-def _refusing_decisions(exam: str, root=None) -> RecordingDoor:
+def _refusing_decisions(exam: str, root=None, trace=None) -> RecordingDoor:
     """Serve the current decisions payload with q21's answer rewritten to a refusal."""
     payload = copy.deepcopy(docx_pipeline_replay.recording(exam, "decisions_1"))
     answers = payload["answers"]

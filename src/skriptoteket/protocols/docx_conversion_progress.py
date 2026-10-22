@@ -11,13 +11,15 @@ Relationships:
     calls the port; it never calls two port methods at once and never while a token
     lease transaction runs, so an implementation may use the request unit of work.
     Calls may repeat after a lease-expiry reclaim; an implementation treats a repeat
-    for an already-filled question as a no-op.
+    for an already-filled question as a no-op. The phase marks which step of the import
+    the job is in (TASK-SKRIPT-39-04-23 D1).
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+from enum import StrEnum
 from types import MappingProxyType
 from typing import Protocol
 from uuid import UUID
@@ -26,6 +28,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.identity.models import User
+
+
+class ConversionPhase(StrEnum):
+    """The step of an import a job is in: reading the file, finding the questions,
+    sorting them by type (first-pass labelling), converting them."""
+
+    READING = "reading"
+    FINDING = "finding"
+    SORTING = "sorting"
+    CONVERTING = "converting"
 
 
 @dataclass(frozen=True)
@@ -68,6 +80,11 @@ class ConversionUpdate:
 
 class DocxConversionProgressProtocol(Protocol):
     """Deliver converted batches before the whole document is done, then publish it."""
+
+    async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        """Called once as each phase starts: one small write per phase change. A repeat
+        after a lease-expiry reclaim overwrites the phase with the new worker's start time."""
+        ...
 
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:
         """Called once, after grouping and before any conversion."""

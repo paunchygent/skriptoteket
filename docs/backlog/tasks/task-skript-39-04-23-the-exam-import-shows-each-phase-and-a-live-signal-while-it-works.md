@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-22'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -90,3 +90,23 @@ D1-D3 are the user's decision (relayed by the Mac orchestrator from the 41-01-04
 2026-10-22; agent-planning:user-closure-gate). D4-D7 are orchestrator decisions under the user's
 delegation (2026-10-22, "Take care of it."). All come from the retained plan in root
 `01a1639c-1df3-7b78-aa2a-aca64e00aa0d`.
+
+## Progress
+
+- 2026-10-22, implementation on branch `codex/task-skript-39-04-23` (retained root
+  `01a1639f-7d95-72f7-9140-ccb6000f8efb`). Owner: implementation lead; next: orchestrator
+  review, merge and the Mac staging walk (D6).
+- Backend (D1): `ConversionPhase` and `DocxConversionProgressProtocol.phase()`; the job row
+  holds `conversion_phase` and `conversion_phase_started_at` (migration `aa30c309b36c`), not
+  the `conversion_progress` JSON, so outline and batch merges never reset it. Reading is
+  reported before the file is chunked (Word and PDF alike, also on a lease reclaim under the
+  new worker), finding before grouping, sorting after the outline, converting once at the
+  first batch dispatch (unlabelable batches included). A stale worker's write is a no-op.
+- Frontend (D2-D4): the Öppna drawer shows the phase text, the existing spinning busy glyph
+  and the phase's elapsed time as m:ss, ticking each second from the reported start time
+  (clamped at 0:00 against clock skew; hidden from the live region). The count shows only in
+  the converting phase. A null phase (DigiExam lane, or a job still queued) keeps the old
+  copy. Copy review approved; "efter typ" kept so phase 3 says what the AI does.
+- Proof: lint, typecheck, backend unit 2649 passed, integration (phase, progress, migration)
+  6 passed, Vitest exam-workspace and api 2743 passed. Logs in the retained root's
+  `evidence/39-04-23-*.log`. Staging walk not yet done.

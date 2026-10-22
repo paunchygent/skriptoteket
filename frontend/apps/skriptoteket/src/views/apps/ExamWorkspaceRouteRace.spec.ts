@@ -135,6 +135,8 @@ beforeEach(() => {
     error_message: null,
     summary: null,
     document_revision: 1,
+    phase: null,
+    phase_started_at: null,
     questions_total: 0,
     questions_done: 0,
     units: [],

@@ -54,6 +54,8 @@ const props = defineProps<{
   saveDetail: string | null;
   sourceFileError: string | null;
   conversionMessage: string | null;
+  /** Time in the current import phase as m:ss; null when no phase is known. */
+  conversionElapsed: string | null;
   conversionError: string | null;
   conversionProgress: { done: number; total: number } | null;
   isConverting: boolean;
@@ -209,7 +211,12 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
           meaning="busy"
           :size="16"
           class="xw-spin"
-        /><span>{{ conversionMessage }}</span>
+        /><span>{{ conversionMessage }}</span><span
+          v-if="conversionElapsed"
+          class="prog__elapsed xw-muted"
+          aria-hidden="true"
+          data-test="exam-workspace-conversion-elapsed"
+        >{{ conversionElapsed }}</span>
       </div>
       <div
         v-if="conversionProgress"
@@ -462,6 +469,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
   font-size: var(--huleedu-text-sm);
 }
 .prog__line { display: flex; align-items: center; gap: var(--huleedu-space-2); }
+.prog__elapsed { margin-left: var(--huleedu-space-2); min-width: 4ch; font-variant-numeric: tabular-nums; }
 .prog__bar { height: 6px; overflow: hidden; border-radius: 3px; border: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-navy-02); }
 .prog__bar > i { display: block; height: 100%; background: var(--huleedu-action); }
 .prog small { font-size: var(--huleedu-text-xs); }

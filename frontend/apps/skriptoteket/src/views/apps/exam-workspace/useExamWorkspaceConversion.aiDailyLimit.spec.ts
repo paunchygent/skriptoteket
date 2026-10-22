@@ -63,6 +63,8 @@ function queuedStatus(): ExamWorkspaceConversionStatus {
     ai_limit: null,
     summary: null,
     document_revision: null,
+    phase: null,
+    phase_started_at: null,
     questions_total: 0,
     questions_done: 0,
     units: [],

@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
 )
 from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 
 
 class AnswerKeyStructuredProviderProtocol(Protocol):
@@ -61,6 +62,12 @@ class ExamAnswerKeyEnrichmentJobRepositoryProtocol(Protocol):
         self, *, job_id: UUID, progress: dict[str, JsonValue]
     ) -> None:
         """Replace the job's persisted conversion progress; update never writes it."""
+        ...
+
+    async def set_conversion_phase(
+        self, *, job_id: UUID, phase: ConversionPhase, started_at: datetime
+    ) -> None:
+        """Replace the job's current conversion phase and its start time; update never writes it."""
         ...
 
     async def get_conversion_view(self, *, job_id: UUID) -> ExamWorkspaceConversionJobView | None:

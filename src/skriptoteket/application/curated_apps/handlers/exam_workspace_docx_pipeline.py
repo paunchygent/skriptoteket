@@ -104,6 +104,7 @@ from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorBusy, AiJobOverageCapReached
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
+    ConversionPhase,
     ConversionUpdate,
     DocxConversionProgressProtocol,
     OutlineQuestion,
@@ -174,6 +175,7 @@ class DocxConversionPipeline:
             )
             run.state.fail_all_pending(reason)
             return final_publication(run, None)
+        await self._report_phase(run, ConversionPhase.FINDING)
         started = time.monotonic()
         try:
             grouping = await self._grouper.group(
@@ -207,6 +209,7 @@ class DocxConversionPipeline:
             run.own_anchors[question.question_id] = (*question.anchors, *question.subpart_anchors)
             run.key_anchors[question.question_id] = question.key_anchors
         await self._outline(run, manifest)
+        await self._report_phase(run, ConversionPhase.SORTING)
         request, unlabeled = labeling_request(run, manifest, self._labeler_source)
         optional = (
             asyncio.create_task(
@@ -230,6 +233,12 @@ class DocxConversionPipeline:
                 optional.cancel()
                 await asyncio.gather(optional, return_exceptions=True)
         return final_publication(run, manifest)
+
+    async def _report_phase(self, run: DocxConversionRun, phase: ConversionPhase) -> None:
+        async with self._uow.lock:
+            await self._progress.phase(
+                worker_id=run.job.worker_id, job_id=run.job.job_id, phase=phase
+            )
 
     async def _outline(self, run: DocxConversionRun, manifest: ExamManifest) -> None:
         questions = tuple(
@@ -321,9 +330,16 @@ class DocxConversionPipeline:
     ) -> None:
         chosen = set(question_ids)
         families = tuple(f for f in run.families if f.question_id in chosen)
-        for batch in pack_batches(
+        batches = pack_batches(
             families, run.kinds, families_per_batch=self._families_per_batch, prefix=prefix
-        ):
+        )
+        if batches and not run.converting_reported:
+            # The first dispatch of any batch, labelled or not, starts the converting phase.
+            # This task is created first, so it takes the unit-of-work lock before any batch
+            # delivers.
+            run.converting_reported = True
+            tasks.create_task(self._report_phase(run, ConversionPhase.CONVERTING))
+        for batch in batches:
             tasks.create_task(self._convert(run, batch, tasks))
 
     async def _convert(

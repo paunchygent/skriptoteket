@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "27bb2fb84d2bcad58e5329625548893bb2fdb39e692fcd0b396effb7ffc4030b",
+  "source_set_digest": "5303c3de4a4b727057e6acbe926ee9ed630a624b5b2512f56f93f7c05331eab6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5443,7 +5443,7 @@
       "type": "task",
       "title": "The exam import shows each phase and a live signal while it works",
       "path": "docs/backlog/tasks/task-skript-39-04-23-the-exam-import-shows-each-phase-and-a-live-signal-while-it-works.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

@@ -103,6 +103,7 @@ class DocxConversionRun:
         self.resent: set[str] = set()
         self.content_tags: tuple[NativeExamContentTag, ...] = ()
         self.second_wave_dispatches = 0
+        self.converting_reported = False
         self.filled: list[str] = []
         self.timings: list[DocxStageTiming] = []
 

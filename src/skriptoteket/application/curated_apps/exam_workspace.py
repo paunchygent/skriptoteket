@@ -29,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.llm_door import AiDailyLimit
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 
 
 class ExamWorkspaceDocumentSummary(BaseModel):
@@ -76,6 +77,8 @@ class ExamWorkspaceConversionStatus(BaseModel):
     document_revision: int | None
     questions_total: int
     questions_done: int
+    phase: ConversionPhase | None
+    phase_started_at: datetime | None
     units: tuple[ExamWorkspaceConversionUnit, ...]
     summary: ExamWorkspaceDocumentSummary | None
 

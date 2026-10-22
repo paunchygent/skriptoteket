@@ -343,6 +343,7 @@ describe("a save outage collapses the backlog into one store of the newest copy"
       props: {
         conversionError: null,
         conversionMessage: null,
+        conversionElapsed: null,
         conversionProgress: null,
         currentExports: [],
         currentLineageId: "lineage-a",

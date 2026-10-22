@@ -84,6 +84,10 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )
     conversion_progress: Mapped[dict[str, JsonValue] | None] = mapped_column(JSONB, nullable=True)
+    conversion_phase: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    conversion_phase_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

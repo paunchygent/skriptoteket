@@ -73,6 +73,7 @@ export function useExamWorkspaceConversion(
 
   return {
     conversionError: runtime.conversionError,
+    conversionElapsed: statusPoll.conversionElapsed,
     conversionMessage: statusPoll.conversionMessage,
     conversionProgress: statusPoll.conversionProgress,
     adoptConversion: statusPoll.adoptConversion,

@@ -31,6 +31,7 @@ import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
 
 export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 export const CONVERSION_MAX_POLL_MS = 30_000;
+export const CONVERSION_CLOCK_MS = 1000;
 export const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
 
 /** The document owner's state that conversion revisions are applied to. */
@@ -62,6 +63,8 @@ export type ExamWorkspaceConversionBinding = {
 export type ConversionPollState = {
   generation: number;
   timer: ReturnType<typeof setTimeout> | null;
+  /** The one-second clock behind the phase's elapsed time; runs while a conversion is followed. */
+  clock: ReturnType<typeof setInterval> | null;
   failures: number;
   request: Promise<void> | null;
 };
@@ -78,6 +81,8 @@ export type ExamWorkspaceConversionRuntime = {
   /** Units of `binding.serverDocument` while its conversion runs; null otherwise. */
   shownUnits: Ref<ExamWorkspaceConversionUnit[] | null>;
   poll: ConversionPollState;
+  /** Browser time in ms, advanced once a second while a conversion is followed. */
+  now: Ref<number>;
 };
 
 export function createConversionRuntime(
@@ -91,7 +96,8 @@ export function createConversionRuntime(
     conversionError: ref<string | null>(null),
     isConverting: ref(false),
     isImporting: ref(false),
-    poll: { failures: 0, generation: 0, request: null, timer: null },
+    now: ref(Date.now()),
+    poll: { clock: null, failures: 0, generation: 0, request: null, timer: null },
     shownUnits: ref<ExamWorkspaceConversionUnit[] | null>(null),
   };
 }
@@ -125,10 +131,27 @@ export function isSelectedConversion(
   return openLineageId === null || openLineageId === status.lineage_id;
 }
 
-export function stopConversionPolling(runtime: ExamWorkspaceConversionRuntime): void {
+function clearPollTimer(runtime: ExamWorkspaceConversionRuntime): void {
   if (runtime.poll.timer !== null) {
     clearTimeout(runtime.poll.timer);
     runtime.poll.timer = null;
+  }
+}
+
+function startConversionClock(runtime: ExamWorkspaceConversionRuntime): void {
+  if (runtime.poll.clock !== null) return;
+  runtime.now.value = Date.now();
+  runtime.poll.clock = setInterval(() => {
+    runtime.now.value = Date.now();
+  }, CONVERSION_CLOCK_MS);
+}
+
+/** Ends the followed conversion's poll timer and its elapsed-time clock. */
+export function stopConversionPolling(runtime: ExamWorkspaceConversionRuntime): void {
+  clearPollTimer(runtime);
+  if (runtime.poll.clock !== null) {
+    clearInterval(runtime.poll.clock);
+    runtime.poll.clock = null;
   }
 }
 
@@ -137,7 +160,8 @@ export function scheduleConversionPoll(
   pollGeneration: number,
   refresh: (pollGeneration: number) => void,
 ): void {
-  stopConversionPolling(runtime);
+  clearPollTimer(runtime);
+  startConversionClock(runtime);
   const delay = Math.min(
     EXAM_WORKSPACE_CONVERSION_POLL_MS * 2 ** Math.max(0, runtime.poll.failures - 1),
     CONVERSION_MAX_POLL_MS,

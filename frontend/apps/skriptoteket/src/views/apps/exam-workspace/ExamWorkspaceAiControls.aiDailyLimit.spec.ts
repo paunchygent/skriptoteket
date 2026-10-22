@@ -267,6 +267,7 @@ describe("exam workspace AI controls under the daily limit", () => {
       props: {
         conversionError: null,
         conversionMessage: null,
+        conversionElapsed: null,
         conversionProgress: null,
         currentExports: [],
         currentLineageId: null,
