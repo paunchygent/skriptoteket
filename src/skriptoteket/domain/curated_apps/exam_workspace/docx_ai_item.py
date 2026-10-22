@@ -75,6 +75,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs impor
 from skriptoteket.domain.curated_apps.exam_workspace.source_item_formatting import (
     item_source_formatting,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_shortened_paragraph import (
+    restore_shortened_paragraphs,
+)
 
 _BLANK = NativeTextSegment(text="____", marks=())
 
@@ -224,6 +227,11 @@ def aligned_native_item(
     choices = formatting.restore("choices", choices)
     match_left = formatting.restore("match_left", match_left)
     match_right = formatting.restore("match_right", match_right)
+    source_entries = tuple(
+        NativeSourceEntry(surface.sequence, ordinal, start, end)
+        for surface in formatting.surfaces
+        for ordinal, (start, end) in enumerate(surface.source.entry_spans, start=1)
+    )
     formatted_body = complete_source_formatting(
         chunk_list,
         sources,
@@ -232,11 +240,14 @@ def aligned_native_item(
         printed_label=produced.printed_label,
         answers=answers,
         can_rebuild_body=can_rebuild_body,
-        entries=(
-            NativeSourceEntry(surface.sequence, ordinal, start, end)
-            for surface in formatting.surfaces
-            for ordinal, (start, end) in enumerate(surface.source.entry_spans, start=1)
-        ),
+        entries=source_entries,
+    )
+    formatted_body = restore_shortened_paragraphs(
+        chunk_list,
+        sources,
+        body_source,
+        formatted_body,
+        entries=source_entries,
     )
     if produced.kind is NativeExamItemKind.GAP_FILL:
         formatted_body = gap_paragraphs_from_source(body_source, formatted_body)

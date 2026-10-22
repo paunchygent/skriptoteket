@@ -44,7 +44,15 @@ async def test_recorded_corpus_has_no_unrecoverable_formatting_transfer(
         for item in document.items
         if FORMATTING_REASON in item.review.reasons
     ]
-    assert failures == []
+    if exam == "svenska_2_grammatik_omprov_variant_2_med_facit":
+        # REP-0049 rereview F4, decision A: Fråga 5's source shares its wording with
+        # the facit and the reply did not emit it, so the item goes to source review
+        # with its question text intact instead of showing the shared text silently.
+        assert failures == [("Fråga 5", (FORMATTING_REASON,))]
+        (item,) = [item for item in document.items if item.printed_label == "Fråga 5"]
+        assert "Gör satsdelsanalys av meningarna." in body_plain_text(item.body)
+    else:
+        assert failures == []
     assert parse_native_exam_document(native_exam_document_json_bytes(document)) == document
 
 
