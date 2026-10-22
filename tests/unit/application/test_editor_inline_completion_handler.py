@@ -616,7 +616,6 @@ async def test_inline_completion_provider_failure_is_an_empty_enabled_result(
 
     assert result.enabled is True
     assert result.completion == ""
-    assert result.notice_code is None
     assert result.eval_meta is not None
     assert result.eval_meta.outcome == outcome
     provider.complete_inline.assert_awaited_once()

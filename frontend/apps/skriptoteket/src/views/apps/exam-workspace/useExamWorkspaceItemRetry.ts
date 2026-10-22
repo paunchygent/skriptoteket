@@ -30,7 +30,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { aiLimitFromError, markAiDailyLimit } from "./aiDailyLimit";
+import { aiLimitFromError, markAiDailyLimit } from "../../../composables/aiDailyLimit";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";

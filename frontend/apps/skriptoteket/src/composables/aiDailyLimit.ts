@@ -1,5 +1,5 @@
 /**
- * Exam workspace daily AI limit.
+ * Daily AI limit shared by the exam workspace and the script editor.
  *
  * Domain purpose:
  *   The HuleEdu LLM door refuses AI work once the daily pool, user share or
@@ -27,7 +27,7 @@
 import { computed, readonly, ref } from "vue";
 import type { ComputedRef, Ref } from "vue";
 
-import { isApiError } from "../../../api/client";
+import { isApiError } from "../api/client";
 
 /** The door's own note for the teacher's personal share. */
 export const AI_USER_LIMIT_NOTE =

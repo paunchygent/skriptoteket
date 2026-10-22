@@ -48,7 +48,6 @@ describe("ChatDrawer", () => {
     wrapper.unmount();
   });
   it.each([
-    ["noticeMessage", "clearNotice", "Notice", "status", "polite"],
     ["error", "clearError", "Chat failed", "alert", "assertive"],
     ["editOpsError", "clearEditOpsError", "Edit failed", "alert", "assertive"],
     ["editOpsDisabledMessage", "clearEditOpsDisabled", "Edit disabled", "status", "polite"],
@@ -61,8 +60,6 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
-        noticeMessage: "Notice",
-        noticeVariant: "warning",
         error: "Chat failed",
         editOpsError: "Edit failed",
         editOpsDisabledMessage: "Edit disabled",
@@ -74,7 +71,7 @@ describe("ChatDrawer", () => {
     expect(message!.attributes()).toMatchObject({ role, "aria-live": live, "aria-atomic": "true" });
     await message!.get('button[aria-label="Stäng"]').trigger("click");
 
-    for (const clearEvent of ["clearNotice", "clearError", "clearEditOpsError", "clearEditOpsDisabled"]) {
+    for (const clearEvent of ["clearError", "clearEditOpsError", "clearEditOpsDisabled"]) {
       expect(wrapper.emitted(clearEvent)).toEqual(clearEvent === event ? [[]] : undefined);
     }
     await wrapper.setProps({ [prop]: null });

@@ -60,9 +60,6 @@ describe("useAuthStore", () => {
           mockJsonResponse({
             local_user: mockUser,
             profile: mockProfile,
-            ai_policy: { remote_providers_enabled: true },
-            allow_remote_fallback: true,
-            inline_completion_provider: "external",
           }),
         )
         .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }))
@@ -83,10 +80,7 @@ describe("useAuthStore", () => {
       expect(store.hasAtLeastRole("contributor")).toBe(true);
       expect(store.grants).toEqual(["tools:run"]);
       expect(store.featureFlags).toEqual(["inline-completion"]);
-      expect(store.$state).not.toHaveProperty("aiPolicy");
       expect(store.profile).toEqual(expect.objectContaining({ user_id: mockUser.id }));
-      expect(store.profile).not.toHaveProperty("allow_remote_fallback");
-      expect(store.profile).not.toHaveProperty("inline_completion_provider");
       expect(fetch).toHaveBeenNthCalledWith(
         1,
         "https://api.hule.education/v1/auth/session",

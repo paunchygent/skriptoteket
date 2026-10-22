@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Literal
 
-SystemMessageVariant = Literal["info", "warning"]
 VirtualFileId = Literal[
     "tool.py",
     "entrypoint.txt",

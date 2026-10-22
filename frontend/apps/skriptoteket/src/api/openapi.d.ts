@@ -5464,12 +5464,6 @@ export interface components {
             completion: string;
             /** Enabled */
             enabled: boolean;
-            /** Notice Code */
-            notice_code?: string | null;
-            /** Notice Message */
-            notice_message?: string | null;
-            /** Notice Variant */
-            notice_variant?: ("info" | "warning") | null;
             /** Replace Suffix Chars */
             replace_suffix_chars?: number | null;
         };

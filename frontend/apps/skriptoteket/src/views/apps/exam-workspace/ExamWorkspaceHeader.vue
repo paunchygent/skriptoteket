@@ -23,7 +23,7 @@ import { computed, nextTick, ref } from "vue";
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
-import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "../../../composables/aiDailyLimit";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 

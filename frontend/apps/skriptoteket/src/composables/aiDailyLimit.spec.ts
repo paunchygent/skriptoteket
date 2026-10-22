@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { ApiError } from "../../../api/client";
+import { ApiError } from "../api/client";
 import {
   AI_APP_LIMIT_NOTE,
   AI_USER_LIMIT_NOTE,

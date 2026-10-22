@@ -39,7 +39,7 @@ import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "../../../composables/aiDailyLimit";
 
 const EXTENSION = ".provdokument.zip";
 

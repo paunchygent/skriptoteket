@@ -24,7 +24,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "../../../composables/aiDailyLimit";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [

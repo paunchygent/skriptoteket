@@ -10,7 +10,7 @@ import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../composables/useAiAccess";
 import { useToast } from "../../composables/useToast";
-import { aiDailyLimitNote, aiDailyLimitReached } from "../../views/apps/exam-workspace/aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "../../composables/aiDailyLimit";
 
 type EditorFieldRefs = {
   entrypoint: Ref<string>;
@@ -87,14 +87,11 @@ const slotBindings = computed(() => ({
   chatMessages: editorChat.messages.value,
   chatStreaming: editorChat.streaming.value,
   chatError: editorChat.error.value,
-  chatNoticeMessage: editorChat.noticeMessage.value,
-  chatNoticeVariant: editorChat.noticeVariant.value,
   aiBlockedNote: canUseAi.value ? aiDailyLimitNote.value : AI_ADMIN_ONLY_NOTE,
   sendChatMessage,
   cancelChat: editorChat.cancel,
   clearChat: editorChat.clear,
   clearChatError: editorChat.clearError,
-  clearChatNotice: editorChat.clearNoticeMessage,
   editOpsRequestError: editOps.requestError.value,
   editOpsDisabledMessage: editOpsDisabledMessage.value,
   editOpsClearDraftToken: editOpsClearDraftToken.value,

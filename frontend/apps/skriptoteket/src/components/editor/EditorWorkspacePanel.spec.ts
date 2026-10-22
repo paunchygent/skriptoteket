@@ -108,8 +108,6 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
     chatMessages: [],
     chatIsStreaming: false,
     chatError: null,
-    chatNoticeMessage: null,
-    chatNoticeVariant: "info",
     aiBlockedNote: null,
     editOpsRequestError: null,
     editOpsDisabledMessage: null,

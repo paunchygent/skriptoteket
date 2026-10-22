@@ -4,7 +4,7 @@ import { computed } from "vue";
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
 import ChatComposer from "./ChatComposer.vue";
 import ChatMessageList from "./ChatMessageList.vue";
-import { SystemMessage, UiDenseActionButton, UiGlyph, type SystemMessageTone } from "../ui";
+import { SystemMessage, UiDenseActionButton, UiGlyph } from "../ui";
 
 type ChatDrawerProps = {
   variant?: "drawer" | "column";
@@ -19,8 +19,6 @@ type ChatDrawerProps = {
   clearDraftToken?: number;
   error: string | null;
   aiBlockedNote?: string | null;
-  noticeMessage?: string | null;
-  noticeVariant?: Extract<SystemMessageTone, "info" | "warning">;
 };
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
@@ -30,8 +28,6 @@ const props = withDefaults(defineProps<ChatDrawerProps>(), {
   editOpsDisabledMessage: null,
   clearDraftToken: 0,
   aiBlockedNote: null,
-  noticeMessage: null,
-  noticeVariant: "info",
 });
 
 const emit = defineEmits<{
@@ -40,7 +36,6 @@ const emit = defineEmits<{
   (event: "cancel"): void;
   (event: "clear"): void;
   (event: "clearError"): void;
-  (event: "clearNotice"): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;
   (event: "toggleCollapse"): void;
@@ -53,7 +48,6 @@ const isRailOnlyOnMobile = computed(() => isColumnVariant.value && props.isColla
 const hasStatusPanel = computed(
   () =>
     Boolean(props.error) ||
-    Boolean(props.noticeMessage) ||
     Boolean(props.editOpsError) ||
     Boolean(props.editOpsDisabledMessage),
 );
@@ -125,16 +119,6 @@ const assistantActivity = computed(() => {
             v-if="hasStatusPanel"
             class="shrink-0 border-b border-navy/20 px-3 py-2 space-y-2"
           >
-            <SystemMessage
-              v-if="props.noticeMessage"
-              :model-value="props.noticeMessage"
-              :tone="props.noticeVariant"
-              dismissible
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              @update:model-value="emit('clearNotice')"
-            />
             <SystemMessage
               v-if="error"
               :model-value="error"

@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.llm_door import AiDoorCaller
 
-from .common import SystemMessageVariant, VirtualFileId
+from .common import VirtualFileId
 from .eval import PromptEvalMeta
 
 
@@ -44,9 +44,6 @@ class InlineCompletionResult(BaseModel):
     completion: str
     enabled: bool
     replace_suffix_chars: int | None = None
-    notice_message: str | None = None
-    notice_variant: SystemMessageVariant | None = None
-    notice_code: str | None = None
     eval_meta: PromptEvalMeta | None = None
 
 

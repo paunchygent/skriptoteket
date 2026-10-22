@@ -13,7 +13,7 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 
-from .common import SystemMessageVariant, VirtualFileId
+from .common import VirtualFileId
 
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
 ChatMessageRole = Literal["user", "assistant"]
@@ -106,13 +106,6 @@ class EditorChatDoneDisabledData(BaseModel):
     code: str | None = None
 
 
-class EditorChatNoticeData(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    message: str
-    variant: SystemMessageVariant = "info"
-
-
 class EditorChatMetaEvent(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -134,16 +127,7 @@ class EditorChatDoneEvent(BaseModel):
     data: EditorChatDoneEnabledData | EditorChatDoneDisabledData
 
 
-class EditorChatNoticeEvent(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    event: Literal["notice"] = "notice"
-    data: EditorChatNoticeData
-
-
-EditorChatStreamEvent = (
-    EditorChatMetaEvent | EditorChatNoticeEvent | EditorChatDeltaEvent | EditorChatDoneEvent
-)
+EditorChatStreamEvent = EditorChatMetaEvent | EditorChatDeltaEvent | EditorChatDoneEvent
 
 
 class ChatStreamProviderProtocol(Protocol):

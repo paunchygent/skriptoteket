@@ -12,7 +12,7 @@ import {
   AI_USER_LIMIT_NOTE,
   aiDailyLimitReached,
   resetAiDailyLimitForTests,
-} from "../../views/apps/exam-workspace/aiDailyLimit";
+} from "../../composables/aiDailyLimit";
 import ChatComposer from "./ChatComposer.vue";
 import ScriptEditorAiPanel from "./ScriptEditorAiPanel.vue";
 

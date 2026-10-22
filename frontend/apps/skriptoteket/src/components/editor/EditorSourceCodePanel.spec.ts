@@ -11,7 +11,7 @@ import {
   AI_USER_LIMIT_NOTE,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
-} from "../../views/apps/exam-workspace/aiDailyLimit";
+} from "../../composables/aiDailyLimit";
 import EditorSourceCodePanel from "./EditorSourceCodePanel.vue";
 
 type ApiRole = components["schemas"]["Role"];

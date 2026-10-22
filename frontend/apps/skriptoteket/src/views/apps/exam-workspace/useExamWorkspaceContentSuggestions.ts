@@ -28,7 +28,7 @@ import {
   aiLimitFromStatus,
   aiLimitNote,
   markAiDailyLimit,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 

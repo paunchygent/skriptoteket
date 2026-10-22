@@ -27,8 +27,6 @@ from skriptoteket.protocols.llm.chat import (
     EditorChatHistoryResult,
     EditorChatMetaData,
     EditorChatMetaEvent,
-    EditorChatNoticeData,
-    EditorChatNoticeEvent,
     EditorChatStreamEvent,
     LLMChatOpsResponse,
     LLMChatRequest,
@@ -36,7 +34,6 @@ from skriptoteket.protocols.llm.chat import (
 from skriptoteket.protocols.llm.common import (
     EditorLlmFailureKind,
     EditorLlmProviderError,
-    SystemMessageVariant,
     VirtualFileId,
 )
 from skriptoteket.protocols.llm.completion import (
@@ -92,8 +89,6 @@ __all__ = [
     "EditorChatHistoryResult",
     "EditorChatMetaData",
     "EditorChatMetaEvent",
-    "EditorChatNoticeData",
-    "EditorChatNoticeEvent",
     "EditorChatStreamEvent",
     "InlineCompletionCommand",
     "InlineCompletionHandlerProtocol",
@@ -119,6 +114,5 @@ __all__ = [
     "EditOpsSelection",
     "PromptEvalMeta",
     "PromptEvalOutcome",
-    "SystemMessageVariant",
     "VirtualFileId",
 ]

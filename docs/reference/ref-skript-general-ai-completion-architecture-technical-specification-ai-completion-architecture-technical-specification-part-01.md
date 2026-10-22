@@ -306,7 +306,6 @@ Notes:
 - `completion` MAY contain newline characters (`\n`) and should be inserted verbatim
 - `replace_suffix_chars` is present only when normalization asks the client to replace that many characters after the
   cursor
-- `notice_message`, `notice_variant` and `notice_code` are optional and absent unless the handler sets a notice
 - The backend MUST NOT surface truncated completions. If the finish reason is `length` or `incomplete`, return empty
   completion
 - Normalization (`application/editor/completion/normalization.py`) strips code fences, trims overlap with the prefix

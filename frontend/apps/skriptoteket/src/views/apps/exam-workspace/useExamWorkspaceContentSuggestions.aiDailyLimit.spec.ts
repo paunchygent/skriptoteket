@@ -25,8 +25,8 @@ import {
   aiDailyLimitReached,
   aiLimitNote,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
-import type { AiDailyLimit } from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import {

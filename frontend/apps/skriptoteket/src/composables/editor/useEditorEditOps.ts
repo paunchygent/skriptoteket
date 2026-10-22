@@ -3,7 +3,7 @@ import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
 import { isApiError } from "../../api/client";
-import { aiLimitFromError, markAiDailyLimit } from "../../views/apps/exam-workspace/aiDailyLimit";
+import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
 import {
   applyEditOps,
   previewEditOps,

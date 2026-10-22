@@ -41,12 +41,12 @@ import {
   EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
   useExamWorkspaceUnreadableFiles,
 } from "./useExamWorkspaceUnreadableFiles";
-import type { AiDailyLimit } from "./aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 import {
   aiLimitNote,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 
 const apiMocks = vi.hoisted(() => ({
   getExamCourseCatalog: vi.fn(),

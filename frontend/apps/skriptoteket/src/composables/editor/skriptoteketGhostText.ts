@@ -11,7 +11,7 @@ import {
 } from "@codemirror/view";
 
 import { apiFetch } from "../../api/client";
-import { aiLimitFromError, markAiDailyLimit } from "../../views/apps/exam-workspace/aiDailyLimit";
+import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
 import type { SkriptoteketIntelligenceConfig } from "./skriptoteketIntelligence";
 
 type GhostTextConfig = {

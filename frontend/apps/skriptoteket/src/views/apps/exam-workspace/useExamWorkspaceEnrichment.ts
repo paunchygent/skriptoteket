@@ -31,7 +31,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { aiLimitFromError, aiLimitFromStatus, markAiDailyLimit } from "./aiDailyLimit";
+import { aiLimitFromError, aiLimitFromStatus, markAiDailyLimit } from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 

@@ -218,7 +218,7 @@ ______________________________________________________________________
 | `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts`                 | Ghost text extension              |
 | `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`              | Bundle integration                |
 | `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` | Config composable                 |
-| `frontend/apps/skriptoteket/src/views/apps/exam-workspace/aiDailyLimit.ts`                   | Shared daily-limit state and note |
+| `frontend/apps/skriptoteket/src/composables/aiDailyLimit.ts`                                 | Shared daily-limit state and note |
 
 ______________________________________________________________________
 

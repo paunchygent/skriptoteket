@@ -13,7 +13,7 @@ import {
 } from "../../composables/editor/bundleFiles";
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
 import { useAiAccess } from "../../composables/useAiAccess";
-import { aiDailyLimitNote, aiDailyLimitReached } from "../../views/apps/exam-workspace/aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "../../composables/aiDailyLimit";
 
 const CodeMirrorEditor = defineAsyncComponent(() => import("./CodeMirrorEditor.vue"));
 

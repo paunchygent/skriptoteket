@@ -3,7 +3,7 @@ import type { Ref } from "vue";
 import { createCorrelationId } from "../../api/correlation";
 import { isApiError, toApiError } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
-import { aiLimitFromError, markAiDailyLimit } from "../../views/apps/exam-workspace/aiDailyLimit";
+import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
 import { postChatStream } from "./chat/editorChatApi";
 import { consumeChatStream } from "./chat/editorChatStreamClient";
 import {
@@ -17,7 +17,6 @@ import type {
   EditorChatMessage,
   EditorChatRequest,
   EditorVirtualFiles,
-  NoticeVariant,
   VirtualFileId,
 } from "./chat/editorChatTypes";
 
@@ -37,9 +36,6 @@ type EditorChatRequestState = {
   messages: Ref<EditorChatMessage[]>;
   streaming: Ref<boolean>;
   error: Ref<string | null>;
-  noticeMessage: Ref<string | null>;
-  noticeVariant: Ref<NoticeVariant>;
-  clearNoticeMessage: () => void;
   scheduleRevealTick: () => void;
 };
 
@@ -50,9 +46,6 @@ export function useEditorChatRequest(
     messages,
     streaming,
     error,
-    noticeMessage,
-    noticeVariant,
-    clearNoticeMessage,
     scheduleRevealTick,
   }: EditorChatRequestState,
 ) {
@@ -89,7 +82,6 @@ export function useEditorChatRequest(
 
     const requestSession = auth.captureSession();
     error.value = null;
-    clearNoticeMessage();
 
     const userMessage = createUserMessage(trimmed);
     messages.value = appendMessage(messages.value, userMessage);
@@ -207,11 +199,6 @@ export function useEditorChatRequest(
                 activeAssistantMessage.correlationId = event.correlationId;
               }
               scheduleRevealTick();
-              break;
-            }
-            case "notice": {
-              noticeMessage.value = event.message;
-              noticeVariant.value = event.variant ?? "info";
               break;
             }
             case "done": {

@@ -10,7 +10,7 @@ import {
   AI_USER_LIMIT_NOTE,
   aiDailyLimitNote,
   resetAiDailyLimitForTests,
-} from "../../views/apps/exam-workspace/aiDailyLimit";
+} from "../aiDailyLimit";
 import { skriptoteketGhostText } from "./skriptoteketGhostText";
 
 vi.mock("../../api/client", async (importOriginal) => ({

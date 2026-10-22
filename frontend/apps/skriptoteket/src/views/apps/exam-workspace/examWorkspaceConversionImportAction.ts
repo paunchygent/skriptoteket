@@ -28,7 +28,7 @@ import {
   aiLimitFromStatus,
   aiLimitNote,
   markAiDailyLimit,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceConversionRuntime } from "./examWorkspaceConversionShared";
 import { IMPORT_FAILURE_COPY } from "./examWorkspaceConversionShared";
 import {

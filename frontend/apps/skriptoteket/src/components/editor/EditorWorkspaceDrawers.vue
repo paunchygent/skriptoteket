@@ -13,8 +13,6 @@ type EditorWorkspaceDrawersProps = {
   chatMessages: EditorChatMessage[];
   chatIsStreaming: boolean;
   chatError: string | null;
-  chatNoticeMessage: string | null;
-  chatNoticeVariant: "info" | "warning";
   aiBlockedNote: string | null;
   isEditOpsLoading: boolean;
   isEditOpsSlow: boolean;
@@ -35,7 +33,6 @@ const emit = defineEmits<{
   (event: "cancelChatStream"): void;
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
-  (event: "clearChatNotice"): void;
   (event: "toggleChatCollapsed"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
@@ -52,8 +49,6 @@ const emit = defineEmits<{
     :messages="props.chatMessages"
     :is-streaming="props.chatIsStreaming"
     :error="props.chatError"
-    :notice-message="props.chatNoticeMessage"
-    :notice-variant="props.chatNoticeVariant"
     :ai-blocked-note="props.aiBlockedNote"
     :is-edit-ops-loading="props.isEditOpsLoading"
     :edit-ops-is-slow="props.isEditOpsSlow"
@@ -66,7 +61,6 @@ const emit = defineEmits<{
     @cancel="emit('cancelChatStream')"
     @clear="emit('clearChat')"
     @clear-error="emit('clearChatError')"
-    @clear-notice="emit('clearChatNotice')"
     @clear-edit-ops-error="emit('clearEditOpsError')"
     @clear-edit-ops-disabled="emit('clearEditOpsDisabled')"
     @request-edit-ops="emit('requestEditOps', $event)"

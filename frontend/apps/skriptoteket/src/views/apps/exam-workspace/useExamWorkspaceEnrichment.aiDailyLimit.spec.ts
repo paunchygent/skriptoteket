@@ -26,11 +26,11 @@ import {
   aiDailyLimitReached,
   aiLimitNote,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
-import type { AiDailyLimit } from "./aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 
 const requestLimits: AiDailyLimit[] = ["pool", "user_share"];
 

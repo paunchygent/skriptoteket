@@ -102,8 +102,6 @@ type EditorWorkspacePanelProps = {
   chatMessages: EditorChatMessage[];
   chatIsStreaming: boolean;
   chatError: string | null;
-  chatNoticeMessage: string | null;
-  chatNoticeVariant: "info" | "warning";
   aiBlockedNote: string | null;
   editOpsRequestError: string | null;
   editOpsDisabledMessage: string | null;
@@ -157,7 +155,6 @@ type EditorWorkspacePanelEmits = {
   (event: "cancelChatStream"): void;
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
-  (event: "clearChatNotice"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;

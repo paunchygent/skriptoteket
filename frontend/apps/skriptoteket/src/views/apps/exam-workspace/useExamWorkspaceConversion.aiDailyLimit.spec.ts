@@ -18,7 +18,7 @@ import type {
   ExamWorkspaceConversionStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import type { AiDailyLimit } from "./aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
@@ -28,7 +28,7 @@ import {
   aiLimitNote,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";

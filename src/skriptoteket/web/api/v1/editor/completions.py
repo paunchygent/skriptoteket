@@ -110,7 +110,4 @@ async def create_inline_completion(
         completion=result.completion,
         enabled=result.enabled,
         replace_suffix_chars=result.replace_suffix_chars,
-        notice_message=result.notice_message,
-        notice_variant=result.notice_variant,
-        notice_code=result.notice_code,
     )
