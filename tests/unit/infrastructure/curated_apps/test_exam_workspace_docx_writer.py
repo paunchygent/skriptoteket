@@ -489,11 +489,6 @@ def _add_embed(drawing: etree._Element) -> None:
     assert blip is not None
 
 
-def _widen(drawing: etree._Element) -> None:
-    extent = drawing.xpath("./wp:inline/wp:extent", namespaces=_NAMESPACES)[0]
-    extent.set("cx", str(Mm(TEXT_WIDTH_MM) + 1))
-
-
 def _unknown_graphic(drawing: etree._Element) -> None:
     graphic_data = drawing.xpath(".//a:graphicData", namespaces=_NAMESPACES)[0]
     graphic_data.set("uri", "http://schemas.openxmlformats.org/drawingml/2006/chart")
@@ -508,7 +503,6 @@ class TestUnusableShapesWriteThePicture:
                 f'<w:p xmlns:w="{_W}"><w:r><w:t>text</w:t></w:r></w:p>', id="root-is-not-a-drawing"
             ),
             pytest.param(_edited_shapes(_add_embed), id="relationship-reference"),
-            pytest.param(_edited_shapes(_widen), id="wider-than-the-text-column"),
             pytest.param(_edited_shapes(_unknown_graphic), id="not-a-shape-graphic"),
         ],
     )
@@ -519,3 +513,171 @@ class TestUnusableShapesWriteThePicture:
         assert root.xpath("//mc:AlternateContent", namespaces=_NAMESPACES) == []
         assert len(_media_names(content)) == 1
         assert root.xpath("//wpg:wgp", namespaces=_NAMESPACES) == []
+
+
+_WPC = "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+_NAMESPACES["wpc"] = _WPC
+_SOURCE_NAMESPACES = (
+    f'xmlns:w="{_W}" xmlns:wp="{_WP}" xmlns:a="{_NAMESPACES["a"]}" '
+    f'xmlns:wpg="{_NAMESPACES["wpg"]}" xmlns:wps="{_NAMESPACES["wps"]}" xmlns:wpc="{_WPC}"'
+)
+
+
+def _rectangle(shape_id: int, name: str, x: int) -> str:
+    return (
+        f'<wps:wsp><wps:cNvPr id="{shape_id}" name="{name}"/><wps:cNvSpPr/><wps:spPr>'
+        f'<a:xfrm><a:off x="{x}" y="0"/><a:ext cx="1000" cy="500"/></a:xfrm>'
+        '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></wps:spPr><wps:bodyPr/></wps:wsp>'
+    )
+
+
+def _connector(shape_id: int, start: int, end: int) -> str:
+    return (
+        f'<wps:wsp><wps:cNvPr id="{shape_id}" name="Pil"/><wps:cNvCnPr>'
+        f'<a:stCxn id="{start}" idx="3"/><a:endCxn id="{end}" idx="1"/></wps:cNvCnPr><wps:spPr>'
+        '<a:xfrm><a:off x="1000" y="250"/><a:ext cx="1000" cy="0"/></a:xfrm>'
+        '<a:prstGeom prst="straightConnector1"><a:avLst/></a:prstGeom></wps:spPr>'
+        "<wps:bodyPr/></wps:wsp>"
+    )
+
+
+def _drawing(graphic_uri: str, root: str, *, cx: int, cy: int) -> str:
+    return (
+        f"<w:drawing {_SOURCE_NAMESPACES}>"
+        '<wp:inline distT="0" distB="0" distL="0" distR="0">'
+        f'<wp:extent cx="{cx}" cy="{cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>'
+        '<wp:docPr id="7" name="Figur"/><wp:cNvGraphicFramePr/>'
+        f'<a:graphic><a:graphicData uri="{graphic_uri}">{root}</a:graphicData></a:graphic>'
+        "</wp:inline></w:drawing>"
+    )
+
+
+def _group_xml(children: str, *, cx: int = 3000, cy: int = 1000) -> str:
+    return _drawing(
+        _NAMESPACES["wpg"],
+        "<wpg:wgp><wpg:cNvGrpSpPr/><wpg:grpSpPr><a:xfrm>"
+        f'<a:off x="0" y="0"/><a:ext cx="{cx}" cy="{cy}"/>'
+        f'<a:chOff x="0" y="0"/><a:chExt cx="{cx}" cy="{cy}"/>'
+        f"</a:xfrm></wpg:grpSpPr>{children}</wpg:wgp>",
+        cx=cx,
+        cy=cy,
+    )
+
+
+def _single_xml(*, cx: int, cy: int) -> str:
+    return _drawing(
+        _NAMESPACES["wps"],
+        '<wps:wsp><wps:cNvPr id="3" name="Ensam"/><wps:cNvSpPr/><wps:spPr>'
+        f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{cx}" cy="{cy}"/></a:xfrm>'
+        '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></wps:spPr><wps:bodyPr/></wps:wsp>',
+        cx=cx,
+        cy=cy,
+    )
+
+
+def _canvas_xml(*, cx: int, cy: int) -> str:
+    return _drawing(
+        _WPC,
+        f"<wpc:wpc><wpc:bg/><wpc:whole/>{_rectangle(3, 'Duk', 0)}</wpc:wpc>",
+        cx=cx,
+        cy=cy,
+    )
+
+
+def _connected_group_xml(*, start: int, end: int) -> str:
+    return _group_xml(
+        _rectangle(100, "Vänster", 0) + _rectangle(101, "Höger", 2000) + _connector(102, start, end)
+    )
+
+
+def _connection_ids(drawing: etree._Element) -> tuple[list[str], list[str]]:
+    starts: list[str] = drawing.xpath(".//a:stCxn/@id", namespaces=_NAMESPACES)
+    ends: list[str] = drawing.xpath(".//a:endCxn/@id", namespaces=_NAMESPACES)
+    return starts, ends
+
+
+def _shape_id(drawing: etree._Element, name: str) -> str:
+    ids: list[str] = drawing.xpath(f".//wps:cNvPr[@name='{name}']/@id", namespaces=_NAMESPACES)
+    assert len(ids) == 1
+    return ids[0]
+
+
+class TestConnectorsKeepTheirShapes:
+    def test_each_copy_connects_its_own_renumbered_rectangles(self) -> None:
+        group = _connected_group_xml(start=100, end=101)
+        _, root = _export((_ASSET_A, None), (_ASSET_B, group), (_ASSET_C, group))
+
+        drawings = root.xpath("//mc:Choice/w:drawing", namespaces=_NAMESPACES)
+        assert len(drawings) == 2
+        for drawing in drawings:
+            starts, ends = _connection_ids(drawing)
+            assert starts == [_shape_id(drawing, "Vänster")]
+            assert ends == [_shape_id(drawing, "Höger")]
+        every_doc_pr_id = root.xpath("//wp:docPr/@id", namespaces=_NAMESPACES)
+        assert len(every_doc_pr_id) == 3  # the plain picture and the two group copies
+        every_id = root.xpath(_DRAWING_IDS, namespaces=_NAMESPACES)
+        assert len(every_id) == len(set(every_id))
+
+    def test_a_connection_naming_a_shape_outside_the_drawing_is_removed(self) -> None:
+        _, root = _export((_ASSET_A, _connected_group_xml(start=999, end=101)))
+
+        (drawing,) = root.xpath("//w:drawing", namespaces=_NAMESPACES)
+        starts, ends = _connection_ids(drawing)
+        assert starts == []
+        assert ends == [_shape_id(drawing, "Höger")]
+
+
+class TestWideDrawingsAreFittedNotReplaced:
+    @pytest.mark.parametrize(
+        ("stored", "root_path"),
+        [
+            pytest.param(
+                lambda cx, cy: _group_xml(_rectangle(100, "Vänster", 0), cx=cx, cy=cy),
+                ".//wpg:grpSpPr/a:xfrm/a:ext",
+                id="group",
+            ),
+            pytest.param(
+                lambda cx, cy: _single_xml(cx=cx, cy=cy),
+                ".//wps:spPr/a:xfrm/a:ext",
+                id="single-shape",
+            ),
+        ],
+    )
+    def test_a_wide_drawing_is_scaled_to_the_text_width_keeping_its_aspect(
+        self, stored: Callable[[int, int], str], root_path: str
+    ) -> None:
+        limit = int(Mm(TEXT_WIDTH_MM))
+        cx, cy = limit + 1000, 1234567
+        content, root = _export((_ASSET_A, stored(limit - 1000, cy)), (_ASSET_B, stored(cx, cy)))
+
+        assert root.xpath("//a:blip", namespaces=_NAMESPACES) == []
+        assert _media_names(content) == []
+        control, wide = root.xpath("//wp:inline", namespaces=_NAMESPACES)
+        assert control.xpath("./wp:extent/@cx", namespaces=_NAMESPACES) == [str(limit - 1000)]
+        (extent,) = wide.xpath("./wp:extent", namespaces=_NAMESPACES)
+        assert int(extent.get("cx", "")) == limit
+        expected_cy = cy * limit / cx
+        assert abs(int(extent.get("cy", "")) - expected_cy) <= 1
+        (box,) = wide.xpath(root_path, namespaces=_NAMESPACES)
+        assert int(box.get("cx", "")) == limit
+        assert abs(int(box.get("cy", "")) - expected_cy) <= 1
+        assert control.xpath(root_path + "/@cy", namespaces=_NAMESPACES) == [str(cy)]
+
+    def test_a_wide_group_keeps_its_child_coordinate_space(self) -> None:
+        limit = int(Mm(TEXT_WIDTH_MM))
+        _, root = _export((_ASSET_A, _group_xml(_rectangle(100, "Vänster", 0), cx=limit + 1000)))
+
+        (transform,) = root.xpath(".//wpg:grpSpPr/a:xfrm", namespaces=_NAMESPACES)
+        (child_extent,) = transform.xpath("./a:chExt", namespaces=_NAMESPACES)
+        assert child_extent.get("cx") == str(limit + 1000)
+        assert child_extent.get("cy") == "1000"
+
+    def test_a_wide_canvas_keeps_its_source_size_and_stays_editable(self) -> None:
+        limit = int(Mm(TEXT_WIDTH_MM))
+        content, root = _export((_ASSET_A, _canvas_xml(cx=limit + 1000, cy=777)))
+
+        assert root.xpath("//a:blip", namespaces=_NAMESPACES) == []
+        assert _media_names(content) == []
+        (extent,) = root.xpath("//wp:inline/wp:extent", namespaces=_NAMESPACES)
+        assert (extent.get("cx"), extent.get("cy")) == (str(limit + 1000), "777")
+        assert len(root.xpath("//wpc:wpc", namespaces=_NAMESPACES)) == 1

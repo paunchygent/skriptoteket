@@ -104,12 +104,18 @@ _NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 _NS_MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 _NS_W14 = "http://schemas.microsoft.com/office/word/2010/wordml"
 _NS_WP14 = "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+_NS_WPG = "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+_NS_WPS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+_NS_WPC = "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
 # The shape kinds Word 2010+ writes inside ``mc:Choice``: graphicData uri -> required prefix.
 _SHAPE_GRAPHIC_PREFIXES: Mapping[str, str] = MappingProxyType(
+    {_NS_WPG: "wpg", _NS_WPS: "wps", _NS_WPC: "wpc"}
+)
+# The root shape's own size box inside each scalable shape graphic, found from graphicData.
+_ROOT_SIZE_PATHS: Mapping[str, str] = MappingProxyType(
     {
-        "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup": "wpg",
-        "http://schemas.microsoft.com/office/word/2010/wordprocessingShape": "wps",
-        "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas": "wpc",
+        f"{{{_NS_WPG}}}wgp": f"{{{_NS_WPG}}}grpSpPr/{{{_NS_A}}}xfrm/{{{_NS_A}}}ext",
+        f"{{{_NS_WPS}}}wsp": f"{{{_NS_WPS}}}spPr/{{{_NS_A}}}xfrm/{{{_NS_A}}}ext",
     }
 )
 # Identity attributes Word regenerates; a stored copy would repeat them for every export.
@@ -123,6 +129,7 @@ _DROPPED_SHAPE_ATTRIBUTES = frozenset(
 )
 _INLINE_CHILDREN = ("extent", "effectExtent", "docPr", "cNvGraphicFramePr", "graphic")
 _SHAPE_ID_ELEMENTS = frozenset({"docPr", "cNvPr"})
+_CONNECTION_ELEMENTS = frozenset({"stCxn", "endCxn"})
 _SHAPE_PARSER = etree.XMLParser(resolve_entities=False, no_network=True, huge_tree=False)
 
 
@@ -350,11 +357,7 @@ class _PrintDocxRenderer:
         prepared = _prepared_shapes(stored, limit)
         if prepared is None:
             return False
-        next_id = self._output.part.next_id
-        for element in prepared.drawing.iter(etree.Element):
-            if etree.QName(element).localname in _SHAPE_ID_ELEMENTS:
-                element.set("id", str(next_id))
-                next_id += 1
+        _renumbered(prepared.drawing, self._output.part.next_id)
         run = paragraph.add_run()
         alternate = etree.SubElement(run._r, f"{{{_NS_MC}}}AlternateContent", nsmap={"mc": _NS_MC})
         choice = etree.SubElement(
@@ -373,6 +376,36 @@ class _PreparedShapes(NamedTuple):
     drawing: etree._Element
     prefix: str
     namespace: str
+
+
+def _renumbered(drawing: etree._Element, first_id: int) -> None:
+    """Give the drawing fresh ids from ``first_id`` and keep its connectors on their shapes.
+
+    Each ``a:stCxn``/``a:endCxn`` follows its shape's old-to-new id in this one drawing;
+    a connection naming a shape the drawing does not hold is removed.
+    """
+    next_id = first_id
+    new_by_old_shape_id: dict[str, str] = {}
+    for element in drawing.iter(etree.Element):
+        if etree.QName(element).localname not in _SHAPE_ID_ELEMENTS:
+            continue
+        if etree.QName(element).localname == "cNvPr":
+            new_by_old_shape_id.setdefault(element.get("id", ""), str(next_id))
+        element.set("id", str(next_id))
+        next_id += 1
+    connections = [
+        element
+        for element in drawing.iter(etree.Element)
+        if etree.QName(element).localname in _CONNECTION_ELEMENTS
+    ]
+    for connection in connections:
+        new_id = new_by_old_shape_id.get(connection.get("id", ""))
+        if new_id is not None:
+            connection.set("id", new_id)
+            continue
+        parent = connection.getparent()
+        if parent is not None:
+            parent.remove(connection)
 
 
 def _apply_house_template(output: DocxDocument) -> None:
@@ -574,8 +607,9 @@ def _prepared_shapes(stored: str, limit: Length) -> _PreparedShapes | None:
     """Parse stored ``w:drawing`` markup and turn it into an inline drawing, or None.
 
     None means the markup is unusable and the picture is written instead: it does not
-    parse, is not one ``w:drawing`` around an inline or anchored shape graphic, references
-    a relationship (D12), or is wider than the text column.
+    parse, is not one ``w:drawing`` around an inline or anchored shape graphic, has no
+    readable size, or references a relationship (D12). A drawing wider than the text
+    column is scaled to fit instead.
     """
     try:
         drawing = etree.fromstring(stored, parser=_SHAPE_PARSER)
@@ -599,7 +633,10 @@ def _prepared_shapes(stored: str, limit: Length) -> _PreparedShapes | None:
     namespace = graphic_data.get("uri", "")
     prefix = _SHAPE_GRAPHIC_PREFIXES.get(namespace)
     width = extent.get("cx", "")
-    if prefix is None or not width.isdigit() or int(width) > limit:
+    height = extent.get("cy", "")
+    if prefix is None or not width.isdigit() or not height.isdigit():
+        return None
+    if int(width) > limit and not _fitted_to_width(graphic_data, extent, limit):
         return None
     inline = _as_inline(frame)
     drawing.replace(frame, inline)
@@ -611,6 +648,32 @@ def _prepared_shapes(stored: str, limit: Length) -> _PreparedShapes | None:
             ):
                 del element.attrib[name]
     return _PreparedShapes(drawing, prefix, namespace)
+
+
+def _fitted_to_width(graphic_data: etree._Element, extent: etree._Element, limit: Length) -> bool:
+    """Scale the drawing's extent and root shape box to the text width, keeping its aspect.
+
+    A group keeps its child coordinate space, so it scales its children; a canvas cannot
+    scale its contents and keeps the source size. False means the root box is unreadable.
+    """
+    if len(graphic_data) != 1:
+        return False
+    root = graphic_data[0]
+    if root.tag == f"{{{_NS_WPC}}}wpc":
+        return True
+    box_path = _ROOT_SIZE_PATHS.get(root.tag)
+    box = root.find(box_path) if box_path is not None else None
+    if box is None:
+        return False
+    scale = int(limit) / int(extent.get("cx", ""))
+    for element in (extent, box):
+        sides = [element.get("cx", ""), element.get("cy", "")]
+        if not all(side.isdigit() for side in sides):
+            return False
+        for name, side in zip(("cx", "cy"), sides, strict=True):
+            element.set(name, str(round(int(side) * scale)))
+    extent.set("cx", str(int(limit)))
+    return True
 
 
 def _as_inline(frame: etree._Element) -> etree._Element:
