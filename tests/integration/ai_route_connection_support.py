@@ -34,7 +34,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, QueuePool
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
@@ -90,7 +90,9 @@ class ConnectionProbe:
 
     async def sample(self, label: str) -> None:
         assert self.engine is not None and self.observer is not None
-        checked_out = self.engine.pool.checkedout()  # type: ignore[attr-defined]
+        pool = self.engine.pool
+        assert isinstance(pool, QueuePool)
+        checked_out = pool.checkedout()
         async with self.observer.connect() as connection:
             idle = (await connection.execute(_IDLE_IN_TRANSACTION)).scalar_one()
         self.samples.append(Sample(label, checked_out, int(idle)))

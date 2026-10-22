@@ -98,6 +98,10 @@ class Settings(BaseSettings):
     DATABASE_POOL_SIZE: int = Field(default=5, ge=1)
     DATABASE_MAX_OVERFLOW: int = Field(default=10, ge=0)
     DATABASE_POOL_TIMEOUT_SECONDS: float = Field(default=30.0, gt=0.0)
+    # Pooled connections per process that hold payload guards (advisory locks that
+    # must outlive a failed application COMMIT). They are counted in the budget on
+    # top of POOL_SIZE + MAX_OVERFLOW; a guard waits up to the pool timeout for one.
+    DATABASE_GUARD_POOL_SIZE: int = Field(default=2, ge=1)
     BOOTSTRAP_SUPERUSER_EMAIL: str = ""
     BOOTSTRAP_SUPERUSER_PASSWORD: str = ""
 

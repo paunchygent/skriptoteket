@@ -41,7 +41,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     GAP_FILL_DEFINITION,
     labeler_boundary_sentences,
 )
-from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.domain.llm_door import AiDoorBusy, AiDoorCaller
 from skriptoteket.infrastructure.llm.openai.decisions_content_tags import (
     build_content_decisions_payload,
     parse_content_decisions_answers,
@@ -169,7 +169,7 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
     async def label(self, *, request: LabelingRequest) -> ItemTypeLabeling:
         if not request.items:
             return ItemTypeLabeling(results=())
-        outcomes = await self._gather(
+        outcomes = await _gather_chunks(
             self._label_chunk(build_decisions_payload(chunk), chunk, request.caller)
             for chunk in split_items(request.items)
         )
@@ -217,7 +217,7 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             results, tokens = parse_content_decisions_answers(body, chunk, request.content_items)
             return results, tokens, attempts
 
-        outcomes = await asyncio.gather(*(classify(chunk) for chunk in split_items(request.items)))
+        outcomes = await _gather_chunks(classify(chunk) for chunk in split_items(request.items))
         tokens = [outcome[1] for outcome in outcomes]
         return ContentTagClassification(
             results=tuple(result for outcome in outcomes for result in outcome[0]),
@@ -227,18 +227,6 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
                 attempts=sum(outcome[2] for outcome in outcomes),
             ),
         )
-
-    @staticmethod
-    async def _gather(
-        calls: Iterable[Coroutine[None, None, _ChunkOutcome]],
-    ) -> list[_ChunkOutcome]:
-        """Run every call to completion, then raise the first failure in call order."""
-
-        outcomes = await asyncio.gather(*calls, return_exceptions=True)
-        for outcome in outcomes:
-            if isinstance(outcome, BaseException):
-                raise outcome
-        return [outcome for outcome in outcomes if not isinstance(outcome, BaseException)]
 
     async def _label_chunk(
         self, payload: _JsonObject, items: Sequence[LabelingItem], caller: AiDoorCaller
@@ -305,6 +293,49 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             if math.isfinite(parsed) and parsed >= 0:
                 delay = parsed
         return float(min(delay, self._max_delay_seconds))
+
+
+async def _gather_chunks[T](calls: Iterable[Coroutine[None, None, T]]) -> list[T]:
+    """Run chunk calls as tasks, results in call order.
+
+    A busy door ends the action: the first ``AiDoorBusy`` cancels and joins the
+    unfinished siblings and is raised. Any other failure lets every call run to
+    completion (a daily limit is never cut short), then raises the first failure in
+    call order. A cancelled caller cancels and joins every chunk before it unwinds.
+    """
+
+    tasks = [asyncio.ensure_future(call) for call in calls]
+    pending = set(tasks)
+    try:
+        while pending:
+            finished, pending = await asyncio.wait(pending, return_when=asyncio.FIRST_EXCEPTION)
+            busy = next(
+                (
+                    error
+                    for task in tasks
+                    if task in finished and not task.cancelled()
+                    for error in [task.exception()]
+                    if isinstance(error, AiDoorBusy)
+                ),
+                None,
+            )
+            if busy is not None:
+                await _cancel_and_join(tasks)
+                raise busy
+        outcomes = await asyncio.gather(*tasks, return_exceptions=True)
+    except asyncio.CancelledError:
+        await _cancel_and_join(tasks)
+        raise
+    for outcome in outcomes:
+        if isinstance(outcome, BaseException):
+            raise outcome
+    return [outcome for outcome in outcomes if not isinstance(outcome, BaseException)]
+
+
+async def _cancel_and_join[T](tasks: Sequence[asyncio.Task[T]]) -> None:
+    for task in tasks:
+        task.cancel()
+    await asyncio.gather(*tasks, return_exceptions=True)
 
 
 def split_items(items: Sequence[LabelingItem]) -> list[Sequence[LabelingItem]]:

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from skriptoteket.infrastructure.db.payload_guard_engine import PayloadGuardEngine
 from skriptoteket.infrastructure.repositories.allowed_domain_repository import (
     PostgreSQLAllowedDomainRepository,
 )
@@ -237,8 +238,10 @@ class InfrastructureRepositoryProvider(Provider):
         return PostgreSQLPasswordResetTokenRepository(session)
 
     @provide(scope=Scope.REQUEST)
-    def vault_file_repo(self, session: AsyncSession) -> VaultFileRepositoryProtocol:
-        return PostgreSQLUserVaultFileRepository(session)
+    def vault_file_repo(
+        self, session: AsyncSession, payload_guard_engine: PayloadGuardEngine
+    ) -> VaultFileRepositoryProtocol:
+        return PostgreSQLUserVaultFileRepository(session, payload_guard_engine)
 
     @provide(scope=Scope.REQUEST)
     def vault_usage_repo(self, session: AsyncSession) -> VaultUsageRepositoryProtocol:

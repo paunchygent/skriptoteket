@@ -7,13 +7,14 @@ Purpose:
     the limit note and ``ai_limit`` set, a started job finishes as paid
     overage while a later job meets the limit, and the per-job overage cap
     stops a job through the same failure path, and a busy door on a later item
-    ends the job with the try-again note and no ``ai_limit``. Also proves the
-    DOCX job carries the owner's caller.
+    ends the job with the try-again note and no ``ai_limit``. A missing owner
+    fails the job before any door call.
 
 Relationships:
-    Exercises the enrichment workspace lane and the DOCX job handler with a
-    real ``OpenAIAnswerKeyStructuredProvider`` over
-    ``tests.unit.llm_door_fakes.RecordingDoor``.
+    Exercises the enrichment workspace lane with a real
+    ``OpenAIAnswerKeyStructuredProvider`` over
+    ``tests.unit.llm_door_fakes.RecordingDoor``. The DOCX job's owner proofs
+    live in ``test_exam_docx_owner_door_limits``.
 """
 
 from __future__ import annotations
@@ -21,14 +22,13 @@ from __future__ import annotations
 import json
 from datetime import timedelta
 from unittest.mock import AsyncMock
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
-    ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceEnrichmentState
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
@@ -40,22 +40,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
-    ProcessExamWorkspaceDocxJobHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
-    DocxConversionPipeline,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
-    DocxConversionJob,
-    DocxConversionOutcome,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     WorkspaceAnswerKeyRequestPayload,
     WorkspaceAnswerKeySuggestionsPayload,
     suggestions_response_for_job,
 )
-from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
 )
@@ -69,17 +58,12 @@ from skriptoteket.domain.llm_door import (
     ai_limit_note,
     ai_try_again_note,
 )
-from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
 )
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
-from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.llm_door import DoorReply
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
@@ -87,17 +71,11 @@ from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_sup
     FixedClock,
     InMemoryEnrichmentJobRepository,
     StubProvider,
-    UUIDGenerator,
     _profile,
     docx_job_handler,
 )
-from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import RecordingProgress
-from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
-    InMemoryExamIndexRepository,
-)
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryVaultStorage,
-    InMemoryVaultUsageRepository,
 )
 from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
     InMemoryVaultFileRepository,
@@ -375,126 +353,6 @@ async def test_a_last_call_whose_overage_passes_the_cap_fails_the_job() -> None:
     assert [entry.item_id for entry in payload.suggestions] == ["item_001", "item_002"]
     response = suggestions_response_for_job(finished, lineage_id=document.document_id)
     assert response.message == ai_limit_note(AiDailyLimit.POOL)
-
-
-class _CapturePipeline(DocxConversionPipeline):
-    """Record the conversion job, then stop; the handler fail-closes around it.
-
-    A subclass of the production pipeline so the handler receives the type it
-    requires without an unchecked cast; only ``convert`` is replaced.
-    """
-
-    def __init__(self) -> None:
-        self.job: DocxConversionJob | None = None
-
-    async def convert(
-        self, *, job: DocxConversionJob, fallback_reason: str | None = None
-    ) -> DocxConversionOutcome:
-        self.job = job
-        raise RuntimeError("stop after capture")
-
-
-async def _docx_handler_with_capture(
-    *,
-    jobs: InMemoryEnrichmentJobRepository,
-    users: UserRepositoryProtocol,
-    pipeline: _CapturePipeline,
-) -> ProcessExamWorkspaceDocxJobHandler:
-    from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
-        ExamWorkspaceDocumentStore,
-    )
-
-    uow = FakeUow()
-    clock = FixedClock(NOW)
-    vault_files = InMemoryVaultFileRepository()
-    store = ExamWorkspaceDocumentStore(
-        vault_files=vault_files,
-        vault_usage=InMemoryVaultUsageRepository(
-            usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=NOW)
-        ),
-        vault_storage=InMemoryVaultStorage(),
-        index=InMemoryExamIndexRepository(vault_files),
-        codec=ExamWorkspaceContainerCodec(),
-        uow=uow,
-        clock=clock,
-        settings=Settings.model_construct(
-            VAULT_MAX_FILE_BYTES=5_000_000,
-            VAULT_MAX_TOTAL_BYTES=50_000_000,
-        ),
-    )
-    progress = RecordingProgress()
-    return ProcessExamWorkspaceDocxJobHandler(
-        jobs=jobs,
-        chunker=PythonDocxExamChunker(),
-        pipeline=pipeline,
-        progress=progress,
-        store=store,
-        users=users,
-        uow=uow,
-        clock=clock,
-        id_generator=UUIDGenerator(),
-    )
-
-
-async def _seed_claimed_docx_job(
-    *,
-    jobs: InMemoryEnrichmentJobRepository,
-    owner_user_id: UUID,
-) -> ExamAnswerKeyEnrichmentJob:
-    from tests.fixtures.docx_corpus import corpus_docx
-    from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
-        DEFAULT_REPLAYED_EXAM,
-    )
-
-    job = ExamAnswerKeyEnrichmentJob(
-        id=uuid4(),
-        source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
-        owner_user_id=owner_user_id,
-        status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
-        input_filename="prov.docx",
-        source_docx=corpus_docx(DEFAULT_REPLAYED_EXAM),
-        workspace_lineage_id=uuid4(),
-        workspace_document_revision=1,
-        available_at=NOW,
-        created_at=NOW,
-        updated_at=NOW,
-    )
-    await jobs.create(job=job)
-    claimed = await jobs.claim_next(worker_id="worker-1", now=NOW, lease_ttl=timedelta(seconds=900))
-    assert claimed is not None
-    return claimed
-
-
-async def test_docx_job_carries_the_owner_caller() -> None:
-    owner_user_id = uuid4()
-    users = UserRepositoryStub()
-    users.user = user_with_role(Role.ADMIN, user_id=owner_user_id)
-    jobs = InMemoryEnrichmentJobRepository()
-    pipeline = _CapturePipeline()
-    handler = await _docx_handler_with_capture(jobs=jobs, users=users, pipeline=pipeline)
-    job = await _seed_claimed_docx_job(jobs=jobs, owner_user_id=owner_user_id)
-
-    await handler.handle(job=job)
-
-    assert pipeline.job is not None
-    assert pipeline.job.caller.user_id == owner_user_id
-    assert pipeline.job.caller.exempt is True
-    assert pipeline.job.caller.allow_paid_overage is False
-
-
-async def test_missing_docx_owner_fails_with_owner_missing() -> None:
-    owner_user_id = uuid4()
-    jobs = InMemoryEnrichmentJobRepository()
-    pipeline = _CapturePipeline()
-    handler = await _docx_handler_with_capture(
-        jobs=jobs, users=UserRepositoryStub(), pipeline=pipeline
-    )
-    job = await _seed_claimed_docx_job(jobs=jobs, owner_user_id=owner_user_id)
-
-    finished = await handler.handle(job=job)
-
-    assert pipeline.job is None
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
 
 
 async def test_missing_workspace_owner_fails_with_owner_missing() -> None:

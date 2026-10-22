@@ -84,7 +84,9 @@ class ProcessExamWorkspaceDocxJobHandler:
             raise ValueError("Unfinished DOCX jobs require their source, lineage and claim.")
         observed: _Diagnostics = ()
         try:
-            actor = await self._users.get_by_id(job.owner_user_id)
+            # The owner read ends its transaction before the conversion awaits any provider.
+            async with self._uow:
+                actor = await self._users.get_by_id(job.owner_user_id)
             if actor is None:
                 return await self._fail(
                     job,

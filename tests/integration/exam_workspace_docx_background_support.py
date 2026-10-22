@@ -60,6 +60,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 API_KEY = "fixture-key"
 
@@ -240,7 +241,9 @@ def document_store(
     uow: SQLAlchemyUnitOfWork | None = None,
 ) -> ExamWorkspaceDocumentStore:
     return ExamWorkspaceDocumentStore(
-        vault_files=PostgreSQLUserVaultFileRepository(session),
+        vault_files=PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ),
         vault_usage=PostgreSQLUserVaultUsageRepository(session),
         vault_storage=storage,
         index=PostgreSQLExamIndexRepository(session),

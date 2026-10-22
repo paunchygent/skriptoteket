@@ -202,7 +202,9 @@ class ProcessExamContentSuggestionsHandler:
                 or document.header.course.key != job.workspace_course_key
             ):
                 raise ValueError("Content job does not match its saved document")
-            owner = await self._users.get_by_id(job.owner_user_id)
+            # The owner read ends its transaction before classification awaits the provider.
+            async with self._uow:
+                owner = await self._users.get_by_id(job.owner_user_id)
             if owner is None:
                 return await self.fail(job=job, last_error="owner_missing")
             tags = await self._classifier.suggest(

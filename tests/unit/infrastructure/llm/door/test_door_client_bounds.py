@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine
 from dataclasses import replace
-from typing import Any
+from typing import TypedDict, Unpack
 from uuid import UUID, uuid4
 
 import httpx
@@ -31,6 +31,18 @@ LIMIT_BODY = {
         "limit": "user_share",
     }
 }
+
+
+class BoundOverrides(TypedDict, total=False):
+    """The `DoorBounds` fields a test may override on top of the settings defaults."""
+
+    max_in_flight: int
+    slot_wait_seconds: float
+    per_action_max_in_flight: int
+    pool_timeout_seconds: float
+    capacity_retries: int
+    retry_after_max_seconds: float
+    retry_after_fallback_seconds: float
 
 
 class RecordingSleeper:
@@ -69,7 +81,7 @@ def _client(
     | Callable[[httpx.Request], Coroutine[None, None, httpx.Response]],
     *,
     sleeper: RecordingSleeper | None = None,
-    **bounds: Any,
+    **bounds: Unpack[BoundOverrides],
 ) -> HuleEduLlmDoorClient:
     return HuleEduLlmDoorClient(
         client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
@@ -298,6 +310,24 @@ async def test_the_overage_cap_is_checked_again_before_each_resend() -> None:
     assert len(requests) == 1
 
 
+async def test_calls_queued_behind_a_slot_recheck_the_cap_once_they_get_it() -> None:
+    gate = Gate()
+    client = _client(gate, max_in_flight=1, per_action_max_in_flight=1)
+    caller = _caller()
+
+    tasks = [asyncio.create_task(_send(client, caller)) for _ in range(10)]
+    await _settle()
+    assert gate.started == 1
+
+    # The in-flight call's settled charge crosses the cap while nine calls wait.
+    caller.charge_overage(1_200_000)
+    gate.release.set()
+    outcomes = await asyncio.gather(*tasks, return_exceptions=True)
+
+    assert gate.started == 1
+    assert all(isinstance(outcome, AiJobOverageCapReached) for outcome in outcomes)
+
+
 async def test_a_limit_429_raises_without_any_retry() -> None:
     requests: list[httpx.Request] = []
 
@@ -357,6 +387,6 @@ async def test_the_pool_wait_is_bounded_separately_from_the_call_timeout() -> No
         {"retry_after_fallback_seconds": 0},
     ],
 )
-def test_nonsense_bounds_are_refused(bounds: dict[str, Any]) -> None:
+def test_nonsense_bounds_are_refused(bounds: BoundOverrides) -> None:
     with pytest.raises(ValueError):
         replace(DoorBounds.from_settings(Settings()), **bounds)

@@ -108,14 +108,27 @@ async def test_concurrent_claim_next_hands_each_queued_job_to_exactly_one_worker
     assert {row.attempts for row in rows} == {1}
 
 
-class _RecordingHandler:
-    """Handler double: records each handled job and holds it until all slots overlap."""
+class _RecordingHandler(ProcessExamAnswerKeyEnrichmentJobHandler):
+    """Handler double: records each handled job and holds it until all slots overlap.
+
+    It is a real handler subtype so the container registers it as the production type;
+    it overrides both operations the worker lane calls and needs none of the real
+    collaborators, so it does not run the base constructor.
+    """
 
     def __init__(self, *, overlap: Callable[[], Awaitable[object]]) -> None:
         self.handled: list[tuple[UUID, str | None]] = []
         self._overlap = overlap
 
-    async def fail_next_expired(self, **_: object) -> ExamAnswerKeyEnrichmentJob | None:
+    async def fail_next_expired(
+        self,
+        *,
+        worker_id: str,
+        now: datetime,
+        lease_ttl: timedelta,
+        source_kind: ExamAnswerKeySourceKind | None = None,
+    ) -> ExamAnswerKeyEnrichmentJob | None:
+        del worker_id, now, lease_ttl, source_kind
         return None
 
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
@@ -152,7 +165,7 @@ class _SlotProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def handler(self) -> ProcessExamAnswerKeyEnrichmentJobHandler:
-        return self._handler  # type: ignore[return-value]
+        return self._handler
 
 
 async def test_concurrent_slots_handle_each_queued_job_exactly_once(

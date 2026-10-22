@@ -32,7 +32,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from testcontainers.postgres import PostgresContainer
 
+from skriptoteket.infrastructure.db.payload_guard_engine import PayloadGuardEngine
 from tests.fixtures.orm_models import load_all_models
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 load_all_models()
 
@@ -262,3 +264,8 @@ async def db_session(
         if tables:
             table_list = ", ".join(f'"{t}"' for t in tables)
             await conn.execute(text(f"TRUNCATE TABLE {table_list} CASCADE"))
+
+
+@pytest.fixture(scope="module")
+def payload_guard_engine(async_engine: AsyncEngine) -> PayloadGuardEngine:
+    return unpooled_payload_guard_engine(async_engine)

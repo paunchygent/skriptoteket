@@ -26,6 +26,7 @@ from skriptoteket.cli.commands.cleanup_vault_files import (
 from skriptoteket.domain.identity.models import AuthProvider, Role
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from skriptoteket.infrastructure.db.models.user import UserModel
+from skriptoteket.infrastructure.db.payload_guard_engine import PayloadGuardEngine
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -34,6 +35,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 pytestmark = [
     pytest.mark.integration,
@@ -104,10 +106,13 @@ def _export(
 
 async def test_purge_deletes_the_trashed_exam_with_its_exports_history_payloads_and_bytes(
     session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
     tmp_path: Path,
 ) -> None:
     async with session_factory() as session:
-        vault_files = PostgreSQLUserVaultFileRepository(session)
+        vault_files = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         vault_usage = PostgreSQLUserVaultUsageRepository(session)
         storage = LocalVaultStorage(vault_root=tmp_path / "vault")
         owner = await _owner(session)
@@ -167,7 +172,7 @@ async def test_purge_deletes_the_trashed_exam_with_its_exports_history_payloads_
             pass  # Publish setup before cleanup opens its independent group sessions.
 
         deleted, affected_users = await purge_expired_vault_files(
-            scope_factory=partial(open_vault_cleanup_scope, session_factory),
+            scope_factory=partial(open_vault_cleanup_scope, session_factory, payload_guard_engine),
             storage=storage,
             cutoff=_CUTOFF,
             now=_NOW,

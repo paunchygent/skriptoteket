@@ -5,16 +5,41 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
-from dishka import AsyncContainer
+from dishka import AsyncContainer, Provider, Scope, make_async_container, provide
 
 from skriptoteket.config import Settings
+from skriptoteket.domain.scripting.artifacts import ArtifactsManifest
+from skriptoteket.domain.scripting.execution import ToolExecutionResult
+from skriptoteket.domain.scripting.models import RunStatus
+from skriptoteket.domain.scripting.ui.contract_v2 import ToolUiContractV2Result
+from skriptoteket.domain.scripting.ui.normalizer import DeterministicUiPayloadNormalizer
+from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.promotions import PromotionApplierProtocol
+from skriptoteket.protocols.run_inputs import RunInputStorageProtocol
+from skriptoteket.protocols.runner import ToolRunnerAdoptionProtocol, ToolRunnerProtocol
+from skriptoteket.protocols.scripting_ui import (
+    BackendActionProviderProtocol,
+    UiPayloadNormalizerProtocol,
+    UiPolicyProviderProtocol,
+)
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.workers import exam_answer_key_enrichment as enrichment_worker
 from skriptoteket.workers import execution_queue_worker as worker
-from tests.unit.workers.execution_queue_runtime_fakes import FakeSleeper
+from tests.unit.workers.execution_queue_repository_fakes import FakeRunInputStorage
+from tests.unit.workers.execution_queue_runtime_fakes import (
+    FakeBackendActionProvider,
+    FakeClock,
+    FakeIdGenerator,
+    FakePromotionApplier,
+    FakeRunner,
+    FakeRunnerAdoption,
+    FakeSleeper,
+    FakeUiPolicyProvider,
+)
 
 BASE_WORKER_ID = "worker-a"
 SLOTS = 4
@@ -54,18 +79,71 @@ class RecordingEnrichmentLane:
             self.active -= 1
 
 
-class FakeContainer:
-    async def get(self, dependency: type[Any]) -> Any:
-        if dependency.__name__ == "ClockProtocol":
-            clock = MagicMock()
-            clock.now.return_value = datetime(2026, 10, 22, 12)
-            return clock
-        if dependency.__name__ == "SleeperProtocol":
-            return FakeSleeper()
-        return MagicMock()
+def _succeeded_result() -> ToolExecutionResult:
+    return ToolExecutionResult(
+        status=RunStatus.SUCCEEDED,
+        stdout="",
+        stderr="",
+        ui_result=ToolUiContractV2Result(
+            status="succeeded",
+            error_summary=None,
+            outputs=[],
+            next_actions=[],
+            state=None,
+            artifacts=[],
+        ),
+        artifacts_manifest=ArtifactsManifest(artifacts=[]),
+    )
 
-    async def close(self) -> None:
-        return None
+
+class WorkerRuntimeProvider(Provider):
+    """The worker-process dependencies the tool-run loop resolves, as protocol-bound doubles."""
+
+    scope = Scope.APP
+
+    @provide
+    def clock(self) -> ClockProtocol:
+        return FakeClock(now=datetime(2026, 10, 22, 12))
+
+    @provide
+    def sleeper(self) -> SleeperProtocol:
+        return FakeSleeper()
+
+    @provide
+    def runner(self) -> ToolRunnerProtocol:
+        return FakeRunner(result=_succeeded_result())
+
+    @provide
+    def runner_adoption(self) -> ToolRunnerAdoptionProtocol:
+        return FakeRunnerAdoption(result=None)
+
+    @provide
+    def run_inputs(self) -> RunInputStorageProtocol:
+        return FakeRunInputStorage()
+
+    @provide
+    def promotion_applier(self) -> PromotionApplierProtocol:
+        return FakePromotionApplier()
+
+    @provide
+    def ui_policy_provider(self) -> UiPolicyProviderProtocol:
+        return FakeUiPolicyProvider()
+
+    @provide
+    def backend_actions_provider(self) -> BackendActionProviderProtocol:
+        return FakeBackendActionProvider()
+
+    @provide
+    def ui_normalizer(self) -> UiPayloadNormalizerProtocol:
+        return DeterministicUiPayloadNormalizer()
+
+    @provide
+    def id_generator(self) -> IdGeneratorProtocol:
+        return FakeIdGenerator()
+
+
+def _runtime_container(_settings: Settings) -> AsyncContainer:
+    return make_async_container(WorkerRuntimeProvider())
 
 
 @pytest.fixture
@@ -76,7 +154,7 @@ def tool_run_boundary(monkeypatch: pytest.MonkeyPatch) -> tuple[AsyncMock, Async
     monkeypatch.setattr(worker, "_clear_stale_leases", clear)
     monkeypatch.setattr(worker, "Settings", lambda: _settings())
     monkeypatch.setattr(worker, "configure_logging", lambda **_: None)
-    monkeypatch.setattr(worker, "create_container", lambda _settings: FakeContainer())
+    monkeypatch.setattr(worker, "create_container", _runtime_container)
     return claim, clear
 
 

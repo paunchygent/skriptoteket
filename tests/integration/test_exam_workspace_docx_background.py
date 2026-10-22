@@ -76,6 +76,7 @@ from skriptoteket.infrastructure.repositories.user_vault_file_repository import 
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.docx_corpus import CORPUS
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_docx_background_support import (
     API_KEY,
@@ -136,7 +137,9 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
     async def open_head() -> ExamWorkspaceDocumentResponse:
         async with session_factory() as reader:
             return await GetExamWorkspaceDocumentHandler(
-                vault_files=PostgreSQLUserVaultFileRepository(reader),
+                vault_files=PostgreSQLUserVaultFileRepository(
+                    reader, unpooled_payload_guard_engine(reader.bind)
+                ),
                 codec=ExamWorkspaceContainerCodec(),
                 store=document_store(reader, storage=storage, clock=clock, settings=settings),
                 jobs=PostgreSQLExamAnswerKeyEnrichmentJobRepository(reader),
@@ -177,7 +180,9 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
         progress_port = SavedRevisions(
             jobs=jobs,
             users=PostgreSQLUserRepository(session),
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            ),
             store=store,
             codec=ExamWorkspaceContainerCodec(),
             uow=uow,

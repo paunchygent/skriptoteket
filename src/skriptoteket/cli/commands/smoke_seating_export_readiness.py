@@ -76,6 +76,7 @@ from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_pdf
 from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.seating_xlsx_renderer import (
     SeatingXlsxRenderer,
 )
+from skriptoteket.infrastructure.db.payload_guard_engine import open_payload_guard_engine
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.classroom_planner import (
@@ -379,8 +380,8 @@ async def _create_export_job(
     draft_id: UUID,
     correlation_id: str,
 ) -> UUID:
-    async with open_session(settings) as session:
-        vault_files = PostgreSQLUserVaultFileRepository(session)
+    async with open_session(settings) as session, open_payload_guard_engine(settings) as guard:
+        vault_files = PostgreSQLUserVaultFileRepository(session, guard)
         vault_storage = LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT))
         finalizer = seating_export_job_completion_handlers.SeatingExportJobFinalizer(
             jobs=PostgreSQLSeatingExportJobRepository(session),
@@ -447,10 +448,10 @@ async def _download_export_from_vault(
     actor: User,
     export_job_id: UUID,
 ) -> tuple[str, bytes]:
-    async with open_session(settings) as session:
+    async with open_session(settings) as session, open_payload_guard_engine(settings) as guard:
         download_handler = seating_export_job_completion_handlers.DownloadSeatingExportJobHandler(
             jobs=PostgreSQLSeatingExportJobRepository(session),
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(session, guard),
             vault_storage=LocalVaultStorage(vault_root=Path(settings.VAULT_ROOT)),
             uow=SQLAlchemyUnitOfWork(session),
         )

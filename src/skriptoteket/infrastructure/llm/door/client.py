@@ -140,8 +140,10 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
         timeout_seconds: float,
     ) -> DoorReply:
         for resends in range(self._bounds.capacity_retries + 1):
-            caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
             async with self._slots(caller):
+                # Checked once the slot is held: calls queued behind it must see
+                # the charges settled while they waited, not the queue-time total.
+                caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
                 response = await self._post(operation, payload, caller, timeout_seconds)
             if response.status_code != 429:
                 break
