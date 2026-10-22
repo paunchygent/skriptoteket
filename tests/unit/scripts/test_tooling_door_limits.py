@@ -34,7 +34,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredOutputSpec,
 )
 from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, tooling_caller
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -84,6 +84,8 @@ def _door(
             base_url="http://door.test:8080",
             internal_api_key="internal-key",
             job_overage_cap_usd_micros=1_000_000,
+            sleeper=AsyncioSleeper(),
+            bounds=DoorBounds.from_settings(Settings()),
         ),
         modes,
     )

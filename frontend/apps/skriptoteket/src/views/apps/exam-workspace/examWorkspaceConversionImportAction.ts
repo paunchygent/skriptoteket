@@ -25,6 +25,7 @@ import {
   aiDailyLimitNote,
   aiDailyLimitReached,
   aiLimitFromError,
+  aiTryAgainFromError,
   aiLimitFromStatus,
   aiLimitNote,
   markAiDailyLimit,
@@ -129,6 +130,13 @@ export function createConversionImportAction(
       if (limit !== null) {
         markAiDailyLimit(limit);
         runtime.conversionError.value = aiLimitNote(limit);
+        return;
+      }
+      // The busy door never disables the import: its sentence stands inline
+      // without a toast and the next import attempt clears it.
+      const tryAgain = aiTryAgainFromError(error);
+      if (tryAgain !== null) {
+        runtime.conversionError.value = tryAgain;
         return;
       }
       const message = serverImportMessage(error) ?? IMPORT_FAILURE_COPY;

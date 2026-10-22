@@ -36,6 +36,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.integration.infrastructure.repositories.test_exam_workspace_repositories import (
@@ -64,7 +65,9 @@ async def test_upsert_joins_live_filename_isolates_owner_and_tracks_trash_restor
         document_format_version=CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
     )
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
-        vault = PostgreSQLUserVaultFileRepository(session)
+        vault = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         await vault.create(file=file)
         await vault.create(file=other)
         index = PostgreSQLExamIndexRepository(session)
@@ -87,9 +90,9 @@ async def test_upsert_joins_live_filename_isolates_owner_and_tracks_trash_restor
         assert exams[0].head_vault_file_id == file.id
         assert await index.list_for_owner(owner_user_id=stranger.id) == []
         assert await index.get(owner_user_id=stranger.id, lineage_id=lineage) is None
-        renamed_file = await PostgreSQLUserVaultFileRepository(session).rename_active(
-            user_id=owner.id, file_id=file.id, name="Renamed.provdokument.zip"
-        )
+        renamed_file = await PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ).rename_active(user_id=owner.id, file_id=file.id, name="Renamed.provdokument.zip")
         assert renamed_file is not None
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
         index = PostgreSQLExamIndexRepository(session)
@@ -115,7 +118,9 @@ async def test_upsert_joins_live_filename_isolates_owner_and_tracks_trash_restor
         )
         restored = await index.get(owner_user_id=owner.id, lineage_id=lineage)
         assert restored == renamed
-        await PostgreSQLUserVaultFileRepository(session).delete(file_id=file.id)
+        await PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ).delete(file_id=file.id)
         assert (
             await session.scalar(
                 text("SELECT count(*) FROM exam_index WHERE owner_user_id=:id"), {"id": owner.id}
@@ -130,7 +135,7 @@ async def test_join_does_not_expose_cross_owner_wrong_lineage_or_export_heads(
     owner, stranger = await create_owner(session_factory), await create_owner(session_factory)
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
         vault, index = (
-            PostgreSQLUserVaultFileRepository(session),
+            PostgreSQLUserVaultFileRepository(session, unpooled_payload_guard_engine(session.bind)),
             PostgreSQLExamIndexRepository(session),
         )
         for wrong in ("owner", "lineage", "export"):
@@ -173,7 +178,9 @@ async def test_failed_outer_save_transaction_restores_index_vault_and_file_bytes
     original = codec.build(content=ExamWorkspaceContainerContent(document=document))
     async with session_factory() as session:
         store = ExamWorkspaceDocumentStore(
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            ),
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=storage,
             index=PostgreSQLExamIndexRepository(session),
@@ -290,7 +297,9 @@ async def test_readable_and_unreadable_listings_split_by_format_version(
         ),
     ]
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
-        vault = PostgreSQLUserVaultFileRepository(session)
+        vault = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         for file in (readable_file, older_file, zero_file, trashed_file):
             await vault.create(file=file)
         index = PostgreSQLExamIndexRepository(session)

@@ -92,6 +92,16 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/skriptoteket"
     DATABASE_ECHO: bool = False
+    # Connections per process (TASK-SKRIPT-41-01-04). Every web process and the
+    # worker each hold up to POOL_SIZE + MAX_OVERFLOW; production keeps the sum
+    # under its share of shared-postgres max_connections. AI calls hold none.
+    DATABASE_POOL_SIZE: int = Field(default=5, ge=1)
+    DATABASE_MAX_OVERFLOW: int = Field(default=10, ge=0)
+    DATABASE_POOL_TIMEOUT_SECONDS: float = Field(default=30.0, gt=0.0)
+    # Pooled connections per process that hold payload guards (advisory locks that
+    # must outlive a failed application COMMIT). They are counted in the budget on
+    # top of POOL_SIZE + MAX_OVERFLOW; a guard waits up to the pool timeout for one.
+    DATABASE_GUARD_POOL_SIZE: int = Field(default=2, ge=1)
     BOOTSTRAP_SUPERUSER_EMAIL: str = ""
     BOOTSTRAP_SUPERUSER_PASSWORD: str = ""
 
@@ -333,6 +343,26 @@ class Settings(BaseSettings):
     # A started AI job finishes as paid overage until the door has charged it
     # this much overage (TASK-SKRIPT-41-01-03 C7); then the job stops.
     LLM_JOB_OVERAGE_CAP_USD: float = Field(default=1.0, ge=0.0)
+    # Door capacity per process (TASK-SKRIPT-41-01-04, ST-SKRIPT-41-01 B7).
+    # Connections and in-flight calls are separate bounds: at most
+    # LLM_DOOR_MAX_IN_FLIGHT calls run at once, over at most
+    # LLM_DOOR_MAX_CONNECTIONS pooled connections (keep it >= the in-flight
+    # bound). A call that waits LLM_DOOR_SLOT_WAIT_SECONDS for a slot, or meets
+    # a door capacity 429 after LLM_DOOR_CAPACITY_RETRIES Retry-After waits
+    # (each capped at LLM_DOOR_RETRY_AFTER_MAX_SECONDS), ends as try-again.
+    LLM_DOOR_MAX_IN_FLIGHT: int = Field(default=250, ge=1)
+    LLM_DOOR_MAX_CONNECTIONS: int = Field(default=300, ge=1)
+    LLM_DOOR_MAX_KEEPALIVE_CONNECTIONS: int = Field(default=100, ge=0)
+    LLM_DOOR_POOL_TIMEOUT_SECONDS: float = Field(default=5.0, gt=0.0)
+    LLM_DOOR_SLOT_WAIT_SECONDS: float = Field(default=10.0, gt=0.0)
+    LLM_DOOR_CAPACITY_RETRIES: int = Field(default=2, ge=0)
+    LLM_DOOR_RETRY_AFTER_MAX_SECONDS: float = Field(default=10.0, gt=0.0)
+    LLM_DOOR_RETRY_AFTER_FALLBACK_SECONDS: float = Field(default=2.0, gt=0.0)
+    # One AI action (a job, a request, a tooling run) has at most this many
+    # door calls in flight, so one large DOCX never takes the whole capacity.
+    LLM_JOB_MAX_IN_FLIGHT: int = Field(default=8, ge=1)
+    # Answer-key and DOCX jobs one worker process runs at once.
+    LLM_WORKER_JOB_CONCURRENCY: int = Field(default=8, ge=1)
     LLM_ANSWER_KEY_MODEL: str = "gpt-6-luna"
     LLM_ANSWER_KEY_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_ANSWER_KEY_TEXT_VERBOSITY: LlmTextVerbosity = "low"

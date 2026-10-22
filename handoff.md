@@ -81,7 +81,8 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02, -04: ready, unblocked by 41-01-03 (done).
+    - 41-01-02: ready. 41-01-04: review repairs F1-F8 on `codex/task-skript-41-01-04`, awaiting merge and walk;
+      HuleEdu door needs hypercorn `--backlog 2048` (task Progress).
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan

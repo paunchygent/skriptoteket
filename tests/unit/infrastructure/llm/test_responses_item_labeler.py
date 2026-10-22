@@ -21,7 +21,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
     estimate_prompt_tokens,
 )
-from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.domain.llm_door import AiDoorBusy, AiDoorCaller
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     build_answer_key_responses_payload,
 )
@@ -167,6 +167,31 @@ async def test_transient_error_retries_once_and_sleeps() -> None:
     assert result.label is ItemTypeLabel.MATCHING
     assert sleeper.delays == [1.0]
     assert len(provider.requests) == 2
+
+
+@pytest.mark.asyncio
+async def test_a_429_reply_is_not_transient_and_is_not_retried() -> None:
+    provider = FakeProvider(_error(StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR, 429))
+    sleeper = RecordingSleeper()
+    with pytest.raises(ItemTypeLabelerError) as caught:
+        await _labeler(provider, sleeper).label_one(
+            job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+        )
+    assert (caught.value.code, caught.value.status_code) == ("provider_http_error", 429)
+    assert sleeper.delays == []
+    assert len(provider.requests) == 1
+
+
+@pytest.mark.asyncio
+async def test_a_busy_door_propagates_without_retry() -> None:
+    provider = FakeProvider(AiDoorBusy(retry_after_seconds=2), _ok({"label": "matching"}))
+    sleeper = RecordingSleeper()
+    with pytest.raises(AiDoorBusy):
+        await _labeler(provider, sleeper).label_one(
+            job_id=JOB_ID, item=ITEM, caller=fixture_caller()
+        )
+    assert sleeper.delays == []
+    assert len(provider.requests) == 1
 
 
 @pytest.mark.asyncio

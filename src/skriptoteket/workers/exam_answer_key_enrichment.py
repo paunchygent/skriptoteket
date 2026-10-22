@@ -1,13 +1,17 @@
 """Execution-worker lane for machine answer-key enrichment jobs.
 
 Purpose:
-    Claim and process one queued answer-key enrichment job inside the
-    existing execution-worker process (`skriptoteket.cli run-execution-worker`)
-    so remote provider calls never run inside a web request.
+    Claim and process queued answer-key enrichment jobs inside the existing
+    execution-worker process (`skriptoteket.cli run-execution-worker`) so
+    remote provider calls never run inside a web request. The worker runs
+    ``LLM_WORKER_JOB_CONCURRENCY`` slots; each slot is one coroutine that
+    advances the lane one step at a time under its own worker id, so the lease
+    fence (``locked_by``) and expired-lease recovery stay per job.
 
 Relationships:
-    Called from ``workers.execution_queue_worker`` on each loop iteration;
-    claiming uses the SKIP LOCKED repository and processing runs through
+    ``workers.execution_queue_worker`` starts the slots (and calls one step
+    directly for ``--once``); claiming uses the SKIP LOCKED repository, which
+    hands each queued job to exactly one slot, and processing runs through
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
 """
 
@@ -26,9 +30,41 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
+
+
+def enrichment_slot_worker_id(*, worker_id: str, slot: int) -> str:
+    """Return the lease identity of one enrichment slot of a worker process."""
+
+    return f"{worker_id}:{slot}"
+
+
+async def run_answer_key_enrichment_slot(
+    *,
+    container: AsyncContainer,
+    worker_id: str,
+    lease_ttl: timedelta,
+    clock: ClockProtocol,
+    sleeper: SleeperProtocol,
+    poll_interval: float,
+    enrichment_enabled: bool,
+) -> None:
+    """Advance the enrichment lane forever as one slot, polling when idle."""
+
+    while True:
+        advanced = await process_next_answer_key_enrichment_job(
+            container=container,
+            worker_id=worker_id,
+            now=clock.now(),
+            lease_ttl=lease_ttl,
+            clock=clock,
+            enrichment_enabled=enrichment_enabled,
+        )
+        if not advanced:
+            await sleeper.sleep(poll_interval)
 
 
 async def process_next_answer_key_enrichment_job(

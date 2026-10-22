@@ -71,6 +71,7 @@ async def error_handler_middleware(
                 },
                 "correlation_id": str(correlation_id) if correlation_id else None,
             },
+            headers=_retry_after_headers(exc),
         )
     except Exception:
         correlation_id = _request_correlation_id(request)
@@ -91,6 +92,17 @@ async def error_handler_middleware(
                 "correlation_id": str(correlation_id) if correlation_id else None,
             },
         )
+
+
+def _retry_after_headers(error: DomainError) -> dict[str, str] | None:
+    """A try-again answer tells the browser when the door said to come back."""
+
+    if error.code is not ErrorCode.AI_TRY_AGAIN:
+        return None
+    retry_after = error.details.get("retry_after_seconds")
+    if not isinstance(retry_after, int) or isinstance(retry_after, bool):
+        return None
+    return {"Retry-After": str(retry_after)}
 
 
 async def _record_rbac_denial_if_needed(

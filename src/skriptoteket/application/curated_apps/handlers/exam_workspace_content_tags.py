@@ -33,9 +33,11 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
     door_caller_for,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -47,6 +49,7 @@ from skriptoteket.protocols.item_type_labeler import ContentTagClassificationReq
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 _DEFAULT_FAILURE_MESSAGE = "Innehållsförslaget kunde inte hämtas. Försök igen senare."
+_DOOR_BUSY_ERROR = "ai_door_busy"
 
 
 class ExamCourseContentResponse(BaseModel):
@@ -79,6 +82,8 @@ def content_response(job: ExamAnswerKeyEnrichmentJob) -> ContentSuggestionsRespo
     )
     if job.ai_limit is not None:
         message: str | None = ai_limit_note(job.ai_limit)
+    elif job.last_error == _DOOR_BUSY_ERROR:
+        message = ai_try_again_note()
     else:
         message = _DEFAULT_FAILURE_MESSAGE if job.last_error else None
     return ContentSuggestionsResponse(
@@ -197,7 +202,9 @@ class ProcessExamContentSuggestionsHandler:
                 or document.header.course.key != job.workspace_course_key
             ):
                 raise ValueError("Content job does not match its saved document")
-            owner = await self._users.get_by_id(job.owner_user_id)
+            # The owner read ends its transaction before classification awaits the provider.
+            async with self._uow:
+                owner = await self._users.get_by_id(job.owner_user_id)
             if owner is None:
                 return await self.fail(job=job, last_error="owner_missing")
             tags = await self._classifier.suggest(
@@ -212,6 +219,8 @@ class ProcessExamContentSuggestionsHandler:
             return await self.fail(job=job, last_error="ai_daily_limit", ai_limit=exc.limit)
         except AiJobOverageCapReached:
             return await self.fail(job=job, last_error="ai_overage_cap", ai_limit=AiDailyLimit.POOL)
+        except AiDoorBusy:
+            return await self.fail(job=job, last_error=_DOOR_BUSY_ERROR)
         except Exception:
             return await self.fail(job=job, last_error="content_suggestions_failed")
         async with self._uow:

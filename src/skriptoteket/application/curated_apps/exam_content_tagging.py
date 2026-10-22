@@ -8,7 +8,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
     aggregate_content_tags,
 )
-from skriptoteket.domain.llm_door import AiDailyLimitReached, AiJobOverageCapReached
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorBusy, AiJobOverageCapReached
 from skriptoteket.protocols.item_type_labeler import (
     ContentTagClassificationRequest,
     ExamContentTagClassifierProtocol,
@@ -40,7 +40,7 @@ class ExamContentTagSuggester:
                 request.content_items,
                 [(r.item_id, r.content_id, r.probability) for r in classification.results],
             )
-        except (AiDailyLimitReached, AiJobOverageCapReached):
+        except (AiDailyLimitReached, AiJobOverageCapReached, AiDoorBusy):
             raise
         except Exception:
             if not fail_open:

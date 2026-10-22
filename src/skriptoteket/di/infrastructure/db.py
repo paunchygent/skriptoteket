@@ -13,6 +13,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from skriptoteket.config import Settings
+from skriptoteket.infrastructure.db.payload_guard_engine import (
+    PayloadGuardEngine,
+    open_payload_guard_engine,
+)
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
@@ -34,7 +38,15 @@ class InfrastructureDatabaseProvider(Provider):
             settings.DATABASE_URL,
             echo=settings.DATABASE_ECHO,
             pool_pre_ping=True,
+            pool_size=settings.DATABASE_POOL_SIZE,
+            max_overflow=settings.DATABASE_MAX_OVERFLOW,
+            pool_timeout=settings.DATABASE_POOL_TIMEOUT_SECONDS,
         )
+
+    @provide(scope=Scope.APP)
+    async def payload_guard_engine(self, settings: Settings) -> AsyncIterator[PayloadGuardEngine]:
+        async with open_payload_guard_engine(settings) as guard_engine:
+            yield guard_engine
 
     @provide(scope=Scope.APP)
     def sessionmaker(self, engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:

@@ -66,6 +66,9 @@ services:
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://llm_provider_service:8080}
       HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
+      # Staging runs web as several processes like production
+      # (TASK-SKRIPT-41-01-04); its own Postgres keeps the default pools.
+      WEB_CONCURRENCY: ${SKRIPTOTEKET_WEB_CONCURRENCY:-2}
     ports:
       - "127.0.0.1:18000:8000"
     volumes:

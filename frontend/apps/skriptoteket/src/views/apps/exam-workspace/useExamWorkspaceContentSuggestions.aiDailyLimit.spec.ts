@@ -43,6 +43,8 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 type Tag = NativeExamContentTag;
 
+const TRY_AGAIN_SENTENCE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.";
+
 const requestLimits: AiDailyLimit[] = ["pool", "user_share"];
 
 function tag(id: string, questionIds: string[]): Tag {
@@ -204,5 +206,56 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
 
     expect(aiDailyLimitReached.value).toBe(false);
     expect(harness.setTags).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("useExamWorkspaceContentSuggestions busy AI door", () => {
+  function tryAgainError(): ApiError {
+    return new ApiError({
+    code: "AI_TRY_AGAIN",
+    message: TRY_AGAIN_SENTENCE,
+    status: 429,
+    details: { retry_after_seconds: 5 },
+  });
+  }
+
+  it("says the sentence in the drawer for a request refused with AI_TRY_AGAIN and clears it on the next success", async () => {
+    const harness = setup();
+    apiMocks.requestExamWorkspaceContentSuggestions.mockRejectedValueOnce(tryAgainError());
+
+    await harness.content.suggest();
+
+    expect(harness.content.message.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(toastMessages()).toEqual([]);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(harness.content.busy.value).toBe(false);
+
+    await runJob(harness, response("succeeded", { suggestions: [tag("t1", ["q1"])] }));
+
+    expect(harness.content.message.value).toBeNull();
+    expect(harness.setTags).toHaveBeenCalledTimes(1);
+    expect(aiDailyLimitReached.value).toBe(false);
+  });
+
+  it("says the sentence in the drawer for a poll refused with AI_TRY_AGAIN", async () => {
+    const harness = setup();
+    apiMocks.requestExamWorkspaceContentSuggestions.mockResolvedValue(response("running"));
+    apiMocks.getExamWorkspaceContentSuggestions.mockRejectedValue(tryAgainError());
+
+    await harness.content.suggest();
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_CONTENT_POLL_MS);
+
+    expect(harness.content.message.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(toastMessages()).toEqual([]);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(harness.content.busy.value).toBe(false);
+  });
+
+  it("toasts a failed job's own try-again sentence without a limit", async () => {
+    const harness = setup();
+    await runJob(harness, response("failed", { message: TRY_AGAIN_SENTENCE }));
+
+    expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
+    expect(aiDailyLimitReached.value).toBe(false);
   });
 });

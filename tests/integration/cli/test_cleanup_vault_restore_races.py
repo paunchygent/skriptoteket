@@ -34,6 +34,7 @@ from skriptoteket.cli.commands.cleanup_vault_files import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
+from skriptoteket.infrastructure.db.payload_guard_engine import PayloadGuardEngine
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -43,6 +44,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.cli.test_cleanup_vault_files_linked_exports import (
     _CUTOFF,
@@ -97,7 +99,9 @@ async def _seed(
             ]
         )
         async with SQLAlchemyUnitOfWork(session):
-            repo = PostgreSQLUserVaultFileRepository(session)
+            repo = PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            )
             for row in rows:
                 await repo.create(file=row)
                 await storage.store_file(
@@ -120,7 +124,9 @@ async def _seed(
 def _restore(session: AsyncSession) -> RestoreVaultFileHandler:
     return RestoreVaultFileHandler(
         uow=SQLAlchemyUnitOfWork(session),
-        vault_files=PostgreSQLUserVaultFileRepository(session),
+        vault_files=PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ),
         vault_usage=PostgreSQLUserVaultUsageRepository(session),
         settings=Settings.model_construct(VAULT_RETENTION_DAYS=30, VAULT_MAX_TOTAL_BYTES=10000),
         clock=FixedClock(_RESTORE_NOW),
@@ -136,7 +142,9 @@ async def _assert_state(
     restored: bool,
 ) -> None:
     async with factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         for row in rows:
             actual = await repo.get_by_id(file_id=row.id)
             if restored:
@@ -159,7 +167,10 @@ async def _assert_state(
 
 @pytest.mark.parametrize("kind", ["plain", "exam", "export"])
 async def test_restore_committed_after_expiry_selection_keeps_rows_and_original_payloads(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path, kind: str
+    session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
+    tmp_path: Path,
+    kind: str,
 ) -> None:
     storage = LocalVaultStorage(vault_root=tmp_path)
     owner, rows, target = await _seed(session_factory, storage, kind)
@@ -177,7 +188,7 @@ async def test_restore_committed_after_expiry_selection_keeps_rows_and_original_
     async def scope() -> AsyncIterator[VaultCleanupScope]:
         async with session_factory() as session:
             yield VaultCleanupScope(
-                vault_files=PausedSelection(session),
+                vault_files=PausedSelection(session, unpooled_payload_guard_engine(session.bind)),
                 vault_usage=PostgreSQLUserVaultUsageRepository(session),
                 uow=SQLAlchemyUnitOfWork(session),
             )
@@ -206,7 +217,10 @@ async def test_restore_committed_after_expiry_selection_keeps_rows_and_original_
 
 @pytest.mark.parametrize("kind", ["plain", "exam", "export"])
 async def test_cleanup_winner_makes_waiting_restore_report_gone_not_half_restore(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path, kind: str
+    session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
+    tmp_path: Path,
+    kind: str,
 ) -> None:
     deleting, resume = asyncio.Event(), asyncio.Event()
 
@@ -228,7 +242,9 @@ async def test_cleanup_winner_makes_waiting_restore_report_gone_not_half_restore
         pid = await restoring.scalar(text("SELECT pg_backend_pid()"))
         cleanup = asyncio.create_task(
             purge_expired_vault_files(
-                scope_factory=partial(open_vault_cleanup_scope, session_factory),
+                scope_factory=partial(
+                    open_vault_cleanup_scope, session_factory, payload_guard_engine
+                ),
                 storage=storage,
                 cutoff=_CUTOFF,
                 now=_NOW,
@@ -263,7 +279,9 @@ async def test_cleanup_winner_makes_waiting_restore_report_gone_not_half_restore
 
 
 async def test_expiring_an_independently_trashed_export_preserves_live_exam_and_sibling(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
+    session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
+    tmp_path: Path,
 ) -> None:
     """L9 is directional: exporting/trashing one format never deletes its exam."""
     storage = LocalVaultStorage(vault_root=tmp_path)
@@ -272,7 +290,9 @@ async def test_expiring_an_independently_trashed_export_preserves_live_exam_and_
     assert lineage is not None
     sibling = _export(owner, lineage_id=lineage, export_format="pdf", file_bytes=20)
     async with session_factory() as session, SQLAlchemyUnitOfWork(session):
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         await repo.update(file=exam.model_copy(update={"deleted_at": None}))
         await repo.update(file=expired.model_copy(update={"trashed_with_exam": False}))
         await repo.create(file=sibling)
@@ -282,7 +302,7 @@ async def test_expiring_an_independently_trashed_export_preserves_live_exam_and_
         )
 
     deleted, affected = await purge_expired_vault_files(
-        scope_factory=partial(open_vault_cleanup_scope, session_factory),
+        scope_factory=partial(open_vault_cleanup_scope, session_factory, payload_guard_engine),
         storage=storage,
         cutoff=_CUTOFF,
         now=_NOW,
@@ -290,7 +310,9 @@ async def test_expiring_an_independently_trashed_export_preserves_live_exam_and_
 
     assert deleted == 1 and affected == {owner}
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         assert await repo.get_by_id(file_id=expired.id) is None
         assert not await storage.exists_file(user_id=owner, file_id=expired.id)
         actual_exam = await repo.get_by_id(file_id=exam.id)

@@ -27,7 +27,9 @@ from skriptoteket.protocols.scripting_ui import (
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.workers.exam_answer_key_enrichment import (
+    enrichment_slot_worker_id,
     process_next_answer_key_enrichment_job,
+    run_answer_key_enrichment_slot,
 )
 from skriptoteket.workers.execution_queue.processor import process_claim
 
@@ -87,36 +89,22 @@ async def run_execution_queue_worker(
             heartbeat_interval_seconds=heartbeat_interval,
             poll_interval_seconds=poll_interval,
             reaper_interval_seconds=reaper_interval,
+            enrichment_slots=int(settings.LLM_WORKER_JOB_CONCURRENCY),
         )
 
-        loop = asyncio.get_running_loop()
-        next_reaper_at = loop.time()
+        enrichment_slots = int(settings.LLM_WORKER_JOB_CONCURRENCY)
 
-        while True:
-            if loop.time() >= next_reaper_at:
-                cleared = await _clear_stale_leases(
-                    container=container,
-                    now=clock.now(),
-                )
-                if cleared:
-                    logger.info(
-                        "Stale leases cleared",
-                        cleared=cleared,
-                        queue=normalized_queue,
-                    )
-                next_reaper_at = loop.time() + reaper_interval
-
-            processed_enrichment = await process_next_answer_key_enrichment_job(
+        async def enrichment_step(*, step_worker_id: str) -> bool:
+            return await process_next_answer_key_enrichment_job(
                 container=container,
-                worker_id=effective_worker_id,
+                worker_id=step_worker_id,
                 now=clock.now(),
                 lease_ttl=enrichment_lease_ttl,
                 clock=clock,
                 enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
             )
-            if processed_enrichment and once:
-                return
 
+        async def tool_run_step() -> bool:
             claim = await _claim_next_job(
                 container=container,
                 worker_id=effective_worker_id,
@@ -125,12 +113,7 @@ async def run_execution_queue_worker(
                 queue=normalized_queue,
             )
             if claim is None:
-                if once:
-                    return
-                if not processed_enrichment:
-                    await sleeper.sleep(poll_interval)
-                continue
-
+                return False
             await process_claim(
                 container=container,
                 service_name=settings.SERVICE_NAME,
@@ -151,9 +134,46 @@ async def run_execution_queue_worker(
                 id_generator=id_generator,
                 sleeper=sleeper,
             )
+            return True
 
-            if once:
+        async def clear_stale_leases() -> None:
+            cleared = await _clear_stale_leases(container=container, now=clock.now())
+            if cleared:
+                logger.info("Stale leases cleared", cleared=cleared, queue=normalized_queue)
+
+        if once:
+            await clear_stale_leases()
+            if await enrichment_step(step_worker_id=effective_worker_id):
                 return
+            await tool_run_step()
+            return
+
+        async def tool_run_loop() -> None:
+            loop = asyncio.get_running_loop()
+            next_reaper_at = loop.time()
+            while True:
+                if loop.time() >= next_reaper_at:
+                    await clear_stale_leases()
+                    next_reaper_at = loop.time() + reaper_interval
+                if not await tool_run_step():
+                    await sleeper.sleep(poll_interval)
+
+        async with asyncio.TaskGroup() as workers:
+            for slot in range(enrichment_slots):
+                workers.create_task(
+                    run_answer_key_enrichment_slot(
+                        container=container,
+                        worker_id=enrichment_slot_worker_id(
+                            worker_id=effective_worker_id, slot=slot
+                        ),
+                        lease_ttl=enrichment_lease_ttl,
+                        clock=clock,
+                        sleeper=sleeper,
+                        poll_interval=poll_interval,
+                        enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
+                    )
+                )
+            workers.create_task(tool_run_loop())
     finally:
         await container.close()
 

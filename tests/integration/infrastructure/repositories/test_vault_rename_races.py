@@ -51,6 +51,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.protocols.vault import VaultStorageProtocol
 from tests.fixtures.identity_fixtures import make_user
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.test_vault_rename_repository import (
     _NOW,
@@ -102,11 +103,15 @@ async def _seed(
             else [_file(owner, name="Left.pdf"), _file(owner, name="Right.pdf")]
         )
         for file in files:
-            await PostgreSQLUserVaultFileRepository(session).create(file=file)
+            await PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            ).create(file=file)
         if lineage is not None:
             # An exam file carries its undo history; an overwrite asserts it exists.
             container = ExamWorkspaceContainerCodec().parse(content=_seed_container(lineage))
-            history_repo = PostgreSQLUserVaultFileRepository(session)
+            history_repo = PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            )
             await history_repo.upsert_history_head(
                 user_id=owner,
                 document_lineage_id=lineage,
@@ -166,7 +171,9 @@ async def test_delete_with_stale_record_preserves_a_concurrently_committed_renam
         pending = asyncio.create_task(
             DeleteVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(deleting),
-                vault_files=PausedDeleteRepository(deleting),
+                vault_files=PausedDeleteRepository(
+                    deleting, unpooled_payload_guard_engine(deleting.bind)
+                ),
                 vault_usage=PostgreSQLUserVaultUsageRepository(deleting),
                 clock=FixedClock(_NOW),
             ).handle(actor=actor, command=DeleteVaultFileCommand(file_id=target.id))
@@ -176,7 +183,9 @@ async def test_delete_with_stale_record_preserves_a_concurrently_committed_renam
             async with session_factory() as renaming:
                 await RenameVaultFileHandler(
                     uow=SQLAlchemyUnitOfWork(renaming),
-                    vault_files=PostgreSQLUserVaultFileRepository(renaming),
+                    vault_files=PostgreSQLUserVaultFileRepository(
+                        renaming, unpooled_payload_guard_engine(renaming.bind)
+                    ),
                     index=PostgreSQLExamIndexRepository(renaming),
                 ).handle(
                     actor=actor, command=RenameVaultFileCommand(file_id=target.id, stem="Renamed")
@@ -186,7 +195,9 @@ async def test_delete_with_stale_record_preserves_a_concurrently_committed_renam
         deleted = await pending
         assert deleted.file.name == "Renamed.pdf"
     async with session_factory() as checking:
-        actual = await PostgreSQLUserVaultFileRepository(checking).get_by_id(file_id=target.id)
+        actual = await PostgreSQLUserVaultFileRepository(
+            checking, unpooled_payload_guard_engine(checking.bind)
+        ).get_by_id(file_id=target.id)
         assert actual is not None
         assert actual.name == "Renamed.pdf"
         assert actual.deleted_at == _NOW
@@ -225,22 +236,24 @@ async def test_delete_committed_after_rename_read_is_not_resurrected(
         pending = asyncio.create_task(
             RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(session),
-                vault_files=PausedRepository(session),
+                vault_files=PausedRepository(session, unpooled_payload_guard_engine(session.bind)),
                 index=PostgreSQLExamIndexRepository(session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=target.id, stem="Renamed"))
         )
         try:
             await checked.wait()
             async with session_factory() as deletion:
-                await PostgreSQLUserVaultFileRepository(deletion).update(
-                    file=target.model_copy(update={"deleted_at": _NOW})
-                )
+                await PostgreSQLUserVaultFileRepository(
+                    deletion, unpooled_payload_guard_engine(deletion.bind)
+                ).update(file=target.model_copy(update={"deleted_at": _NOW}))
                 await deletion.commit()
         finally:
             resume.set()
         outcome = (await asyncio.gather(pending, return_exceptions=True))[0]
     async with session_factory() as verify:
-        actual = await PostgreSQLUserVaultFileRepository(verify).get_by_id(file_id=target.id)
+        actual = await PostgreSQLUserVaultFileRepository(
+            verify, unpooled_payload_guard_engine(verify.bind)
+        ).get_by_id(file_id=target.id)
         assert actual is not None and actual.deleted_at == _NOW
         assert actual.name == target.name
     assert isinstance(outcome, DomainError) and outcome.code == ErrorCode.NOT_FOUND
@@ -255,7 +268,7 @@ async def test_competing_same_owner_renames_return_one_named_collision(
 
     class PausedRepository(PostgreSQLUserVaultFileRepository):
         def __init__(self, session: AsyncSession, *, first: bool) -> None:
-            super().__init__(session)
+            super().__init__(session, unpooled_payload_guard_engine(session.bind))
             self.first = first
 
         async def name_in_use(
@@ -311,7 +324,7 @@ async def test_competing_same_owner_renames_return_one_named_collision(
     assert errors[0].code == ErrorCode.VALIDATION_ERROR
     assert errors[0].details["code"] == "vault_name_in_use"
     async with session_factory() as verify:
-        repo = PostgreSQLUserVaultFileRepository(verify)
+        repo = PostgreSQLUserVaultFileRepository(verify, unpooled_payload_guard_engine(verify.bind))
         actual = [await repo.get_by_id(file_id=file.id) for file in (left, right)]
         assert sum(file is not None and file.name == "Same.pdf" for file in actual) == 1
 
@@ -349,7 +362,9 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
     ):
         rename_pid = await rename_session.scalar(text("SELECT pg_backend_pid()"))
         store = ExamWorkspaceDocumentStore(
-            vault_files=PausedRepository(writer_session),
+            vault_files=PausedRepository(
+                writer_session, unpooled_payload_guard_engine(writer_session.bind)
+            ),
             vault_usage=PostgreSQLUserVaultUsageRepository(writer_session),
             vault_storage=AsyncMock(spec=VaultStorageProtocol),
             index=PostgreSQLExamIndexRepository(writer_session),
@@ -376,7 +391,9 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
         async def rename_document() -> None:
             await RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(rename_session),
-                vault_files=PostgreSQLUserVaultFileRepository(rename_session),
+                vault_files=PostgreSQLUserVaultFileRepository(
+                    rename_session, unpooled_payload_guard_engine(rename_session.bind)
+                ),
                 index=PostgreSQLExamIndexRepository(rename_session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=head.id, stem="Renamed"))
             renamed.set()
@@ -392,9 +409,9 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
             resume.set()
         await asyncio.gather(rename, writer)
     async with session_factory() as verify:
-        actual = await PostgreSQLUserVaultFileRepository(verify).get_document_head(
-            user_id=owner, document_lineage_id=lineage
-        )
+        actual = await PostgreSQLUserVaultFileRepository(
+            verify, unpooled_payload_guard_engine(verify.bind)
+        ).get_document_head(user_id=owner, document_lineage_id=lineage)
         assert actual is not None
         assert actual.id == head.id
         assert actual.name == "Renamed.provdokument.zip"
@@ -421,7 +438,9 @@ async def test_rename_response_joins_new_name_without_rewriting_saved_exam_metad
     async with session_factory() as session:
         result = await RenameVaultFileHandler(
             uow=SQLAlchemyUnitOfWork(session),
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            ),
             index=PostgreSQLExamIndexRepository(session),
         ).handle(
             actor=make_user().model_copy(update={"id": owner}),

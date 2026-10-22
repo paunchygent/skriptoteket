@@ -39,6 +39,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_conversion_support import ConversionWorld
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
@@ -61,7 +62,7 @@ class BarrierVaultFiles(PostgreSQLUserVaultFileRepository):
     """Stop at A's row deletion, with its real lineage SQL lock held."""
 
     def __init__(self, session: AsyncSession, barrier: PurgeBarrier) -> None:
-        super().__init__(session)
+        super().__init__(session, unpooled_payload_guard_engine(session.bind))
         self._barrier = barrier
 
     async def delete(self, *, file_id: UUID) -> None:
@@ -148,7 +149,9 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
             rename_pid.set_result(pid)
             await RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(session),
-                vault_files=PostgreSQLUserVaultFileRepository(session),
+                vault_files=PostgreSQLUserVaultFileRepository(
+                    session, unpooled_payload_guard_engine(session.bind)
+                ),
                 index=PostgreSQLExamIndexRepository(session),
             ).handle(
                 actor=actor,

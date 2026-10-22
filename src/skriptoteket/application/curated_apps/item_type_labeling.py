@@ -7,6 +7,7 @@ Purpose:
     unresolved, by its answer, a refusal or a failure, takes the first pass's top label,
     and the converter's type_conflict resend corrects a wrong one (D23). Only a question
     neither pass gave any label stays unresolved.
+    A busy door is no failure of one question: it ends the whole action.
 
 Relationships:
     Implements ``protocols.item_type_labeler.ItemTypeLabelerProtocol`` over a
@@ -23,6 +24,7 @@ import structlog
 
 from skriptoteket.domain.llm_door import (
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
 )
@@ -131,14 +133,23 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
             for index, (item, result) in enumerate(zip(request.items, first, strict=True))
             if not _settled(result)
         ]
-        decided = await asyncio.gather(
-            *(
+        second = [
+            asyncio.ensure_future(
                 self._second_pass(
                     request.job_id, item, first[index], on_results, request.caller, on_limit
                 )
-                for index, item in escalated
             )
-        )
+            for index, item in escalated
+        ]
+        try:
+            decided = await asyncio.gather(*second)
+        except AiDoorBusy:
+            # A busy door ends the action: stop the other questions' calls instead of
+            # leaving them to run after the job has failed.
+            for pending in second:
+                pending.cancel()
+            await asyncio.gather(*second, return_exceptions=True)
+            raise
         results = list(first)
         tokens = [first_tokens]
         for (index, _), (result, input_tokens) in zip(escalated, decided, strict=True):

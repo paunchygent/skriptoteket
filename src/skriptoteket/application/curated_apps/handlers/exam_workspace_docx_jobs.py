@@ -27,8 +27,10 @@ from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
     door_caller_for,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -82,7 +84,9 @@ class ProcessExamWorkspaceDocxJobHandler:
             raise ValueError("Unfinished DOCX jobs require their source, lineage and claim.")
         observed: _Diagnostics = ()
         try:
-            actor = await self._users.get_by_id(job.owner_user_id)
+            # The owner read ends its transaction before the conversion awaits any provider.
+            async with self._uow:
+                actor = await self._users.get_by_id(job.owner_user_id)
             if actor is None:
                 return await self._fail(
                     job,
@@ -169,6 +173,13 @@ class ProcessExamWorkspaceDocxJobHandler:
                 ai_limit_note(error.limit),
                 _job_failure("ai_daily_limit", type(error).__name__, observed),
                 ai_limit=error.limit,
+            )
+        except AiDoorBusy as error:
+            # A busy door is no limit: the job records no ``ai_limit`` and asks to try again.
+            return await self._fail(
+                job,
+                ai_try_again_note(),
+                _job_failure("ai_door_busy", type(error).__name__, observed),
             )
         except Exception as error:
             logger.exception("DOCX conversion job crashed", job_id=str(job.id))

@@ -4,7 +4,9 @@ Purpose:
     Run one retry batch and turn a door limit or overage-cap refusal into the
     429 limit error carrying the matching teacher note: the user's own note for
     a user-share refusal, the app note for pool, USD ceiling and the cap
-    (recorded as pool). A refusal never becomes a review item.
+    (recorded as pool). A busy door becomes the 429 try-again error carrying
+    the try-again note and the door's Retry-After. A refusal never becomes a
+    review item.
 
 Relationships:
     Consumed by ``exam_workspace_docx_retry``; reuses ``convert_batch`` with
@@ -34,9 +36,11 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
 )
 
 
@@ -49,7 +53,7 @@ async def convert_retry_batch_with_limit(
     profile: StructuredLLMProviderProfile,
     caller: AiDoorCaller,
 ) -> BatchOutcome:
-    """Run one retry batch; a door refusal becomes the 429 limit error, never a review item."""
+    """Run one retry batch; a door refusal or busy door becomes a 429 error, never a review item."""
 
     try:
         return await convert_batch(
@@ -71,4 +75,14 @@ async def convert_retry_batch_with_limit(
             code=ErrorCode.AI_DAILY_LIMIT_REACHED,
             message=ai_limit_note(AiDailyLimit.POOL),
             details={"limit": AiDailyLimit.POOL.value},
+        ) from error
+    except AiDoorBusy as error:
+        raise DomainError(
+            code=ErrorCode.AI_TRY_AGAIN,
+            message=ai_try_again_note(),
+            details=(
+                {"retry_after_seconds": error.retry_after_seconds}
+                if error.retry_after_seconds is not None
+                else None
+            ),
         ) from error

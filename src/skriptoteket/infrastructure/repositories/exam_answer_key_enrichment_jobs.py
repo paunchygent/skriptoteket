@@ -82,7 +82,20 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         job: ExamAnswerKeyEnrichmentJob,
         expected_worker_id: str | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
-        model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job.id)
+        if expected_worker_id is None:
+            model = await self._session.get(ExamAnswerKeyEnrichmentJobModel, job.id)
+        else:
+            # Lease-owned write: read the current committed row under a row lock held
+            # until the UoW ends, so a reaper cannot reclaim the job between this
+            # ownership check and the write (reapers claim with SKIP LOCKED).
+            model = (
+                await self._session.execute(
+                    select(ExamAnswerKeyEnrichmentJobModel)
+                    .where(ExamAnswerKeyEnrichmentJobModel.id == job.id)
+                    .with_for_update()
+                    .execution_options(populate_existing=True)
+                )
+            ).scalar_one_or_none()
         if model is None:
             raise not_found("ExamAnswerKeyEnrichmentJob", str(job.id))
         if expected_worker_id is not None and model.locked_by != expected_worker_id:

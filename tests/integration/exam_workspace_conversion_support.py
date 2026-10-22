@@ -57,6 +57,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
     choice,
@@ -87,7 +88,9 @@ class ConversionWorld:
         self.edit_tabs: dict[tuple[UUID, UUID], UUID] = {}
         self.uow = SQLAlchemyUnitOfWork(session)
         self.jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        self.vault_files = PostgreSQLUserVaultFileRepository(session)
+        self.vault_files = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         self.codec = ExamWorkspaceContainerCodec()
         self.index = PostgreSQLExamIndexRepository(session)
         self.store = ExamWorkspaceDocumentStore(

@@ -16,6 +16,10 @@ from skriptoteket.cli._db import open_session
 from skriptoteket.config import Settings
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.infrastructure.clock import UTCClock
+from skriptoteket.infrastructure.db.payload_guard_engine import (
+    PayloadGuardEngine,
+    open_payload_guard_engine,
+)
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -52,11 +56,12 @@ class VaultCleanupScope:
 @asynccontextmanager
 async def open_vault_cleanup_scope(
     session_factory: async_sessionmaker[AsyncSession],
+    guard_engine: PayloadGuardEngine,
 ) -> AsyncIterator[VaultCleanupScope]:
     """Give each selection or purge its own application session and root UoW."""
     async with session_factory() as session:
         yield VaultCleanupScope(
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(session, guard_engine),
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             uow=SQLAlchemyUnitOfWork(session),
         )
@@ -210,10 +215,10 @@ async def _cleanup_vault_files_async() -> None:
     now = clock.now()
     cutoff = now - timedelta(days=settings.VAULT_RETENTION_DAYS)
 
-    async with open_session(settings) as session:
+    async with open_session(settings) as session, open_payload_guard_engine(settings) as guard:
         session_factory = async_sessionmaker(session.bind, expire_on_commit=False)
         deleted, _affected_users = await purge_expired_vault_files(
-            scope_factory=partial(open_vault_cleanup_scope, session_factory),
+            scope_factory=partial(open_vault_cleanup_scope, session_factory, guard),
             storage=LocalVaultStorage(vault_root=settings.VAULT_ROOT),
             cutoff=cutoff,
             now=now,

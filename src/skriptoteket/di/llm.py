@@ -29,7 +29,7 @@ from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInF
 from skriptoteket.infrastructure.llm.chat_ops_budget_resolver import (
     SettingsBasedChatOpsBudgetResolver,
 )
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIChatOpsProvider,
     OpenAIChatStreamProvider,
@@ -69,6 +69,7 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
+from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
@@ -104,17 +105,32 @@ class LlmProvider(Provider):
             yield client
 
     @provide(scope=Scope.APP)
-    def llm_door_client(
+    async def llm_door_client(
         self,
         settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> LlmDoorClientProtocol:
-        return HuleEduLlmDoorClient(
-            client=client,
-            base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
-            internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
-            job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+        sleeper: SleeperProtocol,
+    ) -> AsyncIterator[LlmDoorClientProtocol]:
+        """The door's own bounded connection pool, closed with the app."""
+
+        limits = httpx.Limits(
+            max_connections=settings.LLM_DOOR_MAX_CONNECTIONS,
+            max_keepalive_connections=settings.LLM_DOOR_MAX_KEEPALIVE_CONNECTIONS,
         )
+        timeout = httpx.Timeout(
+            settings.LLM_COMPLETION_TIMEOUT_SECONDS,
+            pool=settings.LLM_DOOR_POOL_TIMEOUT_SECONDS,
+        )
+        async with httpx.AsyncClient(
+            transport=httpx.AsyncHTTPTransport(limits=limits), timeout=timeout
+        ) as client:
+            yield HuleEduLlmDoorClient(
+                client=client,
+                base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
+                internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
+                job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+                sleeper=sleeper,
+                bounds=DoorBounds.from_settings(settings),
+            )
 
     @provide(scope=Scope.APP)
     def inline_completion_providers(
