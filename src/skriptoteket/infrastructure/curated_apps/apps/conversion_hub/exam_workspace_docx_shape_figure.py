@@ -32,22 +32,6 @@ PresetGeometry = Literal[
     "upArrow",
     "downArrow",
 ]
-# The D2 preset geometries, by their ECMA-376 ``a:prstGeom/@prst`` names.
-SUPPORTED_PRESETS: frozenset[str] = frozenset(
-    {
-        "rect",
-        "roundRect",
-        "ellipse",
-        "triangle",
-        "rtTriangle",
-        "line",
-        "straightConnector1",
-        "rightArrow",
-        "leftArrow",
-        "upArrow",
-        "downArrow",
-    }
-)
 # Presets drawn as one straight stroke from the box's top left to its bottom right corner
 # (before flips); they have no inside to fill.
 LINE_PRESETS: frozenset[str] = frozenset({"line", "straightConnector1"})

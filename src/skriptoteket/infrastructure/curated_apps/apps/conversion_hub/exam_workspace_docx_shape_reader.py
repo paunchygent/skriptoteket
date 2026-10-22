@@ -13,8 +13,16 @@ Purpose:
     to the rotated bounding box, so a rotated shape is smaller than the box, and an ``a:ext``
     equal to the extent fills it. A group maps its child space onto the parent as
     ``x_parent = off.x + (x - chOff.x) * ext.cx / chExt.cx`` (the same for y); nested groups
-    compose their mappings and the top-level group maps onto the figure box. A canvas child is
-    already in EMU of the box.
+    compose their mappings. The top-level group, like a single shape, keeps the size of its own
+    ``a:ext`` and is centred in the figure box. A canvas child is already in EMU of the box.
+
+    Group transforms. A group maps its child space into its box (the scale above), mirrors inside
+    the box (``flipH``, ``flipV``), then rotates clockwise about the box centre. A child's box
+    centre goes through that mapping; the child's size follows the group scale. The child's
+    orientation composes in the same order: a mirrored group negates the child's rotation and
+    toggles its flip, then the group rotation adds. A child whose result is not a rotated
+    rectangle (an uneven group scale applied after a rotation that is not a quarter turn) is a
+    shear, which the figure model cannot hold, and raises ``UnsupportedShapeFigure``.
 
 Relationships:
     - ``exam_workspace_docx_shape_figure`` holds the figure model the reader fills.
@@ -27,19 +35,16 @@ Relationships:
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass
-from typing import cast, get_args
 
 from docx.document import Document as DocxDocument
-from docx.oxml.xmlchemy import BaseOxmlElement
-from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_colors import (  # noqa: E501
     Theme,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
-    SUPPORTED_PRESETS,
     Arrowhead,
     ArrowheadKind,
     ArrowheadSize,
@@ -67,6 +72,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     flag,
     int_attr,
     int_attr_or,
+    local_name,
     only,
     tag_name,
     unsupported,
@@ -103,9 +109,21 @@ _STYLE_CHILDREN = frozenset(
 _GROUP_NON_VISUAL = frozenset(
     f"{WORD_GROUP_NS}{name}" for name in ("cNvPr", "cNvGrpSpPr", "grpSpPr")
 )
-_ARROWHEAD_KINDS = frozenset(get_args(ArrowheadKind))
-_ARROWHEAD_SIZES = frozenset(get_args(ArrowheadSize))
-_DASH_STYLES = frozenset(get_args(DashStyle))
+_PRESETS: dict[str, PresetGeometry] = {
+    "rect": "rect", "roundRect": "roundRect", "ellipse": "ellipse", "triangle": "triangle",
+    "rtTriangle": "rtTriangle", "line": "line", "straightConnector1": "straightConnector1",
+    "rightArrow": "rightArrow", "leftArrow": "leftArrow", "upArrow": "upArrow",
+    "downArrow": "downArrow",
+}  # fmt: skip
+_ARROWHEAD_KINDS: dict[str, ArrowheadKind] = {
+    "triangle": "triangle", "arrow": "arrow", "stealth": "stealth", "oval": "oval",
+    "diamond": "diamond",
+}  # fmt: skip
+_ARROWHEAD_SIZES: dict[str, ArrowheadSize] = {"sm": "sm", "med": "med", "lg": "lg"}
+_DASH_STYLES: dict[str, DashStyle] = {
+    "solid": "solid", "dash": "dash", "sysDash": "sysDash", "dot": "dot", "sysDot": "sysDot",
+    "lgDash": "lgDash", "dashDot": "dashDot", "sysDashDot": "sysDashDot",
+}  # fmt: skip
 _GUIDE = re.compile(r"val\s+(-?\d+)")
 
 
@@ -116,20 +134,73 @@ def _is_empty(element: Element) -> bool:
 # --- geometry ---------------------------------------------------------------------------------
 
 
+_Matrix = tuple[float, float, float, float]  # row major: (a, b, c, d) is [[a, b], [c, d]]
+_SHEAR_TOLERANCE = 1e-9
+_QUARTER_TURNS = {0.0: (1.0, 0.0), 90.0: (0.0, 1.0), 180.0: (-1.0, 0.0), 270.0: (0.0, -1.0)}
+
+
+def _wrap_degrees(degrees: float) -> float:
+    """Degrees in [0, 360); a float residue next to 0 or 360 is a whole turn."""
+    wrapped = degrees % 360
+    return 0.0 if wrapped < _SHEAR_TOLERANCE or 360 - wrapped < _SHEAR_TOLERANCE else wrapped
+
+
+def _rotation_matrix(degrees: float) -> _Matrix:
+    """The clockwise rotation (y points down), exact at quarter turns."""
+    cos, sin = _QUARTER_TURNS.get(degrees) or (
+        math.cos(math.radians(degrees)),
+        math.sin(math.radians(degrees)),
+    )
+    return cos, -sin, sin, cos
+
+
+def _multiply(left: _Matrix, right: _Matrix) -> _Matrix:
+    return (
+        left[0] * right[0] + left[1] * right[2],
+        left[0] * right[1] + left[1] * right[3],
+        left[2] * right[0] + left[3] * right[2],
+        left[2] * right[1] + left[3] * right[3],
+    )
+
+
+def _apply(matrix: _Matrix, x: float, y: float) -> tuple[float, float]:
+    return matrix[0] * x + matrix[1] * y, matrix[2] * x + matrix[3] * y
+
+
+@dataclass(frozen=True)
+class _Placement:
+    """A shape's box in figure coordinates; ``x`` and ``y`` are the box's top left corner."""
+
+    x: float
+    y: float
+    width: float
+    height: float
+    rotation: float
+    flip_h: bool
+    flip_v: bool
+
+
 @dataclass(frozen=True)
 class _Mapping:
-    """Child coordinates to figure coordinates: ``figure = scale * child + offset``."""
+    """Child coordinates to figure coordinates: ``figure = linear * child + offset``.
 
-    scale_x: float = 1.0
-    scale_y: float = 1.0
+    ``linear`` is rotation, mirror and scale of the groups from the outside in. ``turn``,
+    ``mirror_h`` and ``mirror_v`` are the same groups' rotation and mirrors without the scale: the
+    orientation ``rotate(turn) * mirror`` that a child's own orientation follows.
+    """
+
+    linear: _Matrix = (1.0, 0.0, 0.0, 1.0)
     offset_x: float = 0.0
     offset_y: float = 0.0
+    turn: float = 0.0
+    mirror_h: bool = False
+    mirror_v: bool = False
 
     def nested(self, group: Element, *, box: tuple[int, int] | None) -> _Mapping:
         """Return the mapping of a group's children, composed inside this mapping.
 
-        ``box`` replaces the group's own ``off`` and ``ext`` for the top-level group, which
-        fills the figure box.
+        ``box`` is the figure box for the top-level group, which keeps its own ``ext`` and is
+        centred in it instead of using its own ``off``.
         """
         properties = group.find(f"{WORD_GROUP_NS}grpSpPr")
         children = (
@@ -140,12 +211,6 @@ class _Mapping:
         transform = next((c for c in children if c.tag == f"{DRAWINGML_NS}xfrm"), None)
         if transform is None:
             raise unsupported("group without a:xfrm")
-        if (
-            int_attr_or(transform, "rot", 0) != 0
-            or flag(transform, "flipH")
-            or flag(transform, "flipV")
-        ):
-            raise unsupported("rotated or flipped group")
         off, ext, ch_off, ch_ext = (
             transform.find(f"{DRAWINGML_NS}{name}") for name in ("off", "ext", "chOff", "chExt")
         )
@@ -154,19 +219,79 @@ class _Mapping:
         child_width, child_height = int_attr(ch_ext, "cx"), int_attr(ch_ext, "cy")
         if child_width <= 0 or child_height <= 0:
             raise unsupported("group with an empty a:chExt")
-        off_x, off_y = (0, 0) if box else (int_attr(off, "x"), int_attr(off, "y"))
-        width, height = box or (int_attr(ext, "cx"), int_attr(ext, "cy"))
+        width, height = int_attr(ext, "cx"), int_attr(ext, "cy")
+        if box is None:
+            off_x, off_y = float(int_attr(off, "x")), float(int_attr(off, "y"))
+        else:
+            off_x, off_y = (box[0] - width) / 2, (box[1] - height) / 2
         factor_x, factor_y = width / child_width, height / child_height
+        rotation = _wrap_degrees(int_attr_or(transform, "rot", 0) / 60000)
+        flip_h, flip_v = flag(transform, "flipH"), flag(transform, "flipV")
+
+        # child -> group box (scale), mirror about the box centre, rotate about the box centre.
+        mirror: _Matrix = (-1.0 if flip_h else 1.0, 0.0, 0.0, -1.0 if flip_v else 1.0)
+        turn_and_mirror = _multiply(_rotation_matrix(rotation), mirror)
+        centre_x, centre_y = off_x + width / 2, off_y + height / 2
+        shift_x, shift_y = _apply(
+            turn_and_mirror,
+            off_x - centre_x - factor_x * int_attr(ch_off, "x"),
+            off_y - centre_y - factor_y * int_attr(ch_off, "y"),
+        )
+        group_linear = _multiply(turn_and_mirror, (factor_x, 0.0, 0.0, factor_y))
+        outer_x, outer_y = _apply(self.linear, centre_x + shift_x, centre_y + shift_y)
         return _Mapping(
-            self.scale_x * factor_x,
-            self.scale_y * factor_y,
-            self.scale_x * (off_x - int_attr(ch_off, "x") * factor_x) + self.offset_x,
-            self.scale_y * (off_y - int_attr(ch_off, "y") * factor_y) + self.offset_y,
+            _multiply(self.linear, group_linear),
+            outer_x + self.offset_x,
+            outer_y + self.offset_y,
+            *self._compose_orientation(rotation, flip_h, flip_v),
         )
 
-    @property
-    def uniform(self) -> bool:
-        return abs(self.scale_x - self.scale_y) <= 1e-9 * max(self.scale_x, self.scale_y)
+    def _compose_orientation(
+        self, rotation: float, flip_h: bool, flip_v: bool
+    ) -> tuple[float, bool, bool]:
+        """Orientation of ``rotate(turn) * mirror`` followed by ``rotate(rotation) * flips``.
+
+        One mirror axis reverses the direction of the rotation that follows it; two mirrors are
+        a half turn, which commutes.
+        """
+        reversed_turn = self.mirror_h != self.mirror_v
+        turn = self.turn + (-rotation if reversed_turn else rotation)
+        return _wrap_degrees(turn), self.mirror_h != flip_h, self.mirror_v != flip_v
+
+    def place(
+        self,
+        *,
+        centre: tuple[float, float],
+        size: tuple[float, float],
+        rotation: float,
+        flip_h: bool,
+        flip_v: bool,
+    ) -> _Placement:
+        """Return the box of a shape of ``size`` centred on ``centre`` in child coordinates.
+
+        The shape's own rotation and mirror come first, then the groups'. A shape that the
+        groups' scale shears (the result is not a rotated rectangle) is unsupported.
+        """
+        own_mirror: _Matrix = (-1.0 if flip_h else 1.0, 0.0, 0.0, -1.0 if flip_v else 1.0)
+        a, b, c, d = _multiply(self.linear, _multiply(_rotation_matrix(rotation), own_mirror))
+        width_scale, height_scale = math.hypot(a, c), math.hypot(b, d)
+        if abs(a * b + c * d) > _SHEAR_TOLERANCE * width_scale * height_scale:
+            raise unsupported("rotated shape in a group scaled unevenly in x and y")
+        centre_x, centre_y = _apply(self.linear, *centre)
+        centre_x, centre_y = centre_x + self.offset_x, centre_y + self.offset_y
+        width, height = size[0] * width_scale, size[1] * height_scale
+        turn, mirror_h, mirror_v = self._compose_orientation(rotation, flip_h, flip_v)
+        return _Placement(
+            centre_x - width / 2, centre_y - height / 2, width, height, turn, mirror_h, mirror_v
+        )
+
+
+def _arrowhead_size(end: Element, attribute: str, tag: str) -> ArrowheadSize:
+    name = end.get(attribute, "med")
+    size = _ARROWHEAD_SIZES.get(name)
+    if size is None:
+        raise unsupported(f"a:{tag}/@{attribute}={name!r}")
+    return size
 
 
 def _check_canvas_layer(layer: Element) -> None:
@@ -270,30 +395,30 @@ class _FigureReader:
         off, ext = xfrm.find(f"{DRAWINGML_NS}off"), xfrm.find(f"{DRAWINGML_NS}ext")
         if off is None or ext is None:
             raise unsupported("a:xfrm without a:off and a:ext")
-        rotation = (int_attr_or(xfrm, "rot", 0) / 60000) % 360
-        if box is not None:
-            width, height = float(int_attr(ext, "cx")), float(int_attr(ext, "cy"))
-            x, y = (box[0] - width) / 2, (box[1] - height) / 2
-        else:
-            if rotation % 180 and not mapping.uniform:
-                raise unsupported("rotated shape in a group scaled unevenly in x and y")
-            x = mapping.scale_x * int_attr(off, "x") + mapping.offset_x
-            y = mapping.scale_y * int_attr(off, "y") + mapping.offset_y
-            width, height = (
-                mapping.scale_x * int_attr(ext, "cx"),
-                mapping.scale_y * int_attr(ext, "cy"),
-            )
+        width, height = float(int_attr(ext, "cx")), float(int_attr(ext, "cy"))
+        centre = (
+            (box[0] / 2, box[1] / 2)
+            if box is not None
+            else (int_attr(off, "x") + width / 2, int_attr(off, "y") + height / 2)
+        )
+        placed = mapping.place(
+            centre=centre,
+            size=(width, height),
+            rotation=_wrap_degrees(int_attr_or(xfrm, "rot", 0) / 60000),
+            flip_h=flag(xfrm, "flipH"),
+            flip_v=flag(xfrm, "flipV"),
+        )
         preset, adjustments = self._geometry(properties)
         self._check_effects(properties, style)
         return FigureShape(
             preset=preset,
-            x_emu=x,
-            y_emu=y,
-            width_emu=width,
-            height_emu=height,
-            rotation_deg=rotation,
-            flip_h=flag(xfrm, "flipH"),
-            flip_v=flag(xfrm, "flipV"),
+            x_emu=placed.x,
+            y_emu=placed.y,
+            width_emu=placed.width,
+            height_emu=placed.height,
+            rotation_deg=placed.rotation,
+            flip_h=placed.flip_h,
+            flip_v=placed.flip_v,
             adjustments=adjustments,
             fill=self._fill(properties, style),
             outline=self._outline(properties, style),
@@ -308,7 +433,8 @@ class _FigureReader:
         if geometry is None:
             raise unsupported("shape without a:prstGeom geometry")
         name = geometry.get("prst") or ""
-        if name not in SUPPORTED_PRESETS:
+        preset = _PRESETS.get(name)
+        if preset is None:
             raise unsupported(f"preset geometry {name!r}")
         guides: list[tuple[str, int]] = []
         for container in only(geometry, frozenset({f"{DRAWINGML_NS}avLst"})):
@@ -317,13 +443,13 @@ class _FigureReader:
                 if formula is None:
                     raise unsupported(f"a:gd fmla {guide.get('fmla')!r}")
                 guides.append((guide.get("name") or "", int(formula.group(1))))
-        return cast(PresetGeometry, name), tuple(guides)
+        return preset, tuple(guides)
 
     def _style(self, style: Element | None) -> dict[str, Element]:
         """The ``wps:style`` references by local name (``lnRef``, ``fillRef`` and so on)."""
         if style is None:
             return {}
-        return {etree.QName(ref).localname: ref for ref in only(style, _STYLE_CHILDREN)}
+        return {local_name(ref): ref for ref in only(style, _STYLE_CHILDREN)}
 
     # --- fill, outline, effects ---
 
@@ -390,26 +516,26 @@ class _FigureReader:
             dash = source.find(f"{DRAWINGML_NS}prstDash")
             if dash is not None:
                 value = dash.get("val") or ""
-                if value not in _DASH_STYLES:
+                style = _DASH_STYLES.get(value)
+                if style is None:
                     raise unsupported(f"a:prstDash {value!r}")
-                return cast(DashStyle, value)
+                return style
         return "solid"
 
     @staticmethod
     def _arrowhead(sources: list[Element], tag: str) -> Arrowhead | None:
         end = next((e for s in sources if (e := s.find(f"{DRAWINGML_NS}{tag}")) is not None), None)
-        kind = "none" if end is None else end.get("type", "none")
-        if end is None or kind == "none":
+        kind_name = "none" if end is None else end.get("type", "none")
+        if end is None or kind_name == "none":
             return None
-        if kind not in _ARROWHEAD_KINDS:
-            raise unsupported(f"a:{tag} type {kind!r}")
-        sizes = []
-        for attribute in ("w", "len"):
-            size = end.get(attribute, "med")
-            if size not in _ARROWHEAD_SIZES:
-                raise unsupported(f"a:{tag}/@{attribute}={size!r}")
-            sizes.append(cast(ArrowheadSize, size))
-        return Arrowhead(cast(ArrowheadKind, kind), sizes[0], sizes[1])
+        kind = _ARROWHEAD_KINDS.get(kind_name)
+        if kind is None:
+            raise unsupported(f"a:{tag} type {kind_name!r}")
+        return Arrowhead(
+            kind,
+            _arrowhead_size(end, "w", tag),
+            _arrowhead_size(end, "len", tag),
+        )
 
     def _check_effects(self, properties: list[Element], style: dict[str, Element]) -> None:
         own_list = False
@@ -429,7 +555,7 @@ class _FigureReader:
                     raise unsupported(f"theme effect style {index} holds {tag_name(effect)}")
 
 
-def read_shape_figure(drawing: BaseOxmlElement, document: DocxDocument) -> ShapeFigure:
+def read_shape_figure(drawing: Element, document: DocxDocument) -> ShapeFigure:
     """Read one ``w:drawing`` of Word shapes into a ``ShapeFigure``.
 
     Args:
@@ -438,7 +564,7 @@ def read_shape_figure(drawing: BaseOxmlElement, document: DocxDocument) -> Shape
         document: The python-docx document the drawing belongs to.
 
     Raises:
-        UnsupportedShapeFigure: Any element, attribute value or container outside D2; the
+        UnsupportedShapeFigure: An element, attribute value or container outside D2; the
             exception's ``reason`` names it.
     """
     return _FigureReader(document).read(drawing)

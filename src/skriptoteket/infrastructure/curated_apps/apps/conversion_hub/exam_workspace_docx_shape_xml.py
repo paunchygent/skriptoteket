@@ -23,14 +23,45 @@ Relationships:
 
 from __future__ import annotations
 
-from docx.oxml.xmlchemy import BaseOxmlElement
-from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
+from collections.abc import Iterator, Mapping
+from typing import Protocol, overload
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
     UnsupportedShapeFigure,
 )
 
-Element = BaseOxmlElement
+
+class Element(Protocol):
+    """The lxml element API the shape modules read with.
+
+    lxml ships no type information. Elements that python-docx has no class for, such as every
+    ``wps``, ``wpg`` and ``wpc`` element and the parsed theme part, are plain lxml elements, not
+    ``BaseOxmlElement``; the protocol names exactly what a plain lxml element and python-docx's
+    classes share. ``tag`` is the Clark name ``{uri}local``; comments and processing instructions
+    carry a function there, which ``elements`` filters out.
+    """
+
+    @property
+    def tag(self) -> str: ...
+
+    @property
+    def attrib(self) -> Mapping[str, str]: ...
+
+    @property
+    def text(self) -> str | None: ...
+
+    @overload
+    def get(self, key: str) -> str | None: ...
+
+    @overload
+    def get(self, key: str, default: str) -> str: ...
+
+    def find(self, path: str) -> Element | None: ...
+
+    def __iter__(self) -> Iterator[Element]: ...
+
+    def __len__(self) -> int: ...
+
 
 DRAWINGML_URI = "http://schemas.openxmlformats.org/drawingml/2006/main"
 WORD_DRAWING_URI = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
@@ -64,11 +95,16 @@ def unsupported(reason: str) -> UnsupportedShapeFigure:
     return UnsupportedShapeFigure(reason)
 
 
+def local_name(element: Element) -> str:
+    """The element's name without its namespace (``lnRef`` for ``{uri}lnRef``)."""
+    return element.tag.rpartition("}")[2]
+
+
 def tag_name(element: Element) -> str:
     """The element's prefixed name as Word writes it, for the unsupported reason."""
-    qualified = etree.QName(element)
-    prefix = _PREFIXES.get(qualified.namespace or "")
-    return f"{prefix}:{qualified.localname}" if prefix else qualified.localname
+    namespace = element.tag[1:].partition("}")[0] if element.tag.startswith("{") else ""
+    prefix = _PREFIXES.get(namespace)
+    return f"{prefix}:{local_name(element)}" if prefix else local_name(element)
 
 
 def elements(parent: Element) -> list[Element]:
@@ -125,6 +161,7 @@ __all__ = [
     "flag",
     "int_attr",
     "int_attr_or",
+    "local_name",
     "only",
     "tag_name",
     "unsupported",

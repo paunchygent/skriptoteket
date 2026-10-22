@@ -17,9 +17,9 @@ Relationships:
 
 from __future__ import annotations
 
-from typing import cast, get_args
-
 from docx.document import Document as DocxDocument
+from docx.oxml.text.paragraph import CT_P
+from docx.oxml.text.run import CT_R
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
@@ -53,12 +53,12 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 
 _DEFAULT_SIZE_PT = 10.0
-_DEFAULT_INSETS = (91440, 45720, 91440, 45720)
+_DEFAULT_INSETS: tuple[int, int, int, int] = (91440, 45720, 91440, 45720)
 _ALIGNMENTS: dict[str, LabelAlign] = {
     "left": "left", "start": "left", "center": "center", "right": "right", "end": "right",
     "both": "justify",
 }  # fmt: skip
-_ANCHORS = frozenset(get_args(LabelAnchor))
+_ANCHORS: dict[str, LabelAnchor] = {"t": "t", "ctr": "ctr", "b": "b"}
 _PARAGRAPH_CHILDREN = frozenset(
     f"{WORDPROCESSINGML_NS}{name}"
     for name in ("pPr", "r", "bookmarkStart", "bookmarkEnd", "proofErr")
@@ -105,9 +105,10 @@ class LabelReader:
     def _body(body: Element | None) -> tuple[tuple[int, int, int, int], LabelAnchor]:
         if body is None:
             return _DEFAULT_INSETS, "t"
-        anchor = body.get("anchor", "t")
-        if anchor not in _ANCHORS:
-            raise unsupported(f"wps:bodyPr anchor {anchor!r}")
+        anchor_name = body.get("anchor", "t")
+        anchor = _ANCHORS.get(anchor_name)
+        if anchor is None:
+            raise unsupported(f"wps:bodyPr anchor {anchor_name!r}")
         if body.get("vert", "horz") != "horz" or int_attr_or(body, "rot", 0) != 0:
             raise unsupported("wps:bodyPr with vertical or rotated text")
         if int_attr_or(body, "numCol", 1) != 1 or flag(body, "upright") or flag(body, "anchorCtr"):
@@ -121,13 +122,18 @@ class LabelReader:
             if fit.tag == f"{DRAWINGML_NS}prstTxWarp" and fit.get("prst") == "textNoShape":
                 continue
             raise unsupported(f"{tag_name(fit)} in wps:bodyPr")
-        insets = tuple(
-            int_attr_or(body, name, default)
-            for name, default in zip(("lIns", "tIns", "rIns", "bIns"), _DEFAULT_INSETS, strict=True)
+        left, top, right, bottom = _DEFAULT_INSETS
+        insets = (
+            int_attr_or(body, "lIns", left),
+            int_attr_or(body, "tIns", top),
+            int_attr_or(body, "rIns", right),
+            int_attr_or(body, "bIns", bottom),
         )
-        return cast(tuple[int, int, int, int], insets), cast(LabelAnchor, anchor)
+        return insets, anchor
 
     def _paragraph(self, p: Element, style: dict[str, Element]) -> LabelParagraph:
+        if not isinstance(p, CT_P):
+            raise unsupported(f"{tag_name(p)} in a label that is not a w:p paragraph")
         children = only(p, _PARAGRAPH_CHILDREN)
         paragraph = Paragraph(p, self._document)
         properties = p.find(f"{WORDPROCESSINGML_NS}pPr")
@@ -192,6 +198,8 @@ class LabelReader:
 
     def _marks(self, r: Element, paragraph: Paragraph) -> list[Element]:
         """The ``w:rPr`` that apply to a run, strongest first: run, its styles, paragraph styles."""
+        if not isinstance(r, CT_R):
+            raise unsupported(f"{tag_name(r)} in a label that is not a w:r run")
         run = Run(r, paragraph)
         sources = [
             r,

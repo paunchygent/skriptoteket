@@ -10,7 +10,7 @@ figure.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
 import pytest
 from docx import Document
@@ -23,7 +23,9 @@ from docx.oxml.xmlchemy import BaseOxmlElement
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
     SUPPORTED_PRESETS,
     Arrowhead,
+    ArrowheadKind,
     FigureShape,
+    LabelAnchor,
     LabelParagraph,
     LabelRun,
     ShapeLabel,
@@ -174,7 +176,12 @@ def _canvas(children: str, *, background: str = "<wpc:bg><a:noFill/></wpc:bg>") 
     )
 
 
-def _label(*paragraphs: str, body: str = "<wps:bodyPr/>") -> dict[str, Any]:
+class _LabelXml(TypedDict):
+    txbx: str
+    body: str
+
+
+def _label(*paragraphs: str, body: str = "<wps:bodyPr/>") -> _LabelXml:
     content = "".join(paragraphs)
     return {"txbx": f"<wps:txbx><w:txbxContent>{content}</w:txbxContent></wps:txbx>", "body": body}
 
@@ -211,14 +218,14 @@ def _fixture_drawing(doc_pr_id: str) -> tuple[DocxDocument, BaseOxmlElement]:
     raise AssertionError(f"drawing {doc_pr_id} missing from the fixture")
 
 
-def _centered(text: str, anchor: str) -> ShapeLabel:
+def _centered(text: str, anchor: LabelAnchor) -> ShapeLabel:
     return ShapeLabel(
         paragraphs=(LabelParagraph((LabelRun(text, 10.0, "000000"),), "center"),),
         inset_left_emu=36000,
         inset_top_emu=36000,
         inset_right_emu=36000,
         inset_bottom_emu=36000,
-        anchor=anchor,  # type: ignore[arg-type]
+        anchor=anchor,
     )
 
 
@@ -496,7 +503,7 @@ def test_outline_defaults_to_9525_and_reads_dash_and_arrowheads() -> None:
 
 
 @pytest.mark.parametrize("kind", ["triangle", "arrow", "stealth", "oval", "diamond"])
-def test_each_arrowhead_kind_is_read(kind: str) -> None:
+def test_each_arrowhead_kind_is_read(kind: ArrowheadKind) -> None:
     line = (
         '<a:ln w="12700"><a:solidFill><a:srgbClr val="000000"/></a:solidFill>'
         f'<a:tailEnd type="{kind}"/></a:ln>'
@@ -505,7 +512,7 @@ def test_each_arrowhead_kind_is_read(kind: str) -> None:
     shape = _read_one(_wsp(line=line))
 
     assert shape.outline is not None
-    assert shape.outline.tail == Arrowhead(kind)  # type: ignore[arg-type]
+    assert shape.outline.tail == Arrowhead(kind)
 
 
 def test_arrowhead_type_none_is_no_arrowhead() -> None:
@@ -945,25 +952,12 @@ def test_a_graphic_that_is_not_a_shape_container_is_unsupported(uri: str) -> Non
     _rejected(_drawing("<a:ext/>", uri=uri), uri.rsplit("/", 1)[1])
 
 
-@pytest.mark.parametrize("attrs", ['rot="60000"', 'flipH="1"', 'flipV="1"'])
-def test_a_transformed_group_is_unsupported(attrs: str) -> None:
-    group = _group(_wsp(), xfrm_attrs=attrs)
-
-    _rejected(_drawing(group, uri="wpg"), "group")
-
-
-def test_a_transformed_nested_group_is_unsupported() -> None:
-    inner = _group(_wsp(), tag="wpg:grpSp", xfrm_attrs='rot="5400000"')
-
-    _rejected(_drawing(_group(inner), uri="wpg"), "group")
-
-
 def test_a_group_with_zero_child_extent_is_unsupported() -> None:
     _rejected(_drawing(_group(_wsp(), ch_ext=(0, 500)), uri="wpg"), "chExt")
 
 
-def test_a_rotated_shape_in_an_unevenly_scaled_group_is_unsupported() -> None:
-    group = _group(_wsp(xfrm_attrs='rot="5400000"'), ext=(2000, 500), ch_ext=(1000, 500))
+def test_a_shape_turned_off_the_axes_in_an_unevenly_scaled_group_is_unsupported() -> None:
+    group = _group(_wsp(xfrm_attrs='rot="2700000"'), ext=(2000, 500), ch_ext=(1000, 500))
 
     _rejected(_drawing(group, uri="wpg", cx=2000, cy=500), "scaled")
 

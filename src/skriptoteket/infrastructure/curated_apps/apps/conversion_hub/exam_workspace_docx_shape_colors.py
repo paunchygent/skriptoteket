@@ -2,7 +2,7 @@
 
 Purpose:
     Resolves DrawingML colours, through the document's theme part where a colour or a
-    ``wps:style`` reference points into it. Any colour form it does not model raises
+    ``wps:style`` reference points into it. A colour form it does not model raises
     ``UnsupportedShapeFigure`` naming it.
 
     Colours. ``a:srgbClr``, ``a:sysClr/@lastClr``, ``a:schemeClr`` (through the theme part) and
@@ -23,17 +23,17 @@ from __future__ import annotations
 
 import colorsys
 import re
-from typing import cast
 
 from docx.document import Document as DocxDocument
 from docx.opc.constants import RELATIONSHIP_TYPE
-from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
+from docx.oxml.parser import parse_xml
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_xml import (  # noqa: E501
     DRAWINGML_NS,
     Element,
     elements,
     int_attr,
+    local_name,
     tag_name,
     unsupported,
 )
@@ -62,6 +62,24 @@ def _from_linear(linear: float) -> float:
     return value * 255
 
 
+def _shaded(rgb: Rgb, amount: float) -> Rgb:
+    red, green, blue = rgb
+    return (
+        _from_linear(_to_linear(red) * amount),
+        _from_linear(_to_linear(green) * amount),
+        _from_linear(_to_linear(blue) * amount),
+    )
+
+
+def _tinted(rgb: Rgb, amount: float) -> Rgb:
+    red, green, blue = rgb
+    return (
+        _from_linear(_to_linear(red) * amount + 1 - amount),
+        _from_linear(_to_linear(green) * amount + 1 - amount),
+        _from_linear(_to_linear(blue) * amount + 1 - amount),
+    )
+
+
 def _literal_color(element: Element) -> Rgb | None:
     """Return the colour of ``srgbClr``, ``sysClr`` or ``prstClr``; None for any other element."""
     if element.tag == f"{DRAWINGML_NS}srgbClr":
@@ -84,7 +102,7 @@ def _modified(rgb: Rgb, element: Element) -> Rgb:
     """Apply the colour element's modifiers in document order."""
     for modifier in elements(element):
         amount = int_attr(modifier, "val") / 100000
-        local = etree.QName(modifier).localname
+        local = local_name(modifier)
         if modifier.tag == f"{DRAWINGML_NS}alpha" and amount == 1:
             continue
         if modifier.tag == f"{DRAWINGML_NS}lumMod" or modifier.tag == f"{DRAWINGML_NS}lumOff":
@@ -93,9 +111,9 @@ def _modified(rgb: Rgb, element: Element) -> Rgb:
             red, green, blue = colorsys.hls_to_rgb(hue, min(1.0, max(0.0, light)), saturation)
             rgb = (red * 255, green * 255, blue * 255)
         elif modifier.tag == f"{DRAWINGML_NS}shade":
-            rgb = cast(Rgb, tuple(_from_linear(_to_linear(c) * amount) for c in rgb))
+            rgb = _shaded(rgb, amount)
         elif modifier.tag == f"{DRAWINGML_NS}tint":
-            rgb = cast(Rgb, tuple(_from_linear(_to_linear(c) * amount + 1 - amount) for c in rgb))
+            rgb = _tinted(rgb, amount)
         else:
             raise unsupported(f"colour modifier {tag_name(modifier)} {modifier.get('val')}")
     return rgb
@@ -120,13 +138,13 @@ class Theme:
                 blob = self._document.part.part_related_by(RELATIONSHIP_TYPE.THEME).blob
             except KeyError:
                 raise unsupported("a theme reference without a theme part") from None
-            parser = etree.XMLParser(resolve_entities=False, no_network=True)
             try:
-                self._root = cast(Element, etree.fromstring(blob, parser))
-            except etree.XMLSyntaxError:
+                root: Element = parse_xml(blob)
+            except SyntaxError:  # lxml's XMLSyntaxError is a SyntaxError
                 raise unsupported("the theme part is not readable XML") from None
-            if self._root.tag != f"{DRAWINGML_NS}theme":
+            if root.tag != f"{DRAWINGML_NS}theme":
                 raise unsupported("the theme part is not an a:theme")
+            self._root = root
         return self._root
 
     def scheme_color(self, slot: str) -> Rgb:
