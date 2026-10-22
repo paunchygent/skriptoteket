@@ -14,6 +14,7 @@ import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
+  ExamCourse,
   ExamCourseCatalogResponse,
   ExamCourseContent,
   NativeExamDocument,
@@ -36,7 +37,7 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 type Role = "user" | "contributor";
 
-const COURSE = {
+const COURSE: ExamCourse = {
   code: "ENGENG05",
   key: "eng5",
   name: "Engelska 5",
@@ -50,12 +51,12 @@ const CATALOG: ExamCourseCatalogResponse = {
   courses: [COURSE],
   generated_at: "2026-10-18T00:00:00Z",
   registered_course_keys: [],
-} as ExamCourseCatalogResponse;
+};
 
-const CONTENT = {
+const CONTENT: ExamCourseContent = {
   course_key: "eng5",
   items: [{ id: "c1", text: "Centralt innehåll" }],
-} as unknown as ExamCourseContent;
+};
 
 function courseDocument(): NativeExamDocument {
   return { ...buildDocument(), header: { tags: [], course: { key: "eng5", name: "Engelska 5" } } };

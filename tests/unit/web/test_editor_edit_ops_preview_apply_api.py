@@ -1,406 +1,39 @@
-"""Editor edit-ops route tests.
+"""Editor edit-ops preview and apply route tests.
 
 Purpose:
-    Verify edit-op generation, preview, apply, and eval-mode authorization
-    mapping at the FastAPI boundary.
+    Verify edit-op preview and apply mapping at the FastAPI boundary.
 
 Relationships:
-    - Exercises `skriptoteket.web.api.v1.editor.edit_ops` with Dishka protocol
-      stubs.
-    - Reuses HuleEdu app-projection fixtures so route tests match cutover auth.
+    - Fixtures live in `tests.fixtures.editor_edit_ops_api_app`.
+    - Generation access and eval mode live in
+      `test_editor_edit_ops_generation_api.py`.
 """
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
 from datetime import datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
 import pytest
-from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from dishka import Provider, Scope, make_async_container, provide
-from fastapi import FastAPI
-from starlette_dishka import setup_dishka
 
-from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, ai_limit_note
-from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
-    EditOpsApplyHandlerProtocol,
-    EditOpsHandlerProtocol,
-    EditOpsPreviewHandlerProtocol,
     EditOpsPreviewMeta,
     EditOpsPreviewResult,
-    EditOpsResult,
-    PromptEvalMeta,
 )
-from skriptoteket.web.api.v1.editor import edit_ops as edit_ops_api
-from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.profile_app_continuation_support import (
     ClockStub,
-    ProfileContinuationApiProvider,
     ProfileRepositoryStub,
     UserRepositoryStub,
     seed_huleedu_projection,
     signed_huleedu_headers,
 )
+from tests.unit.web.editor_edit_ops_test_support import virtual_files
 
-
-class EditorEditOpsApiProvider(Provider):
-    def __init__(
-        self,
-        *,
-        maintainers: ToolMaintainerRepositoryProtocol,
-        handler: EditOpsHandlerProtocol,
-        preview_handler: EditOpsPreviewHandlerProtocol,
-        apply_handler: EditOpsApplyHandlerProtocol,
-    ) -> None:
-        super().__init__()
-        self._maintainers = maintainers
-        self._handler = handler
-        self._preview_handler = preview_handler
-        self._apply_handler = apply_handler
-
-    @provide(scope=Scope.REQUEST)
-    def maintainers(self) -> ToolMaintainerRepositoryProtocol:
-        return self._maintainers
-
-    @provide(scope=Scope.REQUEST)
-    def edit_ops_handler(self) -> EditOpsHandlerProtocol:
-        return self._handler
-
-    @provide(scope=Scope.REQUEST)
-    def edit_ops_preview_handler(self) -> EditOpsPreviewHandlerProtocol:
-        return self._preview_handler
-
-    @provide(scope=Scope.REQUEST)
-    def edit_ops_apply_handler(self) -> EditOpsApplyHandlerProtocol:
-        return self._apply_handler
-
-
-@pytest.fixture
-def private_key() -> rsa.RSAPrivateKey:
-    return rsa.generate_private_key(public_exponent=65537, key_size=2048)
-
-
-@pytest.fixture
-def settings(private_key: rsa.RSAPrivateKey) -> Settings:
-    public_key = private_key.public_key().public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
-    settings = Settings()
-    settings.HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY = public_key.decode("utf-8")
-    return settings
-
-
-@pytest.fixture
-def clock(now: datetime) -> ClockStub:
-    return ClockStub(now=now)
-
-
-@pytest.fixture
-def users() -> UserRepositoryStub:
-    return UserRepositoryStub()
-
-
-@pytest.fixture
-def profiles() -> ProfileRepositoryStub:
-    return ProfileRepositoryStub()
-
-
-@pytest.fixture
-def maintainers() -> AsyncMock:
-    repo = AsyncMock(spec=ToolMaintainerRepositoryProtocol)
-    repo.is_maintainer.return_value = True
-    return repo
-
-
-@pytest.fixture
-def handler() -> AsyncMock:
-    return AsyncMock(spec=EditOpsHandlerProtocol)
-
-
-@pytest.fixture
-def preview_handler() -> AsyncMock:
-    return AsyncMock(spec=EditOpsPreviewHandlerProtocol)
-
-
-@pytest.fixture
-def apply_handler() -> AsyncMock:
-    return AsyncMock(spec=EditOpsApplyHandlerProtocol)
-
-
-@pytest.fixture
-def app(
-    settings: Settings,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    maintainers: AsyncMock,
-    handler: AsyncMock,
-    preview_handler: AsyncMock,
-    apply_handler: AsyncMock,
-) -> FastAPI:
-    app = FastAPI()
-    app.middleware("http")(error_handler_middleware)
-    app.include_router(edit_ops_api.router, prefix="/api/v1/editor", tags=["editor"])
-
-    container = make_async_container(
-        ProfileContinuationApiProvider(
-            settings=settings,
-            clock=clock,
-            users=users,
-            profiles=profiles,
-        ),
-        EditorEditOpsApiProvider(
-            maintainers=maintainers,
-            handler=handler,
-            preview_handler=preview_handler,
-            apply_handler=apply_handler,
-        ),
-    )
-    setup_dishka(container, app)
-    return app
-
-
-@pytest.fixture
-async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app),
-        base_url="http://test",
-    ) as client:
-        yield client
-
-
-def _virtual_files(tool_py: str) -> dict[str, str]:
-    return {
-        "tool.py": tool_py,
-        "entrypoint.txt": "run_tool\n",
-        "settings_schema.json": "{}",
-        "input_schema.json": "{}",
-        "usage_instructions.md": "",
-    }
-
-
-@pytest.mark.asyncio
-async def test_edit_ops_eval_headers_require_admin_role_metadata(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
-    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
-    headers["X-Skriptoteket-Eval"] = "1"
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=headers,
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 403
-    details = response.json()["error"]["details"]
-    assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == "contributor"
-    handler.handle.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_edit_ops_ai_gate_rejects_a_user_below_contributor(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 403
-    details = response.json()["error"]["details"]
-    assert details["required_role"] == "contributor"
-    assert details["actual_role"] == "user"
-    handler.handle.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_edit_ops_ai_gate_serves_a_signed_in_contributor(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
-    handler.handle.return_value = EditOpsResult(
-        enabled=True,
-        assistant_message="ok",
-        ops=[],
-        base_fingerprints={},
-    )
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 200
-    assert response.json()["enabled"] is True
-    handler.handle.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("role", [Role.ADMIN, Role.SUPERUSER])
-async def test_edit_ops_ai_gate_admits_admin_roles(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    role: Role,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
-    handler.handle.return_value = EditOpsResult(
-        enabled=True,
-        assistant_message="ok",
-        ops=[],
-        base_fingerprints={},
-    )
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 200
-    assert response.json()["enabled"] is True
-    handler.handle.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_edit_ops_eval_headers_admit_an_admin_outside_production(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
-    handler.handle.return_value = EditOpsResult(
-        enabled=True,
-        assistant_message="ok",
-        ops=[],
-        base_fingerprints={},
-        eval_meta=PromptEvalMeta(
-            template_id="edit_ops_v1",
-            outcome="ok",
-            system_prompt_chars=10,
-            prefix_chars=3,
-            suffix_chars=4,
-            instruction_chars=11,
-            selection_chars=5,
-        ),
-    )
-    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
-    headers["X-Skriptoteket-Eval"] = "1"
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=headers,
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 200
-    assert response.headers["X-Skriptoteket-Eval-Template-Id"] == "edit_ops_v1"
-    assert response.headers["X-Skriptoteket-Eval-Outcome"] == "ok"
-    assert response.headers["X-Skriptoteket-Eval-Instruction-Chars"] == "11"
-    assert response.headers["X-Skriptoteket-Eval-Selection-Chars"] == "5"
-    handler.handle.assert_awaited_once()
-
-
-@pytest.mark.asyncio
-async def test_edit_ops_door_limit_refusal_is_a_429_with_the_limit_note(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
-    handler.handle.side_effect = DomainError(
-        code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-        message=ai_limit_note(AiDailyLimit.POOL),
-        details={"limit": AiDailyLimit.POOL.value},
-    )
-
-    response = await client.post(
-        "/api/v1/editor/edit-ops",
-        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
-        json={
-            "tool_id": str(uuid4()),
-            "message": "Patch this",
-            "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
-        },
-    )
-
-    assert response.status_code == 429
-    error = response.json()["error"]
-    assert error["code"] == "AI_DAILY_LIMIT_REACHED"
-    assert error["message"] == "Appens AI-hjälp har nått dagens gräns. Försök igen i morgon."
-    assert error["details"] == {"limit": "pool"}
+pytest_plugins = ("tests.fixtures.editor_edit_ops_api_app",)
 
 
 @pytest.mark.asyncio
@@ -418,7 +51,7 @@ async def test_edit_ops_preview_maps_web_ops_to_domain_command(
     tool_id = uuid4()
     preview_handler.handle.return_value = EditOpsPreviewResult(
         ok=True,
-        after_virtual_files=_virtual_files("print('preview')\n"),
+        after_virtual_files=virtual_files("print('preview')\n"),
         errors=[],
         error_details=[],
         meta=EditOpsPreviewMeta(
@@ -438,7 +71,7 @@ async def test_edit_ops_preview_maps_web_ops_to_domain_command(
         json={
             "tool_id": str(tool_id),
             "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
+            "virtual_files": virtual_files("print('hi')\n"),
             "ops": [
                 {
                     "op": "patch",
@@ -476,7 +109,7 @@ async def test_edit_ops_apply_maps_web_ops_and_includes_gating_tokens(
     tool_id = uuid4()
     apply_handler.handle.return_value = EditOpsPreviewResult(
         ok=True,
-        after_virtual_files=_virtual_files("print('applied')\n"),
+        after_virtual_files=virtual_files("print('applied')\n"),
         errors=[],
         error_details=[],
         meta=EditOpsPreviewMeta(
@@ -496,7 +129,7 @@ async def test_edit_ops_apply_maps_web_ops_and_includes_gating_tokens(
         json={
             "tool_id": str(tool_id),
             "active_file": "tool.py",
-            "virtual_files": _virtual_files("print('hi')\n"),
+            "virtual_files": virtual_files("print('hi')\n"),
             "ops": [
                 {
                     "op": "patch",

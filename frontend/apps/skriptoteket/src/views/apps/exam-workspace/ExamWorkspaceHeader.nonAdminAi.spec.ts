@@ -53,9 +53,9 @@ function mountHeader(pinia: Pinia, overrides: Partial<HeaderProps> = {}) {
   });
 }
 
-/** Elements carrying the old admin-only note as their visible text, found without test hooks. */
+/** Elements whose visible text contains the old admin-only note, found without test hooks. */
 function noteElements(wrapper: ReturnType<typeof mountHeader>) {
-  return wrapper.findAll("*").filter((element) => element.text().trim() === REMOVED_ADMIN_NOTE);
+  return wrapper.findAll("*").filter((element) => element.text().includes(REMOVED_ADMIN_NOTE));
 }
 
 let pinia: Pinia;

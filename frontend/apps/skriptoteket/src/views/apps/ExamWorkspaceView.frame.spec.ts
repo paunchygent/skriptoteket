@@ -51,7 +51,7 @@ const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
 function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === REMOVED_ADMIN_NOTE);
+    .filter((node) => node.text().includes(REMOVED_ADMIN_NOTE));
 }
 
 const apiMocks = vi.hoisted(() => ({
