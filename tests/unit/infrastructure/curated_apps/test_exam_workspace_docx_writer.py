@@ -6,26 +6,36 @@ answer-form geometry lives in the answer-forms suite and the shared-picture roun
 the pictures suite.
 """
 
+import copy
 import io
+import zipfile
+from collections.abc import Callable
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from docx import Document
 from docx.oxml.ns import qn
+from docx.shared import Mm
+from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
 
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
     BODY_PARAGRAPH_SPACING,
     PARAGRAPH_SPACING,
+    TEXT_WIDTH_MM,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
     NativeParagraph,
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
     NativeExamDocument,
+    NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -44,6 +54,7 @@ from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_supp
     document_text,
     heading_texts,
     only_paragraph,
+    png,
 )
 
 ExamWorkspaceDocxWriter = exam_workspace_docx_writer.ExamWorkspaceDocxWriter
@@ -243,3 +254,268 @@ class TestPrintedMarksAndBodySpacing:
         assert detail.paragraph_format.space_after.mm == pytest.approx(
             PARAGRAPH_SPACING.space_after_mm, abs=0.02
         )
+
+
+_SHAPES_FIXTURE = Path("tests/fixtures/exam_conversion/pdf_corpus/metodprov_med_bilder.docx")
+_W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+_MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+_WP = "http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+_NAMESPACES = {
+    "w": _W,
+    "mc": _MC,
+    "wp": _WP,
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "wpg": "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "wps": "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+    "w14": "http://schemas.microsoft.com/office/word/2010/wordml",
+    "wp14": "http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing",
+}
+_ASSET_A = "asset_" + "a" * 16
+_ASSET_B = "asset_" + "b" * 16
+_ASSET_C = "asset_" + "c" * 16
+_LABELS = ("Svenska gymnasieelever (populationen)", "Elever på ett program (urvalet)")
+
+
+def _stored_group_shapes() -> str:
+    """The fixture's drawn group (two labelled ellipses) as the import stores it."""
+    with zipfile.ZipFile(_SHAPES_FIXTURE) as archive:
+        root = etree.fromstring(archive.read("word/document.xml"))
+    drawings = root.xpath("//mc:Choice/w:drawing", namespaces=_NAMESPACES)
+    assert drawings, "the fixture holds a drawn group in mc:Choice"
+    return str(etree.tostring(copy.deepcopy(drawings[0]), encoding="unicode"))
+
+
+def _edited_shapes(edit: Callable[[etree._Element], None]) -> str:
+    drawing = etree.fromstring(_stored_group_shapes())
+    edit(drawing)
+    return str(etree.tostring(drawing, encoding="unicode"))
+
+
+def _picture_document(
+    *pictures: tuple[str, str | None],
+) -> tuple[NativeExamDocument, dict[str, bytes]]:
+    """One free-text question per (asset id, stored shapes), each with a picture in its body."""
+    payloads = {asset_id: png((20, 90, 20, 255), (40, 20)) for asset_id, _ in pictures}
+    items = []
+    for sequence, (asset_id, _) in enumerate(pictures, start=1):
+        item = make_free_text_item(sequence=sequence, item_id=f"item_{sequence:03d}")
+        items.append(
+            item.model_copy(
+                update={
+                    "body": (
+                        NativeParagraph(
+                            heading_level=None,
+                            segments=(
+                                NativeTextSegment(text=f"Se bild {sequence}", marks=()),
+                                NativeAssetSegment(asset_id=asset_id),
+                            ),
+                        ),
+                    )
+                }
+            )
+        )
+    assets = tuple(
+        NativeExamAsset(
+            asset_id=asset_id,
+            sha256="0" * 64,
+            media_type="image/png",
+            byte_length=len(payloads[asset_id]),
+            docx_shapes=shapes,
+        )
+        for asset_id, shapes in pictures
+    )
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Bildprov",
+        items=tuple(items),
+        assets=assets,
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+    return document, payloads
+
+
+def _export(*pictures: tuple[str, str | None]) -> tuple[bytes, etree._Element]:
+    """Export, re-open and validate the file; return its bytes and its document.xml root."""
+    document, payloads = _picture_document(*pictures)
+    writer = ExamWorkspaceDocxWriter()
+    content = writer.build_docx_bytes(document, assets_by_id=payloads)
+    Document(io.BytesIO(content))
+    writer.validate_docx_bytes(content, expected_item_count=len(document.items))
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        return content, etree.fromstring(archive.read("word/document.xml"))
+
+
+_DRAWING_IDS = "//wp:docPr/@id | //wps:cNvPr/@id | //wpg:cNvPr/@id"
+
+
+def _media_names(content: bytes) -> list[str]:
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        return [name for name in archive.namelist() if name.startswith("word/media/")]
+
+
+def _picture_paragraphs(root: etree._Element, label: str) -> list[etree._Element]:
+    paragraphs: list[etree._Element] = root.xpath(
+        f"//w:p[w:r/w:t[starts-with(., '{label}')]]",
+        namespaces=_NAMESPACES,
+    )
+    return paragraphs
+
+
+class TestStoredShapesReplaceThePicture:
+    def test_group_shapes_are_written_as_an_inline_drawing_in_the_question_paragraph(
+        self,
+    ) -> None:
+        content, root = _export((_ASSET_A, _stored_group_shapes()))
+
+        (paragraph,) = _picture_paragraphs(root, "Se bild 1")
+        (inline,) = paragraph.xpath(
+            "./w:r/mc:AlternateContent/mc:Choice[@Requires='wpg']/w:drawing/wp:inline",
+            namespaces=_NAMESPACES,
+        )
+        assert inline.xpath("./a:graphic/a:graphicData/wpg:wgp", namespaces=_NAMESPACES)
+        written = "".join(inline.xpath(".//w:t/text()", namespaces=_NAMESPACES))
+        for label in _LABELS:
+            assert label in written
+        assert (
+            paragraph.xpath("./w:r/mc:AlternateContent/mc:Fallback", namespaces=_NAMESPACES) == []
+        )
+        assert root.xpath("//a:blip", namespaces=_NAMESPACES) == []
+        assert _media_names(content) == []
+
+    def test_the_picture_paragraph_keeps_the_picture_spacing(self) -> None:
+        _, shape_root = _export((_ASSET_A, _stored_group_shapes()))
+        _, plain_root = _export((_ASSET_A, None))
+
+        (shape_paragraph,) = _picture_paragraphs(shape_root, "Se bild 1")
+        (plain_paragraph,) = _picture_paragraphs(plain_root, "Se bild 1")
+        spacing = "./w:pPr/w:spacing"
+        assert dict(shape_paragraph.xpath(spacing, namespaces=_NAMESPACES)[0].attrib) == dict(
+            plain_paragraph.xpath(spacing, namespaces=_NAMESPACES)[0].attrib
+        )
+
+    def test_two_pictures_get_unique_drawing_ids_and_no_word_revision_ids(self) -> None:
+        shapes = _stored_group_shapes()
+        _, root = _export((_ASSET_A, shapes), (_ASSET_B, shapes))
+
+        doc_pr_ids = root.xpath("//wp:docPr/@id", namespaces=_NAMESPACES)
+        assert len(doc_pr_ids) == 2
+        every_shape_id = root.xpath(_DRAWING_IDS, namespaces=_NAMESPACES)
+        assert len(every_shape_id) == 6  # two docPr and two shapes in each of two drawings
+        assert len(every_shape_id) == len(set(every_shape_id))
+        drawings = root.xpath("//w:drawing", namespaces=_NAMESPACES)
+        assert len(drawings) == 2
+        for drawing in drawings:
+            assert drawing.xpath(".//@w14:paraId", namespaces=_NAMESPACES) == []
+            assert drawing.xpath(".//@w14:textId", namespaces=_NAMESPACES) == []
+            assert drawing.xpath(".//@wp14:anchorId", namespaces=_NAMESPACES) == []
+            assert drawing.xpath(".//@wp14:editId", namespaces=_NAMESPACES) == []
+            assert drawing.xpath(".//@*[starts-with(local-name(), 'rsid')]") == []
+        assert set(every_shape_id).isdisjoint({"9001", "9101", "9102"})
+
+    def test_shape_ids_stay_unique_beside_ordinary_pictures(self) -> None:
+        shapes = _stored_group_shapes()
+        content, root = _export((_ASSET_A, None), (_ASSET_B, shapes), (_ASSET_C, None))
+
+        every_shape_id = root.xpath(_DRAWING_IDS, namespaces=_NAMESPACES)
+        assert len(every_shape_id) == 5  # two plain docPr and the group's docPr and two shapes
+        assert len(every_shape_id) == len(set(every_shape_id))
+        assert len(root.xpath("//a:blip", namespaces=_NAMESPACES)) == 2
+        assert len(_media_names(content)) == 1  # identical PNG bytes share one image part
+        assert len(root.xpath("//mc:AlternateContent", namespaces=_NAMESPACES)) == 1
+
+    def test_a_stored_anchor_is_written_as_an_inline(self) -> None:
+        def to_anchor(drawing: etree._Element) -> None:
+            (inline,) = drawing
+            anchor = etree.Element(
+                f"{{{_WP}}}anchor",
+                {
+                    "distT": "0",
+                    "distB": "0",
+                    "distL": "0",
+                    "distR": "0",
+                    "simplePos": "0",
+                    "relativeHeight": "251658240",
+                    "behindDoc": "0",
+                    "locked": "0",
+                    "layoutInCell": "1",
+                    "allowOverlap": "1",
+                    f"{{{_NAMESPACES['wp14']}}}anchorId": "2BABB811",
+                },
+                nsmap={"wp": _WP, "wp14": _NAMESPACES["wp14"]},
+            )
+            etree.SubElement(anchor, f"{{{_WP}}}simplePos", {"x": "0", "y": "0"})
+            horizontal = etree.SubElement(anchor, f"{{{_WP}}}positionH", {"relativeFrom": "column"})
+            etree.SubElement(horizontal, f"{{{_WP}}}posOffset").text = "100"
+            vertical = etree.SubElement(
+                anchor, f"{{{_WP}}}positionV", {"relativeFrom": "paragraph"}
+            )
+            etree.SubElement(vertical, f"{{{_WP}}}posOffset").text = "200"
+            for child in list(inline):
+                anchor.append(child)
+                if child.tag == f"{{{_WP}}}effectExtent":
+                    etree.SubElement(anchor, f"{{{_WP}}}wrapSquare", {"wrapText": "bothSides"})
+            drawing.replace(inline, anchor)
+
+        _, root = _export((_ASSET_A, _edited_shapes(to_anchor)))
+
+        (drawing,) = root.xpath("//mc:Choice/w:drawing", namespaces=_NAMESPACES)
+        (inline,) = drawing
+        assert inline.tag == f"{{{_WP}}}inline"
+        assert [child.tag.rpartition("}")[2] for child in inline] == [
+            "extent",
+            "effectExtent",
+            "docPr",
+            "cNvGraphicFramePr",
+            "graphic",
+        ]
+        assert {name: inline.get(name) for name in ("distT", "distB", "distL", "distR")} == {
+            "distT": "0",
+            "distB": "0",
+            "distL": "0",
+            "distR": "0",
+        }
+        assert inline.get("simplePos") is None
+        assert drawing.xpath(".//@wp14:anchorId", namespaces=_NAMESPACES) == []
+        assert inline.xpath("./a:graphic//wpg:wgp", namespaces=_NAMESPACES)
+
+
+def _add_embed(drawing: etree._Element) -> None:
+    graphic_data = drawing.xpath(".//a:graphicData", namespaces=_NAMESPACES)[0]
+    blip = etree.SubElement(
+        graphic_data, f"{{{_NAMESPACES['a']}}}blip", {f"{{{_R}}}embed": "rId99"}, nsmap={"r": _R}
+    )
+    assert blip is not None
+
+
+def _widen(drawing: etree._Element) -> None:
+    extent = drawing.xpath("./wp:inline/wp:extent", namespaces=_NAMESPACES)[0]
+    extent.set("cx", str(Mm(TEXT_WIDTH_MM) + 1))
+
+
+def _unknown_graphic(drawing: etree._Element) -> None:
+    graphic_data = drawing.xpath(".//a:graphicData", namespaces=_NAMESPACES)[0]
+    graphic_data.set("uri", "http://schemas.openxmlformats.org/drawingml/2006/chart")
+
+
+class TestUnusableShapesWriteThePicture:
+    @pytest.mark.parametrize(
+        "stored",
+        [
+            pytest.param("<w:drawing xmlns:w=", id="malformed-xml"),
+            pytest.param(
+                f'<w:p xmlns:w="{_W}"><w:r><w:t>text</w:t></w:r></w:p>', id="root-is-not-a-drawing"
+            ),
+            pytest.param(_edited_shapes(_add_embed), id="relationship-reference"),
+            pytest.param(_edited_shapes(_widen), id="wider-than-the-text-column"),
+            pytest.param(_edited_shapes(_unknown_graphic), id="not-a-shape-graphic"),
+        ],
+    )
+    def test_the_picture_is_written_instead(self, stored: str) -> None:
+        content, root = _export((_ASSET_A, stored))
+
+        assert len(root.xpath("//a:blip", namespaces=_NAMESPACES)) == 1
+        assert root.xpath("//mc:AlternateContent", namespaces=_NAMESPACES) == []
+        assert len(_media_names(content)) == 1
+        assert root.xpath("//wpg:wgp", namespaces=_NAMESPACES) == []
