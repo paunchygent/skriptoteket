@@ -20,6 +20,7 @@ import {
   setupGuestStore,
   startBlank,
 } from "./examWorkspaceGuestStore.specSupport";
+import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import {
   RED_PNG_PICTURE,
   TRANSPARENT_PNG_PICTURE,
@@ -81,5 +82,54 @@ describe("examWorkspaceGuestStore Word shapes", () => {
       tabId: LEASE_TAB_ID,
     });
     expect(redone.document.assets).toEqual([RED_PNG_PICTURE.asset]);
+  });
+
+  it("stores and reloads a picture a retry source alone still cites without its shapes", async () => {
+    const context = setupGuestStore();
+    await startBlank(context, "Original");
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
+    const base = exam("Retry");
+    const item = {
+      ...base.items[0]!,
+      body: [{ heading_level: null, segments: [] }],
+      retry_source: {
+        chunks: [
+          {
+            anchor: "body:0001",
+            images: [{ asset_id: DRAWN.asset_id, marked_offset: 0, offset: 0 }],
+            kind: "question",
+            marked_text: "Rita figuren.",
+            missing_images: [],
+            paragraphs: [],
+            runs: [],
+            text: "Rita figuren.",
+          },
+        ],
+        context_chunks: [],
+        key_chunks: [],
+        label_kind: "free_text" as const,
+        owned_context_anchors: [],
+      },
+    };
+    const pruned = withReferencedAssetsOnly({
+      ...base,
+      assets: [DRAWN],
+      items: [item, ...base.items.slice(1)],
+    });
+
+    await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
+      afterStepId: null,
+      document: pruned,
+      expectedCursor: opened.history_cursor,
+      newPictures: { [DRAWN.asset_id]: TRANSPARENT_PNG_PICTURE.blob() },
+      tabId: LEASE_TAB_ID,
+    });
+
+    const served = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
+    expect(served.document.assets).toEqual([TRANSPARENT_PNG_PICTURE.asset]);
+    expect(served.document.assets[0]?.docx_shapes).toBeUndefined();
+    expect(served.document.items[0]?.retry_source?.chunks[0]?.images[0]?.asset_id).toBe(
+      DRAWN.asset_id,
+    );
   });
 });

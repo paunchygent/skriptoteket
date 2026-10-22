@@ -19,6 +19,7 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamAsset,
   NativeExamBodyParagraph,
+  NativeExamItem,
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
@@ -79,10 +80,39 @@ function bodyWith(assetId: string): NativeExamBodyParagraph[] {
   return [{ heading_level: null, segments: [{ kind: "asset", asset_id: assetId }] }];
 }
 
+/** The stored retry source of an imported question whose chunk cites the drawn picture. */
+function retrySourceCiting(assetId: string): NonNullable<NativeExamItem["retry_source"]> {
+  return {
+    chunks: [
+      {
+        anchor: "body:0001",
+        images: [{ asset_id: assetId, marked_offset: 0, offset: 0 }],
+        kind: "question",
+        marked_text: "Rita figuren.",
+        missing_images: [],
+        paragraphs: [],
+        runs: [],
+        text: "Rita figuren.",
+      },
+    ],
+    context_chunks: [],
+    key_chunks: [],
+    label_kind: "free_text",
+    owned_context_anchors: [],
+  };
+}
+
 /** An opened exam whose question 1 shows the drawn picture, and optionally its instruction too. */
-function drawnResponse(options: { alsoInInstructions: boolean }): ExamWorkspaceDocumentResponse {
+function drawnResponse(options: {
+  alsoInInstructions: boolean;
+  withRetrySource?: boolean;
+}): ExamWorkspaceDocumentResponse {
   const base = buildResponse();
-  const item = { ...base.document.items[0]!, body: bodyWith(DRAWN.asset_id) };
+  const item = {
+    ...base.document.items[0]!,
+    body: bodyWith(DRAWN.asset_id),
+    retry_source: options.withRetrySource === true ? retrySourceCiting(DRAWN.asset_id) : null,
+  };
   const document = {
     ...base.document,
     assets: [DRAWN],
@@ -92,7 +122,7 @@ function drawnResponse(options: { alsoInInstructions: boolean }): ExamWorkspaceD
   return { ...base, document, saved_document: document };
 }
 
-async function openDrawn(options: { alsoInInstructions: boolean }) {
+async function openDrawn(options: { alsoInInstructions: boolean; withRetrySource?: boolean }) {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(drawnResponse(options));
   const fence = createSyncFence();
   const state = effectScope().run(() =>
@@ -212,5 +242,57 @@ describe("a picture's Word shapes in the open exam", () => {
 
     expect(state.workspaceDocument.value?.assets).toEqual([TRANSPARENT_PNG_PICTURE.asset]);
     expect(state.workspaceDocument.value?.assets[0]?.docx_shapes).toBeUndefined();
+  });
+
+  describe("with the question's retry source still citing the picture", () => {
+    /** The picture's data and the retry reference stay; the shapes are gone from the saved copy. */
+    function expectPlainPictureKept(state: DocumentState, assetId: string): void {
+      const document = state.workspaceDocument.value;
+      const asset = document?.assets.find((candidate) => candidate.asset_id === assetId);
+      expect(asset).toEqual(TRANSPARENT_PNG_PICTURE.asset);
+      expect(asset?.docx_shapes).toBeUndefined();
+      expect(JSON.stringify(document)).not.toContain("w:drawing");
+      expect(document?.items[0]?.retry_source?.chunks[0]?.images[0]?.asset_id).toBe(assetId);
+    }
+
+    it("removing the last placed use keeps the picture for the retry but drops its shapes", async () => {
+      const state = await openDrawn({ alsoInInstructions: false, withRetrySource: true });
+
+      state.updateItemBody("item_001", [{ heading_level: null, segments: [] }], true);
+
+      expectPlainPictureKept(state, DRAWN.asset_id);
+    });
+    it("replacing the last placed use keeps the old picture for the retry but drops its shapes", async () => {
+      const state = await openDrawn({ alsoInInstructions: false, withRetrySource: true });
+      const { service, target } = replaceDrawnPicture(state);
+
+      await service.add(target, [pictureFile(REPLACEMENT_FILE)]);
+
+      expectPlainPictureKept(state, DRAWN.asset_id);
+      expect(state.workspaceDocument.value?.assets).toEqual([
+        TRANSPARENT_PNG_PICTURE.asset,
+        REPLACEMENT_FILE.asset,
+      ]);
+    });
+
+    it("keeps the shapes while another placed use remains and the retry source cites it", async () => {
+      const state = await openDrawn({ alsoInInstructions: true, withRetrySource: true });
+
+      state.updateItemBody("item_001", [{ heading_level: null, segments: [] }], true);
+
+      expect(state.workspaceDocument.value?.assets).toEqual([DRAWN]);
+    });
+  });
+
+  it("replacing the picture with the same PNG bytes drops the declared asset's shapes", async () => {
+    const state = await openDrawn({ alsoInInstructions: false });
+    const { service, target } = replaceDrawnPicture(state);
+
+    await service.add(target, [pictureFile(TRANSPARENT_PNG_PICTURE)]);
+
+    const assets = state.workspaceDocument.value?.assets ?? [];
+    expect(assets).toEqual([TRANSPARENT_PNG_PICTURE.asset]);
+    expect(assets[0]?.docx_shapes).toBeUndefined();
+    expect(JSON.stringify(state.workspaceDocument.value)).not.toContain("w:drawing");
   });
 });

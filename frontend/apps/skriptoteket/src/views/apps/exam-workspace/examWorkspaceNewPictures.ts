@@ -22,7 +22,7 @@
 import { readonly, ref } from "vue";
 
 import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
-import { examWorkspaceReferencedAssetIds } from "./examWorkspaceStructure";
+import { examWorkspaceReferencedAssetIds, withoutShapes } from "./examWorkspaceStructure";
 
 export type ExamWorkspaceNewPictures = ReturnType<typeof createExamWorkspaceNewPictures>;
 
@@ -37,10 +37,18 @@ export function createExamWorkspaceNewPictures(
   const entries = new Map<string, { asset: NativeExamAsset; blob: Blob }>();
   /** Pictures whose bytes a committed save already carried; pruned by `forgetUndeclared`. */
   const sent = new Set<string>();
+  /** Pictures placed since the last declaration pass: their placement carries no Word shapes. */
+  const placed = new Set<string>();
   const objectUrls = ref<Record<string, string>>({});
 
-  /** Keep the picture and its bytes; a second declare of the same id is a no-op. */
+  /**
+   * Keep the picture and its bytes; a second declare of the same id keeps the
+   * first record and Blob. Every declare marks the picture as just placed, so
+   * the next `withDeclared` drops the Word shapes of an asset the document
+   * already declares under that content-addressed id (D10).
+   */
   function declare(asset: NativeExamAsset, blob: Blob): void {
+    placed.add(asset.asset_id);
     if (entries.has(asset.asset_id)) {
       return;
     }
@@ -51,21 +59,30 @@ export function createExamWorkspaceNewPictures(
   /**
    * Append the known pictures the document references but does not declare
    * (question and other item bodies, the exam instruction, part
-   * instructions); returns the same object when nothing is added.
+   * instructions), and strip the Word shapes from a declared asset the
+   * teacher just placed again; returns the same object when nothing changes.
    */
   function withDeclared(document: NativeExamDocument): NativeExamDocument {
     if (entries.size === 0) {
       return document;
     }
+    const justPlaced = new Set(placed);
+    placed.clear();
     const declared = new Set(document.assets.map((asset) => asset.asset_id));
     const referenced = examWorkspaceReferencedAssetIds(document);
     const missing = [...entries.values()]
       .map((entry) => entry.asset)
       .filter((asset) => !declared.has(asset.asset_id) && referenced.has(asset.asset_id));
-    if (missing.length === 0) {
+    const shapeless = document.assets.some(
+      (asset) => asset.docx_shapes != null && justPlaced.has(asset.asset_id),
+    );
+    if (missing.length === 0 && !shapeless) {
       return document;
     }
-    return { ...document, assets: [...document.assets, ...missing] };
+    const kept = shapeless
+      ? document.assets.map((asset) => (justPlaced.has(asset.asset_id) ? withoutShapes(asset) : asset))
+      : document.assets;
+    return { ...document, assets: [...kept, ...missing] };
   }
 
   /**
@@ -125,6 +142,7 @@ export function createExamWorkspaceNewPictures(
       URL.revokeObjectURL(url);
     }
     entries.clear();
+    placed.clear();
     sent.clear();
     objectUrls.value = {};
   }
