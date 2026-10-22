@@ -306,7 +306,6 @@ describe("mapBrowserSessionToAuthSnapshot", () => {
     );
     expect(snapshot.grants).toEqual(["tools:run"]);
     expect(snapshot.featureFlags).toEqual(["inline-completion"]);
-    expect(snapshot.aiPolicy).toBeNull();
   });
 
   it("keeps an authenticated HuleEdu user at the safest local role when no local role matches", () => {

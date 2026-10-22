@@ -8,7 +8,6 @@ type EditorVirtualFiles = components["schemas"]["EditorVirtualFiles"];
 type VirtualFileId = keyof EditorVirtualFiles;
 
 type ChatRole = "user" | "assistant";
-type NoticeVariant = "info" | "warning";
 type ChatTurnStatus = "pending" | "complete" | "failed" | "cancelled";
 type ChatRevealMode = "instant" | "type";
 
@@ -35,6 +34,5 @@ export type {
   EditorChatMessage,
   EditorChatRequest,
   EditorVirtualFiles,
-  NoticeVariant,
   VirtualFileId,
 };

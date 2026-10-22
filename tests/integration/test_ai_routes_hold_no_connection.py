@@ -16,7 +16,7 @@ its ``store.transaction`` block (lock and payload guard) before ``_reconvert`` r
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from uuid import uuid4
 
 import pytest
@@ -49,19 +49,14 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
-from skriptoteket.infrastructure.llm.provider_sets import (
-    ChatOpsProviders,
-    ChatStreamProviders,
-    InlineCompletionProviders,
-)
 from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
 )
 from skriptoteket.protocols.llm import (
-    ChatOpsProvidersProtocol,
-    ChatStreamProvidersProtocol,
-    InlineCompletionProvidersProtocol,
+    ChatOpsProviderProtocol,
+    ChatStreamProviderProtocol,
+    InlineCompletionProviderProtocol,
     LLMChatOpsResponse,
     LLMChatRequest,
     LLMCompletionRequest,
@@ -97,7 +92,7 @@ class _ProbedInline:
         self._probe = probe
 
     async def complete_inline(
-        self, *, request: LLMCompletionRequest, system_prompt: str
+        self, *, request: LLMCompletionRequest, system_prompt: str, caller: AiDoorCaller
     ) -> LLMCompletionResponse:
         await self._probe.sample("inline completion")
         return LLMCompletionResponse(completion="x = 1", finish_reason="stop")
@@ -108,8 +103,8 @@ class _ProbedChatStream:
         self._probe = probe
 
     async def stream_chat(
-        self, *, request: LLMChatRequest, system_prompt: str
-    ) -> AsyncIterator[str]:
+        self, *, request: LLMChatRequest, system_prompt: str, caller: AiDoorCaller
+    ) -> AsyncGenerator[str, None]:
         # The orchestrator persists the partial answer between deltas, so sample at every
         # step: the orchestrator opens and closes its own transaction around each flush.
         await self._probe.sample("chat stream start")
@@ -123,7 +118,7 @@ class _ProbedChatOps:
         self._probe = probe
 
     async def complete_chat_ops(
-        self, *, request: LLMChatRequest, system_prompt: str
+        self, *, request: LLMChatRequest, system_prompt: str, caller: AiDoorCaller
     ) -> LLMChatOpsResponse:
         await self._probe.sample("edit ops")
         return LLMChatOpsResponse(content=_EMPTY_EDIT_OPS, finish_reason="stop")
@@ -155,25 +150,16 @@ class FakeAiProviders(Provider):
         self._probe = probe
 
     @provide(scope=Scope.APP, override=True)
-    def inline_completion_providers(self) -> InlineCompletionProvidersProtocol:
-        return InlineCompletionProviders(
-            primary=_ProbedInline(self._probe),
-            primary_is_remote=False,
-            fallback=None,
-            fallback_is_remote=False,
-        )
+    def inline_completion_provider(self) -> InlineCompletionProviderProtocol:
+        return _ProbedInline(self._probe)
 
     @provide(scope=Scope.APP, override=True)
-    def chat_stream_providers(self) -> ChatStreamProvidersProtocol:
-        return ChatStreamProviders(
-            primary=_ProbedChatStream(self._probe), fallback=None, fallback_is_remote=False
-        )
+    def chat_stream_provider(self) -> ChatStreamProviderProtocol:
+        return _ProbedChatStream(self._probe)
 
     @provide(scope=Scope.APP, override=True)
-    def chat_ops_providers(self) -> ChatOpsProvidersProtocol:
-        return ChatOpsProviders(
-            primary=_ProbedChatOps(self._probe), fallback=None, fallback_is_remote=False
-        )
+    def chat_ops_provider(self) -> ChatOpsProviderProtocol:
+        return _ProbedChatOps(self._probe)
 
     @provide(scope=Scope.REQUEST, override=True)
     def retry_item_handler(

@@ -21,16 +21,17 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
-  aiDailyLimit,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitNote,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
-import type { AiDailyLimit } from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
+
+const smallAllowance = aiDailyLimitFor("small");
 
 const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
 
@@ -164,8 +165,9 @@ describe("useExamWorkspaceItemRetry daily AI limit", () => {
       const applied = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
 
       expect(applied).toBe(false);
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(limit === "usd_ceiling");
       expect(aiLimitNote(limit)).not.toEqual("");
       expect(toastMessages()).toEqual([]);
       scope.stop();
@@ -180,7 +182,7 @@ describe("useExamWorkspaceItemRetry daily AI limit", () => {
     const applied = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
 
     expect(applied).toBe(false);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(toastMessages()).toEqual(["Konflikt."]);
     scope.stop();
   });
@@ -192,7 +194,7 @@ describe("useExamWorkspaceItemRetry daily AI limit", () => {
 
     await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(toastMessages()).toEqual([RETRY_FAILURE_COPY]);
     scope.stop();
   });
@@ -218,14 +220,14 @@ describe("useExamWorkspaceItemRetry busy AI door", () => {
 
     expect(first).toBe(false);
     expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
 
     const second = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
 
     expect(teacher.retryExamWorkspaceItem).toHaveBeenCalledTimes(2);
     expect(second).toBe(true);
     expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     scope.stop();
   });
 });

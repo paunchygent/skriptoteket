@@ -142,8 +142,6 @@ class UserProfile(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
     display_name: str | None = None
-    allow_remote_fallback: bool | None = None
-    inline_completion_provider: Literal["local", "external"] | None = None
     classroom_planner_smart_enabled: bool | None = None
     classroom_planner_use_history: bool | None = None
     classroom_planner_grouping_seating_distance_enabled: bool | None = None

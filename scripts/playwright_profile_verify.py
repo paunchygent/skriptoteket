@@ -98,22 +98,15 @@ def main() -> int:
         page.screenshot(path=str(ARTIFACTS_DIR / "06-password-expand.png"))
         print("   Password change form expanded.")
 
-        # Test AI settings dropdowns
-        print("7. Checking AI settings section...")
-        ai_selects = page.locator('section:has-text("AI-inställningar") select')
-        ai_count = ai_selects.count()
-        print(f"   Found {ai_count} AI settings dropdown(s)")
-        page.screenshot(path=str(ARTIFACTS_DIR / "07-ai-settings.png"))
-
         # Test responsiveness - mobile viewport
-        print("8. Testing mobile responsiveness...")
+        print("7. Testing mobile responsiveness...")
         page.set_viewport_size({"width": 375, "height": 812})
         page.wait_for_timeout(300)
         page.screenshot(path=str(ARTIFACTS_DIR / "08-mobile-view.png"))
         print("   Mobile view captured.")
 
         # Tablet viewport
-        print("9. Testing tablet responsiveness...")
+        print("8. Testing tablet responsiveness...")
         page.set_viewport_size({"width": 768, "height": 1024})
         page.wait_for_timeout(300)
         page.screenshot(path=str(ARTIFACTS_DIR / "09-tablet-view.png"))
@@ -125,7 +118,6 @@ def main() -> int:
     print("\nVerification complete. Please review the screenshots to confirm:")
     print("  - Single outer panel with brutal shadow (no stacked shadows)")
     print("  - Inline editing works (click field → edit → save/cancel)")
-    print("  - AI settings use inline dropdowns")
     print("  - Responsive design maintained")
     return 0
 

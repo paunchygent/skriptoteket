@@ -7,13 +7,12 @@ from skriptoteket.protocols.llm import VirtualFileId
 THREAD_CONTEXT = "editor_chat"
 THREAD_TTL = timedelta(days=30)
 PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
+TURN_PROVIDER = "door"
+AI_LIMIT_FAILURE_OUTCOME = "ai_daily_limit_reached"
+AI_DOOR_BUSY_FAILURE_OUTCOME = "ai_door_busy"
 
 IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
-REMOTE_FALLBACK_REQUIRED_MESSAGE = (
-    "Den lokala AI-modellen är inte tillgänglig. "
-    "Aktivera externa AI-API:er (OpenAI) för att fortsätta."
-)
 MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
 INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."

@@ -22,9 +22,6 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatBudget,
     ChatBudgetResolverProtocol,
-    ChatFailoverDecision,
-    ChatFailoverProvider,
-    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatStreamProviderProtocol,
     EditorChatCommand,
@@ -62,40 +59,11 @@ class BlockChatGuard(ChatInFlightGuardProtocol):
         return None
 
 
-class DummyFailover(ChatFailoverRouterProtocol):
-    async def decide_route(
-        self,
-        *,
-        user_id: UUID,
-        tool_id: UUID,
-        allow_remote_fallback: bool | None,
-        fallback_available: bool,
-        fallback_is_remote: bool,
-    ) -> ChatFailoverDecision:
-        return ChatFailoverDecision(provider="primary", reason="primary_default")
-
-    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def record_success(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def record_failure(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
-        return None
-
-
 class DummyChatBudgetResolver(ChatBudgetResolverProtocol):
     def __init__(self, *, settings: Settings) -> None:
         self._settings = settings
 
-    def resolve_chat_budget(self, *, provider: ChatFailoverProvider) -> ChatBudget:
-        del provider
+    def resolve_chat_budget(self) -> ChatBudget:
         return ChatBudget(
             context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
             max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
@@ -105,9 +73,8 @@ class DummyChatBudgetResolver(ChatBudgetResolverProtocol):
 def _make_handler(
     *,
     settings: Settings,
-    providers,
+    provider: ChatStreamProviderProtocol,
     guard: ChatInFlightGuardProtocol,
-    failover: ChatFailoverRouterProtocol,
     uow: UnitOfWorkProtocol,
     sessions: ToolSessionRepositoryProtocol,
     turns: ToolSessionTurnRepositoryProtocol,
@@ -132,17 +99,14 @@ def _make_handler(
     stream_orchestrator = EditorChatStreamOrchestrator(
         settings=settings,
         capture_store=capture_store,
-        providers=providers,
-        failover=failover,
+        provider=provider,
         uow=uow,
         turns=turns,
         messages=messages,
     )
     return EditorChatHandler(
         settings=settings,
-        providers=providers,
         guard=guard,
-        failover=failover,
         budget_resolver=DummyChatBudgetResolver(settings=settings),
         turn_preparer=turn_preparer,
         stream_orchestrator=stream_orchestrator,
@@ -198,7 +162,7 @@ def _dummy_message(*, tool_session_id: UUID, turn_id: UUID) -> ToolSessionMessag
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_guard_rejects_concurrent_request() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
@@ -206,16 +170,10 @@ async def test_editor_chat_guard_rejects_concurrent_request() -> None:
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=BlockChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -242,7 +200,7 @@ async def test_editor_chat_guard_rejects_concurrent_request() -> None:
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_cancels_pending_turn_when_starting_new_request() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
 
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
@@ -294,16 +252,10 @@ async def test_editor_chat_cancels_pending_turn_when_starting_new_request() -> N
 
     provider.stream_chat.return_value = stream()
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=AllowChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,

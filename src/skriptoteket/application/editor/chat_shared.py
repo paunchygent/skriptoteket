@@ -5,11 +5,6 @@ from datetime import timedelta
 from skriptoteket.protocols.llm import VirtualFileId
 
 DISABLED_MESSAGE = "Kodassistenten är inte tillgänglig just nu. Försök igen senare."
-REMOTE_FALLBACK_REQUIRED_MESSAGE = (
-    "Den lokala AI-modellen är inte tillgänglig. "
-    "Aktivera externa AI-API:er (OpenAI) för att fortsätta."
-)
-REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required"
 MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
 IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 
@@ -17,6 +12,9 @@ THREAD_CONTEXT = "editor_chat"
 THREAD_TTL = timedelta(days=30)
 PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
 BASE_VERSION_KEY = "base_version_id"
+CHAT_TURN_PROVIDER = "door"
+DAILY_LIMIT_OUTCOME = "daily_limit"
+DOOR_BUSY_OUTCOME = "door_busy"
 
 VIRTUAL_FILE_IDS: tuple[VirtualFileId, ...] = (
     "tool.py",

@@ -128,6 +128,26 @@ def test_active_scripts_do_not_use_local_session_cookie_except_cutover_absence_p
     assert offenders == []
 
 
+RETIRED_AI_SURFACE_PATTERNS = (
+    "/profile/ai-settings",
+    "remote_fallback_preference",
+    "AI-inställningar",
+    "api/v1/editor/edits",
+)
+
+
+def test_active_scripts_do_not_consume_retired_ai_surfaces() -> None:
+    """The profile AI-settings section, the consent route and /editor/edits are gone."""
+    offenders: list[str] = []
+    for path in sorted(SCRIPTS_DIR.rglob("*.py")):
+        text = path.read_text(encoding="utf-8")
+        matches = sorted(pattern for pattern in RETIRED_AI_SURFACE_PATTERNS if pattern in text)
+        if matches:
+            offenders.append(f"{path.relative_to(ROOT)}: {', '.join(matches)}")
+
+    assert offenders == []
+
+
 def test_document_converter_proof_fixture_matches_artifact_hygiene_contract(
     tmp_path: Path,
 ) -> None:

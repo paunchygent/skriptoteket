@@ -5,14 +5,17 @@ operation, payload, caller and the paid-overage mode sent, answers from a
 responder, and settles each answer on the caller exactly as the real client
 does (admission, overage charge, per-job cap after each charge),
 so replays serve recorded OpenAI bodies at the door seam and never reach the
-door (B6).
+door (B6). ``stream`` serves the same replies as an open ``DoorStream`` whose
+lines are the reply body's lines, admitting the caller on a success as the
+real client does.
 """
 
 from __future__ import annotations
 
 import inspect
 import json
-from collections.abc import Awaitable, Callable, Iterable, Mapping
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterable, Mapping
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from uuid import UUID
@@ -84,6 +87,34 @@ def replies_in_order(bodies: Iterable[JsonValue]) -> DoorResponder:
     return respond
 
 
+def sse_reply(events: Iterable[tuple[str, JsonValue]], *, status_code: int = 200) -> DoorReply:
+    """A streamed Responses answer: one ``event:``/``data:`` pair per event."""
+
+    body = "".join(f"event: {event}\ndata: {json.dumps(data)}\n\n" for event, data in events)
+    return DoorReply(
+        status_code=status_code,
+        headers={"content-type": "text/event-stream"},
+        body=body.encode(),
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class FakeDoorStream:
+    status_code: int
+    headers: Mapping[str, str]
+    body: bytes
+
+    @property
+    def is_success(self) -> bool:
+        return 200 <= self.status_code < 300
+
+    async def aiter_lines(self) -> AsyncIterator[str]:
+        if not self.is_success:
+            return
+        for line in self.body.decode().splitlines():
+            yield line
+
+
 def limit_refusal(limit: AiDailyLimit) -> DoorResponder:
     """Refuse every call for ``limit`` as the door client raises it."""
 
@@ -121,6 +152,31 @@ class RecordingDoor(LlmDoorClientProtocol):
             reply = await reply
         settle_door_reply(caller, reply, cap_usd_micros=self._cap_usd_micros)
         return reply
+
+    @asynccontextmanager
+    async def stream(
+        self,
+        *,
+        operation: DoorOperation,
+        payload: Mapping[str, JsonValue],
+        caller: AiDoorCaller,
+        timeout_seconds: float,
+    ) -> AsyncIterator[FakeDoorStream]:
+        caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
+        sent = DoorSent(
+            operation=operation,
+            payload=dict(payload),
+            caller=caller,
+            timeout_seconds=timeout_seconds,
+            allow_paid_overage=caller.allow_paid_overage,
+        )
+        self.sent.append(sent)
+        reply = self._responder(sent)
+        if inspect.isawaitable(reply):
+            reply = await reply
+        if reply.is_success:
+            caller.admit()
+        yield FakeDoorStream(status_code=reply.status_code, headers=reply.headers, body=reply.body)
 
 
 def user_with_role(role: Role, *, user_id: UUID) -> User:

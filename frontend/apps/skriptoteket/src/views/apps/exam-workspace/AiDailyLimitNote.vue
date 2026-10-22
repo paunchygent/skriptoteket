@@ -15,7 +15,9 @@
  *     the same note directly.
  */
 
-import { aiDailyLimitNote } from "./aiDailyLimit";
+import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
+
+const { note: aiDailyLimitNote } = aiDailyLimitFor("small");
 
 withDefaults(
   defineProps<{

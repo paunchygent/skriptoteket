@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from typing import Literal, Protocol
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, JsonValue
 
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 
-from .common import SystemMessageVariant, VirtualFileId
+from .common import VirtualFileId
 
 ChatStreamDoneReason = Literal["stop", "cancelled", "error"]
 ChatMessageRole = Literal["user", "assistant"]
@@ -50,7 +51,6 @@ class EditorChatCommand(BaseModel):
     tool_id: UUID
     message: str
     base_version_id: UUID | None = None
-    allow_remote_fallback: bool | None = None
     active_file: VirtualFileId | None = None
     virtual_files: dict[VirtualFileId, str] | None = None
 
@@ -106,13 +106,6 @@ class EditorChatDoneDisabledData(BaseModel):
     code: str | None = None
 
 
-class EditorChatNoticeData(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    message: str
-    variant: SystemMessageVariant = "info"
-
-
 class EditorChatMetaEvent(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -134,50 +127,39 @@ class EditorChatDoneEvent(BaseModel):
     data: EditorChatDoneEnabledData | EditorChatDoneDisabledData
 
 
-class EditorChatNoticeEvent(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    event: Literal["notice"] = "notice"
-    data: EditorChatNoticeData
-
-
-EditorChatStreamEvent = (
-    EditorChatMetaEvent | EditorChatNoticeEvent | EditorChatDeltaEvent | EditorChatDoneEvent
-)
+EditorChatStreamEvent = EditorChatMetaEvent | EditorChatDeltaEvent | EditorChatDoneEvent
 
 
 class ChatStreamProviderProtocol(Protocol):
-    """Protocol for an OpenAI-compatible streaming chat provider."""
+    """Streaming editor chat through the LLM provider door for ``caller``.
+
+    Raises ``AiDailyLimitReached`` before the first delta when the door
+    refuses the call for a daily limit.
+    """
 
     def stream_chat(
         self,
         *,
         request: LLMChatRequest,
         system_prompt: str,
-    ) -> AsyncIterator[str]: ...
-
-
-class ChatStreamProvidersProtocol(Protocol):
-    primary: ChatStreamProviderProtocol
-    fallback: ChatStreamProviderProtocol | None
-    fallback_is_remote: bool
+        caller: AiDoorCaller,
+    ) -> AsyncGenerator[str, None]: ...
 
 
 class ChatOpsProviderProtocol(Protocol):
-    """Protocol for an OpenAI-compatible chat ops provider."""
+    """Editor chat ops (edit) through the LLM provider door for ``caller``.
+
+    Raises ``AiDailyLimitReached`` when the door refuses the call for a daily
+    limit.
+    """
 
     async def complete_chat_ops(
         self,
         *,
         request: LLMChatRequest,
         system_prompt: str,
+        caller: AiDoorCaller,
     ) -> LLMChatOpsResponse: ...
-
-
-class ChatOpsProvidersProtocol(Protocol):
-    primary: ChatOpsProviderProtocol
-    fallback: ChatOpsProviderProtocol | None
-    fallback_is_remote: bool
 
 
 class ChatBudget(BaseModel):
@@ -190,7 +172,7 @@ class ChatBudget(BaseModel):
 class ChatBudgetResolverProtocol(Protocol):
     """Resolve prompt budgeting constraints for streaming chat."""
 
-    def resolve_chat_budget(self, *, provider: "ChatFailoverProvider") -> ChatBudget: ...
+    def resolve_chat_budget(self) -> ChatBudget: ...
 
 
 class ChatOpsBudget(BaseModel):
@@ -203,48 +185,7 @@ class ChatOpsBudget(BaseModel):
 class ChatOpsBudgetResolverProtocol(Protocol):
     """Resolve prompt budgeting constraints for chat-ops (edit-ops)."""
 
-    def resolve_chat_ops_budget(self, *, provider: "ChatFailoverProvider") -> ChatOpsBudget: ...
-
-
-ChatFailoverProvider = Literal["primary", "fallback"]
-ChatFailoverReason = Literal[
-    "primary_default",
-    "sticky_fallback",
-    "breaker_open",
-    "load_shed",
-    "preflight_over_budget",
-]
-ChatFailoverBlock = Literal["remote_fallback_required"]
-
-
-class ChatFailoverDecision(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    provider: ChatFailoverProvider
-    reason: ChatFailoverReason
-    blocked: ChatFailoverBlock | None = None
-
-
-class ChatFailoverRouterProtocol(Protocol):
-    async def decide_route(
-        self,
-        *,
-        user_id: UUID,
-        tool_id: UUID,
-        allow_remote_fallback: bool | None,
-        fallback_available: bool,
-        fallback_is_remote: bool,
-    ) -> ChatFailoverDecision: ...
-
-    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None: ...
-
-    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None: ...
-
-    async def record_success(self, *, provider: ChatFailoverProvider) -> None: ...
-
-    async def record_failure(self, *, provider: ChatFailoverProvider) -> None: ...
-
-    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None: ...
+    def resolve_chat_ops_budget(self) -> ChatOpsBudget: ...
 
 
 class EditorChatHandlerProtocol(Protocol):
@@ -253,7 +194,7 @@ class EditorChatHandlerProtocol(Protocol):
         *,
         actor: User,
         command: EditorChatCommand,
-    ) -> AsyncIterator[EditorChatStreamEvent]: ...
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]: ...
 
 
 class EditorChatClearHandlerProtocol(Protocol):

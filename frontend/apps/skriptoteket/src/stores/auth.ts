@@ -25,7 +25,6 @@ import {
 } from "./authUserMessages";
 
 type ApiRole = components["schemas"]["Role"];
-type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
 type AuthStatus = "idle" | "loading" | "ready" | "error" | "provisioning_required";
 /** A store-owned session lifetime, not merely a teacher ID. */
 export type AuthSession = symbol;
@@ -47,7 +46,6 @@ type AuthState = {
   sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
-  aiPolicy: ApiAiPolicy | null;
   grants: string[];
   featureFlags: string[];
   csrfToken: string | null;
@@ -61,7 +59,6 @@ function anonymousState(): AuthState {
     sharedSessionId: null,
     user: null,
     profile: null,
-    aiPolicy: null,
     grants: [],
     featureFlags: [],
     csrfToken: null,
@@ -98,7 +95,6 @@ export const useAuthStore = defineStore("auth", () => {
     Object.assign(state, {
       sharedSessionId: next.sharedSessionId,
       profile: next.profile,
-      aiPolicy: next.aiPolicy,
       grants: next.grants,
       featureFlags: next.featureFlags,
       csrfToken: next.csrfToken,
@@ -163,7 +159,6 @@ export const useAuthStore = defineStore("auth", () => {
     admittedSnapshot?: SharedAuthSnapshot,
   ): Promise<ContinuationOutcome> {
     if (!isCurrentSession(requestSession)) return { status: "superseded", session: null };
-    state.aiPolicy = null;
     state.appContinuationError = null;
     try {
       const result = await requestAppContinuation();
@@ -177,7 +172,6 @@ export const useAuthStore = defineStore("auth", () => {
           } : {}),
           user: result.continuation.local_user,
           profile: result.profile,
-          aiPolicy: result.continuation.ai_policy,
           error: null,
           appContinuationError: null,
           status: "ready",

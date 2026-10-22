@@ -40,7 +40,7 @@ beforeEach(async () => {
   vi.mocked(fetch).mockReset();
   vi.mocked(fetch).mockResolvedValueOnce(mockSharedSessionResponse())
     .mockResolvedValueOnce(mockJsonResponse({
-      local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
+      local_user: createTestUser(), profile: createTestProfile(),
     }))
     .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }))
     .mockResolvedValueOnce(mockSharedSessionResponse());

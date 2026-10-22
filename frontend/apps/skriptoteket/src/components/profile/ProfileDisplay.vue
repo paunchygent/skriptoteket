@@ -6,7 +6,6 @@ import type { components } from "../../api/openapi";
 import { UiGlyph } from "../ui/shared";
 import { useProfile } from "../../composables/useProfile";
 import { useToast } from "../../composables/useToast";
-import ProfileAiSettingsInline from "./ProfileAiSettingsInline.vue";
 import ProfileExamCoursesSection from "./ProfileExamCourses.vue";
 
 type UserProfile = components["schemas"]["UserProfile"];
@@ -27,8 +26,6 @@ const toast = useToast();
 // Section-level edit states (toggle behavior)
 const isEditingPersonal = ref(false);
 const isSaving = ref(false);
-
-const isEditingAi = ref(false);
 
 // Edit form data for personal info section
 const personalForm = reactive({
@@ -277,7 +274,7 @@ watch(() => props.profile, () => {
     </section>
 
     <!-- Own exam courses section -->
-    <section class="border-b border-navy/20">
+    <section>
       <div class="section-header">
         <h3 class="section-title">Mina kurser</h3>
       </div>
@@ -286,30 +283,6 @@ watch(() => props.profile, () => {
         <ProfileExamCoursesSection
           :exam-courses="profile?.exam_courses ?? null"
         />
-      </div>
-    </section>
-
-    <!-- AI Settings section -->
-    <section>
-      <div class="section-header">
-        <h3 class="section-title">AI-inställningar</h3>
-        <button
-          type="button"
-          class="btn-inline-edit btn-inline-edit--glyph"
-          aria-label="Ändra AI-inställningar"
-          title="Ändra AI-inställningar"
-          :aria-expanded="isEditingAi"
-          @click="isEditingAi = !isEditingAi"
-        >
-          <UiGlyph
-            meaning="edit"
-            :size="12"
-          />
-        </button>
-      </div>
-
-      <div class="px-4 pb-2">
-        <ProfileAiSettingsInline v-model:editing="isEditingAi" />
       </div>
     </section>
   </div>

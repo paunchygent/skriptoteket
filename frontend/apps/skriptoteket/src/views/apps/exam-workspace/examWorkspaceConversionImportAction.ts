@@ -22,14 +22,13 @@ import { isApiError } from "../../../api/client";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import {
-  aiDailyLimitNote,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitFromError,
   aiTryAgainFromError,
   aiLimitFromStatus,
   aiLimitNote,
   markAiDailyLimit,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceConversionRuntime } from "./examWorkspaceConversionShared";
 import { IMPORT_FAILURE_COPY } from "./examWorkspaceConversionShared";
 import {
@@ -58,6 +57,7 @@ export function createConversionImportAction(
   const { binding } = runtime;
   const toast = useToast();
   const { canUseAi } = useAiAccess();
+  const smallAllowance = aiDailyLimitFor("small");
 
   /**
    * The one rule for every import path (picker, drop, `importDocument`): no
@@ -73,8 +73,8 @@ export function createConversionImportAction(
     if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
     // The door's daily limit stops Word imports for the page session; the
     // Öppna drawer names the limit next to the import instead.
-    if (!isDigiExamFile(file) && !isQtiPackageFile(file) && aiDailyLimitReached.value) {
-      runtime.conversionError.value = aiDailyLimitNote.value ?? aiLimitNote("pool");
+    if (!isDigiExamFile(file) && !isQtiPackageFile(file) && smallAllowance.reached.value) {
+      runtime.conversionError.value = smallAllowance.note.value ?? aiLimitNote("pool");
       return;
     }
     const pollGeneration = ++runtime.poll.generation;
@@ -117,7 +117,7 @@ export function createConversionImportAction(
       if (pollGeneration !== runtime.poll.generation) return;
       const limit = aiLimitFromStatus(status);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
       }
       binding.noteImportStarted(status.lineage_id);
       runtime.isConverting.value = true;
@@ -128,7 +128,7 @@ export function createConversionImportAction(
       // No toast for the door's limit: the Öppna drawer names it inline.
       const limit = aiLimitFromError(error);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         runtime.conversionError.value = aiLimitNote(limit);
         return;
       }

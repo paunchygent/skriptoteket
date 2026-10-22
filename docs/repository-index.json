@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2f16ed1dc25dc5d634e50cb2b806c724191cd8aad0cdc97e57a8e37117a93e18",
+  "source_set_digest": "302c107cc6280b663bd4c4ebab409397048ecdffdde867a4994bad36ac492630",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7420,7 +7420,7 @@
       "type": "task",
       "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
       "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -11366,23 +11366,6 @@
       ],
       "retired_ids": [
         "REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08"
-      ]
-    },
-    {
-      "id": "REF-SKRIPT-GENERAL-reference-inline-completion-harness",
-      "type": "reference",
-      "title": "Reference: Inline completion harness",
-      "path": "docs/reference/ref-skript-general-reference-inline-completion-harness-reference-inline-completion-harness.md",
-      "status": "active",
-      "reference_kind": "general",
-      "owners": [
-        {
-          "kind": "service",
-          "id": "skriptoteket"
-        }
-      ],
-      "retired_ids": [
-        "REF-ai-inline-completion-harness"
       ]
     },
     {

@@ -31,7 +31,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
 import { isGuestImportFile, useExamWorkspaceOpenBlocking } from "./useExamWorkspaceOpenBlocking";
-import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
@@ -82,7 +82,7 @@ const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
 const isGuest = computed(() => store.teacher === null);
 /** PDF import is the Word import path: it shows wherever the Word import shows. */
 /** The door's daily limit stops Word imports for the page session; DigiExam and QTI stay open. */
-const limitReached = aiDailyLimitReached;
+const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 const showWordImport = computed(
   () => (isGuest.value || canUseAi.value) && !limitReached.value,
 );

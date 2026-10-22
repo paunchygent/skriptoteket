@@ -10,7 +10,6 @@ from skriptoteket.application.identity.commands import CreateLocalUserCommand
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
-from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.protocols.clock import ClockProtocol
@@ -27,7 +26,6 @@ from tests.fixtures.identity_fixtures import make_user
 @pytest.mark.asyncio
 async def test_provision_user_creates_local_user_for_admin(now: datetime) -> None:
     actor = make_user(role=Role.ADMIN, email="admin@example.com")
-    settings = Settings(AI_REMOTE_PROVIDERS_ENABLED=True, AI_DEFAULT_ALLOW_REMOTE_FALLBACK=False)
 
     uow = AsyncMock(spec=UnitOfWorkProtocol)
     uow.__aenter__.return_value = uow
@@ -54,7 +52,6 @@ async def test_provision_user_creates_local_user_for_admin(now: datetime) -> Non
     id_generator.new_uuid.return_value = new_user_id
 
     handler = ProvisionLocalUserHandler(
-        settings=settings,
         uow=uow,
         users=users,
         profiles=profiles,
@@ -82,7 +79,6 @@ async def test_provision_user_creates_local_user_for_admin(now: datetime) -> Non
 @pytest.mark.asyncio
 async def test_provision_user_raises_for_non_admin(now: datetime) -> None:
     actor = make_user(role=Role.USER, email="user@example.com")
-    settings = Settings(AI_REMOTE_PROVIDERS_ENABLED=True, AI_DEFAULT_ALLOW_REMOTE_FALLBACK=False)
 
     uow = AsyncMock(spec=UnitOfWorkProtocol)
     uow.__aenter__.return_value = uow
@@ -95,7 +91,6 @@ async def test_provision_user_raises_for_non_admin(now: datetime) -> None:
     id_generator = Mock(spec=IdGeneratorProtocol)
 
     handler = ProvisionLocalUserHandler(
-        settings=settings,
         uow=uow,
         users=users,
         profiles=profiles,
@@ -118,7 +113,6 @@ async def test_provision_user_raises_for_non_admin(now: datetime) -> None:
 @pytest.mark.asyncio
 async def test_provision_user_raises_when_admin_attempts_to_create_admin(now: datetime) -> None:
     actor = make_user(role=Role.ADMIN, email="admin@example.com")
-    settings = Settings(AI_REMOTE_PROVIDERS_ENABLED=True, AI_DEFAULT_ALLOW_REMOTE_FALLBACK=False)
 
     uow = AsyncMock(spec=UnitOfWorkProtocol)
     uow.__aenter__.return_value = uow
@@ -131,7 +125,6 @@ async def test_provision_user_raises_when_admin_attempts_to_create_admin(now: da
     id_generator = Mock(spec=IdGeneratorProtocol)
 
     handler = ProvisionLocalUserHandler(
-        settings=settings,
         uow=uow,
         users=users,
         profiles=profiles,

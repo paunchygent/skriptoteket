@@ -6,8 +6,8 @@ Purpose:
 
 Relationships:
     - Profile mutations delegate to identity application handlers.
-    - The continuation endpoint combines runtime AI policy with profile AI
-      preferences without answering browser-auth identity questions.
+    - The continuation endpoint returns the local user and profile without
+      answering browser-auth identity questions.
 """
 
 from typing import Literal
@@ -17,14 +17,12 @@ from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from skriptoteket.application.identity.commands import (
     GetProfileCommand,
-    UpdateAiSettingsCommand,
     UpdateClassroomPlannerSettingsCommand,
     UpdateExamCoursesCommand,
     UpdateExamListOrderingCommand,
     UpdateProfileCommand,
 )
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
-from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import SchoolForm
 from skriptoteket.domain.identity.models import (
     User,
@@ -33,13 +31,11 @@ from skriptoteket.domain.identity.models import (
 )
 from skriptoteket.protocols.identity import (
     GetProfileHandlerProtocol,
-    UpdateAiSettingsHandlerProtocol,
     UpdateClassroomPlannerSettingsHandlerProtocol,
     UpdateExamCoursesHandlerProtocol,
     UpdateExamListOrderingHandlerProtocol,
     UpdateProfileHandlerProtocol,
 )
-from skriptoteket.web.api.v1.ai_policy import AiPolicyResponse, build_ai_policy
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_user_api,
     require_app_user_projection_api,
@@ -59,9 +55,6 @@ class ProfileAppContinuationResponse(BaseModel):
     model_config = ConfigDict(frozen=True)
     local_user: User
     profile: UserProfile
-    ai_policy: AiPolicyResponse
-    allow_remote_fallback: bool | None = None
-    inline_completion_provider: Literal["local", "external"] | None = None
 
 
 class UpdateProfileRequest(BaseModel):
@@ -70,21 +63,6 @@ class UpdateProfileRequest(BaseModel):
     last_name: str | None = None
     display_name: str | None = None
     locale: str | None = None
-
-
-class UpdateAiSettingsRequest(BaseModel):
-    model_config = ConfigDict(frozen=True)
-    remote_fallback_preference: Literal["unset", "allow", "deny"] | None = None
-    inline_completion_provider_preference: Literal["unset", "local", "external"] | None = None
-
-    @model_validator(mode="after")
-    def validate_at_least_one_field(self) -> "UpdateAiSettingsRequest":
-        if (
-            self.remote_fallback_preference is None
-            and self.inline_completion_provider_preference is None
-        ):
-            raise ValueError("At least one AI setting is required")
-        return self
 
 
 class UpdateClassroomPlannerSettingsRequest(BaseModel):
@@ -141,15 +119,11 @@ async def get_profile(
 
 @router.get("/app-continuation", response_model=ProfileAppContinuationResponse)
 async def get_app_continuation(
-    settings: FromDishka[Settings],
     projection: HuleEduAppUserProjection = Depends(require_app_user_projection_api),
 ) -> ProfileAppContinuationResponse:
     return ProfileAppContinuationResponse(
         local_user=projection.user,
         profile=projection.profile,
-        ai_policy=build_ai_policy(settings),
-        allow_remote_fallback=projection.profile.allow_remote_fallback,
-        inline_completion_provider=projection.profile.inline_completion_provider,
     )
 
 
@@ -166,22 +140,6 @@ async def update_profile(
             last_name=payload.last_name,
             display_name=payload.display_name,
             locale=payload.locale,
-        )
-    )
-    return ProfileResponse(user=result.user, profile=result.profile)
-
-
-@router.patch("/ai-settings", response_model=ProfileResponse)
-async def update_ai_settings(
-    payload: UpdateAiSettingsRequest,
-    handler: FromDishka[UpdateAiSettingsHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> ProfileResponse:
-    result = await handler.handle(
-        UpdateAiSettingsCommand(
-            user_id=user.id,
-            remote_fallback_preference=payload.remote_fallback_preference,
-            inline_completion_provider_preference=payload.inline_completion_provider_preference,
         )
     )
     return ProfileResponse(user=result.user, profile=result.profile)

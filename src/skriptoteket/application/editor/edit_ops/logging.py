@@ -14,8 +14,6 @@ class EditOpsLogContext:
     template_id: str
     user_id: UUID
     tool_id: UUID
-    fallback_is_remote: bool
-    allow_remote_fallback: bool | None
     message_len: int
     virtual_files_bytes: int
     started_at: float
@@ -23,8 +21,6 @@ class EditOpsLogContext:
     def log_result(
         self,
         *,
-        provider: str,
-        failover_reason: str | None,
         system_prompt_chars: int,
         prompt_messages_count: int,
         finish_reason: str | None,
@@ -38,10 +34,6 @@ class EditOpsLogContext:
             template_id=self.template_id,
             user_id=str(self.user_id),
             tool_id=str(self.tool_id),
-            provider=provider,
-            fallback_is_remote=self.fallback_is_remote,
-            allow_remote_fallback=self.allow_remote_fallback,
-            failover_reason=failover_reason,
             message_len=self.message_len,
             virtual_files_bytes=self.virtual_files_bytes,
             system_prompt_chars=system_prompt_chars,

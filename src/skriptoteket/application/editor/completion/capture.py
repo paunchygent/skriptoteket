@@ -8,17 +8,11 @@ from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.protocols.llm import InlineCompletionCommand
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 
-from .attempts import PreparedAttempt, ProviderSlot
+from .attempts import PreparedAttempt
 from .normalization import NormalizedInlineCompletion
 
 _CAPTURE_PREFIX_TAIL_CHARS = 2_000
 _CAPTURE_SUFFIX_HEAD_CHARS = 2_000
-
-
-def _slot_kind(slot: ProviderSlot, *, primary_is_remote: bool, fallback_is_remote: bool) -> str:
-    if slot == "primary":
-        return "external" if primary_is_remote else "local"
-    return "external" if fallback_is_remote else "local"
 
 
 async def capture_inline_completion(
@@ -36,8 +30,6 @@ async def capture_inline_completion(
     normalize_ms: int | None,
     total_ms: int | None,
     correlation_id: object,
-    primary_is_remote: bool,
-    fallback_is_remote: bool,
 ) -> None:
     if settings.ENVIRONMENT == "production":
         return
@@ -61,12 +53,6 @@ async def capture_inline_completion(
         capture_id=capture_uuid,
         payload={
             "template_id": attempt.template_id,
-            "provider_slot": attempt.slot,
-            "provider_kind": _slot_kind(
-                attempt.slot,
-                primary_is_remote=primary_is_remote,
-                fallback_is_remote=fallback_is_remote,
-            ),
             "model": attempt.model,
             "active_file": command.active_file,
             "incoming_prefix_chars": len(command.prefix),

@@ -11,7 +11,6 @@ type UseSkriptoteketIntelligenceExtensionsOptions = {
     enabled: Readonly<Ref<boolean>>;
     autoTrigger: Readonly<Ref<boolean>>;
     debounceMs: Readonly<Ref<number>>;
-    onNotice?: (params: { message: string; variant: "info" | "warning"; code?: string | null }) => void;
   };
 };
 
@@ -41,7 +40,6 @@ export function useSkriptoteketIntelligenceExtensions({
             enabled: ghostText.enabled.value,
             autoTrigger: ghostText.autoTrigger.value,
             debounceMs: ghostText.debounceMs.value,
-            onNotice: ghostText.onNotice,
           }
         : undefined,
     };

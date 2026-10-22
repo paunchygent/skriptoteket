@@ -93,7 +93,8 @@ function buildApiRequestBody(body: unknown, headers: Headers): BodyInit | undefi
   return JSON.stringify(body);
 }
 
-async function toApiError(response: Response): Promise<ApiError> {
+/** Read an HTTP error response into the API error envelope every caller shares. */
+export async function toApiError(response: Response): Promise<ApiError> {
   const contentType = response.headers.get("content-type") ?? "";
   const fallbackMessage = response.statusText || `Request failed (${response.status})`;
 

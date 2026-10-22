@@ -10,10 +10,9 @@ from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
-    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatOpsBudgetResolverProtocol,
-    ChatOpsProvidersProtocol,
+    ChatOpsProviderProtocol,
     EditOpsCommand,
     EditOpsHandlerProtocol,
     EditOpsResult,
@@ -33,11 +32,10 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self,
         *,
         settings: Settings,
-        providers: ChatOpsProvidersProtocol,
+        provider: ChatOpsProviderProtocol,
         budget_resolver: ChatOpsBudgetResolverProtocol,
         payload_parser: EditOpsPayloadParserProtocol,
         guard: ChatInFlightGuardProtocol,
-        failover: ChatFailoverRouterProtocol,
         capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
@@ -51,10 +49,9 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         self._guard = guard
         self._flow = EditOpsFlow(
             settings=settings,
-            providers=providers,
+            provider=provider,
             budget_resolver=budget_resolver,
             payload_parser=payload_parser,
-            failover=failover,
             capture_store=capture_store,
             uow=uow,
             sessions=sessions,

@@ -12,12 +12,6 @@ type ChatStreamMetaEvent = {
   correlationId?: string;
 };
 
-type ChatStreamNoticeEvent = {
-  kind: "notice";
-  message: string;
-  variant?: "info" | "warning";
-};
-
 type ChatStreamDoneEvent = {
   kind: "done";
   enabled?: boolean;
@@ -29,7 +23,6 @@ type ChatStreamDoneEvent = {
 type ChatStreamEvent =
   | ChatStreamDeltaEvent
   | ChatStreamMetaEvent
-  | ChatStreamNoticeEvent
   | ChatStreamDoneEvent;
 
 type ChatStreamResult = {
@@ -66,16 +59,6 @@ function parseChatStreamEvent(event: SseEvent): ChatStreamEvent | null {
         assistantMessageId: meta.assistant_message_id,
         turnId: meta.turn_id,
         correlationId: meta.correlation_id,
-      };
-    }
-    case "notice": {
-      const message = String((payload as { message?: string }).message ?? "").trim();
-      if (!message) return null;
-      const variant = String((payload as { variant?: string }).variant ?? "info");
-      return {
-        kind: "notice",
-        message,
-        variant: variant === "warning" ? "warning" : "info",
       };
     }
     case "done": {

@@ -19,6 +19,7 @@ from __future__ import annotations
 from enum import StrEnum
 from uuid import UUID
 
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import has_at_least_role
 
@@ -202,3 +203,27 @@ def ai_try_again_note() -> str:
     """The teacher note for a busy door: try again in a moment."""
 
     return _TRY_AGAIN_NOTE
+
+
+def door_refusal_error(error: AiDailyLimitReached | AiDoorBusy) -> DomainError:
+    """The 429 error a door refusal ends an AI action with.
+
+    A daily limit carries its limit's note; a busy door carries the try-again
+    note and the door's last Retry-After when it named one.
+    """
+
+    if isinstance(error, AiDoorBusy):
+        return DomainError(
+            code=ErrorCode.AI_TRY_AGAIN,
+            message=ai_try_again_note(),
+            details=(
+                {"retry_after_seconds": error.retry_after_seconds}
+                if error.retry_after_seconds is not None
+                else None
+            ),
+        )
+    return DomainError(
+        code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+        message=ai_limit_note(error.limit),
+        details={"limit": error.limit.value},
+    )

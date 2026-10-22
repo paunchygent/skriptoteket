@@ -6,7 +6,7 @@ Purpose:
 
 Relationships:
     - Maintainer and signed HuleEdu-derived access checks stay in web dependencies.
-    - Remote AI fallback consent comes from request-scoped profile preferences.
+    - A door daily-limit refusal reaches the error middleware as a 429 DomainError.
 """
 
 from fastapi import APIRouter, Depends, Header, Response
@@ -25,7 +25,6 @@ from skriptoteket.protocols.llm import (
     EditOpsPreviewHandlerProtocol,
     EditOpsSelection,
 )
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_ai_api,
     require_app_contributor_api,
@@ -58,7 +57,6 @@ async def create_edit_ops(
     settings: FromDishka[Settings],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_app_ai_api),
-    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorEditOpsResponse:
     if eval_mode == "1" and settings.ENVIRONMENT == "production":
@@ -82,7 +80,6 @@ async def create_edit_ops(
             selection=selection,
             cursor=cursor,
             virtual_files=payload.virtual_files.as_map(),
-            allow_remote_fallback=ai_preferences.allow_remote_fallback,
         ),
     )
     assistant_message = result.assistant_message

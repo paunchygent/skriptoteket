@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-ai-completion-architecture-technical-specification-PART-0
 title: AI Completion Architecture Technical Specification — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-ai-completion-architecture-technical-specification
 part: 1
@@ -15,39 +15,38 @@ part: 1
 
 Technical architecture for AI-assisted editor features in Skriptoteket: inline completions and chat-first editing.
 
----
-
+______________________________________________________________________
 
 The AI editor system provides Copilot-style ghost text suggestions and a chat-first assistant for proposing safe edits.
-It integrates with the CodeMirror 6 intelligence bundle and supports both self-hosted and API-based LLM providers.
+It integrates with the CodeMirror 6 intelligence bundle. Every model call goes through HuleEdu's LLM provider door
+(the OpenAI Responses route) with the signed-in teacher's user id. Skriptoteket holds no provider key and no local
+model endpoint.
 
 **Capabilities:**
 
-| Capability | Story | Description |
-| ---------- | ----- | ----------- |
-| Inline completions (ghost text) | ST-08-14 | FIM-based code suggestions at cursor |
-| Chat-first editing | ADR-0051 | Structured CRUD ops + diff preview + apply/undo |
-| Edit suggestions (legacy) | ST-08-16 | Selection-based replacement text (superseded by chat-first) |
+| Capability                      | Story    | Model                          | Description                                                                |
+| ------------------------------- | -------- | ------------------------------ | -------------------------------------------------------------------------- |
+| Inline completions (ghost text) | ST-08-14 | `gpt-6-luna`, reasoning `none` | Insert-only suggestion at the cursor from a delimited prefix/suffix prompt |
+| Chat (SSE)                      | ADR-0051 | `gpt-6.1-sol`, reasoning `low` | Streamed answer on a server-side thread                                    |
+| Chat ops (edit)                 | ADR-0051 | `gpt-6.1-sol`, reasoning `low` | Structured patch-only ops + diff preview + apply/undo                      |
 
 **Key features:**
 
 - Ghost text appears after typing pause (debounced auto-trigger)
-- Manual trigger via Alt+\ keyboard shortcut
+- Manual trigger via Alt+\\ keyboard shortcut
 - Tab to accept, Escape to dismiss
 - Knowledge base injection for Skriptoteket-specific patterns
 - Chat-first editing uses structured operations with diff preview + atomic apply/undo (ADR-0051)
 - Chat-first editing uses “virtual files” (e.g. `tool.py`, `input_schema.json`, `settings_schema.json`) to prevent
   boundary violations while still allowing multi-document proposals
-- Works with self-hosted (Tabby/llama.cpp) and API providers
+- A door daily limit surfaces as HTTP 429 `AI_DAILY_LIMIT_REACHED` with the teacher note inline in the editor's AI area
+- A busy door surfaces as HTTP 429 `AI_TRY_AGAIN` with the try-again note; the AI controls stay enabled
 
----
+______________________________________________________________________
 
 ## Facts And Semantics
 
-No separate facts and semantics is stated in the source.
-
 ### Source: 1.1 Chat-first editing (virtual files + multi-turn)
-
 
 Chat-first editing is defined in ADR-0051 and implemented via stories ST-08-20/21/22.
 
@@ -57,158 +56,130 @@ Key implications for architecture:
   thread keyed by `{user_id, tool_id}` (30-day TTL since last activity) and
   the frontend sends only the newest user message.
 - Proposals must target an explicit virtual file to keep diffs and apply/undo reliable.
-- Output token budgets for proposals are expected to exceed inline completion defaults, and must be coordinated with the
-  provider context window and backend budgeting (ADR-0052).
+- Output token budgets for proposals exceed inline completion defaults (8,192 versus 64 tokens) and are coordinated with
+  the backend budgeting (ADR-0052, section 5.3).
 
-### Source: 2. FIM Token Interpolation
+### Source: 2. Prompt Shape
 
-
-**FIM (Fill-in-the-Middle)** is a prompting technique for code completion where the model receives:
-
-- **Prefix**: Code before the cursor position
-- **Suffix**: Code after the cursor position
-- **Middle token**: Signals where to generate the completion
-
-Example with Qwen FIM tokens:
+**Inline completion** sends one Responses call. The system prompt (`instructions`) is composed from the template
+`inline_completion_gpt5_v1` (section 5). The single user message is a delimited prompt built by
+`infrastructure/llm/openai/inline_completion_prompt.py`:
 
 ```text
-<|fim_prefix|>def hello(name):
-    greeting = f"Hello, {name}!"
-    <|fim_suffix|>
-    return greeting<|fim_middle|>
+<FILE>tool.py</FILE>
+<LANGUAGE>python</LANGUAGE>
+
+<PREFIX>
+...code before the cursor...
+</PREFIX>
+
+<SUFFIX>
+...code after the cursor...
+</SUFFIX>
+
+<CURSOR>
+Return only the insertion text.
 ```
 
-The model generates what belongs between prefix and suffix (e.g., `# Format the greeting`).
+`<FILE>` and `<LANGUAGE>` appear only when the request names an active file; the language is derived from the extension
+(`.py`, `.json`, `.md`, `.txt`). The model returns the insertion text only. Fill-in-the-middle tokens and grammar-
+constrained decoding are not used.
 
-### 2.1 Model-Specific FIM Tokens
+**Chat** sends the thread messages as `input` items with the composed system prompt as `instructions` and `stream: true`.
 
-| Model Family | Prefix | Suffix | Middle |
-| ------------ | ------ | ------ | ------ |
-| Qwen3-Coder | `<\|fim_prefix\|>` | `<\|fim_suffix\|>` | `<\|fim_middle\|>` |
-| CodeLlama | `<PRE>` | `<SUF>` | `<MID>` |
-| StarCoder | `<fim_prefix>` | `<fim_suffix>` | `<fim_middle>` |
-
----
+**Chat ops** sends the same message shape with `stream: false` and a `text.format` of type `json_schema`
+(`edit_ops_patch_only`, built in `infrastructure/llm/openai/edit_ops_text_format.py`). The schema holds
+`assistant_message` and `ops`; each op is a `patch` with a `target_file` (one virtual file) and `patch_lines`.
 
 ### Source: 3. Infrastructure Architecture
 
-
-### 3.1 Self-Hosted Stack (Current)
-
-```text
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  CodeMirror 6   │────▶│  Backend Proxy  │────▶│  llama.cpp      │
-│  (Frontend)     │     │  (FastAPI)      │     │  :8082 (ROCm)   │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                         KB injection            Qwen3-Coder-30B-A3B
-                         + auth + CSRF
-```
-
-See [ADR-SKRIPT-0050](../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md) for infrastructure details.
-
-### 3.2 Tabby Integration (Optional)
-
-Tabby can serve as an intermediary for repository indexing and caching:
+### 3.1 Door Routing
 
 ```text
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Backend Proxy  │────▶│  Tabby :8083    │────▶│  llama.cpp      │
-│  (FastAPI)      │     │                 │     │  :8082          │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌─────────────────┐     ┌──────────────────────┐     ┌────────────┐
+│  CodeMirror 6   │────▶│  Backend        │────▶│  HuleEdu LLM         │────▶│  OpenAI    │
+│  (Frontend)     │     │  (FastAPI)      │     │  provider door       │     │  Responses │
+└─────────────────┘     └─────────────────┘     └──────────────────────┘     └────────────┘
+                         KB injection            meters pools, shares,
+                         + auth + CSRF           USD ceiling
 ```
 
-### 3.3 Tabby Customization Options
+- One module, `infrastructure/llm/door/client.py` (`HuleEduLlmDoorClient`), reaches the door. The three providers in
+  `infrastructure/llm/openai/` (inline completion, chat stream, chat ops) build a Responses body and call it through
+  `LlmDoorClientProtocol`.
+- Route: `POST {HULEEDU_LLM_PROVIDER_BASE_URL}/internal/v1/openai/responses`, authenticated with
+  `X-Internal-API-Key` (`HULEEDU_INTERNAL_API_KEY`) and `X-Service-ID: skriptoteket`. The door resolves provider
+  credentials; Skriptoteket never sees them.
+- The call carries `X-HuleEdu-User-ID` (the teacher), `X-HuleEdu-OpenAI-Allowance-Mode`, and
+  `X-HuleEdu-Exempt-Test-User: true` for admins.
+- Each editor request starts its own `AiDoorCaller` (`door_caller_for(user=actor)`); the handlers pass it to the provider.
+- Pools: inline completion draws on the small-model pool (`gpt-6-luna`); chat, chat ops and edit draw on the
+  full-model pool (`gpt-6.1-sol`). The door prices a model only when its manifest has the entry.
+- Neither model accepts `temperature`. The body carries no temperature, no stop sequences, no prompt-cache key or
+  retention and no extra headers; the door owns caching.
+- There is no failover route and no provider choice: one model per capability, one path.
 
-Based on [Tabby documentation](https://tabby.tabbyml.com/docs/administration/config-toml/):
+### 3.2 Request Body
 
-| Feature | Scope | Custom Context? | Notes |
-| ------- | ----- | --------------- | ----- |
-| `prompt_template` | FIM completion | ❌ | Only `{prefix}` and `{suffix}` placeholders |
-| `[answer] system_prompt` | Chat/Answer Engine | ✅ | Full system prompt customization |
-| `[[repositories]]` | Both | ✅ | Indexes code, injects relevant snippets |
-| `max_input_length` | Completion | — | Context window (default 1536 chars) |
-| `max_decoding_tokens` | Completion | — | Output length (default 64 tokens) |
+`infrastructure/llm/openai/payloads.py` (`build_responses_payload`) builds every editor body:
 
-**Key limitation:** Tabby's `prompt_template` only interpolates `{prefix}` and `{suffix}`. Arbitrary context prefixes
-cause parsing errors. For KB injection, use the backend proxy or Tabby's chat endpoint with `[answer] system_prompt`.
+| Field                 | Source                                                               |
+| --------------------- | -------------------------------------------------------------------- |
+| `model`               | `LLM_*_MODEL`                                                        |
+| `instructions`        | Composed system prompt                                               |
+| `input`               | `message` items (`input_text` for user, `output_text` for assistant) |
+| `max_output_tokens`   | `LLM_*_MAX_TOKENS`                                                   |
+| `reasoning.effort`    | `LLM_*_REASONING_EFFORT`                                             |
+| `text.verbosity`      | `LLM_*_TEXT_VERBOSITY` (omitted when `None`)                         |
+| `text.format`         | Chat ops only: the patch-only JSON schema                            |
+| `stream`              | `true` for chat, `false` otherwise                                   |
+| `store`, `truncation` | Inline completion only: `false`, `auto`                              |
 
-### 3.4 Integration Options
+### 3.3 Failures
 
-| Option | Architecture | KB Injection | Pros | Cons |
-| ------ | ------------ | ------------ | ---- | ---- |
-| A: Backend → llama.cpp | Direct | In prompt prefix | Full control, FIM format | No Tabby features |
-| B: Backend → Tabby chat | `/v1/chat/completions` | System prompt | Native Tabby, repo context | Chat format, not FIM |
-| C: Backend → Tabby FIM | `/v1/completions` | None (Tabby limitation) | Fast, caching | No custom KB |
+`infrastructure/llm/openai/door_replies.py` maps a door answer to `EditorLlmProviderError`
+(`protocols/llm/common.py`):
 
-**Recommended:** Option A for inline completions (full KB control), Option B for chat/edit suggestions.
+| Kind                      | Cause                                                                   |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `timeout`                 | Door call exceeded `LLM_*_TIMEOUT_SECONDS`                              |
+| `request_failed`          | Transport failed before an answer                                       |
+| `context_window_exceeded` | Relayed OpenAI error code `context_length_exceeded`                     |
+| `http_status`             | Any other unsuccessful relayed answer, with `status_code`               |
+| `invalid_response`        | Answer or stream event that cannot be parsed, or a stream `error` event |
 
----
+A door daily limit is never `EditorLlmProviderError`. The door client raises `AiDailyLimitReached(limit)`
+(`pool`, `user_share` or `usd_ceiling`), which the handlers turn into the 429 described in section 6.3. It is never
+retried.
 
-### Source: 4. Recommended Models (December 2025)
+A busy door is never `EditorLlmProviderError` either. Every editor call, the chat stream included, shares
+TASK-SKRIPT-41-01-04's door bounds: the door client's connection pool sized by `LLM_DOOR_MAX_CONNECTIONS`, and the
+action and process slots bounded by `LLM_JOB_MAX_IN_FLIGHT` and `LLM_DOOR_MAX_IN_FLIGHT`. A chat stream holds its
+slots until the stream closes. A door capacity 429 is resent after its capped `Retry-After`; once the retries are
+spent, or when no process slot or pooled connection frees in time, the client raises `AiDoorBusy`, which the
+handlers turn into HTTP 429 `AI_TRY_AGAIN` with the try-again note (`Retry-After` when the door named one). Chat
+refuses before its first SSE event (S6).
 
+______________________________________________________________________
 
-### 4.1 Self-Hosted
+### Source: 4. Models
 
-| Model | Architecture | VRAM | Context | Use Case |
-| ----- | ------------ | ---- | ------- | -------- |
-| **Devstral-Small-2-24B** | Dense | ~24 GB (Q8) | model: 262K / runtime: configured | Inline completions + chat-first editing (current) |
-| **Kimi K2** | Open-source | Varies | - | Alternative for code |
+| Capability        | Setting                | Default       | Reasoning |
+| ----------------- | ---------------------- | ------------- | --------- |
+| Inline completion | `LLM_COMPLETION_MODEL` | `gpt-6-luna`  | `none`    |
+| Chat              | `LLM_CHAT_MODEL`       | `gpt-6.1-sol` | `low`     |
+| Chat ops (edit)   | `LLM_CHAT_OPS_MODEL`   | `gpt-6.1-sol` | `low`     |
 
-### 4.2 API Providers
+The model ids are settings; changing one changes the pool the door meters. Token counting for budgets uses the model's
+`tiktoken` encoding with an `o200k_base` fallback (`infrastructure/llm/token_counter_resolver.py`).
 
-| Provider | Model | Use Case |
-| -------- | ----- | -------- |
-| Anthropic | **Claude Opus 4.5** | High-quality completions |
-| OpenAI | **GPT-5-2-Codex** | Code-specialized model |
-| OpenAI | **GPT-5-2** | Dense big model |
-| OpenAI | **GPT-5-2 High** | Planning model (chat, more reliable than Opus 4.5) |
-
-Note: For OpenAI, we target the **GPT-5-2 family only** (Codex, GPT-5-2, GPT-5-2 High). These share the same
-OpenAI-compatible API surface and prompt caching behavior, which lets us keep a single caching strategy.
-
-### 4.3 Configuration Examples
-
-**Self-hosted (Devstral-Small-2-24B via llama.cpp):**
-
-```bash
-LLM_COMPLETION_ENABLED=true
-LLM_COMPLETION_BASE_URL=http://localhost:8082
-LLM_COMPLETION_MODEL=Devstral-Small-2-24B
-LLM_COMPLETION_MAX_TOKENS=256
-LLM_COMPLETION_TEMPERATURE=0.2
-```
-
-**API Provider (OpenAI GPT-5-2 family + prompt caching):**
-
-```bash
-LLM_COMPLETION_ENABLED=true
-LLM_COMPLETION_BASE_URL=https://api.openai.com/v1
-OPENAI_LLM_COMPLETION_API_KEY=sk-...
-LLM_COMPLETION_MODEL=gpt-5-2-codex
-LLM_COMPLETION_PROMPT_CACHE_RETENTION=24h
-LLM_COMPLETION_PROMPT_CACHE_KEY=skriptoteket:completion
-```
-
-**API Provider (OpenRouter + GPT-5-2 family, optional headers):**
-
-```bash
-LLM_COMPLETION_ENABLED=true
-LLM_COMPLETION_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_LLM_COMPLETION_API_KEY=sk-or-...
-LLM_COMPLETION_MODEL=gpt-5-2-codex  # Use provider-specific model ID if required
-LLM_COMPLETION_PROMPT_CACHE_RETENTION=24h
-LLM_COMPLETION_PROMPT_CACHE_KEY=skriptoteket:completion
-LLM_COMPLETION_EXTRA_HEADERS={"HTTP-Referer":"https://skriptoteket.hule.education","X-Title":"Skriptoteket"}
-```
-
----
+______________________________________________________________________
 
 ### Source: 5. Knowledge Base Injection
 
-
-The backend injects Skriptoteket's knowledge base into the **system prompt** (chat system message). Inline completions
-still use FIM prompting for the **user** content (prefix/suffix + model FIM tokens), but the KB is treated as
-high-priority instruction content.
+The backend injects Skriptoteket's knowledge base into the **system prompt** (`instructions`). The user content carries
+the delimited prefix/suffix (completion) or the thread messages (chat, chat ops). The KB is high-priority instruction
+content.
 
 This ensures the LLM understands:
 
@@ -278,15 +249,15 @@ LIBRARIES: pandas, openpyxl, pypdf, python-docx, weasyprint, jinja2
 - **Packaging strategy:** Ship prompt templates with the application (`src/skriptoteket/application/editor/system_prompts/`)
 - **Failure mode:** If a prompt template cannot be loaded or composed, return `{ "completion": "", "enabled": false }`
 
-### 5.3 Context Budget Enforcement (llama.cpp `n_ctx=4096`)
+### 5.3 Context Budget Enforcement
 
-For both inline completions and chat-first editor capabilities, llama.cpp enforces that **prompt tokens + output
-tokens** fit within
-the configured context window (`n_ctx`). This means `max_tokens` reduces the available prompt budget.
+The backend keeps each prompt inside a configured token budget before it calls the door. The context window settings
+(`LLM_*_CONTEXT_WINDOW_TOKENS`) are Skriptoteket's own budgeting numbers; no inference server enforces them.
+The prompt budget is `context window - max output tokens - safety margin`, so raising `max_tokens` lowers the prompt
+budget unless the window is raised with it.
 
-Chat-first editing proposals (ADR-0051) are expected to require larger outputs than inline completions. Increasing
-`max_tokens` without increasing the context window reduces available prompt budget; therefore, chat-first editing may
-require increasing the inference server `n_ctx` and aligning backend budgets (ADR-0052).
+Chat-first editing proposals (ADR-0051) need larger outputs than inline completions, so chat and chat ops use a
+64k-token window and 8,192 output tokens, against 4,096 and 64 for completions.
 
 Skriptoteket enforces a deterministic prompt budget in the backend:
 
@@ -295,14 +266,17 @@ Skriptoteket enforces a deterministic prompt budget in the backend:
   - `LLM_CHAT_TEMPLATE_ID` (chat streaming)
   - `LLM_CHAT_OPS_TEMPLATE_ID` (chat edit-ops)
 - Reserve an explicit safety margin
-- Trim suffix first, then prefix; reduce KB last (if still over budget)
+- Inline completion: when the target sizes (system prompt, prefix, suffix) exceed the budget, trim the prefix first
+  (keeping the tail next to the cursor), then the suffix (keeping its head), then the system prompt
+- Chat: drop the oldest turns first and never truncate the system prompt (section 6.4)
 
-Budgeting is implemented as a conservative, char-based approximation in `src/skriptoteket/application/editor/prompt_budget.py`.
+Token counts come from the model's `tiktoken` encoding through `TokenCounterResolverProtocol`. Budgeting lives in
+`src/skriptoteket/application/editor/prompt_budget.py`; budgets for chat and chat ops resolve from settings in
+`infrastructure/llm/chat_budget_resolver.py` and `chat_ops_budget_resolver.py`.
 
----
+______________________________________________________________________
 
 ### Source: 6. API Contract
-
 
 ### 6.1 Request
 
@@ -313,40 +287,59 @@ X-CSRFToken: <csrf_token>
 
 {
   "prefix": "<code before cursor>",
-  "suffix": "<code after cursor>"
+  "suffix": "<code after cursor>",
+  "active_file": "tool.py"
 }
 ```
 
 Notes:
 
-- The API accepts large `prefix`/`suffix` strings, but the backend will trim them deterministically to fit the configured
+- `active_file` is a virtual file id and defaults to `tool.py`.
+- The API accepts large `prefix`/`suffix` strings, but the backend trims them deterministically to fit the configured
   context budget (see 5.3).
+- Access requires `require_app_ai_api` (admin or superuser), a temporary gate until the AI spend limits ship
+  (TASK-SKRIPT-REP-0044). Chat (`POST`) and edit-ops (`POST /edit-ops`) use the same gate.
 
 ### 6.2 Response
 
 ```json
 {
   "completion": "<suggested code to insert>",
-  "enabled": true
+  "enabled": true,
+  "replace_suffix_chars": 3
 }
 ```
 
 Notes:
 
 - `completion` MAY contain newline characters (`\n`) and should be inserted verbatim
-- The backend MUST NOT surface truncated completions. If `finish_reason == "length"`, return empty completion
+- `replace_suffix_chars` is present only when normalization asks the client to replace that many characters after the
+  cursor
+- The backend MUST NOT surface truncated completions. If the finish reason is `length` or `incomplete`, return empty
+  completion
+- Normalization (`application/editor/completion/normalization.py`) strips code fences, trims overlap with the prefix
+  and suffix (512-character window), drops echoes of the surrounding code, and may set `replace_suffix_chars`
+  (at most 24)
 
 ### 6.3 Error Handling
 
-| Scenario | Response |
-| -------- | -------- |
-| LLM disabled | `{ "completion": "", "enabled": false }` |
-| KB unavailable | `{ "completion": "", "enabled": false }` |
-| LLM timeout | `{ "completion": "", "enabled": true }` |
-| LLM error | `{ "completion": "", "enabled": true }` |
-| Upstream truncated | `{ "completion": "", "enabled": true }` |
-| Unauthorized | HTTP 401 |
-| Missing CSRF | HTTP 403 |
+| Scenario                                  | Response                                                                                                                     |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| LLM disabled                              | `{ "completion": "", "enabled": false }`                                                                                     |
+| KB unavailable                            | `{ "completion": "", "enabled": false }`                                                                                     |
+| Door timeout                              | `{ "completion": "", "enabled": true }`                                                                                      |
+| Door error (any `EditorLlmProviderError`) | `{ "completion": "", "enabled": true }`                                                                                      |
+| Upstream truncated                        | `{ "completion": "", "enabled": true }`                                                                                      |
+| Door daily limit                          | HTTP 429, code `AI_DAILY_LIMIT_REACHED`, `details.limit` (`pool`, `user_share` or `usd_ceiling`), message = the teacher note |
+| Unauthorized                              | HTTP 401                                                                                                                     |
+| Missing CSRF                              | HTTP 403                                                                                                                     |
+
+The teacher note (`ai_limit_note`) is `Du har nått din gräns för AI-hjälp i dag. Försök igen i morgon.` for the user's
+own share and `Appens AI-hjälp har nått dagens gräns. Försök igen i morgon.` for the app's pool or USD ceiling. The
+SPA shows it inline in the editor's AI area (ghost text, chat and edit-ops share one limit state) and shows no toast.
+
+Chat ops (`POST /api/v1/editor/edit-ops`) returns the same 429 and records the turn as failed with the note as the
+assistant message.
 
 ### 6.4 Editor chat streaming (SSE)
 
@@ -367,13 +360,16 @@ types:
 - `event: delta` (0..n): `data: {"text": "<utf8-chunk>"}`
 - `event: done` (exactly once, last): `data: {"enabled": true, "reason": "stop"|"cancelled"|"error"}`
 - If disabled/misconfigured: a single `event: done` with `data: {"enabled": false, "message": "<svenska>"}`
+- A door daily limit is refused before the first SSE event: the request fails with the HTTP 429 above, so the stream
+  never opens.
+- Any other door failure ends the stream with `done` and `reason: "error"` (after `meta`).
 
 Canonical thread behavior:
 
 - Conversation history is stored server-side per `{user_id, tool_id}` and used
   as context on subsequent chat-first requests (30-day TTL since last
   activity).
-- Clear the thread via `DELETE /api/v1/editor/tools/{tool_id}/chat`.
+- Clear the thread via `DELETE /api/v1/editor/tools/{tool_id}/chat`; read it via `GET` on the same path.
 - Provider calls use a sliding window (drop oldest turns first) and never
   truncate the system prompt.
 - If the newest user message cannot fit with the full system prompt and
@@ -385,6 +381,15 @@ Client rule:
 
 - If the SSE connection closes before a `done` event is received, treat the stream as cancelled.
 
----
+### 6.5 Edit-ops preview and apply
+
+- `POST /api/v1/editor/edit-ops` runs the chat-ops model call and returns `assistant_message`, `ops` and
+  `base_fingerprints`.
+- `POST /api/v1/editor/edit-ops/preview` validates ops against the virtual files and returns `after_virtual_files`,
+  `errors` and `meta`. It makes no model call.
+- `POST /api/v1/editor/edit-ops/apply` applies ops atomically with `base_hash` and `patch_id` checks. It makes no
+  model call. Both require contributor access to the tool.
+
+______________________________________________________________________
 
 ### Source: 7. CodeMirror Extension Architecture
