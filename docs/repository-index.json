@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d4d140dd7da736d0467df5d81c233bf5e274668d8beb805a8df13dafc6a9e4cd",
+  "source_set_digest": "fc6bb92ee68826f790add32fb7b759ecaa2e663d154e89b6418eb8ba81a93e8c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6408,7 +6408,7 @@
       "type": "task",
       "title": "Embedded pictures and cut-out drawn figures from a PDF land in their questions",
       "path": "docs/backlog/tasks/task-skript-39-10-02-embedded-pictures-and-cut-out-drawn-figures-from-a-pdf-land-in-their-questions.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6419,7 +6419,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Review, rereview and second review in retained root 01a160cd; S1-S5 repaired on fail-first proof (evidence/proof/repair/second/); user waived further review (T4, \"Now it's enough.\"); merged as 7adde567c; Mac staging walk 2026-10-22 at 7adde567c passed checks 1, 2 and 5 with metodprov_med_bilder.pdf (Mac .artifacts/staging-walk-39-10-02-7adde567c/walk-record.md); side-by-side figures and answer-line/shading checks rest on unit proof because the fixture has none."
       }
     },
     {

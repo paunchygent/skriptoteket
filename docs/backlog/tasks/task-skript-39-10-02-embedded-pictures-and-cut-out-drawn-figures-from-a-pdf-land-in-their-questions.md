@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Review, rereview and second review in retained root 01a160cd; S1-S5 repaired on fail-first proof (evidence/proof/repair/second/); user waived further review (T4, "Now it''s enough."); merged as 7adde567c; Mac staging walk 2026-10-22 at 7adde567c passed checks 1, 2 and 5 with metodprov_med_bilder.pdf (Mac .artifacts/staging-walk-39-10-02-7adde567c/walk-record.md); side-by-side figures and answer-line/shading checks rest on unit proof because the fixture has none.'
 task_kind: story
 acceptance_criteria:
   - Pictures placed in the PDF come along with their question
