@@ -6,23 +6,7 @@
  * dedupe assets safely without relying on mutable local ids.
  */
 
-function stableStringify(value: unknown): string {
-  if (value === null || typeof value !== "object") {
-    return JSON.stringify(value);
-  }
-
-  if (Array.isArray(value)) {
-    return `[${value.map((entry) => stableStringify(entry)).join(",")}]`;
-  }
-
-  const entries = Object.entries(value as Record<string, unknown>).sort(([left], [right]) => {
-    return left.localeCompare(right);
-  });
-  const serializedEntries = entries.map(([key, entryValue]) => {
-    return `${JSON.stringify(key)}:${stableStringify(entryValue)}`;
-  });
-  return `{${serializedEntries.join(",")}}`;
-}
+import { stableJson } from "../../utils/stableJson";
 
 function rightRotate(value: number, bits: number): number {
   return (value >>> bits) | (value << (32 - bits));
@@ -142,9 +126,9 @@ function sha256Hex(value: string): string {
 }
 
 export function createClassroomPlannerGuestFingerprint(value: unknown): string {
-  return `sha256:${sha256Hex(stableStringify(value))}`;
+  return `sha256:${sha256Hex(stableJson(value))}`;
 }
 
 export function createClassroomPlannerGuestContentHash(value: unknown): string {
-  return `sha256:${sha256Hex(stableStringify(value))}`;
+  return `sha256:${sha256Hex(stableJson(value))}`;
 }

@@ -66,6 +66,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
+import { stableJson } from "../../../utils/stableJson";
 import { BODY_MARKS } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { useExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
@@ -160,7 +161,8 @@ function atomKey(body: readonly NativeExamBodyParagraph[]): string {
   return JSON.stringify([placedGapIds(body), placedAssetIds(body)]);
 }
 
-let emitted = JSON.stringify(props.body);
+/** The last body this editor emitted or installed; key order is ignored, since a save returns the server's order. */
+let emitted = stableJson(props.body);
 let knownAtoms = atomKey(props.body);
 /** True while a toolbar click runs, so its one change is one undo step. */
 let toolbarEdit = false;
@@ -291,7 +293,7 @@ const editor = useEditor({
     const atoms = atomKey(body);
     const creation = pendingGapCreation();
     const structural = toolbarEdit || atoms !== knownAtoms || isDiscreteEdit(transaction);
-    emitted = JSON.stringify(body);
+    emitted = stableJson(body);
     knownAtoms = atoms;
     if (creation !== null) {
       emit("createGap", body, creation.gapId, creation.seed);
@@ -398,7 +400,7 @@ onBeforeUnmount(() => {
 watch(
   () => props.body,
   (body) => {
-    const json = JSON.stringify(body);
+    const json = stableJson(body);
     if (json === emitted) {
       return;
     }
