@@ -1,7 +1,7 @@
 ---
 type: task
 id: TASK-SKRIPT-41-01-02
-title: The script editor's AI runs on Sol 6.1 low through the Sol pool
+title: Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door
 repository: skriptoteket
 owners:
 - kind: service

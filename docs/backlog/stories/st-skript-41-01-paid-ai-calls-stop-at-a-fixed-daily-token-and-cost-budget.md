@@ -38,7 +38,7 @@ This story moves every paid call onto the LLM provider door of ST-HULE-14-03 (B1
 | Task                 | Delivers                                                                                                                               | Depends on           |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
 | TASK-SKRIPT-41-01-03 | Walking skeleton: every exam AI call through the door, ledger, key and GLM failover removed, Luna 6 low, the limit note, staging proof | TASK-HULE-14-03-01   |
-| TASK-SKRIPT-41-01-02 | Script-editor completion, chat, chat ops and edit on Sol 6.1 low through the door                                                      | TASK-SKRIPT-41-01-03 |
+| TASK-SKRIPT-41-01-02 | Script-editor completion on GPT-6 Luna, and chat, chat ops and edit on Sol 6.1 low, through the door                                                      | TASK-SKRIPT-41-01-03 |
 | TASK-SKRIPT-41-01-04 | Capacity for 1,000 concurrent calls and the try-again answer                                                                           | TASK-SKRIPT-41-01-03 |
 
 ## Verification

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0ee3133c9f55223b60f1591f5638188a752f4cb47205d14ee561db03267778b8",
+  "source_set_digest": "e12e3d6c02972a7a779ae9f36ec0ab0cb3c7984c80038f670597dd953fcc8cac",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7368,8 +7368,8 @@
     {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
-      "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
-      "path": "docs/backlog/tasks/task-skript-41-01-02-the-script-editor-s-ai-runs-on-sol-6-1-low-through-the-sol-pool.md",
+      "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
+      "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
