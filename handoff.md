@@ -3,18 +3,14 @@
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
 - [TASK-SKRIPT-39-04-23](docs/backlog/tasks/task-skript-39-04-23-the-exam-import-shows-each-phase-and-a-live-signal-while-it-works.md)
-  `in_progress`: import phase text plus ticking elapsed time on branch
-  `codex/task-skript-39-04-23` (migration `aa30c309b36c`; retained `01a1639f`).
-  Next: Hemma orchestrator review, merge, Mac walk of Word and PDF import (D6).
+  `in_progress`: on main and production `8569092ba` (migration `aa30c309b36c`; retained
+  `01a1639f`). Walk fixes (Läser filen from upload, 300 px row) await the Mac staging re-walk.
 
 - Hemma orchestrator 2026-10-22:
 
-  - Production runs `73952bcb` (07:19 UTC after verified backup
-    `scheduled/20261022T071347Z`; migration `9f3c7a1b4e02`; health green; one
-    direct door probe from skriptoteket-worker returned 200). HuleEdu prod runs
-    `7d298307` (door internal key in prod compose `2885daa9`); it had been down
-    since the 06:43 reboot (restart policy "no"); deploy needed a pulled
-    `prom/alertmanager:v0.34.1`. HuleEdu prod `.env` still holds a stale
+  - Production runs `8569092ba` (deployed 14:05 UTC by user decision; migration
+    `aa30c309b36c`; seating gate and /healthz green). HuleEdu prod runs `ca7ff9700`
+    (door 14-03-04/05/06, deployed 14:04 UTC first). HuleEdu prod `.env` still holds a stale
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
   - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, ntfy
     reaches the phone, Healthchecks check "Hemma" up with receipt verified (`4d8ebe9d`).
@@ -86,12 +82,12 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02: review F1-F6 repaired (`ab453737f`, root `01a16352-c1aa-7200-beac-cdd64393cb32`);
-      merged to main, staging walk next.
-    - 39-04-23 import phases and live signal: lead `local_d5b9c69f` on `codex/task-skript-39-04-23`,
-      review repairs in progress.
+    - 41-01-02: on main and production `8569092ba` (root `01a16352-c1aa-7200-beac-cdd64393cb32`);
+      walk fixes (edit proposal text, first question after Ny chatt) await the Mac re-walk.
+    - Proposed follow-ups chosen by the user 2026-10-22: 41-03-02 ghost text, 41-03-03 chat
+      Markdown, 39-04-24 rising import count.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
-      `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
+      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 ready (retained `01a163e6`), starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
     in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
     one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.
@@ -131,7 +127,7 @@
 - 2026-10-22 `done`: 41-01-04 AI capacity and try-again (`d44e946b5`; review F1-F8, retained
   `01a16352`; Mac walk `.artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md`). HuleEdu door
   14-03-04/05/06 on main `ca7ff9700` (overage, gpt-6.1-sol price, cache writes, backlog 2048);
-  staging door rebuilt, production not deployed.
+  deployed to production 2026-10-22.
 
 - 2026-10-22 `done`: 39-04-22 Word drawn shapes as pictures, shapes kept
   for Word export (`74eeceb2d`; review F1-F9 repaired on fail-first proof, retained
