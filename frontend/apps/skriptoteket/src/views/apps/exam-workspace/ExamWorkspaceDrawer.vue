@@ -132,7 +132,7 @@ useDialogFocus(frame, {
 .drawer__title { flex: 1; margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
 .drawer__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
 .drawer__body {
-  display: grid; align-content: start; gap: var(--huleedu-space-6); flex: 1; min-height: 0; overflow-y: auto;
+  display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--huleedu-space-6); flex: 1; min-height: 0; overflow-y: auto;
   padding: var(--huleedu-space-5);
 }
 .drawer--tablet {

@@ -117,23 +117,34 @@ class _TracingChunker:
         return self._chunker.chunk(content=content)
 
 
-@pytest.mark.parametrize("fallback_reason", [None, "Arbetaren avbröts."])
-async def test_the_job_reports_reading_before_it_chunks_the_file(fallback_reason: str | None):
+async def test_a_first_claim_keeps_the_reading_phase_the_import_queued():
     env = environment()
     running = await claim(env)
     trace = env.replay.progress.trace
     env.processor._chunker = _TracingChunker(trace)  # noqa: SLF001 - trace the chunker
 
-    finished = await env.processor.handle(job=running, fallback_reason=fallback_reason)
+    finished = await env.processor.handle(job=running)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
+    assert trace[0] == "chunk", "no reading write precedes the file read; the import's stands"
+    assert "phase:reading" not in trace
+    stored = env.jobs.jobs[running.id]
+    assert stored.conversion_phase is ConversionPhase.CONVERTING
+    assert stored.conversion_phase_started_at is not None
+
+
+async def test_a_reclaimed_job_reports_reading_before_it_chunks_the_file():
+    env = environment()
+    running = await claim(env)
+    trace = env.replay.progress.trace
+    env.processor._chunker = _TracingChunker(trace)  # noqa: SLF001 - trace the chunker
+
+    finished = await env.processor.handle(job=running, fallback_reason="Arbetaren avbröts.")
 
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert trace[:2] == ["phase:reading", "chunk"], "reading is reported before the file is read"
     assert trace.count("phase:reading") == 1
+    # A lease-reclaimed run keeps the file source-only: reading is the only phase it reports.
+    assert env.replay.progress.phases == [ConversionPhase.READING]
     stored = env.jobs.jobs[running.id]
-    if fallback_reason is None:
-        assert stored.conversion_phase is ConversionPhase.CONVERTING
-        assert stored.conversion_phase_started_at is not None
-    else:
-        # A lease-reclaimed run keeps the file source-only: reading is the only phase it reports.
-        assert env.replay.progress.phases == [ConversionPhase.READING]
-        assert stored.conversion_phase is ConversionPhase.READING
+    assert stored.conversion_phase is ConversionPhase.READING

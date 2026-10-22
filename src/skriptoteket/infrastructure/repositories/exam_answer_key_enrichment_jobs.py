@@ -67,6 +67,10 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             last_error=job.last_error,
             ai_limit=job.ai_limit.value if job.ai_limit is not None else None,
             diagnostics=list(job.diagnostics),
+            conversion_phase=(
+                job.conversion_phase.value if job.conversion_phase is not None else None
+            ),
+            conversion_phase_started_at=job.conversion_phase_started_at,
             created_at=job.created_at,
             updated_at=job.updated_at,
             started_at=job.started_at,

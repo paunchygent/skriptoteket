@@ -57,7 +57,10 @@ async def _queue_and_claim(
         settings=SETTINGS,
         id_generator=Ids(),
     ).handle(actor=actor, filename="prov.docx", content=b"docx-bytes", course_key=None)
-    assert queued.phase is None and queued.phase_started_at is None
+    # The import queues the job already reading; the clock starts at the upload.
+    assert (queued.phase, queued.phase_started_at) == (ConversionPhase.READING, now)
+    stored_status = await world.status.handle(actor=actor, job_id=queued.job_id)
+    assert (stored_status.phase, stored_status.phase_started_at) == (ConversionPhase.READING, now)
     async with world.uow:
         claimed = await world.jobs.claim_next(
             worker_id=WORKER,
@@ -66,6 +69,11 @@ async def _queue_and_claim(
             source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
         )
     assert claimed is not None
+    # The worker's claim keeps the phase and its start time.
+    assert (claimed.conversion_phase, claimed.conversion_phase_started_at) == (
+        ConversionPhase.READING,
+        now,
+    )
     return queued.job_id, queued.lineage_id
 
 

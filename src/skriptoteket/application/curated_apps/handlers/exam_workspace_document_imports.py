@@ -31,6 +31,7 @@ from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -109,6 +110,9 @@ class ImportExamWorkspaceDocumentHandler:
 
         document_id = self._id_generator.new_uuid()
         now = self._clock.now()
+        # A Word or PDF import is queued already reading, so the teacher's first poll
+        # shows the phase and its clock starts at the upload; the worker's claim comes later.
+        reading = self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT
         async with self._uow:
             job = await self._jobs.create(
                 job=ExamAnswerKeyEnrichmentJob(
@@ -126,6 +130,8 @@ class ImportExamWorkspaceDocumentHandler:
                     workspace_lineage_id=document_id,
                     workspace_document_revision=1,
                     workspace_course_key=selected_course_key,
+                    conversion_phase=ConversionPhase.READING if reading else None,
+                    conversion_phase_started_at=now if reading else None,
                     available_at=now,
                     created_at=now,
                     updated_at=now,

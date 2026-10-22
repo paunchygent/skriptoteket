@@ -97,8 +97,9 @@ const isWorking = computed(() => props.isConverting || props.isImporting);
 </template>
 
 <style scoped>
+/* The single track is minmax(0, 1fr): an implicit auto track would size to the nowrap message's full width and push the clock past the drawer. */
 .prog {
-  display: grid; gap: var(--huleedu-space-2); padding: var(--huleedu-space-3) var(--huleedu-space-4);
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--huleedu-space-2); padding: var(--huleedu-space-3) var(--huleedu-space-4);
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content);
   font-size: var(--huleedu-text-sm);
 }

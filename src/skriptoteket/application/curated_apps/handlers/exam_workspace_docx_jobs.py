@@ -96,11 +96,13 @@ class ProcessExamWorkspaceDocxJobHandler:
                     "Kontot för provdokumentet finns inte längre.",
                     _job_failure("owner_missing", str(job.owner_user_id)),
                 )
-            # Chunking reads the Word or PDF file; a reclaimed job reports the phase again
-            # under its new worker id. The phase write opens its own unit of work.
-            await self._progress.phase(
-                worker_id=job.locked_by, job_id=job.id, phase=ConversionPhase.READING
-            )
+            # The import queues the job already reading, so a first claim keeps that phase
+            # and its clock. A reclaim (the only caller passing a fallback reason) reports
+            # reading again under its new worker id. The phase write opens its own unit of work.
+            if fallback_reason is not None:
+                await self._progress.phase(
+                    worker_id=job.locked_by, job_id=job.id, phase=ConversionPhase.READING
+                )
             chunks = self._chunker.chunk(content=job.source_docx)
             outcome = await self._pipeline.convert(
                 job=DocxConversionJob(

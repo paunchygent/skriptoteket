@@ -119,3 +119,9 @@ delegation (2026-10-22, "Take care of it."). All come from the retained plan in 
   message slot with its tooltip and a fixed clock slot (geometry checked on the Mac walk). The
   queued null phase keeps its spinner without a timer (reviewer ruling). Main merged;
   `aa30c309b36c` now revises `e5b1d7a3c9f2` (single head, migration cycle test green).
+- 2026-10-22 Mac walk at `e1fbb32a4` (Mac `.artifacts/staging-walk-39-04-23-e1fbb32a4/walk-record.md`)
+  found two defects, fixed on fail-first proof: a Word or PDF job is created in the reading
+  phase with its start time at upload (a reclaim reports reading again), so the queued wait
+  shows "Läser filen" and a clock; the status box and the drawer body use a `minmax(0, 1fr)`
+  column so the row shrinks at a 300 px viewport (headless Chrome reproduction in the retained
+  root's `evidence/39-04-23-walk-D2-*`).
