@@ -14,6 +14,7 @@ Relationships:
 
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from datetime import datetime, timedelta
 from typing import Protocol
 from uuid import UUID
@@ -33,6 +34,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 
+StructuredLLMTextObserver = Callable[[str], Awaitable[None]]
+
 
 class AnswerKeyStructuredProviderProtocol(Protocol):
     """Execute one structured answer-key request against a provider profile."""
@@ -43,6 +46,7 @@ class AnswerKeyStructuredProviderProtocol(Protocol):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse: ...
 
 

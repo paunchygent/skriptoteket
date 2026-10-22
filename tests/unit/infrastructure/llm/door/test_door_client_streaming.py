@@ -161,11 +161,11 @@ async def test_a_stream_dying_while_reading_lines_raises_a_typed_door_error() ->
             async for line in door_stream.aiter_lines():
                 lines.append(line)
 
-    assert lines == ["event: response.created"]
+    assert lines == []  # An unfinished SSE event is buffered until its boundary.
     assert caller.admitted
 
 
-async def test_a_stream_without_charge_headers_logs_no_missing_header_warning(
+async def test_a_stream_without_charge_record_keeps_missing_charge_warning_policy(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     events: list[str] = []
@@ -188,6 +188,6 @@ async def test_a_stream_without_charge_headers_logs_no_missing_header_warning(
     ) as door_stream:
         _ = [line async for line in door_stream.aiter_lines()]
 
-    assert events == []
+    assert events == ["llm_door_charge_headers_missing"]
     assert caller.admitted
     assert caller.overage_usd_micros == 0

@@ -51,6 +51,7 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
@@ -135,6 +136,8 @@ class _ProbedExchange:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply:
         await self._probe.sample("docx one-question retry")
         return DocxRoundReply(

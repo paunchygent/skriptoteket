@@ -65,6 +65,34 @@ def test_untouched_placeholder_is_replaced_in_place_by_its_converted_items(
     assert merged.progress.questions_done == 2
 
 
+def test_receipt_survives_first_save_merge_and_abandonment_without_implying_readiness() -> None:
+    progress = ConversionProgress.from_question_ids(("q1", "q2"))
+    progress = progress.model_copy(update={"received_question_ids": ("q2",)})
+    progress = ConversionProgress.model_validate_json(progress.model_dump_json())
+    update = conversion_update(
+        [("q1", [choice("p1", "Fråga ett")]), ("q2", [placeholder("p2", "Källtext två")])],
+        pending=("q2",),
+    )
+    first = first_conversion(update=update, progress=progress)
+    assert first.progress.received_question_ids == ("q2",)
+    assert (first.progress.questions_received, first.progress.questions_done) == (1, 1)
+    assert first.progress.units[1].state is ConversionUnitState.CONVERTING
+    repeated = merge_conversion(
+        head=first.document, progress=first.progress, target=target_from_update(update)
+    )
+    assert not repeated.changed
+    assert repeated.progress.received_question_ids == ("q2",)
+    abandoned = merge_conversion(
+        head=first.document,
+        progress=first.progress,
+        target=abandon_target(head=first.document, progress=first.progress, reason="Avbruten"),
+    )
+    # A saved source-review fallback need not have received any converter output.
+    assert abandoned.progress.questions_done == 2
+    assert abandoned.progress.questions_received == 1
+    assert abandoned.progress.received_question_ids == ("q2",)
+
+
 def test_a_save_that_changes_a_placeholder_is_caught(
     first: tuple[NativeExamDocument, ConversionProgress],
 ) -> None:

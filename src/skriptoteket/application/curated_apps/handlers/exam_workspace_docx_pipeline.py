@@ -42,12 +42,9 @@ from skriptoteket.application.curated_apps.exam_content_tagging import (
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     merge_batch,
-    validated,
-    with_type_check_mark,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
-    convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
@@ -58,14 +55,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_content_
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_labeling import (
     labeling_request,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_part_conversion import (
+    admit_part,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline_batches import (
-    BatchPart,
-    batch_state,
     failed,
-    limited,
     reviewed,
     source_parts,
-    source_reviewed,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_publication import (
     final_publication,
@@ -368,7 +364,17 @@ class DocxConversionPipeline:
             await run.converting_written.wait()
         started = time.monotonic()
         parts = source_parts(run, batch)
-        outcomes = [await self._admitted(run, part) for part in parts]
+        outcomes = [
+            await admit_part(
+                run,
+                part,
+                exchange=self._exchange,
+                profile=self._profile,
+                progress=self._progress,
+                progress_lock=self._uow.lock,
+            )
+            for part in parts
+        ]
         run.timed(f"batch {batch.batch_id}", started)
         for part, outcome in zip(parts, outcomes, strict=True):
             await self._deliver(run, part.batch, outcome, tasks)
@@ -416,52 +422,6 @@ class DocxConversionPipeline:
             )
         if outcome.conflicts:
             self._dispatch(run, list(outcome.conflicts), f"{batch.batch_id}c", tasks)
-
-    async def _admitted(self, run: DocxConversionRun, part: BatchPart) -> BatchOutcome:
-        """One part's outcome: its families' review when their source is unavailable, else
-        their admitted and contract-checked items."""
-        if part.missing:
-            return source_reviewed(run, part)
-        if run.ai_limit is not None and run.limit_code is not None:
-            return limited(run, part.batch, run.limit_code)
-        try:
-            outcome = await convert_batch(
-                state=batch_state(run, part.batch),
-                batch=part.batch,
-                families={
-                    f.question_id: f
-                    for f in run.families
-                    if f.question_id in part.batch.question_ids
-                },
-                exchange=self._exchange,
-                profile=self._profile,
-                caller=run.job.caller,
-            )
-            with_type_check_mark(outcome.state)
-            validated(outcome.state)
-        except AiDoorBusy:
-            # A busy door ends the conversion; it never becomes a review item.
-            raise
-        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
-            code = run.note_limit(exc)
-            # One refused batch never fails the conversion (D25): its items fail as for
-            # a DocxBuildRoundFailure.
-            logger.warning(
-                "DOCX conversion batch refused at the door",
-                job_id=str(run.job.job_id),
-                batch=part.batch.batch_id,
-                code=code,
-            )
-            return failed(run, part.batch, code, exc)
-        except Exception as error:
-            # One batch's failure never fails the conversion (D25).
-            logger.exception(
-                "DOCX conversion batch failed",
-                job_id=str(run.job.job_id),
-                batch=part.batch.batch_id,
-            )
-            return failed(run, part.batch, "batch_failed", error)
-        return outcome
 
     def _merged(
         self, run: DocxConversionRun, batch: ConversionBatch, outcome: BatchOutcome

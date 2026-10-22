@@ -10,6 +10,9 @@ import structlog
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_prompt import (
     docx_build_prompt,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_output_observer import (
+    DocxReceiptWriteError,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderError,
     StructuredLLMProviderProfile,
@@ -34,6 +37,7 @@ from skriptoteket.domain.llm_door import (
 )
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
+    StructuredLLMTextObserver,
 )
 
 logger = structlog.get_logger(__name__)
@@ -67,6 +71,8 @@ class DocxBuildExchangeProtocol(Protocol):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply: ...
 
 
@@ -141,12 +147,16 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply:
         """Call the provider once; a failure stops the batch with a review reason."""
         try:
             response = await self._provider.complete_structured(
-                request=request, profile=profile, caller=caller
+                request=request, profile=profile, caller=caller, on_text=on_text
             )
+        except DocxReceiptWriteError:
+            raise
         except StructuredLLMProviderError as error:
             reason = (
                 "AI-tjänsten avböjde tolkningen. Kontrollera källtexten manuellt."

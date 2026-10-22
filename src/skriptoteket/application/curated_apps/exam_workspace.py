@@ -64,7 +64,8 @@ class ExamWorkspaceConversionStatus(BaseModel):
 
     ``document_revision`` is the latest revision conversion saved, absent until the
     first batch is ready; ``units`` lets the editor merge each new revision into
-    unsaved teacher edits.
+    unsaved teacher edits. ``questions_received`` counts distinct questions with AI
+    output, independently of saved results and editor readiness.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -77,6 +78,7 @@ class ExamWorkspaceConversionStatus(BaseModel):
     document_revision: int | None
     questions_total: int
     questions_done: int
+    questions_received: int
     phase: ConversionPhase | None
     phase_started_at: datetime | None
     units: tuple[ExamWorkspaceConversionUnit, ...]

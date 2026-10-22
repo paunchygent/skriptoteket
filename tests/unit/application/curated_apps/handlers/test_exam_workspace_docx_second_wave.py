@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
 )
 from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     ReplayProvider,
@@ -48,10 +49,13 @@ class _HeldLabel(ReplayProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         if request.item_id == f"label_b:{_HELD}":
             await self.release.wait()
-        return await super().complete_structured(request=request, profile=profile, caller=caller)
+        return await super().complete_structured(
+            request=request, profile=profile, caller=caller, on_text=on_text
+        )
 
 
 def _second_wave(provider: ReplayProvider) -> list[str]:

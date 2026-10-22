@@ -27,6 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
     build_replay,
@@ -82,9 +83,10 @@ class _RewrittenReplies(ReplayProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         response = await super().complete_structured(
-            request=request, profile=profile, caller=caller
+            request=request, profile=profile, caller=caller, on_text=on_text
         )
         if self.recording_ids.get(request.item_id) != _REPLY:
             return response

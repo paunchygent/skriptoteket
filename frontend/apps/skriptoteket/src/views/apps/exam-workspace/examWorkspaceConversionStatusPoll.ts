@@ -72,21 +72,16 @@ export function createConversionStatusPoll(
     if (!runtime.isConverting.value || !status || status.questions_total === 0) return null;
     // Before the converting phase the count is not shown: the phase line names the work.
     if (status.phase !== null && status.phase !== "converting") return null;
-    return { done: status.questions_done, total: status.questions_total };
+    return { received: status.questions_received, total: status.questions_total };
   });
 
   const conversionMessage = computed(() => {
     const progress = conversionProgress.value;
     const phase = runtime.isConverting.value ? runtime.conversionStatus.value?.phase : null;
-    if (phase === "converting") {
-      return progress
-        ? `${CONVERSION_PHASE_COPY.converting}: ${progress.done} av ${progress.total} klara`
-        : CONVERSION_PHASE_COPY.converting;
+    if (progress) {
+      return `AI-svar mottagna för ${progress.received} av ${progress.total} frågor.`;
     }
     if (phase) return CONVERSION_PHASE_COPY[phase];
-    if (progress) {
-      return `Konverterar provet: ${progress.done} av ${progress.total} frågor klara.`;
-    }
     if (runtime.isConverting.value) return "Konverterar provet …";
     if (runtime.isImporting.value && runtime.conversionStatus.value === null) return IMPORT_UPLOAD_COPY;
     if (runtime.conversionStatus.value?.state === "failed") {

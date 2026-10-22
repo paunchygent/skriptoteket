@@ -70,6 +70,7 @@ from tests.unit.llm_door_fakes import (
     RecordingDoor,
     fixture_caller,
     json_reply,
+    sse_reply,
     user_with_role,
 )
 
@@ -153,6 +154,32 @@ def responses_envelope(content: JsonValue) -> JsonValue:
         "output_text": json.dumps(content),
         "usage": {"input_tokens": 10, "output_tokens": 10},
     }
+
+
+def _responses_reply(
+    sent: DoorSent, content: JsonValue, *, overage_usd_micros: int | None = None
+) -> DoorReply:
+    """Serve the requested wire format with the same scripted content and settled charge."""
+    response = responses_envelope(content)
+    if sent.payload.get("stream") is not True:
+        return json_reply(response, overage_usd_micros=overage_usd_micros)
+    return sse_reply(
+        [
+            (
+                "response.output_text.delta",
+                {"type": "response.output_text.delta", "delta": json.dumps(content)},
+            ),
+            ("response.completed", {"type": "response.completed", "response": response}),
+            (
+                "huleedu.door.charge",
+                {
+                    "type": "huleedu.door.charge",
+                    "charge_kind": "overage" if overage_usd_micros is not None else "complimentary",
+                    "charge_usd_micros": overage_usd_micros or 0,
+                },
+            ),
+        ]
+    )
 
 
 def anchor_list(raw: object) -> list[str]:
@@ -278,22 +305,21 @@ class DoorScript:
                 converted_item(anchor_list(raw), index)
                 for index, raw in enumerate(raw_questions, start=1)
             ]
-            return json_reply(
-                responses_envelope(
-                    {
-                        "title": None,
-                        "instructions": [],
-                        "answer_key_anchors": [],
-                        "items": converted,
-                    }
-                ),
+            return _responses_reply(
+                sent,
+                {
+                    "title": None,
+                    "instructions": [],
+                    "answer_key_anchors": [],
+                    "items": converted,
+                },
                 overage_usd_micros=self._batch_charge or None,
             )
         if self._refuse_grouping:
             raise AiDailyLimitReached(limit=AiDailyLimit.POOL)
         if self._busy_grouping:
             raise AiDoorBusy(retry_after_seconds=None)
-        return json_reply(responses_envelope(self._grouping))
+        return _responses_reply(sent, self._grouping)
 
 
 def convert(script: DoorScript, *, course_key: str | None = None):

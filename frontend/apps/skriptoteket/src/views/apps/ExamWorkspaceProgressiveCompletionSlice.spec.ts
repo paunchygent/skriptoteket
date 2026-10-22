@@ -66,7 +66,7 @@ describe("Exam workspace progressive conversion completion", () => {
     await saveDocument(view);
 
     const finalItems = [{ ...converted(1), points: 11 }, converted(2), converted(3)];
-    const succeeded = status("succeeded", 3, ["ready", "ready", "ready"]);
+    const succeeded = status("succeeded", 3, ["ready", "ready", "ready"], 3);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(succeeded);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems, succeeded));
     // A store does not block the merge the way Spara did: the batch merges
@@ -99,7 +99,7 @@ describe("Exam workspace progressive conversion completion", () => {
     await editPoints(view, "item_001", "11");
 
     // Conversion finished at revision 2; another tab then saved revision 3 on top of it.
-    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    const done = status("succeeded", 2, ["ready", "ready", "ready"], 3);
     const otherTab = revision(
       3,
       [converted(1), { ...converted(2), points: 32 }, converted(3)],
@@ -125,9 +125,28 @@ describe("Exam workspace progressive conversion completion", () => {
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
   });
 
+  it("opens a saved source-review fallback without inventing AI output receipt", async () => {
+    const view = await uploadFirstBatch();
+    const done = status("succeeded", 2, ["ready", "ready", "ready"], 2);
+    const fallback = {
+      ...converted(3),
+      review: { ...converted(3).review, state: "review_required" as const },
+    };
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(done);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      revision(2, [converted(1), converted(2), fallback], done),
+    );
+    await tick();
+
+    await selectItemRow(view, "item_003");
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
+    expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
+  });
+
   it("keeps the placeholders locked after a final status while its revision cannot be read", async () => {
     const view = await uploadFirstBatch();
-    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    const done = status("succeeded", 2, ["ready", "ready", "ready"], 3);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(done);
     apiMocks.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("offline"));
     await tick();
@@ -149,7 +168,7 @@ describe("Exam workspace progressive conversion completion", () => {
     await editPoints(view, "item_001", "11");
 
     // The status names revision 2, but the document read returns it without the conversion that owns its units.
-    const partial = status("running", 2, ["ready", "ready", "converting"]);
+    const partial = status("running", 2, ["ready", "ready", "converting"], 3);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(partial);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       revision(2, [converted(1), converted(2), placeholder(3)], null),

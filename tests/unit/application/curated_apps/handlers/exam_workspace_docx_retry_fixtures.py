@@ -75,6 +75,7 @@ from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
     InMemoryExamIndexRepository,
@@ -144,6 +145,8 @@ class FakeExchange:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply:
         self.requests.append(request)
         if self.failure is not None:

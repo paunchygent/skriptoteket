@@ -28,7 +28,7 @@ import {
   pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
-import { saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
+import { importFixtureDocument, saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -53,11 +53,33 @@ vi.mock("../../api/examWorkspace", async () => ({
 installProgressiveConversionLifecycle(apiMocks);
 
 describe("Exam workspace progressive conversion", () => {
+  it("labels received AI output without promising editable questions before any revision is saved", async () => {
+    const received = status("running", null, ["converting", "converting", "converting"], 2);
+    apiMocks.getExamWorkspaceConversionStatus.mockReset();
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(received);
+    apiMocks.getExamWorkspaceDocument.mockReset();
+    const { wrapper: view } = await mountTracked();
+    await importFixtureDocument(view);
+
+    expect(received.questions_done).toBe(0);
+    expect(received.document_revision).toBeNull();
+    expect(apiMocks.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    const block = view.get('[data-test="exam-workspace-conversion-status"]');
+    expect(block.text()).toContain("AI-svar mottagna för 2 av 3 frågor.");
+    expect(block.findAll('[role="progressbar"]')).toHaveLength(1);
+    const bar = block.get('[role="progressbar"]');
+    expect.soft(bar.attributes("aria-label")).toBe("AI-svar mottagna");
+    expect(bar.attributes("aria-valuenow")).toBe("2");
+    expect(bar.attributes("aria-valuemax")).toBe("3");
+    expect.soft(block.text()).not.toContain("Klara frågor går att redigera direkt.");
+    expect(block.find(".xw-spin").exists()).toBe(true);
+  });
+
   it("opens the first batch for editing, marks converting questions and fills them as batches arrive", async () => {
     const view = await uploadFirstBatch();
 
     expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain(
-      "Konverterar provet: 1 av 3 frågor klara.",
+      "AI-svar mottagna för 1 av 3 frågor.",
     );
     expect(view.get('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
     await selectItemRow(view, "item_001");
@@ -73,16 +95,46 @@ describe("Exam workspace progressive conversion", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
     await tick();
 
-    expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain("3 av 3 frågor klara.");
+    expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain("AI-svar mottagna för 3 av 3 frågor.");
     expect(convertingNoticeShown(view)).toBe(false);
     expectEditable(view, true);
     expect(await pointsOf(view, "item_002")).toBe("22");
 
-    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 2, ["ready", "ready", "ready"]));
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded", 2, ["ready", "ready", "ready"], 3));
     await tick();
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps placeholders locked and follows the same revision when all AI output arrives", async () => {
+    const view = await uploadFirstBatch();
+    await selectItemRow(view, "item_002");
+    expectEditable(view, false);
+
+    // Receipt advances on the same saved revision; no new editable result exists yet.
+    const received = status("running", 1, ["ready", "converting", "converting"], 3);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(received);
+    await tick();
+
+    expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain(
+      "AI-svar mottagna för 3 av 3 frågor.",
+    );
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(convertingNoticeShown(view)).toBe(true);
+    expectEditable(view, false);
+    expect(await pointsOf(view, "item_002")).toBe("2");
+    await forceInput(view, "exam-workspace-item-points-input", "7");
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
+    await tick();
+
+    expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(3);
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(await pointsOf(view, "item_002")).toBe("22");
+    expectEditable(view, true);
   });
 
   it("refuses every change to a converting placeholder, even one dispatched past its disabled controls", async () => {
@@ -140,7 +192,7 @@ describe("Exam workspace progressive conversion", () => {
 
     // An edit typed after that autosave still merges instead of being replaced.
     await editPoints(view, "item_001", "12");
-    const third = status("succeeded", 3, ["ready", "ready", "ready"]);
+    const third = status("succeeded", 3, ["ready", "ready", "ready"], 3);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(third);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       revision(3, [{ ...converted(1) }, { ...converted(2), points: 99 }, converted(3)], third),
@@ -181,7 +233,7 @@ describe("Exam workspace progressive conversion", () => {
   it("opens a finished import without a lock and without following its conversion", async () => {
     apiMocks.getExamWorkspaceConversionStatus.mockReset();
     apiMocks.getExamWorkspaceDocument.mockReset();
-    const done = status("succeeded", 2, ["ready", "ready", "ready"]);
+    const done = status("succeeded", 2, ["ready", "ready", "ready"], 3);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(2, SECOND.document.items, done));
     const mounted = await mountTracked({ document: "lineage-1" });
 

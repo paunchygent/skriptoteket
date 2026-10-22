@@ -5726,7 +5726,8 @@ export interface components {
          *
          *     ``document_revision`` is the latest revision conversion saved, absent until the
          *     first batch is ready; ``units`` lets the editor merge each new revision into
-         *     unsaved teacher edits.
+         *     unsaved teacher edits. ``questions_received`` counts distinct questions with AI
+         *     output, independently of saved results and editor readiness.
          */
         ExamWorkspaceConversionStatus: {
             ai_limit?: components["schemas"]["AiDailyLimit"] | null;
@@ -5749,6 +5750,8 @@ export interface components {
             phase_started_at: string | null;
             /** Questions Done */
             questions_done: number;
+            /** Questions Received */
+            questions_received: number;
             /** Questions Total */
             questions_total: number;
             /**

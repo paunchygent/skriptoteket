@@ -33,7 +33,7 @@ const MESSAGE = '[data-test="exam-workspace-conversion-message"]';
 type DrawerOverrides = {
   conversionElapsed: string | null;
   conversionMessage: string | null;
-  conversionProgress?: { done: number; total: number } | null;
+  conversionProgress?: { received: number; total: number } | null;
   isConverting?: boolean;
   isImporting?: boolean;
 };
@@ -147,10 +147,10 @@ describe("ExamWorkspaceOpenDrawer status row slots", () => {
 
     await wrapper.setProps({
       conversionElapsed: "12:03",
-      conversionMessage: "Konverterar frågorna: 12 av 120 klara",
-      conversionProgress: { done: 12, total: 120 },
+      conversionMessage: "AI-svar mottagna för 12 av 120 frågor.",
+      conversionProgress: { received: 12, total: 120 },
     });
-    expect(wrapper.get(MESSAGE).attributes("title")).toBe("Konverterar frågorna: 12 av 120 klara");
+    expect(wrapper.get(MESSAGE).attributes("title")).toBe("AI-svar mottagna för 12 av 120 frågor.");
     expect(wrapper.get(ELAPSED).element).toBe(slot);
     expect(wrapper.get(ELAPSED).text()).toBe("12:03");
     expect(wrapper.get(ELAPSED).attributes("aria-hidden")).toBe("true");

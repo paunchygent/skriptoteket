@@ -35,6 +35,7 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
@@ -239,6 +240,7 @@ class ScriptedProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         content: Mapping[str, JsonValue] = (

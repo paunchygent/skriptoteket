@@ -68,7 +68,10 @@ from skriptoteket.protocols.docx_conversion_progress import (
     ConversionPhase,
     ConversionUpdate,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyStructuredProviderProtocol,
+    StructuredLLMTextObserver,
+)
 
 from .compare import ExamComparison, compare_exam, compare_native_exam
 from .gold import GoldExam
@@ -125,9 +128,10 @@ class _RecordingProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         response = await self._provider.complete_structured(
-            request=request, profile=profile, caller=caller
+            request=request, profile=profile, caller=caller, on_text=on_text
         )
         self.replies[request.item_id] = response.content
         return response
@@ -140,6 +144,11 @@ class _CountedProgress:
         self.batches_ready = 0
 
     async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        return None
+
+    async def received(
+        self, *, worker_id: str, job_id: UUID, question_ids: tuple[str, ...]
+    ) -> None:
         return None
 
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:

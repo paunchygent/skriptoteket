@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ef9cfeadd57a7196fd1cc29cd9f7b3a4bf504aa97135e47fb977cb95652c3ee1",
+  "source_set_digest": "65a9e3e986e30a827cd7f9918e88efe9b89fe9a390992e179d450a2ed4552efa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5470,7 +5470,7 @@
       "type": "task",
       "title": "The exam import count rises while the questions convert",
       "path": "docs/backlog/tasks/task-skript-39-04-24-the-exam-import-count-rises-while-the-questions-convert.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
