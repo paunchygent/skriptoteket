@@ -213,6 +213,7 @@ module = [
     "pypdf.*",
     "pandas.*",
     "pypdfium2.*",
+    "lxml.*",
 ]
 ignore_missing_imports = true
 

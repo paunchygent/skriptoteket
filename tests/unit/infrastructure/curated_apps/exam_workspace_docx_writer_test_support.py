@@ -1,8 +1,8 @@
 """Shared builders and DOCX inspection helpers for the exam workspace DOCX writer tests.
 
 The writer's student-copy tests were split by responsibility: content and house template,
-answer forms, and shared pictures. Every load-bearing document builder and every
-paragraph-inspection helper the split suites share lives here, so all three read the
+answer forms, shared pictures and stored Word shapes. Every load-bearing document builder and
+every paragraph-inspection helper the split suites share lives here, so all four read the
 produced bytes back the same way.
 """
 

@@ -8,36 +8,23 @@ Purpose:
     exception: ECMA-376 makes extension lists ignorable, so the allowlists of the property
     elements that carry one admit and skip it (``exam_workspace_docx_shape_xml`` lists them).
 
-    Coordinates. The figure box is ``wp:extent``. A single shape takes the size of its own
-    ``a:xfrm/a:ext`` and is centred in the box (its ``off`` is ignored): Word sizes ``wp:extent``
-    to the rotated bounding box, so a rotated shape is smaller than the box, and an ``a:ext``
-    equal to the extent fills it. A group maps its child space onto the parent as
-    ``x_parent = off.x + (x - chOff.x) * ext.cx / chExt.cx`` (the same for y); nested groups
-    compose their mappings. The top-level group, like a single shape, keeps the size of its own
-    ``a:ext`` and is centred in the figure box. A canvas child is already in EMU of the box.
-
-    Group transforms. A group maps its child space into its box (the scale above), mirrors inside
-    the box (``flipH``, ``flipV``), then rotates clockwise about the box centre. A child's box
-    centre goes through that mapping; the child's size follows the group scale. The child's
-    orientation composes in the same order: a mirrored group negates the child's rotation and
-    toggles its flip, then the group rotation adds. A child whose result is not a rotated
-    rectangle (an uneven group scale applied after a rotation that is not a quarter turn) is a
-    shear, which the figure model cannot hold, and raises ``UnsupportedShapeFigure``.
+    Coordinates and group transforms (where each shape's box lands in the figure, and how group
+    rotation and mirrors compose) live in ``exam_workspace_docx_shape_transforms``.
 
 Relationships:
     - ``exam_workspace_docx_shape_figure`` holds the figure model the reader fills.
     - ``exam_workspace_docx_shape_xml`` holds the namespaces and the exact XML helpers;
       ``exam_workspace_docx_shape_colors`` resolves colours and ``wps:style`` references through
       the theme; ``exam_workspace_docx_shape_labels`` reads the text box labels.
+    - ``exam_workspace_docx_shape_transforms`` maps group and canvas coordinates into the
+      figure box.
     - ``exam_workspace_docx_chunker`` calls ``read_shape_figure`` for a drawing block without a
       picture; ``exam_workspace_docx_shape_drawing`` draws the figure.
 """
 
 from __future__ import annotations
 
-import math
 import re
-from dataclasses import dataclass
 
 from docx.document import Document as DocxDocument
 
@@ -56,6 +43,10 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_labels import (  # noqa: E501
     LabelReader,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_transforms import (  # noqa: E501
+    ShapeMapping,
+    wrap_degrees,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_xml import (  # noqa: E501
     DRAWINGML_NS,
@@ -131,161 +122,6 @@ def _is_empty(element: Element) -> bool:
     return len(element) == 0 and not element.attrib
 
 
-# --- geometry ---------------------------------------------------------------------------------
-
-
-_Matrix = tuple[float, float, float, float]  # row major: (a, b, c, d) is [[a, b], [c, d]]
-_SHEAR_TOLERANCE = 1e-9
-_QUARTER_TURNS = {0.0: (1.0, 0.0), 90.0: (0.0, 1.0), 180.0: (-1.0, 0.0), 270.0: (0.0, -1.0)}
-
-
-def _wrap_degrees(degrees: float) -> float:
-    """Degrees in [0, 360); a float residue next to 0 or 360 is a whole turn."""
-    wrapped = degrees % 360
-    return 0.0 if wrapped < _SHEAR_TOLERANCE or 360 - wrapped < _SHEAR_TOLERANCE else wrapped
-
-
-def _rotation_matrix(degrees: float) -> _Matrix:
-    """The clockwise rotation (y points down), exact at quarter turns."""
-    cos, sin = _QUARTER_TURNS.get(degrees) or (
-        math.cos(math.radians(degrees)),
-        math.sin(math.radians(degrees)),
-    )
-    return cos, -sin, sin, cos
-
-
-def _multiply(left: _Matrix, right: _Matrix) -> _Matrix:
-    return (
-        left[0] * right[0] + left[1] * right[2],
-        left[0] * right[1] + left[1] * right[3],
-        left[2] * right[0] + left[3] * right[2],
-        left[2] * right[1] + left[3] * right[3],
-    )
-
-
-def _apply(matrix: _Matrix, x: float, y: float) -> tuple[float, float]:
-    return matrix[0] * x + matrix[1] * y, matrix[2] * x + matrix[3] * y
-
-
-@dataclass(frozen=True)
-class _Placement:
-    """A shape's box in figure coordinates; ``x`` and ``y`` are the box's top left corner."""
-
-    x: float
-    y: float
-    width: float
-    height: float
-    rotation: float
-    flip_h: bool
-    flip_v: bool
-
-
-@dataclass(frozen=True)
-class _Mapping:
-    """Child coordinates to figure coordinates: ``figure = linear * child + offset``.
-
-    ``linear`` is rotation, mirror and scale of the groups from the outside in. ``turn``,
-    ``mirror_h`` and ``mirror_v`` are the same groups' rotation and mirrors without the scale: the
-    orientation ``rotate(turn) * mirror`` that a child's own orientation follows.
-    """
-
-    linear: _Matrix = (1.0, 0.0, 0.0, 1.0)
-    offset_x: float = 0.0
-    offset_y: float = 0.0
-    turn: float = 0.0
-    mirror_h: bool = False
-    mirror_v: bool = False
-
-    def nested(self, group: Element, *, box: tuple[int, int] | None) -> _Mapping:
-        """Return the mapping of a group's children, composed inside this mapping.
-
-        ``box`` is the figure box for the top-level group, which keeps its own ``ext`` and is
-        centred in it instead of using its own ``off``.
-        """
-        properties = group.find(f"{WORD_GROUP_NS}grpSpPr")
-        children = (
-            []
-            if properties is None
-            else only(properties, frozenset({f"{DRAWINGML_NS}xfrm", EXT_LST}))
-        )
-        transform = next((c for c in children if c.tag == f"{DRAWINGML_NS}xfrm"), None)
-        if transform is None:
-            raise unsupported("group without a:xfrm")
-        off, ext, ch_off, ch_ext = (
-            transform.find(f"{DRAWINGML_NS}{name}") for name in ("off", "ext", "chOff", "chExt")
-        )
-        if off is None or ext is None or ch_off is None or ch_ext is None:
-            raise unsupported("group a:xfrm without off, ext, chOff and chExt")
-        child_width, child_height = int_attr(ch_ext, "cx"), int_attr(ch_ext, "cy")
-        if child_width <= 0 or child_height <= 0:
-            raise unsupported("group with an empty a:chExt")
-        width, height = int_attr(ext, "cx"), int_attr(ext, "cy")
-        if box is None:
-            off_x, off_y = float(int_attr(off, "x")), float(int_attr(off, "y"))
-        else:
-            off_x, off_y = (box[0] - width) / 2, (box[1] - height) / 2
-        factor_x, factor_y = width / child_width, height / child_height
-        rotation = _wrap_degrees(int_attr_or(transform, "rot", 0) / 60000)
-        flip_h, flip_v = flag(transform, "flipH"), flag(transform, "flipV")
-
-        # child -> group box (scale), mirror about the box centre, rotate about the box centre.
-        mirror: _Matrix = (-1.0 if flip_h else 1.0, 0.0, 0.0, -1.0 if flip_v else 1.0)
-        turn_and_mirror = _multiply(_rotation_matrix(rotation), mirror)
-        centre_x, centre_y = off_x + width / 2, off_y + height / 2
-        shift_x, shift_y = _apply(
-            turn_and_mirror,
-            off_x - centre_x - factor_x * int_attr(ch_off, "x"),
-            off_y - centre_y - factor_y * int_attr(ch_off, "y"),
-        )
-        group_linear = _multiply(turn_and_mirror, (factor_x, 0.0, 0.0, factor_y))
-        outer_x, outer_y = _apply(self.linear, centre_x + shift_x, centre_y + shift_y)
-        return _Mapping(
-            _multiply(self.linear, group_linear),
-            outer_x + self.offset_x,
-            outer_y + self.offset_y,
-            *self._compose_orientation(rotation, flip_h, flip_v),
-        )
-
-    def _compose_orientation(
-        self, rotation: float, flip_h: bool, flip_v: bool
-    ) -> tuple[float, bool, bool]:
-        """Orientation of ``rotate(turn) * mirror`` followed by ``rotate(rotation) * flips``.
-
-        One mirror axis reverses the direction of the rotation that follows it; two mirrors are
-        a half turn, which commutes.
-        """
-        reversed_turn = self.mirror_h != self.mirror_v
-        turn = self.turn + (-rotation if reversed_turn else rotation)
-        return _wrap_degrees(turn), self.mirror_h != flip_h, self.mirror_v != flip_v
-
-    def place(
-        self,
-        *,
-        centre: tuple[float, float],
-        size: tuple[float, float],
-        rotation: float,
-        flip_h: bool,
-        flip_v: bool,
-    ) -> _Placement:
-        """Return the box of a shape of ``size`` centred on ``centre`` in child coordinates.
-
-        The shape's own rotation and mirror come first, then the groups'. A shape that the
-        groups' scale shears (the result is not a rotated rectangle) is unsupported.
-        """
-        own_mirror: _Matrix = (-1.0 if flip_h else 1.0, 0.0, 0.0, -1.0 if flip_v else 1.0)
-        a, b, c, d = _multiply(self.linear, _multiply(_rotation_matrix(rotation), own_mirror))
-        width_scale, height_scale = math.hypot(a, c), math.hypot(b, d)
-        if abs(a * b + c * d) > _SHEAR_TOLERANCE * width_scale * height_scale:
-            raise unsupported("rotated shape in a group scaled unevenly in x and y")
-        centre_x, centre_y = _apply(self.linear, *centre)
-        centre_x, centre_y = centre_x + self.offset_x, centre_y + self.offset_y
-        width, height = size[0] * width_scale, size[1] * height_scale
-        turn, mirror_h, mirror_v = self._compose_orientation(rotation, flip_h, flip_v)
-        return _Placement(
-            centre_x - width / 2, centre_y - height / 2, width, height, turn, mirror_h, mirror_v
-        )
-
-
 def _arrowhead_size(end: Element, attribute: str, tag: str) -> ArrowheadSize:
     name = end.get(attribute, "med")
     size = _ARROWHEAD_SIZES.get(name)
@@ -341,12 +177,14 @@ class _FigureReader:
         shapes: list[FigureShape] = []
         if uri == WORD_SHAPE_URI:
             root = self._single(roots, f"{WORD_SHAPE_NS}wsp", "wps:wsp")
-            shapes.append(self._shape(root, _Mapping(), box=(width, height)))
+            shapes.append(self._shape(root, ShapeMapping(), box=(width, height)))
         elif uri == WORD_GROUP_URI:
             root = self._single(roots, f"{WORD_GROUP_NS}wgp", "wpg:wgp")
-            self._walk(root, _Mapping().nested(root, box=(width, height)), shapes)
+            self._walk(root, ShapeMapping().nested(root, box=(width, height)), shapes)
         elif uri == WORD_CANVAS_URI:
-            self._walk(self._single(roots, f"{WORD_CANVAS_NS}wpc", "wpc:wpc"), _Mapping(), shapes)
+            self._walk(
+                self._single(roots, f"{WORD_CANVAS_NS}wpc", "wpc:wpc"), ShapeMapping(), shapes
+            )
         else:
             raise unsupported(f"graphic data of kind {uri.rsplit('/', 1)[-1]} ({uri})")
         if not shapes:
@@ -359,7 +197,7 @@ class _FigureReader:
             raise unsupported(f"graphic data without exactly one {name}")
         return roots[0]
 
-    def _walk(self, parent: Element, mapping: _Mapping, shapes: list[FigureShape]) -> None:
+    def _walk(self, parent: Element, mapping: ShapeMapping, shapes: list[FigureShape]) -> None:
         for child in elements(parent):
             if child.tag == f"{WORD_SHAPE_NS}wsp":
                 shapes.append(self._shape(child, mapping, box=None))
@@ -380,7 +218,7 @@ class _FigureReader:
     # --- one shape ---
 
     def _shape(
-        self, wsp: Element, mapping: _Mapping, *, box: tuple[int, int] | None
+        self, wsp: Element, mapping: ShapeMapping, *, box: tuple[int, int] | None
     ) -> FigureShape:
         children = only(wsp, _WSP_CHILDREN)
         sp_pr = next((c for c in children if c.tag == f"{WORD_SHAPE_NS}spPr"), None)
@@ -404,7 +242,7 @@ class _FigureReader:
         placed = mapping.place(
             centre=centre,
             size=(width, height),
-            rotation=_wrap_degrees(int_attr_or(xfrm, "rot", 0) / 60000),
+            rotation=wrap_degrees(int_attr_or(xfrm, "rot", 0) / 60000),
             flip_h=flag(xfrm, "flipH"),
             flip_v=flag(xfrm, "flipV"),
         )

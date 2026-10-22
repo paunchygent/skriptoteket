@@ -7,7 +7,7 @@ from docx import Document
 from docx.oxml import parse_xml
 from docx.oxml.ns import qn
 from docx.oxml.xmlchemy import BaseOxmlElement
-from lxml import etree  # type: ignore[import-untyped]
+from lxml import etree
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
     ShapeFigure,

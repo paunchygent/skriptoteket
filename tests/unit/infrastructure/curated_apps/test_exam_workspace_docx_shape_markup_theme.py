@@ -23,7 +23,7 @@ from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import parse_xml
 from docx.oxml.ns import qn
 from docx.shared import Pt, RGBColor
-from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
+from lxml import etree
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
