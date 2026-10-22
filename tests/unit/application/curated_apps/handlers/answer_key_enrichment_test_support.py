@@ -236,8 +236,8 @@ class StubProvider:
 
 def _profile() -> StructuredLLMProviderProfile:
     return StructuredLLMProviderProfile(
-        provider_id="openai-gpt-5.6-luna",
-        model="gpt-5.6-luna",
+        provider_id="openai-gpt-6-luna-answer-key",
+        model="gpt-6-luna",
         endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
         is_remote=True,
         context_window_tokens=32_768,

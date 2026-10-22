@@ -57,8 +57,8 @@ def _succeeded(harness: SuggestionHandlerHarness, job_id: UUID, choice_id: str) 
     suggestion = NativeAnswerKeySuggestion(
         correct_choice_ids=(choice_id,),
         fingerprint="a" * 64,
-        provider_profile_id="openai-gpt-5.6-luna",
-        model="gpt-5.6-luna",
+        provider_profile_id="openai-gpt-6-luna-answer-key",
+        model="gpt-6-luna",
         prompt_template_version="v1",
     )
     _set(

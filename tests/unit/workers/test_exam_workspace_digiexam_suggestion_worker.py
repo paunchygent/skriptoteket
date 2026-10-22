@@ -74,7 +74,7 @@ def assert_item_local_suggestions(
         assert suggestion.fingerprint == answer_key_fingerprint(
             item, document.parent_of(item.item_id)
         )
-        assert suggestion.provider_profile_id == "openai-gpt-5.6-luna"
+        assert suggestion.provider_profile_id == "openai-gpt-6-luna-answer-key"
         if item.gaps:
             assert [gap.gap_id for gap in suggestion.gap_accepted_values] == [
                 gap.gap_id for gap in item.gaps

@@ -150,8 +150,8 @@ class TestStatus:
             suggestion = NativeAnswerKeySuggestion(
                 correct_choice_ids=("choice_002",),
                 fingerprint="a" * 64,
-                provider_profile_id="openai-gpt-5.6-luna",
-                model="gpt-5.6-luna",
+                provider_profile_id="openai-gpt-6-luna-answer-key",
+                model="gpt-6-luna",
                 prompt_template_version="v1",
             )
             harness.jobs.jobs[job.id] = job.model_copy(
@@ -188,7 +188,7 @@ class TestStatus:
         assert len(response.suggestions) == 1
         assert response.suggestions[0].item_id == "item_001"
         assert response.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
-        assert response.suggestions[0].suggestion.model == "gpt-5.6-luna"
+        assert response.suggestions[0].suggestion.model == "gpt-6-luna"
 
     async def test_failed_job_returns_suggestions_it_produced_before_the_failure(self) -> None:
         harness = SuggestionHandlerHarness()

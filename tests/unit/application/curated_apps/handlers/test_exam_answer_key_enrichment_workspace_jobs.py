@@ -70,8 +70,8 @@ async def test_workspace_job_stores_suggestions_on_the_job_without_an_overlay() 
     arrived = payload.suggestions[0]
     assert arrived.item_id == "item_001"
     assert arrived.suggestion.correct_choice_ids == ("choice_002",)
-    assert arrived.suggestion.provider_profile_id == "openai-gpt-5.6-luna"
-    assert arrived.suggestion.model == "gpt-5.6-luna"
+    assert arrived.suggestion.provider_profile_id == "openai-gpt-6-luna-answer-key"
+    assert arrived.suggestion.model == "gpt-6-luna"
     assert arrived.suggestion.prompt_template_version == "digiexam_choice_answer_key_prompt_v1"
     assert arrived.suggestion.fingerprint == answer_key_fingerprint(document.items[0], None)
 
