@@ -23,7 +23,7 @@ function fakeTarget(marks: BodyMark[], heading: RichTextHeadingLevel | null): Ri
   return {
     marks: ref<BodyMark[]>(marks),
     acceptsPictures: false,
-    pictureSelected: ref(false),
+    selectedPictureId: ref(null),
     headingLevel: () => heading,
     toggleMark: vi.fn(),
     toggleHeading: vi.fn(),

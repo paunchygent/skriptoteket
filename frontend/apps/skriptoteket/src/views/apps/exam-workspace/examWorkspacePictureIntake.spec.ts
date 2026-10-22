@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
+import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
   EXAM_FILE_MAX_BYTES,
@@ -86,6 +86,10 @@ function declaredAsset(overrides: Partial<NativeExamAsset> & { asset_id: string 
     width: 640,
     ...overrides,
   };
+}
+
+function assetParagraph(assetId: string): NativeExamBodyParagraph {
+  return { heading_level: null, segments: [{ kind: "asset", asset_id: assetId }] };
 }
 
 function documentWith(assets: NativeExamAsset[]): NativeExamDocument {
@@ -205,6 +209,95 @@ describe("readPicture size limit", () => {
     if (result.kind === "picture") {
       expect(result.asset.asset_id).toBe(assetId);
     }
+  });
+});
+
+describe("readPicture replacement sizing and unreadable files", () => {
+  const OLD_ID = `asset_${SHA_A.slice(0, 16)}`;
+  const NEW_SHA = SHA_B;
+  const ELEVEN_MB = 11_000_000;
+  const NINE_HALF_MB = 9_500_000;
+
+  function replacementDocument(references: number): NativeExamDocument {
+    const base = documentWith([
+      declaredAsset({ asset_id: OLD_ID, byte_length: ELEVEN_MB, sha256: SHA_A }),
+      declaredAsset({ asset_id: "asset_filler", byte_length: NINE_HALF_MB }),
+    ]);
+    return {
+      ...base,
+      instructions: Array.from({ length: references }, () => assetParagraph(OLD_ID)),
+    };
+  }
+
+  function newPng(): Blob {
+    return pngBytes(new Array(100).fill(7));
+  }
+
+  it("accepts a different picture that only fits once the replaced sole reference is pruned", async () => {
+    const result = await readPicture(
+      newPng(),
+      replacementDocument(1),
+      stubDeps({ width: 640, height: 480 }, NEW_SHA),
+      OLD_ID,
+    );
+
+    expect(result.kind).toBe("picture");
+    if (result.kind === "picture") {
+      expect(result.asset.asset_id).toBe(`asset_${NEW_SHA.slice(0, 16)}`);
+    }
+  });
+
+  it("refuses the same replacement while another question still references the old picture", async () => {
+    const result = await readPicture(
+      newPng(),
+      replacementDocument(2),
+      stubDeps({ width: 640, height: 480 }, NEW_SHA),
+      OLD_ID,
+    );
+
+    expect(result).toEqual({ kind: "refused", copy: PICTURE_SIZE_REFUSED_COPY });
+  });
+
+  it("counts replacing with the same file once", async () => {
+    const result = await readPicture(
+      newPng(),
+      replacementDocument(2),
+      stubDeps({ width: 640, height: 480 }, SHA_A),
+      OLD_ID,
+    );
+
+    expect(result.kind).toBe("picture");
+    if (result.kind === "picture") {
+      expect(result.asset.asset_id).toBe(OLD_ID);
+    }
+  });
+
+  it("returns the type refusal when the file cannot be read", async () => {
+    const unreadable = new File(["x"], "bild.png", { type: "image/png" });
+    Object.defineProperty(unreadable, "arrayBuffer", {
+      configurable: true,
+      value: async (): Promise<ArrayBuffer> => {
+        throw new DOMException("denied", "NotReadableError");
+      },
+    });
+
+    const result = await readPicture(unreadable, documentWith([]), stubDeps({ width: 1, height: 1 }, SHA_A));
+
+    expect(result).toEqual({ kind: "refused", copy: PICTURE_TYPE_REFUSED_COPY });
+  });
+
+  it("still rejects a non-DOMException read failure", async () => {
+    const broken = new File(["x"], "bild.png", { type: "image/png" });
+    Object.defineProperty(broken, "arrayBuffer", {
+      configurable: true,
+      value: async (): Promise<ArrayBuffer> => {
+        throw new Error("offline");
+      },
+    });
+
+    await expect(
+      readPicture(broken, documentWith([]), stubDeps({ width: 1, height: 1 }, SHA_A)),
+    ).rejects.toThrow("offline");
   });
 });
 

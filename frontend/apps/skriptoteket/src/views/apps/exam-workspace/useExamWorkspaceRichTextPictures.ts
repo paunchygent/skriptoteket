@@ -7,7 +7,7 @@
  *   surface as its target, a drag shows the drop line, and the target's
  *   `placePicture` puts the new picture alone in its own paragraph at the
  *   caret or replaces the selected picture in place, in one undo step.
- *   `pictureSelected` says whether a whole picture is selected, so the
+ *   `selectedPictureId` is the selected picture's asset id, so the
  *   toolbar offers "Byt bild". Without the switch nothing about drop, paste
  *   or the drop line changes.
  *
@@ -19,7 +19,7 @@
  *     composable's placement inside one toolbar edit.
  *   - Reads the picture service with `useExamWorkspacePictures` and places
  *     with `examWorkspacePicturePlacement`; the toolbar reads
- *     `pictureSelected` through the target.
+ *     `selectedPictureId` through the target.
  */
 
 import type { Editor } from "@tiptap/core";
@@ -41,17 +41,17 @@ export function useExamWorkspaceRichTextPictures(options: {
   /** This surface as the picture service sees it. */
   target: () => RichTextTarget;
 }): {
-  /** True while the selection is a whole picture, so the toolbar offers "Byt bild". */
-  pictureSelected: Ref<boolean>;
+  /** The selected picture's asset id, or null, so the toolbar offers "Byt bild". */
+  selectedPictureId: Ref<string | null>;
   /** Drop and paste of picture files, for the editor's `editorProps`. Empty while pictures are off. */
   pictureEditorProps(): Pick<EditorProps, "handlePaste" | "handleDrop">;
-  /** Refresh `pictureSelected` from the editor's current selection. */
+  /** Refresh `selectedPictureId` from the editor's current selection. */
   updatePictureSelected(): void;
   /** Place `assetId` alone in its own paragraph at the caret, or replace the selected picture in place. */
   placePictureAsset(assetId: string): void;
 } {
   const pictureService = useExamWorkspacePictures();
-  const pictureSelected: Ref<boolean> = ref(false);
+  const selectedPictureId: Ref<string | null> = ref(null);
 
   /** Picture files on a paste: PNG, JPEG, or a file whose type the intake must sniff from its bytes. */
   function pastedPictureFiles(event: ClipboardEvent): File[] {
@@ -119,15 +119,19 @@ export function useExamWorkspaceRichTextPictures(options: {
     };
   }
 
-  /** `pictureSelected` follows the selection: true only on a whole picture atom. */
+  /** `selectedPictureId` follows the selection: the whole picture atom's asset id, else null. */
   function updatePictureSelected(): void {
     const current = options.editor();
     if (!current) {
       return;
     }
     const { selection } = current.state;
-    pictureSelected.value =
-      selection instanceof NodeSelection && selection.node.type.name === EXAM_PICTURE_NODE;
+    if (selection instanceof NodeSelection && selection.node.type.name === EXAM_PICTURE_NODE) {
+      const assetId = selection.node.attrs.assetId;
+      selectedPictureId.value = typeof assetId === "string" ? assetId : null;
+      return;
+    }
+    selectedPictureId.value = null;
   }
 
   /**
@@ -148,5 +152,5 @@ export function useExamWorkspaceRichTextPictures(options: {
     current.view.focus();
   }
 
-  return { pictureSelected, pictureEditorProps, updatePictureSelected, placePictureAsset };
+  return { selectedPictureId, pictureEditorProps, updatePictureSelected, placePictureAsset };
 }

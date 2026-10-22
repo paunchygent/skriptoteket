@@ -19,6 +19,7 @@
  */
 
 import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
+import { examWorkspaceAssetReferenceCounts } from "./examWorkspaceStructure";
 
 /** Mirrors the server's `VAULT_MAX_FILE_BYTES` (src/skriptoteket/config.py), which caps the whole exam file; the exam workspace receives no setting that carries it. */
 export const EXAM_FILE_MAX_BYTES = 20_000_000;
@@ -79,14 +80,27 @@ export const browserPictureIntakeDeps: PictureIntakeDeps = {
  * Check a chosen, dropped or pasted file: PNG or JPEG bytes by signature with
  * a decodable non-empty pixel size become the picture's asset record and Blob;
  * anything else is refused with the exact inline copy. A picture the document
- * already declares adds no bytes, so the size check lets it through.
+ * already declares adds no bytes, and a replacement credits the replaced
+ * picture's bytes when its selected reference is the only one left, so the
+ * size check sees the prospective result. An unreadable file is refused with
+ * the type copy. Nothing is changed: the caller records the
+ * asset and Blob, or shows the copy.
  */
 export async function readPicture(
   file: Blob,
   document: NativeExamDocument,
   deps: PictureIntakeDeps = browserPictureIntakeDeps,
+  replacing: string | null = null,
 ): Promise<PictureIntake> {
-  const bytes = await file.arrayBuffer();
+  let bytes: ArrayBuffer;
+  try {
+    bytes = await file.arrayBuffer();
+  } catch (error) {
+    if (error instanceof DOMException) {
+      return { kind: "refused", copy: PICTURE_TYPE_REFUSED_COPY };
+    }
+    throw error;
+  }
   if (bytes.byteLength === 0) {
     return { kind: "refused", copy: PICTURE_TYPE_REFUSED_COPY };
   }
@@ -104,8 +118,19 @@ export async function readPicture(
   const assetId = `asset_${sha256.slice(0, 16)}`;
   if (!document.assets.some((asset) => asset.asset_id === assetId)) {
     const declared = document.assets.reduce((sum, asset) => sum + asset.byte_length, 0);
+    const replaced =
+      replacing === null
+        ? undefined
+        : document.assets.find((asset) => asset.asset_id === replacing);
+    const removedBytes =
+      replaced !== undefined &&
+      replacing !== null &&
+      replacing !== assetId &&
+      examWorkspaceAssetReferenceCounts(document).get(replacing) === 1
+        ? replaced.byte_length
+        : 0;
     const jsonLength = new TextEncoder().encode(JSON.stringify(document)).length;
-    if (declared + bytes.byteLength + jsonLength > EXAM_FILE_MAX_BYTES) {
+    if (declared + bytes.byteLength - removedBytes + jsonLength > EXAM_FILE_MAX_BYTES) {
       return { kind: "refused", copy: PICTURE_SIZE_REFUSED_COPY };
     }
   }

@@ -255,7 +255,7 @@ function stubTarget() {
     toggleHeading: vi.fn(),
     makeGap: vi.fn(),
     acceptsPictures: true,
-    pictureSelected: ref(false),
+    selectedPictureId: ref(null),
     placePicture,
     release: vi.fn(),
   };

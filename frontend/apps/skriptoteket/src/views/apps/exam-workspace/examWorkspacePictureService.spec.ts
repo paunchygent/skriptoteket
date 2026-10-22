@@ -48,7 +48,7 @@ function stubTarget(acceptsPictures = true) {
     toggleHeading: vi.fn(),
     makeGap: vi.fn(),
     acceptsPictures,
-    pictureSelected: ref(false),
+    selectedPictureId: ref(null),
     placePicture: vi.fn((_assetId: string): void => undefined),
     release: vi.fn(),
   };
@@ -252,6 +252,23 @@ describe("createExamWorkspacePictureService", () => {
     expect(service.notice.value).not.toBeNull();
     service.dismissNotice();
     expect(service.notice.value).toBeNull();
+  });
+
+  it("passes the selected picture id as replacing, and null without a selection", async () => {
+    const { read, service } = setupWithRead(
+      async () => ({ kind: "picture", asset: asset(ASSET_ID), blob: BLOB }),
+    );
+    const selected = stubTarget();
+    (selected.selectedPictureId as Ref<string | null>).value = "asset_old";
+    const plain = stubTarget();
+    const file = new File(["png!"], "bild.png", { type: "image/png" });
+
+    await service.add(selected, [file]);
+    await service.add(plain, [file]);
+
+    expect(read).toHaveBeenCalledTimes(2);
+    expect(read.mock.calls[0]?.slice(2)).toEqual([undefined, "asset_old"]);
+    expect(read.mock.calls[1]?.slice(2)).toEqual([undefined, null]);
   });
 
   it("checks each later file against the document the earlier picture changed", async () => {

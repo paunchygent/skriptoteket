@@ -84,12 +84,13 @@ export function createExamWorkspacePictureService(
     busy.value = true;
     try {
       for (const file of files) {
-        // Each file's size check counts the pictures placed before it.
+        // Each file's size check counts the pictures placed before it, and a
+        // replacement credits the selected picture it removes.
         const document = deps.document();
         if (document === null) {
           return;
         }
-        const intake = await read(file, document);
+        const intake = await read(file, document, undefined, target.selectedPictureId.value);
         if (intake.kind === "refused") {
           notice.value = { kind: "refused", text: intake.copy };
           return;
@@ -165,7 +166,7 @@ export function useExamWorkspacePictureControl(
 
   return {
     enabled: pictures !== null,
-    selected: computed(() => pictureTarget()?.pictureSelected.value ?? false),
+    selected: computed(() => (pictureTarget()?.selectedPictureId.value ?? null) !== null),
     busy: computed(() => pictures?.busy.value ?? false),
     add,
   };

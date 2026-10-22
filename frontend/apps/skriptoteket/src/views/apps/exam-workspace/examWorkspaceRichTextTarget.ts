@@ -44,8 +44,8 @@ export type RichTextTarget = {
   makeGap(gapId: string): void;
   /** True while this surface takes pictures: its `pictures` prop. */
   acceptsPictures: boolean;
-  /** True while the selection is a whole picture atom, so the toolbar offers "Byt bild". */
-  pictureSelected: Ref<boolean>;
+  /** The selected `examPicture`'s `assetId`, or null, so the toolbar offers "Byt bild". */
+  selectedPictureId: Ref<string | null>;
   /**
    * Place the picture `assetId` alone in its own paragraph at the caret, or
    * replace the picture the selection covers in place. One toolbar edit, so

@@ -365,7 +365,7 @@ const target: RichTextTarget = {
   get acceptsPictures(): boolean {
     return props.pictures;
   },
-  pictureSelected: pictures.pictureSelected,
+  selectedPictureId: pictures.selectedPictureId,
   headingLevel: currentHeadingLevel,
   toggleMark: (mark) => {
     asToolbarEdit(() => editor.value?.chain().focus().toggleMark(mark).run());

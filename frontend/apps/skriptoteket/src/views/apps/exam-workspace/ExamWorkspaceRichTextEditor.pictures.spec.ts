@@ -5,8 +5,8 @@
  * Expected behavior:
  *   `placePicture` puts the picture in one transaction, so the owner records
  *   exactly one structural Ångra step, and where it lands is
- *   `examWorkspacePicturePlacement`'s decision. `pictureSelected` follows the
- *   selection: true while a whole picture is selected, false otherwise. With
+ *   `examWorkspacePicturePlacement`'s decision. `selectedPictureId` is the
+ *   selected picture's asset id, or null otherwise. With
  *   the `pictures` prop the surface hands dropped and pasted picture files to
  *   the injected picture service with this surface as the target, and a text
  *   paste still pastes text. Without the prop there is no drop or paste
@@ -222,24 +222,24 @@ describe("ExamWorkspaceRichTextEditor pictures", () => {
       ]);
     });
 
-    it("reports a selected picture and hides it again when the selection moves into the text", async () => {
+    it("reports the selected picture id and clears it again when the selection moves into the text", async () => {
       const current = await openEditor({
         body: [paragraph(text("A"), picture("asset_old"), text("B"))],
         pictures: true,
       });
       const target = await activate(current);
-      expect(target.pictureSelected.value).toBe(false);
+      expect(target.selectedPictureId.value).toBeNull();
 
       const at = picturePos(current.editor);
       current.editor.commands.setNodeSelection(at);
-      expect(target.pictureSelected.value).toBe(true);
+      expect(target.selectedPictureId.value).toBe("asset_old");
 
       current.editor.commands.setTextSelection(at - 1);
-      expect(target.pictureSelected.value).toBe(false);
+      expect(target.selectedPictureId.value).toBeNull();
 
       current.editor.commands.setNodeSelection(at);
       target.placePicture("asset_new");
-      expect(target.pictureSelected.value).toBe(true);
+      expect(target.selectedPictureId.value).toBe("asset_new");
       expect(current.last()).toEqual([paragraph(text("A"), picture("asset_new"), text("B"))]);
     });
 
