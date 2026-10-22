@@ -39,7 +39,7 @@ import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { aiDailyLimitNote, aiDailyLimitReached } from "../../../composables/aiDailyLimit";
+import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
 
 const EXTENSION = ".provdokument.zip";
 
@@ -74,7 +74,7 @@ const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 /** The door's daily limit disables the content button for the page session. */
-const limitReached = aiDailyLimitReached;
+const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);
 const myCourses = useExamWorkspaceMyCourses(store.shared);
 

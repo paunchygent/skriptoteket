@@ -1,7 +1,9 @@
 """Repo-owned fixture bank for AI prompt evaluation (non-sensitive).
 
 Fixtures include synthetic editor contexts (prefix/suffix/selection/instruction) intended to
-exercise prompt composition and budgeting through the real HTTP pipeline.
+exercise prompt composition and budgeting through the real HTTP pipeline. An edit fixture
+becomes an edit-ops request: prefix + selection + suffix is `tool.py`, the selection is the
+range it occupies, and the instruction is the message.
 
 Important: This module may contain code-like strings, but they must be non-sensitive and must
 never be written to `.artifacts/` by the harness (artifacts are metadata-only).
@@ -13,7 +15,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-PromptEvalOutcome = Literal["ok", "empty", "truncated", "over_budget", "timeout", "error"]
+from skriptoteket.protocols.llm import PromptEvalOutcome
+
+EvalCapability = Literal["inline_completion", "edit_suggestion"]
 
 
 class InlineCompletionFixture(BaseModel):
@@ -36,7 +40,7 @@ class EditSuggestionFixture(BaseModel):
     prefix: str
     selection: str
     suffix: str
-    instruction: str | None = None
+    instruction: str = Field(min_length=1)
     allowed_outcomes: frozenset[PromptEvalOutcome] | None = None
 
 

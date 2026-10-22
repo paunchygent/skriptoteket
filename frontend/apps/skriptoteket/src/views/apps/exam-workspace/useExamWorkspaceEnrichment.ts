@@ -160,7 +160,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     // message already says so, and the AI controls disable on the flag.
     const limit = aiLimitFromStatus(status);
     if (limit !== null) {
-      markAiDailyLimit(limit);
+      markAiDailyLimit("small", limit);
     }
     pollFailures = 0;
     job.value = { opening, status };
@@ -192,7 +192,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       // No toast for the door's limit: the flag disables the AI controls.
       const limit = aiLimitFromError(error);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         return;
       }
       if (pollFailures === 0) {
@@ -235,7 +235,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       }
       const requestLimit = aiLimitFromError(error);
       if (requestLimit !== null) {
-        markAiDailyLimit(requestLimit);
+        markAiDailyLimit("small", requestLimit);
         return;
       }
       toast.failure(aiTryAgainFromError(error) ?? REQUEST_FAILURE_COPY);
@@ -266,7 +266,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     } catch (error) {
       const lookupLimit = aiLimitFromError(error);
       if (lookupLimit !== null) {
-        markAiDailyLimit(lookupLimit);
+        markAiDailyLimit("small", lookupLimit);
         return;
       }
       if (isLive(opening) && !ownJobStarted()) {

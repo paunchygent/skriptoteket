@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncGenerator, Callable
+from contextlib import aclosing
 
 import structlog
 
@@ -56,7 +57,7 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         *,
         actor: User,
         command: EditorChatCommand,
-    ) -> AsyncIterator[EditorChatStreamEvent]:
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]:
         guard_acquired = await self._guard.try_acquire(user_id=actor.id, tool_id=command.tool_id)
         if not guard_acquired:
             raise DomainError(code=ErrorCode.CONFLICT, message=IN_FLIGHT_MESSAGE)
@@ -99,12 +100,15 @@ class EditorChatHandler(EditorChatHandlerProtocol):
                 yield EditorChatDoneEvent(data=EditorChatDoneDisabledData(message=DISABLED_MESSAGE))
                 return
 
-            async for event in self._stream_orchestrator.stream(
-                actor=actor,
-                command=command,
-                prepared=prepared,
-                template_id=template_id,
-            ):
-                yield event
+            async with aclosing(
+                self._stream_orchestrator.stream(
+                    actor=actor,
+                    command=command,
+                    prepared=prepared,
+                    template_id=template_id,
+                )
+            ) as events:
+                async for event in events:
+                    yield event
         finally:
             await self._guard.release(user_id=actor.id, tool_id=command.tool_id)

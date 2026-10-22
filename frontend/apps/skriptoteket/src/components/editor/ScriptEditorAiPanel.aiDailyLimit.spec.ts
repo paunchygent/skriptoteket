@@ -10,9 +10,11 @@ import { useToastStore } from "../../stores/toast";
 import {
   AI_APP_LIMIT_NOTE,
   AI_USER_LIMIT_NOTE,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
+  markAiDailyLimit,
   resetAiDailyLimitForTests,
 } from "../../composables/aiDailyLimit";
+import type { AiDailyLimit } from "../../composables/aiDailyLimit";
 import ChatComposer from "./ChatComposer.vue";
 import ScriptEditorAiPanel from "./ScriptEditorAiPanel.vue";
 
@@ -34,7 +36,7 @@ type PanelBindings = {
   requestEditOps: (message: string) => Promise<void>;
 };
 
-function limitRefusal(limit: "user_share" | "pool", message: string): ApiError {
+function limitRefusal(limit: AiDailyLimit, message: string): ApiError {
   return new ApiError({
     code: "AI_DAILY_LIMIT_REACHED",
     message,
@@ -43,7 +45,7 @@ function limitRefusal(limit: "user_share" | "pool", message: string): ApiError {
   });
 }
 
-function limitResponse(limit: "user_share" | "pool", message: string): Response {
+function limitResponse(limit: AiDailyLimit, message: string): Response {
   return mockJsonResponse(
     { error: { code: "AI_DAILY_LIMIT_REACHED", message, details: { limit } } },
     429,
@@ -140,7 +142,7 @@ describe("ScriptEditorAiPanel daily limit", () => {
     expect(bindings().aiBlockedNote).toBe(AI_USER_LIMIT_NOTE);
     expect(bindings().editOpsRequestError).toBeNull();
     expect(useToastStore().toasts).toHaveLength(0);
-    expect(aiDailyLimitReached.value).toBe(true);
+    expect(aiDailyLimitFor("full").reached.value).toBe(true);
 
     await wrapper.vm.$nextTick();
     expect(wrapper.text()).toContain(AI_USER_LIMIT_NOTE);
@@ -160,6 +162,119 @@ describe("ScriptEditorAiPanel daily limit", () => {
 
     expect(bindings().editOpsRequestError).toBe("Något gick fel");
     expect(bindings().aiBlockedNote).toBeNull();
+    wrapper.unmount();
+  });
+});
+
+function internalError(): ApiError {
+  return new ApiError({ code: "INTERNAL_ERROR", message: "Något gick fel", status: 500 });
+}
+
+function serverFailureResponse(): Response {
+  return mockJsonResponse(
+    { error: { code: "INTERNAL_ERROR", message: "Något gick fel", details: null } },
+    500,
+  );
+}
+
+describe("ScriptEditorAiPanel allowance scope", () => {
+  it.each(["pool", "user_share"] as const)(
+    "a full-allowance %s refusal from chat blocks chat and edit-ops but not completion or exam AI",
+    async (limit) => {
+      globalThis.fetch = vi.fn().mockResolvedValue(limitResponse(limit, "refused"));
+      vi.mocked(apiFetch).mockRejectedValue(internalError());
+      const { wrapper, bindings } = mountPanel();
+
+      await bindings().sendChatMessage("Hej");
+      await bindings().requestEditOps("Gör om");
+
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      expect(apiFetch).not.toHaveBeenCalled();
+      expect(aiDailyLimitFor("full").reached.value).toBe(true);
+      expect(aiDailyLimitFor("small").reached.value).toBe(false);
+      expect(aiDailyLimitFor("small").note.value).toBeNull();
+      wrapper.unmount();
+    },
+  );
+
+  it.each(["pool", "user_share"] as const)(
+    "a full-allowance %s refusal from edit-ops blocks edit-ops and chat but not completion or exam AI",
+    async (limit) => {
+      globalThis.fetch = vi.fn().mockResolvedValue(serverFailureResponse());
+      vi.mocked(apiFetch).mockRejectedValue(limitRefusal(limit, "refused"));
+      const { wrapper, bindings } = mountPanel();
+
+      await bindings().requestEditOps("Gör om");
+      await bindings().sendChatMessage("Hej");
+
+      expect(apiFetch).toHaveBeenCalledTimes(1);
+      expect(globalThis.fetch).not.toHaveBeenCalled();
+      expect(aiDailyLimitFor("small").reached.value).toBe(false);
+      wrapper.unmount();
+    },
+  );
+
+  it.each(["pool", "user_share"] as const)(
+    "a small-allowance %s refusal leaves chat and edit-ops able to request",
+    async (limit) => {
+      markAiDailyLimit("small", limit);
+      globalThis.fetch = vi.fn().mockResolvedValue(serverFailureResponse());
+      vi.mocked(apiFetch).mockRejectedValue(internalError());
+      const { wrapper, bindings } = mountPanel();
+
+      expect(bindings().aiBlockedNote).toBeNull();
+      await bindings().sendChatMessage("Hej");
+      await bindings().requestEditOps("Gör om");
+
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+      expect(apiFetch).toHaveBeenCalledTimes(1);
+      expect(bindings().aiBlockedNote).toBeNull();
+      wrapper.unmount();
+    },
+  );
+
+  it("a usd_ceiling refusal from the small allowance blocks chat and edit-ops too", async () => {
+    markAiDailyLimit("small", "usd_ceiling");
+    globalThis.fetch = vi.fn().mockResolvedValue(serverFailureResponse());
+    const { wrapper, bindings } = mountPanel();
+
+    await bindings().sendChatMessage("Hej");
+    await bindings().requestEditOps("Gör om");
+
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+    expect(apiFetch).not.toHaveBeenCalled();
+    expect(bindings().aiBlockedNote).toBe(AI_APP_LIMIT_NOTE);
+    wrapper.unmount();
+  });
+
+  it("a usd_ceiling refusal from chat blocks the small allowance too", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(limitResponse("usd_ceiling", AI_APP_LIMIT_NOTE));
+    const { wrapper, bindings } = mountPanel();
+
+    await bindings().sendChatMessage("Hej");
+
+    expect(aiDailyLimitFor("full").reached.value).toBe(true);
+    expect(aiDailyLimitFor("small").reached.value).toBe(true);
+    expect(aiDailyLimitFor("small").note.value).toBe(AI_APP_LIMIT_NOTE);
+    wrapper.unmount();
+  });
+
+  it("a busy answer from chat or edit-ops latches neither allowance", async () => {
+    const busy = {
+      error: { code: "AI_TRY_AGAIN", message: "Försök igen om en stund.", details: { retry_after_seconds: 5 } },
+    };
+    globalThis.fetch = vi.fn().mockResolvedValue(mockJsonResponse(busy, 429));
+    vi.mocked(apiFetch).mockRejectedValue(
+      new ApiError({ code: "AI_TRY_AGAIN", message: "Försök igen om en stund.", status: 429 }),
+    );
+    const { wrapper, bindings } = mountPanel();
+
+    await bindings().sendChatMessage("Hej");
+    await bindings().requestEditOps("Gör om");
+
+    expect(aiDailyLimitFor("full").reached.value).toBe(false);
+    expect(aiDailyLimitFor("small").reached.value).toBe(false);
+    expect(useToastStore().toasts).toHaveLength(0);
     wrapper.unmount();
   });
 });

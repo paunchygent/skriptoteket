@@ -131,7 +131,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
       // No toast for the door's limit: the flag disables the retry control.
       const limit = aiLimitFromError(error);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         return false;
       }
       const serverCopy =

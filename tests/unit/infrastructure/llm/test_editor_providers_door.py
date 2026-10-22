@@ -204,13 +204,14 @@ async def test_chat_streams_sol_low_and_relays_every_delta() -> None:
 
 
 @pytest.mark.asyncio
-async def test_chat_stream_stops_at_the_done_marker() -> None:
-    body = (
-        'event: response.output_text.delta\ndata: {"delta": "a"}\n\n'
-        "data: [DONE]\n\n"
-        'event: response.output_text.delta\ndata: {"delta": "never"}\n\n'
+async def test_chat_stream_stops_at_the_completed_event() -> None:
+    reply = sse_reply(
+        [
+            ("response.output_text.delta", {"type": "response.output_text.delta", "delta": "a"}),
+            ("response.completed", {"type": "response.completed"}),
+            ("response.output_text.delta", {"type": "response.output_text.delta", "delta": "x"}),
+        ]
     )
-    reply = DoorReply(status_code=200, headers={}, body=body.encode())
     door = RecordingDoor(_respond_with(reply))
 
     assert await _chat_stream(door, _caller()) == ["a"]
@@ -323,3 +324,129 @@ async def test_stream_error_chunk_maps_to_invalid_response_after_earlier_deltas(
     assert received == ["a"]
     assert raised.value.kind == "invalid_response"
     assert raised.value.detail is not None and "boom" in raised.value.detail
+
+
+_DELTA_A: tuple[str, JsonValue] = (
+    "response.output_text.delta",
+    {"type": "response.output_text.delta", "delta": "a"},
+)
+
+
+def _raw_reply(body: str) -> DoorReply:
+    return DoorReply(status_code=200, headers={}, body=body.encode())
+
+
+_DELTA_A_BODY = (
+    'event: response.output_text.delta\ndata: {"type": "response.output_text.delta", "delta": "a"}'
+    "\n\n"
+)
+
+# (reply, detail fragment of the failure, or None when the stream ends successfully)
+_TERMINATION_CASES: dict[str, tuple[DoorReply, str | None]] = {
+    "completed": (
+        sse_reply([_DELTA_A, ("response.completed", {"type": "response.completed"})]),
+        None,
+    ),
+    "failed_with_nested_error": (
+        sse_reply(
+            [
+                _DELTA_A,
+                (
+                    "response.failed",
+                    {
+                        "type": "response.failed",
+                        "response": {
+                            "status": "failed",
+                            "error": {"code": "server_error", "message": "upstream-boom"},
+                        },
+                    },
+                ),
+            ]
+        ),
+        "upstream-boom",
+    ),
+    "failed_without_error_body": (
+        sse_reply([_DELTA_A, ("response.failed", {"type": "response.failed"})]),
+        "response.failed",
+    ),
+    "incomplete_keeps_reason": (
+        sse_reply(
+            [
+                _DELTA_A,
+                (
+                    "response.incomplete",
+                    {
+                        "type": "response.incomplete",
+                        "response": {
+                            "status": "incomplete",
+                            "incomplete_details": {"reason": "max_output_tokens"},
+                        },
+                    },
+                ),
+            ]
+        ),
+        "max_output_tokens",
+    ),
+    "stream_error_event": (
+        sse_reply(
+            [_DELTA_A, ("error", {"type": "error", "code": "rate", "message": "stream-boom"})]
+        ),
+        "stream-boom",
+    ),
+    "completed_event_carrying_a_failed_response": (
+        sse_reply(
+            [
+                _DELTA_A,
+                (
+                    "response.completed",
+                    {"type": "response.completed", "response": {"status": "failed"}},
+                ),
+            ]
+        ),
+        "failed",
+    ),
+    "malformed_event_data": (
+        _raw_reply(_DELTA_A_BODY + "event: response.completed\ndata: {not json\n\n"),
+        "not json",
+    ),
+    "event_data_that_is_not_an_object": (
+        _raw_reply(_DELTA_A_BODY + "event: response.completed\ndata: [1]\n\n"),
+        "[1]",
+    ),
+    "delta_that_is_not_text": (
+        _raw_reply(
+            _DELTA_A_BODY
+            + 'event: response.output_text.delta\ndata: {"type": "response.output_text.delta",'
+            + ' "delta": 7}\n\n'
+        ),
+        "delta",
+    ),
+    "eof_after_delta_without_terminal": (_raw_reply(_DELTA_A_BODY), "terminal"),
+    "done_marker_without_terminal": (_raw_reply(_DELTA_A_BODY + "data: [DONE]\n\n"), "terminal"),
+}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", list(_TERMINATION_CASES))
+async def test_only_a_completed_event_ends_the_chat_stream_successfully(case: str) -> None:
+    reply, failure_detail = _TERMINATION_CASES[case]
+    provider = OpenAIChatStreamProvider(
+        settings=Settings(), door=RecordingDoor(_respond_with(reply))
+    )
+    received: list[str] = []
+
+    async def drain() -> None:
+        async for delta in provider.stream_chat(
+            request=_CHAT_REQUEST, system_prompt="sys", caller=_caller()
+        ):
+            received.append(delta)
+
+    if failure_detail is None:
+        await drain()
+    else:
+        with pytest.raises(EditorLlmProviderError) as raised:
+            await drain()
+        assert raised.value.kind == "invalid_response"
+        assert raised.value.detail is not None and failure_detail in raised.value.detail
+
+    assert received == ["a"]

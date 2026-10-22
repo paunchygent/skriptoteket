@@ -8,7 +8,7 @@ import { ApiError, apiFetch } from "../../api/client";
 import { useToastStore } from "../../stores/toast";
 import {
   AI_USER_LIMIT_NOTE,
-  aiDailyLimitNote,
+  aiDailyLimitFor,
   resetAiDailyLimitForTests,
 } from "../aiDailyLimit";
 import { skriptoteketGhostText } from "./skriptoteketGhostText";
@@ -92,7 +92,8 @@ describe("skriptoteketGhostText", () => {
       await flushMicrotasks();
 
       expect(apiFetch).toHaveBeenCalledTimes(1);
-      expect(aiDailyLimitNote.value).toBe(AI_USER_LIMIT_NOTE);
+      expect(aiDailyLimitFor("small").note.value).toBe(AI_USER_LIMIT_NOTE);
+      expect(aiDailyLimitFor("full").reached.value).toBe(false);
       expect(useToastStore().toasts).toHaveLength(0);
 
       typeText(view, "y");
@@ -121,7 +122,7 @@ describe("skriptoteketGhostText", () => {
       vi.advanceTimersByTime(10);
       await flushMicrotasks();
 
-      expect(aiDailyLimitNote.value).toBeNull();
+      expect(aiDailyLimitFor("small").note.value).toBeNull();
     } finally {
       view.destroy();
       parent.remove();

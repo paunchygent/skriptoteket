@@ -10,7 +10,8 @@ Relationships:
 """
 
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -31,6 +32,10 @@ from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_ai_api,
     require_app_contributor_api,
 )
+from skriptoteket.web.closing_stream import (
+    ClosingStreamingResponse,
+    anext_unaffected_by_scope_cancel,
+)
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.editor_support import require_tool_access
 
@@ -47,6 +52,23 @@ def _encode_sse_event(event: EditorChatStreamEvent) -> bytes:
         separators=(",", ":"),
     )
     return f"event: {event.event}\ndata: {payload}\n\n".encode("utf-8")
+
+
+async def _sse_frames(
+    *,
+    first_event: EditorChatStreamEvent,
+    events: AsyncGenerator[EditorChatStreamEvent, None],
+) -> AsyncGenerator[bytes, None]:
+    """Encode the events; this generator owns the close of ``events``."""
+
+    async with aclosing(events):
+        yield _encode_sse_event(first_event)
+        while True:
+            try:
+                event = await anext_unaffected_by_scope_cancel(events)
+            except StopAsyncIteration:
+                return
+            yield _encode_sse_event(event)
 
 
 @router.post("/tools/{tool_id}/chat", response_class=StreamingResponse)
@@ -68,13 +90,8 @@ async def stream_editor_chat(
     stream_iter = handler.stream(actor=user, command=command)
     first_event = await anext(stream_iter)
 
-    async def stream() -> AsyncIterator[bytes]:
-        yield _encode_sse_event(first_event)
-        async for event in stream_iter:
-            yield _encode_sse_event(event)
-
-    return StreamingResponse(
-        stream(),
+    return ClosingStreamingResponse(
+        _sse_frames(first_event=first_event, events=stream_iter),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

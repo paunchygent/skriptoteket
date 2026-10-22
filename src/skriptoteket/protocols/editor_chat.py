@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
@@ -87,4 +87,4 @@ class EditorChatStreamOrchestratorProtocol(Protocol):
         command: EditorChatCommand,
         prepared: PreparedEditorChatRequest,
         template_id: str,
-    ) -> AsyncIterator[EditorChatStreamEvent]: ...
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]: ...

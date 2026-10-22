@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from typing import Literal, Protocol
 from uuid import UUID
 
@@ -143,7 +143,7 @@ class ChatStreamProviderProtocol(Protocol):
         request: LLMChatRequest,
         system_prompt: str,
         caller: AiDoorCaller,
-    ) -> AsyncIterator[str]: ...
+    ) -> AsyncGenerator[str, None]: ...
 
 
 class ChatOpsProviderProtocol(Protocol):
@@ -194,7 +194,7 @@ class EditorChatHandlerProtocol(Protocol):
         *,
         actor: User,
         command: EditorChatCommand,
-    ) -> AsyncIterator[EditorChatStreamEvent]: ...
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]: ...
 
 
 class EditorChatClearHandlerProtocol(Protocol):

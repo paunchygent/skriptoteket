@@ -101,7 +101,7 @@ export function useExamWorkspaceContentSuggestions(deps: {
     // says so in the drawer; unlike other failures it never toasts.
     const settledLimit = aiLimitFromStatus(response);
     if (settledLimit !== null) {
-      markAiDailyLimit(settledLimit);
+      markAiDailyLimit("small", settledLimit);
     }
     if (response.state === "failed") {
       if (settledLimit !== null) {
@@ -153,7 +153,7 @@ export function useExamWorkspaceContentSuggestions(deps: {
           if (!disposed && deps.isOpen(request.opening)) {
             const pollLimit = aiLimitFromError(error);
             if (pollLimit !== null) {
-              markAiDailyLimit(pollLimit);
+              markAiDailyLimit("small", pollLimit);
               message.value = aiLimitNote(pollLimit);
               return;
             }
@@ -186,7 +186,7 @@ export function useExamWorkspaceContentSuggestions(deps: {
       if (!deps.isOpen(opening)) return;
       const requestLimit = aiLimitFromError(error);
       if (requestLimit !== null) {
-        markAiDailyLimit(requestLimit);
+        markAiDailyLimit("small", requestLimit);
         message.value = aiLimitNote(requestLimit);
         return;
       }

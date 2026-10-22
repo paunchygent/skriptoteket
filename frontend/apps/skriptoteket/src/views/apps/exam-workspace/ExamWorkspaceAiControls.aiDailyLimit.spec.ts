@@ -141,6 +141,37 @@ function reviewItem(): NativeExamItem {
 }
 
 let pinia: Pinia;
+
+function mountHeader(): VueWrapper {
+  return mount(ExamWorkspaceHeader, {
+    props: {
+      title: "Prov 1",
+      saveState: "saved",
+      saveText: "Sparat",
+      saveTitle: null,
+      courseLabel: null,
+      total: 0,
+      detailsOpen: false,
+      openDrawerOpen: false,
+      canRename: true,
+      canSaveAs: true,
+      suggestBusy: false,
+      suggestDisabled: false,
+      isPhone: false,
+      previewOpen: false,
+      newExamBusy: false,
+    },
+    global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
+  });
+}
+
+function mountRetry(): VueWrapper {
+  return mount(ExamWorkspaceImportBox, {
+    props: { item: reviewItem(), origin: "docx_import", open: true, disabled: false },
+    global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
+  });
+}
+
 beforeEach(() => {
   pinia = createPinia();
   resetAiDailyLimitForTests();
@@ -156,7 +187,7 @@ beforeEach(() => {
 describe("AiDailyLimitNote", () => {
   it.each(LIMIT_CASES)("renders the $limit note", ({ limit, note }) => {
     resetAiDailyLimitForTests();
-    markAiDailyLimit(limit);
+    markAiDailyLimit("small", limit);
     const wrapper = mount(AiDailyLimitNote);
     expect(wrapper.get('[data-test="ai-daily-limit-note"]').text()).toBe(note);
     wrapper.unmount();
@@ -166,27 +197,8 @@ describe("AiDailyLimitNote", () => {
 describe("exam workspace AI controls under the daily limit", () => {
   it.each(LIMIT_CASES)("disables the header suggest-all button and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit(limit);
-    const wrapper = mount(ExamWorkspaceHeader, {
-      props: {
-        title: "Prov 1",
-        saveState: "saved",
-        saveText: "Sparat",
-        saveTitle: null,
-        courseLabel: null,
-        total: 0,
-        detailsOpen: false,
-        openDrawerOpen: false,
-        canRename: true,
-        canSaveAs: true,
-        suggestBusy: false,
-        suggestDisabled: false,
-        isPhone: false,
-        previewOpen: false,
-        newExamBusy: false,
-      },
-      global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
-    });
+    markAiDailyLimit("small", limit);
+    const wrapper = mountHeader();
 
     const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');
     expect(button.attributes("disabled")).toBeDefined();
@@ -201,7 +213,7 @@ describe("exam workspace AI controls under the daily limit", () => {
 
   it.each(LIMIT_CASES)("disables the export-blocker key buttons and shows the $limit note once", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit(limit);
+    markAiDailyLimit("small", limit);
     const wrapper = mount(ExamWorkspaceExportBlockers, {
       props: {
         blockers: [keyBlocker("item_001", "1"), keyBlocker("item_002", "2")],
@@ -227,7 +239,7 @@ describe("exam workspace AI controls under the daily limit", () => {
 
   it.each(LIMIT_CASES)("disables the details-drawer content button and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit(limit);
+    markAiDailyLimit("small", limit);
     const wrapper = mount(ExamWorkspaceDetailsDrawer, {
       props: {
         document: courseDocument(),
@@ -255,7 +267,7 @@ describe("exam workspace AI controls under the daily limit", () => {
 
   it.each(LIMIT_CASES)("hides the Word format and shows the $limit note in the Öppna drawer", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit(limit);
+    markAiDailyLimit("small", limit);
     setActivePinia(pinia);
     const unreadable = useExamWorkspaceUnreadableFiles();
     const provideUnreadable: Plugin = {
@@ -300,7 +312,7 @@ describe("exam workspace AI controls under the daily limit", () => {
 
   it.each(LIMIT_CASES)("disables the per-question retry and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit(limit);
+    markAiDailyLimit("small", limit);
     const wrapper = mount(ExamWorkspaceImportBox, {
       props: { item: reviewItem(), origin: "docx_import", open: true, disabled: false },
       global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
@@ -316,4 +328,45 @@ describe("exam workspace AI controls under the daily limit", () => {
     expect(wrapper.emitted("retry")).toBeUndefined();
     wrapper.unmount();
   });
+});
+
+describe("exam workspace AI controls allowance scope", () => {
+  it.each(["pool", "user_share"] as const)(
+    "a full-allowance %s refusal leaves the header and retry controls enabled",
+    (limit) => {
+      signIn(pinia, "admin");
+      markAiDailyLimit("full", limit);
+      const header = mountHeader();
+      const retry = mountRetry();
+
+      expect(header.get('[data-test="exam-workspace-suggest-all"]').attributes("disabled"))
+        .toBeUndefined();
+      expect(findLimitNotes(header, aiLimitNote(limit))).toHaveLength(0);
+      expect(retry.get('[data-test="exam-workspace-retry"]').attributes("disabled"))
+        .toBeUndefined();
+      expect(findLimitNotes(retry, aiLimitNote(limit))).toHaveLength(0);
+      header.unmount();
+      retry.unmount();
+    },
+  );
+
+  it.each(["small", "full"] as const)(
+    "a usd_ceiling refusal from the %s allowance disables the header and retry controls",
+    (allowance) => {
+      signIn(pinia, "admin");
+      markAiDailyLimit(allowance, "usd_ceiling");
+      const header = mountHeader();
+      const retry = mountRetry();
+      const note = aiLimitNote("usd_ceiling");
+
+      expect(header.get('[data-test="exam-workspace-suggest-all"]').attributes("disabled"))
+        .toBeDefined();
+      expect(findLimitNotes(header, note)).toHaveLength(1);
+      expect(retry.get('[data-test="exam-workspace-retry"]').attributes("disabled"))
+        .toBeDefined();
+      expect(findLimitNotes(retry, note)).toHaveLength(1);
+      header.unmount();
+      retry.unmount();
+    },
+  );
 });

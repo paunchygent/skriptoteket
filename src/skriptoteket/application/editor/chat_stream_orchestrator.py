@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from typing import Literal
 
 import structlog
@@ -80,7 +81,7 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         command: EditorChatCommand,
         prepared: PreparedEditorChatRequest,
         template_id: str,
-    ) -> AsyncIterator[EditorChatStreamEvent]:
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]:
         request = prepared.request
         system_prompt = prepared.system_prompt
         system_prompt_chars = len(system_prompt)
@@ -175,22 +176,27 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         meta_sent = False
 
         try:
-            async for delta in self._provider.stream_chat(
-                request=request,
-                system_prompt=system_prompt,
-                caller=door_caller_for(user=actor),
-            ):
-                if not meta_sent:
-                    meta_sent = True
-                    yield meta_event
-                if not delta:
-                    continue
-                saw_delta = True
-                output_chars += len(delta)
-                assistant_chunks.append(delta)
-                await flush_assistant_content()
-                yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
-        except asyncio.CancelledError:
+            async with aclosing(
+                self._provider.stream_chat(
+                    request=request,
+                    system_prompt=system_prompt,
+                    caller=door_caller_for(user=actor),
+                )
+            ) as deltas:
+                async for delta in deltas:
+                    if not meta_sent:
+                        meta_sent = True
+                        yield meta_event
+                    if not delta:
+                        continue
+                    saw_delta = True
+                    output_chars += len(delta)
+                    assistant_chunks.append(delta)
+                    await flush_assistant_content()
+                    yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
+        except (asyncio.CancelledError, GeneratorExit):
+            # A cancelled task or a consumer that closed this generator (a dropped
+            # client): the provider stream is already closed; end the turn as cancelled.
             await finalize_turn(status="cancelled", failure_outcome="cancelled")
             elapsed_ms = int((time.perf_counter() - start) * 1000)
             logger.info(

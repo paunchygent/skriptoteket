@@ -24,7 +24,7 @@ def _validate_responses_text_format(
 
     Canonical docs:
     - Responses API: https://platform.openai.com/docs/api-reference/responses
-    - Local runbook: docs/runbooks/runbook-openai-responses-api.md
+    - Local runbook: RUN-SKRIPT-runbook-openai-responses-api-prompt-caching in docs/runbooks/
 
     `/v1/responses` requires the `text.format` shape (not the Chat Completions
     `response_format` shape):

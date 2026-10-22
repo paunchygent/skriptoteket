@@ -141,7 +141,7 @@ export function createConversionStatusPoll(
     // message already says so, and the Word import disables on the flag.
     const limit = aiLimitFromStatus(status);
     if (limit !== null) {
-      markAiDailyLimit(limit);
+      markAiDailyLimit("small", limit);
     }
     const deferred = await applyRevision(status, pollGeneration);
     // Adopting the fetched revision may already have ended or replaced this poll chain.
@@ -180,7 +180,7 @@ export function createConversionStatusPoll(
       // No toast for the door's limit: the Öppna drawer names it inline.
       const limit = aiLimitFromError(error);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         runtime.conversionError.value = aiLimitNote(limit);
       } else {
         runtime.conversionError.value = aiTryAgainFromError(error) ?? STATUS_FAILURE_COPY;

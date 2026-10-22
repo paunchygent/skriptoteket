@@ -19,8 +19,6 @@ from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
-    ChatBudget,
-    ChatBudgetResolverProtocol,
     ChatInFlightGuardProtocol,
     ChatStreamProviderProtocol,
 )
@@ -28,8 +26,8 @@ from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
 from skriptoteket.protocols.tool_session_turns import ToolSessionTurnRepositoryProtocol
 from skriptoteket.protocols.tool_sessions import ToolSessionRepositoryProtocol
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.application_fixtures import FakeTokenCounterResolver
+from tests.fixtures.editor_chat_handler_support import DummyChatBudgetResolver, DummyUow
 
 _NOW = datetime(2025, 1, 1, tzinfo=timezone.utc)
 
@@ -48,25 +46,6 @@ class SlotChatGuard(ChatInFlightGuardProtocol):
 
     async def release(self, *, user_id: UUID, tool_id: UUID) -> None:
         self.held.discard((user_id, tool_id))
-
-
-class _ChatBudgetResolver(ChatBudgetResolverProtocol):
-    def __init__(self, *, settings: Settings) -> None:
-        self._settings = settings
-
-    def resolve_chat_budget(self) -> ChatBudget:
-        return ChatBudget(
-            context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
-            max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
-        )
-
-
-class _NoopUow(UnitOfWorkProtocol):
-    async def __aenter__(self) -> "_NoopUow":
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,7 +122,7 @@ def make_chat_handler_harness(*, tool_id: UUID, user_id: UUID) -> ChatHandlerHar
         [turn_id, user_message_id, assistant_message_id], iter(uuid4, None)
     )
 
-    uow = _NoopUow()
+    uow = DummyUow()
     turn_preparer = EditorChatTurnPreparer(
         settings=settings,
         prompt_builder=SettingsBasedEditorChatPromptBuilder(settings=settings),
@@ -165,7 +144,7 @@ def make_chat_handler_harness(*, tool_id: UUID, user_id: UUID) -> ChatHandlerHar
     handler = EditorChatHandler(
         settings=settings,
         guard=guard,
-        budget_resolver=_ChatBudgetResolver(settings=settings),
+        budget_resolver=DummyChatBudgetResolver(settings=settings),
         turn_preparer=turn_preparer,
         stream_orchestrator=stream_orchestrator,
         token_counters=FakeTokenCounterResolver(),

@@ -94,7 +94,7 @@ Settings (`LLM_COMPLETION_*`, `LLM_CHAT_*`, `LLM_CHAT_OPS_*`, `HULEEDU_LLM_PROVI
 
 Structured output + content item gotchas are documented in:
 
-- `docs/runbooks/runbook-openai-responses-api.md`
+- `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`
 
 ### Source: Captures, correlation IDs, and debugging
 
@@ -138,7 +138,7 @@ Common root causes:
 
 See:
 
-- `docs/runbooks/runbook-openai-responses-api.md`
+- `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`
 - `src/skriptoteket/infrastructure/llm/openai/payloads.py`
 - `src/skriptoteket/infrastructure/llm/openai/types.py`
 
@@ -180,7 +180,7 @@ Common root causes:
 
 See:
 
-- `docs/runbooks/runbook-openai-responses-api.md`
+- `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`
 - `src/skriptoteket/infrastructure/llm/openai/payloads.py`
 - `src/skriptoteket/infrastructure/llm/openai/types.py`
 

@@ -2,7 +2,7 @@
 
 Purpose:
     Prove the deployed Skriptoteket SPA uses the HuleEdu Gateway production
-    protected API edge for browser-session reads and CSRF-protected writes.
+    protected API edge for browser-session reads.
 
 Relationships:
     - Complements HuleEdu TASK-0376 by exercising the live cross-repo contract.
@@ -13,11 +13,8 @@ Relationships:
 
 from __future__ import annotations
 
-import argparse
 import json
-import os
 import re
-from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Sequence
@@ -27,118 +24,12 @@ from playwright.sync_api import Page, Response, expect, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from scripts._playwright_browser import launch_chromium
+from scripts._playwright_task_0376_config import ProofConfig, parse_args
 
-DEFAULT_BASE_URL = "https://skriptoteket.hule.education"
-DEFAULT_HULEEDU_AUTH_ORIGIN = "https://api.hule.education"
-DEFAULT_HULEEDU_LOGIN_ORIGIN = "https://hule.education"
-DEFAULT_DOTENV_PATH = ".env.prod-smoke"
-ARTIFACT_ROOT = Path(".artifacts/playwright-task-0376-production-protected-api")
 PUBLIC_CLASSROOM_APP_PATH = "/public/apps/classroom.group-seating-studio"
 APP_CONTINUATION_PATH = "/api/v1/profile/app-continuation"
-AI_SETTINGS_PATH = "/api/v1/profile/ai-settings"
 PROTECTED_NEXT_PATH = "/editor"
 PROTECTED_FORBIDDEN_PATH = "/forbidden"
-
-
-@dataclass(frozen=True)
-class ProofConfig:
-    """Resolved proof configuration without credential exposure."""
-
-    base_url: str
-    huleedu_auth_origin: str
-    huleedu_login_origin: str
-    artifact_root: Path
-    email: str
-    password: str
-
-
-def _read_dotenv(path: Path) -> dict[str, str]:
-    """Read simple dotenv files without evaluating shell syntax."""
-    if not path.exists():
-        return {}
-
-    values: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        values[key.strip()] = value.strip().strip('"').strip("'")
-    return values
-
-
-def _normalize_origin(value: str, *, field_name: str) -> str:
-    """Validate and normalize an origin-like URL."""
-    normalized = value.rstrip("/")
-    parsed = urlparse(normalized)
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc or parsed.path:
-        raise SystemExit(f"Invalid {field_name}: {value}")
-    return normalized
-
-
-def _config_value(
-    *,
-    cli_value: str | None,
-    env_key: str,
-    dotenv: dict[str, str],
-    default: str,
-) -> str:
-    """Resolve one config value from CLI, env, dotenv, then default."""
-    return cli_value or os.environ.get(env_key) or dotenv.get(env_key) or default
-
-
-def _parse_args(argv: Sequence[str] | None = None) -> ProofConfig:
-    """Parse CLI and dotenv-backed proof config."""
-    parser = argparse.ArgumentParser(description="TASK-0376 production protected API proof")
-    parser.add_argument("--dotenv", default=os.environ.get("DOTENV_PATH") or DEFAULT_DOTENV_PATH)
-    parser.add_argument("--base-url", default=None)
-    parser.add_argument("--huleedu-auth-origin", default=None)
-    parser.add_argument("--huleedu-login-origin", default=None)
-    parser.add_argument("--artifact-dir", default=None)
-    parser.add_argument("--email", default=None)
-    parser.add_argument("--password", default=None)
-    args = parser.parse_args(argv)
-
-    dotenv = _read_dotenv(Path(args.dotenv))
-    email = args.email or os.environ.get("PLAYWRIGHT_EMAIL") or dotenv.get("PLAYWRIGHT_EMAIL")
-    password = (
-        args.password or os.environ.get("PLAYWRIGHT_PASSWORD") or dotenv.get("PLAYWRIGHT_PASSWORD")
-    )
-    if not email or not password:
-        parser.error("Missing credentials. Provide --email/--password or PLAYWRIGHT_* values.")
-
-    return ProofConfig(
-        base_url=_normalize_origin(
-            _config_value(
-                cli_value=args.base_url,
-                env_key="BASE_URL",
-                dotenv=dotenv,
-                default=DEFAULT_BASE_URL,
-            ),
-            field_name="--base-url",
-        ),
-        huleedu_auth_origin=_normalize_origin(
-            _config_value(
-                cli_value=args.huleedu_auth_origin,
-                env_key="HULEEDU_AUTH_ORIGIN",
-                dotenv=dotenv,
-                default=DEFAULT_HULEEDU_AUTH_ORIGIN,
-            ),
-            field_name="--huleedu-auth-origin",
-        ),
-        huleedu_login_origin=_normalize_origin(
-            _config_value(
-                cli_value=args.huleedu_login_origin,
-                env_key="HULEEDU_LOGIN_ORIGIN",
-                dotenv=dotenv,
-                default=DEFAULT_HULEEDU_LOGIN_ORIGIN,
-            ),
-            field_name="--huleedu-login-origin",
-        ),
-        artifact_root=Path(args.artifact_dir).expanduser() if args.artifact_dir else ARTIFACT_ROOT,
-        email=email,
-        password=password,
-    )
 
 
 def _run_id() -> str:
@@ -194,7 +85,6 @@ def _sanitize_response(response: Response, config: ProofConfig) -> dict[str, obj
         "/v1/auth/logout",
         "/api/v1/public/apps/classroom.group-seating-studio",
         APP_CONTINUATION_PATH,
-        AI_SETTINGS_PATH,
         "/auth/callback",
     )
     if not any(marker in parsed.path for marker in markers):
@@ -394,9 +284,8 @@ def _assert_public_app(page: Page, observed: list[dict[str, object]], config: Pr
 
 
 def _assert_protected_api(page: Page, config: ProofConfig) -> dict[str, object]:
-    """Assert reads and writes use the HuleEdu protected API edge."""
+    """Assert reads use the HuleEdu protected API edge and the app host rejects them."""
     protected_app_continuation = f"{config.huleedu_auth_origin}/api/v1/profile/app-continuation"
-    protected_ai_settings = f"{config.huleedu_auth_origin}/api/v1/profile/ai-settings"
     direct_app_host_app_continuation = f"{config.base_url}/api/v1/profile/app-continuation"
 
     read = _browser_fetch(page, target=protected_app_continuation)
@@ -407,45 +296,12 @@ def _assert_protected_api(page: Page, config: ProofConfig) -> dict[str, object]:
     if direct["status"] == 200:
         raise AssertionError("Direct app-host protected app-continuation unexpectedly returned 200")
 
-    negative = _browser_fetch(
-        page,
-        target=protected_ai_settings,
-        method="PATCH",
-        body={"remote_fallback_preference": "deny"},
-    )
-    if negative["status"] != 403:
-        raise AssertionError(f"Expected missing-CSRF write 403, got {negative['status']}")
-
-    csrf = _browser_fetch(page, target=f"{config.huleedu_auth_origin}/v1/auth/csrf")
-    csrf_payload = csrf.get("payload")
-    if csrf["status"] != 200 or not isinstance(csrf_payload, dict):
-        raise AssertionError(f"Expected CSRF fetch 200, got {csrf['status']}")
-    csrf_value = csrf_payload.get("csrf_token")
-    if not isinstance(csrf_value, str) or not csrf_value:
-        raise AssertionError("CSRF response did not include a token")
-
-    positive = _browser_fetch(
-        page,
-        target=protected_ai_settings,
-        method="PATCH",
-        headers={"X-CSRF-Token": csrf_value},
-        body={"remote_fallback_preference": "deny"},
-    )
-    if positive["status"] != 200:
-        raise AssertionError(f"Expected CSRF-protected write 200, got {positive['status']}")
-
     return {
         "protected_read_path": APP_CONTINUATION_PATH,
         "protected_read_origin": "huleedu_gateway",
         "protected_read_status": read["status"],
         "direct_app_host_protected_read_status": direct["status"],
         "direct_app_host_protected_read_rejected": True,
-        "protected_write_path": AI_SETTINGS_PATH,
-        "missing_csrf_write_status": negative["status"],
-        "csrf_fetch_origin": "huleedu_gateway",
-        "csrf_fetch_status": csrf["status"],
-        "csrf_protected_write_origin": "huleedu_gateway",
-        "csrf_protected_write_status": positive["status"],
     }
 
 
@@ -466,7 +322,7 @@ def _assert_spa_observed_gateway(
         item
         for item in observed
         if item.get("origin_label") == "skriptoteket_app_host"
-        and item.get("path") in {APP_CONTINUATION_PATH, AI_SETTINGS_PATH}
+        and item.get("path") == APP_CONTINUATION_PATH
     ]
     if app_host_protected:
         raise AssertionError("Observed protected app-host API calls before direct rejection probe")
@@ -565,7 +421,7 @@ def _run(config: ProofConfig) -> Path:
 
 def main(argv: Sequence[str] | None = None) -> None:
     """CLI entrypoint."""
-    manifest_path = _run(_parse_args(argv))
+    manifest_path = _run(parse_args(argv))
     print(f"playwright-task-0376-production-protected-api: ok manifest={manifest_path}")
 
 

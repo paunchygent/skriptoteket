@@ -16,7 +16,12 @@ File: `scripts/ai_prompt_eval/run_live_backend.py`
 Purpose:
 
 - Exercises the full backend flow (auth + prompt composition + the HuleEdu LLM provider door call).
-- Uses fixtures from `scripts/ai_prompt_eval/fixture_bank.py`.
+- Uses fixtures from `scripts/ai_prompt_eval/fixture_bank.py`: inline-completion fixtures go to
+  `POST /api/v1/editor/completions`; edit fixtures go to `POST /api/v1/editor/edit-ops` as the
+  route's request model (prefix + selection + suffix as `tool.py`, the selection range, the
+  instruction as message, a fixed eval tool id that only a superuser may use).
+- Modules: `cli.py` (configuration), `fixture_requests.py` (fixture to request), `fixture_execution.py`
+  (one call), `interpretation.py` (eval headers, bodies, outcomes), `reporting.py` (artifacts).
 - Talks only to the Skriptoteket HTTP API; it never calls a model endpoint itself.
 
 Artifacts:

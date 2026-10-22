@@ -11,17 +11,24 @@
  *   OpenAI call. The first limit seen wins: the note names the user's own
  *   share, or the app's pool/ceiling.
  *
+ * Allowances:
+ *   The door counts the pool and each caller's share per allowance: the
+ *   small-model allowance (inline completion and all exam-workspace AI) and
+ *   the full-model allowance (editor chat and edit-ops). A refusal is
+ *   remembered under the allowance that made the request and disables only
+ *   that allowance's controls. The cost ceiling is service-wide and disables
+ *   both.
+ *
  * Relationships:
- *   - Marked by the exam-workspace AI composables (enrichment, content
- *     suggestions, conversion, item retry); read by the components that own
- *     an AI button (header, export blockers, details drawer, open drawer,
- *     import box).
- *   - The script editor shares the same page-session flag, because it is the
- *     same door and the same teacher: ghost text, chat and edit-ops mark it
- *     on a 429 (`skriptoteketGhostText`, `useEditorChatRequest`,
- *     `useEditorEditOps`); `ScriptEditorAiPanel` shows the note beside the
- *     disabled composer and `EditorSourceCodePanel` shows it inline over the
- *     editor.
+ *   - Marked under `small` by the exam-workspace AI composables (enrichment,
+ *     content suggestions, conversion, item retry) and by ghost text
+ *     (`skriptoteketGhostText`); read by the components that own an exam AI
+ *     button (header, export blockers, details drawer, open drawer, import
+ *     box).
+ *   - Marked under `full` by `useEditorChatRequest` and `useEditorEditOps`;
+ *     `ScriptEditorAiPanel` shows the note beside the disabled composer for
+ *     the full allowance, and `EditorSourceCodePanel` shows the small
+ *     allowance's note inline over the editor.
  */
 
 import { computed, readonly, ref } from "vue";
@@ -99,37 +106,74 @@ export function aiTryAgainFromError(error: unknown): string | null {
 }
 
 /**
- * The first door limit refused in this page session, or null while no AI
- * action has been refused. Module state on purpose: it lives exactly as long
- * as the page, and a reload clears it.
+ * The door's two separate allowances. `pool` and `user_share` limits count per
+ * allowance; `usd_ceiling` is service-wide.
+ *
+ * - `small`: the small-model allowance, used by inline completion and every
+ *   exam-workspace AI action.
+ * - `full`: the full-model allowance, used by editor chat and edit-ops.
  */
-const reachedLimit = ref<AiDailyLimit | null>(null);
+export type AiAllowance = "small" | "full";
 
-/** Read-only view of the first limit refused this page session. */
-export const aiDailyLimit: Readonly<Ref<AiDailyLimit | null>> = readonly(reachedLimit);
+const allAllowances: readonly AiAllowance[] = ["small", "full"];
 
-/** Whether the door refused an AI action in this page session. */
-export const aiDailyLimitReached: ComputedRef<boolean> = computed(
-  () => reachedLimit.value !== null,
-);
-
-/** The door's note for the refused limit, or null while nothing is refused. */
-export const aiDailyLimitNote: ComputedRef<string | null> = computed(() =>
-  reachedLimit.value === null ? null : aiLimitNote(reachedLimit.value),
-);
+/** What one allowance has seen refused in this page session. */
+export type AiAllowanceState = {
+  /** The first limit this allowance was refused with, or null. */
+  readonly limit: Readonly<Ref<AiDailyLimit | null>>;
+  /** Whether the AI controls of this allowance are disabled. */
+  readonly reached: ComputedRef<boolean>;
+  /** The door's note for the refused limit, or null while nothing is refused. */
+  readonly note: ComputedRef<string | null>;
+};
 
 /**
- * Remember the door's refusal for the rest of the page session. The first
- * limit seen wins; later refusals keep the first note.
+ * The first door limit refused per allowance in this page session. Module
+ * state on purpose: it lives exactly as long as the page, and a reload clears
+ * it.
  */
-export function markAiDailyLimit(limit: AiDailyLimit): void {
-  if (reachedLimit.value !== null) {
-    return;
-  }
-  reachedLimit.value = limit;
+const reachedLimits: Record<AiAllowance, Ref<AiDailyLimit | null>> = {
+  small: ref(null),
+  full: ref(null),
+};
+
+function allowanceState(allowance: AiAllowance): AiAllowanceState {
+  const limit = reachedLimits[allowance];
+  return {
+    limit: readonly(limit),
+    reached: computed(() => limit.value !== null),
+    note: computed(() => (limit.value === null ? null : aiLimitNote(limit.value))),
+  };
 }
 
-/** Clear the flag; tests only, so one spec's limit never leaks into the next. */
+const allowanceStates: Record<AiAllowance, AiAllowanceState> = {
+  small: allowanceState("small"),
+  full: allowanceState("full"),
+};
+
+/** Read-only refusal state of one allowance; each AI control reads its own. */
+export function aiDailyLimitFor(allowance: AiAllowance): AiAllowanceState {
+  return allowanceStates[allowance];
+}
+
+/**
+ * Remember the door's refusal for the rest of the page session under the
+ * allowance that made the request. The first limit per allowance wins; later
+ * refusals keep the first note. The service-wide `usd_ceiling` blocks both
+ * allowances.
+ */
+export function markAiDailyLimit(allowance: AiAllowance, limit: AiDailyLimit): void {
+  const refused = limit === "usd_ceiling" ? allAllowances : [allowance];
+  for (const target of refused) {
+    if (reachedLimits[target].value === null) {
+      reachedLimits[target].value = limit;
+    }
+  }
+}
+
+/** Clear the flags; tests only, so one spec's limit never leaks into the next. */
 export function resetAiDailyLimitForTests(): void {
-  reachedLimit.value = null;
+  for (const allowance of allAllowances) {
+    reachedLimits[allowance].value = null;
+  }
 }

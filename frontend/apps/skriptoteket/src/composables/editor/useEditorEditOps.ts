@@ -1,91 +1,33 @@
 import type { EditorView } from "@codemirror/view";
-import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
+import { computed, ref, type Ref } from "vue";
 
-import { createCorrelationId } from "../../api/correlation";
-import { isApiError } from "../../api/client";
-import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
-import {
-  applyEditOps,
-  previewEditOps,
-  requestEditOps as requestEditOpsApi,
-  type EditorEditOpsOpInput,
-  type EditorEditOpsPreviewResponse,
-  type EditorEditOpsResponse,
-} from "./editOps/editorEditOpsApi";
-import { buildDiffItems, uniqueTargetFiles } from "./editOps/editOpsDiff";
-import {
-  applyVirtualFiles,
-  cloneVirtualFiles,
-  createAppliedSnapshot,
-  virtualFilesFingerprint,
-  type AppliedEditOpsSnapshot,
-} from "./editOps/editOpsSnapshots";
-import {
-  buildEditOpsPanelState,
-  type EditOpsDiffItem,
-  type EditOpsPanelState,
-  type EditOpsProposal,
-  type EditorEditOpsCursor,
-  type EditorEditOpsPreviewErrorDetails,
-  type EditorEditOpsSelection,
-  type EditorEditOpsOpOutput,
-} from "./editOps/editOpsState";
-import {
-  virtualFileTextFromEditorFields,
-  type VirtualFileId,
-  type VirtualFileTextMap,
-} from "./virtualFiles";
+import { virtualFilesFingerprint, type EditorFieldRefs } from "./editOps/editOpsSnapshots";
+import { buildEditOpsPanelState, type EditOpsPanelState, type EditOpsProposal } from "./editOps/editOpsState";
+import { useEditOpsApply } from "./editOps/useEditOpsApply";
+import { useEditOpsHistory } from "./editOps/useEditOpsHistory";
+import { useEditOpsPreview } from "./editOps/useEditOpsPreview";
+import { useEditOpsRequest } from "./editOps/useEditOpsRequest";
+import { virtualFileTextFromEditorFields } from "./virtualFiles";
 
 type UseEditorEditOpsOptions = {
   toolId: Readonly<Ref<string>>;
   isReadOnly: Readonly<Ref<boolean>>;
   editorView: Readonly<Ref<EditorView | null>>;
-  fields: {
-    entrypoint: Ref<string>;
-    sourceCode: Ref<string>;
-    settingsSchemaText: Ref<string>;
-    inputSchemaText: Ref<string>;
-    usageInstructions: Ref<string>;
-  };
+  fields: EditorFieldRefs;
   createBeforeApplyCheckpoint: () => Promise<void> | void;
 };
 
-type EditOpsRequestResult = {
-  response: EditorEditOpsResponse;
-  message: string;
-  activeFile: VirtualFileId;
-  selection: EditorEditOpsSelection | null;
-  cursor: EditorEditOpsCursor | null;
-  correlationId: string | null;
-};
-
-const DEFAULT_ACTIVE_FILE: VirtualFileId = "tool.py";
-
+/**
+ * One edit-ops proposal from request to undo. The request, preview, apply and
+ * undo/redo lifecycles live in `./editOps/`; this composable owns the shared
+ * proposal and the editor's current files, wires the lifecycles together and
+ * exposes the panel state.
+ */
 export function useEditorEditOps(options: UseEditorEditOpsOptions) {
-  const {
-    toolId,
-    isReadOnly,
-    fields,
-    createBeforeApplyCheckpoint,
-  } = options;
+  const { toolId, isReadOnly, fields, createBeforeApplyCheckpoint } = options;
 
   const proposal = ref<EditOpsProposal | null>(null);
-  const lastApplied = ref<AppliedEditOpsSnapshot | null>(null);
-  const isRequesting = ref(false);
-  const isPreviewing = ref(false);
   const isApplying = ref(false);
-  const requestStartedAt = ref<number | null>(null);
-  const requestNow = ref(Date.now());
-  let requestInterval: ReturnType<typeof setInterval> | null = null;
-  const requestError = ref<string | null>(null);
-  const previewError = ref<string | null>(null);
-  const previewErrorDetails = ref<EditorEditOpsPreviewErrorDetails | null>(null);
-  const applyError = ref<string | null>(null);
-  const undoError = ref<string | null>(null);
-  const previewResponse = ref<EditorEditOpsPreviewResponse | null>(null);
-  const previewBaseFiles = ref<VirtualFileTextMap | null>(null);
-  const confirmationAccepted = ref(false);
-  const aiPosition = ref<"after" | "before">("after");
 
   const currentFiles = computed(() =>
     virtualFileTextFromEditorFields({
@@ -96,487 +38,89 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       usageInstructions: fields.usageInstructions.value,
     }),
   );
-
   const currentFingerprint = computed(() => virtualFilesFingerprint(currentFiles.value));
 
-  const requestElapsedSeconds = computed(() => {
-    if (!isRequesting.value || requestStartedAt.value === null) return 0;
-    return Math.max(0, Math.floor((requestNow.value - requestStartedAt.value) / 1000));
+  const preview = useEditOpsPreview({ toolId, proposal, currentFiles });
+  const history = useEditOpsHistory({ isReadOnly, isApplying, fields, currentFingerprint });
+  const apply = useEditOpsApply({
+    toolId,
+    isReadOnly,
+    isApplying,
+    fields,
+    proposal,
+    currentFiles,
+    preview,
+    history,
+    createBeforeApplyCheckpoint,
   });
-
-  const isSlowRequest = computed(() => requestElapsedSeconds.value >= 45);
-
-  const targetFiles = computed(() => (proposal.value ? uniqueTargetFiles(proposal.value.ops) : []));
-
-  const diffItems = computed<EditOpsDiffItem[]>(() => {
-    if (!proposal.value || !previewResponse.value || !previewBaseFiles.value) return [];
-    if (!previewResponse.value.ok) return [];
-    const beforeFiles = previewBaseFiles.value;
-    const afterFiles = previewResponse.value.after_virtual_files as unknown as VirtualFileTextMap;
-    return buildDiffItems({ targetFiles: targetFiles.value, beforeFiles, afterFiles });
+  const request = useEditOpsRequest({
+    toolId,
+    proposal,
+    currentFiles,
+    preview,
+    clearStaleErrors: () => {
+      apply.applyError.value = null;
+      history.undoError.value = null;
+    },
   });
-
-  const hasChanges = computed(() => diffItems.value.length > 0);
-  const previewMeta = computed(() => previewResponse.value?.meta ?? null);
-  const requiresConfirmation = computed(() => previewMeta.value?.requires_confirmation ?? false);
-
-  const applyDisabledReason = computed(() => {
-    if (!proposal.value) return null;
-    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
-    if (isPreviewing.value) return "Skapar förhandsvisning...";
-    if (previewError.value) return previewError.value;
-    if (!hasChanges.value) return "Inga ändringar att tillämpa.";
-    if (requiresConfirmation.value && !confirmationAccepted.value) {
-      return "Bekräfta att du har granskat ändringen.";
-    }
-    return null;
-  });
-
-  const canApply = computed(
-    () =>
-      Boolean(proposal.value) &&
-      !isReadOnly.value &&
-      !isPreviewing.value &&
-      !previewError.value &&
-      hasChanges.value &&
-      (!requiresConfirmation.value || confirmationAccepted.value) &&
-      !isApplying.value,
-  );
-
-  const undoDisabledReason = computed(() => {
-    if (!lastApplied.value) return null;
-    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
-    if (aiPosition.value !== "after") {
-      return "AI-ändringen är redan återställd.";
-    }
-    if (currentFingerprint.value !== lastApplied.value.afterFingerprint) {
-      return "Ändringar har gjorts efter AI-ändringen. Återställ via återställningspunkter.";
-    }
-    return null;
-  });
-
-  const canUndo = computed(
-    () =>
-      Boolean(lastApplied.value) &&
-      !isReadOnly.value &&
-      !undoDisabledReason.value &&
-      !isApplying.value,
-  );
-
-  const redoDisabledReason = computed(() => {
-    if (!lastApplied.value) return null;
-    if (isReadOnly.value) return "Kodredigeraren är låst för redigering.";
-    if (aiPosition.value !== "before") {
-      return "Ingen AI-ändring att återställa.";
-    }
-    if (currentFingerprint.value !== lastApplied.value.beforeFingerprint) {
-      return "Ändringar har gjorts efter återställning. Återställ via återställningspunkter.";
-    }
-    return null;
-  });
-
-  const canRedo = computed(
-    () =>
-      Boolean(lastApplied.value) &&
-      !isReadOnly.value &&
-      !redoDisabledReason.value &&
-      !isApplying.value,
-  );
-
-  function clearErrors(): void {
-    requestError.value = null;
-    previewError.value = null;
-    previewErrorDetails.value = null;
-    applyError.value = null;
-    undoError.value = null;
-  }
-
-  function clearRequestError(): void {
-    requestError.value = null;
-  }
-
-  function setConfirmationAccepted(nextValue: boolean): void {
-    confirmationAccepted.value = nextValue;
-  }
-
-  async function loadPreview(params: {
-    proposal: EditOpsProposal;
-    virtualFiles: VirtualFileTextMap;
-  }): Promise<EditorEditOpsPreviewResponse | null> {
-    if (!toolId.value) {
-      previewError.value = "Ingen editor hittades.";
-      return null;
-    }
-    if (!params.proposal.correlationId) {
-      previewError.value = "Korrelation-ID saknas. Regenerera.";
-      return null;
-    }
-
-    isPreviewing.value = true;
-    previewError.value = null;
-    previewErrorDetails.value = null;
-    applyError.value = null;
-
-    try {
-      const response = await previewEditOps({
-        toolId: toolId.value,
-        activeFile: params.proposal.activeFile,
-        virtualFiles: params.virtualFiles,
-        ops: params.proposal.ops as unknown as EditorEditOpsOpInput[],
-        selection: null,
-        cursor: null,
-        correlationId: params.proposal.correlationId,
-      });
-
-      previewResponse.value = response;
-      previewBaseFiles.value = cloneVirtualFiles(params.virtualFiles);
-
-      const errors = response.errors ?? [];
-      const details = response.error_details ?? [];
-      previewError.value = response.ok ? null : (errors[0] ?? "Förhandsvisningen misslyckades. Regenerera.");
-      previewErrorDetails.value = details[0] ?? null;
-      confirmationAccepted.value = false;
-
-      return response;
-    } catch (error: unknown) {
-      previewResponse.value = null;
-      previewBaseFiles.value = null;
-      confirmationAccepted.value = false;
-      if (isApiError(error)) {
-        previewError.value = error.message;
-      } else if (error instanceof Error) {
-        previewError.value = error.message;
-      } else {
-        previewError.value = "Det gick inte att förhandsvisa förslaget.";
-      }
-      return null;
-    } finally {
-      isPreviewing.value = false;
-    }
-  }
-
-  async function refreshPreview(): Promise<EditorEditOpsPreviewResponse | null> {
-    if (!proposal.value) {
-      previewResponse.value = null;
-      previewBaseFiles.value = null;
-      previewError.value = null;
-      previewErrorDetails.value = null;
-      confirmationAccepted.value = false;
-      return null;
-    }
-
-    return await loadPreview({ proposal: proposal.value, virtualFiles: currentFiles.value });
-  }
-
-  async function requestEditOps(message: string): Promise<EditOpsRequestResult | null> {
-    const trimmed = message.trim();
-    if (!trimmed) {
-      requestError.value = "Skriv ett meddelande först.";
-      return null;
-    }
-    if (!toolId.value) {
-      requestError.value = "Ingen editor hittades.";
-      return null;
-    }
-
-    clearErrors();
-    previewResponse.value = null;
-    previewBaseFiles.value = null;
-    confirmationAccepted.value = false;
-    isRequesting.value = true;
-
-    const activeFile = DEFAULT_ACTIVE_FILE;
-    const virtualFiles = currentFiles.value;
-    const selection = null;
-    const cursor = null;
-
-    try {
-      const correlationId = createCorrelationId();
-      const response = await requestEditOpsApi({
-        toolId: toolId.value,
-        message: trimmed,
-        activeFile,
-        virtualFiles,
-        selection,
-        cursor,
-        correlationId,
-      });
-
-      if (response.enabled && response.ops.length > 0) {
-        const nextProposal: EditOpsProposal = {
-          message: trimmed,
-          assistantMessage: response.assistant_message,
-          ops: response.ops as unknown as EditorEditOpsOpOutput[],
-          activeFile,
-          selection,
-          cursor,
-          correlationId,
-          createdAt: new Date().toISOString(),
-        };
-        proposal.value = nextProposal;
-        await loadPreview({ proposal: nextProposal, virtualFiles });
-      } else {
-        proposal.value = null;
-        previewResponse.value = null;
-        previewBaseFiles.value = null;
-        previewError.value = null;
-        previewErrorDetails.value = null;
-        confirmationAccepted.value = false;
-      }
-
-      return { response, message: trimmed, activeFile, selection, cursor, correlationId };
-    } catch (error: unknown) {
-      proposal.value = null;
-      previewResponse.value = null;
-      previewBaseFiles.value = null;
-      previewErrorDetails.value = null;
-      confirmationAccepted.value = false;
-      const limit = aiLimitFromError(error);
-      if (limit) {
-        // The door's limit note shows beside the disabled composer, not as a request error.
-        markAiDailyLimit(limit);
-        return null;
-      }
-      if (isApiError(error)) {
-        requestError.value = error.message;
-      } else if (error instanceof Error) {
-        requestError.value = error.message;
-      } else {
-        requestError.value = "Det gick inte att skapa ett AI-förslag.";
-      }
-      return null;
-    } finally {
-      isRequesting.value = false;
-    }
-  }
-
-  async function applyProposal(): Promise<boolean> {
-    applyError.value = null;
-    undoError.value = null;
-
-    const proposalValue = proposal.value;
-    if (!proposalValue) return false;
-    if (!proposalValue.correlationId) {
-      applyError.value = "Korrelation-ID saknas. Regenerera.";
-      return false;
-    }
-    if (isReadOnly.value) {
-      applyError.value = "Kodredigeraren är låst för redigering.";
-      return false;
-    }
-
-    if (!previewResponse.value || previewError.value) {
-      await refreshPreview();
-    }
-
-    if (!previewResponse.value) {
-      applyError.value = previewError.value ?? "Förhandsvisningen saknas. Försök igen.";
-      return false;
-    }
-
-    if (!previewResponse.value.ok) {
-      const errors = previewResponse.value.errors ?? [];
-      applyError.value = errors[0] ?? "Förhandsvisningen misslyckades. Regenerera.";
-      return false;
-    }
-
-    if (!hasChanges.value) {
-      applyError.value = "Inga ändringar att tillämpa.";
-      return false;
-    }
-
-    if (previewResponse.value.meta.requires_confirmation && !confirmationAccepted.value) {
-      applyError.value = "Bekräfta att du har granskat ändringen innan du tillämpar.";
-      return false;
-    }
-
-    const beforeFiles = cloneVirtualFiles(currentFiles.value);
-
-    isApplying.value = true;
-    try {
-      const response = await applyEditOps({
-        toolId: toolId.value,
-        activeFile: proposalValue.activeFile,
-        virtualFiles: beforeFiles,
-        ops: proposalValue.ops as unknown as EditorEditOpsOpInput[],
-        baseHash: previewResponse.value.meta.base_hash,
-        patchId: previewResponse.value.meta.patch_id,
-        selection: null,
-        cursor: null,
-        correlationId: proposalValue.correlationId,
-      });
-
-      if (!response.ok) {
-        const errors = response.errors ?? [];
-        const errorMessage = errors[0] ?? "Förslaget kunde inte tillämpas. Regenerera.";
-        applyError.value = null;
-        previewResponse.value = response;
-        previewBaseFiles.value = cloneVirtualFiles(beforeFiles);
-        previewError.value = errorMessage;
-        previewErrorDetails.value = (response.error_details ?? [])[0] ?? null;
-        confirmationAccepted.value = false;
-        return false;
-      }
-
-      await createBeforeApplyCheckpoint();
-      const afterFiles = response.after_virtual_files as unknown as VirtualFileTextMap;
-      applyVirtualFiles(fields, afterFiles);
-      lastApplied.value = createAppliedSnapshot(beforeFiles, afterFiles);
-      aiPosition.value = "after";
-      proposal.value = null;
-      previewResponse.value = null;
-      previewBaseFiles.value = null;
-      previewError.value = null;
-      previewErrorDetails.value = null;
-      confirmationAccepted.value = false;
-      return true;
-    } catch (error: unknown) {
-      if (isApiError(error) && error.status === 409) {
-        confirmationAccepted.value = false;
-        const message = error.message;
-        await refreshPreview();
-        applyError.value = message;
-        return false;
-      }
-
-      applyError.value = isApiError(error)
-        ? error.message
-        : error instanceof Error
-            ? error.message
-            : "Det gick inte att tillämpa förslaget.";
-      return false;
-    } finally {
-      isApplying.value = false;
-    }
-  }
 
   function discardProposal(): void {
     proposal.value = null;
-    previewResponse.value = null;
-    previewBaseFiles.value = null;
-    previewError.value = null;
-    previewErrorDetails.value = null;
-    applyError.value = null;
-    confirmationAccepted.value = false;
+    preview.reset();
+    apply.applyError.value = null;
   }
-
-  function undoLastApply(): boolean {
-    undoError.value = null;
-    if (!lastApplied.value) return false;
-    if (!canUndo.value) {
-      undoError.value = undoDisabledReason.value ?? "Det gick inte att ångra.";
-      return false;
-    }
-
-    applyVirtualFiles(fields, lastApplied.value.beforeFiles);
-    aiPosition.value = "before";
-    return true;
-  }
-
-  function redoLastApply(): boolean {
-    undoError.value = null;
-    if (!lastApplied.value) return false;
-    if (!canRedo.value) {
-      undoError.value = redoDisabledReason.value ?? "Det gick inte att återställa.";
-      return false;
-    }
-
-    applyVirtualFiles(fields, lastApplied.value.afterFiles);
-    aiPosition.value = "after";
-    return true;
-  }
-
-  watch(
-    () => currentFingerprint.value,
-    () => {
-      if (!lastApplied.value) return;
-      if (currentFingerprint.value !== lastApplied.value.afterFingerprint && undoError.value) {
-        undoError.value = null;
-      }
-    },
-  );
-
-  onScopeDispose(() => {
-    if (requestInterval) {
-      clearInterval(requestInterval);
-      requestInterval = null;
-    }
-  });
-
-  watch(
-    () => isRequesting.value,
-    (isActive) => {
-      if (requestInterval) {
-        clearInterval(requestInterval);
-        requestInterval = null;
-      }
-
-      if (!isActive) {
-        requestStartedAt.value = null;
-        requestNow.value = Date.now();
-        return;
-      }
-
-      requestStartedAt.value = Date.now();
-      requestNow.value = Date.now();
-      requestInterval = setInterval(() => {
-        requestNow.value = Date.now();
-      }, 1000);
-    },
-    { immediate: true },
-  );
 
   const panelState = computed<EditOpsPanelState>(() =>
     buildEditOpsPanelState({
       proposal: proposal.value,
-      diffItems: diffItems.value,
-      previewMeta: previewMeta.value,
-      previewError: previewError.value,
-      previewErrorDetails: previewErrorDetails.value,
-      applyError: applyError.value,
-      undoError: undoError.value,
-      canApply: canApply.value,
-      applyDisabledReason: applyDisabledReason.value,
-      canUndo: canUndo.value,
-      undoDisabledReason: undoDisabledReason.value,
-      canRedo: canRedo.value,
-      redoDisabledReason: redoDisabledReason.value,
-      lastApplied: lastApplied.value,
-      aiPosition: aiPosition.value,
+      diffItems: preview.diffItems.value,
+      previewMeta: preview.meta.value,
+      previewError: preview.error.value,
+      previewErrorDetails: preview.errorDetails.value,
+      applyError: apply.applyError.value,
+      undoError: history.undoError.value,
+      canApply: apply.canApply.value,
+      applyDisabledReason: apply.applyDisabledReason.value,
+      canUndo: history.canUndo.value,
+      undoDisabledReason: history.undoDisabledReason.value,
+      canRedo: history.canRedo.value,
+      redoDisabledReason: history.redoDisabledReason.value,
+      lastApplied: history.lastApplied.value,
+      aiPosition: history.aiPosition.value,
       isApplying: isApplying.value,
-      requiresConfirmation: requiresConfirmation.value,
-      confirmationAccepted: confirmationAccepted.value,
+      requiresConfirmation: preview.requiresConfirmation.value,
+      confirmationAccepted: preview.confirmationAccepted.value,
     }),
   );
 
   return {
     proposal,
-    isRequesting,
-    requestElapsedSeconds,
-    isSlowRequest,
-    requestError,
-    clearRequestError,
+    isRequesting: request.isRequesting,
+    requestElapsedSeconds: request.requestElapsedSeconds,
+    isSlowRequest: request.isSlowRequest,
+    requestError: request.requestError,
+    clearRequestError: request.clearRequestError,
     panelState,
-    diffItems,
-    previewError,
-    previewErrorDetails,
-    previewMeta,
-    applyError,
-    undoError,
-    canApply,
-    applyDisabledReason,
-    canUndo,
-    undoDisabledReason,
+    diffItems: preview.diffItems,
+    previewError: preview.error,
+    previewErrorDetails: preview.errorDetails,
+    previewMeta: preview.meta,
+    applyError: apply.applyError,
+    undoError: history.undoError,
+    canApply: apply.canApply,
+    applyDisabledReason: apply.applyDisabledReason,
+    canUndo: history.canUndo,
+    undoDisabledReason: history.undoDisabledReason,
     isApplying,
-    requiresConfirmation,
-    confirmationAccepted,
-    setConfirmationAccepted,
-    requestEditOps,
-    applyProposal,
+    requiresConfirmation: preview.requiresConfirmation,
+    confirmationAccepted: preview.confirmationAccepted,
+    setConfirmationAccepted: preview.setConfirmationAccepted,
+    requestEditOps: request.requestEditOps,
+    applyProposal: apply.applyProposal,
     discardProposal,
-    undoLastApply,
-    redoLastApply,
-    canRedo,
-    redoDisabledReason,
+    undoLastApply: history.undoLastApply,
+    redoLastApply: history.redoLastApply,
+    canRedo: history.canRedo,
+    redoDisabledReason: history.redoDisabledReason,
   };
 }

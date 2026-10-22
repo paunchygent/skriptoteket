@@ -21,8 +21,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
-  aiDailyLimit,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitNote,
   resetAiDailyLimitForTests,
 } from "../../../composables/aiDailyLimit";
@@ -33,6 +32,8 @@ import {
   EXAM_WORKSPACE_CONTENT_POLL_MS,
   useExamWorkspaceContentSuggestions,
 } from "./useExamWorkspaceContentSuggestions";
+
+const smallAllowance = aiDailyLimitFor("small");
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceContentSuggestions: vi.fn(),
@@ -156,8 +157,9 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
         response("failed", { ai_limit, message: note }),
       );
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(ai_limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(ai_limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(ai_limit === "usd_ceiling");
       expect(harness.content.message.value).toBe(note);
       expect(harness.setTags).not.toHaveBeenCalled();
       expect(toastMessages()).toEqual([]);
@@ -169,7 +171,7 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
     const harness = setup();
     await runJob(harness, response("failed", { message: "Modellen svarade inte." }));
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(toastMessages()).toEqual(["Modellen svarade inte."]);
     expect(harness.content.message.value).toBeNull();
   });
@@ -189,8 +191,9 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
 
       await harness.content.suggest();
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(limit === "usd_ceiling");
       expect(harness.content.message.value).toBe(aiLimitNote(limit));
       expect(toastMessages()).toEqual([]);
       expect(harness.content.busy.value).toBe(false);
@@ -204,7 +207,7 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
       response("succeeded", { suggestions: [tag("t1", ["q1"])] }),
     );
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(harness.setTags).toHaveBeenCalledTimes(1);
   });
 });
@@ -227,14 +230,14 @@ describe("useExamWorkspaceContentSuggestions busy AI door", () => {
 
     expect(harness.content.message.value).toBe(TRY_AGAIN_SENTENCE);
     expect(toastMessages()).toEqual([]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(harness.content.busy.value).toBe(false);
 
     await runJob(harness, response("succeeded", { suggestions: [tag("t1", ["q1"])] }));
 
     expect(harness.content.message.value).toBeNull();
     expect(harness.setTags).toHaveBeenCalledTimes(1);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
   });
 
   it("says the sentence in the drawer for a poll refused with AI_TRY_AGAIN", async () => {
@@ -247,7 +250,7 @@ describe("useExamWorkspaceContentSuggestions busy AI door", () => {
 
     expect(harness.content.message.value).toBe(TRY_AGAIN_SENTENCE);
     expect(toastMessages()).toEqual([]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(harness.content.busy.value).toBe(false);
   });
 
@@ -256,6 +259,6 @@ describe("useExamWorkspaceContentSuggestions busy AI door", () => {
     await runJob(harness, response("failed", { message: TRY_AGAIN_SENTENCE }));
 
     expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
   });
 });

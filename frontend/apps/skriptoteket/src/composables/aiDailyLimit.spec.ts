@@ -4,9 +4,7 @@ import { ApiError } from "../api/client";
 import {
   AI_APP_LIMIT_NOTE,
   AI_USER_LIMIT_NOTE,
-  aiDailyLimit,
-  aiDailyLimitNote,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitFromError,
   aiLimitFromStatus,
   aiLimitNote,
@@ -16,9 +14,11 @@ import {
   markAiDailyLimit,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
-import type { AiDailyLimit } from "./aiDailyLimit";
+import type { AiAllowance, AiDailyLimit } from "./aiDailyLimit";
 
 const allLimits: AiDailyLimit[] = ["pool", "user_share", "usd_ceiling"];
+const allowances: AiAllowance[] = ["small", "full"];
+const otherAllowance: Record<AiAllowance, AiAllowance> = { small: "full", full: "small" };
 
 describe("aiDailyLimit", () => {
   beforeEach(() => {
@@ -84,17 +84,51 @@ describe("aiDailyLimit", () => {
     expect(aiLimitFromError(new Error("network down"))).toBeNull();
   });
 
-  it("remembers the first limit for the page session", () => {
-    expect(aiDailyLimitReached.value).toBe(false);
-    expect(aiDailyLimit.value).toBeNull();
-    expect(aiDailyLimitNote.value).toBeNull();
-    markAiDailyLimit("user_share");
-    expect(aiDailyLimit.value).toBe("user_share");
-    expect(aiDailyLimitReached.value).toBe(true);
-    expect(aiDailyLimitNote.value).toBe(AI_USER_LIMIT_NOTE);
-    markAiDailyLimit("pool");
-    expect(aiDailyLimit.value).toBe("user_share");
-    expect(aiDailyLimitNote.value).toBe(AI_USER_LIMIT_NOTE);
+  it.each(allowances)("remembers the first limit of the %s allowance for the page session", (allowance) => {
+    const state = aiDailyLimitFor(allowance);
+    expect(state.reached.value).toBe(false);
+    expect(state.limit.value).toBeNull();
+    expect(state.note.value).toBeNull();
+    markAiDailyLimit(allowance, "user_share");
+    expect(state.limit.value).toBe("user_share");
+    expect(state.reached.value).toBe(true);
+    expect(state.note.value).toBe(AI_USER_LIMIT_NOTE);
+    markAiDailyLimit(allowance, "pool");
+    expect(state.limit.value).toBe("user_share");
+    expect(state.note.value).toBe(AI_USER_LIMIT_NOTE);
+  });
+
+  describe("allowance scope", () => {
+    it.each(allowances.flatMap((allowance) =>
+      (["pool", "user_share"] as const).map((limit) => [allowance, limit] as const),
+    ))("a %s allowance %s refusal blocks only that allowance", (allowance, limit) => {
+      markAiDailyLimit(allowance, limit);
+
+      expect(aiDailyLimitFor(allowance).reached.value).toBe(true);
+      expect(aiDailyLimitFor(allowance).note.value).toBe(aiLimitNote(limit));
+      const other = aiDailyLimitFor(otherAllowance[allowance]);
+      expect(other.reached.value).toBe(false);
+      expect(other.limit.value).toBeNull();
+      expect(other.note.value).toBeNull();
+    });
+
+    it.each(allowances)("a usd_ceiling refusal from the %s allowance blocks both", (allowance) => {
+      markAiDailyLimit(allowance, "usd_ceiling");
+
+      for (const target of allowances) {
+        expect(aiDailyLimitFor(target).reached.value).toBe(true);
+        expect(aiDailyLimitFor(target).limit.value).toBe("usd_ceiling");
+        expect(aiDailyLimitFor(target).note.value).toBe(AI_APP_LIMIT_NOTE);
+      }
+    });
+
+    it("keeps an earlier user_share note on the allowance that already had one when the ceiling arrives", () => {
+      markAiDailyLimit("full", "user_share");
+      markAiDailyLimit("small", "usd_ceiling");
+
+      expect(aiDailyLimitFor("full").note.value).toBe(AI_USER_LIMIT_NOTE);
+      expect(aiDailyLimitFor("small").note.value).toBe(AI_APP_LIMIT_NOTE);
+    });
   });
 
   it("reads no limit from a retry error that names none", () => {
@@ -117,7 +151,8 @@ describe("aiDailyLimit", () => {
     expect(aiTryAgainFromError(error)).toBe("AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.");
     expect(aiLimitFromError(error)).toBeNull();
     expect(isAiDailyLimitError(error)).toBe(false);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(aiDailyLimitFor("small").reached.value).toBe(false);
+    expect(aiDailyLimitFor("full").reached.value).toBe(false);
   });
 
   it("reads the busy sentence when the refusal carries no details", () => {

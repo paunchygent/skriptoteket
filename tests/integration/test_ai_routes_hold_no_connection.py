@@ -16,7 +16,7 @@ its ``store.transaction`` block (lock and payload guard) before ``_reconvert`` r
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from uuid import uuid4
 
 import pytest
@@ -104,7 +104,7 @@ class _ProbedChatStream:
 
     async def stream_chat(
         self, *, request: LLMChatRequest, system_prompt: str, caller: AiDoorCaller
-    ) -> AsyncIterator[str]:
+    ) -> AsyncGenerator[str, None]:
         # The orchestrator persists the partial answer between deltas, so sample at every
         # step: the orchestrator opens and closes its own transaction around each flush.
         await self._probe.sample("chat stream start")

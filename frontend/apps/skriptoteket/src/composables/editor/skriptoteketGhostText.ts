@@ -253,7 +253,7 @@ class GhostTextController {
       const limit = aiLimitFromError(error);
       if (limit) {
         // The door refused for the day: stop asking; the editor shows the note inline.
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         this.disabledByServer = true;
         clearGhostText(this.view);
       }

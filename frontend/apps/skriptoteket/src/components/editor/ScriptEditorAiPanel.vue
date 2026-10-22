@@ -10,7 +10,7 @@ import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../composables/useAiAccess";
 import { useToast } from "../../composables/useToast";
-import { aiDailyLimitNote, aiDailyLimitReached } from "../../composables/aiDailyLimit";
+import { aiDailyLimitFor } from "../../composables/aiDailyLimit";
 
 type EditorFieldRefs = {
   entrypoint: Ref<string>;
@@ -44,6 +44,8 @@ const compareActiveFileId = toRef(props, "compareActiveFileId");
 const isChatDrawerOpen = toRef(props, "isChatDrawerOpen");
 const toast = useToast();
 const { canUseAi } = useAiAccess();
+/** Chat and edit-ops draw on the full-model allowance. */
+const fullAllowance = aiDailyLimitFor("full");
 
 const chatVirtualFiles = computed(() => {
   if (!toolId.value) return null;
@@ -77,7 +79,7 @@ const editOpsDisabledMessage = ref<string | null>(null);
 const editOpsClearDraftToken = ref(0);
 
 async function sendChatMessage(message: string): Promise<void> {
-  if (!canUseAi.value || aiDailyLimitReached.value) {
+  if (!canUseAi.value || fullAllowance.reached.value) {
     return;
   }
   await editorChat.sendMessage(message);
@@ -87,7 +89,7 @@ const slotBindings = computed(() => ({
   chatMessages: editorChat.messages.value,
   chatStreaming: editorChat.streaming.value,
   chatError: editorChat.error.value,
-  aiBlockedNote: canUseAi.value ? aiDailyLimitNote.value : AI_ADMIN_ONLY_NOTE,
+  aiBlockedNote: canUseAi.value ? fullAllowance.note.value : AI_ADMIN_ONLY_NOTE,
   sendChatMessage,
   cancelChat: editorChat.cancel,
   clearChat: editorChat.clear,
@@ -154,7 +156,7 @@ function appendChatMessage(
 }
 
 async function requestEditOps(message: string): Promise<void> {
-  if (!canUseAi.value || aiDailyLimitReached.value) return;
+  if (!canUseAi.value || fullAllowance.reached.value) return;
   if (editorChat.streaming.value || editOps.isRequesting.value) return;
   editOpsDisabledMessage.value = null;
   const result = await editOps.requestEditOps(message);

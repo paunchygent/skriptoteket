@@ -48,7 +48,9 @@ type GhostTextState = {
 - Cancel pending requests on document change
 - Ignore stale responses (cursor moved since request)
 - Debounce auto-trigger to reduce API load
-- A 429 `AI_DAILY_LIMIT_REACHED` answer marks the shared AI limit state; no further requests start until it clears, and
+- A 429 `AI_DAILY_LIMIT_REACHED` answer marks the limit state of the allowance that made the request (small: inline
+  completion and exam AI; full: chat and edit-ops; `usd_ceiling` marks both); that allowance starts no further requests
+  until it clears, and
   the note shows inline in the AI area
 - A 429 `AI_TRY_AGAIN` answer shows the try-again note inline for chat and edit and leaves the controls enabled;
   inline completion shows nothing and tries again on the next request

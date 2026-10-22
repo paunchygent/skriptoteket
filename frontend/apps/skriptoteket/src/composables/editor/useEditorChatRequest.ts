@@ -128,7 +128,7 @@ export function useEditorChatRequest(
         const limit = aiLimitFromError(refusal);
         if (limit) {
           // The door's limit note shows beside the disabled composer, not as a chat bubble.
-          markAiDailyLimit(limit);
+          markAiDailyLimit("full", limit);
           finalizeTurn({
             messages: messages.value,
             userMessage,

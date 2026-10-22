@@ -9,13 +9,16 @@ Relationships:
     Implements ``protocols.llm.ChatStreamProviderProtocol``. A daily-limit
     refusal raises ``AiDailyLimitReached`` and a busy door ``AiDoorBusy`` before
     the first delta; every other
-    failure raises ``EditorLlmProviderError``.
+    failure raises ``EditorLlmProviderError``. Only a ``response.completed`` event
+    ends the stream successfully: a failed or incomplete response, a stream
+    ``error`` event, malformed event data and an end of stream without that event
+    raise ``invalid_response`` after the text already yielded.
 """
 
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.llm_door import AiDoorCaller
@@ -53,7 +56,7 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
         request: LLMChatRequest,
         system_prompt: str,
         caller: AiDoorCaller,
-    ) -> AsyncIterator[str]:
+    ) -> AsyncGenerator[str, None]:
         payload = build_responses_payload(
             model=self._model,
             messages=[
@@ -79,6 +82,7 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
                         body=door_stream.body,
                     )
                 event_type: str | None = None
+                completed = False
                 async for line in door_stream.aiter_lines():
                     if not line:
                         continue
@@ -92,18 +96,24 @@ class OpenAIChatStreamProvider(ChatStreamProviderProtocol):
                         break
                     try:
                         chunk = json.loads(data)
-                    except json.JSONDecodeError:
-                        continue
+                    except json.JSONDecodeError as exc:
+                        raise invalid_response(detail=f"malformed stream event: {data}") from exc
                     if not isinstance(chunk, dict):
-                        continue
-                    if "error" in chunk:
-                        raise invalid_response(detail=data)
-
-                    delta, done = extract_response_stream_delta(chunk, event_type=event_type)
+                        raise invalid_response(detail=f"stream event is not an object: {data}")
+                    try:
+                        delta, completed = extract_response_stream_delta(
+                            chunk, event_type=event_type
+                        )
+                    except ValueError as exc:
+                        raise invalid_response(detail=str(exc)) from exc
                     if delta:
                         yield delta
-                    if done:
+                    if completed:
                         break
+                if not completed:
+                    raise invalid_response(
+                        detail="stream ended without a response.completed terminal event"
+                    )
         except DoorTimeout as exc:
             raise EditorLlmProviderError(kind="timeout") from exc
         except DoorRequestFailed as exc:

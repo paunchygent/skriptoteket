@@ -22,8 +22,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
-  aiDailyLimit,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitNote,
   resetAiDailyLimitForTests,
 } from "../../../composables/aiDailyLimit";
@@ -31,6 +30,8 @@ import { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
+
+const smallAllowance = aiDailyLimitFor("small");
 
 const TRY_AGAIN_SENTENCE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.";
 
@@ -130,8 +131,9 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
       const { enrichment, scope } = setup(async () => limitStatus(ai_limit));
       await enrichment.requestSuggestionsForAll();
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(ai_limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(ai_limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(ai_limit === "usd_ceiling");
       expect(enrichment.enrichmentMessage.value).toBe(note);
       expect(useToastStore().toasts).toEqual([]);
       scope.stop();
@@ -145,7 +147,7 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     }));
     await enrichment.requestSuggestionsForAll();
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(enrichment.enrichmentMessage.value).toBe(
       "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
     );
@@ -166,8 +168,9 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
       });
       await enrichment.requestSuggestionsForAll();
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(limit === "usd_ceiling");
       expect(useToastStore().toasts).toEqual([]);
       scope.stop();
     },
@@ -179,7 +182,7 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     });
     await enrichment.requestSuggestionsForAll();
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
       "Det gick inte att begära facitförslag. Försök igen.",
     ]);
@@ -206,13 +209,13 @@ describe("useExamWorkspaceEnrichment busy AI door", () => {
     await enrichment.requestSuggestionsForAll();
 
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([TRY_AGAIN_SENTENCE]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(enrichment.isRequesting.value).toBe(false);
 
     await enrichment.requestSuggestionsForAll();
 
     expect(teacher.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(enrichment.enrichmentMessage.value).toBe(
       "Inga facitförslag kom tillbaka. Komplettera facit manuellt.",
     );
@@ -228,7 +231,7 @@ describe("useExamWorkspaceEnrichment busy AI door", () => {
     await enrichment.requestSuggestionsForAll();
 
     expect(enrichment.enrichmentMessage.value).toBe(TRY_AGAIN_SENTENCE);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(useToastStore().toasts).toEqual([]);
     scope.stop();
   });

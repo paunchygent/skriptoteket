@@ -27,7 +27,7 @@ import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { aiDailyLimitNote, aiDailyLimitReached } from "../../../composables/aiDailyLimit";
+import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
@@ -51,7 +51,7 @@ const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 /** The door's daily limit disables the key controls for the page session. */
-const limitReached = aiDailyLimitReached;
+const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fix === "suggest_key").length);
 /**
  * At least one answer-key control is on screen: each question still missing a
