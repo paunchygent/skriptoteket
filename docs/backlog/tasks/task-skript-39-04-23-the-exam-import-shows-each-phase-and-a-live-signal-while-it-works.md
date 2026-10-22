@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-22'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'One review (D7) in retained root 01a1639f-7d95-72f7-9140-ccb6000f8efb (evidence/reviews/task-skript-39-04-23-review-5878cca92.md): F1-F4 repaired on fail-first proof (09a3146f8), no rereview per the user rule "Now it''s enough."; eval progress double fix e1fbb32a4. Mac staging walk at e1fbb32a4 found two defects (no reading phase before the first poll, 300 px overflow), repaired on fail-first proof in 90dd63424; Mac re-walk at 8569092ba passed both at 300 px with Reduce motion on (Mac .artifacts/staging-walk-rewalk-8569092ba/walk-record.md). Accepted: phases under the 3 s poll may be skipped (D5); the count stays at 0 until the single batch ends (follow-up TASK-SKRIPT-39-04-24). Deployed to production at 8569092ba by user decision 2026-10-22.'
 task_kind: story
 acceptance_criteria:
   - Every phase of a Word or PDF import shows its name as text

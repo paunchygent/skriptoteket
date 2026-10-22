@@ -123,7 +123,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
   shapes, canvases) land in their questions as pictures, and Word export
   writes the original shapes back. Done.
 - `TASK-SKRIPT-39-04-23`: a Word or PDF import shows each phase and a
-  live signal while it works, so no wait looks frozen. Ready.
+  live signal while it works, so no wait looks frozen. Done.
 - `TASK-SKRIPT-39-04-24`: the import count rises in steps while the
   questions convert, instead of jumping from 0 to all at the end. Proposed.
 

@@ -2,10 +2,6 @@
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
-- [TASK-SKRIPT-39-04-23](docs/backlog/tasks/task-skript-39-04-23-the-exam-import-shows-each-phase-and-a-live-signal-while-it-works.md)
-  `in_progress`: on main and production `8569092ba` (migration `aa30c309b36c`; retained
-  `01a1639f`). Walk fixes (Läser filen from upload, 300 px row) await the Mac staging re-walk.
-
 - Hemma orchestrator 2026-10-22:
 
   - Production runs `8569092ba` (deployed 14:05 UTC by user decision; migration
@@ -122,6 +118,9 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done`: 39-04-23 import phases and live signal (retained `01a1639f`; Mac re-walk
+  `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
 
 - 2026-10-22 `done`: 41-01-02 script editor on Luna and Sol through the door, and ST-SKRIPT-41-01
   (Mac re-walk `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
