@@ -2,8 +2,8 @@
 
 The Word export is the student copy (W2) rendered from the print document; these tests read
 the produced bytes back with python-docx and inspect the paragraph XML. The printed
-answer-form geometry lives in the answer-forms suite and the shared-picture round trips in
-the pictures suite.
+answer-form geometry lives in the answer-forms suite, the shared-picture round trips in the
+pictures suite and the stored Word shapes in the shapes suite.
 """
 
 import io

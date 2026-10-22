@@ -28,6 +28,15 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_picture import (  # noqa: E501
     picture_from_relationship,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
+    UnsupportedShapeFigure,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_markup import (  # noqa: E501
+    self_contained_shapes,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_reader import (  # noqa: E501
+    read_shape_figure,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
     document_body_points,
     paragraph_run_spans,
@@ -50,6 +59,8 @@ _TXBX = qn("w:txbxContent")
 _V_IMAGEDATA = "{urn:schemas-microsoft-com:vml}imagedata"
 _V_ID = qn("r:id")
 _V_HREF = qn("r:href")
+_DRAWING = qn("w:drawing")
+_OTHER_DRAWN = frozenset(qn(tag) for tag in ("w:pict", "w:object"))
 
 
 def drawn(element: BaseOxmlElement) -> bool:
@@ -285,6 +296,75 @@ def _block_png(document: DocxDocument, element: CT_P | CT_Tbl, *, anchor: str) -
         return None
 
 
+def _drawings_outside_fallback(
+    element: BaseOxmlElement,
+) -> tuple[list[BaseOxmlElement], bool]:
+    """A paragraph's ``w:drawing`` elements in order, and whether VML content sits beside them.
+
+    An ``mc:Fallback`` copy is the same content as its ``mc:Choice``, and a drawing inside a
+    ``w:txbxContent`` belongs to its outer drawing, so neither is a drawing of the paragraph.
+    The flag is true when a ``w:pict`` or ``w:object`` outside a fallback is present.
+    """
+    drawings: list[BaseOxmlElement] = []
+    other_drawn = False
+    for child in element:
+        if child.tag in (_MC_FALLBACK, _TXBX):
+            continue
+        if child.tag == _DRAWING:
+            drawings.append(child)
+            continue
+        if child.tag in _OTHER_DRAWN:
+            other_drawn = True
+            continue
+        nested, nested_other = _drawings_outside_fallback(child)
+        drawings.extend(nested)
+        other_drawn = other_drawn or nested_other
+    return drawings, other_drawn
+
+
+def _drawn_figures(document: DocxDocument, element: CT_P, *, anchor: str) -> tuple[DocxImage, ...]:
+    """One PNG per Word-shape drawing of a drawn-only paragraph, in order (D1-D4).
+
+    A figure outside D2 makes the whole paragraph keep today's chunk (D3), as does VML
+    content beside the drawings; a drawing of plain lines gets no picture (D4). Each PNG
+    carries the drawing's self-contained markup for Word export when it has one. The
+    drawing stack is imported here because its WeasyPrint and pypdfium2 rendering is heavy
+    and only a paragraph of shapes needs it.
+    """
+    from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_drawing import (  # noqa: E501
+        draw_shape_figure,
+    )
+    from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
+        LabelerSourceImageUnavailable,
+    )
+
+    drawings, other_drawn = _drawings_outside_fallback(element)
+    if other_drawn:
+        return ()
+    images: list[DocxImage] = []
+    try:
+        for drawing in drawings:
+            figure = read_shape_figure(drawing, document)
+            if figure.plain_lines:
+                continue
+            payload = draw_shape_figure(figure, anchor=anchor)
+            width, height = _png_size(payload)
+            images.append(
+                DocxImage(
+                    payload=payload,
+                    media_type="image/png",
+                    offset=0,
+                    marked_offset=0,
+                    width=width,
+                    height=height,
+                    docx_shapes=self_contained_shapes(drawing, figure),
+                )
+            )
+    except (UnsupportedShapeFigure, LabelerSourceImageUnavailable):
+        return ()
+    return tuple(images)
+
+
 def _placeable_pictures(
     document: DocxDocument,
     element: CT_P | CT_Tbl,
@@ -298,7 +378,9 @@ def _placeable_pictures(
     An image-only block whose only picture is missing is rendered whole by the labeler's
     block renderer; its PNG then takes that picture's exact place and no descriptor remains.
     A block with text or a usable picture keeps the descriptor instead: a whole-block render
-    would duplicate that text or picture, which is not the source.
+    would duplicate that text or picture, which is not the source. A paragraph with no text
+    and no picture of either kind whose drawings are Word shapes gets one drawn PNG per
+    figure (TASK-SKRIPT-39-04-22 D1-D4); a figure outside that support leaves it as it is.
     """
     placed = tuple(
         replace(picture, offset=offset, marked_offset=marked_offset)
@@ -310,6 +392,10 @@ def _placeable_pictures(
         rendered = _rendered_picture(document, element, missing[0], anchor=anchor)
         if rendered is not None:
             return (rendered,), ()
+    if isinstance(element, CT_P) and not text.strip() and not images and not missing:
+        figures = _drawn_figures(document, element, anchor=anchor)
+        if figures:
+            return figures, ()
     return images, missing
 
 

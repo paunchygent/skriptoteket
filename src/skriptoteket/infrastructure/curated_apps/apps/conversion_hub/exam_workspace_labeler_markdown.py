@@ -12,7 +12,6 @@ reported as unavailable instead of approximated.
 from __future__ import annotations
 
 import io
-from collections.abc import Iterator
 from dataclasses import replace
 
 from docx import Document
@@ -21,7 +20,6 @@ from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.xmlchemy import BaseOxmlElement
-from docx.styles.style import CharacterStyle
 from docx.table import Table, _Cell
 from docx.text.hyperlink import Hyperlink
 from docx.text.paragraph import Paragraph
@@ -31,6 +29,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
     drawn,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
+    style_chain,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
     DocxBlockImageRenderer,
@@ -48,21 +49,12 @@ class _ImageRequired(Exception):
     """The block needs a rendered image rather than a text approximation."""
 
 
-def _style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
-    """Yield a style and its bases; Word ignores a basedOn cycle, so stop at a repeat."""
-    seen: set[str | None] = set()
-    while style is not None and style.style_id not in seen:
-        seen.add(style.style_id)
-        yield style
-        style = style.base_style
-
-
 def _font_flag(run: Run, paragraph: Paragraph, name: str) -> bool:
     """Resolve bold/italic as Word displays it: run, then character style, then paragraph style."""
     direct = getattr(run.font, name)
     if direct is not None:
         return bool(direct)
-    for style in (*_style_chain(run.style), *_style_chain(paragraph.style)):
+    for style in (*style_chain(run.style), *style_chain(paragraph.style)):
         flag = getattr(style.font, name)
         if flag is not None:
             return bool(flag)
@@ -101,7 +93,7 @@ def _val(element: BaseOxmlElement | None, attribute: str = "w:val") -> str | Non
 def _paragraph_property(paragraph: Paragraph, tag: str) -> BaseOxmlElement | None:
     """Find a paragraph property directly or through the paragraph style chain."""
     found = _child(_child(paragraph._p, "w:pPr"), tag)
-    for style in _style_chain(paragraph.style):
+    for style in style_chain(paragraph.style):
         if found is not None:
             break
         found = _child(_child(style.element, "w:pPr"), tag)

@@ -26,13 +26,15 @@ from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.xmlchemy import BaseOxmlElement
-from docx.styles.style import CharacterStyle
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxMissingImage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_picture import (  # noqa: E501
     picture_from_relationship,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
+    style_chain,
 )
 from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
 from skriptoteket.infrastructure.documents.pdfium_access import rasterize_pdf_pages
@@ -91,15 +93,6 @@ def _val(element: BaseOxmlElement | None, attribute: str = "w:val") -> str | Non
     return None if element is None else element.get(qn(attribute))
 
 
-def _style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
-    """Yield a style and its bases; Word ignores a basedOn cycle, so stop at a repeat."""
-    seen: set[str | None] = set()
-    while style is not None and style.style_id not in seen:
-        seen.add(style.style_id)
-        yield style
-        style = style.base_style
-
-
 def _shown_paragraphs(element: BaseOxmlElement) -> Iterator[BaseOxmlElement]:
     """Yield paragraphs in document order once each; mc:Fallback repeats mc:Choice content."""
     for child in element:
@@ -130,6 +123,33 @@ def _format_number(value: int, number_format: str) -> str:
 
 def _start(level: BaseOxmlElement | None) -> int:
     return int(_val(_child(level, "w:start")) or 1)
+
+
+def cropped_page_png(page: str, *, anchor: str) -> bytes:
+    """Print one HTML page, rasterize it at twice its size and crop it to its drawn content.
+
+    Raises:
+        LabelerSourceImageUnavailable: the HTML takes more than one page or draws nothing.
+    """
+    images = rasterize_pdf_pages(render_html_to_pdf_bytes(html=page), scale=2)
+    if len(images) != 1:
+        raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
+    image = images[0].convert("RGB")
+    box = image.convert("L").point(lambda v: 255 if v < 250 else 0).getbbox()
+    if box is None:
+        raise LabelerSourceImageUnavailable(anchor, "empty render")
+    left, top, right, bottom = box
+    cropped = image.crop(
+        (
+            max(0, left - _CROP_MARGIN),
+            max(0, top - _CROP_MARGIN),
+            min(image.width, right + _CROP_MARGIN),
+            min(image.height, bottom + _CROP_MARGIN),
+        )
+    )
+    output = io.BytesIO()
+    cropped.save(output, format="PNG")
+    return output.getvalue()
 
 
 class DocxBlockImageRenderer:
@@ -167,7 +187,7 @@ class DocxBlockImageRenderer:
         """Resolve numPr like Word: paragraph pPr first, then the paragraph style chain."""
         properties = _child(_child(p, "w:pPr"), "w:numPr")
         if properties is None:
-            for style in _style_chain(Paragraph(p, self._document).style):
+            for style in style_chain(Paragraph(p, self._document).style):
                 properties = _child(_child(style.element, "w:pPr"), "w:numPr")
                 if properties is not None:
                     break
@@ -233,25 +253,7 @@ class DocxBlockImageRenderer:
             '<!doctype html><html><head><meta charset="utf-8">'
             f"<style>{_CSS}</style></head><body>{fragment}</body></html>"
         )
-        images = rasterize_pdf_pages(render_html_to_pdf_bytes(html=page), scale=2)
-        if len(images) != 1:
-            raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
-        image = images[0].convert("RGB")
-        box = image.convert("L").point(lambda v: 255 if v < 250 else 0).getbbox()
-        if box is None:
-            raise LabelerSourceImageUnavailable(anchor, "empty render")
-        left, top, right, bottom = box
-        cropped = image.crop(
-            (
-                max(0, left - _CROP_MARGIN),
-                max(0, top - _CROP_MARGIN),
-                min(image.width, right + _CROP_MARGIN),
-                min(image.height, bottom + _CROP_MARGIN),
-            )
-        )
-        output = io.BytesIO()
-        cropped.save(output, format="PNG")
-        return output.getvalue()
+        return cropped_page_png(page, anchor=anchor)
 
     def _block(self, element: BaseOxmlElement) -> str:
         if element.tag == _P:
@@ -293,7 +295,7 @@ class DocxBlockImageRenderer:
         direct = getattr(run.font, name)
         if direct is not None:
             return bool(direct)
-        for style in (*_style_chain(run.style), *_style_chain(paragraph.style)):
+        for style in (*style_chain(run.style), *style_chain(paragraph.style)):
             flag = getattr(style.font, name)
             if flag is not None:
                 return bool(flag)

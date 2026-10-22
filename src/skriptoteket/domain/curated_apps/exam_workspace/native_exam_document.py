@@ -46,6 +46,14 @@ DocumentImportOriginKind = Literal["docx_import", "pdf_import"]
 
 
 class NativeExamAsset(BaseModel):
+    """One picture the document declares; its payload lives in the container.
+
+    ``docx_shapes`` is the self-contained ``w:drawing`` markup of the Word shapes this
+    picture was drawn from at import (TASK-SKRIPT-39-04-22 D8, D12). The Word export
+    writes those shapes in its place (D9); every other view and export uses the picture.
+    A picture the teacher adds is a new asset and carries none (D10).
+    """
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     asset_id: str = Field(pattern=ASSET_ID_PATTERN)
@@ -54,6 +62,7 @@ class NativeExamAsset(BaseModel):
     byte_length: int = Field(gt=0)
     width: int | None = Field(default=None, gt=0)
     height: int | None = Field(default=None, gt=0)
+    docx_shapes: str | None = Field(default=None, min_length=1)
 
 
 class NativeExamDocumentOrigin(BaseModel):

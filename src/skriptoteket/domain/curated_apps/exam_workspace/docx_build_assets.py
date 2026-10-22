@@ -24,7 +24,8 @@ def asset_manifest(
     every picture an item's stored retry source keeps (facit and read-only context
     included) is carried, because the native contract rejects an orphan asset; the QTI
     export reads the body references only, so a source-only picture never reaches a
-    student. The container requires payloads to match the document's asset list exactly.
+    student. A drawn picture's asset carries the self-contained shape markup of its source
+    drawing. The container requires payloads to match the document's asset list exactly.
     """
     images: dict[str, DocxImage] = {}
     for chunk in chunks:
@@ -49,6 +50,7 @@ def asset_manifest(
             byte_length=len(images[asset_id].payload),
             width=images[asset_id].width,
             height=images[asset_id].height,
+            docx_shapes=images[asset_id].docx_shapes,
         )
         for asset_id in referenced
     )

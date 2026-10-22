@@ -27,6 +27,7 @@
  */
 
 import type {
+  NativeExamAsset,
   NativeExamBodyParagraph,
   NativeExamDocument,
   NativeExamItem,
@@ -264,6 +265,15 @@ function itemAssetIds(item: NativeExamItem): string[] {
   return [...bodyAssetIds(item.body), ...records.flatMap((record) => record.images.map((image) => image.asset_id))];
 }
 
+/** Pictures a body, an instruction or a part instruction places (not those only a retry source cites). */
+function placedAssetIds(document: NativeExamDocument): Set<string> {
+  return new Set([
+    ...document.items.flatMap((item) => bodyAssetIds(item.body)),
+    ...bodyAssetIds(document.instructions),
+    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
+  ]);
+}
+
 /** Whether removing the question would leave the exam without one. */
 export function examWorkspaceIsOnlyQuestion(document: NativeExamDocument, itemId: string): boolean {
   return document.items.every((item) => item.item_id === itemId);
@@ -295,12 +305,32 @@ export function examWorkspaceReferencedAssetIds(document: NativeExamDocument): S
 /**
  * Keep only the pictures something still references (an item's body or retry
  * source, the exam instruction, a part instruction), as the server's rebuild
- * does; a picture an edit removed takes its asset record with it.
+ * does; a picture an edit removed takes its asset record with it. A picture
+ * only a retry source still cites keeps its data for the retry but loses its
+ * Word shapes (D10): the shapes stay only while a placed picture uses them.
  */
 export function withReferencedAssetsOnly(document: NativeExamDocument): NativeExamDocument {
   const referenced = examWorkspaceReferencedAssetIds(document);
-  const assets = document.assets.filter((asset) => referenced.has(asset.asset_id));
-  return assets.length === document.assets.length ? document : { ...document, assets };
+  const placed = placedAssetIds(document);
+  let changed = false;
+  const assets = document.assets.flatMap((asset) => {
+    if (!referenced.has(asset.asset_id)) {
+      changed = true;
+      return [];
+    }
+    if (asset.docx_shapes != null && !placed.has(asset.asset_id)) {
+      changed = true;
+      return [withoutShapes(asset)];
+    }
+    return [asset];
+  });
+  return changed ? { ...document, assets } : document;
+}
+
+/** The picture's own data without the Word shapes it was drawn from. */
+export function withoutShapes(asset: NativeExamAsset): NativeExamAsset {
+  const { docx_shapes: _shapes, ...plain } = asset;
+  return plain;
 }
 
 /**
