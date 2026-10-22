@@ -132,6 +132,33 @@ def _start(level: BaseOxmlElement | None) -> int:
     return int(_val(_child(level, "w:start")) or 1)
 
 
+def cropped_page_png(page: str, *, anchor: str) -> bytes:
+    """Print one HTML page, rasterize it at twice its size and crop it to its drawn content.
+
+    Raises:
+        LabelerSourceImageUnavailable: the HTML takes more than one page or draws nothing.
+    """
+    images = rasterize_pdf_pages(render_html_to_pdf_bytes(html=page), scale=2)
+    if len(images) != 1:
+        raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
+    image = images[0].convert("RGB")
+    box = image.convert("L").point(lambda v: 255 if v < 250 else 0).getbbox()
+    if box is None:
+        raise LabelerSourceImageUnavailable(anchor, "empty render")
+    left, top, right, bottom = box
+    cropped = image.crop(
+        (
+            max(0, left - _CROP_MARGIN),
+            max(0, top - _CROP_MARGIN),
+            min(image.width, right + _CROP_MARGIN),
+            min(image.height, bottom + _CROP_MARGIN),
+        )
+    )
+    output = io.BytesIO()
+    cropped.save(output, format="PNG")
+    return output.getvalue()
+
+
 class DocxBlockImageRenderer:
     """Render single DOCX body blocks to cropped PNG images."""
 
@@ -233,25 +260,7 @@ class DocxBlockImageRenderer:
             '<!doctype html><html><head><meta charset="utf-8">'
             f"<style>{_CSS}</style></head><body>{fragment}</body></html>"
         )
-        images = rasterize_pdf_pages(render_html_to_pdf_bytes(html=page), scale=2)
-        if len(images) != 1:
-            raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
-        image = images[0].convert("RGB")
-        box = image.convert("L").point(lambda v: 255 if v < 250 else 0).getbbox()
-        if box is None:
-            raise LabelerSourceImageUnavailable(anchor, "empty render")
-        left, top, right, bottom = box
-        cropped = image.crop(
-            (
-                max(0, left - _CROP_MARGIN),
-                max(0, top - _CROP_MARGIN),
-                min(image.width, right + _CROP_MARGIN),
-                min(image.height, bottom + _CROP_MARGIN),
-            )
-        )
-        output = io.BytesIO()
-        cropped.save(output, format="PNG")
-        return output.getvalue()
+        return cropped_page_png(page, anchor=anchor)
 
     def _block(self, element: BaseOxmlElement) -> str:
         if element.tag == _P:
