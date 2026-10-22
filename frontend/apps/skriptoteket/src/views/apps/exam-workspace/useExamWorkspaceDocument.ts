@@ -245,7 +245,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   });
 
   /** Pictures added from files this session, shown before their first save. */
-  const newPictures = createExamWorkspaceNewPictures();
+  const newPictures = createExamWorkspaceNewPictures(() => workspaceDocument.value);
+  /** Every install prunes the sent marks the working copy no longer declares. */
+  watch(workspaceDocument, (document) => newPictures.forgetUndeclared(document), { flush: "sync" });
   /** A new opening forgets the previous exam's unsaved pictures. */
   watch(openExam, () => newPictures.reset());
   onScopeDispose(() => newPictures.reset());

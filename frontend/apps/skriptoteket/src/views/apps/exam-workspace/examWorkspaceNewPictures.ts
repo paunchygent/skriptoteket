@@ -19,7 +19,7 @@
  *     record stay one edit, one undo step, one autosave.
  */
 
-import { readonly, ref, type Ref } from "vue";
+import { readonly, ref } from "vue";
 
 import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
 import { examWorkspaceReferencedAssetIds } from "./examWorkspaceStructure";
@@ -31,9 +31,11 @@ export type ExamWorkspaceNewPictures = ReturnType<typeof createExamWorkspaceNewP
  * keeps the asset, its bytes and one object URL; `withDeclared` appends the
  * known assets the document references but does not declare yet.
  */
-export function createExamWorkspaceNewPictures() {
+export function createExamWorkspaceNewPictures(
+  currentDocument: () => NativeExamDocument | null = () => null,
+) {
   const entries = new Map<string, { asset: NativeExamAsset; blob: Blob }>();
-  /** Pictures whose bytes a committed save already carried; kept until reset. */
+  /** Pictures whose bytes a committed save already carried; pruned by `forgetUndeclared`. */
   const sent = new Set<string>();
   const objectUrls = ref<Record<string, string>>({});
 
@@ -83,8 +85,37 @@ export function createExamWorkspaceNewPictures() {
 
   /** Those pictures' bytes reached a committed save; they are sent no more. */
   function noteSent(assetIds: readonly string[]): void {
+    const current = currentDocument();
+    if (current === null) {
+      return;
+    }
+    const declared = new Set(current.assets.map((asset) => asset.asset_id));
     for (const assetId of assetIds) {
-      sent.add(assetId);
+      // A store that commits after the teacher removed the picture must not
+      // mark it sent: re-adding the same file has to carry its bytes again.
+      if (declared.has(assetId)) {
+        sent.add(assetId);
+      }
+    }
+  }
+
+  /**
+   * A picture stays "sent" only while the working copy declares it without a
+   * gap. Every install (edits, undo/redo moves, server commands, reloads)
+   * prunes at once, including transient states between two edits. The entry
+   * and its Blob are kept, so re-adding the same file resends its bytes;
+   * a null document clears every mark.
+   */
+  function forgetUndeclared(document: NativeExamDocument | null): void {
+    if (document === null) {
+      sent.clear();
+      return;
+    }
+    const declared = new Set(document.assets.map((asset) => asset.asset_id));
+    for (const assetId of [...sent]) {
+      if (!declared.has(assetId)) {
+        sent.delete(assetId);
+      }
     }
   }
 
@@ -102,9 +133,10 @@ export function createExamWorkspaceNewPictures() {
     declare,
     withDeclared,
     /** One object URL per known picture, overlaying the server URLs. */
-    urls: readonly(objectUrls) as Readonly<Ref<Record<string, string>>>,
+    urls: readonly(objectUrls),
     bytesFor,
     noteSent,
+    forgetUndeclared,
     reset,
   };
 }

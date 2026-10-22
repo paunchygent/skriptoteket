@@ -86,4 +86,30 @@ describe("examWorkspaceGuestStore new pictures", () => {
     expect(redone.history.position_step_id).toBe(second.history.position_step_id);
     expect((await context.storage.load())?.assets["asset_001"]).toBe(blob);
   });
+
+  it("refuses a step that declares a picture the stored assets do not hold", async () => {
+    const context = setupGuestStore();
+    await startBlank(context, "Original");
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
+
+    await expect(
+      context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
+        afterStepId: null,
+        document: pictureExam("With picture"),
+        expectedCursor: opened.history_cursor,
+        newPictures: {},
+        tabId: LEASE_TAB_ID,
+      }),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      details: { missing_assets: ["asset_001"] },
+      message: "Dokumentet hänvisar till bilder som saknas.",
+      status: 422,
+    });
+
+    const stored = await context.storage.load();
+    expect(stored?.draft.cursor).toBe(opened.history_cursor);
+    expect(stored?.draft.steps).toHaveLength(0);
+    expect(stored?.assets).toEqual({});
+  });
 });

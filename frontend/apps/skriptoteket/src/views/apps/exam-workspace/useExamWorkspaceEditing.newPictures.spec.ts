@@ -65,18 +65,25 @@ afterEach(() => {
 });
 
 /** Canonical asset ids: the server accepts `asset_` and sixteen hex digits. */
-const PICTURE = "asset_0000000000000001";
-const GUEST_PICTURE = "asset_001";
+const PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+const PNG_BYTES = Uint8Array.from(atob(PNG_BASE64), (char) => char.charCodeAt(0));
+const PNG_SHA256 = "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77";
+const PICTURE = `asset_${PNG_SHA256.slice(0, 16)}`;
 
-function pictureAsset(assetId: string): NativeExamAsset {
+function pictureAsset(): NativeExamAsset {
   return {
-    asset_id: assetId,
-    byte_length: 4,
+    asset_id: PICTURE,
+    byte_length: PNG_BYTES.length,
     height: 1,
     media_type: "image/png",
-    sha256: "a".repeat(64),
+    sha256: PNG_SHA256,
     width: 1,
   };
+}
+
+function pictureBlob(): Blob {
+  return new Blob([PNG_BYTES], { type: "image/png" });
 }
 
 function pictureBody(assetId: string): NativeExamItem["body"] {
@@ -100,8 +107,8 @@ function channel(): GuestEditLeaseChannel {
 describe("a declared picture reaches the signed-in autosave once", () => {
   it("carries the picture's bytes on the first store and nothing on the next", async () => {
     const { editing } = await openEditing(api);
-    const blob = new Blob(["png!"], { type: "image/png" });
-    const asset = pictureAsset(PICTURE);
+    const blob = pictureBlob();
+    const asset = pictureAsset();
 
     editing.newPictures.declare(asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
@@ -121,9 +128,9 @@ describe("a declared picture reaches the signed-in autosave once", () => {
   it("carries the picture again when the first store fails", async () => {
     const { editing } = await openEditing(api);
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const blob = pictureBlob();
 
-    editing.newPictures.declare(pictureAsset(PICTURE), blob);
+    editing.newPictures.declare(pictureAsset(), blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
 
     expect(await editing.save()).toBe(true);
@@ -136,9 +143,9 @@ describe("a declared picture reaches the signed-in autosave once", () => {
 
   it("sends nothing when the picture is removed before the autosave runs", async () => {
     const { editing } = await openEditing(api);
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const blob = pictureBlob();
 
-    editing.newPictures.declare(pictureAsset(PICTURE), blob);
+    editing.newPictures.declare(pictureAsset(), blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), false);
     editing.updateItemBody("item_001", textBody(), false);
 
@@ -149,6 +156,39 @@ describe("a declared picture reaches the signed-in autosave once", () => {
     expect(sent.newPictures).toEqual({});
     expect(sent.document.assets).toEqual([]);
     expect(editing.workspaceDocument.value?.assets).toEqual([]);
+  });
+
+  it("resends a picture re-added after undo and branching dropped its retained bytes", async () => {
+    const { editing } = await openEditing(api);
+    const blob = pictureBlob();
+    const asset = pictureAsset();
+
+    editing.newPictures.declare(asset, blob);
+    editing.updateItemBody("item_001", pictureBody(PICTURE), true);
+    expect(await editing.save()).toBe(true);
+    await vi.waitFor(() => expect(api.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1));
+    expect(api.storeExamWorkspaceUndoStep.mock.calls[0]![1].newPictures).toEqual({ [PICTURE]: blob });
+
+    await editing.history.undo();
+    expect(editing.workspaceDocument.value?.assets).toEqual([]);
+
+    editing.updateItemBody("item_001", textBody(), true);
+    expect(await editing.save()).toBe(true);
+    const branched = api.storeExamWorkspaceUndoStep.mock.calls[
+      api.storeExamWorkspaceUndoStep.mock.calls.length - 1
+    ]![1];
+    expect(branched.newPictures).toEqual({});
+    expect(branched.document.assets).toEqual([]);
+
+    editing.newPictures.declare(asset, blob);
+    editing.updateItemBody("item_001", pictureBody(PICTURE), true);
+    expect(await editing.save()).toBe(true);
+
+    const readded = api.storeExamWorkspaceUndoStep.mock.calls[
+      api.storeExamWorkspaceUndoStep.mock.calls.length - 1
+    ]![1];
+    expect(readded.document.assets).toContainEqual(asset);
+    expect(readded.newPictures).toEqual({ [PICTURE]: blob });
   });
 });
 
@@ -185,14 +225,67 @@ describe("a declared picture reaches the guest draft store", () => {
     editing.applyCommandResponse(opened);
     await vi.waitFor(() => expect(editing.editingLocked.value).toBe(false));
 
-    const blob = new Blob(["png!"], { type: "image/png" });
-    editing.newPictures.declare(pictureAsset(GUEST_PICTURE), blob);
-    editing.updateItemBody("item_001", pictureBody(GUEST_PICTURE), true);
+    const blob = pictureBlob();
+    const asset = pictureAsset();
+    editing.newPictures.declare(asset, blob);
+    editing.updateItemBody("item_001", pictureBody(PICTURE), true);
     expect(await editing.save()).toBe(true);
 
     const stored = await storage.load();
-    expect(stored?.assets[GUEST_PICTURE]).toBe(blob);
-    expect(editing.workspaceDocument.value?.assets.map((asset) => asset.asset_id)).toContain(GUEST_PICTURE);
-    expect(editing.assetUrls.value[GUEST_PICTURE]).toBe("blob:picture");
+    expect(stored?.assets[PICTURE]).toBe(blob);
+    expect(editing.workspaceDocument.value?.assets.map((asset) => asset.asset_id)).toContain(PICTURE);
+    expect(editing.assetUrls.value[PICTURE]).toBe("blob:picture");
+  });
+
+  it("keeps the re-added picture's bytes after undo and branching collected them", async () => {
+    const leaseStorage = createInMemoryGuestEditLeaseStorage();
+    const publicMocks = createGuestPublicApiMocks();
+    const storage = createExamWorkspaceGuestDraftStorage({
+      port: createInMemoryExamWorkspaceGuestDraftStorage({ lease: leaseStorage }),
+    });
+    const guest = createGuestExamWorkspaceStore({
+      api: publicMocks,
+      ids: createIds(),
+      leaseStorage,
+      onLimit: vi.fn(),
+      storage,
+    });
+    publicMocks.createPublicExamWorkspaceBlank.mockResolvedValue({
+      document: guestExam("Original"),
+      export_blockers: [],
+    });
+    await guest.startBlank(null, liveAdmission());
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(guest.store, nullRouteProjection(), {
+        guestStorage: leaseStorage,
+        openGuestChannel: channel,
+        tabId: LEASE_TAB_ID,
+      }),
+    );
+    const opened = await guest.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
+    editing.applyCommandResponse(opened);
+    await vi.waitFor(() => expect(editing.editingLocked.value).toBe(false));
+
+    const blob = pictureBlob();
+    const asset = pictureAsset();
+    editing.newPictures.declare(asset, blob);
+    editing.updateItemBody("item_001", pictureBody(PICTURE), true);
+    expect(await editing.save()).toBe(true);
+    expect((await storage.load())?.assets[PICTURE]).toBe(blob);
+
+    await editing.history.undo();
+    expect(editing.workspaceDocument.value?.assets).toEqual([]);
+
+    editing.updateItemBody("item_001", textBody(), true);
+    expect(await editing.save()).toBe(true);
+    expect((await storage.load())?.assets[PICTURE]).toBeUndefined();
+
+    editing.newPictures.declare(asset, blob);
+    editing.updateItemBody("item_001", pictureBody(PICTURE), true);
+    expect(await editing.save()).toBe(true);
+
+    const stored = await storage.load();
+    expect(stored?.assets[PICTURE]).toBe(blob);
+    expect(editing.workspaceDocument.value?.assets).toContainEqual(asset);
   });
 });

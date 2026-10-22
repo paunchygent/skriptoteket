@@ -175,4 +175,31 @@ describe("new pictures in useExamWorkspaceDocument", () => {
     expect(state.newPictures.urls.value).toEqual({});
     expect(state.workspaceDocument.value?.assets).toEqual([]);
   });
+
+  it("prunes sent when an edit stops declaring the picture, so re-adding resends its bytes", async () => {
+    const { state } = await openDocument(vi.fn());
+    const asset = picture("asset_aaaaaaaaaaaaaaaa");
+    const bytes = new Blob(["bytes"], { type: "image/png" });
+    state.newPictures.declare(asset, bytes);
+    state.updateItemBody("item_001", bodyWith(asset.asset_id), true);
+    expect(state.workspaceDocument.value?.assets).toEqual([asset]);
+
+    state.newPictures.noteSent([asset.asset_id]);
+    if (state.workspaceDocument.value === null) {
+      throw new Error("expected an open document");
+    }
+    expect(state.newPictures.bytesFor(state.workspaceDocument.value)).toEqual({});
+
+    state.updateItemBody("item_001", [{ heading_level: null, segments: [] }], true);
+    expect(state.workspaceDocument.value?.assets).toEqual([]);
+
+    state.newPictures.declare(asset, bytes);
+    state.updateItemBody("item_001", bodyWith(asset.asset_id), true);
+    if (state.workspaceDocument.value === null) {
+      throw new Error("expected an open document");
+    }
+    expect(state.newPictures.bytesFor(state.workspaceDocument.value)).toEqual({
+      [asset.asset_id]: bytes,
+    });
+  });
 });

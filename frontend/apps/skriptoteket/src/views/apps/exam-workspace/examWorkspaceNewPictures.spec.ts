@@ -88,6 +88,67 @@ function documentWith(assets: NativeExamAsset[], bodies: NativeExamBodyParagraph
 }
 
 describe("createExamWorkspaceNewPictures", () => {
+  function setupSent() {
+    let current: NativeExamDocument | null = null;
+    const registry = createExamWorkspaceNewPictures(() => current);
+    const asset = picture("asset_aaaaaaaaaaaaaaaa");
+    const bytes = blob();
+    registry.declare(asset, bytes);
+    const declared = documentWith([asset], [bodyWith(asset.asset_id)]);
+    const undeclared = documentWith([], [[{ heading_level: null, segments: [] }]]);
+    return {
+      asset,
+      bytes,
+      declared,
+      registry,
+      setCurrent: (document: NativeExamDocument | null): void => {
+        current = document;
+      },
+      undeclared,
+    };
+  }
+
+  it("forgets sent for an undeclared picture but keeps its bytes for a re-add", () => {
+    const { asset, bytes, declared, registry, setCurrent, undeclared } = setupSent();
+    setCurrent(declared);
+    registry.noteSent([asset.asset_id]);
+    expect(registry.bytesFor(declared)).toEqual({});
+
+    setCurrent(undeclared);
+    registry.forgetUndeclared(undeclared);
+
+    expect(registry.bytesFor(declared)).toEqual({ [asset.asset_id]: bytes });
+  });
+
+  it("keeps sent while the document still declares the picture", () => {
+    const { asset, declared, registry, setCurrent } = setupSent();
+    setCurrent(declared);
+    registry.noteSent([asset.asset_id]);
+
+    registry.forgetUndeclared(declared);
+
+    expect(registry.bytesFor(declared)).toEqual({});
+  });
+
+  it("noteSent ignores an id the current document no longer declares", () => {
+    const { asset, bytes, declared, registry, setCurrent, undeclared } = setupSent();
+    setCurrent(undeclared);
+
+    registry.noteSent([asset.asset_id]);
+
+    expect(registry.bytesFor(declared)).toEqual({ [asset.asset_id]: bytes });
+  });
+
+  it("a null document clears every sent mark but keeps the bytes", () => {
+    const { asset, bytes, declared, registry, setCurrent } = setupSent();
+    setCurrent(declared);
+    registry.noteSent([asset.asset_id]);
+
+    setCurrent(null);
+    registry.forgetUndeclared(null);
+
+    expect(registry.bytesFor(declared)).toEqual({ [asset.asset_id]: bytes });
+  });
   it("declares a referenced picture in the same document object step", () => {
     const registry = createExamWorkspaceNewPictures();
     const asset = picture("asset_aaaaaaaaaaaaaaaa");
@@ -136,10 +197,10 @@ describe("createExamWorkspaceNewPictures", () => {
   });
 
   it("noteSent removes bytes from bytesFor but keeps the URL", () => {
-    const registry = createExamWorkspaceNewPictures();
     const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    registry.declare(asset, blob());
     const document = documentWith([asset], [bodyWith(asset.asset_id)]);
+    const registry = createExamWorkspaceNewPictures(() => document);
+    registry.declare(asset, blob());
     const url = registry.urls.value[asset.asset_id];
 
     registry.noteSent([asset.asset_id]);
