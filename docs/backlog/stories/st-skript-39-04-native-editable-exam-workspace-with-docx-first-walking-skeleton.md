@@ -123,7 +123,9 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
      question becomes its points. Done.
    - `TASK-SKRIPT-39-04-22`: shapes drawn in a Word file (groups, single
      shapes, canvases) land in their questions as pictures, and Word export
-     writes the original shapes back. Ready.
+     writes the original shapes back. Done.
+   - `TASK-SKRIPT-39-04-23`: a Word or PDF import shows each phase and a
+     live signal while it works, so no wait looks frozen. Ready.
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.
