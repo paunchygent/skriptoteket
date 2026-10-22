@@ -276,6 +276,7 @@ describe("exam workspace AI controls under the daily limit", () => {
         isBusy: false,
         isOpenBlockedByOtherOperation: false,
         isConverting: false,
+        isImporting: false,
         isDirty: false,
         notes: [],
         ordering: "newest",

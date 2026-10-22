@@ -15,6 +15,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
+import { IMPORT_FAILURE_COPY } from "./examWorkspaceConversionShared";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import {
@@ -80,8 +81,8 @@ function binding(): ExamWorkspaceConversionBinding {
 
 const scopes: Array<{ stop: () => void }> = [];
 
-/** Follow an admin's Word import whose first status is `first`; later polls answer `first` until changed. */
-async function followImport(first: ExamWorkspaceConversionStatus) {
+/** An admin's conversion composable inside its own scope, ready to import. */
+function startConversion() {
   setActivePinia(createPinia());
   useAuthStore().user = {
     id: "teacher-1",
@@ -89,14 +90,20 @@ async function followImport(first: ExamWorkspaceConversionStatus) {
     role: "admin",
     auth_provider: "local",
   };
-  api.importExamWorkspaceDocument.mockResolvedValue(first);
-  api.getExamWorkspaceConversionStatus.mockResolvedValue(first);
   const scope = effectScope();
   scopes.push(scope);
   const conversion = scope.run(() =>
     useExamWorkspaceConversion(() => false, binding(), async () => "installed"),
   );
   if (!conversion) throw new Error("conversion did not start");
+  return { conversion, scope };
+}
+
+/** Follow an admin's Word import whose first status is `first`; later polls answer `first` until changed. */
+async function followImport(first: ExamWorkspaceConversionStatus) {
+  api.importExamWorkspaceDocument.mockResolvedValue(first);
+  api.getExamWorkspaceConversionStatus.mockResolvedValue(first);
+  const { conversion, scope } = startConversion();
   await conversion.importDocument(new File(["prov"], "Prov.docx"), null);
   return { conversion, scope };
 }
@@ -252,5 +259,71 @@ describe("conversion elapsed clock", () => {
 
     // One poll timer plus one clock interval, however many polls have run.
     expect(vi.getTimerCount()).toBe(2);
+  });
+});
+
+describe("upload wait before the first status", () => {
+  /** The import request stays pending until the test settles it. */
+  function pendingImport(fileName: string) {
+    let resolve: (status: ExamWorkspaceConversionStatus) => void = () => undefined;
+    let reject: (reason: Error) => void = () => undefined;
+    api.importExamWorkspaceDocument.mockReturnValue(
+      new Promise<ExamWorkspaceConversionStatus>((res, rej) => {
+        resolve = res;
+        reject = rej;
+      }),
+    );
+    const { conversion, scope } = startConversion();
+    const done = conversion.importDocument(new File(["prov"], fileName), null);
+    return { conversion, scope, done, resolve, reject };
+  }
+
+  it.each(["Prov.docx", "Prov.pdf"])(
+    "says %s is uploading while the request is pending, then continues into the queued status",
+    async (fileName) => {
+      const { conversion, done, resolve } = pendingImport(fileName);
+      await vi.advanceTimersByTimeAsync(0);
+
+      expect(conversion.isImporting.value).toBe(true);
+      expect(conversion.isConverting.value).toBe(false);
+      expect(conversion.conversionMessage.value).toBe("Laddar upp filen");
+      expect(conversion.conversionElapsed.value).toBeNull();
+      expect(conversion.conversionProgress.value).toBeNull();
+
+      api.getExamWorkspaceConversionStatus.mockResolvedValue(running(null, 0));
+      resolve(running(null, 0));
+      await done;
+
+      expect(conversion.isConverting.value).toBe(true);
+      expect(conversion.conversionMessage.value).toBe("Konverterar provet …");
+    },
+  );
+
+  it("clears the upload message and shows the failure copy when the request fails", async () => {
+    const { conversion, done, reject } = pendingImport("Prov.docx");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(conversion.conversionMessage.value).toBe("Laddar upp filen");
+
+    reject(new Error("network down"));
+    await done;
+
+    expect(conversion.isImporting.value).toBe(false);
+    expect(conversion.isConverting.value).toBe(false);
+    expect(conversion.conversionMessage.value).toBe(IMPORT_FAILURE_COPY);
+  });
+
+  it("clears the upload message when the page scope is disposed during the request", async () => {
+    const { conversion, scope, done, resolve } = pendingImport("Prov.docx");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(conversion.conversionMessage.value).toBe("Laddar upp filen");
+
+    scope.stop();
+
+    expect(conversion.isImporting.value).toBe(false);
+    expect(conversion.conversionMessage.value).toBeNull();
+
+    resolve(running(null, 0));
+    await done;
+    expect(conversion.isConverting.value).toBe(false);
   });
 });

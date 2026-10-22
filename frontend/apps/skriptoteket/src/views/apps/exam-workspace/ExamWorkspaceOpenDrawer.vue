@@ -4,10 +4,10 @@
  *
  * Domain purpose:
  *   Import an exam from Word (.docx), PDF (.pdf), DigiExam (.dxe) or QTI (.zip),
- *   optionally for a course, and open a saved exam. While a conversion runs,
- *   its progress replaces the drop zone; finished questions can be edited at
- *   once. The saved exams group by course (the teacher's own courses first)
- *   or list newest first, and the teacher's choice is kept in the profile.
+ *   optionally for a course, and open a saved exam. While the file uploads or a
+ *   conversion runs, its status replaces the drop zone; finished questions can
+ *   be edited at once. The saved exams group by course (the teacher's own
+ *   courses first) or list newest first, and the teacher's choice is kept in the profile.
  *   The open exam is marked "Öppet" with its import notes and the files it
  *   saved in Mina filer this session. Import and opening wait while the open
  *   exam has unsaved changes.
@@ -24,6 +24,7 @@ import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
+import ExamWorkspaceConversionStatus from "./ExamWorkspaceConversionStatus.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import ExamWorkspaceUnreadableFiles from "./ExamWorkspaceUnreadableFiles.vue";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
@@ -59,6 +60,8 @@ const props = defineProps<{
   conversionError: string | null;
   conversionProgress: { done: number; total: number } | null;
   isConverting: boolean;
+  /** The import request is pending and no status exists yet: the upload wait. */
+  isImporting: boolean;
   notes: string[];
   /** The formats the open exam saved in Mina filer this session, e.g. "QTI". */
   currentExports: string[];
@@ -198,61 +201,18 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     >
       {{ courseCatalogError }}
     </p>
-    <div
+    <ExamWorkspaceConversionStatus
       v-if="conversionMessage"
-      class="prog"
-      role="status"
-      aria-live="polite"
-      data-test="exam-workspace-conversion-status"
-    >
-      <div class="prog__line">
-        <UiGlyph
-          v-if="isConverting"
-          meaning="busy"
-          :size="16"
-          class="xw-spin"
-        /><span>{{ conversionMessage }}</span><span
-          v-if="conversionElapsed"
-          class="prog__elapsed xw-muted"
-          aria-hidden="true"
-          data-test="exam-workspace-conversion-elapsed"
-        >{{ conversionElapsed }}</span>
-      </div>
-      <div
-        v-if="conversionProgress"
-        class="prog__bar"
-        role="progressbar"
-        aria-label="Konverterade frågor"
-        aria-valuemin="0"
-        :aria-valuemax="conversionProgress.total"
-        :aria-valuenow="conversionProgress.done"
-        data-test="exam-workspace-conversion-progress"
-      >
-        <i :style="{ width: `${(100 * conversionProgress.done) / conversionProgress.total}%` }" />
-      </div>
-      <small
-        v-if="conversionProgress && conversionProgress.done > 0"
-        class="xw-muted"
-      >Klara frågor går att redigera direkt.</small>
-      <button
-        v-if="isConverting && conversionError"
-        type="button"
-        class="xw-btn xw-btn--compact prog__retry"
-        data-test="exam-workspace-conversion-retry"
-        @click="emit('retryConversion')"
-      >
-        <UiGlyph
-          meaning="retry"
-          :size="16"
-        />Försök igen
-      </button>
-      <small
-        v-else-if="!isConverting"
-        class="xw-muted"
-      >Välj provfilen igen för att försöka på nytt.</small>
-    </div>
+      :message="conversionMessage"
+      :elapsed="conversionElapsed"
+      :error="conversionError"
+      :progress="conversionProgress"
+      :is-converting="isConverting"
+      :is-importing="isImporting"
+      @retry="emit('retryConversion')"
+    />
     <div
-      v-if="!isConverting"
+      v-if="!isConverting && !isImporting"
       class="drop"
       :class="{ 'drop--over': dragOver && !importBlocked, 'drop--off': importBlocked }"
       data-test="exam-workspace-drop-zone"
@@ -463,17 +423,6 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
 .drop__format { font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-normal); color: var(--huleedu-navy-70); white-space: nowrap; }
 .drop__input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .drop small { color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
-.prog {
-  display: grid; gap: var(--huleedu-space-2); padding: var(--huleedu-space-3) var(--huleedu-space-4);
-  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content);
-  font-size: var(--huleedu-text-sm);
-}
-.prog__line { display: flex; align-items: center; gap: var(--huleedu-space-2); }
-.prog__elapsed { margin-left: var(--huleedu-space-2); min-width: 4ch; font-variant-numeric: tabular-nums; }
-.prog__bar { height: 6px; overflow: hidden; border-radius: 3px; border: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-navy-02); }
-.prog__bar > i { display: block; height: 100%; background: var(--huleedu-action); }
-.prog small { font-size: var(--huleedu-text-xs); }
-.prog__retry { justify-self: start; }
 .egroup + .egroup { margin-top: var(--huleedu-space-4); }
 .egroup h4 {
   display: flex; gap: var(--huleedu-space-2); margin: 0 0 var(--huleedu-space-1-5);

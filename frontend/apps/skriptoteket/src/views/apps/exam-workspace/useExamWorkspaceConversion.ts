@@ -68,6 +68,8 @@ export function useExamWorkspaceConversion(
 
   onScopeDispose(() => {
     runtime.poll.generation += 1;
+    // A request still pending retires with the generation; its upload message goes with the scope.
+    runtime.isImporting.value = false;
     stopConversionPolling(runtime);
   });
 

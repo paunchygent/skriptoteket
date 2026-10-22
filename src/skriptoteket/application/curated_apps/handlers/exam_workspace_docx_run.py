@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -104,6 +105,9 @@ class DocxConversionRun:
         self.content_tags: tuple[NativeExamContentTag, ...] = ()
         self.second_wave_dispatches = 0
         self.converting_reported = False
+        self.converting_written = asyncio.Event()
+        """Set once the converting phase write has completed; batches that start the converting
+        phase wait for it before their first provider call."""
         self.filled: list[str] = []
         self.timings: list[DocxStageTiming] = []
 

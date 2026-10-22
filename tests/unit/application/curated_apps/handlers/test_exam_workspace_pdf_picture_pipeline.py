@@ -12,13 +12,13 @@ from pydantic import JsonValue
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
     PdfPlumberExamChunker,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_source_images import (
-    _BETWEEN_GROUPING,
-    _PICTURE_STEM,
-    _convert,
-    _converted,
-    _image,
-    _png,
+from tests.unit.application.curated_apps.handlers.docx_source_image_support import (
+    BETWEEN_GROUPING,
+    PICTURE_STEM,
+    convert,
+    converted,
+    part_image,
+    picture_png,
 )
 from tests.unit.infrastructure.curated_apps.exam_workspace_pdf_test_support import pdf_bytes
 
@@ -29,10 +29,10 @@ def _between_pdf() -> bytes:
     """body:0003 a picture alone between two questions, as in the Word case."""
     import base64
 
-    picture = base64.b64encode(_png()).decode()
+    picture = base64.b64encode(picture_png()).decode()
     return pdf_bytes(
         "<h1>Bildfrågor</h1>"
-        f"<p>1. {_PICTURE_STEM}</p>"
+        f"<p>1. {PICTURE_STEM}</p>"
         f'<p><img src="data:image/png;base64,{picture}" style="width:120pt;height:60pt"></p>'
         "<p>2. Beskriv vädret i dag.</p>"
     )
@@ -45,13 +45,13 @@ async def test_a_pdf_picture_between_two_questions_reaches_the_labeler_and_the_d
     (picture,) = [image for chunk in chunker.chunk(content=content) for image in chunk.images]
     asset_id = picture.asset_id
     items = (
-        _converted(f"1. {_PICTURE_STEM}", 2, 3, asset_ids=(asset_id,)),
-        _converted("2. Beskriv vädret i dag.", 4),
+        converted(f"1. {PICTURE_STEM}", 2, 3, asset_ids=(asset_id,)),
+        converted("2. Beskriv vädret i dag.", 4),
     )
     title: dict[str, JsonValue] = {"text": "Bildfrågor", "source_anchors": ["body:0001"]}
 
-    decisions, provider, outcome = await _convert(
-        content, _BETWEEN_GROUPING, items, title, chunker=chunker
+    decisions, provider, outcome = await convert(
+        content, BETWEEN_GROUPING, items, title, chunker=chunker
     )
 
     (grouping,) = [r for r in provider.requests if r.item_id.startswith("docx_grouping")]
@@ -59,7 +59,7 @@ async def test_a_pdf_picture_between_two_questions_reaches_the_labeler_and_the_d
     (labeling,) = decisions
     assert not isinstance(labeling.input, str), "the cut picture must reach the labeler"
     images = [part for message in labeling.input for part in message.content if part.image_url]
-    assert [(_image(part).width, _image(part).height) for part in images] == [
+    assert [(part_image(part).width, part_image(part).height) for part in images] == [
         (picture.width, picture.height)
     ]
     document = outcome.result.document

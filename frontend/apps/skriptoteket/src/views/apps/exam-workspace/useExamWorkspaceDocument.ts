@@ -14,9 +14,8 @@
  *     history's steps and the server commands' results. Every confirmed step
  *     also updates the saved baseline through `noteStored`, so dirty means
  *     the copy differs from the exam file.
- *   - The whole-document field commands (exam and part instructions, tags,
- *     printed-total accepts) in `useExamWorkspaceDocumentFields`, built on
- *     `editDocument` here.
+ *   - The teacher edit paths (item patch, whole-copy edit, title, gap keying,
+ *     item and field commands) in `useExamWorkspaceDocumentEditPaths`.
  *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list, AI suggestion arrivals, conversion merges and
  *     one-question retries through their own composables.
@@ -39,18 +38,14 @@ import type {
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
 import { createExamWorkspaceNewPictures } from "./examWorkspaceNewPictures";
 import { sameDocument } from "./examWorkspaceConversionMerge";
-import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
-import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
-import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence, type FenceToken, type SyncFence } from "./examWorkspaceSyncFence";
 import { createDocumentInstalls } from "./useExamWorkspaceDocumentInstalls";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
-import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
+import { useExamWorkspaceDocumentEditPaths } from "./useExamWorkspaceDocumentEditPaths";
 import { useExamWorkspaceDocumentOpen } from "./useExamWorkspaceDocumentOpen";
 import { useExamWorkspaceDocumentReload } from "./useExamWorkspaceDocumentReload";
 import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
-import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceImportPoints } from "./useExamWorkspaceImportPoints";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
@@ -295,13 +290,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     selectedItemId.value = itemId;
   }
 
-  function setTitle(title: string): void {
-    const current = workspaceDocument.value;
-    if (!current || isBusy.value || isReadOnly()) return;
-    workspaceDocument.value = { ...current, title };
-    noteEdit(false, current);
-  }
-
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
     isBusy: () => isBusy.value,
     operationBusy,
@@ -333,43 +321,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     }
   }
 
-  /**
-   * The one path every item edit takes; a placeholder whose batch still converts is refused.
-   * A picture the edit removed takes its asset record with it.
-   */
-  function patchItem(
-    itemId: string,
-    patch: (item: NativeExamItem) => NativeExamItem,
-    structural = false,
-  ): boolean {
-    const current = workspaceDocument.value;
-    if (!current || isBusy.value || isReadOnly() || convertingItemIds.value.has(itemId)) {
-      return false;
-    }
-    let changed = false;
-    const items = current.items.map((item) => {
-      if (item.item_id !== itemId) {
-        return item;
-      }
-      changed = true;
-      return patch(item);
+  // Every teacher edit of the copy, including gap keying and its replies.
+  const { editDocument, fieldCommands, itemEdits, keying, restoreItemSuggestion, setTitle } =
+    useExamWorkspaceDocumentEditPaths({
+      workspaceDocument,
+      selectedItemId,
+      openExam,
+      isBusy,
+      isReadOnly,
+      convertingItemIds,
+      newPictures,
+      noteEdit,
+      noteMachineWrite,
+      shared: store.shared,
     });
-    if (!changed) {
-      return false;
-    }
-    workspaceDocument.value = withReferencedAssetsOnly(newPictures.withDeclared({ ...current, items }));
-    noteEdit(structural, current);
-    return true;
-  }
-
-  // Every gap keying edit and its asynchronous misspelling reply.
-  const keying = useExamWorkspaceGapKeying({
-    noteReply: noteMachineWrite,
-    openExam,
-    patchItem,
-    workspaceDocument,
-    shared: store.shared,
-  });
 
   // Reads that replace the open copy (undo, redo, server commands).
   const replacingScope = useExamWorkspaceDocumentReplacing({
@@ -408,40 +373,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     keying.invalidateCopy();
   }
 
-  // Every teacher edit command, applied through the one patch path above.
-  const itemEdits = useExamWorkspaceItemEdits(patchItem);
-
-  function restoreItemSuggestion(itemId: string): void {
-    patchItem(itemId, (item) => withRestoredSuggestion(item));
-  }
-
-  /**
-   * An edit of the whole copy. A structural edit (add, delete, reorder) is one
-   * undo step at once; typing waits for the pause like an item's text.
-   */
-  function editDocument(
-    edit: (document: NativeExamDocument) => NativeExamDocument,
-    selectId: string | null = null,
-    structural = true,
-  ): boolean {
-    const current = workspaceDocument.value;
-    if (!current || isBusy.value || isReadOnly()) {
-      return false;
-    }
-    workspaceDocument.value = withReferencedAssetsOnly(newPictures.withDeclared(edit(current)));
-    if (selectId !== null) {
-      selectedItemId.value = selectId;
-    }
-    noteEdit(structural, current);
-    return true;
-  }
-
-  // The whole-document field commands, each one `editDocument` call.
-  const fieldCommands = useExamWorkspaceDocumentFields({
-    courseKey: () => workspaceDocument.value?.header.course?.key ?? null,
-    editDocument,
-  });
-
   return {
     ...itemEdits,
     ...fieldCommands,
@@ -460,6 +391,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     conversionStatus,
     convertingItemIds,
     isConverting,
+    isImporting,
     retryConversionStatus,
     importBlocked,
     importDocument,

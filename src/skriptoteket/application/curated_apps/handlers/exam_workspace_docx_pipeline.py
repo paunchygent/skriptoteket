@@ -342,16 +342,30 @@ class DocxConversionPipeline:
             families, run.kinds, families_per_batch=self._families_per_batch, prefix=prefix
         )
         if batches and starts_converting and not run.converting_reported:
-            # The first labeled dispatch starts the converting phase. This task is created
-            # before its batches, so it takes the unit-of-work lock before they deliver.
+            # The first labeled dispatch starts the converting phase. Creating this task first
+            # is not a barrier: its write yields at database IO. Every batch of a dispatch that
+            # starts converting, including later second-wave and conflict dispatches, therefore
+            # waits on ``run.converting_written`` before its provider work.
             run.converting_reported = True
-            tasks.create_task(self._report_phase(run, ConversionPhase.CONVERTING))
+            tasks.create_task(self._report_converting(run))
         for batch in batches:
-            tasks.create_task(self._convert(run, batch, tasks))
+            tasks.create_task(self._convert(run, batch, tasks, after_converting=starts_converting))
+
+    async def _report_converting(self, run: DocxConversionRun) -> None:
+        await self._report_phase(run, ConversionPhase.CONVERTING)
+        # A failed write never sets the event: the task group cancels the waiting batches.
+        run.converting_written.set()
 
     async def _convert(
-        self, run: DocxConversionRun, batch: ConversionBatch, tasks: asyncio.TaskGroup
+        self,
+        run: DocxConversionRun,
+        batch: ConversionBatch,
+        tasks: asyncio.TaskGroup,
+        *,
+        after_converting: bool,
     ) -> None:
+        if after_converting:
+            await run.converting_written.wait()
         started = time.monotonic()
         parts = source_parts(run, batch)
         outcomes = [await self._admitted(run, part) for part in parts]

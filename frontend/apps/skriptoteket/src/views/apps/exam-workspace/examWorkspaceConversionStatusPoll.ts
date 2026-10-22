@@ -43,6 +43,9 @@ export const CONVERSION_PHASE_COPY = {
   converting: "Konverterar frågorna",
 } as const;
 
+/** The wait for the import request, before the server has reported any status; no server start time exists for it. */
+export const IMPORT_UPLOAD_COPY = "Laddar upp filen";
+
 /** m:ss for the time since the phase began; the server's clock may run ahead of the browser's, so it never goes negative. */
 export function formatConversionElapsed(startedAt: string, nowMs: number): string | null {
   const started = Date.parse(startedAt);
@@ -85,6 +88,7 @@ export function createConversionStatusPoll(
       return `Konverterar provet: ${progress.done} av ${progress.total} frågor klara.`;
     }
     if (runtime.isConverting.value) return "Konverterar provet …";
+    if (runtime.isImporting.value && runtime.conversionStatus.value === null) return IMPORT_UPLOAD_COPY;
     if (runtime.conversionStatus.value?.state === "failed") {
       return runtime.conversionStatus.value.error_message ?? IMPORT_FAILURE_COPY;
     }

@@ -95,6 +95,7 @@ const {
   isBusy,
   isConverting,
   isDirty,
+  isImporting,
   isOpenBlockedByOtherOperation,
   listOrdering,
   notes,
@@ -157,6 +158,7 @@ const openSaveDetail = computed(() =>
       :conversion-error="conversionError"
       :conversion-progress="conversionProgress"
       :is-converting="isConverting"
+      :is-importing="isImporting"
       :notes="notes"
       :current-exports="currentExports"
       :import-pick-pending="importPickPending"

@@ -124,6 +124,7 @@ function mountFromEditing(editing: Editing) {
       importBlocked: editing.importBlocked.value,
       isBusy: editing.isBusy.value,
       isConverting: editing.isConverting.value,
+      isImporting: editing.isImporting.value,
       isDirty: editing.isDirty.value,
       isOpenBlockedByOtherOperation: editing.isOpenBlockedByOtherOperation.value,
       notes: editing.notes.value,

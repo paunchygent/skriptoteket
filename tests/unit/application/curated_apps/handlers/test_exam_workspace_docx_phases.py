@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
+from uuid import UUID
+
 import pytest
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
@@ -13,6 +16,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
+    RecordingProgress,
     build_replay,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_jobs import (
@@ -47,6 +51,43 @@ async def test_a_conversion_reports_finding_sorting_and_converting_once_each_in_
     assert _first(trace, "phase:converting") > _first(trace, "phase:sorting")
     assert _first(trace, "phase:converting") < _first(trace, "provider:docx_exam_build")
     assert _first(trace, "phase:converting") < _first(trace, "batch_ready")
+
+
+class _SuspendedConvertingProgress(RecordingProgress):
+    """Holds the converting phase write open, as unfinished database IO would."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.converting_entered = asyncio.Event()
+        self.release_converting = asyncio.Event()
+
+    async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        await super().phase(worker_id=worker_id, job_id=job_id, phase=phase)
+        if phase is ConversionPhase.CONVERTING:
+            self.converting_entered.set()
+            await self.release_converting.wait()
+
+
+async def test_no_converter_calls_the_provider_before_the_converting_write_completes():
+    progress = _SuspendedConvertingProgress()
+    replay = build_replay(_QUIZ_EXAM, progress=progress)
+    conversion = asyncio.create_task(replay.pipeline.convert(job=replay.job()))
+
+    await asyncio.wait_for(progress.converting_entered.wait(), timeout=5)
+    # Let every dispatched converter run as far as it can while the write is open.
+    for _ in range(50):
+        await asyncio.sleep(0)
+    assert "phase:converting" in progress.trace
+    assert "provider:docx_exam_build" not in progress.trace
+    assert "batch_ready" not in progress.trace
+
+    progress.release_converting.set()
+    await asyncio.wait_for(conversion, timeout=10)
+
+    trace = progress.trace
+    assert _first(trace, "phase:converting") < _first(trace, "provider:docx_exam_build")
+    assert _first(trace, "phase:converting") < _first(trace, "batch_ready")
+    assert progress.calls.count("batch_ready") > 1, "every batch still converts and delivers"
 
 
 @pytest.mark.parametrize("enabled", [False])

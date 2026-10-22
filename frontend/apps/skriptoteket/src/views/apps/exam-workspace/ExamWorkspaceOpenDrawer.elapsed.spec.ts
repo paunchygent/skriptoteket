@@ -28,8 +28,17 @@ vi.mock("../../../api/examWorkspaceUnreadableFiles", () => unreadableApiMocks);
 
 const STATUS = '[data-test="exam-workspace-conversion-status"]';
 const ELAPSED = '[data-test="exam-workspace-conversion-elapsed"]';
+const MESSAGE = '[data-test="exam-workspace-conversion-message"]';
 
-function mountDrawer(overrides: { conversionElapsed: string | null; conversionMessage: string | null }) {
+type DrawerOverrides = {
+  conversionElapsed: string | null;
+  conversionMessage: string | null;
+  conversionProgress?: { done: number; total: number } | null;
+  isConverting?: boolean;
+  isImporting?: boolean;
+};
+
+function mountDrawer(overrides: DrawerOverrides) {
   setActivePinia(createPinia());
   const unreadable = useExamWorkspaceUnreadableFiles();
   const provideUnreadable: Plugin = {
@@ -48,6 +57,7 @@ function mountDrawer(overrides: { conversionElapsed: string | null; conversionMe
       isBusy: true,
       isOpenBlockedByOtherOperation: false,
       isConverting: true,
+      isImporting: false,
       isDirty: false,
       notes: [],
       ordering: "newest",
@@ -80,11 +90,69 @@ describe("ExamWorkspaceOpenDrawer elapsed time", () => {
     expect(elapsed.classes()).toContain("prog__elapsed");
   });
 
-  it("renders no clock while no phase is known", async () => {
+  it("renders an empty clock slot while no phase is known", async () => {
     const wrapper = mountDrawer({ conversionElapsed: null, conversionMessage: "Konverterar provet …" });
     await flushPromises();
 
-    expect(wrapper.find(ELAPSED).exists()).toBe(false);
+    expect(wrapper.get(ELAPSED).text()).toBe("");
     expect(wrapper.get(STATUS).find(".xw-spin").exists()).toBe(true);
+  });
+});
+
+describe("ExamWorkspaceOpenDrawer upload wait", () => {
+  beforeEach(() => {
+    vi.mocked(listUnreadableExamWorkspaceDocuments).mockResolvedValue({ documents: [] });
+  });
+
+  it("shows the status block, the spinning glyph and no drop zone or retry hint while the file uploads", async () => {
+    const wrapper = mountDrawer({
+      conversionElapsed: null,
+      conversionMessage: "Laddar upp filen",
+      isConverting: false,
+      isImporting: true,
+    });
+    await flushPromises();
+
+    const status = wrapper.get(STATUS);
+    expect(status.text()).toContain("Laddar upp filen");
+    expect(status.find(".xw-spin").exists()).toBe(true);
+    expect(status.text()).not.toContain("Välj provfilen igen");
+    expect(wrapper.find('[data-test="exam-workspace-drop-zone"]').exists()).toBe(false);
+  });
+});
+
+/**
+ * The status row's geometry (clock position, row height at the supported
+ * drawer widths) cannot be measured in jsdom: it is checked in the Mac
+ * staging walk. These checks hold what jsdom can: the full text in the
+ * tooltip and the clock slot present, as one element, through every phase.
+ */
+describe("ExamWorkspaceOpenDrawer status row slots", () => {
+  beforeEach(() => {
+    vi.mocked(listUnreadableExamWorkspaceDocuments).mockResolvedValue({ documents: [] });
+  });
+
+  it("keeps the clock slot and carries the full message as its tooltip through the phases", async () => {
+    const wrapper = mountDrawer({ conversionElapsed: null, conversionMessage: "Läser filen" });
+    await flushPromises();
+    const slot = wrapper.get(ELAPSED).element;
+    expect(wrapper.get(MESSAGE).attributes("title")).toBe("Läser filen");
+    expect(wrapper.get(ELAPSED).text()).toBe("");
+
+    await wrapper.setProps({ conversionElapsed: "0:07", conversionMessage: "Sorterar frågorna efter typ" });
+    expect(wrapper.get(MESSAGE).attributes("title")).toBe("Sorterar frågorna efter typ");
+    expect(wrapper.get(MESSAGE).text()).toBe("Sorterar frågorna efter typ");
+    expect(wrapper.get(ELAPSED).element).toBe(slot);
+    expect(wrapper.get(ELAPSED).text()).toBe("0:07");
+
+    await wrapper.setProps({
+      conversionElapsed: "12:03",
+      conversionMessage: "Konverterar frågorna: 12 av 120 klara",
+      conversionProgress: { done: 12, total: 120 },
+    });
+    expect(wrapper.get(MESSAGE).attributes("title")).toBe("Konverterar frågorna: 12 av 120 klara");
+    expect(wrapper.get(ELAPSED).element).toBe(slot);
+    expect(wrapper.get(ELAPSED).text()).toBe("12:03");
+    expect(wrapper.get(ELAPSED).attributes("aria-hidden")).toBe("true");
   });
 });
