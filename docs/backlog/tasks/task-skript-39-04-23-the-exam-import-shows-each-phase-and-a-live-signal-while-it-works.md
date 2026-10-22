@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-23
 title: The exam import shows each phase and a live signal while it works
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-22'
 status: in_progress
 closeout_review:
@@ -13,9 +13,9 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Every phase of a Word or PDF import shows its name as text
-- Every phase, including the long AI waits, shows a live signal that the work is running
-- No wait during an import shows a static screen
+  - Every phase of a Word or PDF import shows its name as text
+  - Every phase, including the long AI waits, shows a live signal that the work is running
+  - No wait during an import shows a static screen
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -76,15 +76,15 @@ Units, one junior each:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | The conversion job reports its current phase through the progress port, with the phase's start time: reading the file, finding the questions, sorting the questions by type (first-pass labelling) and converting the questions. A PDF import names its reading phase the same way. The status response carries the phase and its start time. |
-| D2  | Every phase shows its name as text, and the converting phase adds the count "N av M frågor klara". |
-| D3  | Every phase shows a live signal: an existing moving indicator from the design system plus the phase's elapsed time, counted in the browser from the reported start time and updated every second. No wait shows a static screen. |
-| D4  | The phase copy is Swedish, short and plain, follows huleedu-ui-design, and the lead settles the exact words with one ui-copy-reviewer pass. Draft: "Läser filen", "Hittar frågorna", "Sorterar frågorna efter typ", "Konverterar frågorna: N av M klara". |
-| D5  | Batch sizes, the labelling call, the AI models and the poll interval stay as they are. The unreleased status payload changes shape with no compatibility path. |
-| D6  | Proof: focused backend tests that each phase is reported in order with a start time, also after a lease reclaim; focused frontend tests of the phase text, the count and the ticking elapsed time; a Mac staging walk of a Word and a PDF import of metodprov_med_bilder in which no wait shows a static screen. |
-| D7  | One independent review at most. Repairs are admitted on focused fail-first proof, with no rereview (user rule 2026-10-22). |
+| D2  | Every phase shows its name as text, and the converting phase adds the count "N av M frågor klara".                                                                                                                                                                                                                                            |
+| D3  | Every phase shows a live signal: an existing moving indicator from the design system plus the phase's elapsed time, counted in the browser from the reported start time and updated every second. No wait shows a static screen.                                                                                                              |
+| D4  | The phase copy is Swedish, short and plain, follows huleedu-ui-design, and the lead settles the exact words with one ui-copy-reviewer pass. Draft: "Läser filen", "Hittar frågorna", "Sorterar frågorna efter typ", "Konverterar frågorna: N av M klara".                                                                                     |
+| D5  | Batch sizes, the labelling call, the AI models and the poll interval stay as they are. The unreleased status payload changes shape with no compatibility path.                                                                                                                                                                                |
+| D6  | Proof: focused backend tests that each phase is reported in order with a start time, also after a lease reclaim; focused frontend tests of the phase text, the count and the ticking elapsed time; a Mac staging walk of a Word and a PDF import of metodprov_med_bilder in which no wait shows a static screen.                              |
+| D7  | One independent review at most. Repairs are admitted on focused fail-first proof, with no rereview (user rule 2026-10-22).                                                                                                                                                                                                                    |
 
 D1-D3 are the user's decision (relayed by the Mac orchestrator from the 41-01-04 staging walk,
 2026-10-22; agent-planning:user-closure-gate). D4-D7 are orchestrator decisions under the user's
@@ -101,7 +101,8 @@ delegation (2026-10-22, "Take care of it."). All come from the retained plan in 
   the `conversion_progress` JSON, so outline and batch merges never reset it. Reading is
   reported before the file is chunked (Word and PDF alike, also on a lease reclaim under the
   new worker), finding before grouping, sorting after the outline, converting once at the
-  first batch dispatch (unlabelable batches included). A stale worker's write is a no-op.
+  first labeled batch dispatch (a question no labeler sees converts at once but keeps the
+  phase on sorting, so "0 av N" never sits under sorting). A stale worker's write is a no-op.
 - Frontend (D2-D4): the Öppna drawer shows the phase text, the existing spinning busy glyph
   and the phase's elapsed time as m:ss, ticking each second from the reported start time
   (clamped at 0:00 against clock skew; hidden from the live region). The count shows only in

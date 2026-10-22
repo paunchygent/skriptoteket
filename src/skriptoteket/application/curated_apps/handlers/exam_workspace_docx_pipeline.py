@@ -272,7 +272,9 @@ class DocxConversionPipeline:
             run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
             run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
         if unlabeled:
-            self._dispatch(run, unlabeled, "wi-", tasks)
+            # Questions no labeler sees convert at once, but the teacher still waits on
+            # sorting: the first labeled batch starts the converting phase.
+            self._dispatch(run, unlabeled, "wi-", tasks, starts_converting=False)
         if run.ai_limit is not None and run.limit_code is not None:
             run.state.record("labeling", run.limit_code, detail="limit_already_recorded")
             run.state.fail_all_pending(_LABELING_REASON)
@@ -326,17 +328,22 @@ class DocxConversionPipeline:
         run.timed("labeling", started)
 
     def _dispatch(
-        self, run: DocxConversionRun, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
+        self,
+        run: DocxConversionRun,
+        question_ids: list[str],
+        prefix: str,
+        tasks: asyncio.TaskGroup,
+        *,
+        starts_converting: bool = True,
     ) -> None:
         chosen = set(question_ids)
         families = tuple(f for f in run.families if f.question_id in chosen)
         batches = pack_batches(
             families, run.kinds, families_per_batch=self._families_per_batch, prefix=prefix
         )
-        if batches and not run.converting_reported:
-            # The first dispatch of any batch, labelled or not, starts the converting phase.
-            # This task is created first, so it takes the unit-of-work lock before any batch
-            # delivers.
+        if batches and starts_converting and not run.converting_reported:
+            # The first labeled dispatch starts the converting phase. This task is created
+            # before its batches, so it takes the unit-of-work lock before they deliver.
             run.converting_reported = True
             tasks.create_task(self._report_phase(run, ConversionPhase.CONVERTING))
         for batch in batches:

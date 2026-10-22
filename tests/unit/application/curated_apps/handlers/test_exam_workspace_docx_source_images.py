@@ -49,6 +49,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
 )
+from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
 from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
@@ -314,13 +315,16 @@ async def _convert(
     items: tuple[dict[str, JsonValue], ...] = (),
     title: dict[str, JsonValue] | None = None,
     chunker: DocxExamChunkerProtocol | None = None,
+    progress: RecordingProgress | None = None,
 ) -> tuple[list[_DecisionsBody], _Provider, DocxConversionOutcome]:
     decisions: list[_DecisionsBody] = []
+    progress = progress or RecordingProgress()
 
     def answer(sent: DoorSent) -> DoorReply:
         assert sent.operation is DoorOperation.DECISIONS
         body = _DecisionsBody.model_validate(sent.payload)
         decisions.append(body)
+        progress.trace.append("door:decisions")
         answers: list[JsonValue] = [_free_text(question.name) for question in body.questions]
         return json_reply({"answers": answers})
 
@@ -331,7 +335,7 @@ async def _convert(
         sleeper=NoSleep(),
         uow=SerializedUnitOfWork(NoTransaction()),
         settings=Settings.model_construct(LLM_ANSWER_KEY_ENABLED=True),
-        progress=RecordingProgress(),
+        progress=progress,
     )
     outcome = await pipeline.convert(
         job=DocxConversionJob(
@@ -483,3 +487,19 @@ async def test_a_picture_between_two_questions_places_the_carrier_or_falls_back_
         ], "a picture the reply did not place keeps the question's own source, picture included"
     assert document.items[0].body_asset_ids() == (asset_id,)
     assert outcome.update.pending == ()
+
+
+@pytest.mark.asyncio
+async def test_an_unlabelable_question_does_not_start_the_converting_phase_before_labeling():
+    """A question no labeler sees converts at once, but the phase stays on sorting until the
+    first labeled batch (TASK-SKRIPT-39-04-23): the count must not sit at 0 under sorting."""
+    progress = RecordingProgress()
+    await _convert(_exam(), _GROUPING, progress=progress)
+
+    trace = progress.trace
+    assert progress.phases == [
+        ConversionPhase.FINDING,
+        ConversionPhase.SORTING,
+        ConversionPhase.CONVERTING,
+    ]
+    assert trace.index("phase:converting") > trace.index("door:decisions")
