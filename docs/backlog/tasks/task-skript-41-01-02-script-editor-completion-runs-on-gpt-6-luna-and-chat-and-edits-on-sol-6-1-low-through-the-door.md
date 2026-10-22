@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'One review in retained root 01a16352-c1aa-7200-beac-cdd64393cb32 (evidence/reviews/task-skript-41-01-02-365bbae9a-review.md): F1-F6 repaired on fail-first proof (ab453737f), no rereview per the user rule "Now it''s enough."; merged 1bab3a4f4; staging compose flag fix 400c88156. Mac staging walk at e1fbb32a4 passed ghost text, chat stream, cancel then new chat and profile, and found two defects, repaired on fail-first proof in 5f23f6501; Mac re-walk at 8569092ba passed both (Mac .artifacts/staging-walk-rewalk-8569092ba/walk-record.md). The door logs carry no per-call user id or model, so those rest on the transport test of 365bbae9a. The PR-0254 and TASK-0376 browser proofs keep no CSRF-refusal probe after S3 removed their consent PATCH; unit tests own CSRF refusal (orchestrator decision 2026-10-22). Deployed to production at 8569092ba by user decision 2026-10-22.'
 task_kind: story
 acceptance_criteria:
   - Script-editor inline completion calls GPT-6 Luna through the LLM provider door with the user's id, on the small-model pool; chat, chat ops and edit call OpenAI Sol 6.1 low through the door with the user's id, on the full-model pool

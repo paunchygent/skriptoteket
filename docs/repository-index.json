@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d1e295c8b107829598550299e23dbbd6fb27839711e82d5d117c750a36aebac8",
+  "source_set_digest": "e6eef7d53e8a1e4b43158b10fbd21e927cd3061a2f2f9f13f3260ddd117e620d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2555,7 +2555,7 @@
       "type": "story",
       "title": "Paid AI calls stop at a fixed daily token and cost budget",
       "path": "docs/backlog/stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-41",
       "owners": [
         {
@@ -2568,7 +2568,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "All three tasks done with approved closeouts: TASK-SKRIPT-41-01-03 (exam AI through the door), TASK-SKRIPT-41-01-04 (capacity and try-again, d44e946b5) and TASK-SKRIPT-41-01-02 (script editor on Luna and Sol through the door, re-walked at 8569092ba). Production runs 8569092ba with HuleEdu door ca7ff9700, deployed by user decision 2026-10-22."
       }
     },
     {
@@ -7439,7 +7443,7 @@
       "type": "task",
       "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
       "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -7450,7 +7454,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "One review in retained root 01a16352-c1aa-7200-beac-cdd64393cb32 (evidence/reviews/task-skript-41-01-02-365bbae9a-review.md): F1-F6 repaired on fail-first proof (ab453737f), no rereview per the user rule \"Now it's enough.\"; merged 1bab3a4f4; staging compose flag fix 400c88156. Mac staging walk at e1fbb32a4 passed ghost text, chat stream, cancel then new chat and profile, and found two defects, repaired on fail-first proof in 5f23f6501; Mac re-walk at 8569092ba passed both (Mac .artifacts/staging-walk-rewalk-8569092ba/walk-record.md). The door logs carry no per-call user id or model, so those rest on the transport test of 365bbae9a. The PR-0254 and TASK-0376 browser proofs keep no CSRF-refusal probe after S3 removed their consent PATCH; unit tests own CSRF refusal (orchestrator decision 2026-10-22). Deployed to production at 8569092ba by user decision 2026-10-22."
       }
     },
     {

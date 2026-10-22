@@ -38,7 +38,7 @@ Non-goals: public AI (any later public AI is off by default and limited to one c
 
 | Story | Delivers |
 | ----- | -------- |
-| ST-SKRIPT-41-01 | Every paid call through the LLM provider door, the script editor on Sol 6.1 low, and capacity for 1,000 concurrent calls |
+| ST-SKRIPT-41-01 | Done 2026-10-22: every exam and script-editor AI call goes through the HuleEdu door with the user's id (exam AI and inline completion on Luna in the small pool; chat, chat ops and edit on Sol 6.1 low in the full pool), the local token ledger and Devstral path are gone, the door serves 1,000 concurrent calls with a try-again answer; in production at `8569092ba` with HuleEdu door `ca7ff9700` |
 | ST-SKRIPT-41-02 | Done 2026-10-22 (user closure): QTI import, the public workspace without login, and removal of the guest DigiExam line; every guest start and export walked on staging at `4b321fa1`, the untitled-draft sign-in handoff at `ede1ea0d` |
 | ST-SKRIPT-41-03 | Every signed-in teacher uses the exam and script-editor AI within the daily shares; the admin-only AI check is deleted |
 

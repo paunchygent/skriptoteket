@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'All three tasks done with approved closeouts: TASK-SKRIPT-41-01-03 (exam AI through the door), TASK-SKRIPT-41-01-04 (capacity and try-again, d44e946b5) and TASK-SKRIPT-41-01-02 (script editor on Luna and Sol through the door, re-walked at 8569092ba). Production runs 8569092ba with HuleEdu door ca7ff9700, deployed by user decision 2026-10-22.'
 epic: EPIC-SKRIPT-41
 acceptance_criteria:
   - Every paid AI call goes through the LLM provider door, and a teacher past a limit sees the limit note with no provider call
