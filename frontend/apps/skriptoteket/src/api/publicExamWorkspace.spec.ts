@@ -25,7 +25,7 @@ import {
   deletePublicExamWorkspaceParent,
   downloadPublicExamWorkspaceExport,
   getPublicExamCourseCatalog,
-  getExamWorkspaceLimits,
+  getPublicExamWorkspaceLimits,
   getPublicExamWorkspaceExportChecklist,
   groupPublicExamWorkspaceItems,
   importPublicExamWorkspaceQti,
@@ -222,7 +222,7 @@ describe("publicExamWorkspace transport", () => {
   it("reads the backend-owned exam size limit without credentials", async () => {
     publicApiGetMock.mockResolvedValueOnce({ max_exam_bytes: 7_000_000 });
 
-    const result = await getExamWorkspaceLimits();
+    const result = await getPublicExamWorkspaceLimits();
 
     expect(publicApiGetMock).toHaveBeenCalledWith(`${WORKSPACE_ROOT}/limits`);
     expect(result).toEqual({ max_exam_bytes: 7_000_000 });

@@ -15,6 +15,7 @@ import { apiFetch, apiGet, apiPost } from "./client";
 import {
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
+  getExamWorkspaceLimits,
   getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
   importExamWorkspaceGuestDraft,
@@ -181,6 +182,17 @@ describe("examWorkspace transport", () => {
 
     expect(apiGetMock).toHaveBeenCalledWith(DOCUMENTS_ROOT);
     expect(result).toEqual({ documents: [] });
+  });
+
+  it("reads the backend-owned exam size limit from the signed-in limits path", async () => {
+    apiGetMock.mockResolvedValueOnce({ max_exam_bytes: 7_000_000 });
+
+    const result = await getExamWorkspaceLimits();
+
+    expect(apiGetMock).toHaveBeenCalledWith(
+      "/api/v1/apps/documents.conversion_hub/exam-workspace/limits",
+    );
+    expect(result).toEqual({ max_exam_bytes: 7_000_000 });
   });
 
   it("requests suggestions with the editor document and reads status per job", async () => {

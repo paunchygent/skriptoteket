@@ -45,7 +45,7 @@ export function createGuestPublicApiMocks(): GuestPublicApiMocks {
     deletePublicExamWorkspaceParent: vi.fn<PublicApi["deletePublicExamWorkspaceParent"]>(),
     downloadPublicExamWorkspaceExport: vi.fn<PublicApi["downloadPublicExamWorkspaceExport"]>(),
     getPublicExamCourseCatalog: vi.fn<PublicApi["getPublicExamCourseCatalog"]>(),
-    getExamWorkspaceLimits: vi.fn<PublicApi["getExamWorkspaceLimits"]>(),
+    getPublicExamWorkspaceLimits: vi.fn<PublicApi["getPublicExamWorkspaceLimits"]>(),
     getPublicExamWorkspaceExportChecklist:
       vi.fn<PublicApi["getPublicExamWorkspaceExportChecklist"]>(),
     groupPublicExamWorkspaceItems: vi.fn<PublicApi["groupPublicExamWorkspaceItems"]>(),

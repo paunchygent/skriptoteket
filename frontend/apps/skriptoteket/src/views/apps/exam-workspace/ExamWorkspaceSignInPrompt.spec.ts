@@ -114,7 +114,7 @@ function setupGuest() {
       generated_at: "2026-10-18T00:00:00Z",
       registered_course_keys: [],
     })),
-    getExamWorkspaceLimits: vi.fn(),
+    getPublicExamWorkspaceLimits: vi.fn(),
     getPublicExamWorkspaceExportChecklist: vi.fn(),
     groupPublicExamWorkspaceItems: vi.fn(),
     importPublicExamWorkspaceQti: vi.fn(),

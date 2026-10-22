@@ -28,6 +28,7 @@ import {
 import type {
   ExamCourseCatalogResponse,
   ExamWorkspaceDocumentResponse,
+  ExamWorkspaceLimits,
   ExamWorkspaceMisspellingsRequest,
   ExamWorkspaceMisspellingsResponse,
   NativeExamBodyParagraph,
@@ -127,9 +128,6 @@ type PublicExamWorkspaceQtiImportResponse = {
   assets_by_id: Record<string, string>;
   notes: string[];
 };
-
-/** The backend-owned exam size limit both modes enforce before sending work. */
-export type ExamWorkspaceLimits = Schemas["ExamWorkspaceLimitsResponse"];
 
 function parentsPath(parentId: string): string {
   return `${PUBLIC_WORKSPACE_ROOT}/parents/${encodeURIComponent(parentId)}`;
@@ -308,7 +306,7 @@ export async function requestPublicExamWorkspaceAnswerMisspellings(
   );
 }
 
-export async function getExamWorkspaceLimits(): Promise<ExamWorkspaceLimits> {
+export async function getPublicExamWorkspaceLimits(): Promise<ExamWorkspaceLimits> {
   return await publicApiGet<ExamWorkspaceLimits>(`${PUBLIC_WORKSPACE_ROOT}/limits`);
 }
 

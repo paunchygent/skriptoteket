@@ -53,6 +53,8 @@ export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"]
 /** A part creation's document response; `created_parent_id` names the part the editor opens. */
 export type ExamWorkspaceCreatedPartResponse = Schemas["ExamWorkspaceCreatedPartResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
+/** The backend-owned exam size limit both modes enforce before sending work. */
+export type ExamWorkspaceLimits = Schemas["ExamWorkspaceLimitsResponse"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceAnswerKeySuggestionsStatus =
   Schemas["ExamWorkspaceAnswerKeySuggestionsResponse"];
@@ -134,6 +136,11 @@ export async function importExamWorkspaceDocument(
 
 export async function getExamCourseCatalog(): Promise<ExamCourseCatalogResponse> {
   return await apiGet<ExamCourseCatalogResponse>(`${ROOT}/courses`);
+}
+
+/** Read the backend-owned exam size limit over the signed-in route. */
+export async function getExamWorkspaceLimits(): Promise<ExamWorkspaceLimits> {
+  return await apiGet<ExamWorkspaceLimits>(`${ROOT}/limits`);
 }
 
 export async function getExamWorkspaceConversionStatus(
