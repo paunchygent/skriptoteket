@@ -1,5 +1,6 @@
 """Native projection of DOCX pictures: carriers, exact places and the asset manifest (D2)."""
 
+from dataclasses import replace
 from typing import Literal
 from uuid import uuid4
 
@@ -247,6 +248,25 @@ def test_manifest_drops_a_picture_no_item_references() -> None:
 
     assert [asset.asset_id for asset in assets] == [used.asset_id]
     assert set(payloads) == {used.asset_id}
+
+
+def test_manifest_carries_the_shape_markup_of_a_drawn_picture_to_its_asset() -> None:
+    drawn = replace(_image(_PNG), docx_shapes="<w:drawing/>")
+    plain = _image(_JPEG, media_type="image/jpeg")
+    chunk = _chunk("body:0001", "Fråga", (drawn, plain))
+    produced = _produced(
+        [
+            {"kind": "text", "text": "Fråga", "accepted_values": []},
+            {"kind": "asset", "text": None, "accepted_values": [], "asset_id": drawn.asset_id},
+            {"kind": "asset", "text": None, "accepted_values": [], "asset_id": plain.asset_id},
+        ]
+    )
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv", foreign_chunks=()).item
+
+    assets, _ = asset_manifest((item,), (chunk,))
+
+    shapes = {asset.asset_id: asset.docx_shapes for asset in assets}
+    assert shapes == {drawn.asset_id: "<w:drawing/>", plain.asset_id: None}
 
 
 def test_native_item_refuses_a_question_whose_source_picture_is_missing() -> None:

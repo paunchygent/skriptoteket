@@ -7181,12 +7181,22 @@ export interface components {
             kind: "answer_key";
             origin: components["schemas"]["NativeAnswerKeyOrigin"];
         };
-        /** NativeExamAsset */
+        /**
+         * NativeExamAsset
+         * @description One picture the document declares; its payload lives in the container.
+         *
+         *     ``docx_shapes`` is the self-contained ``w:drawing`` markup of the Word shapes this
+         *     picture was drawn from at import (TASK-SKRIPT-39-04-22 D8, D12). The Word export
+         *     writes those shapes in its place (D9); every other view and export uses the picture.
+         *     A picture the teacher adds is a new asset and carries none (D10).
+         */
         NativeExamAsset: {
             /** Asset Id */
             asset_id: string;
             /** Byte Length */
             byte_length: number;
+            /** Docx Shapes */
+            docx_shapes?: string | null;
             /** Height */
             height?: number | null;
             /**
