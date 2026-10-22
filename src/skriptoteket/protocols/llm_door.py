@@ -49,9 +49,9 @@ class DoorStream(Protocol):
     """One open streamed door answer (``stream: true`` Responses call).
 
     ``status_code`` and ``headers`` are the relayed answer's; a success
-    yields the upstream SSE lines unchanged through ``aiter_lines``. A
-    failed answer (status 400 or above) has its body read into ``body``
-    and yields no lines.
+    yields the upstream SSE lines unchanged through ``aiter_lines``, excluding
+    private door charge events consumed by the client. A failed answer (status
+    400 or above) has its body read into ``body`` and yields no lines.
     """
 
     @property
@@ -113,7 +113,11 @@ class LlmDoorClientProtocol(Protocol):
         ``AiDailyLimitReached`` on entry for a pool, user-share or USD-ceiling
         429, before any line is relayed; ``AiDoorBusy``, ``DoorTimeout`` and
         ``DoorRequestFailed`` as ``send`` does. A success admits ``caller``
-        on entry. The door sends no charge headers on a stream, so a stream
-        records no overage charge.
+        on entry. The client consumes private ``huleedu.door.charge`` SSE
+        events (``charge_kind`` and integer ``charge_usd_micros``), records
+        overage on that same caller and applies its existing job cap.
+        Normal context exit drains any remaining events, including
+        settlement after provider completion; exceptional exit closes promptly.
+        A missing charge counts no overage and logs for non-exempt callers.
         """
         ...

@@ -142,6 +142,7 @@ function runningStatus(lineageId: string): ExamWorkspaceConversionStatus {
     job_id: "job-1",
     lineage_id: lineageId,
     questions_done: 1,
+    questions_received: 1,
     phase: null,
     phase_started_at: null,
     questions_total: 4,
@@ -228,7 +229,7 @@ describe("ExamWorkspaceOpenDrawer busy hint fail-first (U22)", () => {
     await flushPromises();
 
     expect(live.isConverting.value).toBe(true);
-    expect(live.conversionMessage.value).toContain("Konverterar provet");
+    expect(live.conversionMessage.value).toBe("AI-svar mottagna för 1 av 4 frågor.");
     expect(live.isBusy.value).toBe(true);
 
     const wrapper = mountFromEditing(live);

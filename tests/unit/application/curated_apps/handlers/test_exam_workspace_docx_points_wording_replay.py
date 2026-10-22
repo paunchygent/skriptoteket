@@ -19,7 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 
-pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
+pytestmark = pytest.mark.unit
 
 _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _METODPROV = "metodprov_vetenskaplig_metod_med_facit"

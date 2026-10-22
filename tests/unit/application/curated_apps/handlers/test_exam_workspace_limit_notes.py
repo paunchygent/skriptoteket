@@ -73,7 +73,10 @@ from skriptoteket.domain.llm_door import (
     ai_try_again_note,
 )
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    StructuredLLMTextObserver,
+)
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
@@ -117,6 +120,8 @@ class _RefusalExchange:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply:
         raise self._error
 

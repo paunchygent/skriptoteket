@@ -67,6 +67,7 @@ export function status(
   state: ExamWorkspaceConversionStatus["state"],
   documentRevision: number | null,
   units: UnitState[],
+  questionsReceived: number,
 ): ExamWorkspaceConversionStatus {
   return {
     job_id: "job-1",
@@ -79,6 +80,7 @@ export function status(
     phase_started_at: null,
     questions_total: 3,
     questions_done: units.filter((unit) => unit !== "converting").length,
+    questions_received: questionsReceived,
     units: units.map((unitState, index) => ({
       unit_id: `q${index + 1}`,
       question: true,
@@ -88,9 +90,9 @@ export function status(
   };
 }
 
-export const FIRST_STATUS = status("running", 1, ["ready", "converting", "converting"]);
+export const FIRST_STATUS = status("running", 1, ["ready", "converting", "converting"], 1);
 export const FIRST = revision(1, [converted(1), placeholder(2), placeholder(3)], FIRST_STATUS);
-export const SECOND_STATUS = status("running", 2, ["ready", "ready", "ready"]);
+export const SECOND_STATUS = status("running", 2, ["ready", "ready", "ready"], 3);
 export const SECOND = revision(2, [converted(1), converted(2), converted(3)], SECOND_STATUS);
 
 export type ProgressiveApiMocks = HistoryApiMocks & Record<string, Mock>;
@@ -105,7 +107,7 @@ export function installProgressiveConversionLifecycle(apiMocks: ProgressiveApiMo
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     resetSliceApiMocks(apiMocks);
-    apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued", null, []));
+    apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued", null, [], 0));
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(FIRST_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(FIRST);
     apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });

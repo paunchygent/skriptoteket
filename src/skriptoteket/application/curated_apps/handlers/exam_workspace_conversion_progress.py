@@ -120,6 +120,23 @@ class ExamWorkspaceConversionProgress:
                 job_id=job_id, progress=progress.model_dump(mode="json")
             )
 
+    async def received(
+        self, *, worker_id: str, job_id: UUID, question_ids: tuple[str, ...]
+    ) -> None:
+        """Persist receipt without changing saved revisions, readiness or job state."""
+        async with self._uow:
+            job = await self._owned_job(job_id=job_id, worker_id=worker_id)
+            if job is None or job.conversion_progress is None:
+                return
+            progress = ConversionProgress.model_validate(job.conversion_progress)
+            received = tuple(sorted(set(progress.received_question_ids).union(question_ids)))
+            if received == progress.received_question_ids:
+                return
+            progress = progress.model_copy(update={"received_question_ids": received})
+            await self._jobs.set_conversion_progress(
+                job_id=job_id, progress=progress.model_dump(mode="json")
+            )
+
     async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
         located = await self._jobs.get_by_id(job_id=job_id)
         if located is None or located.workspace_lineage_id is None:

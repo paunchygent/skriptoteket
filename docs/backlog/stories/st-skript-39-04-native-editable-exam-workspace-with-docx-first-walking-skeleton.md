@@ -124,8 +124,9 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
   writes the original shapes back. Done.
 - `TASK-SKRIPT-39-04-23`: a Word or PDF import shows each phase and a
   live signal while it works, so no wait looks frozen. Done.
-- `TASK-SKRIPT-39-04-24`: the import count rises in steps while the
-  questions convert, instead of jumping from 0 to all at the end. Proposed.
+- `TASK-SKRIPT-39-04-24`: report AI output received for distinct questions
+  within the existing 16-family batch; saved/editable status stays separate.
+  In progress; follows the user-adopted lean Astra plan and existing C7/C8 charging policy.
 
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
     intake reusing the same native document and review path; deferred

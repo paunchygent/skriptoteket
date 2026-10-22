@@ -29,7 +29,15 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     input_content,
 )
 from skriptoteket.domain.llm_door import AiDoorCaller
-from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.infrastructure.llm.openai.structured_stream import (
+    ResponseStreamError,
+    ResponseStreamRefusal,
+    observe_response_stream,
+)
+from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyStructuredProviderProtocol,
+    StructuredLLMTextObserver,
+)
 from skriptoteket.protocols.llm_door import (
     DoorOperation,
     DoorReply,
@@ -61,6 +69,7 @@ class OpenAIAnswerKeyStructuredProvider(AnswerKeyStructuredProviderProtocol):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         if profile.endpoint_kind is not StructuredLLMEndpointKind.RESPONSES:
             raise StructuredLLMProviderError(
@@ -70,12 +79,41 @@ class OpenAIAnswerKeyStructuredProvider(AnswerKeyStructuredProviderProtocol):
             )
         payload = build_answer_key_responses_payload(profile=profile, request=request)
         try:
+            if on_text is not None:
+                payload["stream"] = True
+                async with self._door.stream(
+                    operation=DoorOperation.RESPONSES,
+                    payload=payload,
+                    caller=caller,
+                    timeout_seconds=self._timeout_seconds,
+                ) as stream:
+                    if not stream.is_success:
+                        return _parse_door_reply(
+                            reply=DoorReply(
+                                status_code=stream.status_code,
+                                headers=stream.headers,
+                                body=stream.body,
+                            ),
+                            profile=profile,
+                        )
+                    body = await observe_response_stream(
+                        lines=stream.aiter_lines(), on_text=on_text
+                    )
+                return parse_answer_key_responses_payload(payload=body, profile=profile)
             reply = await self._door.send(
                 operation=DoorOperation.RESPONSES,
                 payload=payload,
                 caller=caller,
                 timeout_seconds=self._timeout_seconds,
             )
+        except ResponseStreamRefusal as exc:
+            raise _refusal_error(profile) from exc
+        except ResponseStreamError as exc:
+            raise _provider_error(
+                profile=profile,
+                failure_code=StructuredLLMBackendFailureCode.PROVIDER_REQUEST_FAILED,
+                message=str(exc),
+            ) from exc
         except DoorTimeout as exc:
             raise StructuredLLMProviderError(
                 failure_code=StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT,

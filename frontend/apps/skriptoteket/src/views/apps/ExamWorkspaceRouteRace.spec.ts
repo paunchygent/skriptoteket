@@ -139,6 +139,7 @@ beforeEach(() => {
     phase_started_at: null,
     questions_total: 0,
     questions_done: 0,
+    questions_received: 0,
     units: [],
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });

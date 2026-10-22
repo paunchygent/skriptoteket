@@ -24,7 +24,7 @@ const props = defineProps<{
   /** Time in the current phase as m:ss; null when no phase is known (the slot stays). */
   elapsed: string | null;
   error: string | null;
-  progress: { done: number; total: number } | null;
+  progress: { received: number; total: number } | null;
   isConverting: boolean;
   /** The import request is pending: the file is on its way and no status exists yet. */
   isImporting: boolean;
@@ -65,18 +65,14 @@ const isWorking = computed(() => props.isConverting || props.isImporting);
       v-if="progress"
       class="prog__bar"
       role="progressbar"
-      aria-label="Konverterade frågor"
+      aria-label="AI-svar mottagna"
       aria-valuemin="0"
       :aria-valuemax="progress.total"
-      :aria-valuenow="progress.done"
+      :aria-valuenow="progress.received"
       data-test="exam-workspace-conversion-progress"
     >
-      <i :style="{ width: `${(100 * progress.done) / progress.total}%` }" />
+      <i :style="{ width: `${(100 * progress.received) / progress.total}%` }" />
     </div>
-    <small
-      v-if="progress && progress.done > 0"
-      class="xw-muted"
-    >Klara frågor går att redigera direkt.</small>
     <button
       v-if="isConverting && error"
       type="button"

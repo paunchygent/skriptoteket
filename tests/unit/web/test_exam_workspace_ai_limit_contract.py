@@ -65,6 +65,7 @@ from skriptoteket.domain.llm_door import (
     AiJobOverageCapReached,
     ai_limit_note,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.web.error_mapping import error_to_status
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.unit.application.curated_apps.handlers.exam_workspace_docx_retry_fixtures import (
@@ -174,6 +175,8 @@ class _LimitExchange:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        *,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> DocxRoundReply:
         raise self._error
 

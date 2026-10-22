@@ -57,7 +57,7 @@ const props = defineProps<{
   /** Time in the current import phase as m:ss; null when no phase is known. */
   conversionElapsed: string | null;
   conversionError: string | null;
-  conversionProgress: { done: number; total: number } | null;
+  conversionProgress: { received: number; total: number } | null;
   isConverting: boolean;
   /** The import request is pending and no status exists yet: the upload wait. */
   isImporting: boolean;

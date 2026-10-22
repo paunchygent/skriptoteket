@@ -10,13 +10,16 @@ still converts.
 
 import pytest
 
-from skriptoteket.application.curated_apps.handlers import exam_workspace_docx_pipeline
+from skriptoteket.application.curated_apps.handlers import exam_workspace_docx_part_conversion
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import BatchOutcome
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_output_observer import (
+    QuestionReceiptObserver,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
@@ -90,7 +93,7 @@ async def test_a_choice_batch_schema_offers_no_gap_segment():
 
 
 async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
-    convert_batch = exam_workspace_docx_pipeline.convert_batch
+    convert_batch = exam_workspace_docx_part_conversion.convert_batch
 
     async def failing_batch(
         *,
@@ -100,6 +103,7 @@ async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
         exchange: DocxBuildRoundExchange,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_received: QuestionReceiptObserver | None = None,
     ) -> BatchOutcome:
         if batch.batch_id == "w1-02":
             raise RuntimeError("unexpected failure inside the batch")
@@ -110,9 +114,10 @@ async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
             exchange=exchange,
             profile=profile,
             caller=caller,
+            on_received=on_received,
         )
 
-    monkeypatch.setattr(exam_workspace_docx_pipeline, "convert_batch", failing_batch)
+    monkeypatch.setattr(exam_workspace_docx_part_conversion, "convert_batch", failing_batch)
     replay = build_replay(_EXAM)
     outcome = await replay.pipeline.convert(job=replay.job())
 

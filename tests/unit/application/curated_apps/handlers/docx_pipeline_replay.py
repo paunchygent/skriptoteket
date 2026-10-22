@@ -48,6 +48,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
@@ -105,6 +106,7 @@ class ReplayProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         if self.trace is not None:
@@ -234,6 +236,15 @@ class RecordingProgress:
     outlines: list[ConversionOutline] = field(default_factory=list)
     updates: list[ConversionUpdate] = field(default_factory=list)
     finals: list[ConversionUpdate] = field(default_factory=list)
+    receipts: list[tuple[str, ...]] = field(default_factory=list)
+
+    async def received(
+        self, *, worker_id: str, job_id: UUID, question_ids: tuple[str, ...]
+    ) -> None:
+        self.receipts.append(question_ids)
+        self.trace.append("received")
+        if self.inner is not None:
+            await self.inner.received(worker_id=worker_id, job_id=job_id, question_ids=question_ids)
 
     async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
         # Phases stay out of ``calls``, which pins the document-delivering port calls.
@@ -322,6 +333,7 @@ def build_replay(
     corpus: Path | None = None,
     families_per_batch: int = RECORDED_FAMILIES_PER_BATCH,
     provider: ReplayProvider | None = None,
+    uow: SerializedUnitOfWork | None = None,
 ) -> Replay:
     """Build the production pipeline over ``exam``'s recordings at their batch size."""
     provider = provider or ReplayProvider(exam, failures, root)
@@ -331,7 +343,7 @@ def build_replay(
         door=decisions_door(exam, root, progress.trace),
         provider=provider,
         sleeper=NoSleep(),
-        uow=SerializedUnitOfWork(NoTransaction()),
+        uow=uow or SerializedUnitOfWork(NoTransaction()),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=enabled,
             LLM_DOCX_BATCH_FAMILIES=families_per_batch,

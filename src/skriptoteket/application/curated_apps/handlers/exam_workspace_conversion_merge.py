@@ -84,6 +84,7 @@ class ConversionProgress(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     units: tuple[ConversionUnit, ...] = ()
+    received_question_ids: tuple[str, ...] = ()
     revision: int | None = Field(default=None, ge=1)
     title_digest: str | None = None
     header_digest: str | None = None
@@ -104,6 +105,10 @@ class ConversionProgress(BaseModel):
     @property
     def questions_total(self) -> int:
         return sum(unit.question for unit in self.units)
+
+    @property
+    def questions_received(self) -> int:
+        return len(self.received_question_ids)
 
     @property
     def questions_done(self) -> int:
@@ -203,6 +208,7 @@ def first_conversion(*, update: ConversionUpdate, progress: ConversionProgress) 
         document=document,
         progress=ConversionProgress(
             units=_ordered_units(progress, written),
+            received_question_ids=progress.received_question_ids,
             revision=1,
             title_digest=_digest(document.title),
             header_digest=_digest(document.header.model_dump(mode="json")),

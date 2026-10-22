@@ -1,9 +1,10 @@
 ## Current
 
-- 39-04-24 planning, owner Codex `01a1647b`: user accepted AI-output-received
-  counts; batches stay 16, saved/editable status stays separate. Decisions closed;
-  next: publish task contract. Streamed charge settlement is an execution dependency.
-  Retained `01a1647c-736c-7c8c-827d-c8b616ccb074`, evidence/planning/accepted-progress-contract.md.
+- 39-04-24 `in_progress`, parent Codex `01a1647b`, managed task worktree:
+  user adopted Astra's lean receipt plan at batch16 and authorized implementation.
+  Pi implementation/checks pass; Opus5.5 reviewed, medium repairs admitted.
+  MacBook parent owns Word/PDF walk; no production changes or live-proof claim.
+  Retained `01a1647c-736c-7c8c-827d-c8b616ccb074`, evidence/implementation/macbook-walk-handoff.md.
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 

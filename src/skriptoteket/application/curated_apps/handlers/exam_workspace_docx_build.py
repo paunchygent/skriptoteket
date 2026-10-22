@@ -1,9 +1,9 @@
 """Convert one type batch through one Responses call (TASK-SKRIPT-39-05-04).
 
-A batch sends its own chunks and its read-only context once. The strict schema is the only
-gate: every schema-valid entry is admitted, and every chunk the response leaves out becomes
-a review item. Families reported as type conflicts leave the batch for the pipeline to
-resend once with the kind the source shows.
+A batch sends its own chunks and its read-only context once. Complete streamed items
+report receipt independently of final admission. Every chunk the final response leaves out
+becomes a review item. Families reported as type conflicts leave the batch for the pipeline
+to resend once with the kind the source shows.
 """
 
 from __future__ import annotations
@@ -20,6 +20,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ro
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_output_observer import (
+    DocxOutputObserver,
+    QuestionReceiptObserver,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
@@ -90,6 +94,7 @@ async def convert_batch(
     exchange: DocxBuildExchangeProtocol,
     profile: StructuredLLMProviderProfile,
     caller: AiDoorCaller,
+    on_received: QuestionReceiptObserver | None = None,
 ) -> BatchOutcome:
     """Send the batch once and admit the schema-valid response."""
     outcome = BatchOutcome(state)
@@ -103,7 +108,10 @@ async def convert_batch(
             kinds=batch.kinds,
             profile=profile,
         )
-        reply = await exchange.exchange(request, profile, caller)
+        observer = DocxOutputObserver(families, on_received) if on_received else None
+        reply = await exchange.exchange(
+            request, profile, caller, on_text=observer.on_text if observer else None
+        )
     except DocxBuildRoundFailure as error:
         state.record("provider", error.code, detail=error.detail)
         state.fail_all_pending(str(error))

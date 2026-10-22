@@ -9,8 +9,8 @@ Purpose:
     (C7), and turn a limit 429 into ``AiDailyLimitReached`` with its
     ``error.limit``. A streamed call (``stream``) relays the upstream SSE lines
     under the same slots and capacity retries as ``send``, holds its slots
-    until the stream closes, and admits the caller on a 2xx; the door sends no
-    charge headers on a stream, so a stream records no overage charge.
+    until the stream closes, admits the caller on a 2xx, and consumes the door's
+    settled charge control event before closing, applying the same cap policy.
 
 Relationships:
     Implements ``protocols.llm_door.LlmDoorClientProtocol``; composed in
@@ -37,6 +37,7 @@ from skriptoteket.domain.llm_door import (
     AiDoorBusy,
     AiDoorCaller,
 )
+from skriptoteket.infrastructure.llm.door.stream import ChargeRecordingDoorStream
 from skriptoteket.protocols.llm_door import (
     DoorOperation,
     DoorReply,
@@ -197,10 +198,26 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
                     if response.status_code >= 400:
                         body = await response.aread()
                 if response.status_code != 429:
-                    door_stream = _HttpxDoorStream(response=response, body=body)
-                    if door_stream.is_success:
-                        caller.admit()
-                    yield door_stream
+                    raw_stream = _HttpxDoorStream(response=response, body=body)
+                    if not raw_stream.is_success:
+                        yield raw_stream
+                        return
+                    caller.admit()
+
+                    def record_charge(headers: Mapping[str, str]) -> None:
+                        record_door_charge(caller, headers)
+                        caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
+
+                    door_stream = ChargeRecordingDoorStream(
+                        stream=raw_stream, record_charge=record_charge
+                    )
+                    try:
+                        yield door_stream
+                    except BaseException:
+                        await door_stream.finish(drain=False)
+                        raise
+                    else:
+                        await door_stream.finish()
                     return
             limit = _limit_of(body)
             if limit is not None:

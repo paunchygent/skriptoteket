@@ -144,7 +144,7 @@ describe("ExamWorkspaceView host frame", () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
       return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
-      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, questions_received: 0, units: [] };
     });
     const wrapper = await mountView();
 
@@ -169,7 +169,7 @@ describe("ExamWorkspaceView host frame", () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
       return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
-      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, questions_received: 0, units: [] };
     });
     const wrapper = await mountView();
 
@@ -209,7 +209,7 @@ describe("ExamWorkspaceView host frame", () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
       return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
-      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, questions_received: 0, units: [] };
     });
     const wrapper = await mountView();
 
@@ -233,7 +233,7 @@ describe("ExamWorkspaceView host frame", () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
       return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
-      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, questions_received: 0, units: [] };
     });
     const wrapper = await mountView();
 

@@ -71,7 +71,10 @@ from skriptoteket.infrastructure.id_generator import UUID4Generator
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyStructuredProviderProtocol,
+    StructuredLLMTextObserver,
+)
 from skriptoteket.protocols.item_type_labeler import (
     ContentTagClassification,
     ContentTagClassificationRequest,
@@ -168,6 +171,7 @@ class GatedAnswerKeyProvider(AnswerKeyStructuredProviderProtocol):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         await self._gate.hold(self._session)
         raise AiDoorBusy(retry_after_seconds=None)

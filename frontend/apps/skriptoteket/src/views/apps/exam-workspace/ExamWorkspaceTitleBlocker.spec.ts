@@ -83,7 +83,7 @@ function importTitled(title: string): void {
     response.summary.title = title;
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce({ ...response, export_blockers: judge(title) });
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
-      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, units: [] };
+      document_revision: null, phase: null, phase_started_at: null, questions_total: 0, questions_done: 0, questions_received: 0, units: [] };
   });
 }
 

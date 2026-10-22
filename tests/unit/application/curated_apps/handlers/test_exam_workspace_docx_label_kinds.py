@@ -45,6 +45,7 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
     ConversionCache,
     conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
@@ -166,9 +167,10 @@ class _MutatedProvider(ReplayProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         response = await super().complete_structured(
-            request=request, profile=profile, caller=caller
+            request=request, profile=profile, caller=caller, on_text=on_text
         )
         # A converter batch is matched to its recording by anchors, so select the reply by the
         # recording batch that was served, not by the request id.

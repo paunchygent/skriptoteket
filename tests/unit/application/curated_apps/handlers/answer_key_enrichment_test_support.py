@@ -48,7 +48,10 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxExamChunker,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
-from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.protocols.exam_answer_key import (
+    AnswerKeyStructuredProviderProtocol,
+    StructuredLLMTextObserver,
+)
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
@@ -239,6 +242,7 @@ class StubProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         self.call_count += 1
         return StructuredLLMResponse(

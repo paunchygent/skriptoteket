@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
@@ -43,9 +44,10 @@ class _UnresolvedLabel(ReplayProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         response = await super().complete_structured(
-            request=request, profile=profile, caller=caller
+            request=request, profile=profile, caller=caller, on_text=on_text
         )
         if request.item_id != "label_b:q2":
             return response

@@ -97,6 +97,7 @@ def conversion_status(
         document_revision=progress.revision,
         questions_total=progress.questions_total,
         questions_done=progress.questions_done,
+        questions_received=progress.questions_received,
         phase=job.conversion_phase,
         phase_started_at=job.conversion_phase_started_at,
         summary=summary,

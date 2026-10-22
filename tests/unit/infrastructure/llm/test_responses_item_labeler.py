@@ -36,6 +36,7 @@ from skriptoteket.infrastructure.llm.openai.responses_item_labeler import (
     ResponsesSecondPassItemTypeLabeler,
     build_second_pass_request,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from skriptoteket.protocols.item_type_labeler import (
     ItemTypeLabel,
     ItemTypeLabelerError,
@@ -76,6 +77,7 @@ class FakeProvider:
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         outcome = self.outcomes.pop(0)

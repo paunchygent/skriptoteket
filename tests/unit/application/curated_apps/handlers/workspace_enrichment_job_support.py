@@ -75,6 +75,7 @@ from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
@@ -206,6 +207,7 @@ class SequenceProvider(StubProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         del request, profile, caller
         self.call_count += 1
@@ -239,6 +241,7 @@ class ScriptedProvider(StubProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         del request, profile, caller
         self.call_count += 1

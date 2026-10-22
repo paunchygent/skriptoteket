@@ -5,9 +5,9 @@ operation, payload, caller and the paid-overage mode sent, answers from a
 responder, and settles each answer on the caller exactly as the real client
 does (admission, overage charge, per-job cap after each charge),
 so replays serve recorded OpenAI bodies at the door seam and never reach the
-door (B6). ``stream`` serves the same replies as an open ``DoorStream`` whose
-lines are the reply body's lines, admitting the caller on a success as the
-real client does.
+door (B6). ``stream`` serves the same replies as an open ``DoorStream``,
+consuming private settled-charge events and admitting the caller on a success
+as the real client does. Normal exit drains settlement; exceptional exit closes.
 """
 
 from __future__ import annotations
@@ -29,7 +29,8 @@ from skriptoteket.domain.llm_door import (
     AiDoorCaller,
     AiOverageAuthority,
 )
-from skriptoteket.infrastructure.llm.door.client import settle_door_reply
+from skriptoteket.infrastructure.llm.door.client import record_door_charge, settle_door_reply
+from skriptoteket.infrastructure.llm.door.stream import ChargeRecordingDoorStream
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply, LlmDoorClientProtocol
 
 FIXTURE_USER_ID = UUID("00000000-0000-0000-0000-00000000a11e")
@@ -161,7 +162,7 @@ class RecordingDoor(LlmDoorClientProtocol):
         payload: Mapping[str, JsonValue],
         caller: AiDoorCaller,
         timeout_seconds: float,
-    ) -> AsyncIterator[FakeDoorStream]:
+    ) -> AsyncIterator[FakeDoorStream | ChargeRecordingDoorStream]:
         caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
         sent = DoorSent(
             operation=operation,
@@ -174,9 +175,26 @@ class RecordingDoor(LlmDoorClientProtocol):
         reply = self._responder(sent)
         if inspect.isawaitable(reply):
             reply = await reply
-        if reply.is_success:
-            caller.admit()
-        yield FakeDoorStream(status_code=reply.status_code, headers=reply.headers, body=reply.body)
+        raw_stream = FakeDoorStream(
+            status_code=reply.status_code, headers=reply.headers, body=reply.body
+        )
+        if not reply.is_success:
+            yield raw_stream
+            return
+        caller.admit()
+
+        def record_charge(headers: Mapping[str, str]) -> None:
+            record_door_charge(caller, headers)
+            caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
+
+        stream = ChargeRecordingDoorStream(stream=raw_stream, record_charge=record_charge)
+        try:
+            yield stream
+        except BaseException:
+            await stream.finish(drain=False)
+            raise
+        else:
+            await stream.finish()
 
 
 def user_with_role(role: Role, *, user_id: UUID) -> User:

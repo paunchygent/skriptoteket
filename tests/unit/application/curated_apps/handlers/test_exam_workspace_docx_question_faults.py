@@ -16,6 +16,7 @@ import pytest
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers import (
+    exam_workspace_docx_part_conversion,
     exam_workspace_docx_pipeline,
     exam_workspace_docx_publication,
 )
@@ -51,6 +52,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_tex
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
     ConversionCache,
     conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
@@ -152,9 +154,10 @@ class _CorruptedProvider(ReplayProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         response = await super().complete_structured(
-            request=request, profile=profile, caller=caller
+            request=request, profile=profile, caller=caller, on_text=on_text
         )
         if request.item_id != self._request_id:
             return response
@@ -419,7 +422,7 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
 
 
 async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseline, monkeypatch):
-    mark = exam_workspace_docx_pipeline.with_type_check_mark
+    mark = exam_workspace_docx_part_conversion.with_type_check_mark
 
     def breaking_mark(state: DocxBuildState) -> None:
         mark(state)
@@ -433,7 +436,7 @@ async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseli
             for a, anchors in state.accepted
         ]
 
-    monkeypatch.setattr(exam_workspace_docx_pipeline, "with_type_check_mark", breaking_mark)
+    monkeypatch.setattr(exam_workspace_docx_part_conversion, "with_type_check_mark", breaking_mark)
     outcome = await _convert()
 
     _assert_only_reviewed(baseline, outcome, {"body:0019"})

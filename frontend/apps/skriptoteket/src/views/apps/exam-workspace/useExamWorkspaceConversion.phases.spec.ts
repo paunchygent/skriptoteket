@@ -40,7 +40,7 @@ type Phase = ExamWorkspaceConversionStatus["phase"];
 function running(
   phase: Phase,
   secondsAgo: number,
-  counts: { done: number; total: number } = { done: 0, total: 0 },
+  counts: { done: number; received: number; total: number } = { done: 0, received: 0, total: 0 },
 ): ExamWorkspaceConversionStatus {
   return {
     job_id: "job-1",
@@ -53,6 +53,7 @@ function running(
     phase_started_at: phase === null ? null : new Date(NOW - secondsAgo * 1000).toISOString(),
     questions_total: counts.total,
     questions_done: counts.done,
+    questions_received: counts.received,
     units: [],
   };
 }
@@ -132,24 +133,67 @@ describe("conversion phase line", () => {
     expect(conversion.conversionMessage.value).toBe(copy);
   });
 
-  it("counts the converted questions in the converting phase", async () => {
-    const { conversion } = await followImport(running("converting", 5, { done: 2, total: 9 }));
+  it("counts received AI output before the first saved revision", async () => {
+    const first = running("converting", 5, { done: 0, received: 2, total: 9 });
+    const { conversion } = await followImport(first);
 
-    expect(conversion.conversionMessage.value).toBe("Konverterar frågorna: 2 av 9 klara");
-    expect(conversion.conversionProgress.value).toEqual({ done: 2, total: 9 });
+    expect(first.document_revision).toBeNull();
+    expect(conversion.conversionMessage.value).toBe("AI-svar mottagna för 2 av 9 frågor.");
+    expect(conversion.conversionProgress.value).toEqual({ received: 2, total: 9 });
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+
+    api.getExamWorkspaceConversionStatus.mockResolvedValue({ ...first, questions_received: 5 });
+    await vi.advanceTimersByTimeAsync(3000);
+
+    expect(conversion.conversionMessage.value).toBe("AI-svar mottagna för 5 av 9 frågor.");
+    expect(conversion.conversionStatus.value?.questions_done).toBe(0);
+    expect(conversion.conversionStatus.value?.document_revision).toBeNull();
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+  });
+
+  it("keeps polling and the elapsed clock running when every question has received output", async () => {
+    const { conversion } = await followImport(
+      running("converting", 5, { done: 0, received: 3, total: 3 }),
+    );
+
+    expect(conversion.conversionMessage.value).toBe("AI-svar mottagna för 3 av 3 frågor.");
+    expect(conversion.conversionProgress.value).toEqual({ received: 3, total: 3 });
+    expect(conversion.isConverting.value).toBe(true);
+    expect(conversion.conversionElapsed.value).toBe("0:05");
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(conversion.isConverting.value).toBe(true);
+    expect(conversion.conversionElapsed.value).toBe("0:08");
+    expect(api.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("ends a successful job without raising receipt to the saved question count", async () => {
+    const { conversion } = await followImport(
+      running("converting", 5, { done: 0, received: 2, total: 3 }),
+    );
+    api.getExamWorkspaceConversionStatus.mockResolvedValue({
+      ...running(null, 0, { done: 3, received: 2, total: 3 }),
+      state: "succeeded",
+    });
+    await vi.advanceTimersByTimeAsync(3000);
+
+    expect(conversion.isConverting.value).toBe(false);
+    expect(conversion.conversionStatus.value?.questions_received).toBe(2);
+    expect(conversion.conversionStatus.value?.questions_done).toBe(3);
+    expect(conversion.conversionProgress.value).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it("shows no count and no bar before the converting phase", async () => {
-    const { conversion } = await followImport(running("sorting", 5, { done: 0, total: 9 }));
+    const { conversion } = await followImport(running("sorting", 5, { done: 0, received: 0, total: 9 }));
 
     expect(conversion.conversionMessage.value).toBe("Sorterar frågorna efter typ");
     expect(conversion.conversionProgress.value).toBeNull();
   });
 
-  it("keeps the old copy and no clock while the phase is null", async () => {
-    const { conversion } = await followImport(running(null, 0, { done: 1, total: 3 }));
+  it("shows received output and no clock while the phase is null", async () => {
+    const { conversion } = await followImport(running(null, 0, { done: 1, received: 2, total: 3 }));
 
-    expect(conversion.conversionMessage.value).toBe("Konverterar provet: 1 av 3 frågor klara.");
+    expect(conversion.conversionMessage.value).toBe("AI-svar mottagna för 2 av 3 frågor.");
     expect(conversion.conversionElapsed.value).toBeNull();
   });
 
@@ -221,7 +265,7 @@ describe("conversion elapsed clock", () => {
   });
 
   it("stops the clock and leaves no timer when the conversion finishes", async () => {
-    const { conversion } = await followImport(running("converting", 10, { done: 1, total: 2 }));
+    const { conversion } = await followImport(running("converting", 10, { done: 1, received: 1, total: 2 }));
     expect(vi.getTimerCount()).toBeGreaterThan(0);
 
     api.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded());

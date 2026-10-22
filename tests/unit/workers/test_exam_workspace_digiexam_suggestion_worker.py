@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import answer_key_fingerprint
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.exam_answer_key import StructuredLLMTextObserver
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     StubProvider,
 )
@@ -47,6 +48,7 @@ class CapturingModel(StubProvider):
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
+        on_text: StructuredLLMTextObserver | None = None,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         self.call_count += 1

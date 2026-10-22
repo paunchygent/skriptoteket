@@ -90,6 +90,16 @@ class DocxConversionProgressProtocol(Protocol):
         """Called once, after grouping and before any conversion."""
         ...
 
+    async def received(
+        self, *, worker_id: str, job_id: UUID, question_ids: tuple[str, ...]
+    ) -> None:
+        """Record question-output receipt after outline, independently of saved results.
+
+        Repeated identities leave receipt set; this does not publish a revision or make
+        a question editable. The pipeline serializes this write with other port calls.
+        """
+        ...
+
     async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
         """Called after each admitted batch, in admission order."""
         ...
