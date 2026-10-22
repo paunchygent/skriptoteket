@@ -90,6 +90,13 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
   a pipeline test that runs a PDF picture through grouping, labeling, conversion and the
   native document, lint and typecheck. Logs in retained root
   `01a160cd-e56d-72dd-a347-6c49957db10c` `evidence/proof/`.
-- Open: no Word fixture with a picture or drawn figure existed; corpus parity and the
-  figure-versus-answer-line-versus-table-rule stop condition wait on the Mac's Word-made
-  `metodprov_med_bilder` .docx and .pdf.
+- Corpus parity: no corpus fixture held a picture or drawn figure, so the Mac made
+  `metodprov_med_bilder.docx` in Microsoft Word (a chart picture in question 7, figures
+  drawn with shapes and text-box labels in questions 5 and 6) and Word's own PDF export;
+  both are in `tests/fixtures/exam_conversion/pdf_corpus/`. The PDF import gives the same
+  101 chunks and text as the Word import, the picture in the same place with its shape,
+  and both drawn figures as pictures in their places (the Word import has no picture for
+  Word shapes). No answer line, rule or table became a figure on it, so the stop
+  condition did not trigger. Reading the PDF takes about 1.8 s, as before this task.
+- Residual (39-10-01, not this task): a non-breaking space Word kept on one line reads as
+  a line break inside the paragraph ("100\\nelever").
