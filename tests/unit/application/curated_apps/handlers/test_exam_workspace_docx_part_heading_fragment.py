@@ -72,6 +72,7 @@ def _run(
     chunks: tuple[DocxChunk, ...] = _CHUNKS, questions: dict[str, tuple[str, ...]] = _QUESTIONS
 ) -> DocxConversionRun:
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=UUID(int=1),
         worker_id="worker",
         document_id=UUID(int=2),

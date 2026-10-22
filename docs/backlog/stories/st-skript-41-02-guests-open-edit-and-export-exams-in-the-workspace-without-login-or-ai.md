@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the story on 2026-10-22: all six tasks TASK-SKRIPT-41-02-01 to TASK-SKRIPT-41-02-06 are done; every guest start and export was walked at 4b321fa1 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md), and the owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at ede1ea0d (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md).'
 epic: EPIC-SKRIPT-41
 acceptance_criteria:
   - A guest imports a QTI package or starts a blank exam, edits it and exports QTI, print PDF, DOCX and the fallback Exam.net PDF without login, with no AI
@@ -51,6 +55,7 @@ The public guest converter today converts DigiExam files through its own jobs ta
   collapsible list rail and widths remembered per browser. W1 and W2 are handed to
   TASK-SKRIPT-40-04-17.
 - 2026-10-21: TASK-SKRIPT-41-02-03 is `done` (user closure), so all six tasks are done. The Mac staging walk at `4b321fa1` gave each guest start and export its own browser proof: QTI import, blank start, and QTI, print PDF, DOCX and Exam.net PDF exports all returned 200 (Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, B3 and addendum). Owed before story closure: the empty-title sign-in handoff fix (TASK-SKRIPT-40-04-21 D12), because a guest who starts blank and never sets a title is probably refused when the draft is saved to Mina filer at sign-in (P5).
+- 2026-10-22: done (user closure). The owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at `ede1ea0d`: an untitled guest draft moved to Mina filer as "Namnlöst prov" at sign-in (Mac `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). All six tasks are done and every guest start and export was walked at `4b321fa1`.
 
 ## Verification
 

@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-10'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22 after seeing the labels: findings F1 and F2 were repaired, the Sol rereview approved at 0f17cc78, and the repair merged at 61cce3ac.'
 task_kind: repository
 acceptance_criteria:
 - APP_EXPORT files whose source artifact id is a plain app id or an app-scoped id
@@ -62,3 +66,9 @@ title`. One string split per listed row; no new queries or persistence.
 | D1  | The app id is the `source_artifact_id` text before the first `:`, trimmed; a value without `:` is the app id itself. |
 | D2  | Unknown or empty app ids keep the generic "App-export" label. |
 | D3  | The fix ships as its own commit, separate from TASK-SKRIPT-39-04-01. |
+
+## Progress
+
+### 2026-10-22 (user closure)
+
+- 2026-10-22: done (user closure). The user saw the labels; F1/F2 repaired, Sol rereview approved `0f17cc78`, merged `61cce3ac`.

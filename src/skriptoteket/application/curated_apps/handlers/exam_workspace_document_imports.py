@@ -1,4 +1,4 @@
-"""Exam workspace document import handlers: DOCX and DigiExam intake.
+"""Exam workspace document import handlers: Word or PDF, and DigiExam intake.
 
 Import queues one teacher file as a background conversion. Each exam has one
 saved vault file and a separate bounded editor history. Persistence and
@@ -23,6 +23,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import is_pdf
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     ExamCourseChoice,
 )
@@ -63,9 +64,13 @@ def validated_exam_course(course_key: str | None) -> ExamCourseChoice | None:
 
 
 class ImportExamWorkspaceDocumentHandler:
-    """Import one teacher DOCX into a new exam workspace document."""
+    """Import one teacher Word file or text PDF into a new exam workspace document.
 
-    extension = ".docx"
+    A PDF runs the Word conversion lane unchanged (ST-SKRIPT-39-10 P5): its bytes travel
+    in the job's ``source_docx`` and the lane's chunker reads them by their format.
+    """
+
+    extensions: tuple[str, ...] = (".docx", ".pdf")
     source_kind = ExamAnswerKeySourceKind.DOCX_IMPORT
 
     def __init__(
@@ -87,12 +92,15 @@ class ImportExamWorkspaceDocumentHandler:
         self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus:
         safe_name = sanitize_input_filename(input_filename=filename)
-        if not safe_name.lower().endswith(self.extension):
-            raise validation_error(
-                f"Välj en {self.extension}-fil.", details={"filename": safe_name}
-            )
+        if not safe_name.lower().endswith(self.extensions):
+            choices = " eller ".join(f"{extension}-fil" for extension in self.extensions)
+            raise validation_error(f"Välj en {choices}.", details={"filename": safe_name})
         if not content:
             raise validation_error("Filen saknar innehåll.")
+        if safe_name.lower().endswith(".pdf") and not is_pdf(content):
+            raise validation_error(
+                "Filen kunde inte läsas som en PDF-fil (.pdf).", details={"filename": safe_name}
+            )
         if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
             raise validation_error("Filen är större än maxstorleken för Mina filer.")
 
@@ -131,5 +139,5 @@ class ImportExamWorkspaceDocumentHandler:
 class ImportExamWorkspaceDigiExamDocumentHandler(ImportExamWorkspaceDocumentHandler):
     """Queue a bare DigiExam export without invoking answer-key enrichment."""
 
-    extension = ".dxe"
+    extensions = (".dxe",)
     source_kind = ExamAnswerKeySourceKind.DIGIEXAM_IMPORT

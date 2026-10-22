@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   The box heading names the import source each document origin stands for:
- *   "Word" for a Word import, "DigiExam" for a DigiExam import and "QTI" for
- *   a QTI package import, and never names one source after another.
+ *   "Word" for a Word import, "PDF" for a PDF import, "DigiExam" for a
+ *   DigiExam import and "QTI" for a QTI package import, and never names
+ *   one source after another.
  */
 
 import { mount } from "@vue/test-utils";
@@ -49,6 +50,10 @@ function sourceNameOf(origin: NativeExamDocument["origin"]["kind"]): string {
 }
 
 describe("ExamWorkspaceImportBox source name", () => {
+  it("names PDF for a PDF import", () => {
+    expect(sourceNameOf("pdf_import")).toBe("· PDF");
+  });
+
   it("names QTI for a QTI package import", () => {
     expect(sourceNameOf("qti_import")).toBe("· QTI");
   });

@@ -22,6 +22,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
     DocxConversionJob,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
+from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import (
+    import_origin_kind,
+)
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
@@ -100,6 +103,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     chunks=self._chunker.chunk(content=job.source_docx),
                     course_key=job.workspace_course_key,
                     caller=door_caller_for(user=actor),
+                    origin_kind=import_origin_kind(job.source_docx),
                 ),
                 fallback_reason=fallback_reason,
             )

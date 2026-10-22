@@ -155,6 +155,7 @@ def _assembled(chunks: tuple[DocxChunk, ...], produced: ProducedItem) -> DocxBui
     aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
     assert body_plain_text(aligned.item.body) == "Förklara."
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="synthetic.docx",
         source_sha256="0" * 64,
@@ -167,6 +168,7 @@ def _assembled(chunks: tuple[DocxChunk, ...], produced: ProducedItem) -> DocxBui
 
 def _admitted(chunks: tuple[DocxChunk, ...], produced: ProducedItem) -> DocxBuildResult:
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="synthetic.docx",

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-12'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the story on 2026-10-22: TASK-SKRIPT-39-07-01, TASK-SKRIPT-39-07-02 and TASK-SKRIPT-39-07-03 are done; the Mac staging walk at 4b321fa1 proved the in-app DigiExam import and editing, and TASK-SKRIPT-39-07-03 passed B1 to B5 with the old routes redirecting to the workspace (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md).'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - A teacher opens a DigiExam export as a secondary input mode of the exam workspace, edits it in the same editor and exports QTI, PDF and DOCX, and the signed-in old converter views are gone
@@ -104,6 +108,7 @@ Scope boundaries:
 ## Progress
 
 - 2026-10-21 (Hemma orchestrator), closure readiness: the Mac staging walk at `4b321fa1` proved the in-app DigiExam import (signed-in import 202, document opens with 7 questions) and editing a DigiExam-imported document in the workspace editor (document `ea09e8ec…` reached revision 2 and the edit survived a reload) (Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, B4 and the last addendum). Exports are proved by TASK-SKRIPT-39-07-01. Open: TASK-SKRIPT-39-07-03 (its tail review waits for the user's decision; its clause that the public guest converter stays is superseded by TASK-SKRIPT-41-02-03).
+- 2026-10-22: done (user closure). TASK-SKRIPT-39-07-01, -02 and -03 are done; the open item above is closed. Mac walk at `4b321fa1` (`.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, B1-B5).
 
 ## Verification
 

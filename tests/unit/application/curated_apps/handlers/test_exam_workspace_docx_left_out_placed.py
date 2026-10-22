@@ -60,6 +60,7 @@ def _chunk(anchor: str, kind: str, text: str) -> DocxChunk:
 def _heading_state(*specs: tuple[str, str, str]) -> DocxBuildState:
     chunks = tuple(_chunk(anchor, kind, text) for anchor, kind, text in specs)
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

@@ -354,3 +354,60 @@ async def test_digiexam_import_stays_open_for_signed_in_users(
 
     assert response.status_code == 202
     assert len(handlers.digiexam_import.calls) == 1
+
+
+_WORD_LANE_UPLOADS = (
+    ("prov.docx", b"docx-bytes"),
+    ("prov.pdf", b"%PDF-1.4 fake"),
+)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("filename,content", _WORD_LANE_UPLOADS)
+@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
+async def test_word_lane_import_rejects_non_admin_roles_for_docx_and_pdf(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handlers: HandlerDoubles,
+    filename: str,
+    content: bytes,
+    role: Role,
+    now: datetime,
+) -> None:
+    """A PDF upload keeps the Word import's AI access rule: non-admins get 403."""
+
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+
+    response = await client.post(
+        f"{_BASE}/documents",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        files={"file": (filename, content, "application/octet-stream")},
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == role.value
+    assert handlers.docx_import.calls == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("filename,content", _WORD_LANE_UPLOADS)
+async def test_word_lane_import_requires_sign_in_for_docx_and_pdf(
+    client: httpx.AsyncClient,
+    handlers: HandlerDoubles,
+    filename: str,
+    content: bytes,
+) -> None:
+    """A guest with no session gets exactly the same outcome for PDF as for DOCX."""
+
+    response = await client.post(
+        f"{_BASE}/documents",
+        files={"file": (filename, content, "application/octet-stream")},
+    )
+
+    assert response.status_code == 401
+    assert handlers.docx_import.calls == []

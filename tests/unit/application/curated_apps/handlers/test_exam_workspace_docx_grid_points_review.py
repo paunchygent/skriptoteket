@@ -64,6 +64,7 @@ def test_impossible_section_tick_share_keeps_source_as_blocking_review_item():
         match_pairs=tuple(ProducedMatchPair(left=row, right="Kategori A") for row in rows),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="gransprov.docx",

@@ -95,6 +95,7 @@ def _placed(opener_kind: str) -> tuple[object, ...]:
         unplaced_anchors=(),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=UUID(int=1),
         document_id=UUID(int=2),
         filename="prov.docx",

@@ -31,6 +31,7 @@ def _chunk(anchor: str, text: str) -> DocxChunk:
 
 def _state(question_text: str) -> DocxBuildState:
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

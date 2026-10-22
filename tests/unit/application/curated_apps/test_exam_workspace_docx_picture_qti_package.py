@@ -120,6 +120,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
     assert converted.item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert isinstance(converted.item.body[0].segments[0 if picture_only else 1], NativeAssetSegment)
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="bildprov.docx",
         source_sha256=hashlib.sha256(b"source").hexdigest(),

@@ -10,6 +10,7 @@ import {
   type SharedAuthSnapshot,
   sharedAuthUrl,
   requestWithCsrfRecovery,
+  readSharedCsrfCookie,
   SHARED_AUTH_LOGOUT_PATH,
 } from "../api/sharedAuth";
 import {
@@ -209,34 +210,44 @@ export const useAuthStore = defineStore("auth", () => {
 
   async function ensureCsrfToken(
     requestSession: AuthSession = captureSession(),
+    rejectedToken: string | null = null,
   ): Promise<string | null> {
     if (!isCurrentSession(requestSession)) return null;
-    if (state.csrfToken) return state.csrfToken;
+    const cookieToken = readSharedCsrfCookie();
+    const usableCookieToken = cookieToken && cookieToken !== rejectedToken ? cookieToken : null;
+    if (state.csrfToken && (!usableCookieToken || usableCookieToken === state.csrfToken)) {
+      return state.csrfToken;
+    }
     if (!state.user || !state.sharedSessionId) return null;
     const sharedSessionId = state.sharedSessionId;
     try {
-      const result = await loadSharedCsrfToken();
-      if (!isCurrentSession(requestSession)) return null;
-      if (result.kind === "ready") {
-        // Every candidate token belongs to the shared cookie, not necessarily
-        // this tab. Establish continuity before caching it or dispatching work.
-        const current = await loadSharedSessionSnapshot();
+      let candidate: string | null = usableCookieToken;
+      if (!candidate) {
+        const result = await loadSharedCsrfToken();
         if (!isCurrentSession(requestSession)) return null;
-        if (current.kind === "error") {
-          applyResponse(requestSession, { error: current.message });
+        if (result.kind === "anonymous") {
+          applyResponse(requestSession, anonymousState());
           return null;
         }
-        if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
-          clear(requestSession);
+        if (result.kind !== "ready") {
+          applyResponse(requestSession, { error: result.message });
           return null;
         }
-        return applyResponse(requestSession, { csrfToken: result.token }) ? result.token : null;
+        candidate = result.token;
       }
-      if (result.kind === "anonymous") {
-        applyResponse(requestSession, anonymousState());
+      // Every candidate token belongs to the shared cookie, not necessarily
+      // this tab. Establish continuity before caching it or dispatching work.
+      const current = await loadSharedSessionSnapshot();
+      if (!isCurrentSession(requestSession)) return null;
+      if (current.kind === "error") {
+        applyResponse(requestSession, { error: current.message });
         return null;
       }
-      applyResponse(requestSession, { error: result.message });
+      if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
+        clear(requestSession);
+        return null;
+      }
+      return applyResponse(requestSession, { csrfToken: candidate }) ? candidate : null;
     } catch (error: unknown) {
       applyResponse(requestSession, {
         error: error instanceof Error ? error.message : "Failed to fetch CSRF token",
@@ -252,7 +263,7 @@ export const useAuthStore = defineStore("auth", () => {
     return requestWithCsrfRecovery({
       requireCurrent: () => requireCurrentSession(requestSession),
       ensureToken: () => ensureCsrfToken(requestSession),
-      recoverToken: () => ensureCsrfToken(requestSession),
+      recoverToken: (rejectedToken) => ensureCsrfToken(requestSession, rejectedToken),
       invalidateToken: (rejectedToken) => {
         requireCurrentSession(requestSession);
         if (state.csrfToken === rejectedToken) state.csrfToken = null;

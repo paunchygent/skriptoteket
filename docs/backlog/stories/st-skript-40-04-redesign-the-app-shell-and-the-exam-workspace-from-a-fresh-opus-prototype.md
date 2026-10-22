@@ -166,6 +166,13 @@ their own tasks own.
     other's CSRF token (proposed; the user owns proposed to ready).
 20. TASK-SKRIPT-40-04-20: printed exams and the editor keep imported text
     formatting (done).
+21. TASK-SKRIPT-40-04-21: a new exam starts from Nytt prov in the workspace
+    toolbar (done 2026-10-22: staging walks passed at `25c4ac01`, `18f045fc`
+    and `ede1ea0d`, user closure).
+22. TASK-SKRIPT-40-04-22: signing out shows no saved exam list error (done).
+23. TASK-SKRIPT-40-04-23: after an import the question list warns about
+    questions whose points differ from the source (done 2026-10-22: main
+    `ede1ea0d`, staging walk passed, user closure).
 
 Tasks 2 and 3 run in parallel.
 

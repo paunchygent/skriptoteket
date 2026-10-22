@@ -139,6 +139,7 @@ def _built(*, item_paragraphs: _PARAGRAPHS | None = None) -> DocxBuildResult:
     chunks = _joined_chunks()
     item = _joined_item(item_paragraphs or [[_text("a) en katt")]])
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="joined.docx",
         source_sha256="0" * 64,
@@ -164,6 +165,7 @@ def _built_headed(heading_text: str = _HEADING_TEXT) -> DocxBuildResult:
         ),
     )
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="headed.docx",
         source_sha256="0" * 64,
@@ -262,6 +264,7 @@ def test_a_repeated_source_paragraph_keeps_both_picture_occurrences(
             ],
         )
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="repeated.docx",
         source_sha256="0" * 64,
@@ -297,6 +300,7 @@ def test_identical_picture_paragraphs_at_distinct_shared_source_anchors_both_lan
         DocxChunk("body:0004", "paragraph", "Fråga 2. Hur?", "Fråga 2. Hur?"),
     )
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="parent.docx",
         source_sha256="0" * 64,
@@ -388,6 +392,7 @@ def test_heading_normalization_maps_interior_and_removed_text_picture_positions(
         DocxChunk("body:0003", "paragraph", "a) en katt", "a) en katt"),
     )
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="heading.docx",
         source_sha256="0" * 64,
@@ -417,6 +422,7 @@ def test_heading_without_retained_wording_still_delivers_its_picture(text: str):
     # stays with its picture; only an empty heading delivers the picture alone.
     image = _end_picture(text)
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="heading.docx",
         source_sha256="0" * 64,
@@ -446,6 +452,7 @@ def test_item_heading_with_points_label_keeps_its_picture_at_the_end() -> None:
     heading = "2. Tidningsartiklar (2 poäng)"
     image = _end_picture(heading)
     built = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="heading.docx",
         source_sha256="0" * 64,

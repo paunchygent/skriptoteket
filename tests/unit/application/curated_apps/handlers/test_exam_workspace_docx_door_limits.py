@@ -275,6 +275,7 @@ def _convert(script: _DoorScript, *, course_key: str | None = None):
         progress=progress,
     )
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=uuid4(),
         worker_id="limit-worker",
         document_id=uuid4(),

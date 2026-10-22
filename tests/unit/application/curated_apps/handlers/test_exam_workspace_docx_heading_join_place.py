@@ -76,6 +76,7 @@ _QUESTIONS = {"q1": ("body:0001",), "q2": ("body:0002", "body:0003", "body:0004"
 
 def _run(chunks: tuple[DocxChunk, ...]) -> DocxConversionRun:
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=UUID(int=1),
         worker_id="worker",
         document_id=UUID(int=2),

@@ -211,6 +211,7 @@ def _source_chunk(anchor: str, text: str) -> DocxChunk:
 
 def _review_result(chunks: tuple[DocxChunk, ...]):
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,

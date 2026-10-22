@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     SharedContext,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import NativeExamContentTag
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    DocumentImportOriginKind,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -49,6 +52,7 @@ class DocxConversionJob:
     chunks: tuple[DocxChunk, ...]
     course_key: str | None
     caller: AiDoorCaller
+    origin_kind: DocumentImportOriginKind
 
 
 class DocxConversionRun:
@@ -62,7 +66,12 @@ class DocxConversionRun:
         self.limit_code: str | None = None
         """The failure/state code of the first refusal: ai_daily_limit or ai_overage_cap."""
         self.state = DocxBuildState(
-            job.job_id, job.document_id, job.filename, job.source_sha256, job.chunks
+            job.job_id,
+            job.document_id,
+            job.filename,
+            job.source_sha256,
+            job.chunks,
+            job.origin_kind,
         )
         self.manifest: ExamManifest | None = None
         self.families: tuple[QuestionFamily, ...] = ()

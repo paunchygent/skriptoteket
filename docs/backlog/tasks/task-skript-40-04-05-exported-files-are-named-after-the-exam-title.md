@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user closed the task on 2026-10-22 after review f9239f80 (F1 repaired with the shared 238-character cap, admitted on focused proof and merged at 3eb5742f; F2 accepted unfixed by the user on 2026-10-21) and the Mac staging walk at aff7b005 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md, last addendum); the 2026-10-22 walk at fd2d911c shows the title-based names again (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - QTI, PDF and DOCX exports and their Mina filer copies are named after the exam title without punctuation plus the extension
@@ -76,3 +80,7 @@ Stop and report to the parent when the exam title can be empty in a saved docume
 - F1 admitted on focused proof and merged to main `3eb5742f`, with the trailing-space repair `9eb05ef0` (a cut just after a space leaves no trailing space). The full suite passed on `3eb5742f` (frontend 4392 tests, backend 7986 passed).
 - Staging walk at `aff7b005` by the Mac orchestrator: PASS. The proof user set a 270-character title through the UI, saved at revision 2. QTI, PDF, PDF med facit, DOCX and Exam.net PDF all returned 200, with file names of 246-255 characters that keep their suffix (facit 252, Exam.net 255). Record: Mac `.artifacts/staging-walk-l1c-4b321fa1/walk-record.md`, last addendum.
 - Note, not a finding: with å, ä and ö the longest names reach 271 UTF-8 bytes, which only a Linux filesystem with a 255-byte limit refuses; Windows and macOS accept them.
+
+### 2026-10-22 (Mac orchestrator, closure)
+
+- Closed by the user on 2026-10-22 (see `closeout_review`).

@@ -79,6 +79,7 @@ const record = computed(() => props.item.import_record);
 const ORIGIN_SOURCE_NAMES: Record<NativeExamDocument["origin"]["kind"], string> = {
   created: "Word",
   docx_import: "Word",
+  pdf_import: "PDF",
   digiexam_import: "DigiExam",
   qti_import: "QTI",
 };

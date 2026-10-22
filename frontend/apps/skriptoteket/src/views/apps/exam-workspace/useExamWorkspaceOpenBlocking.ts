@@ -64,7 +64,7 @@ export function useExamWorkspaceOpenBlocking(deps: ExamWorkspaceOpenBlockingDeps
   return { blockedReason, openBlocked };
 }
 
-/** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
+/** A guest may start from a QTI .zip only; DigiExam (.dxe), Word (.docx) and PDF (.pdf) stay signed-in. */
 export function isGuestImportFile(file: File): boolean {
   return file.name.toLowerCase().endsWith(".zip");
 }

@@ -108,6 +108,7 @@ def _normalised_state(
     )
     normalised = assign_points_lines(manifest, docx)
     return DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

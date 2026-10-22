@@ -7294,7 +7294,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "docx_import" | "digiexam_import" | "qti_import" | "created";
+            kind: "docx_import" | "pdf_import" | "digiexam_import" | "qti_import" | "created";
             /** Source Filename */
             source_filename?: string | null;
             /** Source Sha256 */

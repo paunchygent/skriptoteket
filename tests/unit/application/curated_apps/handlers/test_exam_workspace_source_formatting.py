@@ -95,6 +95,7 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
     assert isinstance(anchors, list)
     chunks = tuple(c for c in corpus_chunks(exam) if c.anchor in anchors)
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename=f"{exam}.docx",

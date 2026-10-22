@@ -167,6 +167,7 @@ def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions
         }
     )
     document = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,

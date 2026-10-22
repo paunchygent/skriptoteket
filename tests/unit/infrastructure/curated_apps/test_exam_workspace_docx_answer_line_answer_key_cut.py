@@ -93,6 +93,7 @@ def _two_gap_reply(anchor: str) -> ProducedItem:
 def _admitted(chunks: tuple[DocxChunk, ...]) -> tuple[DocxBuildState, DocxBuildResult]:
     anchors = tuple(chunk.anchor for chunk in chunks)
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="synthetic.docx",
@@ -107,6 +108,7 @@ def _admitted(chunks: tuple[DocxChunk, ...]) -> tuple[DocxBuildState, DocxBuildR
 def _assembled(chunks: tuple[DocxChunk, ...], state: DocxBuildState) -> DocxBuildResult:
     anchors = tuple(chunk.anchor for chunk in chunks)
     return assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="synthetic.docx",
         source_sha256="0" * 64,

@@ -266,6 +266,7 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
     progress = RecordingProgress()
     content = corpus_docx(exam)
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=uuid4(),
         worker_id="replay-worker",
         document_id=uuid4(),

@@ -126,6 +126,7 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     )
     source = corpus_docx(_EXAM)
     job = DocxConversionJob(
+        origin_kind="docx_import",
         job_id=uuid4(),
         worker_id="content-replay",
         document_id=uuid4(),

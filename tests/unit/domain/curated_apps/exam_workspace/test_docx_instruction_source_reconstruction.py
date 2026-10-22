@@ -146,6 +146,7 @@ def test_full_assembly_keeps_a_rewritten_multi_anchor_instruction_source_backed(
     instruction = _rewritten_instruction((bold.anchor, italic.anchor, heading.anchor))
 
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="instructions.docx",
         source_sha256="a" * 64,
@@ -173,6 +174,7 @@ def test_full_assembly_reconstructs_a_reversed_anchor_list_in_source_order() -> 
     instruction = _rewritten_instruction((heading.anchor, italic.anchor, bold.anchor))
 
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="instructions.docx",
         source_sha256="a" * 64,

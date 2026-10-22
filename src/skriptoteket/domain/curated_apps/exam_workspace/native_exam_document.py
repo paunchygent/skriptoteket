@@ -41,6 +41,9 @@ NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v11"] = (
     "native_exam_document_v11"
 )
 
+DocumentImportOriginKind = Literal["docx_import", "pdf_import"]
+"""The origin of a document built by the Word import lane, from the uploaded bytes."""
+
 
 class NativeExamAsset(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -56,14 +59,14 @@ class NativeExamAsset(BaseModel):
 class NativeExamDocumentOrigin(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    kind: Literal["docx_import", "digiexam_import", "qti_import", "created"]
+    kind: Literal["docx_import", "pdf_import", "digiexam_import", "qti_import", "created"]
     source_filename: str | None = None
     source_sha256: str | None = Field(default=None, pattern=SHA256_PATTERN)
     extractor_version: str | None = None
 
     @model_validator(mode="after")
     def _import_requires_source(self) -> "NativeExamDocumentOrigin":
-        if self.kind in {"docx_import", "digiexam_import", "qti_import"}:
+        if self.kind in {"docx_import", "pdf_import", "digiexam_import", "qti_import"}:
             if not self.source_filename or not self.source_sha256:
                 raise ValueError("import origin requires source_filename and source_sha256")
         return self

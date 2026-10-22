@@ -75,6 +75,7 @@ def _assembled(
         for n, wording in enumerate(wordings, 1)
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="instruktion.docx",

@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -33,11 +33,16 @@ Non-goals: flagging rewording, changing 39-04-14 D7 marking, the svenska_2 Fråg
 
 ## Core Vertical And Performance
 
-To be derived in planning after 39-04-15 merges. No performance concern known.
+A teacher imports metodprov 1 (`tests/fixtures/exam_conversion/docx_corpus/metodprov_vetenskaplig_metod_med_facit.docx`). The item built from `body:0006` holds its whole own source paragraph, including "Gruppen har slumpat fram 120 tvåor från en fullständig elevlista.", and no rewording elsewhere is flagged. 39-04-15 is done, so its verdicts are the baseline. No performance concern is known.
 
 ## Validation
 
-To be derived in planning.
+- Root cause named with evidence before any fix: where the sentence leaves the item between the recorded reply and the final item.
+- A fail-first replay test over the recorded metodprov 1 conversion: the final item keeps the sentence. A guard test shows that a meaning-preserving rewording is still kept as the model wrote it and is not flagged.
+- The existing 39-04-14 and 39-04-15 replay tests still pass.
+- `pdm run lint`, `pdm run typecheck` and docs-validate.
+- One independent review.
+- A staging import of metodprov 1 by the Mac shows the sentence in its item.
 
 ## Stop Conditions
 
@@ -45,5 +50,16 @@ To be derived in planning.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | metodprov 1 keeps "Gruppen har slumpat fram 120 tvåor från en fullständig elevlista." in the final item built from `body:0006`.        |
+| D2  | The cause of the shortened own paragraph is named with evidence and fixed at that cause, never by a patch on the output.             |
+| D3  | Meaning-preserving rewording stays as the model wrote it and is not flagged; 39-04-14 D7 marking and the 39-04-15 D4 rule stay as they are. |
+| D4  | Proof replays the recorded conversion; new paid model calls or re-recordings need the user's decision.                               |
+| D5  | Real task: one independent review, at most one rereview per finding; staging import by the Mac.                                     |
+
+## Progress
+
+### 2026-10-22 (Hemma orchestrator)
+
+- Decided terms filled from the existing contract text, Core Vertical and Validation derived now that 39-04-15 is done, and status set to `ready` by the user's decision of 2026-10-22 (Mac AskUserQuestion, "39-10-02 + REP-0049"). A fresh lead session is assigned.

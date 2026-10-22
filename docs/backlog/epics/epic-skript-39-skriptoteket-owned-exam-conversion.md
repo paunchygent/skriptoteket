@@ -163,7 +163,7 @@ closes the epic and is not on the critical path.
     type is new scope; ST-SKRIPT-39-04 closed with free-text creation only
     and its acceptance stands.
 10. DigiExam conversion as a secondary input mode (`ST-SKRIPT-39-07`,
-    `proposed`; user decision 2026-10-12): the exam workspace is the main exam
+    `done` 2026-10-22, user closure; user decision 2026-10-12): the exam workspace is the main exam
     conversion and editing app, and DigiExam export becomes one secondary
     input mode of it, edited in the same editor and exported as QTI, PDF or
     DOCX. The signed-in DigiExam converter views retire with it; the public guest converter stays (user 2026-10-17); superseded by the user 2026-10-20: TASK-SKRIPT-41-02-03 removes it and the public workspace replaces it (EPIC-SKRIPT-41 E5). It starts now
@@ -198,9 +198,16 @@ closes the epic and is not on the critical path.
 | ------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------- |
 | Port the remote answer-key completion line with a daily token lease | verified            | `.orchestration/context/sessions/01a04d62-c71c-721c-a43a-76384e182429/evidence/reviews/ST-SKRIPT-39-02/terminal-spec-verification.md` | ST-SKRIPT-39-02 | None                                                                                           |
 | Native editable exam workspace DOCX walking skeleton                | ready               | ST-SKRIPT-39-04, TASK-SKRIPT-39-04-01, ADR-SKRIPT-0091 (accepted 2026-10-09)                                                          | ST-SKRIPT-39-04 | Cleanup gates (02-03, 03-03, 03-04) done; review accepted 2026-10-09; implementation may start |
+| DigiExam conversion as a secondary input mode of the exam workspace | verified            | ST-SKRIPT-39-07 closeout (user closure 2026-10-22); TASK-SKRIPT-39-07-01 to -03 closeout evidence; Mac staging walk at `4b321fa1` (B1-B5) | ST-SKRIPT-39-07 | None                                                                                           |
 
 ## Current Implementation Summary
 
+- `ST-SKRIPT-39-07` is done (2026-10-22, user closure). A teacher opens a
+  DigiExam `.dxe` export from the exam workspace, edits it in the same editor,
+  asks for answer-key suggestions per question and exports QTI, PDF and DOCX.
+  The signed-in old converter routes, correction sessions, correction overlay
+  and screens are removed; the old routes redirect to the workspace (Mac
+  staging walk at `4b321fa1`, B1-B5).
 - `ST-SKRIPT-39-08` is done (2026-10-17). A teacher picks an official
   Skolverket course at import (preselected from a uniquely matching course
   line) and changes course, title and Mina filer name in the metadata

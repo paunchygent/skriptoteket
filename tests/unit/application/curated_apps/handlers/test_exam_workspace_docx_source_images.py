@@ -333,6 +333,7 @@ async def _convert(
     )
     outcome = await pipeline.convert(
         job=DocxConversionJob(
+            origin_kind="docx_import",
             job_id=uuid4(),
             worker_id="worker",
             document_id=uuid4(),

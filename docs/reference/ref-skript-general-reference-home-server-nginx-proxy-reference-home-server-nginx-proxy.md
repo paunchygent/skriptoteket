@@ -128,12 +128,16 @@ pdm run run-local-pdm hemma-start-hostwide
 pdm run run-local-pdm hemma-skriptoteket-protected-api-proof
 ```
 
-### Source: Skriptoteket public metrics block
+### Source: Skriptoteket host snippet (request size and metrics block)
 
-Public `/metrics` should stay operator-only. On Hemma, the current pattern is a dedicated
-vhost snippet for `skriptoteket.hule.education`:
+The dedicated vhost snippet for `skriptoteket.hule.education` holds two settings:
+
+- `client_max_body_size 30m;` lets signed-out exam exports and export checklists carry their pictures. Those requests post the document and picture bytes as multipart to the app origin, not to the API Gateway, and nginx's 1 MB default refused a normal 2 MB picture with 413. The 30 MB cap covers the exam's 20 MB file limit plus multipart overhead (user decision 2026-10-22, TASK-SKRIPT-39-10-04 review F2).
+- Public `/metrics` stays operator-only.
 
 ```nginx
+client_max_body_size 30m;
+
 location = /metrics {
     return 403;
 }
@@ -143,12 +147,16 @@ Deploy/update the snippet inside `nginx-proxy`:
 
 ```bash
 ssh hemma "sudo docker exec nginx-proxy sh -lc 'cat >/etc/nginx/vhost.d/skriptoteket.hule.education <<\"EOF\"
+client_max_body_size 30m;
+
 location = /metrics {
     return 403;
 }
 EOF
-nginx -s reload'"
+nginx -t && nginx -s reload'"
 ```
+
+The snippet lives in the named volume `infrastructure_vhost`, so it survives a recreation of the `nginx-proxy` container; deleting that volume removes it. Applied on Hemma on 2026-10-22: `nginx -t` passed, the reload took, and `nginx -T` shows `client_max_body_size 30m` in this host's server block. A signed-out export with a 2.16 MB PNG through `https://skriptoteket.hule.education` then returned 200 for QTI and DOCX (retained root `01a160de-f796-7a04-8a8e-cb36e07f3352`, `evidence/f2-edge-proof.log`).
 
 Important: this edge block is safe because Prometheus scrapes `skriptoteket-web:8000`
 directly on `hule-network`, not through the public vhost.

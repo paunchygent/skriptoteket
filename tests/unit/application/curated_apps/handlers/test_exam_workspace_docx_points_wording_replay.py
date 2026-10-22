@@ -260,6 +260,7 @@ def test_a_sentence_that_mentions_points_keeps_its_text_through_the_build() -> N
         }
     )
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,
@@ -309,6 +310,7 @@ def test_a_volt_range_keeps_its_admitted_points_through_the_plan_and_assembly() 
     assert item.source_points is None
     own = ("body:0001",)
     result = assemble_build_result(
+        origin_kind="docx_import",
         document_id=uuid4(),
         filename="prov.docx",
         source_sha256="0" * 64,

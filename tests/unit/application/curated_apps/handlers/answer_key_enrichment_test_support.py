@@ -48,7 +48,10 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxExamChunker,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
-from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
+from skriptoteket.protocols.exam_workspace import (
+    DocxExamChunkerProtocol,
+    ExamWorkspaceContainerCodecProtocol,
+)
 from skriptoteket.protocols.identity import UserRepositoryProtocol
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
@@ -274,6 +277,7 @@ def replayed_docx_job_handler(
     store: ExamWorkspaceDocumentStore | None = None,
     users: UserRepositoryProtocol | None = None,
     enabled: bool = True,
+    chunker: DocxExamChunkerProtocol | None = None,
 ) -> tuple[ProcessExamWorkspaceDocxJobHandler, Replay]:
     """The DOCX processor over ``exam``'s replayed pipeline and the production progress port."""
     uow = FakeUow()
@@ -310,7 +314,7 @@ def replayed_docx_job_handler(
     replay = build_replay(exam, progress=progress, enabled=enabled)
     handler = ProcessExamWorkspaceDocxJobHandler(
         jobs=enrichment_jobs,
-        chunker=PythonDocxExamChunker(),
+        chunker=chunker if chunker is not None else PythonDocxExamChunker(),
         pipeline=replay.pipeline,
         progress=progress,
         store=store,

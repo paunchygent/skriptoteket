@@ -102,6 +102,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         match_pairs=tuple(ProducedMatchPair(left=row, right="Kategori A") for row in rows),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="kategorisering.docx",
@@ -164,6 +165,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
             chunks,
         )
         job = DocxConversionJob(
+            origin_kind="docx_import",
             job_id=state.job_id,
             worker_id="boundary-test",
             document_id=state.document_id,

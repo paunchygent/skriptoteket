@@ -252,6 +252,7 @@ async def _convert(
     )
     outcome = await pipeline.convert(
         job=DocxConversionJob(
+            origin_kind="docx_import",
             job_id=uuid4(),
             worker_id="worker",
             document_id=uuid4(),
@@ -315,6 +316,7 @@ def _chunk(anchor: str, *, missing: bool = False) -> DocxChunk:
 def _run(chunks: tuple[DocxChunk, ...], families: tuple[QuestionFamily, ...]) -> DocxConversionRun:
     run = DocxConversionRun(
         DocxConversionJob(
+            origin_kind="docx_import",
             job_id=uuid4(),
             worker_id="worker",
             document_id=uuid4(),

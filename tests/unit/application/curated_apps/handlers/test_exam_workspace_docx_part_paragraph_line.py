@@ -69,6 +69,7 @@ def _built(opener: str, grouped: tuple[tuple[int, ...], ...], listed: bool) -> N
         unplaced_anchors=(),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="prov.docx",

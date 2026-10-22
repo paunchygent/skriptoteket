@@ -7,13 +7,17 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-20'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user narrowed the criterion to the two-tab fix and closed the task on 2026-10-22 (Mac AskUserQuestion, Drop it, close 40-04-19). Independent review approved with no findings (retained root 01a1605d-6338-78d7-b66c-a02947ac907a, evidence/reviews/review-40-04-19.md); merged at e2f12bcc; Mac two-tab staging walk at e2f12bcc passed with 16 renews, all 200 and no CSRF 403.'
 task_kind: story
 acceptance_criteria:
-  - With two tabs each holding an exam lock, lock renews pass on the first try with no CSRF 403; a stale or mismatched CSRF token gets a message that says so instead of 'CSRF token required'
+  - With two tabs each holding an exam lock, lock renews pass on the first try with no CSRF 403
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -27,7 +31,7 @@ Observed on staging at main f84eb85d (Mac .artifacts/staging-walk-e4d15c4a/walk-
 Behaviour:
 
 1. Two tabs that each hold an exam lock renew with no CSRF 403 on the first try.
-2. A browser-session write with a stale or mismatched CSRF token gets a 403 whose message says the token is stale or does not match, not that it is required.
+2. Dropped by the user on 2026-10-22: the 403 message for a stale or mismatched token stays "CSRF token required", with no HuleEdu follow-up.
 
 ## Contract Inputs
 
@@ -63,3 +67,17 @@ One two-tab lock renew on staging, recorded with the X-CSRF-Token header and the
 ### 2026-10-21 (Hemma orchestrator)
 
 - The user moved the task from `proposed` to `ready` ("Build it now"). It is sequenced after the TASK-SKRIPT-40-04-21 merge (D4).
+
+### 2026-10-21 (implementation lead)
+
+- Set `in_progress`. Root cause, with evidence in the retained root `01a1605d-6338-78d7-b66c-a02947ac907a` (`evidence/root-cause.md`): HuleEdu's `GET /v1/auth/csrf` issues a new token and rewrites the shared `huleedu_csrf` cookie on every call; each Skriptoteket tab caches its own copy in the Pinia auth store and, after the gateway's cookie-equals-header 403, recovers by calling that endpoint again. Each tab's recovery therefore makes the other tab's cached copy stale, so both tabs pay a 403 on every renew.
+- Fix (D3, shared token): a tab takes its token from the readable shared cookie, as HuleEdu's own SPA does, and calls `/v1/auth/csrf` only when no usable cookie value exists. The session-continuity check still runs before any new token is cached (D2: no exemption, no added retry).
+- Behaviour 2 (a stale or mismatched token gets its own message) is blocked by the stop condition: the message is the HuleEdu gateway guard's text (`browser_write_guard.py`) and identity routes, which send one message for missing and mismatched tokens. Skriptoteket's recovery string-matches that exact message (`api/sharedAuth.ts`), so a HuleEdu change must be coordinated with it.
+- Proof: the fail-first spec `src/stores/auth.csrfTwoTabs.spec.ts` (two tab stores, one shared cookie, a rotating `/auth/csrf`, a guard that checks the header against the cookie) failed with 8 CSRF 403s across 8 renews before the fix and passes after it with 0 403s and 0 `/auth/csrf` calls; its continuity case shows that an outdated tab still sends no write after the shared session changes. Focused specs (310 files), `fe-type-check`, `fe-lint`, `lint`, `typecheck` and `docs-validate` pass; logs are in the retained root's `evidence/`. The Mac's two-tab staging re-walk is still open.
+- Residual: a tab that reads the cookie between another tab's `/auth/csrf` response and its own send can still pay one 403 and recover; no data is lost.
+
+### 2026-10-22 (Hemma orchestrator, merge and staging walk)
+
+- Independent review approved with no findings (retained root `01a1605d-6338-78d7-b66c-a02947ac907a`, `evidence/reviews/review-40-04-19.md`). Merged at `e2f12bcc`; the Hemma pre-push suite passed.
+- Mac staging walk at `e2f12bcc`, PASS (Mac `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`): two tabs holding locks on two exams, measured for 40 s. Each tab sent 8 renews 5 s apart, all 200, with no CSRF 403 and no `/v1/auth/csrf` request; both tabs carry the `huleedu_csrf` cookie. One `/v1/auth/csrf` call came before the window, during page load.
+- The user dropped the 403 message half of the criterion on 2026-10-22, with no HuleEdu follow-up, and closed the task.

@@ -2,11 +2,8 @@
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
-- TASK-SKRIPT-40-04-19 `proposed` (user, 2026-10-20): two tabs holding exam
-  locks invalidate each other's CSRF token on every renew. Not started.
-
-- Closeout owed: TASK-SKRIPT-06-18-01 is merged on main but still `proposed`;
-  its readiness and closure go to the user through the Mac orchestrator.
+- TASK-SKRIPT-40-04-19 two-tab CSRF fix: staging walk PASS; the user narrowed out
+  the 403-message half (2026-10-22). Hemma orchestrator closes it.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
   all 82 Hemma task and verify worktrees hold no work missing from main
@@ -51,11 +48,6 @@
   (edit sibling `grouping.py`, sandbox run, save), record proof, close docs. UX
   note: a saved class list is not selected in step 2 until the class name is filled.
 
-- [TASK-SKRIPT-REP-0036](docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md)
-  `ready` (user 2026-10-11); label behaviour user-witnessed; F1/F2 repaired, Sol
-  rereview approved `0f17cc78`, merged `61cce3ac`. Next: user closure. Mina filer
-  keeps every workspace version visible by user choice; head-only listing is later.
-
 - TASK-SKRIPT-REP-0035 passive web liveness deployed in production and staging
   (c282c74b, image 0ae40a8a34a2, /healthz 200). Owner skill-repository parent 01a1036b; next: terminal closeout.
   34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
@@ -72,18 +64,12 @@
   PDF renders the DOCX house template (user 2026-10-18).
 
   - On main, closeout owed (user or orchestrator closes):
-    - 40-04-12: K11 passed; K7 "/" check owed, shared with 39-04-20 (f7eeada5).
-    - 40-01-04: review owed.
     - 40-04-09: F1 rereview and the R14 Exam.net check (REP-0048) owed.
-    - 40-04-05: review and walk owed.
-    - 39-04-11 and 39-04-12: staging omprov/Svenska 2 import owed.
     - 39-06-08: walk with the Exam.net import owed.
-    - 39-07-03: suites and walk not recorded.
     - 39-01-02: review of the 2026-10-18 commits owed.
     - 40-02-01: tranche 3 review, 13 exam-held wrappers, `lucide-vue-next` removal.
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
-    - 41-02-03: removes the old guest DigiExam converter (user 2026-10-20).
     - 39-06-09: waits on 39-06-08.
     - 41-01-02, -03, -04: wait on HuleEdu TASK-HULE-14-03-01 on staging.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
@@ -121,6 +107,10 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). Next leads: 39-10-02 and REP-0049 (user 2026-10-22), then 39-10-03.
+
+- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
 
 - 2026-10-21 `done` on main: [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md) parallel and quiet pytest (merge `6a557b5d`; review 321854a9 F1-F6 medium repaired `b1f019e6`, admitted on focused proof).
 

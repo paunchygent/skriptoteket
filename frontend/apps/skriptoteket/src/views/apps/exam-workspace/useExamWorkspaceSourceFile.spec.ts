@@ -32,9 +32,18 @@ describe("exam workspace course-aware source intake", () => {
     expect(state.importDocument).toHaveBeenCalledExactlyOnceWith(file, null);
   });
 
-  it.each(["picker", "drop"] as const)("a course never makes non-DOCX input importable through %s", (path) => {
+  it.each(["picker", "drop"] as const)("accepts a .pdf through %s like a .docx", (path) => {
     const state = intake();
-    const file = new File(["exam"], "prov.pdf");
+    const file = new File(["exam"], "prov.pdf", { type: "application/pdf" });
+    if (path === "picker") state.handleSelectedFile(file, COURSE);
+    else state.handleDroppedFiles([file], COURSE);
+    expect(state.importDocument).toHaveBeenCalledExactlyOnceWith(file, COURSE);
+    expect(state.sourceFileError.value).toBeNull();
+  });
+
+  it.each(["picker", "drop"] as const)("a course never makes non-exam input importable through %s", (path) => {
+    const state = intake();
+    const file = new File(["exam"], "prov.txt", { type: "text/plain" });
     if (path === "picker") state.handleSelectedFile(file, COURSE);
     else state.handleDroppedFiles([file], COURSE);
     expect(state.importDocument).not.toHaveBeenCalled();

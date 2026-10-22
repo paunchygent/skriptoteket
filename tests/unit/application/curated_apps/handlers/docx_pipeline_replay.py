@@ -277,6 +277,7 @@ class Replay:
     def job(self, *, caller: AiDoorCaller | None = None) -> DocxConversionJob:
         content = corpus_docx(self.exam, self.corpus)
         return DocxConversionJob(
+            origin_kind="docx_import",
             job_id=uuid4(),
             worker_id=WORKER,
             document_id=uuid4(),

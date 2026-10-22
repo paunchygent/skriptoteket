@@ -99,6 +99,7 @@ def _state(
     governing: frozenset[str] = frozenset(),
 ) -> DocxBuildState:
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="verbprov.docx",

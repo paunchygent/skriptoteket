@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "05ff0c4b1e1caeb746116ae3b7ab918aed791ff15493348ec8accc468e4a81fc",
+  "source_set_digest": "f0b57f052df02a305f1b3559cff8ffae849cb4841ba244fc678b4f8ebfe03d41",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2369,7 +2369,7 @@
       "type": "story",
       "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
       "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2382,7 +2382,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: TASK-SKRIPT-39-07-01, TASK-SKRIPT-39-07-02 and TASK-SKRIPT-39-07-03 are done; the Mac staging walk at 4b321fa1 proved the in-app DigiExam import and editing, and TASK-SKRIPT-39-07-03 passed B1 to B5 with the old routes redirecting to the workspace (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
@@ -2459,7 +2463,7 @@
       "type": "story",
       "title": "Converge tokens, components and action buttons onto the shared package",
       "path": "docs/backlog/stories/st-skript-40-01-converge-tokens-components-and-action-buttons-onto-the-shared-package.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2472,7 +2476,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: TASK-SKRIPT-40-01-01 to TASK-SKRIPT-40-01-04 are done, and the story-level proof on main d9fab7e2 (clean-state repeat sync with no change, frontend and backend suites, migration tests) is recorded in its progress section."
       }
     },
     {
@@ -2568,7 +2576,7 @@
       "type": "story",
       "title": "Guests open, edit and export exams in the workspace without login or AI",
       "path": "docs/backlog/stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-41",
       "owners": [
         {
@@ -2581,7 +2589,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the story on 2026-10-22: all six tasks TASK-SKRIPT-41-02-01 to TASK-SKRIPT-41-02-06 are done; every guest start and export was walked at 4b321fa1 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md), and the owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at ede1ea0d (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
       }
     },
     {
@@ -2679,7 +2691,7 @@
       "type": "task",
       "title": "Repair vitest-run target resolution, separator handling and the include transport type",
       "path": "docs/backlog/tasks/task-skript-06-18-01-repair-vitest-run-target-resolution-separator-handling-and-the-include-transport-type.md",
-      "status": "proposed",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-18",
       "owners": [
@@ -2690,7 +2702,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user approved readiness and closure together on 2026-10-22: merged at 44197733 (4e9d65e0), and rereview finding R1 admitted on focused proof."
       }
     },
     {
@@ -5135,7 +5151,7 @@
       "type": "task",
       "title": "Printed point totals reach their questions through one owner per points line",
       "path": "docs/backlog/tasks/task-skript-39-04-11-printed-point-totals-reach-their-questions-through-one-owner-per-points-line.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5146,7 +5162,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed it on 2026-10-22 (Mac AskUserQuestion, Close all three). Mac staging walk at fd2d911c passed (Svenska 2 kursavslutande import 066da8de, 24 questions, 36 p, printed_total 36, 0 export blockers; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md). Focused Validation suites on main 41691447 passed, 127 tests, with lint and typecheck exit 0 (retained root 01a160d3-ed0d-7269-a098-9d5dd88eff0a, evidence/). R6-1 accepted unfixed by the user on 2026-10-21."
       }
     },
     {
@@ -5154,7 +5174,7 @@
       "type": "task",
       "title": "Grammar exams convert with each lead-in, exam-wide text, question and table in its own place",
       "path": "docs/backlog/tasks/task-skript-39-04-12-grammar-exams-convert-with-each-lead-in-exam-wide-text-question-and-table-in-its-own-place.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5165,7 +5185,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: repair rounds 1 and 2 are merged, the user accepted the mid-paragraph fragment case as a known residual on 2026-10-21 (\"Keep fixes, stop here\"), and the 10-exam gold replay is unchanged. The user closed it without the planned staging grammar-exam import walk."
       }
     },
     {
@@ -5997,7 +6021,7 @@
       "type": "task",
       "title": "Retire the old exam converter routes, correction overlay and screens",
       "path": "docs/backlog/tasks/task-skript-39-07-03-retire-the-old-exam-converter-routes-correction-overlay-and-screens.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
@@ -6008,7 +6032,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: review b88ad1f4 findings F1 to F3 were repaired and merged at aff7b005 and admitted on focused proof and migration tests, and the Mac staging walk at 4b321fa1 passed B1 to B5 (the old routes redirect to the workspace) (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md)."
       }
     },
     {
@@ -6336,7 +6364,7 @@
       "type": "task",
       "title": "A PDF exam with text opens in the exam workspace through the Word import path",
       "path": "docs/backlog/tasks/task-skript-39-10-01-a-pdf-exam-with-text-opens-in-the-exam-workspace-through-the-word-import-path.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6347,7 +6375,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a1605d-572d-70b4-aa95-dc8d05125933 (evidence/reviews/review-39-10-01.md and the F1 rereview); the user chose the page-match rule with merge on proof on 2026-10-22. Merged as 08726f81, bb293251 and fd2d911c (W1). Mac staging walk at bb293251 passed (footer PDF and the bf26 corpus PDF, 53 questions and 59 p, guest prompt), and the W1 re-walk at fd2d911c passed (PDF label shows PDF, Word label shows Word)."
       }
     },
     {
@@ -6355,7 +6387,7 @@
       "type": "task",
       "title": "Embedded pictures and cut-out drawn figures from a PDF land in their questions",
       "path": "docs/backlog/tasks/task-skript-39-10-02-embedded-pictures-and-cut-out-drawn-figures-from-a-pdf-land-in-their-questions.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6481,7 +6513,7 @@
       "type": "task",
       "title": "Adopt huleedu-integrated 0.1.34 through design-system sync",
       "path": "docs/backlog/tasks/task-skript-40-01-04-adopt-huleedu-integrated-0-1-34-through-design-system-sync.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -6492,7 +6524,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22: merged at e9983e4f, review findings F1 and F2 fixed and merged at 3b91b792, and admitted on focused proof."
       }
     },
     {
@@ -6839,7 +6875,7 @@
       "type": "task",
       "title": "Exported files are named after the exam title",
       "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6850,7 +6886,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after review f9239f80 (F1 repaired with the shared 238-character cap, admitted on focused proof and merged at 3eb5742f; F2 accepted unfixed by the user on 2026-10-21) and the Mac staging walk at aff7b005 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md, last addendum); the 2026-10-22 walk at fd2d911c shows the title-based names again (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
@@ -6990,7 +7030,7 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7001,7 +7041,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after merge 8d51a6ba, the K11 staging walk (Mac .artifacts/staging-walk-40-04-12/walk-record.md) and the K7 walk at fd2d911c: neither the student PDF nor the PDF med facit holds a line with only \"/\" under omprov Fråga 1c (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
@@ -7145,7 +7189,7 @@
       "type": "task",
       "title": "Two tabs that each hold an exam lock stop invalidating each other's CSRF token on every renew",
       "path": "docs/backlog/tasks/task-skript-40-04-19-two-tabs-that-each-hold-an-exam-lock-stop-invalidating-each-other-s-csrf-token-on-every-renew.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7156,7 +7200,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user narrowed the criterion to the two-tab fix and closed the task on 2026-10-22 (Mac AskUserQuestion, Drop it, close 40-04-19). Independent review approved with no findings (retained root 01a1605d-6338-78d7-b66c-a02947ac907a, evidence/reviews/review-40-04-19.md); merged at e2f12bcc; Mac two-tab staging walk at e2f12bcc passed with 16 renews, all 200 and no CSRF 403."
       }
     },
     {
@@ -7186,7 +7234,7 @@
       "type": "task",
       "title": "A new exam starts from Nytt prov in the workspace toolbar",
       "path": "docs/backlog/tasks/task-skript-40-04-21-a-new-exam-starts-from-nytt-prov-in-the-workspace-toolbar.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7197,7 +7245,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "independent ruthless-reviewer",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent rereview approved F1-F5 (retained root 01a15f95-9eca-7a87-b3b5-4cb77a0761c6, evidence/reviews/review-40-04-21-f5-rereview5.md); merged at a8dd8fa4. Mac staging walk at 25c4ac01 passed signed in and as a guest and found W3; W3 was repaired on the light route (2585d641, focused proof in retained root 01a16066-477c-75b1-acc0-8c76298003b9 evidence/w3/), merged at 18f045fc with the Hemma pre-push suite passing, and the Mac re-walk at 18f045fc passed (Mac .artifacts/staging-walk-40-04-21/walk-record.md)."
       }
     },
     {
@@ -7228,7 +7280,7 @@
       "type": "task",
       "title": "After an import the question list warns about questions whose points differ from the source",
       "path": "docs/backlog/tasks/task-skript-40-04-23-after-an-import-the-question-list-warns-about-questions-whose-points-differ-from-the-source.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7239,7 +7291,57 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after the Mac walk at 25c4ac01 (PASS with W1 and W2), the repair merged at ede1ea0d, and the Mac re-walk at ede1ea0d (PASS): Fråga 1 shows \"Provtexten: 4 p och 3 p\", Fråga 2 shows \"4 p, 2,5 p och 3 p\", and the line reads \"2 frågor avviker från provtexten\" (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-24",
+      "type": "task",
+      "title": "A Word import whose question has only a points heading converts instead of crashing",
+      "path": "docs/backlog/tasks/task-skript-40-04-24-a-word-import-whose-question-has-only-a-points-heading-converts-instead-of-crashing.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Admitted on focused proof under the user's light-route rule of 2026-10-21. Fail-first unit test for a question holding only its points heading passed after fix ff578404, merged as 73e76a57; the Hemma pre-push suite passed on main 57ecd182."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-25",
+      "type": "task",
+      "title": "The Import view shows a question's Word source lines once",
+      "path": "docs/backlog/tasks/task-skript-40-04-25-the-import-view-shows-a-question-s-word-source-lines-once.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Admitted on focused proof under the user's light-route rule of 2026-10-21. Fail-first unit test for repeated subpart anchors passed after fix b904c59f, merged as 57ecd182; the Hemma pre-push suite passed on main 57ecd182."
       }
     },
     {
@@ -8309,7 +8411,7 @@
       "type": "task",
       "title": "Resolve Mina filer app-export labels from the app id prefix",
       "path": "docs/backlog/tasks/task-skript-rep-0036-resolve-mina-filer-app-export-labels-from-the-app-id-prefix.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8319,7 +8421,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after seeing the labels: findings F1 and F2 were repaired, the Sol rereview approved at 0f17cc78, and the repair merged at 61cce3ac."
       }
     },
     {
@@ -8571,7 +8677,7 @@
       "type": "task",
       "title": "A converted item never drops a sentence from its own source paragraph",
       "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {

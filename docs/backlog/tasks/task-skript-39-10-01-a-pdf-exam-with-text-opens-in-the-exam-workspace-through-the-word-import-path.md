@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Independent review in retained root 01a1605d-572d-70b4-aa95-dc8d05125933 (evidence/reviews/review-39-10-01.md and the F1 rereview); the user chose the page-match rule with merge on proof on 2026-10-22. Merged as 08726f81, bb293251 and fd2d911c (W1). Mac staging walk at bb293251 passed (footer PDF and the bf26 corpus PDF, 53 questions and 59 p, guest prompt), and the W1 re-walk at fd2d911c passed (PDF label shows PDF, Word label shows Word).'
 task_kind: story
 acceptance_criteria:
   - A Word corpus exam saved as PDF, dropped or chosen in the exam workspace import box, opens in the editor with its text questions, through the same chunk sequence and conversion path as the Word import
@@ -73,3 +77,13 @@ One Word corpus exam saved as PDF goes through the import box, is read into the 
 ### 2026-10-21 (Hemma orchestrator)
 
 - Scaffolded from the ST-SKRIPT-39-10 story terms. The story is `ready` by the user's grilling of 2026-10-21, relayed by the Mac orchestrator, and this task is `ready` with it. A lead session is assigned.
+
+### 2026-10-21 (implementation lead, branch `codex/task-skript-39-10-01`)
+
+- Mechanism: the PDF uses the Word import lane unchanged. The import handler admits a `.pdf` whose bytes start with `%PDF-` into an `ExamAnswerKeySourceKind.DOCX_IMPORT` job; the bytes travel in the existing `source_docx` field. The job's chunker and the pipeline's labeler source are format dispatchers (`exam_workspace_import_source`) that send PDF bytes to the new pdfplumber reader and Word bytes to the Word readers. The pipeline, job handler and validator are unchanged, and pdfplumber loads only when a PDF is read.
+- The reader (`exam_workspace_pdf_layout`, `exam_workspace_pdf_blocks`, `exam_workspace_pdf_chunker`) rebuilds the Word chunks: paragraphs from line pitch and wrap, soft line breaks, headings from font size, italic as the `<i>` facit cue, ruled and borderless tables, two-column pages, and underscore answer lines as their own chunks. It drops repeated headers, footers and page numbers. Drawn lines carry no text.
+- Real-producer proof: the Word-saved PDF of `bf26_english_1_unit_test_kap_1_2_med_facit` reads as the Word file's 136 chunks. Every table, heading level and italic span is equal. The only difference is six Word paragraphs that contain a blank soft-broken line; each reads as two chunks.
+- The import box accepts `.pdf`; the guest prompt reads "Logga in för att importera från DigiExam, Word eller PDF.". Access is the Word import's route gate. An import scan shows that the PDF modules import no AI client.
+- Review F1 and F2 (page furniture), repaired under the user's page-match rule (2026-10-22) and the Mac orchestrator's keep-when-unsure rule. A repeated line's changing number is a page counter only when it equals the page number. A repeated line is dropped only when it is in a smaller font than the body text, or when it lies in the page margin beyond the body text's edge by more than one body line step. The edge is read only from pages without that line; when no such page exists, the line is kept. At body size, a page-matching number counts only in pagination wording (after sida, s., page or p., or as the N of "N av M" / "N of M"); a bare number, as in "Uppgift 3" or a lone "3", keeps the line. A lone page number is dropped only when it names its own page and is smaller than the body text or in pagination wording. A body-size line in the body flow is always kept, including "Fråga 2. Svara på frågan." at the top of page 2 and "Uppgift 3" with space after it on page 3; no dropped-question limit remains. Accepted cost: a body-size header or footer that appears on every page stays in the text.
+- Staging-walk finding W1: the Import box named a PDF source "Word", because the stored origin recorded only `docx_import`. The origin now records the source format: a document built from PDF bytes stores `kind: pdf_import`, decided once from the bytes with `is_pdf` when the job starts, and the Import box names it "PDF". The job lane stays `DOCX_IMPORT` and `extractor_version` stays `docx_ai_build_v2`. A title taken from a PDF's filename now drops the answer-key label the way a `.docx` name does.
+- Closed 2026-10-22 by the Hemma orchestrator after the Mac's staging walk and W1 re-walk passed.

@@ -41,6 +41,7 @@ def test_the_part_shares_what_remains_after_the_printed_question_points(
         _chunk("body:0004", "paragraph", "2. Förklara modus."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="del.docx",
@@ -75,6 +76,7 @@ def test_a_section_parent_ends_at_the_next_part_heading_whatever_its_rank(
         _chunk("body:0005", "paragraph", "3. Förklara aspekt."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="del.docx",
@@ -111,6 +113,7 @@ def test_part_headings_that_repeat_their_part_stay_inside_it(level: int | None) 
         _chunk("body:0005", "paragraph", "Write the word for a poet's choice of words."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="poetry.docx",
@@ -152,6 +155,7 @@ def test_a_part_heading_no_question_owns_ends_the_section_whatever_it_names(
         _chunk("body:0006", "paragraph", "4. Förklara diates."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="del.docx",
@@ -188,6 +192,7 @@ def test_a_section_ends_exactly_where_the_running_part_changes(level: int | None
         _chunk("body:0007", "paragraph", "Name the group of lines in a poem."),
     )
     state = DocxBuildState(
+        origin_kind="docx_import",
         job_id=uuid4(),
         document_id=uuid4(),
         filename="poetry.docx",
