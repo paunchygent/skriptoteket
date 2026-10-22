@@ -32,6 +32,7 @@ function setupGuestStore(): ExamWorkspaceStore {
     deletePublicExamWorkspaceParent: vi.fn(),
     downloadPublicExamWorkspaceExport: vi.fn(),
     getPublicExamCourseCatalog: vi.fn(),
+    getPublicExamWorkspaceLimits: vi.fn(),
     getPublicExamWorkspaceExportChecklist: vi.fn(),
     groupPublicExamWorkspaceItems: vi.fn(),
     importPublicExamWorkspaceQti: vi.fn(),

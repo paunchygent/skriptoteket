@@ -33,6 +33,7 @@ import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
+import { useExamWorkspacePictureControl } from "./examWorkspacePictureService";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceItemEntry } from "./examWorkspaceListEntries";
 import { examWorkspaceFormatPoints } from "./examWorkspaceTotals";
@@ -67,6 +68,10 @@ const targets = provideRichTextTargetRegistry();
 const activeMarks = computed(() => targets.active.value?.marks.value ?? []);
 const activeHeading = computed(() => targets.active.value?.headingLevel() ?? null);
 
+/** The part instruction's own entry: the picture fallback when no selected surface takes pictures. */
+const instructionEntry = ref<InstanceType<typeof ExamWorkspaceRichTextEntry> | null>(null);
+
+
 const addTrigger = ref<HTMLButtonElement | null>(null);
 const moreTrigger = ref<HTMLButtonElement | null>(null);
 const addOpen = ref(false);
@@ -79,6 +84,17 @@ function toggleMark(mark: BodyMark): void {
 function toggleHeading(level: RichTextHeadingLevel): void {
   targets.active.value?.toggleHeading(level);
 }
+
+/** The picture button: its state and where a chosen file goes. */
+const {
+  enabled: picturesEnabled,
+  selected: pictureSelected,
+  busy: pictureBusy,
+  add: handleAddPicture,
+} = useExamWorkspacePictureControl(
+  () => targets.active.value,
+  () => instructionEntry.value,
+);
 
 function chooseDelete(mode: ExamParentDeleteMode): void {
   moreOpen.value = false;
@@ -131,11 +147,16 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         :active-heading="activeHeading"
         :disabled="disabled"
         show-headings
+        :show-picture="picturesEnabled"
+        :picture-selected="pictureSelected"
+        :picture-busy="pictureBusy"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
+        @add-picture="handleAddPicture"
       />
       <ExamWorkspaceRichTextEntry
         :key="parent.parent_id"
+        ref="instructionEntry"
         class="xw-rich__body"
         :body="parent.instruction"
         :disabled="disabled"
@@ -143,6 +164,7 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         test-id="exam-workspace-instruction-text"
         variant="paragraph"
         :asset-urls="assetUrls"
+        :pictures="picturesEnabled"
         @update-body="(body, structural) => emit('updateInstruction', body, structural)"
       />
     </div>

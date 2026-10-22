@@ -78,6 +78,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
       document: exam("Utkast"),
       expectedCursor: seeded.cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     expect(step.document.title).toBe("Utkast");
 

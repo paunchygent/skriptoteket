@@ -45,6 +45,7 @@ export function createGuestPublicApiMocks(): GuestPublicApiMocks {
     deletePublicExamWorkspaceParent: vi.fn<PublicApi["deletePublicExamWorkspaceParent"]>(),
     downloadPublicExamWorkspaceExport: vi.fn<PublicApi["downloadPublicExamWorkspaceExport"]>(),
     getPublicExamCourseCatalog: vi.fn<PublicApi["getPublicExamCourseCatalog"]>(),
+    getPublicExamWorkspaceLimits: vi.fn<PublicApi["getPublicExamWorkspaceLimits"]>(),
     getPublicExamWorkspaceExportChecklist:
       vi.fn<PublicApi["getPublicExamWorkspaceExportChecklist"]>(),
     groupPublicExamWorkspaceItems: vi.fn<PublicApi["groupPublicExamWorkspaceItems"]>(),
@@ -221,6 +222,7 @@ export async function seedRetainedPictureDraft(
     document: { ...loaded.document, title: "Keep this exam, edited" },
     expectedCursor: loaded.history_cursor,
     tabId,
+    newPictures: {},
   });
   const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
   return { lineageId, opened };
@@ -247,6 +249,7 @@ export async function expectRetainedAndNewOwnerStores(
     document: { ...loaded.document, title: "B's first edit" },
     expectedCursor: loaded.history_cursor,
     tabId: owner.tabId,
+    newPictures: {},
   });
   const stored = await context.storage.load();
   expect(stored?.draft.lineage_id).toBe(lineageId);

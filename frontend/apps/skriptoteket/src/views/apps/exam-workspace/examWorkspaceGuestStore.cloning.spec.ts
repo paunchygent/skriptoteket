@@ -91,6 +91,7 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       document: edited.value,
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     expect(step.document.title).toBe("Redigerad");
@@ -110,6 +111,7 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       document: edited.value,
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     expect(step.document.title).toBe("Sparad");
@@ -135,6 +137,7 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       document: edited.value,
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     edited.value.title = "Changed afterwards";
 

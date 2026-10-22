@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import posixpath
 from collections.abc import Mapping
+from typing import Literal
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_body_reader import (
@@ -130,7 +131,7 @@ def image_resources(
         payload = files.get(path)
         if payload is None:
             raise UnsupportedImage
-        media_type = _media_type(payload)
+        media_type = picture_media_type(payload)
         if media_type is None:
             raise UnsupportedImage
         resources.append(
@@ -146,7 +147,8 @@ def image_resources(
     return tuple(resources)
 
 
-def _media_type(payload: bytes) -> str | None:
+def picture_media_type(payload: bytes) -> Literal["image/png", "image/jpeg"] | None:
+    """The picture media type its leading bytes name: PNG or JPEG, else None."""
     if payload.startswith(_PNG_SIGNATURE):
         return "image/png"
     if payload.startswith(_JPEG_SIGNATURE):

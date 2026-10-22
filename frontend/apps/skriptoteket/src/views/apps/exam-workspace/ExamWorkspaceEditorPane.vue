@@ -12,7 +12,7 @@
  *     as props from `ExamWorkspaceView`, which owns them.
  */
 
-import { computed } from "vue";
+import { computed, watch } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
@@ -22,6 +22,11 @@ import { freeTextWritingLines, type FreeTextWritingLines } from "./examWorkspace
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import {
+  createExamWorkspacePictureService,
+  provideExamWorkspacePictures,
+} from "./examWorkspacePictureService";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -47,7 +52,7 @@ const props = defineProps<{
   openDrawerShown: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   "open-drawer": [];
   select: [id: string];
   "add-child": [kind: TeacherItemKind];
@@ -58,6 +63,51 @@ defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
+const store = useInjectedExamWorkspaceStore();
+
+/** The open exam's picture service: the toolbar, drop and paste read it. */
+const pictures = createExamWorkspacePictureService({
+  document: () => props.editing.workspaceDocument.value,
+  newPictures: props.editing.newPictures,
+  canEdit: () => !props.disabled,
+  opening: () => props.editing.openExam.value,
+  isOpen: props.editing.isOpen,
+  maxExamBytes: () => store.shared.getExamWorkspaceLimits().then((limits) => limits.max_exam_bytes),
+});
+provideExamWorkspacePictures(pictures);
+
+/** A refused picture belongs to its editor: moving on clears it. */
+watch(
+  [
+    () => props.examInstructionsSelected,
+    () => props.selectedParent?.parent_id,
+    () => props.selectedItem?.item_id,
+  ],
+  () => {
+    pictures.dismissNotice();
+  },
+);
+
+/** A picture refusal replaces the question's own notice until it is closed. */
+const questionNotice = computed(() => pictures.notice.value ?? props.itemNotice);
+/** A picture refusal replaces the part instruction's own notice until it is closed. */
+const instructionNotice = computed(() => pictures.notice.value ?? structure.deleteNotice.value);
+
+function handleQuestionDismissNotice(): void {
+  if (pictures.notice.value !== null) {
+    pictures.dismissNotice();
+    return;
+  }
+  emit("dismiss-item-notice");
+}
+
+function handleInstructionDismissNotice(): void {
+  if (pictures.notice.value !== null) {
+    pictures.dismissNotice();
+    return;
+  }
+  structure.dismissDeleteNotice();
+}
 
 /** Every free-text question with its display label and writing-line count, for the Skrivyta popover. */
 const freeTextWritingLinesSummary = computed<FreeTextWritingLines[]>(() =>
@@ -117,7 +167,9 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :instructions="workspaceDocument.instructions"
         :disabled="disabled"
         :asset-urls="assetUrls"
+        :notice="pictures.notice.value"
         @update-instructions="editing.setExamInstructions"
+        @dismiss-notice="pictures.dismissNotice"
       />
       <ExamWorkspaceInstructionEditor
         v-else-if="selectedParent && selectedParentEntry"
@@ -126,7 +178,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :children="parentChildren"
         :subtotal="selectedParentEntry.points"
         :disabled="disabled"
-        :notice="structure.deleteNotice.value"
+        :notice="instructionNotice"
         :asset-urls="assetUrls"
         @update-instruction="(body, structural) => editing.setParentInstruction(selectedParent!.parent_id, body, structural)"
         @goto-child="$emit('select', $event)"
@@ -134,7 +186,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @delete-child="structure.deleteItem"
         @add-child="(kind) => $emit('add-child', kind)"
         @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
-        @dismiss-notice="structure.dismissDeleteNotice"
+        @dismiss-notice="handleInstructionDismissNotice"
       />
       <ExamWorkspaceQuestionEditor
         v-else-if="selectedItem && itemEntry"
@@ -145,7 +197,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :child="itemChild"
         :converting="converting"
         :disabled="disabled"
-        :notice="itemNotice"
+        :notice="questionNotice"
         :import-open="importOpen"
         :move-targets="moveTargets"
         :current-parent-id="currentParentId"
@@ -160,7 +212,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @toggle-reviewed="$emit('toggle-reviewed')"
         @retry="(kind) => editing.retryItem(selectedItem!.item_id, kind)"
         @goto-parent="$emit('select', $event)"
-        @dismiss-notice="$emit('dismiss-item-notice')"
+        @dismiss-notice="handleQuestionDismissNotice"
         @undo-interpretation="editing.undoItemInterpretation"
         @remove-automatic-value="editing.removeItemAutomaticValue"
         @create-gap="editing.createItemGap"

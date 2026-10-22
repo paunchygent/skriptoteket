@@ -26,13 +26,14 @@
  *     the toolbar reads and calls.
  */
 
-import { computed, useId } from "vue";
+import { computed, ref, useId } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceGapAnswerList from "./ExamWorkspaceGapAnswerList.vue";
 import ExamWorkspaceGapAutomaticValues from "./ExamWorkspaceGapAutomaticValues.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
+import { useExamWorkspacePictureControl } from "./examWorkspacePictureService";
 import { shortAnswerParts, withShortAnswerQuestion } from "./examWorkspaceShortAnswer";
 import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolbar";
 
@@ -51,8 +52,22 @@ const emit = defineEmits<{
 
 const questionLabelId = useId();
 const answerLabelId = useId();
+const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const parts = computed(() => shortAnswerParts(props.item));
-const { activeMarks, activeHeading, toggleMark, toggleHeading } = useExamWorkspaceRichTextToolbar();
+const { activeMarks, activeHeading, activeRichTextTarget, toggleMark, toggleHeading } =
+  useExamWorkspaceRichTextToolbar();
+
+
+/** The picture button: its state and where a chosen file goes. */
+const {
+  enabled: picturesEnabled,
+  selected: pictureSelected,
+  busy: pictureBusy,
+  add: handleAddPicture,
+} = useExamWorkspacePictureControl(
+  () => activeRichTextTarget.value,
+  () => editor.value,
+);
 
 function handleQuestionUpdate(body: NativeExamBodyParagraph[], structural: boolean): void {
   if (props.disabled) {
@@ -112,18 +127,24 @@ function handleAutomaticValueRemoval(value: string): void {
           :active-heading="activeHeading"
           :disabled="disabled"
           show-headings
+          :show-picture="picturesEnabled"
+          :picture-selected="pictureSelected"
+          :picture-busy="pictureBusy"
           @toggle-mark="toggleMark"
           @toggle-heading="toggleHeading"
+          @add-picture="handleAddPicture"
         />
         <div class="xw-rich__body grid gap-2">
           <ExamWorkspaceRichTextEditor
             :key="item.item_id"
+            ref="editor"
             :body="parts.question"
             label="Frågetext"
             test-id="exam-workspace-short-answer-question"
             variant="field"
             :disabled="disabled"
             :asset-urls="assetUrls"
+            :pictures="picturesEnabled"
             @update="handleQuestionUpdate"
           />
         </div>

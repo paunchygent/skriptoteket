@@ -340,6 +340,7 @@ describe("ExamWorkspaceView guest mode Nytt prov protected replacement", () => {
       document: { ...emptyGuestDocument(), title: "Behåll mig" },
       expectedCursor: checked.draft.cursor,
       tabId: "other-tab",
+      newPictures: {},
     });
 
     blank.resolve({ document: emptyGuestDocument(), export_blockers: [] });

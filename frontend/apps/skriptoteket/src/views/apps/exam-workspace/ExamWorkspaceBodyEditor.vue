@@ -69,6 +69,7 @@ import { GAP_TOOL_AT_CAP_REASON, gapDisabledReason } from "./useExamWorkspaceMak
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
+import { useExamWorkspacePictureControl } from "./examWorkspacePictureService";
 import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolbar";
 
 const props = defineProps<{
@@ -101,7 +102,7 @@ const labelId = useId();
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
-const { activeMarks, activeHeading, toggleMark, toggleHeading } =
+const { activeMarks, activeHeading, activeRichTextTarget, toggleMark, toggleHeading } =
   useExamWorkspaceRichTextToolbar();
 let openChip: HTMLElement | null = null;
 
@@ -275,6 +276,18 @@ function handleInsertEmptyGap(): void {
   editor.value?.insertEmptyGap();
 }
 
+
+/** The picture button: its state and where a chosen file goes. */
+const {
+  enabled: picturesEnabled,
+  selected: pictureSelected,
+  busy: pictureBusy,
+  add: handleAddPicture,
+} = useExamWorkspacePictureControl(
+  () => activeRichTextTarget.value,
+  () => editor.value,
+);
+
 /** Forward one gap creation; a tool-made gap opens no popover, but Tom lucka's empty gap always does. */
 function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: string): void {
   if (props.disabled) {
@@ -345,10 +358,14 @@ watch(newGapId, (gapId) => {
         :gap-tool-disabled-reason="gapKind && newGapId === null ? GAP_TOOL_AT_CAP_REASON : null"
         :empty-gap-disabled-reason="gapKind ? gapDisabledReason(newGapId) : null"
         :gap-tool-on="gapToolOn"
+        :show-picture="picturesEnabled"
+        :picture-selected="pictureSelected"
+        :picture-busy="pictureBusy"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
         @toggle-gap-tool="toggleGapTool"
         @insert-empty-gap="handleInsertEmptyGap"
+        @add-picture="handleAddPicture"
       />
       <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
@@ -361,6 +378,7 @@ watch(newGapId, (gapId) => {
           :disabled="disabled"
           :gap-states="gapStates"
           :asset-urls="assetUrls"
+          :pictures="picturesEnabled"
           gaps-interactive
           :next-gap-id="gapKind ? newGapId : undefined"
           :gap-tool="gapToolOn"

@@ -28,6 +28,7 @@ import {
 import type {
   ExamCourseCatalogResponse,
   ExamWorkspaceDocumentResponse,
+  ExamWorkspaceLimits,
   ExamWorkspaceMisspellingsRequest,
   ExamWorkspaceMisspellingsResponse,
   NativeExamBodyParagraph,
@@ -303,6 +304,10 @@ export async function requestPublicExamWorkspaceAnswerMisspellings(
     `${PUBLIC_WORKSPACE_ROOT}/answer-misspellings`,
     request,
   );
+}
+
+export async function getPublicExamWorkspaceLimits(): Promise<ExamWorkspaceLimits> {
+  return await publicApiGet<ExamWorkspaceLimits>(`${PUBLIC_WORKSPACE_ROOT}/limits`);
 }
 
 export async function getPublicExamCourseCatalog(): Promise<ExamCourseCatalogResponse> {

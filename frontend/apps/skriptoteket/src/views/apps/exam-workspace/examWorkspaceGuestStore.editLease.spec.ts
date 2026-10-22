@@ -44,6 +44,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
         document: exam("Främmande"),
         expectedCursor: opened.history_cursor,
         tabId: LEASE_TAB_ID,
+        newPictures: {},
       })
       .catch((caught: unknown) => caught);
 
@@ -63,6 +64,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       document: exam("Egen"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     expect(step.document.title).toBe("Egen");
@@ -76,6 +78,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       document: exam("Utan"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     expect(stored.document.title).toBe("Utan");
 
@@ -87,6 +90,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       document: exam("Efter"),
       expectedCursor: reopened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     expect(restep.document.title).toBe("Efter");
   });
@@ -99,6 +103,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     await context.leaseStorage.claim(FOREIGN_TAB_ID, Date.now());
 
@@ -108,6 +113,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
         document: exam("Gammal"),
         expectedCursor: opened.history_cursor,
         tabId: LEASE_TAB_ID,
+        newPictures: {},
       })
       .catch((caught: unknown) => caught);
 
@@ -123,6 +129,7 @@ describe("examWorkspaceGuestStore edit lease", () => {
       document: exam("Steg"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     await context.leaseStorage.claim(FOREIGN_TAB_ID, Date.now());
 

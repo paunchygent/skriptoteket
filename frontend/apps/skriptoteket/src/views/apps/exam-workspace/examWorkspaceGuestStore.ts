@@ -45,6 +45,8 @@ import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
 import {
   commitGuestCommand,
   loadGuestStored,
+  missingAssetsError,
+  missingRetainedAssets,
   persistGuestStored,
   replaceGuestSlot,
   retainDeclaredAssets,
@@ -199,8 +201,16 @@ export function createGuestExamWorkspaceStore(
         throw refusalError(outcome.copy);
       }
       await requireGuestEditLease(params.tabId);
+      const retained = retainDeclaredAssets(
+        { ...stored, assets: { ...stored.assets, ...params.newPictures } },
+        outcome.draft,
+      );
+      const missing = missingRetainedAssets(outcome.step.document, retained);
+      if (missing.length > 0) {
+        throw missingAssetsError(missing);
+      }
       await persist(stored.draft.cursor, {
-        assets: retainDeclaredAssets(stored, outcome.draft),
+        assets: retained,
         draft: outcome.draft,
       });
       return outcome.step;
@@ -425,6 +435,9 @@ export function createGuestExamWorkspaceStore(
     },
     async getExamCourseCatalog() {
       return await api.getPublicExamCourseCatalog();
+    },
+    async getExamWorkspaceLimits() {
+      return await api.getPublicExamWorkspaceLimits();
     },
     examWorkspaceAssetUrl(lineageId, assetId) {
       if (openLineageId !== lineageId) {

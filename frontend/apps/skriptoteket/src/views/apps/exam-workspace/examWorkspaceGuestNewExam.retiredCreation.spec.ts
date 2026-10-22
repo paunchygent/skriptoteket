@@ -89,6 +89,7 @@ async function seedRetainedDraft(context: GuestStoreSetup): Promise<{
     document: edited,
     expectedCursor: loaded.history_cursor,
     tabId: TAB_A,
+    newPictures: {},
   });
   const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
   return { lineageId, opened };
@@ -218,6 +219,7 @@ describe("guest Nytt prov after its creation is retired", () => {
       document: { ...loadedByB.document, title: "B's first edit" },
       expectedCursor: loadedByB.history_cursor,
       tabId: TAB_B,
+      newPictures: {},
     });
     const stored = await context.storage.load();
     expect(stored?.draft.lineage_id).toBe(lineageId);
@@ -326,6 +328,7 @@ describe("guest Nytt prov after its creation is retired", () => {
       document: { ...loaded.document, title: "B's first edit" },
       expectedCursor: loaded.history_cursor,
       tabId: TAB_B,
+      newPictures: {},
     });
     const stored = await context.storage.load();
     expect(stored?.draft.lineage_id).toBe(lineageId);

@@ -1983,6 +1983,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace Limits */
+        get: operations["get_exam_workspace_limits_api_v1_apps_documents_conversion_hub_exam_workspace_limits_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/unreadable-documents": {
         parameters: {
             query?: never;
@@ -3287,6 +3304,23 @@ export interface paths {
         put?: never;
         /** Import Public Exam Workspace Qti Package */
         post: operations["import_public_exam_workspace_qti_package_api_v1_public_apps_documents_conversion_hub_exam_converter_workspace_imports_qti_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/apps/documents.conversion_hub/exam-converter/workspace/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Public Exam Workspace Limits */
+        get: operations["get_public_exam_workspace_limits_api_v1_public_apps_documents_conversion_hub_exam_converter_workspace_limits_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -6091,6 +6125,20 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+        };
+        /**
+         * ExamWorkspaceLimitsResponse
+         * @description The exam size limit both modes enforce before sending work to the server.
+         *
+         *     ``max_exam_bytes`` is the backend-owned ``VAULT_MAX_FILE_BYTES`` setting,
+         *     so the editor never keeps a handwritten copy of the cap.
+         */
+        ExamWorkspaceLimitsResponse: {
+            /**
+             * Max Exam Bytes
+             * @description Largest accepted exam size in bytes.
+             */
+            max_exam_bytes: number;
         };
         /** ExamWorkspaceMisspellingsRequest */
         ExamWorkspaceMisspellingsRequest: {
@@ -9869,6 +9917,13 @@ export interface components {
              * Format: uuid
              */
             expected_cursor: string;
+            /**
+             * New Assets By Id
+             * @description Bytes of pictures this document declares that the server may not hold yet, sent once by the editor that added them.
+             */
+            new_assets_by_id?: {
+                [key: string]: string;
+            };
             /**
              * Tab Id
              * Format: uuid
@@ -14808,6 +14863,26 @@ export interface operations {
             };
         };
     };
+    get_exam_workspace_limits_api_v1_apps_documents_conversion_hub_exam_workspace_limits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceLimitsResponse"];
+                };
+            };
+        };
+    };
     list_unreadable_exam_workspace_documents_api_v1_apps_documents_conversion_hub_exam_workspace_unreadable_documents_get: {
         parameters: {
             query?: never;
@@ -17317,6 +17392,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicExamWorkspaceQtiImportResponse"];
+                };
+            };
+        };
+    };
+    get_public_exam_workspace_limits_api_v1_public_apps_documents_conversion_hub_exam_converter_workspace_limits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceLimitsResponse"];
                 };
             };
         };

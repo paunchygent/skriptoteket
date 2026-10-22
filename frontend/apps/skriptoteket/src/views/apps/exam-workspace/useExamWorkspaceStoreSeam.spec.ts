@@ -24,6 +24,7 @@ import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
 const apiMocks = vi.hoisted(() => ({
   copyExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceLimits: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceExport: vi.fn(),
 }));
@@ -94,5 +95,16 @@ describe("teacher actions in guest mode", () => {
 
     expect(apiMocks.listExamWorkspaceDocuments).not.toHaveBeenCalled();
     expect(list.savedDocuments.value).toEqual([]);
+  });
+});
+
+describe("shared limits", () => {
+  it("reads the exam size limit through the signed-in limits route", async () => {
+    apiMocks.getExamWorkspaceLimits.mockResolvedValue({ max_exam_bytes: 7_000_000 });
+
+    const limits = await serverExamWorkspaceStore.shared.getExamWorkspaceLimits();
+
+    expect(limits).toEqual({ max_exam_bytes: 7_000_000 });
+    expect(apiMocks.getExamWorkspaceLimits).toHaveBeenCalledTimes(1);
   });
 });

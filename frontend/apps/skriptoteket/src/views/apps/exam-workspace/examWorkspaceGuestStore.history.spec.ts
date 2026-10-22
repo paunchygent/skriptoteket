@@ -79,6 +79,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       document: exam("A"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     expect(autosaved.document.title).toBe("A");
 
@@ -94,6 +95,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       document: exam("B"),
       expectedCursor: autosaved.history.cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     // A branch after the baseline drops the redo step A.
     expect(branched.history.step_ids).toEqual([branched.history.position_step_id]);
@@ -149,6 +151,7 @@ describe("examWorkspaceGuestStore history and save", () => {
         document: exam("X"),
         expectedCursor: "99999999-9999-4999-8999-999999999999",
         tabId: LEASE_TAB_ID,
+        newPictures: {},
       })
       .catch((caught: unknown) => caught);
 
@@ -183,6 +186,7 @@ describe("examWorkspaceGuestStore history and save", () => {
         document: refusedExam(),
         expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
       })
       .catch((caught: unknown) => caught);
 

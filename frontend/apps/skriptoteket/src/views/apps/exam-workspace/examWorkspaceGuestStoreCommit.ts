@@ -30,6 +30,7 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { ApiError } from "../../../api/client";
 import {
   guestDocumentResponse,
   storeGuestUndoStep,
@@ -80,6 +81,31 @@ export function retainDeclaredAssets(
     }
   }
   return kept;
+}
+
+/**
+ * Ids the document declares whose bytes the stored assets do not hold,
+ * sorted; the guest counterpart of the server's missing-picture check in
+ * `prepare_editor_content`.
+ */
+export function missingRetainedAssets(
+  document: NativeExamDocument,
+  assets: Record<string, Blob>,
+): string[] {
+  const held = new Set(Object.keys(assets));
+  return [...new Set(document.assets.map((asset) => asset.asset_id))]
+    .filter((assetId) => !held.has(assetId))
+    .sort();
+}
+
+/** The server's 422 when a save declares pictures the stored draft does not hold. */
+export function missingAssetsError(missing: string[]): ApiError {
+  return new ApiError({
+    code: "VALIDATION_ERROR",
+    details: { missing_assets: missing },
+    message: "Dokumentet hänvisar till bilder som saknas.",
+    status: 422,
+  });
 }
 
 /** Load the browser draft for `lineageId`, or report the server's 404. */
@@ -177,11 +203,16 @@ export async function commitGuestCommand<Result extends PublicCommandResult>(
   if (outcome.kind === "refused") {
     throw refusalError(outcome.copy);
   }
+  const retained = retainDeclaredAssets(stored, outcome.draft);
+  const missing = missingRetainedAssets(result.document, retained);
+  if (missing.length > 0) {
+    throw missingAssetsError(missing);
+  }
   await persistGuestStored(
     options.storage,
     expectedCursor,
     {
-      assets: retainDeclaredAssets(stored, outcome.draft),
+      assets: retained,
       draft: outcome.draft,
     },
     options.onStored,
