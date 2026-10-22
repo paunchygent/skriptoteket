@@ -130,17 +130,25 @@ def rebuild_misplaced(source: SourceFormatting) -> list[tuple[NativeParagraph, i
 
 
 def own_source_span(
-    source: SourceFormatting, first: SourceParagraph, last: SourceParagraph
+    source: SourceFormatting,
+    first: SourceParagraph,
+    last: SourceParagraph,
+    *,
+    start: int | None = None,
 ) -> NativeParagraph | None:
     """Build one output's whole source extent, never another question's source.
 
-    The span runs from ``content_start(first)`` to ``last.end`` through the shared
-    source_paragraph() builder, so a joined row rebuilds every cell it rendered with
-    the " | " separators and the D5 join rule (TASK-SKRIPT-REP-0049 review F2). A span
-    with a source picture or an inline answer key cannot be rebuilt and raises; only
-    a span with no visible text returns None. The whole span is marked covered and
-    projected."""
-    start = source.content_start(first)
+    The span runs from ``start`` (default ``content_start(first)``) to ``last.end``
+    through the shared source_paragraph() builder, so a joined row rebuilds every
+    cell it rendered with the " | " separators and the D5 join rule
+    (TASK-SKRIPT-REP-0049 review F2). A caller restoring a shortened paragraph
+    passes the question opening's restore start, so the question's own printed
+    number is never restored: naming a question is our list label's job
+    (merged pre-push failure; Skriptoteket names questions by its own list labels,
+    never by the source's numbering). A span with a source picture or an inline
+    answer key cannot be rebuilt and raises; only a span with no visible text
+    returns None. The whole span is marked covered and projected."""
+    start = source.content_start(first) if start is None else start
     end = last.end
     if ANSWER_LABEL.search(source.text[start:end]):
         raise FormattingTransferError(

@@ -100,3 +100,9 @@ Evidence: retained root `01a160cd-e60f-7a6f-8166-26210b7bf1db`, `evidence/probes
 - Replays (`evidence/replays/f4/`):
   - Against base (`diff_base_f4.txt`), two items differ. Metodprov 1 item 1 keeps the restored sentence and is still review_complete. Fråga 5 becomes the printed review item; on main, its body showed the analyses.
   - Against the repair round (`diff_repair_f4.txt`), only Fråga 5 differs.
+
+### 2026-10-22 (lead): pre-push failure on the merge, light route
+
+- The pre-push suite on merge `d9193a821` failed `tests/unit/infrastructure/curated_apps/test_exam_workspace_docx_answer_line_main_builders.py::test_a_rebuilt_misplaced_paragraph_drops_the_printed_answer_line_on_both_paths`. With no printed label, the restore counted the source's "1." as missing and brought it back. Questions are named by Skriptoteket's list labels, never by the source's numbering.
+- U5: `restore_shortened_paragraphs` counts missing text from `_restore_start`. A `QUESTION_HEADING_LABEL` match at the start of the body's first visible paragraph is skipped. `own_source_span` takes that start. Fail-first: the failing test. Three admission cases cover a number restored away, a whole paragraph left unchanged, and a later "2)" paragraph that keeps its number.
+- Replays (`evidence/replays/u5/`, `diff_f4_u5.txt`): identical to the approved F4 run.

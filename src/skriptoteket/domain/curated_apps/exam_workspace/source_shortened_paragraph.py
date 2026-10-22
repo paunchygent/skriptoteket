@@ -17,7 +17,10 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import BLANK_RUN
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    BLANK_RUN,
+    QUESTION_HEADING_LABEL,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
 )
@@ -42,6 +45,34 @@ if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
         SourceFormatting,
     )
+
+
+def _restore_start(body_source: SourceFormatting, paragraph: SourceParagraph) -> int:
+    """Where the restore counts missing text from for one source paragraph.
+
+    The question's own printed number is our list label's job, never restored
+    (merged pre-push failure; Skriptoteket names questions by its own list labels,
+    never by the source's numbering): when the paragraph opens the question
+    (the first ``available_paragraphs`` entry with visible text) and
+    ``QUESTION_HEADING_LABEL`` matches at its start, the match end is the start.
+    """
+    start = body_source.content_start(paragraph)
+    if start != paragraph.start:
+        return start
+    first_visible: SourceParagraph | None = None
+    for candidate in body_source.available_paragraphs:
+        if any(
+            segment.text.strip()
+            for segment in body_source.visible_text_segments(candidate.start, candidate.end)
+        ):
+            first_visible = candidate
+            break
+    if first_visible is None or paragraph.start != first_visible.start:
+        return start
+    match = QUESTION_HEADING_LABEL.match(body_source.text, paragraph.start, paragraph.end)
+    if match is None:
+        return start
+    return match.end()
 
 
 def _paragraph_has_missing(
@@ -139,7 +170,7 @@ def restore_shortened_paragraphs(
             _paragraph_has_missing(
                 text,
                 paragraph,
-                body_source.content_start(paragraph),
+                _restore_start(body_source, paragraph),
                 body_source.excluded,
                 accounted,
             )
@@ -150,7 +181,7 @@ def restore_shortened_paragraphs(
             result.extend(merged[index] for index in group)
             cursor = group[-1] + 1
             continue
-        built = own_source_span(body_source, first, last)
+        built = own_source_span(body_source, first, last, start=_restore_start(body_source, first))
         if built is None:
             result.extend(merged[index] for index in group)
             cursor = group[-1] + 1

@@ -80,7 +80,7 @@ def _choice(text: str, correct: bool) -> dict[str, JsonValue]:
 
 def _item(
     anchors: tuple[str, ...],
-    label: str,
+    label: str | None,
     body: list[list[JsonValue]],
     *,
     kind: str = "free_text",
@@ -354,3 +354,31 @@ def test_a_whole_exact_joined_row_is_unchanged():
         _item(("body:0001",), "2", [[_text("First cell whole. | Second cell whole.")]]),
     )
     assert body_plain_text(item.body) == "First cell whole. | Second cell whole."
+
+
+def test_a_shortened_opening_paragraph_restores_without_the_printed_number():
+    chunks = (_chunk("body:0001", "1. Alpha first. Beta second."),)
+    item = _admit(chunks, _item(("body:0001",), None, [[_text("Alpha first.")]]))
+    assert body_plain_text(item.body) == "Alpha first. Beta second."
+
+
+def test_a_whole_opening_paragraph_without_the_printed_number_is_unchanged():
+    chunks = (_chunk("body:0001", "1. Alpha first."),)
+    item = _admit(chunks, _item(("body:0001",), None, [[_text("Alpha first.")]]))
+    assert body_plain_text(item.body) == "Alpha first."
+
+
+def test_a_shortened_later_paragraph_keeps_its_own_number():
+    chunks = (
+        _chunk("body:0001", "1. Intro sentence."),
+        _chunk("body:0002", "2) Part one. Part two."),
+    )
+    item = _admit(
+        chunks,
+        _item(
+            ("body:0001", "body:0002"),
+            None,
+            [[_text("Intro sentence.")], [_text("Part one.")]],
+        ),
+    )
+    assert body_plain_text(item.body) == "Intro sentence.\n2) Part one. Part two."
