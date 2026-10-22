@@ -122,7 +122,6 @@ class EditOpsCommand(BaseModel):
     selection: EditOpsSelection | None = None
     cursor: EditOpsCursor | None = None
     virtual_files: dict[VirtualFileId, str]
-    allow_remote_fallback: bool | None = None
 
 
 class EditOpsResult(BaseModel):

@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict
 
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDoorCaller
 
 from .common import SystemMessageVariant, VirtualFileId
 from .eval import PromptEvalMeta
-
-InlineCompletionProviderPreference = Literal["local", "external"]
 
 
 class LLMCompletionRequest(BaseModel):
@@ -37,8 +36,6 @@ class InlineCompletionCommand(BaseModel):
     prefix: str
     suffix: str
     active_file: VirtualFileId = "tool.py"
-    allow_remote_fallback: bool | None = None
-    inline_completion_provider: InlineCompletionProviderPreference | None = None
 
 
 class InlineCompletionResult(BaseModel):
@@ -54,21 +51,19 @@ class InlineCompletionResult(BaseModel):
 
 
 class InlineCompletionProviderProtocol(Protocol):
-    """Protocol for an OpenAI-compatible completion provider."""
+    """Inline completion through the LLM provider door for ``caller``.
+
+    Raises ``AiDailyLimitReached`` when the door refuses the call for a daily
+    limit.
+    """
 
     async def complete_inline(
         self,
         *,
         request: LLMCompletionRequest,
         system_prompt: str,
+        caller: AiDoorCaller,
     ) -> LLMCompletionResponse: ...
-
-
-class InlineCompletionProvidersProtocol(Protocol):
-    primary: InlineCompletionProviderProtocol
-    primary_is_remote: bool
-    fallback: InlineCompletionProviderProtocol | None
-    fallback_is_remote: bool
 
 
 class InlineCompletionHandlerProtocol(Protocol):

@@ -218,14 +218,9 @@ class Settings(BaseSettings):
     CLASSROOM_SHARE_PREVIEW_TIMEOUT_SECONDS: float = 8.0
 
     # LLM API
-    LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_v1"
-    LLM_COMPLETION_GPT5_TEMPLATE_ID: str = "inline_completion_gpt5_v1"
+    LLM_COMPLETION_TEMPLATE_ID: str = "inline_completion_gpt5_v1"
     LLM_CHAT_TEMPLATE_ID: str = "editor_chat_v1"
     LLM_CHAT_OPS_TEMPLATE_ID: str = "editor_chat_ops_v1"
-
-    # AI policy
-    AI_REMOTE_PROVIDERS_ENABLED: bool = True
-    AI_DEFAULT_ALLOW_REMOTE_FALLBACK: bool = False
 
     # HuleEdu Gateway internal identity context verification (ADR-0076 / ADR-0082)
     HULEEDU_INTERNAL_IDENTITY_ISSUER: str = "api_gateway_service"
@@ -238,24 +233,16 @@ class Settings(BaseSettings):
     HULEEDU_INTERNAL_IDENTITY_TTL_SECONDS: int = 60
     HULEEDU_INTERNAL_IDENTITY_ALLOWED_CLOCK_SKEW_SECONDS: int = 5
 
-    # Prompt caching guardrails (OpenAI)
-    LLM_PROMPT_CACHE_RETENTION_MODE: Literal["in_memory", "24h"] = "in_memory"
-    LLM_PROMPT_CACHE_EXTENDED_ALLOWED: bool = True
-
+    # Script-editor AI (TASK-SKRIPT-41-01-02): every call goes through HuleEdu's
+    # LLM provider door's Responses route with the teacher's user id. Inline
+    # completion runs on GPT-6 Luna (small-model pool); chat, chat ops and edit
+    # run on OpenAI Sol 6.1 at low reasoning (full-model pool). Neither model
+    # accepts temperature.
     LLM_COMPLETION_ENABLED: bool = False
-    LLM_COMPLETION_BASE_URL: str = "http://localhost:8082"
-    OPENAI_LLM_COMPLETION_API_KEY: str = ""
-    LLM_COMPLETION_PROMPT_CACHE_KEY: str = ""
-    LLM_COMPLETION_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
-    LLM_COMPLETION_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_COMPLETION_MODEL: str = "Devstral-Small-2-24B"
-    LLM_COMPLETION_REASONING_EFFORT: LlmReasoningEffort | None = "minimal"
-    LLM_COMPLETION_TEXT_VERBOSITY: LlmTextVerbosity | None = "low"
-    LLM_COMPLETION_FALLBACK_BASE_URL: str = ""
-    LLM_COMPLETION_FALLBACK_MODEL: str = ""
-    LLM_COMPLETION_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_COMPLETION_MODEL: str = "gpt-6-luna"
+    LLM_COMPLETION_REASONING_EFFORT: LlmReasoningEffort = "none"
+    LLM_COMPLETION_TEXT_VERBOSITY: LlmTextVerbosity = "low"
     LLM_COMPLETION_MAX_TOKENS: int = 64
-    LLM_COMPLETION_TEMPERATURE: float = 0.2
     LLM_COMPLETION_TIMEOUT_SECONDS: int = 30
     LLM_COMPLETION_CONTEXT_WINDOW_TOKENS: int = 4096
     LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
@@ -264,60 +251,27 @@ class Settings(BaseSettings):
     LLM_COMPLETION_SUFFIX_MAX_TOKENS: int = 512
 
     LLM_CHAT_ENABLED: bool = False
-    LLM_CHAT_BASE_URL: str = "http://localhost:8082"
-    OPENAI_LLM_CHAT_API_KEY: str = ""
-    LLM_CHAT_PROMPT_CACHE_KEY: str = ""
-    LLM_CHAT_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
-    LLM_CHAT_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_CHAT_MODEL: str = "Devstral-Small-2-24B"
-    LLM_CHAT_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_CHAT_MODEL: str = "gpt-6.1-sol"
+    LLM_CHAT_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_CHAT_TEXT_VERBOSITY: LlmTextVerbosity | None = None
-    # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
-    LLM_CHAT_MAX_TOKENS: int = 4 * 1024
-    LLM_CHAT_GPT5_MAX_TOKENS: int = 8 * 1024
-    LLM_CHAT_TEMPERATURE: float = 0.2
-    LLM_CHAT_TIMEOUT_SECONDS: int = 60
-    LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 16384
-    LLM_CHAT_GPT5_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
+    LLM_CHAT_MAX_TOKENS: int = 8 * 1024
+    LLM_CHAT_TIMEOUT_SECONDS: int = 120
+    LLM_CHAT_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
     LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_TAIL_MAX_MESSAGES: int = 60
 
-    # Chat failover (primary -> fallback). Defaults keep failover disabled.
-    LLM_CHAT_FALLBACK_BASE_URL: str = ""
-    LLM_CHAT_FALLBACK_MODEL: str = ""
-    LLM_CHAT_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
-
     LLM_CHAT_OPS_ENABLED: bool = False
-    LLM_CHAT_OPS_BASE_URL: str = "http://localhost:8082"
-    OPENAI_LLM_CHAT_OPS_API_KEY: str = ""
-    LLM_CHAT_OPS_PROMPT_CACHE_KEY: str = ""
-    LLM_CHAT_OPS_PROMPT_CACHE_RETENTION: Literal["in_memory", "24h"] | None = None
-    LLM_CHAT_OPS_EXTRA_HEADERS: dict[str, str] = Field(default_factory=dict)
-    LLM_CHAT_OPS_MODEL: str = "Devstral-Small-2-24B"
-    LLM_CHAT_OPS_REASONING_EFFORT: LlmReasoningEffort | None = None
+    LLM_CHAT_OPS_MODEL: str = "gpt-6.1-sol"
+    LLM_CHAT_OPS_REASONING_EFFORT: LlmReasoningEffort = "low"
     LLM_CHAT_OPS_TEXT_VERBOSITY: LlmTextVerbosity | None = None
-    # Output token budgets vary significantly between local llama.cpp and GPT-5 thinking models.
-    LLM_CHAT_OPS_MAX_TOKENS: int = 4 * 1024
-    LLM_CHAT_OPS_GPT5_MAX_TOKENS: int = 8 * 1024
-    LLM_CHAT_OPS_TEMPERATURE: float = 0.2
+    LLM_CHAT_OPS_MAX_TOKENS: int = 8 * 1024
     LLM_CHAT_OPS_TIMEOUT_SECONDS: int = 120
-    LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 16 * 1024
-    LLM_CHAT_OPS_GPT5_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
+    LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: int = 64 * 1024
     LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: int = 256
     # Chat-ops prompts include strict JSON-only schema + rules.
     # They are larger than chat-stream prompts.
     LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: int = 8 * 1024
-
-    LLM_CHAT_OPS_FALLBACK_BASE_URL: str = ""
-    LLM_CHAT_OPS_FALLBACK_MODEL: str = ""
-    LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT: LlmReasoningEffort | None = None
-
-    LLM_CHAT_FAILOVER_STICKY_TTL_SECONDS: int = 60 * 10  # 10 minutes
-    LLM_CHAT_FAILOVER_BREAKER_FAILURE_THRESHOLD: int = 2
-    LLM_CHAT_FAILOVER_BREAKER_WINDOW_SECONDS: int = 30
-    LLM_CHAT_FAILOVER_BREAKER_COOLDOWN_SECONDS: int = 90
-    LLM_CHAT_FAILOVER_PRIMARY_MAX_INFLIGHT: int = 0  # 0 = disabled
 
     # Exam answer-key completion (ST-SKRIPT-39-02, ST-SKRIPT-41-01): every paid
     # AI call goes through HuleEdu's LLM provider door on the shared
@@ -368,20 +322,10 @@ class Settings(BaseSettings):
     LLM_DOCX_GROUPING_MAX_OUTPUT_TOKENS: int = 60_000
     LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS: int = 4_000
 
-    # Tokenizers / prompt budgeting (ST-08-27 / ADR-0055)
-    # Devstral (Tekken) tokenizer assets may be set via env and we also auto-detect
-    # packaged Tekken assets when `mistral-common` is installed. Missing tokenizers fall back
-    # to conservative heuristic counting.
-    LLM_DEVSTRAL_TEKKEN_JSON_PATH: Path | None = None
-
-    # Chat template overhead (tokens). These are intentionally conservative defaults and are added
-    # in addition to tokenizing message content.
+    # Prompt budgeting (ST-08-27 / ADR-0055): chat template overhead in tokens,
+    # added to the tokenized message content.
     LLM_GPT5_MESSAGE_OVERHEAD_TOKENS: int = 3
     LLM_GPT5_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 3
-    LLM_DEVSTRAL_MESSAGE_OVERHEAD_TOKENS: int = 4
-    LLM_DEVSTRAL_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
-    LLM_HEURISTIC_MESSAGE_OVERHEAD_TOKENS: int = 4
-    LLM_HEURISTIC_SYSTEM_MESSAGE_OVERHEAD_TOKENS: int = 4
 
     @property
     def curated_apps_production_allowlist(self) -> frozenset[str]:
@@ -421,7 +365,12 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _require_llm_door_credentials(self) -> Settings:
-        if not self.LLM_ANSWER_KEY_ENABLED:
+        if not (
+            self.LLM_ANSWER_KEY_ENABLED
+            or self.LLM_COMPLETION_ENABLED
+            or self.LLM_CHAT_ENABLED
+            or self.LLM_CHAT_OPS_ENABLED
+        ):
             return self
         missing = [
             name
@@ -433,7 +382,7 @@ class Settings(BaseSettings):
         ]
         if missing:
             raise ValueError(
-                f"LLM answer-key completion requires the LLM provider door: {', '.join(missing)}"
+                f"Enabled AI features require the LLM provider door: {', '.join(missing)}"
             )
         return self
 
