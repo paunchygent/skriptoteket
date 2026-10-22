@@ -131,7 +131,7 @@ def test_italic_answer_line_under_a_triangle_is_a_label_accepted_residual() -> N
     )
 
 
-def test_plain_rectangle_with_dimension_stays_a_figure_and_text() -> None:
+def test_plain_rectangle_with_dimension_keeps_dimension_in_figure() -> None:
     chunks = pdf_chunks(
         "<p>1. Beskriv figuren.</p>"
         '<svg width="240" height="180"><rect x="40" y="30" width="150" height="100" '
@@ -144,14 +144,16 @@ def test_plain_rectangle_with_dimension_stays_a_figure_and_text() -> None:
     assert len(drawings) == 1
     assert drawings[0] is chunks[1]
     joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
-    assert "8" in joined.split() or ("8" in joined and "cm" in joined)
+    assert "8" not in joined.split()
+    assert "cm" not in joined
+    # The cut covers the rectangle (y 30..130) and the dimension under it.
     _assert_generous_cut(
         assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
-        expected_aspect=150 / 100,
+        expected_aspect=150 / 125,
     )
 
 
-def test_chart_tick_is_a_label_while_title_stays_text() -> None:
+def test_chart_tick_and_title_are_labels_in_figure() -> None:
     chunks = pdf_chunks(
         "<p>1. Beskriv figuren.</p>"
         '<svg width="240" height="200">'
@@ -164,14 +166,13 @@ def test_chart_tick_is_a_label_while_title_stays_text() -> None:
 
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
     assert len(drawings) == 1
-    rest = chunks[chunks.index(drawings[0]) + 1 :]
-    after = [chunk.text for chunk in rest if chunk.kind != "drawing"]
-    assert "10" not in " ".join(after).split()
-    assert "Tid" in " ".join(after) and "sekunder" in " ".join(after)
-    # The cut covers the axes (y 20..130) and the tick under them (to about y 143).
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "10" not in joined.split()
+    assert "Tid" not in joined and "sekunder" not in joined
+    # The cut covers the axes (y 20..130), the tick and the title under them.
     _assert_generous_cut(
         assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
-        expected_aspect=160 / 123,
+        expected_aspect=160 / 147,
     )
 
 

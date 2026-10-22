@@ -6,13 +6,16 @@ label words, using only deterministic box predicates. No text is inspected.
 
 Rules:
     A figure owns the words whose centre lies inside its drawn outline grown by
-    ``_LABEL_INSIDE_POINTS``, plus the label runs in one ring around it. Each visual
-    line splits into runs at every horizontal gap between neighbouring words of at
-    least ``_RUN_GAP_RATIO`` body sizes; a run is the unit of label ownership. A run
-    with some words inside the grown hull and some outside gives none of its words;
-    a ring run lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes sideways
-    and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, wholly within the side
-    reach, and never starts at the left text margin (its first word). A word claimed
+    ``_LABEL_INSIDE_POINTS``, plus the label runs in at most two rings around it: one
+    ring against the hull (a tick row), then one chained row above the top or below
+    the bottom of the union of the hull and the labels already taken (an axis-title
+    row). Each visual line splits into runs at every horizontal gap between
+    neighbouring words of at least ``_RUN_GAP_RATIO`` body sizes; a run is the unit
+    of label ownership. A run with some words inside the grown hull and some outside
+    gives none of its words; a ring run lies outside the hull, within
+    ``_LABEL_SIDE_RATIO`` body sizes sideways and ``_LABEL_VERTICAL_RATIO`` body
+    sizes above or below its reference, wholly within the side reach of the original
+    hull, and never starts at the left text margin (its first word). A word claimed
     by more than one cut goes to the cut whose hull is nearest its run box
     (horizontal gap plus vertical gap, 0 when overlapping); ties break by hull-centre
     distance to the word centre, then the smaller hull top, then the smaller hull
@@ -22,7 +25,7 @@ Rules:
     no words inside it, but takes ring labels such as a dimension below it. Such a
     box holding a margin-starting line is a paragraph or page border (no cut), and
     a ``rect`` stroke holding one is dropped before clustering. A placed picture of
-    any size is a picture cut. An axis title one ring further out is read as text.
+    any size is a picture cut.
 
 Relationships:
     The layout adapter builds ``PageGraphics`` from pdfplumber page objects;
@@ -79,10 +82,17 @@ _LABEL_INSIDE_POINTS = 1.0  # the hull grows this far when catching inside label
 # A label line beside the drawing: at most this many body sizes away from the hull
 # sideways, and wholly within that reach left and right of it.
 _LABEL_SIDE_RATIO = 1.5
-# A label line above or below the drawing: at most this many body sizes of white space
-# from the hull. Body text after a figure usually sits further off; an axis title one
-# ring further out is read as text, a duplicate the teacher can delete.
-_LABEL_VERTICAL_RATIO = 0.5
+# A label line above or below the drawing: at most this many body sizes of white
+# space from its reference. Measured against the hull: "8 cm" sits 8.1 pt under a
+# rectangle at body 11 (0.74 body sizes); a chart tick sits 2.9 pt under the axes
+# and the title "Tid (sekunder)" 6.8 pt under the tick (0.62). A body line a full
+# Word spacing further out (0.97 body sizes) stays text, as does a third stacked row.
+_LABEL_VERTICAL_RATIO = 0.8
+# Label rows chain through at most this many ring passes in all: the first ring
+# against the hull (a tick row), then one chained row above the top or below the
+# bottom of the union of the hull and the labels already taken (an axis-title row).
+# A stack of indented lines under a figure is cut off after these two rows.
+_LABEL_ROW_PASSES = 2
 # A line starting this close to the document's left text margin is body text, never a
 # ring label: paragraphs start there, a figure's labels sit by the drawing. When such
 # a line reaches into a boundary box the box is a paragraph or page border, never a
@@ -265,34 +275,56 @@ def _figure_labels(
     grown_hull: Box,
     body_size: float,
 ) -> frozenset[int]:
-    """Hull-inside words plus the label runs in the ring around the hull, one ring.
+    """Hull-inside words plus the label runs in at most two rings around the hull.
 
-    A ring run lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes of it
-    sideways and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, and wholly within
-    the side reach left and right, so a wrapped text line beside the figure is no label.
-    A run starting at the left text margin (its first word) is a paragraph, never a
-    ring label. A run with some words inside the grown hull and some outside gives
-    none of its words: the run stays text.
+    The first ring lies against the hull; the second chained pass takes runs above
+    the top or below the bottom of the union of the hull and the labels already
+    taken, within ``_LABEL_VERTICAL_RATIO`` body sizes of that union. Both passes
+    stay wholly within ``_LABEL_SIDE_RATIO`` body sizes of the original hull left
+    and right, so a wrapped text line beside the figure is no label. A run starting
+    at the left text margin (its first word) is a paragraph, never a ring label.
+    A run with some words inside the grown hull and some outside gives none of its
+    words: the run stays text.
     """
     side = _LABEL_SIDE_RATIO * body_size
     vertical = _LABEL_VERTICAL_RATIO * body_size
     labels = {
         index for index, word in enumerate(graphics.words) if _centre_inside(word, grown_hull)
     }
+    straddling: set[int] = set()
     for run in runs:
         inside = [index for index in run if index in labels]
-        if inside:
-            if len(inside) != len(run):
-                labels.difference_update(inside)
-            continue
-        box = _union(tuple(graphics.words[index] for index in run))
-        horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
-        vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
-        within_reach = box[0] >= hull[0] - side and box[2] <= hull[2] + side
-        at_margin = abs(box[0] - graphics.text_left) <= _MARGIN_START_POINTS
-        in_ring = horizontal_gap <= side and vertical_gap <= vertical
-        if in_ring and within_reach and not at_margin:
+        if inside and len(inside) != len(run):
+            straddling.update(run)
+    labels.difference_update(straddling)
+    reference = hull
+    for row in range(_LABEL_ROW_PASSES):
+        taken: list[tuple[int, ...]] = []
+        for run in runs:
+            if any(index in labels or index in straddling for index in run):
+                continue
+            box = _union(tuple(graphics.words[index] for index in run))
+            if row == 0:
+                horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
+                vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
+                in_reach = horizontal_gap <= side and vertical_gap <= vertical
+            else:
+                if box[3] <= reference[1]:
+                    gap = reference[1] - box[3]
+                elif box[1] >= reference[3]:
+                    gap = box[1] - reference[3]
+                else:
+                    continue
+                in_reach = gap <= vertical
+            within_reach = box[0] >= hull[0] - side and box[2] <= hull[2] + side
+            at_margin = abs(box[0] - graphics.text_left) <= _MARGIN_START_POINTS
+            if in_reach and within_reach and not at_margin:
+                taken.append(run)
+        if not taken:
+            break
+        for run in taken:
             labels.update(run)
+        reference = _union((hull, *(graphics.words[index] for index in labels)))
     return frozenset(labels)
 
 

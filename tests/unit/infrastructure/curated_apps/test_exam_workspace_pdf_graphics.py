@@ -315,22 +315,73 @@ def test_large_picture_between_paragraphs_is_picture() -> None:
     assert cuts == (PdfCut(kind="picture", box=image, labels=frozenset()),)
 
 
-def test_axis_tick_is_label_while_title_one_ring_out_is_text() -> None:
+def test_axis_tick_with_chained_title_are_labels() -> None:
     strokes = (
         _stroke((40.0, 120.0, 200.0, 122.0)),
         _stroke((40.0, 20.0, 42.0, 120.0)),
         _stroke((50.0, 30.0, 190.0, 110.0), kind="curve"),
     )
-    words = ((90.0, 123.0, 110.0, 133.0), (80.0, 145.0, 170.0, 155.0))
+    # Tick 1 pt under the axes; title 7 pt under the tick (the chart's measured
+    # spacing), 18 pt under the axes: only the chained second pass reaches it.
+    words = ((90.0, 123.0, 110.0, 133.0), (80.0, 140.0, 170.0, 150.0))
     cuts = page_cuts(
         _page(strokes=strokes, words=words, lines=((0,), (1,)), text_left=70.0),
         body_size=_BODY,
     )
     assert len(cuts) == 1
     assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset({0, 1})
+    assert cuts[0].box == (29.0, 9.0, 211.0, 161.0)
+    assert cuts[0].box[3] >= 150.0
+
+
+def test_third_indented_row_under_figure_is_text_after_two_label_rows() -> None:
+    strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
+    words = (
+        (100.0, 182.0, 130.0, 190.0),
+        (133.0, 182.0, 180.0, 190.0),
+        (100.0, 192.0, 130.0, 200.0),
+        (133.0, 192.0, 180.0, 200.0),
+        (100.0, 202.0, 130.0, 210.0),
+        (133.0, 202.0, 180.0, 210.0),
+    )
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1), (2, 3), (4, 5)), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    # Two label rows are taken (first ring, then one chained pass); the third row
+    # stays text even though it sits within reach of the second row.
+    assert cuts[0].labels == frozenset({0, 1, 2, 3})
+
+
+def test_indented_line_word_spacing_below_figure_is_not_a_label() -> None:
+    strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
+    # 0.97 body sizes under the hull: Word's spacing to the next line, beyond reach.
+    words = ((100.0, 190.67, 130.0, 198.67), (133.0, 190.67, 180.0, 198.67))
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1),), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset()
+    assert cuts[0].box == (89.0, 89.0, 211.0, 189.67)
+
+
+def test_indented_short_line_just_above_figure_is_a_label() -> None:
+    strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
+    # 0.75 body sizes above the hull: within reach, the recorded absorption cost.
+    words = ((100.0, 83.75, 140.0, 91.75),)
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0,),), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
     assert cuts[0].labels == frozenset({0})
-    assert cuts[0].box == (29.0, 9.0, 211.0, 144.0)
-    assert cuts[0].box[3] < 145.0
+    assert cuts[0].box == (89.0, 72.75, 211.0, 191.0)
 
 
 def test_line_straddling_hull_gives_none_of_its_words_while_inside_labels_stay() -> None:
