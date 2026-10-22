@@ -20,7 +20,6 @@
 import { computed, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { EXAM_WORKSPACE_BLOCKER_FIX_LABELS } from "./examWorkspaceBlockers";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
@@ -44,12 +43,10 @@ const emit = defineEmits<{
 }>();
 
 const requestSignIn = useExamWorkspaceSignIn();
-const aiNoteId = useId();
 const limitNoteId = useId();
-/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+/** Guest controls stay enabled and ask for sign-in; every signed-in user's control runs. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
-const adminOnly = computed(() => aiMode.value === "admin_only");
 /** The door's daily limit disables the key controls for the page session. */
 const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fix === "suggest_key").length);
@@ -92,13 +89,6 @@ function handleFix(blocker: ExamWorkspaceBlockerEntry): void {
       meaning="status-failure"
       :size="16"
     />Kan inte exporteras ännu</b>
-    <p
-      v-if="adminOnly && hasAiControl"
-      :id="aiNoteId"
-      class="xw-hint"
-    >
-      {{ AI_ADMIN_ONLY_NOTE }}
-    </p>
     <AiDailyLimitNote
       v-if="limitReached && hasAiControl"
       :id="limitNoteId"
@@ -107,9 +97,9 @@ function handleFix(blocker: ExamWorkspaceBlockerEntry): void {
       v-if="missingKeys > 1"
       type="button"
       class="xw-mblock__fix xw-mblock__all"
-      :disabled="fixDisabled || suggestBusy || adminOnly || limitReached"
-      :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
-      :aria-describedby="limitReached ? limitNoteId : adminOnly ? aiNoteId : undefined"
+      :disabled="fixDisabled || suggestBusy || limitReached"
+      :title="limitReached ? (aiDailyLimitNote ?? undefined) : undefined"
+      :aria-describedby="limitReached ? limitNoteId : undefined"
       data-test="exam-workspace-blocker-suggest-all"
       @click="handleSuggestAll"
     >
@@ -132,10 +122,10 @@ function handleFix(blocker: ExamWorkspaceBlockerEntry): void {
         v-if="blocker.fix"
         type="button"
         class="xw-mblock__fix"
-        :disabled="fixDisabled || (blocker.fix === 'suggest_key' && (suggestBusy || adminOnly || limitReached))"
-        :title="blocker.fix === 'suggest_key' && limitReached ? (aiDailyLimitNote ?? undefined) : blocker.fix === 'suggest_key' && adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+        :disabled="fixDisabled || (blocker.fix === 'suggest_key' && (suggestBusy || limitReached))"
+        :title="blocker.fix === 'suggest_key' && limitReached ? (aiDailyLimitNote ?? undefined) : undefined"
         :aria-label="`Fråga ${blocker.label}: ${EXAM_WORKSPACE_BLOCKER_FIX_LABELS[blocker.fix]}`"
-        :aria-describedby="blocker.fix === 'suggest_key' && limitReached ? limitNoteId : blocker.fix === 'suggest_key' && adminOnly ? aiNoteId : undefined"
+        :aria-describedby="blocker.fix === 'suggest_key' && limitReached ? limitNoteId : undefined"
         :data-test="`exam-workspace-blocker-fix-${blocker.itemId ?? 'title'}`"
         @click="handleFix(blocker)"
       >

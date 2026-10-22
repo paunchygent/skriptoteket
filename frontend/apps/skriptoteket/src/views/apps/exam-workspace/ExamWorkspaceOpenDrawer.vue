@@ -21,7 +21,6 @@ import { computed, onMounted, ref, watch } from "vue";
 
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import ExamWorkspaceConversionStatus from "./ExamWorkspaceConversionStatus.vue";
@@ -81,16 +80,12 @@ const emit = defineEmits<{
 const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog(store.shared);
-const { canUseAi } = useAiAccess();
-const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
-/** Guest import stays visible and asks for sign-in; signed-in Word and PDF import follows the admin gate. */
+/** Guest import stays visible and asks for sign-in; every signed-in user may import Word and PDF. */
 const isGuest = computed(() => store.teacher === null);
 /** PDF import is the Word import path: it shows wherever the Word import shows. */
 /** The door's daily limit stops Word imports for the page session; DigiExam and QTI stay open. */
 const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
-const showWordImport = computed(
-  () => (isGuest.value || canUseAi.value) && !limitReached.value,
-);
+const showWordImport = computed(() => !limitReached.value);
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -267,10 +262,6 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         class="xw-muted"
         data-test="ai-daily-limit-note"
       >{{ aiDailyLimitNote }}</small>
-      <small
-        v-else-if="!showWordImport"
-        class="xw-muted"
-      >{{ aiAdminOnlyNote }}</small>
     </div>
     <p
       v-if="sourceFileError"

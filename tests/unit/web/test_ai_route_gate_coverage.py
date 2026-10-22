@@ -1,18 +1,20 @@
-"""Route-coverage guard for the paid-AI admin gate.
+"""Route-coverage guard for paid-LLM sign-in.
 
 Purpose:
-    Prove (TASK-SKRIPT-REP-0044 L1, L2, L4) that the set of HTTP routes that can
-    start a paid LLM call, the set of routes carrying `require_app_ai_api`, and
-    an explicit expected snapshot are equal. A new route that reaches an LLM
-    client without the gate fails this module.
+    Prove that the set of HTTP routes that can start a paid LLM call, the set
+    of routes whose dependency chain reaches the sign-in gate, and an explicit
+    expected snapshot are equal. Every paid route must keep a signed-in caller
+    behind it, reached directly or through a role check, and no guest or
+    public route may reach an LLM client. A new route that reaches an LLM
+    client without the sign-in chain fails this module.
 
 Relationships:
     - Maintained policy lives in `ai_route_gate_policy.py`.
     - Discovery and classification helpers live in `ai_route_gate_discovery.py`,
       which derives reachability from `skriptoteket.di.build_providers` and the
       real FastAPI app built by `skriptoteket.web.app.create_app`.
-    - Complements the HTTP-level gate tests in
-      `test_apps_exam_workspace_ai_gate_api.py`.
+    - Complements the HTTP-level access tests in
+      `test_apps_exam_workspace_non_admin_ai_api.py`.
 """
 
 from __future__ import annotations
@@ -47,7 +49,6 @@ from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.web.app import create_app
 from skriptoteket.web.auth.huleedu_app_projection import (
-    require_app_contributor_api,
     require_app_user_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -68,7 +69,6 @@ from tests.unit.web.ai_route_gate_discovery import (
 from tests.unit.web.ai_route_gate_policy import (
     AI_ROLE_GATE,
     EXPECTED_AI_ROUTES,
-    FORBIDDEN_AI_ROLE_GATES,
     JOB_ENQUEUERS,
     JOB_LANES,
     NON_AI_JOB_REPOSITORY_USERS,
@@ -159,7 +159,7 @@ def test_route_resolved_job_repository_users_are_classified(
     )
 
 
-def test_paid_llm_routes_require_ai_gate(app: FastAPI, reached_llm: set[type]) -> None:
+def test_paid_llm_routes_require_sign_in(app: FastAPI, reached_llm: set[type]) -> None:
     derived = paid_llm_route_keys(app, reached_llm)
     gated = ai_gated_route_keys(app)
 
@@ -170,33 +170,12 @@ def test_paid_llm_routes_require_ai_gate(app: FastAPI, reached_llm: set[type]) -
         + describe_routes(derived - EXPECTED_AI_ROUTES)
         + " (do not gate a new route here; report it)"
     )
-    assert gated == EXPECTED_AI_ROUTES, (
-        "routes carrying require_app_ai_api deviate from the snapshot; not-yet-gated: "
+    assert not (EXPECTED_AI_ROUTES - gated), (
+        "snapshot paid-LLM routes whose sign-in chain is broken: "
         + describe_routes(EXPECTED_AI_ROUTES - gated)
-        + "; gated-outside-snapshot: "
-        + describe_routes(gated - EXPECTED_AI_ROUTES)
     )
-    assert derived == gated, (
-        "paid-LLM routes without the AI gate: "
-        + describe_routes(derived - gated)
-        + "; gated routes that cannot start an LLM call: "
-        + describe_routes(gated - derived)
-    )
-
-
-def test_ai_routes_have_no_other_role_dependency(app: FastAPI, reached_llm: set[type]) -> None:
-    offenders: list[str] = []
-    for route in app.routes:
-        if not isinstance(route, APIRoute):
-            continue
-        if not is_paid_llm_route(route, reached_llm):
-            continue
-        conflicting = dependency_call_names(route.dependant) & FORBIDDEN_AI_ROLE_GATES
-        if conflicting:
-            offenders.append(f"{sorted(route.methods)} {route.path} -> {sorted(conflicting)}")
-    assert not offenders, (
-        "paid-LLM routes must carry require_app_ai_api as their only AI role check: "
-        + "; ".join(offenders)
+    assert not (derived - gated), "paid-LLM routes outside the sign-in chain: " + describe_routes(
+        derived - gated
     )
 
 
@@ -221,9 +200,8 @@ def test_guard_detects_an_ungated_llm_route(reached_llm: set[type]) -> None:
     @router.post("/__guard_probe__/ungated-llm")
     async def ungated_llm_probe(
         handler: FromDishka[InlineCompletionHandlerProtocol],
-        user: User = Depends(require_app_contributor_api),
     ) -> None:
-        del handler, user
+        del handler
 
     probe_app = FastAPI()
     probe_app.include_router(router)
@@ -332,9 +310,8 @@ def test_content_classifier_protocol_route_is_paid_and_ungated(
     @router.post("/__guard_probe__/content-classification")
     async def content_classification_probe(
         classifier: FromDishka[ExamContentTagClassifierProtocol],
-        user: User = Depends(require_app_user_api),
     ) -> None:
-        del classifier, user
+        del classifier
 
     probe_app = FastAPI()
     probe_app.include_router(router)

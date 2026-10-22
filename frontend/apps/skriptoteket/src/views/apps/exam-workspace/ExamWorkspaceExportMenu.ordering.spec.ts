@@ -31,15 +31,12 @@ function mountMenu(blockers: ExamWorkspaceBlockerEntry[]) {
   return mount(ExamWorkspaceExportMenu, {
     attachTo: document.body,
     global: {
-      // The export blockers read the admin-only AI gate through the auth
-      // store (TASK-SKRIPT-REP-0044 L3). `hasAtLeastRole` is a setup-store
-      // function, so `createTestingPinia` registers it as an action and must
-      // keep it real; the admin user is the "no change" role for these cases.
+      // The export menu mounts signed in; every signed-in user runs the AI
+      // controls, so the default stubbed auth store is enough for these cases.
       plugins: [
         createTestingPinia({
           createSpy: vi.fn,
           initialState: { auth: { user: adminUser } },
-          stubActions: (name) => name !== "hasAtLeastRole",
         }),
         examWorkspaceProvidersPlugin(),
       ],

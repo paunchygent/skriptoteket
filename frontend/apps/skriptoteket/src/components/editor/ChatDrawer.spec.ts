@@ -3,16 +3,17 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { mountWithContext } from "../../test/utils";
-import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { SystemMessage } from "../ui";
 import { UiGlyph } from "../ui/shared";
 import ChatComposer from "./ChatComposer.vue";
 import ChatDrawer from "./ChatDrawer.vue";
 
+const BLOCKED_NOTE = "Daglig AI-gräns nådd.";
+
 function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+    .filter((node) => node.text().trim() === BLOCKED_NOTE);
 }
 
 describe("ChatDrawer", () => {
@@ -180,7 +181,7 @@ describe("ChatDrawer", () => {
     expect(wrapper.text()).toContain("correlation-id: corr-123");
   });
 
-  it("forwards the AI admin-only note through to the composer", () => {
+  it("forwards the AI blocked note through to the composer", () => {
     const wrapper = mountWithContext(ChatDrawer, {
       props: {
         variant: "column",
@@ -190,15 +191,15 @@ describe("ChatDrawer", () => {
         isStreaming: false,
         isEditOpsLoading: false,
         error: null,
-        aiBlockedNote: AI_ADMIN_ONLY_NOTE,
+        aiBlockedNote: BLOCKED_NOTE,
       },
     });
 
     const composer = wrapper.findComponent(ChatComposer);
-    expect(composer.props("aiBlockedNote")).toBe(AI_ADMIN_ONLY_NOTE);
+    expect(composer.props("aiBlockedNote")).toBe(BLOCKED_NOTE);
     const notes = findNotes(wrapper);
     expect(notes).toHaveLength(1);
-    expect(notes[0]!.text()).toBe(AI_ADMIN_ONLY_NOTE);
+    expect(notes[0]!.text()).toBe(BLOCKED_NOTE);
     wrapper.unmount();
   });
 });

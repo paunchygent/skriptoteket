@@ -19,7 +19,6 @@
 import { computed } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import {
   aiDailyLimitFor,
@@ -56,7 +55,6 @@ export function createConversionImportAction(
 ) {
   const { binding } = runtime;
   const toast = useToast();
-  const { canUseAi } = useAiAccess();
   const smallAllowance = aiDailyLimitFor("small");
 
   /**
@@ -68,9 +66,6 @@ export function createConversionImportAction(
 
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || runtime.isConverting.value) return;
-    // A Word or PDF import is a paid AI conversion and stays admin-only until the spend cap ships;
-    // the Öppna drawer already shows the L3 note for the refused file.
-    if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
     // The door's daily limit stops Word imports for the page session; the
     // Öppna drawer names the limit next to the import instead.
     if (!isDigiExamFile(file) && !isQtiPackageFile(file) && smallAllowance.reached.value) {

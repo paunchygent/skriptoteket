@@ -4,12 +4,13 @@ import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
-import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import ChatDrawer from "./ChatDrawer.vue";
 import EditorWorkspaceDrawers from "./EditorWorkspaceDrawers.vue";
 import EditorWorkspacePanel from "./EditorWorkspacePanel.vue";
 import type { EditorWorkspacePanelProps } from "./EditorWorkspacePanel.types";
+
+const BLOCKED_NOTE = "Daglig AI-gräns nådd.";
 
 function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorWorkspacePanelProps {
   const editOpsState: EditorWorkspacePanelProps["editOpsState"] = {
@@ -122,7 +123,7 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
 function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+    .filter((node) => node.text().trim() === BLOCKED_NOTE);
 }
 
 function drawerStubs() {
@@ -184,13 +185,13 @@ describe("EditorWorkspacePanel", () => {
     expect(wrapper.find('[data-editor-mode="metadata"]').exists()).toBe(true);
   });
 
-  it("renders the AI admin-only note and disables the composer textarea when aiBlockedNote is set", async () => {
-    const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+  it("renders the AI blocked note and disables the composer textarea when aiBlockedNote is set", async () => {
+    const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: BLOCKED_NOTE });
     await nextTick();
 
     const notes = findNotes(wrapper);
     expect(notes.length).toBeGreaterThan(0);
-    expect(notes.every((note) => note.text() === AI_ADMIN_ONLY_NOTE)).toBe(true);
+    expect(notes.every((note) => note.text() === BLOCKED_NOTE)).toBe(true);
 
     const textarea = wrapper.get('textarea[aria-label="Meddelande till kodassistenten"]');
     expect(textarea.attributes("disabled")).toBeDefined();

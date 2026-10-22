@@ -28,7 +28,6 @@ import type {
   NativeExamHeader,
 } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
@@ -65,14 +64,12 @@ const emit = defineEmits<{
 }>();
 
 const id = useId();
-const contentAiNoteId = `${id}-ai-note`;
 const contentLimitNoteId = `${id}-limit-note`;
 const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
-/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+/** Guest controls stay enabled and ask for sign-in; every signed-in user's control runs. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
-const adminOnly = computed(() => aiMode.value === "admin_only");
 /** The door's daily limit disables the content button for the page session. */
 const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);
@@ -333,9 +330,9 @@ function cites(entryId: string): string | null {
       <button
         type="button"
         class="xw-btn xw-btn--compact"
-        :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || adminOnly || limitReached)"
-        :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
-        :aria-describedby="limitReached ? contentLimitNoteId : adminOnly ? contentAiNoteId : undefined"
+        :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || limitReached)"
+        :title="limitReached ? (aiDailyLimitNote ?? undefined) : suggestBlocked ?? undefined"
+        :aria-describedby="limitReached ? contentLimitNoteId : undefined"
         data-test="exam-workspace-content-suggest"
         @click="handleSuggestContent"
       >
@@ -346,13 +343,6 @@ function cites(entryId: string): string | null {
         />Föreslå innehåll
       </button>
     </h3>
-    <p
-      v-if="adminOnly"
-      :id="contentAiNoteId"
-      class="xw-hint"
-    >
-      {{ AI_ADMIN_ONLY_NOTE }}
-    </p>
     <AiDailyLimitNote
       v-if="limitReached"
       :id="contentLimitNoteId"

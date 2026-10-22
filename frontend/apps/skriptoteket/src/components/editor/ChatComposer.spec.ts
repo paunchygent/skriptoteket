@@ -2,9 +2,10 @@ import { mount } from "@vue/test-utils";
 import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { UiGlyph } from "../ui/shared";
 import ChatComposer from "./ChatComposer.vue";
+
+const BLOCKED_NOTE = "Daglig AI-gräns nådd.";
 
 function mountComposer(overrides: Record<string, unknown> = {}) {
   return mount(ChatComposer, {
@@ -15,7 +16,7 @@ function mountComposer(overrides: Record<string, unknown> = {}) {
 function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+    .filter((node) => node.text().trim() === BLOCKED_NOTE);
 }
 
 describe("ChatComposer shared controls", () => {
@@ -120,9 +121,9 @@ describe("ChatComposer shared controls", () => {
   });
 
   it.each([0, 1])(
-    "blocks the textarea, primary action, Enter and shows the note in mode %i under the AI gate",
+    "blocks the textarea, primary action, Enter and shows the note in mode %i under the daily-limit block",
     async (modeIndex) => {
-      const wrapper = mountComposer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+      const wrapper = mountComposer({ aiBlockedNote: BLOCKED_NOTE });
       const modes = wrapper.get('[role="radiogroup"]').findAll('[role="radio"]');
       await modes[modeIndex]!.trigger("click");
 
@@ -141,13 +142,13 @@ describe("ChatComposer shared controls", () => {
       expect(wrapper.emitted("requestEditOps")).toBeUndefined();
       const notes = findNotes(wrapper);
       expect(notes).toHaveLength(1);
-      expect(notes[0]!.text()).toBe(AI_ADMIN_ONLY_NOTE);
+      expect(notes[0]!.text()).toBe(BLOCKED_NOTE);
       wrapper.unmount();
     },
   );
 
-  it("keeps cancel and clear behaviour while the AI gate is on", async () => {
-    const wrapper = mountComposer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+  it("keeps cancel and clear behaviour while the daily-limit block is on", async () => {
+    const wrapper = mountComposer({ aiBlockedNote: BLOCKED_NOTE });
     await wrapper.findAll("button").find((button) => button.text() === "Ny chatt")!.trigger("click");
     expect(wrapper.emitted("clear")).toEqual([[]]);
 

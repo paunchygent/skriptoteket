@@ -63,7 +63,6 @@ vi.mock("../../api/examWorkspace", async (original) => ({
   ...api,
 }));
 vi.mock("../../composables/useToast", () => ({ useToast: () => toast }));
-vi.mock("../../composables/useAiAccess", () => ({ useAiAccess: () => ({ canUseAi: { value: true } }) }));
 
 const Z = "00000000-0000-4000-8000-000000000003";
 const COPY = "00000000-0000-4000-8000-000000000004";

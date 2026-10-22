@@ -1,33 +1,27 @@
 /**
- * The import box's per-question "Konvertera igen" retry is admin-only until the
- * AI spend cap ships (TASK-SKRIPT-REP-0044 L3).
+ * The import box's per-question "Konvertera igen" retry runs for every
+ * signed-in user.
  *
  * Expected behavior:
- *   With role "user" or "contributor" the retry button and its type selector are
- *   disabled, the button carries the admin-only note (title, described-by and an
- *   inline note), and clicking emits nothing. With role "admin" or "superuser"
- *   the note is gone and the retry works.
+ *   With role "user" or "contributor" the retry button and its type selector
+ *   are enabled, no admin-only note shows (inline, title or described-by),
+ *   and clicking emits the retry.
  */
 
 import { mount } from "@vue/test-utils";
-import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
-type Role = "user" | "contributor" | "admin" | "superuser";
+/** Distinctive fragment of the removed admin-only note; the full note must not render. */
+const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
 
-function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
-  return wrapper
-    .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
-}
+type Role = "user" | "contributor";
 
 function reviewItem(): NativeExamItem {
   return {
@@ -83,41 +77,19 @@ beforeEach(() => {
   pinia = createPinia();
 });
 
-describe("ExamWorkspaceImportBox AI gate", () => {
+describe("ExamWorkspaceImportBox non-admin AI", () => {
   it.each(["user", "contributor"] as const)(
-    "disables the retry, shows the note and emits nothing for role %s",
+    "leaves the retry working without the admin-only note for role %s",
     async (role) => {
       signIn(pinia, role);
       const wrapper = mountBox(pinia);
 
-      expect(wrapper.get('[data-test="exam-workspace-retry-kind"]').attributes("disabled")).toBeDefined();
-
-      const notes = findNotes(wrapper);
-      expect(notes).toHaveLength(1);
-      const note = notes[0]!;
-      expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
-
-      const button = wrapper.get('[data-test="exam-workspace-retry"]');
-      expect(button.attributes("disabled")).toBeDefined();
-      expect(button.attributes("title")).toBe(AI_ADMIN_ONLY_NOTE);
-      expect(button.attributes("aria-describedby")).toBe(note.attributes("id"));
-      await button.trigger("click");
-      expect(wrapper.emitted("retry")).toBeUndefined();
-      wrapper.unmount();
-    },
-  );
-
-  it.each(["admin", "superuser"] as const)(
-    "leaves the retry working without the note for role %s",
-    async (role) => {
-      signIn(pinia, role);
-      const wrapper = mountBox(pinia);
-
-      expect(findNotes(wrapper)).toHaveLength(0);
+      expect(wrapper.text()).not.toContain(REMOVED_ADMIN_NOTE);
       expect(wrapper.get('[data-test="exam-workspace-retry-kind"]').attributes("disabled")).toBeUndefined();
 
       const button = wrapper.get('[data-test="exam-workspace-retry"]');
       expect(button.attributes("disabled")).toBeUndefined();
+      expect(button.attributes("title")).toBeUndefined();
       await button.trigger("click");
       expect(wrapper.emitted("retry")).toEqual([["gap_fill"]]);
       wrapper.unmount();

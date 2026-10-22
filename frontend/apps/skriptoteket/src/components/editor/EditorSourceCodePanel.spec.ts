@@ -117,18 +117,16 @@ describe("EditorSourceCodePanel bundle file tabs", () => {
   });
 });
 
-describe("EditorSourceCodePanel AI access gate", () => {
-  it.each([
-    ["user", false],
-    ["contributor", false],
-    ["admin", true],
-    ["superuser", true],
-  ] as const)("gates inline completion for role %s", (role, expected) => {
-    const wrapper = mountPanel({}, role);
+describe("EditorSourceCodePanel AI access", () => {
+  it.each(["user", "contributor", "admin", "superuser"] as const)(
+    "enables inline completion for signed-in role %s",
+    (role) => {
+      const wrapper = mountPanel({}, role);
 
-    expect(intelligence.options?.ghostText?.enabled.value).toBe(expected);
-    wrapper.unmount();
-  });
+      expect(intelligence.options?.ghostText?.enabled.value).toBe(true);
+      wrapper.unmount();
+    },
+  );
 });
 
 describe("EditorSourceCodePanel daily limit note", () => {

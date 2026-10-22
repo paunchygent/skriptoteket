@@ -1,11 +1,10 @@
-"""HTTP-level paid-AI admin gate coverage for the exam-workspace routes.
+"""HTTP-level paid-AI access for the exam-workspace routes.
 
 Purpose:
-    Prove (TASK-SKRIPT-REP-0044 L1, L2) that the four exam-workspace routes
-    which can start a paid LLM call return 403 for a signed-in user and a
-    contributor without ever reaching their handler, while admins and
-    superusers stay admitted. DigiExam import makes no LLM call and must stay
-    open for every signed-in user.
+    Prove that the four exam-workspace routes which can start a paid LLM call
+    serve every signed-in teacher: a signed-in user reaches the handler and
+    gets the success status. DigiExam import makes no LLM call and stays open
+    for every signed-in user.
 
 Relationships:
     - Exercises `apps_conversion_hub_exam_workspace` and
@@ -277,8 +276,7 @@ def _handler_for(handlers: HandlerDoubles, route: str) -> RecordingDouble:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("route", GATED_ROUTES)
-@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
-async def test_gated_routes_reject_non_admin_roles_without_reaching_the_handler(
+async def test_gated_routes_serve_a_signed_in_user_and_reach_the_handler(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
@@ -286,10 +284,9 @@ async def test_gated_routes_reject_non_admin_roles_without_reaching_the_handler(
     profiles: ProfileRepositoryStub,
     handlers: HandlerDoubles,
     route: str,
-    role: Role,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
     lineage_id = uuid4()
 
     response = await _send(
@@ -299,11 +296,8 @@ async def test_gated_routes_reject_non_admin_roles_without_reaching_the_handler(
         headers=signed_huleedu_headers(private_key=private_key, clock=clock),
     )
 
-    assert response.status_code == 403
-    details = response.json()["error"]["details"]
-    assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == role.value
-    assert _handler_for(handlers, route).calls == []
+    assert response.status_code == _EXPECTED_STATUS[route]
+    assert len(_handler_for(handlers, route).calls) == 1
 
 
 @pytest.mark.asyncio
@@ -365,7 +359,7 @@ _WORD_LANE_UPLOADS = (
 @pytest.mark.asyncio
 @pytest.mark.parametrize("filename,content", _WORD_LANE_UPLOADS)
 @pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
-async def test_word_lane_import_rejects_non_admin_roles_for_docx_and_pdf(
+async def test_word_lane_import_serves_signed_in_non_admins_for_docx_and_pdf(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
@@ -377,7 +371,7 @@ async def test_word_lane_import_rejects_non_admin_roles_for_docx_and_pdf(
     role: Role,
     now: datetime,
 ) -> None:
-    """A PDF upload keeps the Word import's AI access rule: non-admins get 403."""
+    """A PDF upload keeps the Word import's AI access rule: non-admins are served."""
 
     seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
 
@@ -387,11 +381,8 @@ async def test_word_lane_import_rejects_non_admin_roles_for_docx_and_pdf(
         files={"file": (filename, content, "application/octet-stream")},
     )
 
-    assert response.status_code == 403
-    details = response.json()["error"]["details"]
-    assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == role.value
-    assert handlers.docx_import.calls == []
+    assert response.status_code == 202
+    assert len(handlers.docx_import.calls) == 1
 
 
 @pytest.mark.asyncio

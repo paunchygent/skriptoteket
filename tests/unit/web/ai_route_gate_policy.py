@@ -1,11 +1,12 @@
-"""Maintained policy data for the paid-AI admin-gate route-coverage guard.
+"""Maintained policy for the paid-LLM sign-in route-coverage guard.
 
 Purpose:
     Hold the one maintained input the guard derives everything else from: the
     paid LLM client protocols, the job enqueue/lane classification, the
     non-AI job-repository decisions, the expected paid-LLM route snapshot and
-    the AI role gate constants. Editing policy here is a deliberate decision,
-    never a way to make a failing guard assertion pass.
+    the sign-in gate every AI route depends on, directly or through a role
+    check. Editing policy here is a deliberate decision, never a way to make
+    a failing guard assertion pass.
 
 Relationships:
     - Consumed by `test_ai_route_gate_coverage.py` (assertions) and
@@ -59,12 +60,7 @@ from skriptoteket.protocols.item_type_labeler import (
     MeteredItemTypeLabelerProtocol,
     SecondPassItemTypeLabelerProtocol,
 )
-from skriptoteket.web.auth.huleedu_app_projection import (
-    require_app_admin_api,
-    require_app_ai_api,
-    require_app_contributor_api,
-    require_app_superuser_api,
-)
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 
 # The one maintained input: the paid LLM client protocols. Every class under
 # `skriptoteket.infrastructure.llm` that implements one of these is a paid LLM
@@ -154,11 +150,7 @@ EXPECTED_AI_ROUTES: frozenset[tuple[str, str]] = frozenset(
     }
 )
 
-AI_ROLE_GATE = require_app_ai_api
-FORBIDDEN_AI_ROLE_GATES = frozenset(
-    {
-        require_app_contributor_api.__name__,
-        require_app_admin_api.__name__,
-        require_app_superuser_api.__name__,
-    }
-)
+# The sign-in gate every paid-LLM route depends on, directly or through a
+# role check such as `require_app_contributor_api`. The guard walks the
+# dependency chain, so a route carrying the contributor check counts as gated.
+AI_ROLE_GATE = require_app_user_api

@@ -12,7 +12,6 @@ import {
   type BundleFiles,
 } from "../../composables/editor/bundleFiles";
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
-import { useAiAccess } from "../../composables/useAiAccess";
 import { aiDailyLimitFor } from "../../composables/aiDailyLimit";
 
 const CodeMirrorEditor = defineAsyncComponent(() => import("./CodeMirrorEditor.vue"));
@@ -32,13 +31,12 @@ const emit = defineEmits<{
   (event: "editorViewReady", value: EditorView | null): void;
 }>();
 
-const { canUseAi } = useAiAccess();
 /** Ghost text draws on the small-model allowance. */
 const { note: ghostTextLimitNote, reached: ghostTextLimitReached } = aiDailyLimitFor("small");
 
 const entrypointName = computed(() => props.entrypoint);
 const ghostTextEnabled = computed(
-  () => !props.isReadOnly && canUseAi.value && !ghostTextLimitReached.value,
+  () => !props.isReadOnly && !ghostTextLimitReached.value,
 );
 const ghostTextAutoTrigger = computed(() => true);
 const ghostTextDebounceMs = computed(() => 1500);
@@ -154,7 +152,7 @@ function updateActiveBundleFile(value: string): void {
         </template>
       </Suspense>
       <p
-        v-if="canUseAi && ghostTextLimitNote"
+        v-if="ghostTextLimitNote"
         class="pointer-events-none absolute bottom-2 right-3 z-10 max-w-[calc(100%-1.5rem)] border border-[var(--huleedu-panel-border)] bg-canvas px-2 py-1 text-[10px] text-navy/60"
         role="status"
         data-test="editor-ai-limit-note"

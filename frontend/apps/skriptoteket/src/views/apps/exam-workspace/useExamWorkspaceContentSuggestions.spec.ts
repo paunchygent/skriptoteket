@@ -36,7 +36,7 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 const STALE_COPY = "Provet ändrades medan innehållet föreslogs. Föreslå innehåll igen.";
 
-/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+/** Seed the signed-in actor. */
 function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
   useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
 }
@@ -203,17 +203,19 @@ describe("useExamWorkspaceContentSuggestions", () => {
   });
 });
 
-describe("useExamWorkspaceContentSuggestions admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+describe("useExamWorkspaceContentSuggestions signed-in AI", () => {
   it.each(["user", "contributor"] as const)(
-    "sends no request and stays idle for role %s",
+    "sends the request for non-admin role %s",
     async (role) => {
       signInAs(role);
       const harness = setup();
+      apiMocks.requestExamWorkspaceContentSuggestions.mockResolvedValue(response("running"));
+      apiMocks.getExamWorkspaceContentSuggestions.mockResolvedValue(response("succeeded"));
+
       await harness.content.suggest();
 
-      expect(apiMocks.requestExamWorkspaceContentSuggestions).not.toHaveBeenCalled();
-      expect(apiMocks.getExamWorkspaceContentSuggestions).not.toHaveBeenCalled();
-      expect(harness.content.busy.value).toBe(false);
+      expect(apiMocks.requestExamWorkspaceContentSuggestions).toHaveBeenCalledTimes(1);
+      expect(apiMocks.requestExamWorkspaceContentSuggestions).toHaveBeenCalledWith("lineage-a");
     },
   );
 

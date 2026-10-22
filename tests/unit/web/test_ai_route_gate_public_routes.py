@@ -1,15 +1,15 @@
 """Public-route AI guard for the guest exam workspace.
 
 Purpose:
-    Prove (TASK-SKRIPT-41-02-02 G1, story P3) that no public or guest route can
-    start an LLM call: every route under `/api/v1/public/` stays free of LLM
-    client reach, every LLM-reaching route anywhere carries
-    `require_app_ai_api`, and the guest exam-workspace surface stays public,
-    LLM-free and free of `require_app_*` auth dependencies. A later edit that
-    wires an AI dependency into a guest route fails this module.
+    Prove that no public or guest route can start an LLM call: every route
+    under `/api/v1/public/` stays free of LLM client reach, every
+    LLM-reaching route anywhere belongs to a signed-in caller through the
+    sign-in dependency chain, and the guest exam-workspace surface stays
+    public, LLM-free and free of `require_app_*` auth dependencies. A later
+    edit that wires an AI dependency into a guest route fails this module.
 
 Relationships:
-    - Extends the REP-0044 guard in `test_ai_route_gate_coverage.py` without
+    - Extends the sign-in guard in `test_ai_route_gate_coverage.py` without
       changing it; discovery and policy live in `ai_route_gate_discovery.py`
       and `ai_route_gate_policy.py`.
     - Reuses `create_app` so the asserted routes are the real production wiring.
@@ -158,8 +158,9 @@ def test_every_llm_reaching_route_requires_a_signed_in_caller(
         if AI_ROLE_GATE.__name__ not in dependency_call_names(route.dependant):
             offenders.append(f"{sorted(route.methods)} {route.path}")
     assert not offenders, (
-        "every LLM-reaching route must carry require_app_ai_api so a guest is "
-        "asked to sign in and no call is made: " + "; ".join(offenders)
+        "every LLM-reaching route must belong to a signed-in caller through the "
+        "sign-in dependency chain so a guest is asked to sign in and no call is "
+        "made: " + "; ".join(offenders)
     )
 
 

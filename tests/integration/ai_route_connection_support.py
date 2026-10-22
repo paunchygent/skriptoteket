@@ -42,6 +42,7 @@ from skriptoteket.di import build_providers
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.projections import IdentityProjection, ProductIdentityRealm
 from skriptoteket.infrastructure.db.models.tool import ToolModel
+from skriptoteket.infrastructure.db.models.tool_maintainer import ToolMaintainerModel
 from skriptoteket.infrastructure.repositories.identity_projection_repository import (
     PostgreSQLIdentityProjectionRepository,
 )
@@ -149,7 +150,7 @@ async def ai_route_harness(
     probe.bind(engine=engine, observer=observer)
     sessions = await container.get(async_sessionmaker[AsyncSession])
 
-    actor = await create_owner(sessions, Role.SUPERUSER)
+    actor = await create_owner(sessions, Role.CONTRIBUTOR)
     now = datetime.now(UTC)
     tool_id = uuid4()
     # A module's tests share one database, so each harness needs its own identity subject.
@@ -176,6 +177,10 @@ async def ai_route_harness(
                 updated_at=now,
             )
         )
+        # The harness runs the editor routes as a contributor, which passes
+        # `require_tool_access` only as a recorded maintainer; the owner row
+        # alone does not satisfy the maintainer read.
+        session.add(ToolMaintainerModel(tool_id=tool_id, user_id=actor.id))
     headers = signed_huleedu_headers(
         private_key=private_key, clock=FixedClock(now), subject=subject
     )

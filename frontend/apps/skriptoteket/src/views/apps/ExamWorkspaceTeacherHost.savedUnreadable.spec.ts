@@ -78,10 +78,6 @@ vi.mock("../../api/examWorkspace", async () => ({
 vi.mock("../../api/examWorkspaceUnreadableFiles", () => unreadableApi);
 vi.mock("../../api/examWorkspaceExports", () => ({ downloadExamWorkspaceExport: vi.fn() }));
 vi.mock("../../utils/browserDownload", () => downloadSink);
-vi.mock("../../composables/useAiAccess", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../composables/useAiAccess")>()),
-  useAiAccess: () => ({ canUseAi: { value: true } }),
-}));
 vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal) => ({
   ...(await importOriginal<typeof import("./exam-workspace/examWorkspaceGuestDraftStorage")>()),
   createExamWorkspaceGuestDraftStorage: () => ({

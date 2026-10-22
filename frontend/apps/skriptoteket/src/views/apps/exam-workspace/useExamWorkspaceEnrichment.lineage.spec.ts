@@ -108,7 +108,7 @@ function toastCount(message: string): number {
   return useToastStore().toasts.filter((toast) => toast.message === message).length;
 }
 
-/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+/** Seed the signed-in actor. */
 function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
   useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
 }
@@ -323,19 +323,17 @@ describe("a job of the exam that stays open", () => {
   });
 });
 
-describe("useExamWorkspaceEnrichment admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+describe("useExamWorkspaceEnrichment signed-in AI", () => {
   it.each(["user", "contributor"] as const)(
-    "sends no request and stays idle for role %s",
+    "sends the request for non-admin role %s",
     async (role) => {
       signInAs(role);
       const { enrichment } = await openExamA();
+      apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(jobStatus("queued"));
 
       await enrichment.requestSuggestionsForAll();
-      await enrichment.requestSuggestionForItem("item_001");
 
-      expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).not.toHaveBeenCalled();
-      expect(enrichment.isRequesting.value).toBe(false);
-      expect(enrichment.isEnrichmentPending.value).toBe(false);
+      expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
     },
   );
 

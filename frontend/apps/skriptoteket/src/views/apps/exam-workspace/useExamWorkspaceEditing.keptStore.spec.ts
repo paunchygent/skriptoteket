@@ -49,7 +49,6 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...api,
 }));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
-vi.mock("../../../composables/useAiAccess", () => ({ useAiAccess: () => ({ canUseAi: { value: true } }) }));
 
 type EditingSession = ReturnType<typeof useExamWorkspaceEditing>;
 

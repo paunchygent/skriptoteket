@@ -10,7 +10,8 @@
 import { flushPromises } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
-import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
+/** Distinctive fragment of the removed admin-only note; the full note must not render. */
+const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
 import {
   expectNoTeacherCalls,
   installGuestModeObjectUrls,
@@ -177,13 +178,13 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
     await wrapper.get('[data-test="exam-workspace-new-exam"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.text()).not.toContain(AI_ADMIN_ONLY_NOTE);
-    expect(document.body.textContent ?? "").not.toContain(AI_ADMIN_ONLY_NOTE);
+    expect(wrapper.text()).not.toContain(REMOVED_ADMIN_NOTE);
+    expect(document.body.textContent ?? "").not.toContain(REMOVED_ADMIN_NOTE);
     expect(wrapper.get('[data-test="exam-workspace-suggest-all"]').attributes("disabled")).toBeUndefined();
 
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
     await flushPromises();
-    expect(document.body.textContent ?? "").not.toContain(AI_ADMIN_ONLY_NOTE);
+    expect(document.body.textContent ?? "").not.toContain(REMOVED_ADMIN_NOTE);
 
     await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
     await flushPromises();
@@ -193,7 +194,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
     await wrapper.get('[data-test="exam-workspace-import-toggle"]').trigger("click");
     await flushPromises();
     expect(wrapper.get('[data-test="exam-workspace-retry"]').attributes("disabled")).toBeUndefined();
-    expect(wrapper.text()).not.toContain(AI_ADMIN_ONLY_NOTE);
+    expect(wrapper.text()).not.toContain(REMOVED_ADMIN_NOTE);
     wrapper.unmount();
   });
 });

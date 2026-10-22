@@ -1,16 +1,14 @@
 /**
- * The details drawer's "Föreslå innehåll" button is admin-only until the AI
- * spend cap ships (TASK-SKRIPT-REP-0044 L3).
+ * The details drawer's "Föreslå innehåll" button runs for every signed-in
+ * user.
  *
  * Expected behavior:
- *   With role "user" or "contributor" the button is disabled, its title and the
- *   inline note carry the admin-only text, and clicking emits nothing. With role
- *   "admin" or "superuser" the note is gone and the button works once the course
- *   content is loaded and the exam is saved.
+ *   With role "user" or "contributor" no admin-only note shows, the button
+ *   is enabled once the course content is loaded and the exam is saved, and
+ *   clicking emits the suggestion request.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
-import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -20,12 +18,14 @@ import type {
   ExamCourseContent,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+
+/** Distinctive fragment of the removed admin-only note; the full note must not render. */
+const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
 
 const apiMocks = vi.hoisted(() => ({
   getExamCourseCatalog: vi.fn(),
@@ -34,13 +34,7 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock("../../../api/examWorkspace", () => apiMocks);
 
-type Role = "user" | "contributor" | "admin" | "superuser";
-
-function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
-  return wrapper
-    .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
-}
+type Role = "user" | "contributor";
 
 const COURSE = {
   code: "ENGENG05",
@@ -98,39 +92,18 @@ beforeEach(() => {
   apiMocks.getExamCourseContent.mockReset().mockResolvedValue(CONTENT);
 });
 
-describe("ExamWorkspaceDetailsDrawer AI gate", () => {
+describe("ExamWorkspaceDetailsDrawer non-admin AI", () => {
   it.each(["user", "contributor"] as const)(
-    "disables the content button, shows the note and emits nothing for role %s",
+    "leaves the content button working without the admin-only note for role %s",
     async (role) => {
       signIn(pinia, role);
       const wrapper = mountDrawer(pinia);
       await flushPromises();
 
-      const notes = findNotes(wrapper);
-      expect(notes).toHaveLength(1);
-      const note = notes[0]!;
-      expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
-
-      const button = wrapper.get('[data-test="exam-workspace-content-suggest"]');
-      expect(button.attributes("disabled")).toBeDefined();
-      expect(button.attributes("title")).toBe(AI_ADMIN_ONLY_NOTE);
-      expect(button.attributes("aria-describedby")).toBe(note.attributes("id"));
-      await button.trigger("click");
-      expect(wrapper.emitted("suggestContent")).toBeUndefined();
-      wrapper.unmount();
-    },
-  );
-
-  it.each(["admin", "superuser"] as const)(
-    "leaves the content button working without the note for role %s",
-    async (role) => {
-      signIn(pinia, role);
-      const wrapper = mountDrawer(pinia);
-      await flushPromises();
-
-      expect(findNotes(wrapper)).toHaveLength(0);
+      expect(wrapper.text()).not.toContain(REMOVED_ADMIN_NOTE);
       const button = wrapper.get('[data-test="exam-workspace-content-suggest"]');
       expect(button.attributes("disabled")).toBeUndefined();
+      expect(button.attributes("title")).not.toBe(REMOVED_ADMIN_NOTE);
       await button.trigger("click");
       expect(wrapper.emitted("suggestContent")).toHaveLength(1);
       wrapper.unmount();

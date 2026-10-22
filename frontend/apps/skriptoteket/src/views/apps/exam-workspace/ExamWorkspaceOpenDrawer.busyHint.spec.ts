@@ -70,10 +70,6 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...api,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
-vi.mock("../../../composables/useAiAccess", async (original) => ({
-  ...(await original<typeof import("../../../composables/useAiAccess")>()),
-  useAiAccess: () => ({ canUseAi: { value: true } }),
-}));
 
 const unreadableApiMocks = vi.hoisted(() => ({
   downloadSavedExamFile: vi.fn(),

@@ -183,7 +183,7 @@ beforeEach(() => {
   }
 });
 
-/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+/** Seed the signed-in actor. */
 function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
   useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
 }
@@ -337,18 +337,21 @@ describe("assetUrls", () => {
   });
 });
 
-describe("useExamWorkspaceItemRetry admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+describe("useExamWorkspaceItemRetry signed-in AI", () => {
   it.each(["user", "contributor"] as const)(
-    "sends no retry for role %s and leaves the draft untouched",
+    "sends the retry for non-admin role %s",
     async (role) => {
-      const { state } = await openRetryDocument();
       signInAs(role);
+      const { state } = await openRetryDocument();
+      apiMocks.retryExamWorkspaceItem.mockResolvedValue({
+        lineage_id: "lineage-1",
+        item: convertedItem(),
+      });
 
       await state.retryItem("item_001", "matching");
 
-      expect(apiMocks.retryExamWorkspaceItem).not.toHaveBeenCalled();
-      expect(currentItem(state).kind).toBe("free_text");
-      expect(state.isDirty.value).toBe(false);
+      expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
+      expect(currentItem(state).kind).toBe("matching");
     },
   );
 

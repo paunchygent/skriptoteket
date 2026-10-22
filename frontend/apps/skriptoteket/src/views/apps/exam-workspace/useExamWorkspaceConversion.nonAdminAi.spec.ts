@@ -1,8 +1,7 @@
 /**
- * The Öppna drawer's Word import is an AI control (TASK-SKRIPT-REP-0044, L3):
- * only an admin may start the paid DOCX conversion, while the DigiExam importer
- * stays open to every role. The gate runs before any import state changes, so a
- * refused file starts no request and leaves the workspace untouched.
+ * The Öppna drawer's Word import runs for every signed-in user, while the
+ * DigiExam importer stays open to every role. A signed-in user's Word import
+ * starts the paid DOCX conversion request at once.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -106,19 +105,16 @@ afterEach(() => {
   for (const scope of scopes.splice(0)) scope.stop();
 });
 
-describe("exam workspace conversion AI gate", () => {
+describe("exam workspace conversion non-admin AI", () => {
   it.each<Role>(["user", "contributor"])(
-    "refuses a Word .docx for role %s before any import state changes",
+    "imports a Word .docx for non-admin role %s",
     async (role) => {
       const conversion = conversionFor(role);
 
       await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
-      expect(api.importExamWorkspaceDocument).not.toHaveBeenCalled();
+      expect(api.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
       expect(api.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-      expect(conversion.isImporting.value).toBe(false);
-      expect(conversion.conversionStatus.value).toBeNull();
-      expect(conversion.conversionError.value).toBeNull();
     },
   );
 
@@ -152,7 +148,7 @@ describe("exam workspace conversion AI gate", () => {
     expect(api.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
   });
 
-  it("imports a QTI .zip without AI access", async () => {
+  it("imports a QTI .zip without going through the AI conversion", async () => {
     const openImported = vi.fn(async () => "installed" as const);
     const conversion = conversionFor("user", openImported);
 
@@ -162,16 +158,5 @@ describe("exam workspace conversion AI gate", () => {
     expect(api.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(api.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
     expect(openImported).toHaveBeenCalledWith("lineage-1");
-  });
-
-  it("starts no importer for a Word .docx without AI access", async () => {
-    const conversion = conversionFor("user");
-
-    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
-
-    expect(api.importExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(api.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(api.importExamWorkspaceQti).not.toHaveBeenCalled();
-    expect(conversion.isImporting.value).toBe(false);
   });
 });

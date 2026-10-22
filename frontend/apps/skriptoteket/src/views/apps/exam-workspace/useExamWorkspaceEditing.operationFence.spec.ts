@@ -53,7 +53,6 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...api,
 }));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
-vi.mock("../../../composables/useAiAccess", () => ({ useAiAccess: () => ({ canUseAi: { value: true } }) }));
 
 beforeEach(() => {
   for (const fn of [...Object.values(api), ...Object.values(toast)]) fn.mockReset();

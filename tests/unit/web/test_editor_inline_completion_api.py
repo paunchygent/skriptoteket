@@ -276,18 +276,39 @@ async def test_inline_completion_daily_limit_answers_429(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
-async def test_inline_completion_ai_gate_rejects_non_admin_roles(
+async def test_inline_completion_serves_a_signed_in_contributor(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
     handler: AsyncMock,
-    role: Role,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
+
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 200
+    handler.handle.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_rejects_a_user_below_contributor(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
 
     response = await client.post(
         "/api/v1/editor/completions",
@@ -297,8 +318,35 @@ async def test_inline_completion_ai_gate_rejects_non_admin_roles(
 
     assert response.status_code == 403
     details = response.json()["error"]["details"]
+    assert details["required_role"] == "contributor"
+    assert details["actual_role"] == "user"
+    handler.handle.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_eval_mode_rejects_a_contributor_outside_production(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers=headers,
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
     assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == role.value
+    assert details["actual_role"] == "contributor"
     handler.handle.assert_not_awaited()
 
 
@@ -380,6 +428,43 @@ async def test_inline_completion_includes_eval_headers_for_superuser(
     assert response.headers["X-Skriptoteket-Eval-Provider-Ms"] == "321"
     assert response.headers["X-Skriptoteket-Eval-Normalize-Ms"] == "2"
     assert response.headers["X-Skriptoteket-Eval-Total-Ms"] == "330"
+
+
+@pytest.mark.asyncio
+async def test_inline_completion_includes_eval_headers_for_admin(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
+    handler.handle.return_value = InlineCompletionResult(
+        completion="pass\n",
+        enabled=True,
+        eval_meta=PromptEvalMeta(
+            template_id="inline_completion_v1",
+            outcome="ok",
+            system_prompt_chars=123,
+            prefix_chars=12,
+            suffix_chars=0,
+        ),
+    )
+
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+    headers["X-Skriptoteket-Eval"] = "1"
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers=headers,
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 200
+    assert response.headers["X-Skriptoteket-Eval-Template-Id"] == "inline_completion_v1"
+    assert response.headers["X-Skriptoteket-Eval-Outcome"] == "ok"
+    handler.handle.assert_awaited_once()
 
 
 @pytest.mark.asyncio

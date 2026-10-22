@@ -18,7 +18,6 @@ import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
-import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { useAuthStore } from "../../stores/auth";
 import { useToastStore } from "../../stores/toast";
 import { createTestRouter, mountWithContext } from "../../test/utils";
@@ -46,10 +45,13 @@ const FORBIDDEN_VISIBLE_WORDS = [
   "lineage",
 ];
 
+/** Distinctive fragment of the removed admin-only note; the full note must not render. */
+const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
+
 function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+    .filter((node) => node.text().trim() === REMOVED_ADMIN_NOTE);
 }
 
 const apiMocks = vi.hoisted(() => ({
@@ -85,10 +87,8 @@ beforeEach(() => {
 type FrameRole = "admin" | "user" | "contributor";
 
 /**
- * Mount the frame as one signed-in role. The Öppna drawer's Word (.docx)
- * import is an AI control limited to admins (TASK-SKRIPT-REP-0044, L3), so the
- * host-frame specs mount as an admin — the "no change" role — and the appended
- * gate cases mount a denied role.
+ * Mount the frame as one signed-in role. Every signed-in user runs the Öppna
+ * drawer's Word (.docx) import, so the role only varies the signed-in user.
  */
 async function mountView(role: FrameRole = "admin") {
   const pinia = createPinia();
@@ -330,27 +330,27 @@ describe("ExamWorkspaceView host frame", () => {
   });
 });
 
-describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
+describe("ExamWorkspaceView non-admin AI in the Öppna drawer", () => {
   const ACCEPT = '[data-test="exam-workspace-source-file-input"]';
   const PICK = '[data-test="exam-workspace-pick-file"]';
   const DROP = '[data-test="exam-workspace-drop-zone"]';
 
-  it("offers a user DigiExam and QTI plus the L3 note, and still imports a .dxe", async () => {
+  it("offers a user Word, PDF, DigiExam and QTI without the admin-only note, and still imports a .dxe", async () => {
     apiMocks.importExamWorkspaceDigiExam.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
       return queuedImport;
     });
     const wrapper = await mountView("user");
 
-    expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe,.zip");
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
-    expect(wrapper.text()).not.toContain("Word (.docx)");
-    expect(wrapper.text()).not.toContain("PDF (.pdf)");
+    expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".docx,.pdf,.dxe,.zip");
+    expect(findNotes(wrapper)).toHaveLength(0);
+    expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("PDF (.pdf)");
     expect(wrapper.get(PICK).attributes("disabled")).toBeUndefined();
     expect(wrapper.get(".drop__formats").findAll(".xw-chip")).toHaveLength(0);
     expect(
       wrapper.get(".drop__formats").findAll(".drop__format").map((node) => node.text()),
-    ).toEqual(["DigiExam (.dxe)", "QTI (.zip)"]);
+    ).toEqual(["Word (.docx)", "PDF (.pdf)", "DigiExam (.dxe)", "QTI (.zip)"]);
 
     await chooseSourceFile(wrapper, new File(["dxe"], "NO_Prov_HT25.dxe"));
 
@@ -358,24 +358,25 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
   });
 
-  it("never imports a Word or PDF file a user forces past the single-format picker", async () => {
+  it("imports a Word file a user chooses through the picker", async () => {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return queuedImport;
+    });
     const wrapper = await mountView("user");
 
     await chooseSourceFile(wrapper, new File(["prov"], "NO_Prov_HT25.docx"));
 
-    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
-    expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
-
-    await chooseSourceFile(wrapper, new File(["pdf"], "NO_Prov_HT25.pdf", { type: "application/pdf" }));
-
-    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
+    expect(findNotes(wrapper)).toHaveLength(0);
   });
 
-  it("never imports a Word or PDF file a user drops on the zone", async () => {
+  it("imports a Word and a PDF file a user drops on the zone", async () => {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return queuedImport;
+    });
     const wrapper = await mountView("user");
 
     await wrapper.get(DROP).trigger("drop", {
@@ -383,21 +384,25 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     });
     await flushPromises();
 
-    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
+    expect(findNotes(wrapper)).toHaveLength(0);
 
     await wrapper.get(DROP).trigger("drop", {
       dataTransfer: { files: [new File(["pdf"], "NO_Prov_HT25.pdf", { type: "application/pdf" })] },
     });
     await flushPromises();
 
-    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
+    expect(findNotes(wrapper)).toHaveLength(0);
   });
 
-  it("refuses a Word and a PDF file for a contributor through both the picker and a drop", async () => {
+  it("imports a Word and a PDF file for a contributor through both the picker and a drop", async () => {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+      return queuedImport;
+    });
     const wrapper = await mountView("contributor");
 
     await chooseSourceFile(wrapper, new File(["prov"], "NO_Prov_HT25.docx"));
@@ -411,22 +416,22 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     });
     await flushPromises();
 
-    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(findNotes(wrapper).length).toBeGreaterThan(0);
+    expect(findNotes(wrapper)).toHaveLength(0);
   });
 
-  it("imports a .zip a user chooses through the picker without any Word control", async () => {
+  it("imports a .zip a user chooses through the picker alongside the Word control", async () => {
     apiMocks.importExamWorkspaceQti.mockResolvedValue(
       buildSavedExamSummary({ name: "NO-prov HT25.zip", title: "NO-prov HT25" }),
     );
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
     const wrapper = await mountView("user");
 
-    expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe,.zip");
+    expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".docx,.pdf,.dxe,.zip");
     expect(wrapper.text()).toContain("QTI (.zip)");
-    expect(wrapper.text()).not.toContain("Word (.docx)");
-    expect(wrapper.text()).not.toContain("PDF (.pdf)");
+    expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("PDF (.pdf)");
 
     await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
 
@@ -438,7 +443,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
   });
 
-  it("imports a .zip a user drops on the zone without any Word control", async () => {
+  it("imports a .zip a user drops on the zone alongside the Word control", async () => {
     apiMocks.importExamWorkspaceQti.mockResolvedValue(
       buildSavedExamSummary({ name: "NO-prov HT25.zip", title: "NO-prov HT25" }),
     );
@@ -446,8 +451,8 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     const wrapper = await mountView("user");
 
     expect(wrapper.text()).toContain("QTI (.zip)");
-    expect(wrapper.text()).not.toContain("Word (.docx)");
-    expect(wrapper.text()).not.toContain("PDF (.pdf)");
+    expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("PDF (.pdf)");
 
     await wrapper.get(DROP).trigger("drop", {
       dataTransfer: { files: [new File(["qti"], "Prov_HT25.zip", { type: "application/zip" })] },

@@ -56,7 +56,6 @@ function mountMenu(options: MenuOptions = {}): VueWrapper {
         createTestingPinia({
           createSpy: vi.fn,
           initialState: { auth: { user: adminUser } },
-          stubActions: (name) => name !== "hasAtLeastRole",
         }),
         examWorkspaceProvidersPlugin({
           store: options.guest === true ? GUEST_STORE : serverExamWorkspaceStore,

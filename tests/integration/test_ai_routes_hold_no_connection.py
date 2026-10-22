@@ -6,11 +6,13 @@ test sends a real HTTP request through the real route, the real signed-identity 
 and the production container, with a fake provider at the provider seam that samples the
 connections held at the moment it is called (``ai_route_connection_support``).
 
-The brief expected the editor routes to hold a connection through an auth or maintainer
+Each route runs as the signed-in non-admin its screen serves: the contributor
+role for the editor routes and the user role for the one-question retry. The
+brief expected the editor routes to hold a connection through an auth or maintainer
 read and the one-question retry route to hold its document-lineage lock across the call.
 The measurements below show neither: the auth resolver and every editor handler end their
-reads inside ``async with uow:``, ``require_tool_access`` returns before any read for the
-admin and superuser roles that ``require_app_ai_api`` admits, and the retry handler closes
+reads inside ``async with uow:``, ``require_tool_access`` returns after a maintainer
+read that releases its connection for a contributor, and the retry handler closes
 its ``store.transaction`` block (lock and payload guard) before ``_reconvert`` runs.
 """
 

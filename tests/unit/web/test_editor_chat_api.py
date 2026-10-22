@@ -263,18 +263,39 @@ async def _chat_stream_events() -> AsyncIterator[EditorChatStreamEvent]:
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
-async def test_editor_chat_ai_gate_rejects_non_admin_roles(
+async def test_editor_chat_serves_a_signed_in_contributor(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
     chat_handler: AsyncMock,
-    role: Role,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    chat_handler.stream.return_value = _chat_stream_events()
+
+    response = await client.post(
+        f"/api/v1/editor/tools/{uuid4()}/chat",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"message": "Hej"},
+    )
+
+    assert response.status_code == 200
+    chat_handler.stream.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_editor_chat_rejects_a_user_below_contributor(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    chat_handler: AsyncMock,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.USER, now=now)
 
     response = await client.post(
         f"/api/v1/editor/tools/{uuid4()}/chat",
@@ -284,8 +305,8 @@ async def test_editor_chat_ai_gate_rejects_non_admin_roles(
 
     assert response.status_code == 403
     details = response.json()["error"]["details"]
-    assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == role.value
+    assert details["required_role"] == "contributor"
+    assert details["actual_role"] == "user"
     chat_handler.stream.assert_not_called()
 
 

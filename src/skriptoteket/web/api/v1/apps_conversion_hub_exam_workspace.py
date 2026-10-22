@@ -82,7 +82,7 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
 from skriptoteket.web.api.v1.apps_conversion_hub_exam_workspace_guest_draft_request import (
     read_guest_draft_request,
 )
-from skriptoteket.web.auth.huleedu_app_projection import require_app_ai_api, require_app_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
@@ -107,7 +107,7 @@ async def request_exam_content_suggestions(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[RequestExamContentSuggestionsHandlerProtocol],
-    user: User = Depends(require_app_ai_api),
+    user: User = Depends(require_app_user_api),
 ) -> ContentSuggestionsResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id)
@@ -178,7 +178,7 @@ async def import_exam_workspace_document(
     handler: FromDishka[ImportExamWorkspaceDocumentHandlerProtocol],
     file: UploadFile = File(...),
     course_key: str | None = Form(None, max_length=64),
-    user: User = Depends(require_app_ai_api),
+    user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceConversionStatus:
     require_conversion_hub_access(registry=registry, user=user)
     content = await file.read()
@@ -445,7 +445,7 @@ async def retry_exam_workspace_item(
     request: RetryExamWorkspaceItemRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[RetryExamWorkspaceItemHandlerProtocol],
-    user: User = Depends(require_app_ai_api),
+    user: User = Depends(require_app_user_api),
 ) -> ExamWorkspaceItemRetryResponse:
     """Reconvert one question from its saved source with the chosen type."""
 

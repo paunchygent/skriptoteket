@@ -3,8 +3,8 @@
  *
  * Expected behavior:
  *   A store whose teacher half is null reads "guest" for every role. A
- *   signed-in store reads "allowed" for role "admin" or "superuser" and
- *   "admin_only" for role "user" or "contributor".
+ *   signed-in store reads "allowed" for every role: every signed-in user
+ *   runs AI.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -56,14 +56,7 @@ describe("useExamWorkspaceAiMode", () => {
     },
   );
 
-  it.each(["user", "contributor"] as const)(
-    "reads admin_only for the server store with role %s",
-    (role) => {
-      expect(readMode(pinia, serverExamWorkspaceStore, role)).toBe("admin_only");
-    },
-  );
-
-  it.each(["admin", "superuser"] as const)(
+  it.each(["user", "contributor", "admin", "superuser"] as const)(
     "reads allowed for the server store with role %s",
     (role) => {
       expect(readMode(pinia, serverExamWorkspaceStore, role)).toBe("allowed");

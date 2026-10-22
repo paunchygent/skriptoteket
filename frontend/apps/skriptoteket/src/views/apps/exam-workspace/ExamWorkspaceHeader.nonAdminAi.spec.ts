@@ -1,13 +1,11 @@
 /**
- * The header's "Föreslå facit för frågor som saknar facit" button is admin-only
- * until the AI spend cap ships (TASK-SKRIPT-REP-0044 L3).
+ * The header's "Föreslå facit för frågor som saknar facit" button runs for
+ * every signed-in user.
  *
  * Expected behavior:
- *   With role "user" or "contributor" the glyph-only button is disabled, its
- *   title and aria-description are the admin-only note, and no note text shows
- *   anywhere in the header (T8). With role "admin" or "superuser" the note is
- *   absent, the button works, and the existing busy/disabled reasons still
- *   hold.
+ *   With role "user" or "contributor" the glyph-only button is enabled, its
+ *   title names the suggest action, and no admin-only note text shows
+ *   anywhere in the header. The existing busy/disabled reasons still hold.
  */
 
 import { mount } from "@vue/test-utils";
@@ -15,12 +13,13 @@ import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceHeader from "./ExamWorkspaceHeader.vue";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const SUGGEST_TITLE = "Föreslå facit för frågor som saknar facit";
+/** Distinctive fragment of the removed admin-only note; the full note must not render. */
+const REMOVED_ADMIN_NOTE = "bara tillgängliga för administratörer";
 
 type HeaderProps = InstanceType<typeof ExamWorkspaceHeader>["$props"];
 
@@ -54,9 +53,9 @@ function mountHeader(pinia: Pinia, overrides: Partial<HeaderProps> = {}) {
   });
 }
 
-/** Elements carrying the exact note as their visible text, found without test hooks. */
+/** Elements carrying the old admin-only note as their visible text, found without test hooks. */
 function noteElements(wrapper: ReturnType<typeof mountHeader>) {
-  return wrapper.findAll("*").filter((element) => element.text().trim() === AI_ADMIN_ONLY_NOTE);
+  return wrapper.findAll("*").filter((element) => element.text().trim() === REMOVED_ADMIN_NOTE);
 }
 
 let pinia: Pinia;
@@ -64,27 +63,9 @@ beforeEach(() => {
   pinia = createPinia();
 });
 
-describe("ExamWorkspaceHeader AI gate", () => {
+describe("ExamWorkspaceHeader non-admin AI", () => {
   it.each(["user", "contributor"] as const)(
-    "disables the suggest-all button and keeps the note out of the header text for role %s",
-    (role) => {
-      setActivePinia(pinia);
-      useAuthStore().user = { id: "u1", email: "u@example.test", role, auth_provider: "local" };
-      const wrapper = mountHeader(pinia);
-
-      const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');
-      expect(button.attributes("disabled")).toBeDefined();
-      expect(button.attributes("title")).toBe(AI_ADMIN_ONLY_NOTE);
-
-      expect(button.attributes("aria-description")).toBe(AI_ADMIN_ONLY_NOTE);
-      expect(button.text()).toBe("");
-      expect(noteElements(wrapper)).toHaveLength(0);
-      wrapper.unmount();
-    },
-  );
-
-  it.each(["admin", "superuser"] as const)(
-    "leaves the suggest-all button working without the note for role %s",
+    "leaves the suggest-all button working without the admin-only note for role %s",
     async (role) => {
       setActivePinia(pinia);
       useAuthStore().user = { id: "u1", email: "u@example.test", role, auth_provider: "local" };
@@ -101,9 +82,9 @@ describe("ExamWorkspaceHeader AI gate", () => {
     },
   );
 
-  it("keeps a disabled reason for an admin when the exam is busy", () => {
+  it("keeps a disabled reason when the exam is busy", () => {
     setActivePinia(pinia);
-    useAuthStore().user = { id: "u1", email: "u@example.test", role: "admin", auth_provider: "local" };
+    useAuthStore().user = { id: "u1", email: "u@example.test", role: "user", auth_provider: "local" };
     const wrapper = mountHeader(pinia, { suggestBusy: true });
 
     const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');

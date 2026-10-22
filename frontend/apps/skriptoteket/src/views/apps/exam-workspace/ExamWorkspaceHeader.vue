@@ -21,7 +21,6 @@
 import { computed, nextTick, ref } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
@@ -64,7 +63,7 @@ const emit = defineEmits<{
 }>();
 
 const requestSignIn = useExamWorkspaceSignIn();
-/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+/** Guest controls stay enabled and ask for sign-in; every signed-in user's control runs. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 /** The door's daily limit disables the suggest-all button for the page session. */
@@ -269,10 +268,10 @@ function handleSuggestAll(): void {
       <button
         type="button"
         class="xw-cmd"
-        :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only' || limitReached"
-        :title="limitReached ? (aiDailyLimitNote ?? undefined) : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :disabled="suggestDisabled || suggestBusy || limitReached"
+        :title="limitReached ? (aiDailyLimitNote ?? undefined) : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
-        :aria-description="limitReached ? (aiDailyLimitNote ?? undefined) : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
+        :aria-description="limitReached ? (aiDailyLimitNote ?? undefined) : undefined"
         data-test="exam-workspace-suggest-all"
         @click="handleSuggestAll"
       >
