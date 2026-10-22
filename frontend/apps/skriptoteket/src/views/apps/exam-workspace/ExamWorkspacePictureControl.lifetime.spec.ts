@@ -24,6 +24,7 @@ import {
 import type { RichTextTarget } from "./examWorkspaceRichTextTarget";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import { exam } from "./examWorkspaceGuestStore.specSupport";
+import { TRANSPARENT_PNG_PICTURE } from "./examWorkspacePictureFixtures.specSupport";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 describe("picture intake lifetime across openings", () => {
@@ -107,15 +108,8 @@ describe("picture intake lifetime across openings", () => {
       newPictures.reset();
       await nextTick();
       await nextTick();
-      const asset = {
-        asset_id: "asset_0000000000000001",
-        sha256: "0".repeat(64),
-        media_type: "image/png" as const,
-        byte_length: 1,
-        width: 1,
-        height: 1,
-      };
-      resolve({ kind: "picture", asset, blob: new Blob(["x"]) });
+      const asset = TRANSPARENT_PNG_PICTURE.asset;
+      resolve({ kind: "picture", asset, blob: TRANSPARENT_PNG_PICTURE.blob() });
       await pending;
       await nextTick();
 
