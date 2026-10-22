@@ -2,16 +2,17 @@
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
-- Hemma orchestrator overnight 2026-10-22 (user: deploy, then small planned items):
-  - Production runs `4f555442` (deployed 01:10 UTC after verified backup
-    `scheduled/20261022T010031Z`; migrations to `015a3af12871`; health green).
-    Main is ahead at `fe2bc9b9`; next deploy also needs HuleEdu prod via its
-    hemma-deploy for the 41-01-03 door (HuleEdu prod at `45d4a6f7`).
-  - 39-10-02 held unmerged at `8c1eecd2`: T5, T7, T8 user-decided; F1-F3 still
-    high after the one rereview; user decides a further round.
-  - 41-01-03 junior R6 (launcher PID 3010867) is stalled, not cancelled; user
-    decides the stop.
-  - Next lead: 39-10-03 when a slot frees.
+- Hemma orchestrator 2026-10-22:
+  - Production runs `73952bcb` (07:19 UTC after verified backup
+    `scheduled/20261022T071347Z`; migration `9f3c7a1b4e02`; health green; one
+    direct door probe from skriptoteket-worker returned 200). HuleEdu prod runs
+    `7d298307` (door internal key in prod compose `2885daa9`); it had been down
+    since the 06:43 reboot (restart policy "no"); deploy needed a pulled
+    `prom/alertmanager:v0.34.1`. HuleEdu prod `.env` still holds a stale
+    `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
+  - 39-10-02 (lead `local_fa0c6b84`): second review S1-S5 mediums in repair;
+    admit on focused proof, then merge, staging, Mac walk.
+  - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
   all 82 Hemma task and verify worktrees hold no work missing from main
