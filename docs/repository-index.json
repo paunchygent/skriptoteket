@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f0b57f052df02a305f1b3559cff8ffae849cb4841ba244fc678b4f8ebfe03d41",
+  "source_set_digest": "09e3ac786011f89d5cd7cea115227bb46c253e30a75fbb24bc345acdc58e0d37",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2594,6 +2594,27 @@
         "decided_at": "2026-10-22",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "The user closed the story on 2026-10-22: all six tasks TASK-SKRIPT-41-02-01 to TASK-SKRIPT-41-02-06 are done; every guest start and export was walked at 4b321fa1 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md), and the owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at ede1ea0d (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
+      }
+    },
+    {
+      "id": "ST-SKRIPT-41-03",
+      "type": "story",
+      "title": "Every signed-in teacher uses the exam and script-editor AI within the daily budget",
+      "path": "docs/backlog/stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-41",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
@@ -7347,8 +7368,8 @@
     {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
-      "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
-      "path": "docs/backlog/tasks/task-skript-41-01-02-the-script-editor-s-ai-runs-on-sol-6-1-low-through-the-sol-pool.md",
+      "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
+      "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",

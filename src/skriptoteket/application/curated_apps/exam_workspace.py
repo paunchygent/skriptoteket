@@ -148,6 +148,18 @@ class ExamCourseCatalogResponse(BaseModel):
     registered_course_keys: tuple[str, ...] = ()
 
 
+class ExamWorkspaceLimitsResponse(BaseModel):
+    """The exam size limit both modes enforce before sending work to the server.
+
+    ``max_exam_bytes`` is the backend-owned ``VAULT_MAX_FILE_BYTES`` setting,
+    so the editor never keeps a handwritten copy of the cap.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    max_exam_bytes: int = Field(ge=1, description="Largest accepted exam size in bytes.")
+
+
 class ExamWorkspaceEnrichmentState(StrEnum):
     """Teacher-facing state of one answer-key suggestion job."""
 

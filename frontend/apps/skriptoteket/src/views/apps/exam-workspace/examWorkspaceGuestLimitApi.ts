@@ -76,6 +76,9 @@ export function wrapGuestPublicApiForLimit(
       raw.requestPublicExamWorkspaceAnswerMisspellings(...args),
     ),
     getPublicExamCourseCatalog: guardLimit((...args) => raw.getPublicExamCourseCatalog(...args)),
+    getPublicExamWorkspaceLimits: guardLimit((...args) =>
+      raw.getPublicExamWorkspaceLimits(...args),
+    ),
     downloadPublicExamWorkspaceExport: guardLimit((...args) =>
       raw.downloadPublicExamWorkspaceExport(...args),
     ),

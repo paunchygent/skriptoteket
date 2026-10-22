@@ -182,6 +182,7 @@ export function useExamWorkspaceEditing(
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
+    newPictures: document.newPictures,
     onConflict: () => {
       requireGate().staleConflict();
       return Promise.resolve();

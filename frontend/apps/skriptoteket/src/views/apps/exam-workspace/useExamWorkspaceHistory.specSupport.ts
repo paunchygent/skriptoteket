@@ -31,6 +31,10 @@ export type HistorySetupHooks = {
   leaseHeld?: boolean;
   onLeaseLost?: () => void;
   shared?: ExamWorkspaceSharedStore;
+  newPictures?: {
+    bytesFor: (document: NativeExamDocument) => Record<string, Blob>;
+    noteSent: (assetIds: readonly string[]) => void;
+  };
 };
 
 const MAX_STEPS = 10;
@@ -151,6 +155,7 @@ export async function setupHistory(
     noteStored: (document) => {
       noteStored(document);
     },
+    newPictures: hooks.newPictures,
     shared: hooks.shared,
   });
   function edit(title: string, structural = false): void {

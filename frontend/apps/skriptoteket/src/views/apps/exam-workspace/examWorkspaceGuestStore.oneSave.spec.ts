@@ -33,6 +33,7 @@ describe("examWorkspaceGuestStore one save model", () => {
       document: exam("A"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     expect(step.document.title).toBe("A");
@@ -55,12 +56,14 @@ describe("examWorkspaceGuestStore one save model", () => {
       document: exam("A"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
     const second = await context.store.store.shared.storeExamWorkspaceUndoStep(lineageId, {
       afterStepId: null,
       document: exam("B"),
       expectedCursor: first.history.cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     const undone = await context.store.moveToHistoryStep(lineageId, {
@@ -97,6 +100,7 @@ describe("examWorkspaceGuestStore one save model", () => {
       document: exam("A"),
       expectedCursor: opened.history_cursor,
       tabId: LEASE_TAB_ID,
+      newPictures: {},
     });
 
     const reopened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);

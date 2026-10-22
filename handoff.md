@@ -72,6 +72,8 @@
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
     - 41-01-02, -03, -04: wait on HuleEdu TASK-HULE-14-03-01 on staging.
+    - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
+      `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
     in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
     one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.

@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=41 | story=337 | task=0 | review=137
-- open | epic=20 | story=65 | task=0
+- total | epic=41 | story=338 | task=0 | review=137
+- open | epic=20 | story=66 | task=0
 
 ## Lookup
 
@@ -387,6 +387,7 @@
 - story | ST-SKRIPT-40-04 | [Redesign the app shell and the exam workspace from a fresh Opus prototype](stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md)
 - story | ST-SKRIPT-41-01 | [Paid AI calls stop at a fixed daily token and cost budget](stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md)
 - story | ST-SKRIPT-41-02 | [Guests open, edit and export exams in the workspace without login or AI](stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md)
+- story | ST-SKRIPT-41-03 | [Every signed-in teacher uses the exam and script-editor AI within the daily budget](stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md)
 - review | REV-EPIC-02 | [Review: Local password reset via emailed token](reviews/review-epic-02-local-password-reset-via-emailed-token.md) | target=EPIC-02, [ST-02-07](stories/story-02-07-local-password-reset-via-emailed-token.md), ADR-0078
 - review | REV-EPIC-06 | [Review: Linter Architecture Refactor](reviews/review-epic-06-linter-architecture-refactor.md) | target=EPIC-06, [ST-06-10](stories/story-06-10-context-rule-architecture.md), [ST-06-11](stories/story-06-11-quick-fix-actions.md), [ST-06-12](stories/story-06-12-lint-panel-navigation.md), [ST-06-13](stories/story-06-13-gutter-filter-polish.md), [ST-06-14](stories/story-06-14-headless-test-harness.md)
 - review | REV-EPIC-07 | [Review: ASGI correlation middleware for access-log correlation](reviews/review-epic-07-correlation-middleware-asgi.md) | target=[EPIC-07](epics/epic-07-observability-and-operations.md), [ST-07-06](stories/story-07-06-asgi-correlation-middleware.md), ADR-0061
@@ -548,7 +549,7 @@
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
 - EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=3, ready=1, done=6 | tasks=none
 - EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=2, done=2 | tasks=none
-- EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=1, done=1 | tasks=none
+- EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=2, done=1 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
@@ -613,6 +614,7 @@
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-39-10 | [Teachers import exams from PDF files that contain text into the exam workspace](stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-41-01 | [Paid AI calls stop at a fixed daily token and cost budget](stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-41-03 | [Every signed-in teacher uses the exam and script-editor AI within the daily budget](stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
 
 ### proposed
 

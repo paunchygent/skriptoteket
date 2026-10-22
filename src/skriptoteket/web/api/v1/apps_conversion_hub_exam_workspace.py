@@ -24,6 +24,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
     ExamWorkspaceItemRetryResponse,
+    ExamWorkspaceLimitsResponse,
     ExamWorkspaceUnreadableDocumentListResponse,
     RetryExamWorkspaceItemRequest,
 )
@@ -256,6 +257,19 @@ async def get_exam_course_catalog(
 ) -> ExamCourseCatalogResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user)
+
+
+@router.get(
+    "/exam-workspace/limits",
+    response_model=ExamWorkspaceLimitsResponse,
+)
+def get_exam_workspace_limits(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceLimitsResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return ExamWorkspaceLimitsResponse(max_exam_bytes=settings.VAULT_MAX_FILE_BYTES)
 
 
 @router.get(

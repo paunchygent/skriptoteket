@@ -54,6 +54,7 @@ import {
   Heading3,
   History,
   Image,
+  ImagePlus,
   Info,
   Italic,
   LayoutDashboard,
@@ -171,7 +172,8 @@ export type UiGlyphActionMeaning =
   | "export-checklist"
   | "send"
   | "file-import"
-  | "file-new";
+  | "file-new"
+  | "add-picture";
 
 export type UiGlyphUtilityMeaning =
   | "info"
@@ -323,6 +325,7 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   send: lucide(SendHorizontal),
   "file-import": lucide(FileInput),
   "file-new": lucide(FilePlus),
+  "add-picture": lucide(ImagePlus),
 };
 
 const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {

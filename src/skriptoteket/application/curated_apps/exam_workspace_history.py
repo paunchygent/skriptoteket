@@ -124,10 +124,19 @@ class ExamWorkspaceHistoryState(BaseModel):
 
 
 class StoreExamWorkspaceUndoStepRequest(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True, extra="forbid", ser_json_bytes="base64", val_json_bytes="base64"
+    )
 
     expected_cursor: UUID
     document: NativeExamDocument
+    new_assets_by_id: dict[str, bytes] = Field(
+        default_factory=dict,
+        description=(
+            "Bytes of pictures this document declares that the server may not hold yet, "
+            "sent once by the editor that added them."
+        ),
+    )
     after_step_id: UUID | None = None
     tab_id: UUID
     """The editing tab's id; the server refuses a store from a tab without the lease."""

@@ -11,9 +11,11 @@
  *   emits the empty body and keeps it; the item's export blockers, not the
  *   editor, say that an option, entry or step is missing its text. The five
  *   kept marks and the heading glyphs act through the item editor's shared
- *   toolbar, and Ctrl/Cmd+B, I and U toggle marks. The entry never offers gaps
- *   or pictures of its own; a stored one still renders as a fixed atom, so an
- *   edit cannot drop it silently.
+ *   toolbar, and Ctrl/Cmd+B, I and U toggle marks. The entry offers no gap
+ *   tool of its own, and pictures only when its `pictures` prop asks for them:
+ *   then a dropped or pasted file goes to the picture service with this entry
+ *   as the target. A stored gap or picture always renders as a fixed atom, so
+ *   an edit cannot drop it silently.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceChoiceField` for each choice,
@@ -21,13 +23,18 @@
  *     `ExamWorkspaceOrderingField` for each step and
  *     `ExamWorkspaceInstructionEditor` for the part instruction.
  *   - A thin wrapper over `ExamWorkspaceRichTextEditor`, which registers
- *     itself as the shared toolbar's target when the teacher focuses it.
+ *     itself as the shared toolbar's target when the teacher focuses it; the
+ *     entry re-exposes that target and its focus for a host that places a
+ *     chosen picture on its own entry.
  *   - Emits the whole entry body on any edit; `examWorkspaceItemEdits`
  *     applies it to the document.
  */
 
+import { ref } from "vue";
+
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
+import type { RichTextTarget } from "./examWorkspaceRichTextTarget";
 
 withDefaults(
   defineProps<{
@@ -44,6 +51,8 @@ withDefaults(
     variant?: "paragraph" | "input";
     /** Picture URLs by asset id; an unmapped picture keeps its "Bild" placeholder. */
     assetUrls?: Record<string, string>;
+    /** While true, the entry takes dropped and pasted pictures. */
+    pictures?: boolean;
   }>(),
   {
     disabled: false,
@@ -52,6 +61,7 @@ withDefaults(
     borderClass: "border-navy/35",
     variant: "input",
     assetUrls: () => ({}),
+    pictures: false,
   },
 );
 
@@ -59,10 +69,23 @@ const emit = defineEmits<{
   updateBody: [body: NativeExamBodyParagraph[], structural: boolean];
   focusEntry: [];
 }>();
+
+const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
+
+defineExpose({
+  /** The entry's own rich target, so the host can place a chosen picture on it. */
+  get target(): RichTextTarget | undefined {
+    return editor.value?.target;
+  },
+  focus(): void {
+    editor.value?.focus();
+  },
+});
 </script>
 
 <template>
   <ExamWorkspaceRichTextEditor
+    ref="editor"
     :body="body"
     :disabled="disabled"
     :label="label"
@@ -73,6 +96,7 @@ const emit = defineEmits<{
     :variant="variant === 'input' ? 'compact' : 'field'"
     :asset-urls="assetUrls"
     :gaps-interactive="false"
+    :pictures="pictures"
     @update="(next, structural) => emit('updateBody', next, structural)"
     @focus="emit('focusEntry')"
   />
