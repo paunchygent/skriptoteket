@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass
+from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
@@ -26,6 +27,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+)
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 
 
@@ -35,11 +42,22 @@ class DocxConversionOutcome:
 
     result: DocxBuildResult
     update: ConversionUpdate
+    ai_limit: AiDailyLimit | None = None
+    limit_code: str | None = None
+    """The failure/state code of the job's first refusal: ai_daily_limit or ai_overage_cap."""
+
+
+class DocxConversionPipelineProtocol(Protocol):
+    """One DOCX conversion over a grouped exam; doubles inject through the constructor."""
+
+    async def convert(
+        self, *, job: DocxConversionJob, fallback_reason: str | None = ...
+    ) -> DocxConversionOutcome: ...
 
 
 @dataclass(frozen=True)
 class DocxConversionJob:
-    """Identity and source of one conversion."""
+    """Identity, source and door caller of one conversion."""
 
     job_id: UUID
     worker_id: str
@@ -49,6 +67,7 @@ class DocxConversionJob:
     source_docx: bytes
     chunks: tuple[DocxChunk, ...]
     course_key: str | None
+    caller: AiDoorCaller
     origin_kind: DocumentImportOriginKind
 
 
@@ -58,6 +77,10 @@ class DocxConversionRun:
     def __init__(self, job: DocxConversionJob, started: float) -> None:
         self.job = job
         self.started = started
+        self.ai_limit: AiDailyLimit | None = None
+        """The door limit of the job's first refusal; later steps take failure paths."""
+        self.limit_code: str | None = None
+        """The failure/state code of the first refusal: ai_daily_limit or ai_overage_cap."""
         self.state = DocxBuildState(
             job.job_id,
             job.document_id,
@@ -85,6 +108,18 @@ class DocxConversionRun:
 
     def family(self, question_id: str) -> QuestionFamily:
         return next(f for f in self.families if f.question_id == question_id)
+
+    def note_limit(self, exc: AiDailyLimitReached | AiJobOverageCapReached) -> str:
+        """Record the job's first refusal; return its failure/state code."""
+
+        if isinstance(exc, AiJobOverageCapReached):
+            code, limit = "ai_overage_cap", AiDailyLimit.POOL
+        else:
+            code, limit = "ai_daily_limit", exc.limit
+        if self.ai_limit is None:
+            self.ai_limit = limit
+            self.limit_code = code
+        return code
 
     def timed(self, stage: str, started: float) -> None:
         self.timings.append(

@@ -2,12 +2,12 @@
 
 Purpose:
     Complete one claimed workspace suggestion job on the answer-key views
-    the editor sent with the request (TASK-SKRIPT-39-04-07): reserve the
-    daily token leases with the recorded attempt, collect one suggestion
-    per requested question (one GLM failover per item after a transient
-    outage), and store the suggestions on the job itself. This lane never
-    reads a saved document revision and writes no overlay; any failure
-    finishes the job as FAILED with a typed ``last_error``.
+    the editor sent with the request (TASK-SKRIPT-39-04-07): build the job's
+    door caller from its owner, record the attempt, collect one suggestion
+    per requested question through the Luna profile, and store the
+    suggestions on the job itself. This lane never reads a saved document
+    revision and writes no overlay; any failure finishes the job as FAILED
+    with a typed ``last_error``.
 
 Relationships:
     Dispatched by
@@ -18,8 +18,6 @@ Relationships:
 """
 
 from __future__ import annotations
-
-from uuid import UUID
 
 from pydantic import ValidationError
 
@@ -44,10 +42,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
-    StructuredLLMRequest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLeaseRefused,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_prompts import (
     WorkspaceAnswerKeyCandidatePlan,
@@ -60,11 +54,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
+from skriptoteket.domain.llm_door import AiDailyLimit, door_caller_for
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyProviderSelectorProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
 )
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
@@ -75,13 +70,15 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         self,
         *,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        provider_selector: AnswerKeyProviderSelectorProtocol,
+        users: UserRepositoryProtocol,
+        profile: StructuredLLMProviderProfile,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         ledger: AnswerKeyAttemptLedger,
     ) -> None:
         self._enrichment_jobs = enrichment_jobs
-        self._provider_selector = provider_selector
+        self._users = users
+        self._profile = profile
         self._uow = uow
         self._clock = clock
         self._ledger = ledger
@@ -101,32 +98,28 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         if not views:
             return await self.fail(job=job, last_error="workspace_no_enrichable_items")
 
-        route = self._provider_selector.select_route()
+        owner = await self._users.get_by_id(job.owner_user_id)
+        if owner is None:
+            return await self.fail(job=job, last_error="owner_missing")
+        caller = door_caller_for(user=owner)
+
         plans = plan_workspace_answer_key_candidates(
             job_id=str(job.id),
             views=views,
-            profile=route.primary,
+            profile=self._profile,
         )
         attempt_candidates = tuple(
-            _workspace_attempt_candidate(job_id=job.id, plan=plan) for plan in plans
+            AnswerKeyAttemptCandidate(item_id=plan.view.item_id, request=plan.request)
+            for plan in plans
         )
-        try:
-            job, leases_by_item = await self._ledger.record_attempt_and_reserve(
-                job=job,
-                requests=tuple(
-                    (candidate.item_id, candidate.request) for candidate in attempt_candidates
-                ),
-                profile=route.primary,
-            )
-        except AnswerKeyTokenLeaseRefused:
-            return await self.fail(job=job, last_error="daily_token_lease_exhausted")
+        job = await self._ledger.record_attempt(job=job)
 
         collected = await self._ledger.collect_valid_proposals(
             job=job,
-            route=route,
+            profile=self._profile,
+            caller=caller,
             plans=plans,
             attempt_candidates=attempt_candidates,
-            leases_by_item=leases_by_item,
             proposal_from=_workspace_suggestion,
         )
         suggestions = collected.proposals
@@ -143,6 +136,7 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
             return await self.fail(
                 job=job,
                 last_error=collected.failure.last_error,
+                ai_limit=collected.failure.ai_limit,
                 suggestions=payload if suggestions else None,
             )
         if not suggestions:
@@ -167,6 +161,7 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         *,
         job: ExamAnswerKeyEnrichmentJob,
         last_error: str,
+        ai_limit: AiDailyLimit | None = None,
         suggestions: WorkspaceAnswerKeySuggestionsPayload | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
         """Finish one workspace-lane job as FAILED; no conversion to update.
@@ -179,6 +174,8 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
             job = job.model_copy(
                 update={"workspace_suggestions_json": suggestions.model_dump(mode="json")}
             )
+        if ai_limit is not None:
+            job = job.model_copy(update={"ai_limit": ai_limit})
         now = self._clock.now()
         async with self._uow:
             return await self._enrichment_jobs.update(
@@ -190,29 +187,6 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
                 ),
                 expected_worker_id=job.locked_by,
             )
-
-
-def _workspace_attempt_candidate(
-    *,
-    job_id: UUID,
-    plan: WorkspaceAnswerKeyCandidatePlan,
-) -> AnswerKeyAttemptCandidate:
-    """Wrap one workspace candidate plan with its failover request rebuild."""
-
-    view = plan.view
-
-    def build(profile: StructuredLLMProviderProfile) -> StructuredLLMRequest:
-        return plan_workspace_answer_key_candidates(
-            job_id=str(job_id),
-            views=(view,),
-            profile=profile,
-        )[0].request
-
-    return AnswerKeyAttemptCandidate(
-        item_id=view.item_id,
-        request=plan.request,
-        build_request_for_profile=build,
-    )
 
 
 def _workspace_suggestion(

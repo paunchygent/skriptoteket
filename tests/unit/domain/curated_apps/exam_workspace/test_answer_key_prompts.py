@@ -65,8 +65,8 @@ _TWO_PAIR_FINGERPRINT = "56ac0be0fa7c0c2a631abfd11294a54d882589f97a1d0c503af4d0d
 
 def _profile() -> StructuredLLMProviderProfile:
     return StructuredLLMProviderProfile(
-        provider_id="openai-gpt-5.6-luna",
-        model="gpt-5.6-luna",
+        provider_id="openai-gpt-6-luna-answer-key",
+        model="gpt-6-luna",
         endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
         is_remote=True,
         context_window_tokens=32_768,
@@ -278,8 +278,8 @@ class TestGapFillLabels:
 def test_profile_rejects_output_budget_at_or_above_context_window() -> None:
     with pytest.raises(ValueError):
         StructuredLLMProviderProfile(
-            provider_id="openai-gpt-5.6-luna",
-            model="gpt-5.6-luna",
+            provider_id="openai-gpt-6-luna-answer-key",
+            model="gpt-6-luna",
             endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
             is_remote=True,
             context_window_tokens=4_096,

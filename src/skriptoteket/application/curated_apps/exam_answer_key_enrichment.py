@@ -21,6 +21,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
 
+from skriptoteket.domain.llm_door import AiDailyLimit
+
 
 class ExamAnswerKeyEnrichmentJobStatus(StrEnum):
     """Lifecycle of one machine answer-key enrichment job."""
@@ -66,6 +68,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     locked_by: str | None = None
     locked_until: datetime | None = None
     last_error: str | None = None
+    ai_limit: AiDailyLimit | None = None
     diagnostics: tuple[dict[str, JsonValue], ...] = ()
     conversion_progress: dict[str, JsonValue] | None = None
 
@@ -127,6 +130,7 @@ class ExamWorkspaceConversionJobView(BaseModel):
     status: ExamAnswerKeyEnrichmentJobStatus
     workspace_lineage_id: UUID | None
     last_error: str | None
+    ai_limit: AiDailyLimit | None = None
     conversion_progress: dict[str, JsonValue] | None = None
 
 

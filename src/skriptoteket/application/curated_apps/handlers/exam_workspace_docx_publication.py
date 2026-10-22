@@ -157,6 +157,9 @@ def final_publication(
             document=document,
             events=(*result.events, *checks),
             timings=tuple(run.timings),
+            ai_limit=run.ai_limit,
         ),
         update=update,
+        ai_limit=run.ai_limit,
+        limit_code=run.limit_code,
     )

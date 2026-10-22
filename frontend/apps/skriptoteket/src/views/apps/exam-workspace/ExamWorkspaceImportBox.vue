@@ -23,6 +23,8 @@ import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
+import AiDailyLimitNote from "./AiDailyLimitNote.vue";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [
@@ -44,12 +46,18 @@ const emit = defineEmits<{ retry: [kind: NativeExamItemKind] }>();
 
 const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
+const limitNoteId = useId();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
+/** The door's daily limit disables the retry for the page session. */
+const limitReached = aiDailyLimitReached;
 
 function handleRetry(): void {
+  if (limitReached.value) {
+    return;
+  }
   if (isGuest.value) {
     requestSignIn(GUEST_AI_SIGN_IN);
     return;
@@ -154,7 +162,7 @@ function chooseKind(event: Event): void {
           <select
             :id="`retry-${item.item_id}`"
             :value="selectedKind"
-            :disabled="disabled || adminOnly"
+            :disabled="disabled || adminOnly || limitReached"
             data-test="exam-workspace-retry-kind"
             @change="chooseKind"
           >
@@ -169,9 +177,9 @@ function chooseKind(event: Event): void {
           <button
             type="button"
             class="xw-btn xw-btn--compact"
-            :disabled="disabled || adminOnly"
-            :title="adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
-            :aria-describedby="adminOnly ? aiNoteId : undefined"
+            :disabled="disabled || adminOnly || limitReached"
+            :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+            :aria-describedby="limitReached ? limitNoteId : adminOnly ? aiNoteId : undefined"
             data-test="exam-workspace-retry"
             @click="handleRetry"
           >
@@ -180,8 +188,13 @@ function chooseKind(event: Event): void {
               :size="16"
             />Konvertera igen
           </button>
+          <AiDailyLimitNote
+            v-if="limitReached"
+            :id="limitNoteId"
+            class="imp__retry-note"
+          />
           <p
-            v-if="adminOnly"
+            v-else-if="adminOnly"
             :id="aiNoteId"
             class="xw-hint imp__retry-note"
           >

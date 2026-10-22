@@ -1,4 +1,4 @@
-"""Two-pass item-type classifier behind the daily token lease (TASK-SKRIPT-39-05-04 D23).
+"""Two-pass item-type classifier (TASK-SKRIPT-39-05-04 D23).
 
 Purpose:
     The batched first pass labels every question. A label other than unresolved at or
@@ -6,14 +6,12 @@ Purpose:
     alone by the second pass (B), all such questions concurrently. A question B leaves
     unresolved, by its answer, a refusal or a failure, takes the first pass's top label,
     and the converter's type_conflict resend corrects a wrong one (D23). Only a question
-    neither pass gave any label stays unresolved. Each call reserves its
-    estimated tokens before any network access and reconciles the measured tokens after;
-    a failed or unmeasured call keeps its reservation charged, as every lease does.
+    neither pass gave any label stays unresolved.
 
 Relationships:
     Implements ``protocols.item_type_labeler.ItemTypeLabelerProtocol`` over a
-    ``MeteredItemTypeLabelerProtocol`` first pass, a ``SecondPassItemTypeLabelerProtocol``
-    second pass and the shared ``AnswerKeyTokenLeaseRepositoryProtocol`` daily lease.
+    ``MeteredItemTypeLabelerProtocol`` first pass and a ``SecondPassItemTypeLabelerProtocol``
+    second pass.
 """
 
 from __future__ import annotations
@@ -23,12 +21,11 @@ from uuid import UUID
 
 import structlog
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseRefused,
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
 )
-from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
     ItemTypeLabel,
@@ -42,15 +39,13 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelPass,
     LabelRoute,
     LabelSink,
+    LimitSink,
     MeteredItemTypeLabelerProtocol,
     SecondPassItemTypeLabelerProtocol,
     SecondPassLabel,
 )
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
-
-FIRST_PASS_LEASE_ITEM_ID = "item_type_labeling"
 
 
 def _first_pass_failed(item: LabelingItem, code: str) -> ItemTypeLabelResult:
@@ -107,25 +102,23 @@ def _decided(
 
 
 class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
-    """Charge each labeling call against the daily token lease and settle every question."""
+    """Settle every question over its two labeling passes."""
 
     def __init__(
         self,
         *,
         first_pass: MeteredItemTypeLabelerProtocol,
         second_pass: SecondPassItemTypeLabelerProtocol,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
     ) -> None:
         self._first = first_pass
         self._second = second_pass
-        self._leases = leases
-        self._uow = uow
-        self._clock = clock
 
     async def label(
-        self, *, request: LabelingRequest, on_results: LabelSink | None = None
+        self,
+        *,
+        request: LabelingRequest,
+        on_results: LabelSink | None = None,
+        on_limit: LimitSink | None = None,
     ) -> ItemTypeLabeling:
         if not request.items:
             return ItemTypeLabeling(results=())
@@ -140,7 +133,9 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         ]
         decided = await asyncio.gather(
             *(
-                self._second_pass(request.job_id, item, first[index], on_results)
+                self._second_pass(
+                    request.job_id, item, first[index], on_results, request.caller, on_limit
+                )
                 for index, item in escalated
             )
         )
@@ -161,13 +156,7 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
     async def _first_pass(
         self, request: LabelingRequest
     ) -> tuple[tuple[ItemTypeLabelResult, ...], int | None]:
-        """A failed first pass sends every question to the second pass; a refused lease stops."""
-        lease = await self._reserve(
-            request.job_id,
-            FIRST_PASS_LEASE_ITEM_ID,
-            self._first.estimate_input_tokens(request=request),
-            self._first.provider_profile_id,
-        )
+        """A failed first pass sends every question to the second pass."""
         try:
             labeling = await self._first.label(request=request)
         except ItemTypeLabelerError as error:
@@ -178,7 +167,6 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
                 status_code=error.status_code,
             )
             return tuple(_first_pass_failed(item, error.code) for item in request.items), None
-        await self._reconcile(lease, request.job_id, labeling.usage.input_tokens)
         return labeling.results, labeling.usage.input_tokens
 
     async def _second_pass(
@@ -187,19 +175,33 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         item: LabelingItem,
         first: ItemTypeLabelResult,
         on_results: LabelSink | None,
+        caller: AiDoorCaller,
+        on_limit: LimitSink | None,
     ) -> tuple[ItemTypeLabelResult, int | None]:
         decided: SecondPassLabel | None = None
         failure: str | None = None
         try:
-            lease = await self._reserve(
-                job_id,
-                f"label_b:{item.item_id}",
-                self._second.estimate_tokens(item=item),
-                self._second.provider_profile_id,
+            decided = await self._second.label_one(job_id=job_id, item=item, caller=caller)
+        except AiDailyLimitReached as exc:
+            failure = "ai_daily_limit"
+            if on_limit is not None:
+                on_limit(exc)
+            logger.warning(
+                "Item-type second pass refused for the daily limit; "
+                "the question takes the first pass's top label",
+                job_id=str(job_id),
+                code=failure,
             )
-            decided = await self._second.label_one(job_id=job_id, item=item)
-            if decided.input_tokens is not None and decided.output_tokens is not None:
-                await self._reconcile(lease, job_id, decided.input_tokens + decided.output_tokens)
+        except AiJobOverageCapReached as exc:
+            failure = "ai_overage_cap"
+            if on_limit is not None:
+                on_limit(exc)
+            logger.warning(
+                "Item-type second pass stopped at the overage cap; "
+                "the question takes the first pass's top label",
+                job_id=str(job_id),
+                code=failure,
+            )
         except ItemTypeLabelerError as error:
             failure = error.code
             logger.warning(
@@ -217,37 +219,3 @@ class TwoPassItemTypeLabeler(ItemTypeLabelerProtocol):
         if on_results is not None:
             on_results((result,))
         return result, None if decided is None else decided.input_tokens
-
-    async def _reserve(
-        self, job_id: UUID, item_id: str, requested: int, profile_id: str
-    ) -> AnswerKeyTokenLease:
-        try:
-            async with self._uow:
-                return await self._leases.reserve(
-                    now=self._clock.now(),
-                    requested_tokens=requested,
-                    job_id=job_id,
-                    item_id=item_id,
-                    provider_profile_id=profile_id,
-                )
-        except AnswerKeyTokenLeaseRefused as error:
-            raise ItemTypeLabelerError(
-                code="lease_refused", message=f"Daily token lease refused {requested} tokens."
-            ) from error
-
-    async def _reconcile(
-        self, lease: AnswerKeyTokenLease, job_id: UUID, actual: int | None
-    ) -> None:
-        """A failed reconciliation keeps the reservation charged; the labels still stand."""
-        if actual is None:
-            return
-        try:
-            async with self._uow:
-                await self._leases.reconcile(
-                    lease_id=lease.lease_id, actual_tokens=actual, now=self._clock.now()
-                )
-        except Exception:
-            logger.exception(
-                "Item-type labeling token reconciliation failed; reservation retained",
-                job_id=str(job_id),
-            )

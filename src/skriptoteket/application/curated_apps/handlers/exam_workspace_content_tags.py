@@ -13,7 +13,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     finish_enrichment_job,
 )
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
     ContentSuggestionsResponse,
@@ -30,12 +30,23 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+    ai_limit_note,
+    door_caller_for,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import GetExamWorkspaceDocumentHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.item_type_labeler import ContentTagClassificationRequest, LabelingItem
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+
+_DEFAULT_FAILURE_MESSAGE = "Innehållsförslaget kunde inte hämtas. Försök igen senare."
 
 
 class ExamCourseContentResponse(BaseModel):
@@ -66,16 +77,19 @@ def content_response(job: ExamAnswerKeyEnrichmentJob) -> ContentSuggestionsRespo
         if job.workspace_suggestions_json is not None
         else None
     )
+    if job.ai_limit is not None:
+        message: str | None = ai_limit_note(job.ai_limit)
+    else:
+        message = _DEFAULT_FAILURE_MESSAGE if job.last_error else None
     return ContentSuggestionsResponse(
         job_id=job.id,
         lineage_id=job.workspace_lineage_id,
         document_revision=job.workspace_document_revision,
         course_key=job.workspace_course_key,
         state=job.status,
+        ai_limit=job.ai_limit,
         suggestions=payload.suggestions if payload else (),
-        message="Innehållsförslaget kunde inte hämtas. Försök igen senare."
-        if job.last_error
-        else None,
+        message=message,
     )
 
 
@@ -135,7 +149,7 @@ class GetExamContentSuggestionsHandler:
 
 
 def saved_content_request(
-    document: NativeExamDocument, job_id: UUID
+    document: NativeExamDocument, job_id: UUID, caller: AiDoorCaller
 ) -> ContentTagClassificationRequest:
     assert document.header.course is not None
     items = []
@@ -156,6 +170,7 @@ def saved_content_request(
         job_id=job_id,
         items=tuple(items),
         content_items=load_exam_content_catalog()[document.header.course.key],
+        caller=caller,
     )
 
 
@@ -163,12 +178,14 @@ class ProcessExamContentSuggestionsHandler:
     def __init__(
         self,
         *,
-        classifier: MeteredExamContentTagClassifier,
+        classifier: ExamContentTagSuggester,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        users: UserRepositoryProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
     ) -> None:
         self._classifier, self._jobs, self._uow, self._clock = classifier, jobs, uow, clock
+        self._users = users
 
     async def handle(self, *, job: ExamAnswerKeyEnrichmentJob) -> ExamAnswerKeyEnrichmentJob:
         try:
@@ -180,13 +197,21 @@ class ProcessExamContentSuggestionsHandler:
                 or document.header.course.key != job.workspace_course_key
             ):
                 raise ValueError("Content job does not match its saved document")
+            owner = await self._users.get_by_id(job.owner_user_id)
+            if owner is None:
+                return await self.fail(job=job, last_error="owner_missing")
             tags = await self._classifier.suggest(
-                request=saved_content_request(document, job.id), fail_open=False
+                request=saved_content_request(document, job.id, door_caller_for(user=owner)),
+                fail_open=False,
             )
             payload = ContentSuggestionsPayload(suggestions=tags)
             job = job.model_copy(
                 update={"workspace_suggestions_json": payload.model_dump(mode="json")}
             )
+        except AiDailyLimitReached as exc:
+            return await self.fail(job=job, last_error="ai_daily_limit", ai_limit=exc.limit)
+        except AiJobOverageCapReached:
+            return await self.fail(job=job, last_error="ai_overage_cap", ai_limit=AiDailyLimit.POOL)
         except Exception:
             return await self.fail(job=job, last_error="content_suggestions_failed")
         async with self._uow:
@@ -200,8 +225,14 @@ class ProcessExamContentSuggestionsHandler:
             )
 
     async def fail(
-        self, *, job: ExamAnswerKeyEnrichmentJob, last_error: str
+        self,
+        *,
+        job: ExamAnswerKeyEnrichmentJob,
+        last_error: str,
+        ai_limit: AiDailyLimit | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
+        if ai_limit is not None:
+            job = job.model_copy(update={"ai_limit": ai_limit})
         async with self._uow:
             return await self._jobs.update(
                 job=finish_enrichment_job(

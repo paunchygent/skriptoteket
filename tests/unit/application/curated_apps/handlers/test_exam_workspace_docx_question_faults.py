@@ -49,6 +49,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
     ConversionCache,
@@ -146,9 +147,15 @@ class _CorruptedProvider(ReplayProvider):
         self._corrupt = corrupt
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await super().complete_structured(request=request, profile=profile)
+        response = await super().complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         if request.item_id != self._request_id:
             return response
         content = dict(response.content)

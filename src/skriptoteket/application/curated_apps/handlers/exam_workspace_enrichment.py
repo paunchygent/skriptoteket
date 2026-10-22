@@ -48,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDailyLimit, ai_limit_note
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -65,14 +66,18 @@ NOT_ELIGIBLE_MESSAGE = (
 _DEFAULT_FAILURE_MESSAGE = "Facitförslaget kunde inte hämtas just nu. Försök igen senare."
 
 _FAILURE_MESSAGES: dict[str, str] = {
-    "daily_token_lease_exhausted": (
-        "Dagens AI-budget för facitförslag är förbrukad. Försök igen i morgon."
-    ),
     "llm_output_invalid": "Facitförslaget kunde inte tolkas. Komplettera facit manuellt.",
     "workspace_no_enrichable_items": "Dokumentet har inga frågor som saknar facit.",
     "workspace_request_missing": _DEFAULT_FAILURE_MESSAGE,
     "workspace_request_invalid": _DEFAULT_FAILURE_MESSAGE,
 }
+
+
+def _failure_message(job: ExamAnswerKeyEnrichmentJob) -> str:
+    """The teacher message for a failed job: the limit note from the job's limit."""
+    if job.ai_limit is not None:
+        return ai_limit_note(job.ai_limit)
+    return _FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE)
 
 
 def _document_not_found(lineage_id: UUID) -> DomainError:
@@ -268,9 +273,9 @@ def suggestions_response_for_job(
     """Report one suggestion job's state and, once finished, its suggestions."""
 
     if job.status is ExamAnswerKeyEnrichmentJobStatus.QUEUED:
-        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED)
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.QUEUED, job.ai_limit)
     if job.status is ExamAnswerKeyEnrichmentJobStatus.RUNNING:
-        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING)
+        return _status(lineage_id, job.id, ExamWorkspaceEnrichmentState.RUNNING, job.ai_limit)
     payload = _stored_suggestions(job.workspace_suggestions_json)
     if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED:
         # A failed job still delivers every suggestion it produced before
@@ -279,7 +284,8 @@ def suggestions_response_for_job(
             job_id=job.id,
             lineage_id=lineage_id,
             state=ExamWorkspaceEnrichmentState.FAILED,
-            message=_FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE),
+            ai_limit=job.ai_limit,
+            message=_failure_message(job),
             suggestions=payload.suggestions if payload is not None else (),
         )
     if payload is None:
@@ -287,12 +293,14 @@ def suggestions_response_for_job(
             job_id=job.id,
             lineage_id=lineage_id,
             state=ExamWorkspaceEnrichmentState.FAILED,
+            ai_limit=job.ai_limit,
             message=_DEFAULT_FAILURE_MESSAGE,
         )
     return ExamWorkspaceAnswerKeySuggestionsResponse(
         job_id=job.id,
         lineage_id=lineage_id,
         state=ExamWorkspaceEnrichmentState.SUCCEEDED,
+        ai_limit=job.ai_limit,
         suggestions=payload.suggestions,
     )
 
@@ -309,10 +317,14 @@ def _stored_suggestions(
 
 
 def _status(
-    lineage_id: UUID, job_id: UUID, state: ExamWorkspaceEnrichmentState
+    lineage_id: UUID,
+    job_id: UUID,
+    state: ExamWorkspaceEnrichmentState,
+    ai_limit: AiDailyLimit | None,
 ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
     return ExamWorkspaceAnswerKeySuggestionsResponse(
         job_id=job_id,
         lineage_id=lineage_id,
         state=state,
+        ai_limit=ai_limit,
     )

@@ -16,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
+from skriptoteket.domain.llm_door import AiDoorCaller
 
 
 class ExamGroupingError(Exception):
@@ -38,4 +39,6 @@ class ExamGrouping:
 class ExamGrouperProtocol(Protocol):
     """Map the exam's chunks to a manifest of source references."""
 
-    async def group(self, *, job_id: UUID, chunks: tuple[DocxChunk, ...]) -> ExamGrouping: ...
+    async def group(
+        self, *, job_id: UUID, chunks: tuple[DocxChunk, ...], caller: AiDoorCaller
+    ) -> ExamGrouping: ...

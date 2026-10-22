@@ -4,23 +4,6 @@
  */
 
 export interface paths {
-    "/api/v1/admin/answer-key-lease/status": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Answer Key Lease Status */
-        get: operations["get_answer_key_lease_status_api_v1_admin_answer_key_lease_status_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/admin/suggestions": {
         parameters: {
             query?: never;
@@ -3881,6 +3864,12 @@ export interface components {
         AdminUserResponse: {
             user: components["schemas"]["User"];
         };
+        /**
+         * AiDailyLimit
+         * @description The door limit that refused a call (ST-HULE-14-03 D3-D5).
+         * @enum {string}
+         */
+        AiDailyLimit: "pool" | "user_share" | "usd_ceiling";
         /** AiPolicyResponse */
         AiPolicyResponse: {
             /** Completion External Available */
@@ -3898,28 +3887,6 @@ export interface components {
             reason?: string | null;
             /** Row Number */
             row_number?: number | null;
-        };
-        /**
-         * AnswerKeyLeaseStatusResponse
-         * @description Current UTC day's non-refundable answer-key lease balance.
-         */
-        AnswerKeyLeaseStatusResponse: {
-            /** Allocated Tokens */
-            allocated_tokens: number;
-            /** Available Tokens */
-            available_tokens: number;
-            /**
-             * Resets At
-             * Format: date-time
-             */
-            resets_at: string;
-            /** Spent Tokens */
-            spent_tokens: number;
-            /**
-             * Utc Day
-             * Format: date
-             */
-            utc_day: string;
         };
         /**
          * AppDetailResponse
@@ -4393,6 +4360,7 @@ export interface components {
         ClassroomSelectionMode: "optional" | "required";
         /** ContentSuggestionsResponse */
         ContentSuggestionsResponse: {
+            ai_limit?: components["schemas"]["AiDailyLimit"] | null;
             /** Course Key */
             course_key: string;
             /** Document Revision */
@@ -5760,6 +5728,7 @@ export interface components {
          * @description Status of one suggestion job, plus its suggestions once finished.
          */
         ExamWorkspaceAnswerKeySuggestionsResponse: {
+            ai_limit?: components["schemas"]["AiDailyLimit"] | null;
             /** Job Id */
             job_id?: string | null;
             /**
@@ -5785,6 +5754,7 @@ export interface components {
          *     unsaved teacher edits.
          */
         ExamWorkspaceConversionStatus: {
+            ai_limit?: components["schemas"]["AiDailyLimit"] | null;
             /** Document Revision */
             document_revision: number | null;
             /** Error Message */
@@ -10948,26 +10918,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get_answer_key_lease_status_api_v1_admin_answer_key_lease_status_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AnswerKeyLeaseStatusResponse"];
-                };
-            };
-        };
-    };
     list_suggestions_for_review_api_v1_admin_suggestions_get: {
         parameters: {
             query?: never;

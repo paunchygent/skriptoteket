@@ -30,6 +30,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from tests.unit.application.curated_apps.handlers.docx_conversion_cache import independent_copy
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
@@ -105,7 +106,11 @@ class _ConflictedReplies(ReplayProvider):
         self.gap_values = gap_values
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         if request.item_id.endswith("c01"):
             self.requests.append(request)
@@ -115,7 +120,7 @@ class _ConflictedReplies(ReplayProvider):
                 finish_reason="completed",
                 usage=StructuredLLMUsage(),
             )
-        return await super().complete_structured(request=request, profile=profile)
+        return await super().complete_structured(request=request, profile=profile, caller=caller)
 
 
 _CONVERTED: dict[tuple[str, ...], tuple[list[str], DocxConversionOutcome]] = {}

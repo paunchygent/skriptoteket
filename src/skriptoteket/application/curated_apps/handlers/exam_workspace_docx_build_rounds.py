@@ -1,4 +1,4 @@
-"""Batched request construction and leased Responses provider exchange."""
+"""Batched request construction and provider exchange."""
 
 import json
 from dataclasses import dataclass
@@ -17,10 +17,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     estimate_prompt_tokens,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseRefused,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import (
     DOCX_BUILD_SCHEMA_VERSION,
     docx_build_output_spec,
@@ -30,12 +26,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import ma
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
-from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorCaller, AiJobOverageCapReached
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
 )
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
 
@@ -51,22 +45,23 @@ class DocxBuildRoundFailure(Exception):
 
 @dataclass(frozen=True)
 class DocxRoundReply:
-    """Provider response plus the failure type of a reconciliation that did not commit."""
+    """Provider response."""
 
     response: StructuredLLMResponse
-    reconciliation_failure: str | None = None
 
 
 class DocxBuildExchangeProtocol(Protocol):
     """The one batch exchange the conversion pipeline and the retry handler depend on.
 
-    ``DocxBuildRoundExchange`` reserves a token lease, calls the provider and reconciles
-    the measured usage behind this method; a test double serves one canned reply through
-    the same seam.
+    ``DocxBuildRoundExchange`` calls the provider behind this method; a test
+    double serves one canned reply through the same seam.
     """
 
     async def exchange(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> DocxRoundReply: ...
 
 
@@ -131,53 +126,22 @@ def build_batch_request(
 
 
 class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
-    """Own reservation, provider failure handling and measured reconciliation."""
+    """Own provider failure handling."""
 
-    def __init__(
-        self,
-        provider: AnswerKeyStructuredProviderProtocol,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-    ) -> None:
+    def __init__(self, provider: AnswerKeyStructuredProviderProtocol) -> None:
         self._provider = provider
-        self._leases = leases
-        self._uow = uow
-        self._clock = clock
-
-    async def _reserve(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
-    ) -> AnswerKeyTokenLease:
-        try:
-            async with self._uow:
-                return await self._leases.reserve(
-                    now=self._clock.now(),
-                    requested_tokens=request.estimated_input_tokens + profile.max_output_tokens,
-                    job_id=UUID(request.job_id),
-                    item_id=request.item_id,
-                    provider_profile_id=profile.provider_id,
-                )
-        except AnswerKeyTokenLeaseRefused as error:
-            raise DocxBuildRoundFailure(
-                "Dagens AI-budget är förbrukad. Kontrollera källtexten manuellt.",
-                code="lease_refused",
-                detail=f"requested {request.estimated_input_tokens + profile.max_output_tokens}",
-            ) from error
-        except Exception as error:
-            logger.exception("DOCX build token reservation failed", job_id=request.job_id)
-            raise DocxBuildRoundFailure(
-                "AI-budgeten kunde inte reserveras. Kontrollera källtexten manuellt.",
-                code="lease_reservation_failed",
-                detail=type(error).__name__,
-            ) from error
 
     async def exchange(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> DocxRoundReply:
-        """Reserve before network access; retain failed and incomplete reservations."""
-        lease = await self._reserve(request, profile)
+        """Call the provider once; a failure stops the batch with a review reason."""
         try:
-            response = await self._provider.complete_structured(request=request, profile=profile)
+            response = await self._provider.complete_structured(
+                request=request, profile=profile, caller=caller
+            )
         except StructuredLLMProviderError as error:
             reason = (
                 "AI-tjänsten avböjde tolkningen. Kontrollera källtexten manuellt."
@@ -190,6 +154,8 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
                 code=error.failure_code.value,
                 detail=f"provider={error.provider_id} status={error.status_code}",
             ) from error
+        except (AiDailyLimitReached, AiJobOverageCapReached):
+            raise
         except Exception as error:
             logger.exception("DOCX build provider unavailable", job_id=request.job_id)
             raise DocxBuildRoundFailure(
@@ -197,32 +163,4 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
                 code="provider_unavailable",
                 detail=type(error).__name__,
             ) from error
-        if response.finish_reason in {None, "completed"}:
-            return DocxRoundReply(response, await self._reconcile(lease, request, response))
         return DocxRoundReply(response)
-
-    async def _reconcile(
-        self,
-        lease: AnswerKeyTokenLease,
-        request: StructuredLLMRequest,
-        response: StructuredLLMResponse,
-    ) -> str | None:
-        """Return the failure type when reconciliation fails; the reservation stays charged."""
-        actual_tokens = response.usage.usable_total_tokens
-        if actual_tokens is None:
-            return None
-        try:
-            async with self._uow:
-                await self._leases.reconcile(
-                    lease_id=lease.lease_id,
-                    actual_tokens=actual_tokens,
-                    now=self._clock.now(),
-                )
-        except Exception as error:
-            logger.exception(
-                "DOCX build token reconciliation failed; reservation retained",
-                job_id=request.job_id,
-                request_item_id=request.item_id,
-            )
-            return type(error).__name__
-        return None

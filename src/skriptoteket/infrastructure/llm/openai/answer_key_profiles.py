@@ -1,14 +1,14 @@
-"""GPT-5.6 Luna answer-key provider profile.
+"""GPT-6 Luna answer-key provider profile.
 
 Purpose:
-    Pin the GPT-5.6 Luna low-reasoning-effort profile as the primary provider
-    path for the answer-key lane; the GLM failover profile lives in
-    ``infrastructure.llm.openrouter.answer_key_profiles``.
+    Pin the GPT-6 Luna low-reasoning-effort profile as the provider path for
+    the answer-key lane; its calls go through HuleEdu's LLM provider door
+    (ST-SKRIPT-41-01 B2), which prices `gpt-6-luna`.
 
 Relationships:
-    Model identifier `gpt-5.6-luna` verified against current OpenAI docs
-    (developers.openai.com/api/docs/models/gpt-5.6-luna) at implementation
-    time; profile defaults carry over from sir-convert-a-lot `76983339`.
+    The model comes from ``Settings.LLM_ANSWER_KEY_MODEL`` (default
+    `gpt-6-luna`); profile defaults carry over from sir-convert-a-lot
+    `76983339`.
 """
 
 from __future__ import annotations
@@ -21,15 +21,14 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMTextVerbosity,
 )
 
-OPENAI_GPT56_LUNA_PROVIDER_ID = "openai-gpt-5.6-luna"
-OPENAI_GPT56_LUNA_MODEL = "gpt-5.6-luna"
+OPENAI_GPT6_LUNA_ANSWER_KEY_PROVIDER_ID = "openai-gpt-6-luna-answer-key"
 
 
 def build_luna_answer_key_profile(settings: Settings) -> StructuredLLMProviderProfile:
     """Build the pinned Luna profile from operator-configurable settings."""
 
     return StructuredLLMProviderProfile(
-        provider_id=OPENAI_GPT56_LUNA_PROVIDER_ID,
+        provider_id=OPENAI_GPT6_LUNA_ANSWER_KEY_PROVIDER_ID,
         model=settings.LLM_ANSWER_KEY_MODEL,
         endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
         is_remote=True,

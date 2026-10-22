@@ -93,6 +93,7 @@ def conversion_status(
         error_message=job.last_error
         if job.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
         else None,
+        ai_limit=job.ai_limit,
         document_revision=progress.revision,
         questions_total=progress.questions_total,
         questions_done=progress.questions_done,

@@ -62,10 +62,10 @@ services:
       HULEEDU_INTERNAL_IDENTITY_ISSUER: api_gateway_service
       HULEEDU_INTERNAL_IDENTITY_AUDIENCE: skriptoteket
       # Answer-key completion lane. Off unless the untracked staging .env sets
-      # LLM_ANSWER_KEY_ENABLED=true together with both provider keys.
+      # LLM_ANSWER_KEY_ENABLED=true together with HULEEDU_INTERNAL_API_KEY.
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
-      OPENAI_LLM_ANSWER_KEY_API_KEY: ${OPENAI_LLM_ANSWER_KEY_API_KEY:-}
-      OPENROUTER_LLM_ANSWER_KEY_API_KEY: ${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}
+      HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://llm_provider_service:8080}
+      HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
     ports:
       - "127.0.0.1:18000:8000"
     volumes:
@@ -128,6 +128,7 @@ services:
       - vault_data:/var/lib/skriptoteket/vault
     networks:
       - default
+      - huleedu-dev-hule-network
     healthcheck:
       test:
         - CMD

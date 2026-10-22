@@ -57,9 +57,6 @@ from skriptoteket.infrastructure.db.models.conversion_hub_transcript_speaker_ove
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
-from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
-    ExamAnswerKeyTokenLeaseModel,
-)
 from skriptoteket.infrastructure.db.models.exam_guest_draft_handoff import (
     ExamGuestDraftHandoffModel,
 )
@@ -90,7 +87,6 @@ __all__ = [
     "ConversionHubTranscriptFormatterExportStateModel",
     "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamAnswerKeyEnrichmentJobModel",
-    "ExamAnswerKeyTokenLeaseModel",
     "ExamGuestDraftHandoffModel",
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",

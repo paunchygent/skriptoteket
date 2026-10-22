@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 
 INCOMPLETE_REASON = "AI-tjänstens svar blev ofullständigt. Kontrollera källtexten manuellt."
 
@@ -88,6 +89,7 @@ async def convert_batch(
     families: dict[str, QuestionFamily],
     exchange: DocxBuildExchangeProtocol,
     profile: StructuredLLMProviderProfile,
+    caller: AiDoorCaller,
 ) -> BatchOutcome:
     """Send the batch once and admit the schema-valid response."""
     outcome = BatchOutcome(state)
@@ -101,13 +103,11 @@ async def convert_batch(
             kinds=batch.kinds,
             profile=profile,
         )
-        reply = await exchange.exchange(request, profile)
+        reply = await exchange.exchange(request, profile, caller)
     except DocxBuildRoundFailure as error:
         state.record("provider", error.code, detail=error.detail)
         state.fail_all_pending(str(error))
         return outcome
-    if reply.reconciliation_failure is not None:
-        state.record("provider", "token_reconciliation_failed", detail=reply.reconciliation_failure)
     response = reply.response
     state.record_usage(response.usage)
     if response.finish_reason not in {None, "completed"}:

@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
+from skriptoteket.domain.llm_door import AiDoorCaller
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
     build_replay,
@@ -95,9 +96,15 @@ class _RewrittenReplies(ReplayProvider):
         self._rewrite = rewrite
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await super().complete_structured(request=request, profile=profile)
+        response = await super().complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         if self.recording_ids.get(request.item_id) != _REPLY:
             return response
         content = copy.deepcopy(response.content)

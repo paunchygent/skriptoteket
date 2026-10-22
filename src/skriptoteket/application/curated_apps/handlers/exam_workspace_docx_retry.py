@@ -12,8 +12,10 @@ Purpose:
 
 Relationships:
     - Built by ``di.exam_workspace`` beside the conversion pipeline.
-    - Reuses ``convert_batch``/``DocxBuildRoundExchange``, so the strict schema and the
-      admission rules are the same as the import conversion's.
+    - Reuses ``convert_retry_batch_with_limit`` (limit mapping),
+      ``exam_workspace_docx_retry_source`` (saved-source resolution) and the
+      build admission rules, so the schema and the admission are the same as
+      the import conversion's.
     - The pipeline persists ``retry_source`` on every item it builds; this handler is the
       only reader.
 """
@@ -34,7 +36,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
-    convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     Admitted,
@@ -44,6 +45,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ro
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry_limits import (
+    convert_retry_batch_with_limit,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry_source import (
+    document_not_found,
+    missing_source_assets,
+    validate_retry_history,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
@@ -79,7 +88,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source im
     own_chunks,
     pending_chunks,
     replacement_item,
-    source_asset_ids,
     source_missing_picture_reasons,
     source_review_item,
 )
@@ -95,6 +103,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import door_caller_for
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
@@ -107,14 +116,6 @@ _TYPE_CONFLICT_REASON = (
 _MULTIPLE_ITEMS_REASON = "AI-svaret gav fler än en fråga. Kontrollera källtexten manuellt."
 _INVALID_REASON = "Svaret följer inte provformatet. Kontrollera källtexten manuellt."
 _NO_SOURCE_REASON = "Frågan saknar källtext för omkonvertering. Kontrollera frågan manuellt."
-
-
-def _document_not_found(lineage_id: UUID) -> DomainError:
-    return DomainError(
-        code=ErrorCode.NOT_FOUND,
-        message="Provdokumentet finns inte.",
-        details={"lineage_id": str(lineage_id)},
-    )
 
 
 class RetryExamWorkspaceItemHandler:
@@ -158,7 +159,7 @@ class RetryExamWorkspaceItemHandler:
                 user_id=actor.id, document_lineage_id=lineage_id
             )
             if head is None:
-                raise _document_not_found(lineage_id)
+                raise document_not_found(lineage_id)
             if head.document_version != draft.revision:
                 raise DomainError(
                     code=ErrorCode.CONFLICT,
@@ -179,14 +180,14 @@ class RetryExamWorkspaceItemHandler:
         # Saved evidence governs the source; the working item carries unsaved attempts.
         saved_item = saved.item_by_id(request.item_id)
         draft_item = draft.item_by_id(request.item_id)
-        _validate_retry_history(saved_item, draft_item)
+        validate_retry_history(saved_item, draft_item)
         source = saved_item.retry_source
         if source is None:
             raise validation_error(
                 _NO_SOURCE_REASON,
                 details={"item_id": request.item_id},
             )
-        missing = _missing_source_assets(
+        missing = missing_source_assets(
             source, assets=saved.assets, payloads=container.assets_by_id
         )
         if missing:
@@ -232,6 +233,7 @@ class RetryExamWorkspaceItemHandler:
             )
         else:
             item = await self._reconvert(
+                actor=actor,
                 saved=saved,
                 assets=assets,
                 payloads=payloads,
@@ -257,6 +259,7 @@ class RetryExamWorkspaceItemHandler:
     async def _reconvert(
         self,
         *,
+        actor: User,
         saved: NativeExamDocument,
         assets: Mapping[str, NativeExamAsset],
         payloads: Mapping[str, bytes],
@@ -305,12 +308,13 @@ class RetryExamWorkspaceItemHandler:
             owned_contexts=dict.fromkeys(family.question_anchors, owned),
             document_language=infer_exam_document_language(native_exam_document_text(saved)),
         )
-        outcome = await convert_batch(
+        outcome = await convert_retry_batch_with_limit(
             state=state,
             batch=batch,
             families={family.question_id: family},
             exchange=self._exchange,
             profile=self._profile,
+            caller=door_caller_for(user=actor),
         )
         admitted = _single_item(state, outcome)
         if admitted is not None:
@@ -354,18 +358,6 @@ class RetryExamWorkspaceItemHandler:
             )
 
 
-def _missing_source_assets(
-    source: NativeExamRetrySource,
-    *,
-    assets: tuple[NativeExamAsset, ...],
-    payloads: Mapping[str, bytes],
-) -> list[str]:
-    """Source pictures whose saved manifest entry or container payload is gone."""
-    referenced = set(source_asset_ids(source))
-    declared = {asset.asset_id for asset in assets}
-    return sorted(referenced - (declared & set(payloads)))
-
-
 def _single_item(state: DocxBuildState, outcome: BatchOutcome) -> Admitted | None:
     """The one item the reply admitted with the anchors it holds, or None when no single item
     can replace the question."""
@@ -395,40 +387,6 @@ def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admit
         # The single item could not hold the contexts its question owns.
         return " ".join(admitted[0].item.review.reasons)
     return next(iter(state.reasons.values()), _DEFAULT_FAILURE_REASON)
-
-
-def _validate_retry_history(original: NativeExamItem, draft_item: NativeExamItem) -> None:
-    """Anchor import facts, but allow teacher retry history to branch after undo.
-
-    Chosen type, answer-key origin and import type-conflict resends cannot change.
-    Only the teacher-request tail is working state: it may predate or diverge from
-    Spara, or include several unsaved attempts. Wording is copied from the saved
-    record by ``_placed``, never trusted from the working document.
-    """
-    saved = original.import_record
-    if saved is None:
-        return
-    import_end = next(
-        (
-            index
-            for index, step in enumerate(saved.steps)
-            if isinstance(step, NativeExamRetryStep) and step.reason == "teacher_request"
-        ),
-        len(saved.steps),
-    )
-    current = draft_item.import_record
-    if (
-        current is None
-        or current.steps[:import_end] != saved.steps[:import_end]
-        or any(
-            not isinstance(step, NativeExamRetryStep) or step.reason != "teacher_request"
-            for step in current.steps[import_end:]
-        )
-    ):
-        raise validation_error(
-            "Frågans konverteringshistorik stämmer inte med den sparade versionen.",
-            details={"item_id": original.item_id},
-        )
 
 
 def _placed(

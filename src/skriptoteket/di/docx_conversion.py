@@ -6,10 +6,8 @@ so both run the same grouping, labeling, batching and assembly.
 
 from __future__ import annotations
 
-import httpx
-
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
@@ -45,63 +43,49 @@ from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
 from skriptoteket.infrastructure.llm.openai.responses_item_labeler import (
     ResponsesSecondPassItemTypeLabeler,
 )
-from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
 )
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
 
 def build_docx_conversion_pipeline(
     *,
-    client: httpx.AsyncClient,
+    door: LlmDoorClientProtocol,
     provider: AnswerKeyStructuredProviderProtocol,
     sleeper: SleeperProtocol,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol,
     uow: SerializedUnitOfWork,
-    clock: ClockProtocol,
     settings: Settings,
     progress: DocxConversionProgressProtocol,
 ) -> DocxConversionPipeline:
     """Grouping, the second label pass and batch conversion share one Responses provider.
 
-    The Decisions first pass calls its own endpoint on ``client``. Every call is leased on
-    the serialized unit of work.
+    The Decisions first pass and content tags call the door directly.
     """
-    exchange = DocxBuildRoundExchange(provider, leases, uow, clock)
+    exchange = DocxBuildRoundExchange(provider)
     return DocxConversionPipeline(
         grouper=ResponsesExamGrouper(
             exchange=exchange, profile=build_luna_docx_grouping_profile(settings)
         ),
         labeler=TwoPassItemTypeLabeler(
             first_pass=OpenAIDecisionsItemTypeLabeler(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
                 sleeper=sleeper,
             ),
             second_pass=ResponsesSecondPassItemTypeLabeler(
                 provider=provider, profile=build_luna_item_label_profile(settings), sleeper=sleeper
             ),
-            leases=leases,
-            uow=uow,
-            clock=clock,
         ),
-        content_classifier=MeteredExamContentTagClassifier(
+        content_classifier=ExamContentTagSuggester(
             classifier=OpenAIDecisionsItemTypeLabeler(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                door=door,
                 timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
                 sleeper=sleeper,
                 max_attempts=1,
             ),
-            leases=leases,
-            uow=uow,
-            clock=clock,
         ),
         labeler_source=ImportLabelerSource(
             docx=PythonDocxLabelerMarkdown(), pdf=PdfPlumberLabelerMarkdown()

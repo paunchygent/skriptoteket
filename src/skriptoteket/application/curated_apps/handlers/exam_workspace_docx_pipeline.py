@@ -38,7 +38,7 @@ from dataclasses import replace
 import structlog
 
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     merge_batch,
@@ -52,10 +52,17 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_content_suggest import (
+    suggest_content_tags,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_labeling import (
+    labeling_request,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline_batches import (
     BatchPart,
     batch_state,
     failed,
+    limited,
     reviewed,
     source_parts,
     source_reviewed,
@@ -73,7 +80,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_u
     SerializedUnitOfWork,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    SourceImage,
     StructuredLLMProviderProfile,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
@@ -81,13 +87,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     pack_batches,
     question_families,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
-    resolve_header_course,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     claim_inner_chunks,
-    question_source_anchors,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     assign_points_lines,
@@ -95,16 +97,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     assign_question_headings,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
-    load_exam_content_catalog,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
-    load_exam_course_catalog,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiJobOverageCapReached
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
@@ -112,14 +109,12 @@ from skriptoteket.protocols.docx_conversion_progress import (
     OutlineQuestion,
 )
 from skriptoteket.protocols.exam_grouping import ExamGrouperProtocol, ExamGroupingError
-from skriptoteket.protocols.exam_workspace import LabelerSource, LabelerSourceProtocol
+from skriptoteket.protocols.exam_workspace import LabelerSourceProtocol
 from skriptoteket.protocols.item_type_labeler import (
-    ContentTagClassificationRequest,
     ItemTypeLabel,
     ItemTypeLabelerError,
     ItemTypeLabelerProtocol,
     ItemTypeLabelResult,
-    LabelingItem,
     LabelingRequest,
     LabelPass,
 )
@@ -134,25 +129,10 @@ _KIND_OF_LABEL: dict[ItemTypeLabel, NativeExamItemKind] = {
 }
 _DISABLED_REASON = "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 _LABELING_REASON = "Frågetyperna kunde inte avgöras. Kontrollera källtexten manuellt."
+_GROUPING_LIMIT_REASON = "Provets struktur kunde inte läsas ut. Kontrollera källtexten manuellt."
 UNLABELED_REASON = "Frågetypen kunde inte avgöras. Välj frågetyp och kontrollera källtexten."
 
 logger = structlog.get_logger(__name__)
-
-
-def _labeling_item(
-    question_id: str, source: LabelerSource, anchors: frozenset[str]
-) -> LabelingItem:
-    """The question's block markdown in source order, each block image at its place."""
-    text = ""
-    images: list[SourceImage] = []
-    for chunk in source.chunks:
-        if chunk.anchor not in anchors:
-            continue
-        if chunk.anchor in source.images:
-            images.append(SourceImage(source.images[chunk.anchor], len(text)))
-            continue
-        text = f"{text}\n{chunk.marked_text}" if text else chunk.marked_text
-    return LabelingItem(item_id=question_id, source_text=text, images=tuple(images))
 
 
 class DocxConversionPipeline:
@@ -170,7 +150,7 @@ class DocxConversionPipeline:
         uow: SerializedUnitOfWork,
         families_per_batch: int,
         enabled: bool,
-        content_classifier: MeteredExamContentTagClassifier | None = None,
+        content_classifier: ExamContentTagSuggester | None = None,
     ) -> None:
         self._grouper = grouper
         self._labeler = labeler
@@ -196,7 +176,14 @@ class DocxConversionPipeline:
             return final_publication(run, None)
         started = time.monotonic()
         try:
-            grouping = await self._grouper.group(job_id=job.job_id, chunks=job.chunks)
+            grouping = await self._grouper.group(
+                job_id=job.job_id, chunks=job.chunks, caller=job.caller
+            )
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = run.note_limit(exc)
+            run.state.record("grouping", code, detail=type(exc).__name__)
+            run.state.fail_all_pending(_GROUPING_LIMIT_REASON)
+            return final_publication(run, None)
         except ExamGroupingError as error:
             run.state.record("grouping", error.code, detail=error.detail)
             run.state.fail_all_pending(str(error))
@@ -220,9 +207,11 @@ class DocxConversionPipeline:
             run.own_anchors[question.question_id] = (*question.anchors, *question.subpart_anchors)
             run.key_anchors[question.question_id] = question.key_anchors
         await self._outline(run, manifest)
-        request, unlabeled = self._labeling_request(run, manifest)
+        request, unlabeled = labeling_request(run, manifest, self._labeler_source)
         optional = (
-            asyncio.create_task(self._suggest_content(run, manifest, request))
+            asyncio.create_task(
+                suggest_content_tags(run, manifest, request, self._content_classifier)
+            )
             if self._content_classifier is not None
             else None
         )
@@ -260,30 +249,6 @@ class DocxConversionPipeline:
                 outline=ConversionOutline(title=title or None, questions=questions),
             )
 
-    def _labeling_request(
-        self, run: DocxConversionRun, manifest: ExamManifest
-    ) -> tuple[LabelingRequest, list[str]]:
-        """Each question's faithful source (D14), and the questions holding a block of which
-        no faithful image could be made; those are recorded and never labeled."""
-        source = self._labeler_source.source(content=run.job.source_docx)
-        items: list[LabelingItem] = []
-        unlabeled: list[str] = []
-        for family in run.families:
-            anchors = question_source_anchors(manifest, source.chunks, family.question_id)
-            missing = sorted(anchor for anchor in anchors if anchor in source.unavailable)
-            for anchor in missing:
-                run.state.record(
-                    "labeling",
-                    "labeler_source_image_unavailable",
-                    anchors=(anchor,),
-                    detail=source.unavailable[anchor],
-                )
-            if missing:
-                unlabeled.append(family.question_id)
-            else:
-                items.append(_labeling_item(family.question_id, source, anchors))
-        return LabelingRequest(job_id=run.job.job_id, items=tuple(items)), unlabeled
-
     async def _label_and_convert(
         self,
         run: DocxConversionRun,
@@ -297,6 +262,13 @@ class DocxConversionPipeline:
             run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
         if unlabeled:
             self._dispatch(run, unlabeled, "wi-", tasks)
+        if run.ai_limit is not None and run.limit_code is not None:
+            run.state.record("labeling", run.limit_code, detail="limit_already_recorded")
+            run.state.fail_all_pending(_LABELING_REASON)
+            return
+
+        def _note_run_limit(exc: AiDailyLimitReached | AiJobOverageCapReached) -> None:
+            run.note_limit(exc)
 
         def settle(results: tuple[ItemTypeLabelResult, ...]) -> None:
             if not results:
@@ -330,38 +302,17 @@ class DocxConversionPipeline:
                 tasks.create_task(self._unlabeled(run, unlabeled, f"{prefix}u", tasks))
 
         try:
-            await self._labeler.label(request=request, on_results=settle)
+            await self._labeler.label(request=request, on_results=settle, on_limit=_note_run_limit)
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = run.note_limit(exc)
+            run.state.record("labeling", code, detail=type(exc).__name__)
+            run.state.fail_all_pending(_LABELING_REASON)
+            return
         except ItemTypeLabelerError as error:
             run.state.record("labeling", error.code, detail=str(error.status_code or ""))
             run.state.fail_all_pending(_LABELING_REASON)
             return
         run.timed("labeling", started)
-
-    async def _suggest_content(
-        self, run: DocxConversionRun, manifest: ExamManifest, request: LabelingRequest
-    ) -> None:
-        try:
-            course_anchors = {entry.anchor for entry in manifest.header if entry.kind == "course"}
-            hint = " ".join(
-                chunk.text.strip() for chunk in run.job.chunks if chunk.anchor in course_anchors
-            )
-            course = resolve_header_course(
-                hint, run.job.course_key, load_exam_course_catalog().courses
-            )
-            if course is None or self._content_classifier is None:
-                return
-            run.content_tags = await self._content_classifier.suggest(
-                request=ContentTagClassificationRequest(
-                    job_id=request.job_id,
-                    items=request.items,
-                    content_items=load_exam_content_catalog()[course.key],
-                )
-            )
-        except Exception:
-            logger.exception(
-                "Import content suggestions failed; conversion continues",
-                job_id=str(run.job.job_id),
-            )
 
     def _dispatch(
         self, run: DocxConversionRun, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
@@ -432,6 +383,8 @@ class DocxConversionPipeline:
         their admitted and contract-checked items."""
         if part.missing:
             return source_reviewed(run, part)
+        if run.ai_limit is not None and run.limit_code is not None:
+            return limited(run, part.batch, run.limit_code)
         try:
             outcome = await convert_batch(
                 state=batch_state(run, part.batch),
@@ -443,9 +396,21 @@ class DocxConversionPipeline:
                 },
                 exchange=self._exchange,
                 profile=self._profile,
+                caller=run.job.caller,
             )
             with_type_check_mark(outcome.state)
             validated(outcome.state)
+        except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
+            code = run.note_limit(exc)
+            # One refused batch never fails the conversion (D25): its items fail as for
+            # a DocxBuildRoundFailure.
+            logger.warning(
+                "DOCX conversion batch refused at the door",
+                job_id=str(run.job.job_id),
+                batch=part.batch.batch_id,
+                code=code,
+            )
+            return failed(run, part.batch, code, exc)
         except Exception as error:
             # One batch's failure never fails the conversion (D25).
             logger.exception(

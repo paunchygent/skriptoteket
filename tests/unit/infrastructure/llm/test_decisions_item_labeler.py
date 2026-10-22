@@ -18,6 +18,7 @@ from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     replay,
     request_for,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -73,7 +74,9 @@ async def test_204_items_split_into_two_recorded_requests_in_item_order() -> Non
 async def test_empty_request_sends_nothing() -> None:
     harness = Harness(replay(load(CORPUS_24)["exchanges"]))
 
-    labeling = await harness.labeler().label(request=LabelingRequest(job_id=uuid4(), items=()))
+    labeling = await harness.labeler().label(
+        request=LabelingRequest(job_id=uuid4(), items=(), caller=fixture_caller())
+    )
 
     assert labeling.results == ()
     assert harness.requests == []

@@ -7,7 +7,7 @@ measured in the feasibility step (2026-10-11). A failed call or an unusable mani
 retried; three failures stop the grouping.
 
 Relationships:
-    Implements ``protocols.exam_grouping.ExamGrouperProtocol`` over the leased
+    Implements ``protocols.exam_grouping.ExamGrouperProtocol`` over the
     ``DocxBuildRoundExchange``; ``domain.curated_apps.exam_workspace.docx_manifest``
     validates the output against the chunk anchors.
 """
@@ -36,6 +36,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     manifest_from_output,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import marked_source_text
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.exam_grouping import (
     ExamGrouperProtocol,
     ExamGrouping,
@@ -192,7 +193,7 @@ def build_grouping_request(
 
 
 class ResponsesExamGrouper(ExamGrouperProtocol):
-    """Group an exam's chunks with at most three leased Responses calls."""
+    """Group an exam's chunks with at most three Responses calls."""
 
     def __init__(
         self, *, exchange: DocxBuildRoundExchange, profile: StructuredLLMProviderProfile
@@ -200,7 +201,9 @@ class ResponsesExamGrouper(ExamGrouperProtocol):
         self._exchange = exchange
         self._profile = profile
 
-    async def group(self, *, job_id: UUID, chunks: tuple[DocxChunk, ...]) -> ExamGrouping:
+    async def group(
+        self, *, job_id: UUID, chunks: tuple[DocxChunk, ...], caller: AiDoorCaller
+    ) -> ExamGrouping:
         usage: list[StructuredLLMUsage] = []
         failure = ExamGroupingError(
             "Provets struktur kunde inte läsas ut. Kontrollera källtexten manuellt.",
@@ -211,9 +214,9 @@ class ResponsesExamGrouper(ExamGrouperProtocol):
                 job_id=job_id, attempt=attempt, chunks=chunks, profile=self._profile
             )
             try:
-                reply = await self._exchange.exchange(request, self._profile)
+                reply = await self._exchange.exchange(request, self._profile, caller)
             except DocxBuildRoundFailure as error:
-                if error.code in {"lease_refused", "text_budget_exceeded"}:
+                if error.code == "text_budget_exceeded":
                     raise ExamGroupingError(
                         str(error), code=error.code, detail=error.detail
                     ) from error

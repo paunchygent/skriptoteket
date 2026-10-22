@@ -70,6 +70,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -139,7 +140,10 @@ class FakeExchange:
         self.requests: list[StructuredLLMRequest] = []
 
     async def exchange(
-        self, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> DocxRoundReply:
         self.requests.append(request)
         if self.failure is not None:

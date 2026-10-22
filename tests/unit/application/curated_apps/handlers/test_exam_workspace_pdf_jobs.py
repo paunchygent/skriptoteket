@@ -34,7 +34,6 @@ from tests.fixtures.docx_corpus import corpus_docx
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
-    InMemoryLeaseRepository,
     replayed_docx_job_handler,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import Replay
@@ -72,7 +71,6 @@ def pdf_environment() -> PdfJobEnvironment:
     )
     env.processor, env.replay = replayed_docx_job_handler(
         enrichment_jobs=env.jobs,
-        leases=InMemoryLeaseRepository(daily_token_limit=1_000_000),
         vault_files=env.vault_files,
         vault_storage=env.vault_storage,
         codec=env.codec,

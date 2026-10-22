@@ -37,6 +37,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     recorded_exams,
     recording,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
@@ -133,7 +134,9 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(
         user_payload=json.dumps({"chunks": [{"anchor": "body:9999"}], "context_chunks": []}),
     )
     with pytest.raises(MissingRecording, match="no unused batch reply"):
-        await provider.complete_structured(request=invisible, profile=profile)
+        await provider.complete_structured(
+            request=invisible, profile=profile, caller=fixture_caller()
+        )
     assert provider.served == []
 
     context_only = replace(
@@ -146,13 +149,19 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(
         ),
     )
     with pytest.raises(MissingRecording, match="no unused batch reply"):
-        await provider.complete_structured(request=context_only, profile=profile)
+        await provider.complete_structured(
+            request=context_only, profile=profile, caller=fixture_caller()
+        )
     assert provider.served == []
 
-    response = await provider.complete_structured(request=request, profile=profile)
+    response = await provider.complete_structured(
+        request=request, profile=profile, caller=fixture_caller()
+    )
     assert response.content == recording(exam, name)
     with pytest.raises(MissingRecording, match="no unused batch reply"):
-        await provider.complete_structured(request=request, profile=profile)
+        await provider.complete_structured(
+            request=request, profile=profile, caller=fixture_caller()
+        )
     assert provider.served == [(request.item_id, name)]
 
     # A pre-change build may cite a header omitted from the current conversion batch.
@@ -163,14 +172,16 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(
     reply["answer_key_anchors"] = [*_list(reply["answer_key_anchors"]), "recorded_header"]
     (directory / f"{name}.json").write_text(json.dumps(reply))
     header_provider = ReplayProvider(exam, root=tmp_path)
-    response = await header_provider.complete_structured(request=request, profile=profile)
+    response = await header_provider.complete_structured(
+        request=request, profile=profile, caller=fixture_caller()
+    )
     assert response.content == reply
     # The exception is only for recorded headers, not arbitrary unseen source anchors.
     reply["answer_key_anchors"] = [*_list(reply["answer_key_anchors"]), "unseen_non_header"]
     (directory / f"{name}.json").write_text(json.dumps(reply))
     with pytest.raises(MissingRecording, match="no unused batch reply"):
         await ReplayProvider(exam, root=tmp_path).complete_structured(
-            request=request, profile=profile
+            request=request, profile=profile, caller=fixture_caller()
         )
 
 

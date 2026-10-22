@@ -2,8 +2,8 @@
 
 ``RecordedTransport`` serves the live replies recorded in
 ``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/`` to the real HTTP adapters, so the
-job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue, token
-ledger, vault storage and QTI validators run unchanged around it. Each ``label_b`` recording
+job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue,
+vault storage and QTI validators run unchanged around it. Each ``label_b`` recording
 carries its capture-time request key in ``label_b_<qid>.request.txt``, followed by one final
 newline.
 """
@@ -37,6 +37,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     ExamWorkspaceContainerCodec,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
+from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -56,7 +57,6 @@ from skriptoteket.protocols.docx_conversion_progress import (
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
@@ -135,15 +135,16 @@ class RecordedTransport:
         self.responses_requests = 0
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
-        assert request.headers["Authorization"] == f"Bearer {API_KEY}"
-        if request.url.path.endswith("/decisions"):
+        if request.url.path == "/internal/v1/openai/decisions":
+            assert request.headers["X-Internal-API-Key"] == API_KEY
             self.decisions_requests += 1
             if len(self.served_decisions) >= len(self._decisions):
                 return self._unmatched("more Decisions requests than recordings")
             path = self._decisions[len(self.served_decisions)]
             self.served.append(path.stem)
             return httpx.Response(200, json=json.loads(path.read_text()))
-        assert request.url.path == "/v1/responses"
+        assert request.url.path == "/internal/v1/openai/responses"
+        assert request.headers["X-Internal-API-Key"] == API_KEY
         self.responses_requests += 1
         payload = _ResponsesRequest.model_validate_json(request.content)
         assert payload.text.format.strict is True and "tools" not in (payload.model_extra or {})
@@ -204,25 +205,25 @@ def build_pipeline(
     client: httpx.AsyncClient,
     *,
     settings: Settings,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol,
     uow: UnitOfWorkProtocol,
-    clock: ClockProtocol,
     progress: DocxConversionProgressProtocol,
     sleeper: SleeperProtocol,
 ) -> DocxConversionPipeline:
-    """The production composition over real Responses and Decisions adapters."""
-    return build_docx_conversion_pipeline(
+    """The production composition over the door client and the Decisions adapter."""
+    door = HuleEduLlmDoorClient(
         client=client,
+        base_url="https://door.test",
+        internal_api_key=API_KEY,
+        job_overage_cap_usd_micros=1_000_000,
+    )
+    return build_docx_conversion_pipeline(
+        door=door,
         provider=OpenAIAnswerKeyStructuredProvider(
-            client=client,
-            base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-            api_key=API_KEY,
+            door=door,
             timeout_seconds=30,
         ),
         sleeper=sleeper,
-        leases=leases,
         uow=SerializedUnitOfWork(uow),
-        clock=clock,
         settings=settings,
         progress=progress,
     )
