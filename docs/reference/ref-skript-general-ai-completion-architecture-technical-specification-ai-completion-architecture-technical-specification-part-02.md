@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-ai-completion-architecture-technical-specification-PART-0
 title: AI Completion Architecture Technical Specification — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-ai-completion-architecture-technical-specification
 part: 2
@@ -18,7 +18,8 @@ skriptoteketIntelligence(config)
 ├─ skriptoteketCompletions (existing)
 ├─ skriptoteketHover (existing)
 ├─ skriptoteketLinter (existing)
-└─ skriptoteketGhostText (NEW)
+├─ skriptoteketLintPanel (existing)
+└─ skriptoteketGhostText
 ```
 
 ### 7.2 Ghost Text State
@@ -26,37 +27,46 @@ skriptoteketIntelligence(config)
 ```typescript
 type GhostTextState = {
   text: string | null;     // Suggested completion
-  from: number;            // Cursor position when suggested
+  from: number | null;     // Cursor position when suggested
+  replaceSuffixChars: number;
   decorations: DecorationSet;
 };
 ```
 
 ### 7.3 Triggers
 
-| Trigger | Behavior |
-| ------- | -------- |
+| Trigger               | Behavior                         |
+| --------------------- | -------------------------------- |
 | Typing pause (1500ms) | Auto-fetch completion if enabled |
-| Alt+\ | Manual fetch completion |
-| Tab | Accept ghost text |
-| Escape | Dismiss ghost text |
-| Any document change | Clear ghost text |
+| Alt+\\                | Manual fetch completion          |
+| Tab                   | Accept ghost text                |
+| Escape                | Dismiss ghost text               |
+| Any document change   | Clear ghost text                 |
 
 ### 7.4 Request Management
 
 - Cancel pending requests on document change
 - Ignore stale responses (cursor moved since request)
 - Debounce auto-trigger to reduce API load
+- A 429 `AI_DAILY_LIMIT_REACHED` answer marks the shared AI limit state; no further requests start until it clears, and
+  the note shows inline in the AI area
 
----
+______________________________________________________________________
 
 ### Source: 8. Configuration
 
-
 ### 8.1 Backend (Environment Variables)
+
+Door connection (shared with the exam apps):
+
+| Variable                        | Default                                    | Description                                |
+| ------------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `HULEEDU_LLM_PROVIDER_BASE_URL` | `http://huleedu_llm_provider_service:8080` | Door base URL on the shared `hule-network` |
+| `HULEEDU_INTERNAL_API_KEY`      | `""`                                       | Internal key sent as `X-Internal-API-Key`  |
 
 Prompt templates:
 
-- `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_v1`)
+- `LLM_COMPLETION_TEMPLATE_ID` (default: `inline_completion_gpt5_v1`)
 - `LLM_CHAT_TEMPLATE_ID` (default: `editor_chat_v1`)
 - `LLM_CHAT_OPS_TEMPLATE_ID` (default: `editor_chat_ops_v1`)
 
@@ -64,69 +74,63 @@ Notes:
 
 - Templates are repo-owned text files with placeholders like `{{CONTRACT_V2_FRAGMENT}}`.
 - Placeholders are replaced with code-owned fragments sourced from canonical Contract v2 + policy definitions.
+- There are no per-profile base URL, API key, temperature, stop, prompt-cache or extra-header settings. The door
+  owns the key and caching; neither model accepts temperature.
 
-Provider caching + headers (applies per profile):
+Inline completions (small-model pool):
 
-- `LLM_COMPLETION_PROMPT_CACHE_RETENTION` /
-  `LLM_CHAT_PROMPT_CACHE_RETENTION` / `LLM_CHAT_OPS_PROMPT_CACHE_RETENTION`:
-  Optional prompt cache retention. Use `24h` for GPT-5-2 family (prompt caching), or omit for providers
-  that do not support it.
-- `LLM_COMPLETION_PROMPT_CACHE_KEY` /
-  `LLM_CHAT_PROMPT_CACHE_KEY` / `LLM_CHAT_OPS_PROMPT_CACHE_KEY`:
-  Optional stable key to improve cache routing (example: `skriptoteket:chat_ops`).
-- `LLM_COMPLETION_EXTRA_HEADERS` /
-  `LLM_CHAT_EXTRA_HEADERS` / `LLM_CHAT_OPS_EXTRA_HEADERS`:
-  JSON object of provider-specific headers (example: `{"HTTP-Referer":"https://example.com","X-Title":"Skriptoteket"}`).
+| Variable                                      | Default                     | Description                                            |
+| --------------------------------------------- | --------------------------- | ------------------------------------------------------ |
+| `LLM_COMPLETION_ENABLED`                      | `false`                     | Enable/disable feature                                 |
+| `LLM_COMPLETION_TEMPLATE_ID`                  | `inline_completion_gpt5_v1` | Prompt template ID for system prompt composition       |
+| `LLM_COMPLETION_MODEL`                        | `gpt-6-luna`                | Door model id                                          |
+| `LLM_COMPLETION_REASONING_EFFORT`             | `none`                      | Responses `reasoning.effort`                           |
+| `LLM_COMPLETION_TEXT_VERBOSITY`               | `low`                       | Responses `text.verbosity`                             |
+| `LLM_COMPLETION_MAX_TOKENS`                   | `64`                        | `max_output_tokens`                                    |
+| `LLM_COMPLETION_TIMEOUT_SECONDS`              | `30`                        | Door call timeout                                      |
+| `LLM_COMPLETION_CONTEXT_WINDOW_TOKENS`        | `4096`                      | Budgeting window (prompt + output)                     |
+| `LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS` | `256`                       | Reserved prompt budget for variance                    |
+| `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS`     | `2048`                      | Target max tokens for system prompt (rules + KB)       |
+| `LLM_COMPLETION_PREFIX_MAX_TOKENS`            | `2048`                      | Target max tokens for prefix (keeps tail near cursor)  |
+| `LLM_COMPLETION_SUFFIX_MAX_TOKENS`            | `512`                       | Target max tokens for suffix (keeps head after cursor) |
 
-Inline completions:
+Chat (streaming, full-model pool):
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `LLM_COMPLETION_TEMPLATE_ID` | `inline_completion_v1` | Prompt template ID for system prompt composition |
-| `LLM_COMPLETION_ENABLED` | `false` | Enable/disable feature |
-| `LLM_COMPLETION_BASE_URL` | `http://localhost:8082` | LLM API URL |
-| `OPENAI_LLM_COMPLETION_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_COMPLETION_MODEL` | `Devstral-Small-2-24B` | Model name |
-| `LLM_COMPLETION_MAX_TOKENS` | `256` | Max tokens in response |
-| `LLM_COMPLETION_TEMPERATURE` | `0.2` | Sampling temperature |
-| `LLM_COMPLETION_TIMEOUT_SECONDS` | `30` | Request timeout |
-| `LLM_COMPLETION_CONTEXT_WINDOW_TOKENS` | `4096` | Context window (prompt + output), matches llama.cpp `n_ctx` |
-| `LLM_COMPLETION_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for chat wrapping/variance |
-| `LLM_COMPLETION_SYSTEM_PROMPT_MAX_TOKENS` | `2048` | Target max tokens for system prompt (rules + KB) |
-| `LLM_COMPLETION_PREFIX_MAX_TOKENS` | `2048` | Target max tokens for prefix (keeps tail near cursor) |
-| `LLM_COMPLETION_SUFFIX_MAX_TOKENS` | `512` | Target max tokens for suffix (keeps head after cursor) |
+| Variable                                | Default          | Description                                      |
+| --------------------------------------- | ---------------- | ------------------------------------------------ |
+| `LLM_CHAT_ENABLED`                      | `false`          | Enable/disable feature                           |
+| `LLM_CHAT_TEMPLATE_ID`                  | `editor_chat_v1` | Prompt template ID for system prompt composition |
+| `LLM_CHAT_MODEL`                        | `gpt-6.1-sol`    | Door model id                                    |
+| `LLM_CHAT_REASONING_EFFORT`             | `low`            | Responses `reasoning.effort`                     |
+| `LLM_CHAT_TEXT_VERBOSITY`               | unset            | Responses `text.verbosity` (omitted when unset)  |
+| `LLM_CHAT_MAX_TOKENS`                   | `8192`           | `max_output_tokens`                              |
+| `LLM_CHAT_TIMEOUT_SECONDS`              | `120`            | Door call timeout                                |
+| `LLM_CHAT_CONTEXT_WINDOW_TOKENS`        | `65536`          | Budgeting window (prompt + output)               |
+| `LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256`            | Reserved prompt budget for variance              |
+| `LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS`     | `8192`           | Target max tokens for system prompt (rules + KB) |
+| `LLM_CHAT_TAIL_MAX_MESSAGES`            | `60`             | Most recent thread messages considered           |
 
-Chat (streaming):
+Chat edit-ops (non-streaming, full-model pool):
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `LLM_CHAT_TEMPLATE_ID` | `editor_chat_v1` | Prompt template ID for system prompt composition |
-| `LLM_CHAT_ENABLED` | `false` | Enable/disable feature |
-| `LLM_CHAT_BASE_URL` | `http://localhost:8082` | LLM API URL |
-| `OPENAI_LLM_CHAT_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_CHAT_MODEL` | `Devstral-Small-2-24B` | Model name |
-| `LLM_CHAT_MAX_TOKENS` | `1500` | Max tokens in response |
-| `LLM_CHAT_TEMPERATURE` | `0.2` | Sampling temperature |
-| `LLM_CHAT_TIMEOUT_SECONDS` | `60` | Request timeout |
-| `LLM_CHAT_CONTEXT_WINDOW_TOKENS` | `16384` | Context window (prompt + output), matches llama.cpp `n_ctx` |
-| `LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for variance |
-| `LLM_CHAT_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+| Variable                                    | Default              | Description                                                         |
+| ------------------------------------------- | -------------------- | ------------------------------------------------------------------- |
+| `LLM_CHAT_OPS_ENABLED`                      | `false`              | Enable/disable feature                                              |
+| `LLM_CHAT_OPS_TEMPLATE_ID`                  | `editor_chat_ops_v1` | Prompt template ID for system prompt composition                    |
+| `LLM_CHAT_OPS_MODEL`                        | `gpt-6.1-sol`        | Door model id                                                       |
+| `LLM_CHAT_OPS_REASONING_EFFORT`             | `low`                | Responses `reasoning.effort`                                        |
+| `LLM_CHAT_OPS_TEXT_VERBOSITY`               | unset                | Responses `text.verbosity` (omitted when unset)                     |
+| `LLM_CHAT_OPS_MAX_TOKENS`                   | `8192`               | `max_output_tokens`                                                 |
+| `LLM_CHAT_OPS_TIMEOUT_SECONDS`              | `120`                | Door call timeout                                                   |
+| `LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS`        | `65536`              | Budgeting window (prompt + output)                                  |
+| `LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS` | `256`                | Reserved prompt budget for variance                                 |
+| `LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS`     | `8192`               | Target max tokens for system prompt (rules, strict JSON schema, KB) |
 
-Chat edit-ops (non-streaming):
+Platform debug capture (off by default; written under `ARTIFACTS_ROOT`, may contain tool code and model output):
 
-| Variable | Default | Description |
-| -------- | ------- | ----------- |
-| `LLM_CHAT_OPS_TEMPLATE_ID` | `editor_chat_ops_v1` | Prompt template ID for system prompt composition |
-| `LLM_CHAT_OPS_ENABLED` | `false` | Enable/disable feature |
-| `LLM_CHAT_OPS_BASE_URL` | `http://localhost:8082` | LLM API URL |
-| `OPENAI_LLM_CHAT_OPS_API_KEY` | `""` | API key (optional for self-hosted) |
-| `LLM_CHAT_OPS_MODEL` | `Devstral-Small-2-24B` | Model name |
-| `LLM_CHAT_OPS_MAX_TOKENS` | `1500` | Max tokens in response |
-| `LLM_CHAT_OPS_TEMPERATURE` | `0.2` | Sampling temperature |
-| `LLM_CHAT_OPS_TIMEOUT_SECONDS` | `60` | Request timeout |
-| `LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS` | `16384` | Context window (prompt + output), matches llama.cpp `n_ctx` |
-| `LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS` | `256` | Reserved prompt budget for variance |
-| `LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS` | `1024` | Target max tokens for system prompt (rules + KB) |
+| Variable                         | Default | Description                                                                                  |
+| -------------------------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `LLM_CAPTURE_ON_ERROR_ENABLED`   | `false` | Capture failed chat-ops responses                                                            |
+| `LLM_CAPTURE_ON_SUCCESS_ENABLED` | `false` | Dev-only: capture successful completion and chat-ops responses for admins outside production |
 
 ### 8.2 Frontend (Intelligence Config)
 
@@ -141,72 +145,95 @@ type SkriptoteketIntelligenceConfig = {
 };
 ```
 
----
+______________________________________________________________________
 
 ### Source: 9. Security Considerations
 
+### 9.1 Credential Protection
 
-### 9.1 API Key Protection
-
-- API keys stored as environment variables on backend only
+- Skriptoteket holds one door credential, `HULEEDU_INTERNAL_API_KEY`, as a backend environment variable; provider
+  keys live with the door
 - Never exposed to frontend
-- Backend proxies all LLM requests
+- Backend proxies all LLM requests and sends the teacher's user id so the door meters per user
 
 ### 9.2 Authentication
 
-- Endpoint requires `require_contributor_api` (authenticated contributor+)
+- Completions, chat (`POST`) and edit-ops (`POST /edit-ops`) require `require_app_ai_api` (admin or superuser; a
+  temporary gate until the AI spend limits ship, TASK-SKRIPT-REP-0044)
+- Chat history read/clear, edit-ops preview and apply require contributor access to the tool
 - CSRF token required for all POST requests
 
 ### 9.3 Rate Limiting
 
-- Consider per-user rate limiting (10 requests/minute)
-- Prevents abuse and controls costs
+- The door meters the daily pools, per-user shares and the USD ceiling; Skriptoteket adds no request-rate limit of its
+  own
+- A refusal reaches the teacher as HTTP 429 `AI_DAILY_LIMIT_REACHED` (section 6.3)
+- Chat allows one in-flight turn per `{user_id, tool_id}` in each process (`InProcessChatInFlightGuard`)
 
 ### 9.4 Privacy & Logging
 
 - Do not log raw prefix/suffix/prompt/code
-- Log only metadata (lengths, provider, timing, status)
-- Document that remote providers receive user code; recommend self-hosted for sensitive content
+- Log only metadata (lengths, token counts, model, timing, status)
+- The door relays teacher code to OpenAI; no per-user consent setting exists
 
----
+______________________________________________________________________
 
 ### Source: 10. Files
 
-
 ### 10.1 Backend
 
-| Path | Purpose |
-| ---- | ------- |
-| `src/skriptoteket/protocols/llm/` | Protocol definitions |
-| `src/skriptoteket/infrastructure/llm/openai_provider.py` | OpenAI-compatible client |
-| `src/skriptoteket/application/editor/completion_handler.py` | Handler entrypoint (completion orchestration) |
-| `src/skriptoteket/application/editor/completion/` | Completion flow submodules (prepare/provider/normalize) |
-| `src/skriptoteket/di/llm.py` | DI provider |
-| `src/skriptoteket/config.py` | Configuration settings |
-| `src/skriptoteket/application/editor/prompt_templates.py` | Prompt template registry (IDs + required placeholders) |
-| `src/skriptoteket/application/editor/prompt_fragments.py` | Code-owned fragments (Contract v2 + runner constraints + helpers) |
-| `src/skriptoteket/application/editor/prompt_composer.py` | Template composition + validation (placeholders + budget) |
-| `src/skriptoteket/web/api/v1/editor/completions.py` | Inline completions API endpoint |
-| `src/skriptoteket/web/api/v1/editor/chat.py` | Chat SSE API endpoint |
-| `src/skriptoteket/web/api/v1/editor/edit_ops.py` | Edit-ops API endpoints |
+| Path                                                                       | Purpose                                                                                   |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `src/skriptoteket/protocols/llm/`                                          | Editor AI protocols (providers take an `AiDoorCaller`), `EditorLlmProviderError`          |
+| `src/skriptoteket/protocols/llm_door.py`                                   | Door client protocol, `DoorOperation`, `DoorReply`, `DoorStream`                          |
+| `src/skriptoteket/domain/llm_door.py`                                      | `AiDoorCaller`, `door_caller_for`, `AiDailyLimit`, `AiDailyLimitReached`, `ai_limit_note` |
+| `src/skriptoteket/infrastructure/llm/door/client.py`                       | Door HTTP client (`send`, `stream`)                                                       |
+| `src/skriptoteket/infrastructure/llm/openai/inline_completion_provider.py` | Completion provider (Responses body, parse)                                               |
+| `src/skriptoteket/infrastructure/llm/openai/inline_completion_prompt.py`   | Delimited prefix/suffix user prompt                                                       |
+| `src/skriptoteket/infrastructure/llm/openai/chat_stream_provider.py`       | Chat SSE provider                                                                         |
+| `src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py`          | Chat-ops provider                                                                         |
+| `src/skriptoteket/infrastructure/llm/openai/edit_ops_text_format.py`       | Patch-only JSON schema for chat ops                                                       |
+| `src/skriptoteket/infrastructure/llm/openai/payloads.py`                   | Responses body builder                                                                    |
+| `src/skriptoteket/infrastructure/llm/openai/door_replies.py`               | Door answer to `EditorLlmProviderError` mapping                                           |
+| `src/skriptoteket/infrastructure/llm/openai/parsing.py`                    | Responses output and stream-delta parsing                                                 |
+| `src/skriptoteket/infrastructure/llm/token_counter_resolver.py`            | `tiktoken` token counters                                                                 |
+| `src/skriptoteket/application/editor/completion_handler.py`                | Handler entrypoint (completion orchestration)                                             |
+| `src/skriptoteket/application/editor/completion/`                          | Completion flow submodules (attempts/normalization/capture/telemetry)                     |
+| `src/skriptoteket/application/editor/chat_stream_orchestrator.py`          | Chat stream orchestration and limit refusal                                               |
+| `src/skriptoteket/application/editor/edit_ops/`                            | Edit-ops flow, execution, preview and apply                                               |
+| `src/skriptoteket/di/llm.py`                                               | DI provider                                                                               |
+| `src/skriptoteket/config.py`                                               | Configuration settings                                                                    |
+| `src/skriptoteket/application/editor/prompt_templates.py`                  | Prompt template registry (IDs + required placeholders)                                    |
+| `src/skriptoteket/application/editor/prompt_fragments.py`                  | Code-owned fragments (Contract v2 + runner constraints + helpers)                         |
+| `src/skriptoteket/application/editor/prompt_composer.py`                   | Template composition + validation (placeholders + budget)                                 |
+| `src/skriptoteket/application/editor/prompt_budget.py`                     | Deterministic prompt budgeting                                                            |
+| `src/skriptoteket/web/api/v1/editor/completions.py`                        | Inline completions API endpoint                                                           |
+| `src/skriptoteket/web/api/v1/editor/chat.py`                               | Chat SSE API endpoint                                                                     |
+| `src/skriptoteket/web/api/v1/editor/edit_ops.py`                           | Edit-ops API endpoints                                                                    |
 
 ### 10.2 Frontend
 
-| Path | Purpose |
-| ---- | ------- |
-| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts` | Ghost text extension |
-| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts` | Bundle integration |
-| `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` | Config composable |
+| Path                                                                                         | Purpose                           |
+| -------------------------------------------------------------------------------------------- | --------------------------------- |
+| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketGhostText.ts`                 | Ghost text extension              |
+| `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`              | Bundle integration                |
+| `frontend/apps/skriptoteket/src/composables/editor/useSkriptoteketIntelligenceExtensions.ts` | Config composable                 |
+| `frontend/apps/skriptoteket/src/views/apps/exam-workspace/aiDailyLimit.ts`                   | Shared daily-limit state and note |
 
----
+______________________________________________________________________
 
 ### Source: 11. Testing
 
-
 ### 11.1 Backend
 
-- Unit: Provider formats FIM request correctly
+- Unit: Providers send a Responses body with the configured model, reasoning effort and `max_output_tokens`, and no
+  temperature or stop sequences
+- Unit: Each provider passes the teacher's `AiDoorCaller` to the door
 - Unit: System prompt template composes (placeholders resolved, within budget)
+- Unit: Door timeout, transport failure, `context_length_exceeded` and other statuses map to the right
+  `EditorLlmProviderError` kind
+- Unit: A door daily limit becomes 429 `AI_DAILY_LIMIT_REACHED` with the matching note and `details.limit`; chat
+  refuses before its first SSE event
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
 - Integration: Truncated response returns empty completion
@@ -217,20 +244,24 @@ type SkriptoteketIntelligenceConfig = {
 - Unit: Multi-line ghost text preserves indentation/newlines
 - Unit: Tab accepts, Escape dismisses
 - Unit: Document change clears ghost text
-- E2E: Full flow with mock LLM server
+- Unit: A 429 daily-limit answer shows the note inline and stops further requests
+- E2E: Full flow with a stubbed door
 
----
+______________________________________________________________________
 
 ### Source: 12. References
 
-
-- [ADR-0043: AI completion integration](../adr/adr-0043-ai-completion-integration.md)
-- [ADR-SKRIPT-0050: Self-hosted LLM infrastructure](../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md)
-- [ADR-0035: Script editor intelligence architecture](../adr/adr-0035-script-editor-intelligence-architecture.md)
-- [ref-ai-script-generation-kb.md](ref-ai-script-generation-kb.md) - Full knowledge base
-- [Tabby Config.toml](https://tabby.tabbyml.com/docs/administration/config-toml/) - Tabby configuration
-- [Tabby Code Completion](https://tabby.tabbyml.com/docs/administration/code-completion/) - Tabby settings
+- [ADR-0043: AI completion integration](../decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md)
+- [ADR-0035: Script editor intelligence architecture](../decisions/adr-skript-0035-script-editor-intelligence-architecture-codemirror-6.md)
+- [ADR-0051: Chat-first AI editing](../decisions/adr-skript-0051-chat-first-ai-editing-structured-crud-ops-diff-preview-apply-undo.md)
+- [ADR-0052: LLM prompt budgeting and KB fragments](../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments-for-ai-editor-features.md)
+- [AI script generation knowledge base](ref-skript-general-ai-script-generation-knowledge-base-ai-script-generation-knowledge-base.md)
+- [Editor AI pipeline runbook](../runbooks/run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops-runbook-editor-ai-pipeline-completion-chat-edit-ops.md)
 
 ## Decisions And Interpretation
 
-No separate decisions and interpretation is stated in the source.
+- Every editor model call goes through HuleEdu's LLM provider door with the teacher's user id (TASK-SKRIPT-41-01-02,
+  S1, S2). There is no second route.
+- Inline completion runs on `gpt-6-luna` (small-model pool, S2); chat, chat ops and edit run on `gpt-6.1-sol` at low
+  reasoning (full-model pool, S1, S4).
+- A door daily limit is HTTP 429 `AI_DAILY_LIMIT_REACHED` with the teacher note inline, and no toast (S5).
