@@ -31,7 +31,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { hasAiDailyLimit, isAiDailyLimitError, markAiDailyLimit } from "./aiDailyLimit";
+import { aiLimitFromError, aiLimitFromStatus, markAiDailyLimit } from "./aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -153,8 +153,9 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     }
     // The door's daily limit is terminal for the page session: the status
     // message already says so, and the AI controls disable on the flag.
-    if (hasAiDailyLimit(status)) {
-      markAiDailyLimit();
+    const limit = aiLimitFromStatus(status);
+    if (limit !== null) {
+      markAiDailyLimit(limit);
     }
     pollFailures = 0;
     job.value = { opening, status };
@@ -184,8 +185,9 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
         return;
       }
       // No toast for the door's limit: the flag disables the AI controls.
-      if (isAiDailyLimitError(error)) {
-        markAiDailyLimit();
+      const limit = aiLimitFromError(error);
+      if (limit !== null) {
+        markAiDailyLimit(limit);
         return;
       }
       if (pollFailures === 0) {
@@ -226,8 +228,9 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       if (!isLive(opening)) {
         return;
       }
-      if (isAiDailyLimitError(error)) {
-        markAiDailyLimit();
+      const requestLimit = aiLimitFromError(error);
+      if (requestLimit !== null) {
+        markAiDailyLimit(requestLimit);
         return;
       }
       toast.failure(REQUEST_FAILURE_COPY);
@@ -256,8 +259,9 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     try {
       status = await teacher.findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
     } catch (error) {
-      if (isAiDailyLimitError(error)) {
-        markAiDailyLimit();
+      const lookupLimit = aiLimitFromError(error);
+      if (lookupLimit !== null) {
+        markAiDailyLimit(lookupLimit);
         return;
       }
       if (isLive(opening) && !ownJobStarted()) {

@@ -24,7 +24,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [
@@ -178,7 +178,7 @@ function chooseKind(event: Event): void {
             type="button"
             class="xw-btn xw-btn--compact"
             :disabled="disabled || adminOnly || limitReached"
-            :title="limitReached ? AI_DAILY_LIMIT_NOTE : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+            :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
             :aria-describedby="limitReached ? limitNoteId : adminOnly ? aiNoteId : undefined"
             data-test="exam-workspace-retry"
             @click="handleRetry"

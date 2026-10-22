@@ -2,11 +2,11 @@
  * Exam workspace answer-key suggestions under the daily AI limit.
  *
  * Expected behavior:
- *   A suggestion status that ends with ai_limit set (pool, user_share or
- *   usd_ceiling) marks the page-session limit, shows the exact limit note and
- *   fires no toast. A status without ai_limit keeps today's behavior. A
- *   transport failure with AI_DAILY_LIMIT_REACHED marks the limit without a
- *   toast; any other failure still toasts.
+ *   A suggestion status that ends with ai_limit set marks the page-session
+ *   limit, shows that limit's note and fires no toast. A status without
+ *   ai_limit keeps today's behavior. A transport failure with
+ *   AI_DAILY_LIMIT_REACHED marks the refused limit without a toast; any other
+ *   failure still toasts.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -23,23 +23,25 @@ import type {
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
-  AI_DAILY_LIMIT_NOTE,
+  aiDailyLimit,
   aiDailyLimitReached,
+  aiLimitNote,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
 import { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
+import type { AiDailyLimit } from "./aiDailyLimit";
 
 function limitStatus(
-  ai_limit: ExamWorkspaceAnswerKeySuggestionsStatus["ai_limit"],
+  ai_limit: AiDailyLimit | null,
 ): ExamWorkspaceAnswerKeySuggestionsStatus {
   return {
     job_id: "job-1",
     lineage_id: "lineage-a",
     state: "failed",
     ai_limit,
-    message: AI_DAILY_LIMIT_NOTE,
+    message: ai_limit === null ? null : aiLimitNote(ai_limit),
     suggestions: [] as ExamWorkspaceAnswerKeySuggestionItem[],
   };
 }
@@ -80,14 +82,19 @@ beforeEach(() => {
 });
 
 describe("useExamWorkspaceEnrichment daily AI limit", () => {
-  it.each(["pool", "user_share", "usd_ceiling"] as const)(
+  it.each([
+    ["pool", aiLimitNote("pool")],
+    ["user_share", aiLimitNote("user_share")],
+    ["usd_ceiling", aiLimitNote("usd_ceiling")],
+  ] as Array<[AiDailyLimit, string]>)(
     "marks the limit, shows the note and fires no toast for ai_limit %s",
-    async (ai_limit) => {
+    async (ai_limit, note) => {
       const { enrichment, scope } = setup(async () => limitStatus(ai_limit));
       await enrichment.requestSuggestionsForAll();
 
       expect(aiDailyLimitReached.value).toBe(true);
-      expect(enrichment.enrichmentMessage.value).toBe(AI_DAILY_LIMIT_NOTE);
+      expect(aiDailyLimit.value).toBe(ai_limit);
+      expect(enrichment.enrichmentMessage.value).toBe(note);
       expect(useToastStore().toasts).toEqual([]);
       scope.stop();
     },
@@ -108,21 +115,25 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     scope.stop();
   });
 
-  it("marks the limit without a toast when the request is refused with 429", async () => {
-    const { enrichment, scope } = setup(async () => {
-      throw new ApiError({
-        code: "AI_DAILY_LIMIT_REACHED",
-        message: AI_DAILY_LIMIT_NOTE,
-        status: 429,
-        details: { limit: "pool" },
+  it.each(["pool", "user_share"] as const)(
+    "marks the request 429 limit %s without a toast",
+    async (limit) => {
+      const { enrichment, scope } = setup(async () => {
+        throw new ApiError({
+          code: "AI_DAILY_LIMIT_REACHED",
+          message: "refused",
+          status: 429,
+          details: { limit },
+        });
       });
-    });
-    await enrichment.requestSuggestionsForAll();
+      await enrichment.requestSuggestionsForAll();
 
-    expect(aiDailyLimitReached.value).toBe(true);
-    expect(useToastStore().toasts).toEqual([]);
-    scope.stop();
-  });
+      expect(aiDailyLimitReached.value).toBe(true);
+      expect(aiDailyLimit.value).toBe(limit);
+      expect(useToastStore().toasts).toEqual([]);
+      scope.stop();
+    },
+  );
 
   it("still toasts a transport failure without the limit code", async () => {
     const { enrichment, scope } = setup(async () => {

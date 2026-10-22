@@ -27,7 +27,7 @@ import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
@@ -108,7 +108,7 @@ function handleFix(blocker: ExamWorkspaceBlockerEntry): void {
       type="button"
       class="xw-mblock__fix xw-mblock__all"
       :disabled="fixDisabled || suggestBusy || adminOnly || limitReached"
-      :title="limitReached ? AI_DAILY_LIMIT_NOTE : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+      :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
       :aria-describedby="limitReached ? limitNoteId : adminOnly ? aiNoteId : undefined"
       data-test="exam-workspace-blocker-suggest-all"
       @click="handleSuggestAll"
@@ -133,7 +133,7 @@ function handleFix(blocker: ExamWorkspaceBlockerEntry): void {
         type="button"
         class="xw-mblock__fix"
         :disabled="fixDisabled || (blocker.fix === 'suggest_key' && (suggestBusy || adminOnly || limitReached))"
-        :title="blocker.fix === 'suggest_key' && limitReached ? AI_DAILY_LIMIT_NOTE : blocker.fix === 'suggest_key' && adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+        :title="blocker.fix === 'suggest_key' && limitReached ? (aiDailyLimitNote ?? undefined) : blocker.fix === 'suggest_key' && adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
         :aria-label="`Fråga ${blocker.label}: ${EXAM_WORKSPACE_BLOCKER_FIX_LABELS[blocker.fix]}`"
         :aria-describedby="blocker.fix === 'suggest_key' && limitReached ? limitNoteId : blocker.fix === 'suggest_key' && adminOnly ? aiNoteId : undefined"
         :data-test="`exam-workspace-blocker-fix-${blocker.itemId ?? 'title'}`"

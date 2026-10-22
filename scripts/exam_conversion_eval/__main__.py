@@ -42,8 +42,16 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import (
+    import_origin_kind,
+)
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    tooling_caller,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -160,12 +168,6 @@ class _NoTransaction:
         return None
 
 
-def _door_caller(user_id: UUID, *, allow_paid_overage: bool) -> AiDoorCaller:
-    """One caller for the whole run; agent-run tooling sets the overage flag per run."""
-
-    return AiDoorCaller(user_id=user_id, exempt=True, overage_approved=allow_paid_overage)
-
-
 def _limit_exit(error: AiDailyLimitReached) -> int:
     """Stop the run on a door limit; a pool refusal needs the user's overage approval."""
 
@@ -217,8 +219,11 @@ async def _evaluate(
                 chunks=chunks,
                 course_key=None,
                 caller=caller,
+                origin_kind=import_origin_kind(content),
             )
         )
+    except AiDailyLimitReached:
+        raise
     except Exception as error:
         return _ExamReport(
             exam=docx.stem,
@@ -234,6 +239,8 @@ async def _evaluate(
             crash=_crash_lines(error),
             comparison=compare_exam(gold, ()),
         )
+    if outcome.ai_limit is not None:
+        raise AiDailyLimitReached(limit=outcome.ai_limit)
     result = outcome.result
     return _ExamReport(
         exam=docx.stem,
@@ -385,7 +392,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     # The eval runs conversion with the job's composition whatever the local enable flag says.
     settings = Settings().model_copy(update={"LLM_ANSWER_KEY_ENABLED": True})
-    caller = _door_caller(args.user_id, allow_paid_overage=args.allow_paid_overage)
+    caller = tooling_caller(user_id=args.user_id, paid_overage_approved=args.allow_paid_overage)
     exams = sorted(_CORPUS.glob("*.docx"))
     if args.exam:
         exams = [docx for docx in exams if docx.stem in set(args.exam)]

@@ -134,7 +134,7 @@ async def grouping_a(
         max_output_tokens=60_000,
     )
     output = responses_output_json(record) if record.ok else None
-    grouping = _grouping_from_manifest(output, chunks) if output else None
+    grouping = _grouping_from_manifest(output, chunks) if isinstance(output, dict) else None
     return MethodResult([record], grouping)
 
 

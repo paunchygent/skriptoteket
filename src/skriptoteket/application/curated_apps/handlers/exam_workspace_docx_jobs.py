@@ -15,11 +15,9 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
-    DocxConversionPipeline,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
+    DocxConversionPipelineProtocol,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import (
@@ -30,6 +28,7 @@ from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
     AiJobOverageCapReached,
+    ai_limit_note,
     door_caller_for,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -41,8 +40,6 @@ from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 logger = structlog.get_logger(__name__)
-
-_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 _Diagnostics = tuple[dict[str, JsonValue], ...]
 
@@ -60,7 +57,7 @@ class ProcessExamWorkspaceDocxJobHandler:
         *,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
         chunker: DocxExamChunkerProtocol,
-        pipeline: DocxConversionPipeline,
+        pipeline: DocxConversionPipelineProtocol,
         progress: DocxConversionProgressProtocol,
         store: ExamWorkspaceDocumentStore,
         users: UserRepositoryProtocol,
@@ -109,8 +106,18 @@ class ProcessExamWorkspaceDocxJobHandler:
             )
             result = outcome.result
             observed = tuple(event.as_json() for event in result.events)
+            if outcome.ai_limit is not None:
+                # A door limit anywhere in the conversion ends the job as failed:
+                # already-published batches and teacher edits stay, but the partial
+                # or source-review document is never advertised as a completed conversion.
+                code = outcome.limit_code or "ai_daily_limit"
+                return await self._fail(
+                    job,
+                    ai_limit_note(outcome.ai_limit),
+                    _job_failure(code, outcome.ai_limit.value, observed),
+                    ai_limit=outcome.ai_limit,
+                )
             file_id = self._ids.new_uuid()
-            ai_limit = outcome.ai_limit
             async with self._store.transaction(
                 user_id=actor.id, lineage_id=job.workspace_lineage_id
             ):
@@ -118,8 +125,6 @@ class ProcessExamWorkspaceDocxJobHandler:
                 if not self._owns(current, job):
                     return current or job
                 assert current is not None
-                if ai_limit is not None:
-                    current = current.model_copy(update={"ai_limit": ai_limit})
                 await self._progress.publish_final(
                     worker_id=job.locked_by,
                     job_id=job.id,
@@ -154,14 +159,14 @@ class ProcessExamWorkspaceDocxJobHandler:
         except AiJobOverageCapReached:
             return await self._fail(
                 job,
-                _LIMIT_MESSAGE,
+                ai_limit_note(AiDailyLimit.POOL),
                 _job_failure("ai_overage_cap", "AiJobOverageCapReached", observed),
                 ai_limit=AiDailyLimit.POOL,
             )
         except AiDailyLimitReached as error:
             return await self._fail(
                 job,
-                _LIMIT_MESSAGE,
+                ai_limit_note(error.limit),
                 _job_failure("ai_daily_limit", type(error).__name__, observed),
                 ai_limit=error.limit,
             )

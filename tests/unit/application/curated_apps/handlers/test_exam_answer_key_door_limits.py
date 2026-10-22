@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import json
 from datetime import timedelta
-from typing import cast
 from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
@@ -46,6 +45,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionPipeline,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionJob,
+    DocxConversionOutcome,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     WorkspaceAnswerKeyRequestPayload,
     WorkspaceAnswerKeySuggestionsPayload,
@@ -58,7 +61,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import answer_key_item_views
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, ai_limit_note
 from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -70,6 +73,7 @@ from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider impor
     OpenAIAnswerKeyStructuredProvider,
 )
 from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.protocols.llm_door import DoorReply
 from tests.fixtures.application_fixtures import FakeUow
 from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
@@ -96,11 +100,9 @@ from tests.unit.application.curated_apps.handlers.workspace_enrichment_job_suppo
     three_unkeyed_choice_document,
     unkeyed_choice_document,
 )
-from tests.unit.llm_door_fakes import RecordingDoor, json_reply, user_with_role
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, json_reply, user_with_role
 
 pytestmark = pytest.mark.unit
-
-_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 
 def _responses_body(choice_index: int) -> dict:
@@ -205,7 +207,7 @@ async def test_non_admin_owner_is_sent_not_exempt() -> None:
 async def test_limit_on_the_second_item_keeps_the_first_suggestion() -> None:
     document = three_unkeyed_choice_document(document_id=uuid4())
 
-    def respond(sent):
+    def respond(sent: DoorSent) -> DoorReply:
         if len(door.sent) == 2:
             raise AiDailyLimitReached(limit=AiDailyLimit.POOL)
         return json_reply(_responses_body(2))
@@ -226,13 +228,39 @@ async def test_limit_on_the_second_item_keeps_the_first_suggestion() -> None:
     assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
     response = suggestions_response_for_job(finished, lineage_id=document.document_id)
     assert response.state is ExamWorkspaceEnrichmentState.FAILED
-    assert response.message == _LIMIT_MESSAGE
+    assert response.message == ai_limit_note(AiDailyLimit.POOL)
+
+
+async def test_limit_on_the_second_item_with_user_share_uses_the_user_note() -> None:
+    document = three_unkeyed_choice_document(document_id=uuid4())
+
+    def respond(sent: DoorSent) -> DoorReply:
+        if len(door.sent) == 2:
+            raise AiDailyLimitReached(limit=AiDailyLimit.USER_SHARE)
+        return json_reply(_responses_body(2))
+
+    door = RecordingDoor(respond)
+    harness = DoorHarness(door=door, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "ai_daily_limit"
+    assert finished.ai_limit is AiDailyLimit.USER_SHARE
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
+    response = suggestions_response_for_job(finished, lineage_id=document.document_id)
+    assert response.state is ExamWorkspaceEnrichmentState.FAILED
+    assert response.message == ai_limit_note(AiDailyLimit.USER_SHARE)
 
 
 async def test_started_job_finishes_as_overage_while_a_later_job_meets_the_limit() -> None:
     calls = 0
 
-    def respond(sent):
+    def respond(sent: DoorSent) -> DoorReply:
         nonlocal calls
         calls += 1
         if not sent.allow_paid_overage and calls > 1:
@@ -261,14 +289,14 @@ async def test_started_job_finishes_as_overage_while_a_later_job_meets_the_limit
     assert finished2.ai_limit is AiDailyLimit.POOL
     assert len(second.door.sent) == 1
     response = suggestions_response_for_job(finished2, lineage_id=second.document.document_id)
-    assert response.message == _LIMIT_MESSAGE
+    assert response.message == ai_limit_note(AiDailyLimit.POOL)
 
 
 async def test_overage_under_the_cap_completes() -> None:
     document = three_unkeyed_choice_document(document_id=uuid4())
     calls = 0
 
-    def respond(sent):
+    def respond(sent: DoorSent) -> DoorReply:
         nonlocal calls
         calls += 1
         if calls == 1:
@@ -289,7 +317,7 @@ async def test_a_last_call_whose_overage_passes_the_cap_fails_the_job() -> None:
     document = three_unkeyed_choice_document(document_id=uuid4())
     calls = 0
 
-    def respond(sent):
+    def respond(sent: DoorSent) -> DoorReply:
         nonlocal calls
         calls += 1
         if calls < 3:
@@ -311,20 +339,22 @@ async def test_a_last_call_whose_overage_passes_the_cap_fails_the_job() -> None:
     )
     assert [entry.item_id for entry in payload.suggestions] == ["item_001", "item_002"]
     response = suggestions_response_for_job(finished, lineage_id=document.document_id)
-    assert response.message == _LIMIT_MESSAGE
+    assert response.message == ai_limit_note(AiDailyLimit.POOL)
 
 
-class _CapturePipeline:
-    """Record the conversion job, then stop; the handler fail-closes around it."""
+class _CapturePipeline(DocxConversionPipeline):
+    """Record the conversion job, then stop; the handler fail-closes around it.
+
+    A subclass of the production pipeline so the handler receives the type it
+    requires without an unchecked cast; only ``convert`` is replaced.
+    """
 
     def __init__(self) -> None:
-        from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
-            DocxConversionJob,
-        )
-
         self.job: DocxConversionJob | None = None
 
-    async def convert(self, *, job, fallback_reason=None):
+    async def convert(
+        self, *, job: DocxConversionJob, fallback_reason: str | None = None
+    ) -> DocxConversionOutcome:
         self.job = job
         raise RuntimeError("stop after capture")
 
@@ -361,7 +391,7 @@ async def _docx_handler_with_capture(
     return ProcessExamWorkspaceDocxJobHandler(
         jobs=jobs,
         chunker=PythonDocxExamChunker(),
-        pipeline=cast(DocxConversionPipeline, pipeline),
+        pipeline=pipeline,
         progress=progress,
         store=store,
         users=users,

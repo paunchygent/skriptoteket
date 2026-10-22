@@ -2,10 +2,10 @@
  * Exam workspace DOCX conversion under the daily AI limit.
  *
  * Expected behavior:
- *   A conversion status that ends with ai_limit set (pool, user_share or
- *   usd_ceiling) marks the page-session limit and fires no toast; the status
- *   already carries the limit note as its message. While the limit is marked,
- *   a Word import starts nothing and says the limit note instead. A failure
+ *   A conversion status that ends with ai_limit set marks the page-session
+ *   limit and fires no toast; the note names the first refused limit (the
+ *   user's own share, or the app's pool/ceiling). While the limit is marked,
+ *   a Word import starts nothing and says that same note instead. A failure
  *   without ai_limit keeps today's behavior.
  */
 
@@ -13,15 +13,19 @@ import { createPinia, setActivePinia } from "pinia";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, ref } from "vue";
 
+import { ApiError } from "../../../api/client";
 import type {
   ExamWorkspaceConversionStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import type { AiDailyLimit } from "./aiDailyLimit";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
-  AI_DAILY_LIMIT_NOTE,
+  aiDailyLimit,
+  aiDailyLimitNote,
   aiDailyLimitReached,
+  aiLimitNote,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
@@ -61,12 +65,12 @@ function queuedStatus(): ExamWorkspaceConversionStatus {
 }
 
 function limitStatus(
-  ai_limit: ExamWorkspaceConversionStatus["ai_limit"],
+  ai_limit: AiDailyLimit | null,
 ): ExamWorkspaceConversionStatus {
   return {
     ...queuedStatus(),
     state: "failed",
-    error_message: AI_DAILY_LIMIT_NOTE,
+    error_message: ai_limit === null ? null : aiLimitNote(ai_limit),
     ai_limit,
   };
 }
@@ -136,20 +140,57 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
       await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
       expect(aiDailyLimitReached.value).toBe(true);
+      expect(aiDailyLimit.value).toBe(ai_limit);
       expect(conversion.conversionStatus.value?.ai_limit).toBe(ai_limit);
-      expect(conversion.conversionMessage.value).toBe(AI_DAILY_LIMIT_NOTE);
+      expect(conversion.conversionMessage.value).toBe(aiLimitNote(ai_limit));
+      expect(aiDailyLimitNote.value).toBe(aiLimitNote(ai_limit));
+      expect(toastMessages()).toEqual([]);
+    },
+  );
+
+  it("keeps the first limit when a later refusal names another", async () => {
+    const conversion = conversionFor();
+    api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
+    api.getExamWorkspaceConversionStatus.mockResolvedValueOnce(limitStatus("user_share"));
+    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+    expect(aiDailyLimit.value).toBe("user_share");
+
+    markAiDailyLimit("pool");
+    expect(aiDailyLimit.value).toBe("user_share");
+    expect(aiDailyLimitNote.value).toBe(aiLimitNote("user_share"));
+  });
+
+  it.each(["pool", "user_share"] as const)(
+    "marks the retry 429 limit %s without a toast",
+    async (limit) => {
+      const conversion = conversionFor();
+      api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
+      api.getExamWorkspaceConversionStatus.mockRejectedValue(
+        new ApiError({
+          code: "AI_DAILY_LIMIT_REACHED",
+          message: "refused",
+          status: 429,
+          details: { limit },
+        }),
+      );
+
+      await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+
+      expect(aiDailyLimitReached.value).toBe(true);
+      expect(aiDailyLimit.value).toBe(limit);
+      expect(conversion.conversionError.value).toBe(aiLimitNote(limit));
       expect(toastMessages()).toEqual([]);
     },
   );
 
   it("starts no Word import while the limit is marked", async () => {
     const conversion = conversionFor();
-    markAiDailyLimit();
+    markAiDailyLimit("pool");
 
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
     expect(api.importExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(conversion.conversionError.value).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(conversion.conversionError.value).toBe(aiLimitNote("pool"));
     expect(toastMessages()).toEqual([]);
     expect(conversion.isImporting.value).toBe(false);
   });

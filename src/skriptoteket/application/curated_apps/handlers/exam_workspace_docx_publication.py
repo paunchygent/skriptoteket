@@ -161,4 +161,5 @@ def final_publication(
         ),
         update=update,
         ai_limit=run.ai_limit,
+        limit_code=run.limit_code,
     )

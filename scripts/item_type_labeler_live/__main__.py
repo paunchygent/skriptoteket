@@ -38,7 +38,12 @@ from scripts.item_type_labeler_live.records import (
     SavedGrouping,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    tooling_caller,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
 )
@@ -306,9 +311,7 @@ async def main() -> int:
     )
     args = parser.parse_args()
     settings = Settings()
-    caller = AiDoorCaller(
-        user_id=args.user_id, exempt=True, overage_approved=args.allow_paid_overage
-    )
+    caller = tooling_caller(user_id=args.user_id, paid_overage_approved=args.allow_paid_overage)
     args.out.mkdir(parents=True, exist_ok=True)
     stems = sorted(path.stem for path in args.corpus.glob("*.docx"))
     items = {

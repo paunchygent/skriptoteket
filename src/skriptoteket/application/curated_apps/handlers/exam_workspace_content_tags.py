@@ -35,6 +35,7 @@ from skriptoteket.domain.llm_door import (
     AiDailyLimitReached,
     AiDoorCaller,
     AiJobOverageCapReached,
+    ai_limit_note,
     door_caller_for,
 )
 from skriptoteket.protocols.clock import ClockProtocol
@@ -45,7 +46,6 @@ from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.item_type_labeler import ContentTagClassificationRequest, LabelingItem
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
-_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 _DEFAULT_FAILURE_MESSAGE = "Innehållsförslaget kunde inte hämtas. Försök igen senare."
 
 
@@ -77,8 +77,8 @@ def content_response(job: ExamAnswerKeyEnrichmentJob) -> ContentSuggestionsRespo
         if job.workspace_suggestions_json is not None
         else None
     )
-    if job.last_error in {"ai_daily_limit", "ai_overage_cap"}:
-        message: str | None = _LIMIT_MESSAGE
+    if job.ai_limit is not None:
+        message: str | None = ai_limit_note(job.ai_limit)
     else:
         message = _DEFAULT_FAILURE_MESSAGE if job.last_error else None
     return ContentSuggestionsResponse(

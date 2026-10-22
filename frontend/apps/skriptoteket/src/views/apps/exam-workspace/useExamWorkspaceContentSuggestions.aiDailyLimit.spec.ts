@@ -2,10 +2,9 @@
  * Exam workspace content suggestions under the daily AI limit.
  *
  * Expected behavior:
- *   A suggestion job that ends with ai_limit set (pool, user_share or
- *   usd_ceiling) marks the page-session limit, says the exact limit note in
- *   the drawer and fires no toast. A failure without ai_limit keeps today's
- *   toast behavior.
+ *   A suggestion job that ends with ai_limit set marks the page-session
+ *   limit, says that limit's note in the drawer and fires no toast. A failure
+ *   without ai_limit keeps today's toast behavior.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -21,10 +20,12 @@ import { ApiError } from "../../../api/client";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
-  AI_DAILY_LIMIT_NOTE,
+  aiDailyLimit,
   aiDailyLimitReached,
+  aiLimitNote,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
+import type { AiDailyLimit } from "./aiDailyLimit";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import {
@@ -125,17 +126,22 @@ afterEach(() => {
 });
 
 describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
-  it.each(["pool", "user_share", "usd_ceiling"] as const)(
+  it.each([
+    ["pool", aiLimitNote("pool")],
+    ["user_share", aiLimitNote("user_share")],
+    ["usd_ceiling", aiLimitNote("usd_ceiling")],
+  ] as Array<[AiDailyLimit, string]>)(
     "says the limit note and fires no toast for ai_limit %s",
-    async (ai_limit) => {
+    async (ai_limit, note) => {
       const harness = setup();
       await runJob(
         harness,
-        response("failed", { ai_limit, message: AI_DAILY_LIMIT_NOTE }),
+        response("failed", { ai_limit, message: note }),
       );
 
       expect(aiDailyLimitReached.value).toBe(true);
-      expect(harness.content.message.value).toBe(AI_DAILY_LIMIT_NOTE);
+      expect(aiDailyLimit.value).toBe(ai_limit);
+      expect(harness.content.message.value).toBe(note);
       expect(harness.setTags).not.toHaveBeenCalled();
       expect(toastMessages()).toEqual([]);
       expect(harness.content.busy.value).toBe(false);
@@ -151,24 +157,28 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
     expect(harness.content.message.value).toBeNull();
   });
 
-  it("marks the limit without a toast when the request is refused with 429", async () => {
-    const harness = setup();
-    apiMocks.requestExamWorkspaceContentSuggestions.mockRejectedValue(
-      new ApiError({
-        code: "AI_DAILY_LIMIT_REACHED",
-        message: AI_DAILY_LIMIT_NOTE,
-        status: 429,
-        details: { limit: "pool" },
-      }),
-    );
+  it.each(["pool", "user_share"] as const)(
+    "marks the request 429 limit %s without a toast",
+    async (limit) => {
+      const harness = setup();
+      apiMocks.requestExamWorkspaceContentSuggestions.mockRejectedValue(
+        new ApiError({
+          code: "AI_DAILY_LIMIT_REACHED",
+          message: "refused",
+          status: 429,
+          details: { limit },
+        }),
+      );
 
-    await harness.content.suggest();
+      await harness.content.suggest();
 
-    expect(aiDailyLimitReached.value).toBe(true);
-    expect(harness.content.message.value).toBe(AI_DAILY_LIMIT_NOTE);
-    expect(toastMessages()).toEqual([]);
-    expect(harness.content.busy.value).toBe(false);
-  });
+      expect(aiDailyLimitReached.value).toBe(true);
+      expect(aiDailyLimit.value).toBe(limit);
+      expect(harness.content.message.value).toBe(aiLimitNote(limit));
+      expect(toastMessages()).toEqual([]);
+      expect(harness.content.busy.value).toBe(false);
+    },
+  );
 
   it("still ticks a current result that carries no limit", async () => {
     const harness = setup();

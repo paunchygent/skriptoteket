@@ -9,8 +9,10 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Any
+
+from pydantic import JsonValue
 
 from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.llm_door import DoorOperation, LlmDoorClientProtocol
@@ -47,16 +49,18 @@ class CallRecord:
     status_code: int
     duration_seconds: float
     headers: dict[str, str]
-    body: Any
-    request_summary: dict[str, Any] = field(default_factory=dict)
+    body: JsonValue
+    request_summary: dict[str, JsonValue] = field(default_factory=dict)
 
     @property
     def ok(self) -> bool:
         return self.status_code == 200 and isinstance(self.body, dict)
 
     @property
-    def usage(self) -> dict[str, Any]:
-        usage = self.body.get("usage") if isinstance(self.body, dict) else None
+    def usage(self) -> dict[str, JsonValue]:
+        if not isinstance(self.body, dict):
+            return {}
+        usage = self.body.get("usage")
         return usage if isinstance(usage, dict) else {}
 
     def cost_usd(self) -> float | None:
@@ -66,11 +70,12 @@ class CallRecord:
             return None
         if self.endpoint == "decisions":
             return input_tokens * _DECISIONS_INPUT / 1_000_000
-        details = usage.get("input_tokens_details") or {}
-        cached = int(details.get("cached_tokens") or 0)
-        written = int(details.get("cache_write_tokens") or 0)
+        details = usage.get("input_tokens_details")
+        detail_map = details if isinstance(details, dict) else {}
+        cached = _count(detail_map.get("cached_tokens"))
+        written = _count(detail_map.get("cache_write_tokens"))
         uncached = input_tokens - cached - written
-        output = int(usage.get("output_tokens") or 0)
+        output = _count(usage.get("output_tokens"))
         return (
             uncached * _RESPONSES_UNCACHED
             + cached * _RESPONSES_CACHED
@@ -78,18 +83,28 @@ class CallRecord:
             + output * _RESPONSES_OUTPUT
         ) / 1_000_000
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> dict[str, JsonValue]:
+        headers: dict[str, JsonValue] = {name: value for name, value in self.headers.items()}
+        summary: dict[str, JsonValue] = {
+            name: value for name, value in self.request_summary.items()
+        }
         return {
             "endpoint": self.endpoint,
             "label": self.label,
             "status_code": self.status_code,
             "duration_seconds": round(self.duration_seconds, 3),
-            "headers": self.headers,
+            "headers": headers,
             "usage": self.usage,
             "cost_usd": self.cost_usd(),
-            "request_summary": self.request_summary,
+            "request_summary": summary,
             "body": self.body,
         }
+
+
+def _count(value: JsonValue | None) -> int:
+    """A token count that is missing or malformed counts as zero in this estimate."""
+
+    return value if isinstance(value, int) else 0
 
 
 class OpenAIClient:
@@ -107,8 +122,8 @@ class OpenAIClient:
         operation: DoorOperation,
         endpoint: str,
         label: str,
-        payload: dict[str, Any],
-        summary: dict[str, Any],
+        payload: Mapping[str, JsonValue],
+        summary: Mapping[str, JsonValue],
     ) -> CallRecord:
         started = time.perf_counter()
         reply = await self._door.send(
@@ -119,21 +134,37 @@ class OpenAIClient:
         )
         duration = time.perf_counter() - started
         try:
-            body: Any = json.loads(reply.body)
+            body: JsonValue = json.loads(reply.body)
         except json.JSONDecodeError:
             body = reply.body.decode("utf-8", errors="replace")
-        headers = {name: reply.headers[name] for name in _KEPT_HEADERS if name in reply.headers}
-        return CallRecord(endpoint, label, reply.status_code, duration, headers, body, summary)
+        headers: dict[str, str] = {
+            name: reply.headers[name] for name in _KEPT_HEADERS if name in reply.headers
+        }
+        return CallRecord(
+            endpoint, label, reply.status_code, duration, headers, body, dict(summary)
+        )
 
     async def decisions(
         self,
         *,
         label: str,
-        input_value: str | list[dict[str, Any]],
-        questions: list[dict[str, Any]],
+        input_value: str | Sequence[Mapping[str, JsonValue]],
+        questions: Sequence[Mapping[str, JsonValue]],
     ) -> CallRecord:
-        payload = {"model": DECISIONS_MODEL, "input": input_value, "questions": questions}
-        summary = {"questions": len(questions), "input_chars": len(json.dumps(input_value))}
+        question_values: list[JsonValue] = [dict(question) for question in questions]
+        if isinstance(input_value, str):
+            input_json: JsonValue = input_value
+        else:
+            input_json = [dict(item) for item in input_value]
+        payload: dict[str, JsonValue] = {
+            "model": DECISIONS_MODEL,
+            "input": input_json,
+            "questions": question_values,
+        }
+        summary: dict[str, JsonValue] = {
+            "questions": len(question_values),
+            "input_chars": len(json.dumps(input_value)),
+        }
         return await self._post(DoorOperation.DECISIONS, "decisions", label, payload, summary)
 
     async def responses(
@@ -144,11 +175,12 @@ class OpenAIClient:
         instructions: str,
         user_text: str,
         schema_name: str,
-        schema: dict[str, Any],
+        schema: Mapping[str, JsonValue],
         reasoning_effort: str,
         max_output_tokens: int,
     ) -> CallRecord:
-        payload = {
+        schema_json: dict[str, JsonValue] = dict(schema)
+        payload: dict[str, JsonValue] = {
             "model": model,
             "instructions": instructions,
             "input": [
@@ -167,29 +199,54 @@ class OpenAIClient:
                     "type": "json_schema",
                     "name": schema_name,
                     "strict": True,
-                    "schema": schema,
+                    "schema": schema_json,
                 },
                 "verbosity": "low",
             },
         }
-        summary = {"model": model, "effort": reasoning_effort, "input_chars": len(user_text)}
+        summary: dict[str, JsonValue] = {
+            "model": model,
+            "effort": reasoning_effort,
+            "input_chars": len(user_text),
+        }
         return await self._post(DoorOperation.RESPONSES, "responses", label, payload, summary)
 
 
-def responses_output_json(record: CallRecord) -> Any:
+def responses_output_json(record: CallRecord) -> JsonValue | None:
     """Parse the structured output text of a completed Responses call."""
     body = record.body
     if not isinstance(body, dict):
         return None
-    for item in body.get("output") or []:
-        for part in item.get("content") or []:
+    output = body.get("output")
+    if not isinstance(output, list):
+        return None
+    for item in output:
+        if not isinstance(item, dict):
+            continue
+        content = item.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if not isinstance(part, dict):
+                continue
             if part.get("type") == "output_text":
-                return json.loads(part["text"])
+                text = part.get("text")
+                return json.loads(text) if isinstance(text, str) else None
     return None
 
 
-def decision_answers(record: CallRecord) -> dict[str, dict[str, Any]]:
+def decision_answers(record: CallRecord) -> dict[str, dict[str, JsonValue]]:
     body = record.body
     if not isinstance(body, dict):
         return {}
-    return {answer["name"]: answer for answer in body.get("answers") or [] if "name" in answer}
+    listed = body.get("answers")
+    if not isinstance(listed, list):
+        return {}
+    found: dict[str, dict[str, JsonValue]] = {}
+    for answer in listed:
+        if not isinstance(answer, dict):
+            continue
+        name = answer.get("name")
+        if isinstance(name, str):
+            found[name] = answer
+    return found

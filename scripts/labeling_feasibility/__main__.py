@@ -19,7 +19,7 @@ from scripts.labeling_feasibility.render import png_data_url, render_docx_pages
 from scripts.labeling_feasibility.requests import MethodResult
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, tooling_caller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
 )
@@ -103,6 +103,7 @@ async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
         record = await client.decisions(
             label=f"limit-{count}", input_value="1 2 3", questions=questions
         )
+        listed = record.body.get("answers") if isinstance(record.body, dict) else None
         results.append(
             {
                 "questions": count,
@@ -110,7 +111,7 @@ async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
                 "usage": record.usage,
                 "duration_seconds": record.duration_seconds,
                 "error": None if record.ok else record.body,
-                "answers": len(record.body.get("answers") or []) if record.ok else 0,
+                "answers": len(listed) if isinstance(listed, list) and record.ok else 0,
             }
         )
         print(
@@ -303,9 +304,7 @@ async def _run(client: OpenAIClient, args: argparse.Namespace) -> None:
 
 async def _main(args: argparse.Namespace) -> None:
     settings = Settings()
-    caller = AiDoorCaller(
-        user_id=args.user_id, exempt=True, overage_approved=args.allow_paid_overage
-    )
+    caller = tooling_caller(user_id=args.user_id, paid_overage_approved=args.allow_paid_overage)
     async with httpx.AsyncClient() as http:
         door = HuleEduLlmDoorClient(
             client=http,

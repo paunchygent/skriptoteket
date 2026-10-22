@@ -6,7 +6,6 @@ import asyncio
 import hashlib
 import json
 from dataclasses import replace
-from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -61,7 +60,7 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     # The snapshot is an offline input, not a mocked model answer. Only one course is
     # needed here; generator/source completeness is proved separately.
     monkeypatch.setattr(
-        "skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline."
+        "skriptoteket.application.curated_apps.handlers.exam_workspace_docx_content_suggest."
         "load_exam_content_catalog",
         lambda: {"SVESVE02": _CONTENT},
     )
@@ -78,10 +77,16 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
 
     async def respond(sent: DoorSent) -> DoorReply:
         assert sent.operation is DoorOperation.DECISIONS
-        payload: Any = sent.payload
-        assert isinstance(payload["questions"], list)
-        questions = payload["questions"]
-        if questions[0]["name"].startswith("kind_"):
+        payload = sent.payload
+        raw_questions = payload.get("questions")
+        assert isinstance(raw_questions, list)
+        names: list[str] = []
+        for raw_question in raw_questions:
+            assert isinstance(raw_question, dict)
+            name = raw_question.get("name")
+            assert isinstance(name, str)
+            names.append(name)
+        if names[0].startswith("kind_"):
             return json_reply(recorded_bodies.pop(0))
         requests.append(payload)
         if outcome in {"pending", "cancelled"}:
@@ -98,14 +103,14 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
                 "answers": [
                     {
                         "type": "choice",
-                        "name": q["name"],
+                        "name": name,
                         "choice": "c0",
                         "probabilities": [
                             {"value": "c0", "probability": 0.95},
                             {"value": "none", "probability": 0.05},
                         ],
                     }
-                    for q in questions
+                    for name in names
                 ],
                 "usage": {"input_tokens": 91},
             }

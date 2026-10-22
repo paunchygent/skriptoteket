@@ -23,7 +23,7 @@ import { computed, nextTick, ref } from "vue";
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
-import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
@@ -270,9 +270,9 @@ function handleSuggestAll(): void {
         type="button"
         class="xw-cmd"
         :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only' || limitReached"
-        :title="limitReached ? AI_DAILY_LIMIT_NOTE : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :title="limitReached ? (aiDailyLimitNote ?? undefined) : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
-        :aria-description="limitReached ? AI_DAILY_LIMIT_NOTE : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
+        :aria-description="limitReached ? (aiDailyLimitNote ?? undefined) : aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
         data-test="exam-workspace-suggest-all"
         @click="handleSuggestAll"
       >
@@ -286,7 +286,7 @@ function handleSuggestAll(): void {
         v-if="limitReached"
         class="ws-limit"
         data-test="ai-daily-limit-note"
-      >{{ AI_DAILY_LIMIT_NOTE }}</span>
+      >{{ aiDailyLimitNote }}</span>
       <span class="ws-status-slot">
         <span
           v-if="title !== null"

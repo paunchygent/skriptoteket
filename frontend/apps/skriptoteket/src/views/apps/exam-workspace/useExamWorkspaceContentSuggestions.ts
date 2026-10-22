@@ -24,9 +24,9 @@ import { isApiError } from "../../../api/client";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import {
-  AI_DAILY_LIMIT_NOTE,
-  hasAiDailyLimit,
-  isAiDailyLimitError,
+  aiLimitFromError,
+  aiLimitFromStatus,
+  aiLimitNote,
   markAiDailyLimit,
 } from "./aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
@@ -98,12 +98,13 @@ export function useExamWorkspaceContentSuggestions(deps: {
     if (!deps.isOpen(request.opening)) return;
     // The door's daily limit disables the control for the page session and
     // says so in the drawer; unlike other failures it never toasts.
-    if (hasAiDailyLimit(response)) {
-      markAiDailyLimit();
+    const settledLimit = aiLimitFromStatus(response);
+    if (settledLimit !== null) {
+      markAiDailyLimit(settledLimit);
     }
     if (response.state === "failed") {
-      if (hasAiDailyLimit(response)) {
-        message.value = AI_DAILY_LIMIT_NOTE;
+      if (settledLimit !== null) {
+        message.value = aiLimitNote(settledLimit);
         return;
       }
       toast.failure(response.message ?? FAILURE_COPY);
@@ -149,9 +150,10 @@ export function useExamWorkspaceContentSuggestions(deps: {
         .catch((error: unknown) => {
           busy.value = false;
           if (!disposed && deps.isOpen(request.opening)) {
-            if (isAiDailyLimitError(error)) {
-              markAiDailyLimit();
-              message.value = AI_DAILY_LIMIT_NOTE;
+            const pollLimit = aiLimitFromError(error);
+            if (pollLimit !== null) {
+              markAiDailyLimit(pollLimit);
+              message.value = aiLimitNote(pollLimit);
               return;
             }
             toast.failure(FAILURE_COPY);
@@ -176,9 +178,10 @@ export function useExamWorkspaceContentSuggestions(deps: {
     } catch (error) {
       busy.value = false;
       if (!deps.isOpen(opening)) return;
-      if (isAiDailyLimitError(error)) {
-        markAiDailyLimit();
-        message.value = AI_DAILY_LIMIT_NOTE;
+      const requestLimit = aiLimitFromError(error);
+      if (requestLimit !== null) {
+        markAiDailyLimit(requestLimit);
+        message.value = aiLimitNote(requestLimit);
         return;
       }
       toast.failure(isApiError(error) && error.status === 422 ? error.message : FAILURE_COPY);

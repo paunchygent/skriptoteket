@@ -63,6 +63,7 @@ from skriptoteket.domain.llm_door import (
     AiDailyLimitReached,
     AiDoorCaller,
     AiJobOverageCapReached,
+    ai_limit_note,
 )
 from skriptoteket.web.error_mapping import error_to_status
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
@@ -87,8 +88,6 @@ from tests.unit.application.curated_apps.handlers.workspace_enrichment_job_suppo
 )
 
 pytestmark = pytest.mark.unit
-
-_LIMIT_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 
 def _workspace_job(*, limit: AiDailyLimit | None) -> ExamAnswerKeyEnrichmentJob:
@@ -191,7 +190,7 @@ async def _retry_with_exchange_error(error: Exception) -> DomainError:
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
-        exchange=_LimitExchange(error),  # type: ignore[arg-type]
+        exchange=_LimitExchange(error),
         profile=RETRY_PROFILE,
         enabled=True,
     )
@@ -211,7 +210,7 @@ async def test_retry_maps_a_door_limit_to_the_limit_error() -> None:
     error = await _retry_with_exchange_error(AiDailyLimitReached(limit=AiDailyLimit.USER_SHARE))
 
     assert error.code is ErrorCode.AI_DAILY_LIMIT_REACHED
-    assert error.message == _LIMIT_MESSAGE
+    assert error.message == ai_limit_note(AiDailyLimit.USER_SHARE)
     assert error.details == {"limit": AiDailyLimit.USER_SHARE.value}
 
 
@@ -222,6 +221,7 @@ async def test_retry_maps_an_overage_cap_refusal_to_the_pool_limit_error() -> No
     )
 
     assert error.code is ErrorCode.AI_DAILY_LIMIT_REACHED
+    assert error.message == ai_limit_note(AiDailyLimit.POOL)
     assert error.details == {"limit": AiDailyLimit.POOL.value}
 
 
@@ -234,7 +234,7 @@ async def test_retry_limit_error_reaches_http_as_429_with_details_limit() -> Non
     async def retry() -> None:
         raise DomainError(
             code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-            message=_LIMIT_MESSAGE,
+            message=ai_limit_note(AiDailyLimit.POOL),
             details={"limit": AiDailyLimit.POOL.value},
         )
 

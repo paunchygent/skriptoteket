@@ -31,7 +31,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
 import { isGuestImportFile, useExamWorkspaceOpenBlocking } from "./useExamWorkspaceOpenBlocking";
-import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
@@ -299,7 +299,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         v-if="limitReached && !isGuest"
         class="xw-muted"
         data-test="ai-daily-limit-note"
-      >{{ AI_DAILY_LIMIT_NOTE }}</small>
+      >{{ aiDailyLimitNote }}</small>
       <small
         v-else-if="!showWordImport"
         class="xw-muted"

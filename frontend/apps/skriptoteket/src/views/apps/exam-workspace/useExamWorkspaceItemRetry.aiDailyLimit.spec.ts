@@ -2,9 +2,9 @@
  * Exam workspace one-question retry under the daily AI limit.
  *
  * Expected behavior:
- *   A retry refused with HTTP 429 AI_DAILY_LIMIT_REACHED marks the
- *   page-session limit and fires no toast. Any other failure keeps today's
- *   toast behavior.
+ *   A retry refused with HTTP 429 AI_DAILY_LIMIT_REACHED marks the refused
+ *   limit for the page session and fires no toast. Any other failure keeps
+ *   today's toast behavior.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -20,8 +20,9 @@ import type {
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
-  AI_DAILY_LIMIT_NOTE,
+  aiDailyLimit,
   aiDailyLimitReached,
+  aiLimitNote,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
 import { createSyncFence } from "./examWorkspaceSyncFence";
@@ -87,23 +88,28 @@ beforeEach(() => {
 });
 
 describe("useExamWorkspaceItemRetry daily AI limit", () => {
-  it("marks the limit and fires no toast for 429 AI_DAILY_LIMIT_REACHED", async () => {
-    const { retry, scope } = setup(async () => {
-      throw new ApiError({
-        code: "AI_DAILY_LIMIT_REACHED",
-        message: AI_DAILY_LIMIT_NOTE,
-        status: 429,
-        details: { limit: "pool" },
+  it.each(["pool", "user_share"] as const)(
+    "marks the retry 429 limit %s and fires no toast",
+    async (limit) => {
+      const { retry, scope } = setup(async () => {
+        throw new ApiError({
+          code: "AI_DAILY_LIMIT_REACHED",
+          message: "refused",
+          status: 429,
+          details: { limit },
+        });
       });
-    });
 
-    const applied = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
+      const applied = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
 
-    expect(applied).toBe(false);
-    expect(aiDailyLimitReached.value).toBe(true);
-    expect(toastMessages()).toEqual([]);
-    scope.stop();
-  });
+      expect(applied).toBe(false);
+      expect(aiDailyLimitReached.value).toBe(true);
+      expect(aiDailyLimit.value).toBe(limit);
+      expect(aiLimitNote(limit)).not.toEqual("");
+      expect(toastMessages()).toEqual([]);
+      scope.stop();
+    },
+  );
 
   it("keeps the retry toast for a failure without the limit code", async () => {
     const { retry, scope } = setup(async () => {

@@ -31,6 +31,7 @@ from skriptoteket.domain.llm_door import (
     AiDailyLimitReached,
     AiDoorCaller,
     AiJobOverageCapReached,
+    ai_limit_note,
 )
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
@@ -39,7 +40,6 @@ from skriptoteket.protocols.exam_answer_key import (
 logger = logging.getLogger(__name__)
 
 _PROVIDER_FAILURE_MESSAGE = "Facitförslaget kunde inte hämtas just nu. Försök igen senare."
-_LIMIT_FAILURE_MESSAGE = "Du har nått dagens gräns för AI-hjälp. Försök igen i morgon."
 
 
 @dataclass(frozen=True)
@@ -91,13 +91,13 @@ class AnswerKeyProviderAttemptRunner:
             )
         except AiDailyLimitReached as exc:
             return EnrichmentFailure(
-                teacher_message=_LIMIT_FAILURE_MESSAGE,
+                teacher_message=ai_limit_note(exc.limit),
                 last_error="ai_daily_limit",
                 ai_limit=exc.limit,
             )
         except AiJobOverageCapReached:
             return EnrichmentFailure(
-                teacher_message=_LIMIT_FAILURE_MESSAGE,
+                teacher_message=ai_limit_note(AiDailyLimit.POOL),
                 last_error="ai_overage_cap",
                 ai_limit=AiDailyLimit.POOL,
             )

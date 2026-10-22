@@ -39,7 +39,7 @@ import { PENDING_SAVE_COPY } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { AI_DAILY_LIMIT_NOTE, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 
 const EXTENSION = ".provdokument.zip";
 
@@ -334,7 +334,7 @@ function cites(entryId: string): string | null {
         type="button"
         class="xw-btn xw-btn--compact"
         :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || adminOnly || limitReached)"
-        :title="limitReached ? AI_DAILY_LIMIT_NOTE : adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
+        :title="limitReached ? (aiDailyLimitNote ?? undefined) : adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
         :aria-describedby="limitReached ? contentLimitNoteId : adminOnly ? contentAiNoteId : undefined"
         data-test="exam-workspace-content-suggest"
         @click="handleSuggestContent"

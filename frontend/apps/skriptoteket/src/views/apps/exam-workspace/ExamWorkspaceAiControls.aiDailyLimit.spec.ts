@@ -3,10 +3,12 @@
  *
  * Expected behavior:
  *   Once the page-session limit is marked, every AI control is disabled and
- *   shows the exact limit note inline next to it: the header suggest-all
+ *   shows that limit's inline note next to it: the header suggest-all
  *   button, the export-blocker key buttons, the details-drawer content
  *   button, the Word import in the Öppna drawer, and the per-question retry.
- *   Without the limit, today's behavior is unchanged.
+ *   The user's own share names the user note; the pool and the ceiling name
+ *   the app note. Without the limit, today's behavior is unchanged. No toast
+ *   belongs to this path.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -37,8 +39,9 @@ import {
   EXAM_WORKSPACE_UNREADABLE_FILES_KEY,
   useExamWorkspaceUnreadableFiles,
 } from "./useExamWorkspaceUnreadableFiles";
+import type { AiDailyLimit } from "./aiDailyLimit";
 import {
-  AI_DAILY_LIMIT_NOTE,
+  aiLimitNote,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
@@ -81,15 +84,21 @@ const CONTENT = {
   items: [{ id: "c1", text: "Centralt innehåll" }],
 } as unknown as ExamCourseContent;
 
+const LIMIT_CASES: Array<{ limit: AiDailyLimit; note: string }> = [
+  { limit: "user_share", note: aiLimitNote("user_share") },
+  { limit: "pool", note: aiLimitNote("pool") },
+  { limit: "usd_ceiling", note: aiLimitNote("usd_ceiling") },
+];
+
 function signIn(pinia: Pinia, role: Role): void {
   setActivePinia(pinia);
   useAuthStore().user = { id: "u1", email: "u@example.test", role, auth_provider: "local" };
 }
 
-function findLimitNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+function findLimitNotes(wrapper: VueWrapper, note: string): DOMWrapper<Element>[] {
   return wrapper
     .findAll("p, small, span")
-    .filter((node) => node.text().trim() === AI_DAILY_LIMIT_NOTE);
+    .filter((node) => node.text().trim() === note);
 }
 
 function keyBlocker(itemId: string, label: string): ExamWorkspaceBlockerEntry {
@@ -134,17 +143,19 @@ beforeEach(() => {
 });
 
 describe("AiDailyLimitNote", () => {
-  it("renders exactly the limit note", () => {
+  it.each(LIMIT_CASES)("renders the $limit note", ({ limit, note }) => {
+    resetAiDailyLimitForTests();
+    markAiDailyLimit(limit);
     const wrapper = mount(AiDailyLimitNote);
-    expect(wrapper.get('[data-test="ai-daily-limit-note"]').text()).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(wrapper.get('[data-test="ai-daily-limit-note"]').text()).toBe(note);
     wrapper.unmount();
   });
 });
 
 describe("exam workspace AI controls under the daily limit", () => {
-  it("disables the header suggest-all button and shows the note next to it", async () => {
+  it.each(LIMIT_CASES)("disables the header suggest-all button and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit();
+    markAiDailyLimit(limit);
     const wrapper = mount(ExamWorkspaceHeader, {
       props: {
         title: "Prov 1",
@@ -168,18 +179,18 @@ describe("exam workspace AI controls under the daily limit", () => {
 
     const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');
     expect(button.attributes("disabled")).toBeDefined();
-    expect(button.attributes("title")).toBe(AI_DAILY_LIMIT_NOTE);
-    const notes = findLimitNotes(wrapper);
+    expect(button.attributes("title")).toBe(note);
+    const notes = findLimitNotes(wrapper, note);
     expect(notes).toHaveLength(1);
-    expect(notes[0]!.text()).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(notes[0]!.text()).toBe(note);
     await button.trigger("click");
     expect(wrapper.emitted("suggestAll")).toBeUndefined();
     wrapper.unmount();
   });
 
-  it("disables the export-blocker key buttons and shows the note once", async () => {
+  it.each(LIMIT_CASES)("disables the export-blocker key buttons and shows the $limit note once", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit();
+    markAiDailyLimit(limit);
     const wrapper = mount(ExamWorkspaceExportBlockers, {
       props: {
         blockers: [keyBlocker("item_001", "1"), keyBlocker("item_002", "2")],
@@ -190,10 +201,10 @@ describe("exam workspace AI controls under the daily limit", () => {
       global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
     });
 
-    expect(findLimitNotes(wrapper)).toHaveLength(1);
+    expect(findLimitNotes(wrapper, note)).toHaveLength(1);
     const all = wrapper.get('[data-test="exam-workspace-blocker-suggest-all"]');
     expect(all.attributes("disabled")).toBeDefined();
-    expect(all.attributes("title")).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(all.attributes("title")).toBe(note);
     await all.trigger("click");
     expect(wrapper.emitted("suggestAll")).toBeUndefined();
     const fix = wrapper.get('[data-test="exam-workspace-blocker-fix-item_001"]');
@@ -203,9 +214,9 @@ describe("exam workspace AI controls under the daily limit", () => {
     wrapper.unmount();
   });
 
-  it("disables the details-drawer content button and shows the note", async () => {
+  it.each(LIMIT_CASES)("disables the details-drawer content button and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit();
+    markAiDailyLimit(limit);
     const wrapper = mount(ExamWorkspaceDetailsDrawer, {
       props: {
         document: courseDocument(),
@@ -222,18 +233,18 @@ describe("exam workspace AI controls under the daily limit", () => {
     });
     await flushPromises();
 
-    expect(findLimitNotes(wrapper)).toHaveLength(1);
+    expect(findLimitNotes(wrapper, note)).toHaveLength(1);
     const button = wrapper.get('[data-test="exam-workspace-content-suggest"]');
     expect(button.attributes("disabled")).toBeDefined();
-    expect(button.attributes("title")).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(button.attributes("title")).toBe(note);
     await button.trigger("click");
     expect(wrapper.emitted("suggestContent")).toBeUndefined();
     wrapper.unmount();
   });
 
-  it("hides the Word format and shows the note in the Öppna drawer", async () => {
+  it.each(LIMIT_CASES)("hides the Word format and shows the $limit note in the Öppna drawer", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit();
+    markAiDailyLimit(limit);
     setActivePinia(pinia);
     const unreadable = useExamWorkspaceUnreadableFiles();
     const provideUnreadable: Plugin = {
@@ -268,7 +279,7 @@ describe("exam workspace AI controls under the daily limit", () => {
       .findAll(".drop__format")
       .map((node) => node.text().trim());
     expect(formats).not.toContain("Word (.docx)");
-    const notes = findLimitNotes(wrapper);
+    const notes = findLimitNotes(wrapper, note);
     expect(notes).toHaveLength(1);
     expect(
       wrapper.get('[data-test="exam-workspace-source-file-input"]').attributes("accept"),
@@ -276,9 +287,9 @@ describe("exam workspace AI controls under the daily limit", () => {
     wrapper.unmount();
   });
 
-  it("disables the per-question retry and shows the note", async () => {
+  it.each(LIMIT_CASES)("disables the per-question retry and shows the $limit note", async ({ limit, note }) => {
     signIn(pinia, "admin");
-    markAiDailyLimit();
+    markAiDailyLimit(limit);
     const wrapper = mount(ExamWorkspaceImportBox, {
       props: { item: reviewItem(), origin: "docx_import", open: true, disabled: false },
       global: { plugins: [pinia, examWorkspaceProvidersPlugin()] },
@@ -286,10 +297,10 @@ describe("exam workspace AI controls under the daily limit", () => {
 
     expect(wrapper.get('[data-test="exam-workspace-retry-kind"]').attributes("disabled"))
       .toBeDefined();
-    expect(findLimitNotes(wrapper)).toHaveLength(1);
+    expect(findLimitNotes(wrapper, note)).toHaveLength(1);
     const button = wrapper.get('[data-test="exam-workspace-retry"]');
     expect(button.attributes("disabled")).toBeDefined();
-    expect(button.attributes("title")).toBe(AI_DAILY_LIMIT_NOTE);
+    expect(button.attributes("title")).toBe(note);
     await button.trigger("click");
     expect(wrapper.emitted("retry")).toBeUndefined();
     wrapper.unmount();
