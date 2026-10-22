@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2276842b35c7ddedb0d7ec7a357a41d4fbcc6bc464606f70b1fa914249c558d2",
+  "source_set_digest": "2c8d8b8c34268a2e7d835091e6af8c8616715916fab106780462867a26717291",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7393,7 +7393,7 @@
       "type": "task",
       "title": "Exam AI calls go through the LLM provider door and the local token ledger is removed",
       "path": "docs/backlog/tasks/task-skript-41-01-03-exam-ai-calls-go-through-the-llm-provider-door-and-the-local-token-ledger-is-removed.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -7404,7 +7404,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a16084-cdf6-72e7-99a6-40748a91cb88 (evidence/reviews/review-41-01-03.md); F1-F3 rereview approved at d7ffdc30f (review-41-01-03-rereview.md); F4-F6 admitted on focused proof. Merged as fe2bc9b9c; staging door key fixed by HuleEdu 547e1deb1; walk finding D1 fixed on the light route (045a0dbdb, merged 2d16c24d6). Mac staging walk at fe2bc9b9c passed (Word imports, Föreslå facit, Föreslå innehåll, Konvertera igen; 22 door calls 200), and the D1 re-walk at 2d16c24d6 passed (one autosave, Sparat, suggestion kept after reload). B4 limit notes are unit-proof only. The user closes on walk pass (via Mac, 2026-10-22)."
       }
     },
     {

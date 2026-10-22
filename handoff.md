@@ -7,10 +7,6 @@
     `scheduled/20261022T010031Z`; migrations to `015a3af12871`; health green).
     Main is ahead at `fe2bc9b9`; next deploy also needs HuleEdu prod via its
     hemma-deploy for the 41-01-03 door (HuleEdu prod at `45d4a6f7`).
-  - 41-01-03 (`fe2bc9b9`; staging door key fixed by HuleEdu `547e1deb`): walk
-    passed except D1 (an arriving facit suggestion schedules no autosave); D1 is
-    with the 41-01-03 lead on the light route, then a re-walk and close. B4 limit
-    notes are unit-proof only (walk residual).
   - 39-10-02 held unmerged at `8c1eecd2`: T5, T7, T8 user-decided; F1-F3 still
     high after the one rereview; user decides a further round.
   - 41-01-03 junior R6 (launcher PID 3010867) is stalled, not cancelled; user
@@ -83,7 +79,7 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02, -04: ready; 41-01-03 merged (walk owed, above).
+    - 41-01-02, -04: ready, unblocked by 41-01-03 (done).
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
@@ -122,7 +118,7 @@
 
 ## Recent
 
-- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user). REP-0049 done (`b8293abd`; Mac walk `.artifacts/staging-walk-overnight-fe2bc9b9/walk-record.md`). 39-10-04 Lägg till bild done (`4f555442` + W1 `e68e84a1`; Mac walks passed, check 4 re-walk at `fe2bc9b9`).
+- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user). 41-01-03 exam AI through the door done (`fe2bc9b9` + D1 `2d16c24d`; HuleEdu staging door key `547e1deb`; B4 notes unit-proof only). REP-0049 done (`b8293abd`; Mac walk `.artifacts/staging-walk-overnight-fe2bc9b9/walk-record.md`). 39-10-04 Lägg till bild done (`4f555442` + W1 `e68e84a1`; Mac walks passed, check 4 re-walk at `fe2bc9b9`).
 
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
 

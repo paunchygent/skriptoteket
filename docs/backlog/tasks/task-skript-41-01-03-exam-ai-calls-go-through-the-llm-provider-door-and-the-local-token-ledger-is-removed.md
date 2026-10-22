@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Independent review in retained root 01a16084-cdf6-72e7-99a6-40748a91cb88 (evidence/reviews/review-41-01-03.md); F1-F3 rereview approved at d7ffdc30f (review-41-01-03-rereview.md); F4-F6 admitted on focused proof. Merged as fe2bc9b9c; staging door key fixed by HuleEdu 547e1deb1; walk finding D1 fixed on the light route (045a0dbdb, merged 2d16c24d6). Mac staging walk at fe2bc9b9c passed (Word imports, Föreslå facit, Föreslå innehåll, Konvertera igen; 22 door calls 200), and the D1 re-walk at 2d16c24d6 passed (one autosave, Sparat, suggestion kept after reload). B4 limit notes are unit-proof only. The user closes on walk pass (via Mac, 2026-10-22).'
 task_kind: story
 acceptance_criteria:
   - Answer keys, DOCX conversion, labeling and content tags call the LLM provider door with the internal key and the teacher's user id, on GPT-6 Luna low
