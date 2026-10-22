@@ -41,6 +41,8 @@ Non-goals: a remaining-today indicator; a school-domain allowlist for sign-up or
 | Task                 | Delivers                                                                                                                                                                                                  | Depends on        |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
 | TASK-SKRIPT-41-03-01 | Walking skeleton: Skriptoteket's door policy at 20% small and 10% full share with no USD ceiling, the admin-only AI check and its note deleted, and a non-admin teacher using exam and script-editor AI on staging | ST-SKRIPT-41-01 done |
+| TASK-SKRIPT-41-03-02 | Ghost text in the script editor appears within two seconds of the last keystroke | TASK-SKRIPT-41-03-01 |
+| TASK-SKRIPT-41-03-03 | The script editor chat shows its answers as formatted text and code blocks | TASK-SKRIPT-41-03-01 |
 
 ## Verification
 
