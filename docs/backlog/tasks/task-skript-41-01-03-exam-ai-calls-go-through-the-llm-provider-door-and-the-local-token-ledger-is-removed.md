@@ -77,5 +77,10 @@ Before the REP-0044 gate opens AI to teachers, close this gap: the door's `allow
   - `pdm run typecheck`, `fe-type-check`, `fe-lint`, `check-migration-test-coverage` and `docs-validate` pass.
   - Docker integration passes: the migration test plus the DOCX background and DigiExam suggestion modules, 13 passed.
   - Focused unit tests pass: 2342 in curated apps, LLM and workers; 673 in web, architecture and config; 2282 exam-workspace Vitest.
-  - `pdm run lint` fails only on yamllint line length in `compose.prod.yaml` and `compose.hemma-dev.yaml`. 32 of those long lines are already on `main`; the new door lines use the same `${VAR:-default}` form.
+  - `pdm run lint` passes after the consumer-root `.yamllint` turns off only line length; the other default yamllint rules still run on the compose files (orchestrator ruling, 2026-10-22).
   - Logs are in the lead's retained root, under `evidence/closeout-*.log`.
+- Orchestrator confirmations (2026-10-22) of choices the work orders did not settle:
+  1. A limit on any AI action disables every exam-workspace AI control for the page session, because one shared pool refuses them all.
+  2. The guard test allowlists `scripts/llm_harness/inline_completion_harness.py`, script-editor tooling owned by TASK-SKRIPT-41-01-02.
+  3. The live scripts exit with code 2 and the approval message on a pool refusal, and with code 1 naming the limit on any other limit; they send the caller as exempt.
+  4. A DOCX job stopped by a door refusal keeps the user-facing limit note in `last_error`, and the job's first refusal wins.
