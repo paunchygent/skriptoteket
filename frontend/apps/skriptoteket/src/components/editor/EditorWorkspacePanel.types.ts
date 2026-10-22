@@ -8,7 +8,6 @@ import type { WorkingCopyProvider } from "../../composables/editor/useEditorComp
 import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
 import type { SchemaIssuesBySchema } from "../../composables/editor/useEditorSchemaValidation";
 import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
-import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type ProfessionItem = components["schemas"]["ProfessionItem"];
@@ -102,12 +101,10 @@ type EditorWorkspacePanelProps = {
 
   chatMessages: EditorChatMessage[];
   chatIsStreaming: boolean;
-  chatDisabledMessage: string | null;
   chatError: string | null;
   chatNoticeMessage: string | null;
   chatNoticeVariant: "info" | "warning";
   aiBlockedNote: string | null;
-  remoteFallbackPrompt: RemoteFallbackPrompt | null;
   editOpsRequestError: string | null;
   editOpsDisabledMessage: string | null;
   editOpsClearDraftToken: number;
@@ -160,11 +157,7 @@ type EditorWorkspacePanelEmits = {
   (event: "cancelChatStream"): void;
   (event: "clearChat"): void;
   (event: "clearChatError"): void;
-  (event: "clearChatDisabled"): void;
   (event: "clearChatNotice"): void;
-  (event: "allowRemoteFallbackPrompt"): void;
-  (event: "denyRemoteFallbackPrompt"): void;
-  (event: "dismissRemoteFallbackPrompt"): void;
   (event: "requestEditOps", message: string): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;

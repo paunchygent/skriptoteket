@@ -90,7 +90,6 @@ describe.each([
       isAuthenticated,
       user: isAuthenticated ? { id: "user-1", email: "teacher@example.com", role: "user" } : null,
       profile: null,
-      aiPolicy: null,
       bootstrap: vi.fn().mockResolvedValue(undefined),
       logout: vi.fn().mockResolvedValue(undefined),
       hasAtLeastRole: vi.fn().mockReturnValue(false),

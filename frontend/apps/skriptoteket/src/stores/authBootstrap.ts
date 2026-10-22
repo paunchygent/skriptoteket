@@ -94,14 +94,6 @@ async function readAppContinuationError(response: Response): Promise<AppContinua
   };
 }
 
-function mergeAppContinuationProfile(continuation: AppContinuationResponse): AuthProfile {
-  return {
-    ...continuation.profile,
-    allow_remote_fallback: continuation.allow_remote_fallback ?? null,
-    inline_completion_provider: continuation.inline_completion_provider ?? null,
-  };
-}
-
 export async function loadSharedSessionSnapshot(): Promise<SharedSessionBootstrapResult> {
   const response = await fetchWithTimeout(
     sharedAuthUrl(SHARED_AUTH_SESSION_PATH),
@@ -151,7 +143,7 @@ export async function loadAppContinuation(): Promise<AppContinuationResult> {
     return {
       kind: "ready",
       continuation,
-      profile: mergeAppContinuationProfile(continuation),
+      profile: continuation.profile,
     };
   }
 

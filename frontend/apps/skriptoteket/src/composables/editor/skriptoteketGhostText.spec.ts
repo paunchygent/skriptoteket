@@ -2,10 +2,19 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EditorState, Transaction } from "@codemirror/state";
 import { EditorView } from "@codemirror/view";
 
-import { apiFetch } from "../../api/client";
+import { createPinia, setActivePinia } from "pinia";
+
+import { ApiError, apiFetch } from "../../api/client";
+import { useToastStore } from "../../stores/toast";
+import {
+  AI_USER_LIMIT_NOTE,
+  aiDailyLimitNote,
+  resetAiDailyLimitForTests,
+} from "../../views/apps/exam-workspace/aiDailyLimit";
 import { skriptoteketGhostText } from "./skriptoteketGhostText";
 
-vi.mock("../../api/client", () => ({
+vi.mock("../../api/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../api/client")>()),
   apiFetch: vi.fn(),
 }));
 
@@ -61,6 +70,62 @@ describe("skriptoteketGhostText", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    resetAiDailyLimitForTests();
+    setActivePinia(createPinia());
+  });
+
+  it("answers a user-share 429 with the inline note, no toast and no further requests", async () => {
+    vi.mocked(apiFetch).mockRejectedValue(
+      new ApiError({
+        code: "AI_DAILY_LIMIT_REACHED",
+        message: AI_USER_LIMIT_NOTE,
+        status: 429,
+        details: { limit: "user_share" },
+      }),
+    );
+
+    const { view, parent } = createEditor("def x():\n    ");
+
+    try {
+      typeText(view, "x");
+      vi.advanceTimersByTime(10);
+      await flushMicrotasks();
+
+      expect(apiFetch).toHaveBeenCalledTimes(1);
+      expect(aiDailyLimitNote.value).toBe(AI_USER_LIMIT_NOTE);
+      expect(useToastStore().toasts).toHaveLength(0);
+
+      typeText(view, "y");
+      vi.advanceTimersByTime(10);
+      await flushMicrotasks();
+      keyDown(view.contentDOM, "Alt-\\");
+      await flushMicrotasks();
+
+      expect(apiFetch).toHaveBeenCalledTimes(1);
+      expect(parent.querySelector(".cm-skriptoteket-ghost-text")).toBeFalsy();
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
+  });
+
+  it("leaves the limit unmarked when a completion fails for another reason", async () => {
+    vi.mocked(apiFetch).mockRejectedValue(
+      new ApiError({ code: "INTERNAL_ERROR", message: "Fel", status: 500 }),
+    );
+
+    const { view, parent } = createEditor("def x():\n    ");
+
+    try {
+      typeText(view, "x");
+      vi.advanceTimersByTime(10);
+      await flushMicrotasks();
+
+      expect(aiDailyLimitNote.value).toBeNull();
+    } finally {
+      view.destroy();
+      parent.remove();
+    }
   });
 
   it("shows ghost text after typing pause and accepts with Tab", async () => {

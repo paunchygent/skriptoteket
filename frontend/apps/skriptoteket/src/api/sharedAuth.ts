@@ -13,7 +13,6 @@
 
 import type { components } from "./openapi";
 
-type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
 type ApiRole = components["schemas"]["Role"];
 type ApiUser = components["schemas"]["User"];
 type ApiUserProfile = components["schemas"]["UserProfile"];
@@ -65,7 +64,6 @@ export type SharedAuthSnapshot = {
   sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
-  aiPolicy: ApiAiPolicy | null;
   grants: string[];
   featureFlags: string[];
 };
@@ -313,7 +311,6 @@ function emptySnapshot(): SharedAuthSnapshot {
     sharedSessionId: null,
     user: null,
     profile: null,
-    aiPolicy: null,
     grants: [],
     featureFlags: [],
   };
@@ -347,7 +344,6 @@ export function mapBrowserSessionToAuthSnapshot(
       last_name: pickNamePart(personName, ["last_name", "family_name", "family", "surname"]),
       locale: payload.profile?.locale ?? "sv-SE",
     },
-    aiPolicy: null,
     grants: uniqueStrings(payload.policy?.grants),
     featureFlags: uniqueStrings(payload.policy?.feature_flags),
   };

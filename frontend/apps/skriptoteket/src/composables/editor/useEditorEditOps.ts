@@ -3,6 +3,7 @@ import { computed, onScopeDispose, ref, watch, type Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
 import { isApiError } from "../../api/client";
+import { aiLimitFromError, markAiDailyLimit } from "../../views/apps/exam-workspace/aiDailyLimit";
 import {
   applyEditOps,
   previewEditOps,
@@ -330,6 +331,12 @@ export function useEditorEditOps(options: UseEditorEditOpsOptions) {
       previewBaseFiles.value = null;
       previewErrorDetails.value = null;
       confirmationAccepted.value = false;
+      const limit = aiLimitFromError(error);
+      if (limit) {
+        // The door's limit note shows beside the disabled composer, not as a request error.
+        markAiDailyLimit(limit);
+        return null;
+      }
       if (isApiError(error)) {
         requestError.value = error.message;
       } else if (error instanceof Error) {

@@ -33,7 +33,7 @@ function deferred() {
 
 function mountProfile() {
   return mount(ProfileView, {
-    global: { stubs: { ProfileExamCoursesSection: true, ProfileAiSettingsInline: true } },
+    global: { stubs: { ProfileExamCoursesSection: true } },
   });
 }
 

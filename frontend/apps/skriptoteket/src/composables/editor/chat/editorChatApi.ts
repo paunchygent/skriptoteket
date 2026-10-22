@@ -16,11 +16,6 @@ import { apiFetch, apiGet, bindProtectedSession, resolveProtectedApiUrl } from "
 import type { AuthSession } from "../../../stores/auth";
 import type { EditorChatHistoryResponse, EditorChatRequest } from "./editorChatTypes";
 
-type ApiErrorEnvelope = {
-  error?: { code?: string; message?: string };
-  detail?: unknown;
-};
-
 type ChatStreamRequestParams = {
   toolId: string;
   body: EditorChatRequest;
@@ -69,28 +64,4 @@ export async function postChatStream({
       credentials: "include", signal,
     });
   });
-}
-
-export async function readChatErrorMessage(response: Response): Promise<string> {
-  const contentType = response.headers.get("content-type") ?? "";
-  const fallback = response.statusText || `Request failed (${response.status})`;
-
-  if (!contentType.includes("application/json")) {
-    return fallback;
-  }
-
-  const payload = (await response.json().catch(() => null)) as ApiErrorEnvelope | null;
-  if (!payload || typeof payload !== "object") {
-    return fallback;
-  }
-
-  if (payload.error?.message) {
-    return payload.error.message;
-  }
-
-  if (payload.detail) {
-    return "Validation error";
-  }
-
-  return fallback;
 }

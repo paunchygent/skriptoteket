@@ -46,12 +46,6 @@ export function createTestProfile(
   };
 }
 
-export const TEST_AI_POLICY = {
-  remote_providers_enabled: true,
-  completion_external_available: true,
-  completion_local_available: true,
-};
-
 export function mockJsonResponse(
   payload: unknown,
   status = 200,

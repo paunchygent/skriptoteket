@@ -25,7 +25,6 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
-        disabledMessage: null,
         error: null,
       },
     });
@@ -51,7 +50,6 @@ describe("ChatDrawer", () => {
   it.each([
     ["noticeMessage", "clearNotice", "Notice", "status", "polite"],
     ["error", "clearError", "Chat failed", "alert", "assertive"],
-    ["disabledMessage", "clearDisabled", "Chat disabled", "status", "polite"],
     ["editOpsError", "clearEditOpsError", "Edit failed", "alert", "assertive"],
     ["editOpsDisabledMessage", "clearEditOpsDisabled", "Edit disabled", "status", "polite"],
   ] as const)("dismisses %s through its clear handler exactly once", async (prop, event, text, role, live) => {
@@ -66,7 +64,6 @@ describe("ChatDrawer", () => {
         noticeMessage: "Notice",
         noticeVariant: "warning",
         error: "Chat failed",
-        disabledMessage: "Chat disabled",
         editOpsError: "Edit failed",
         editOpsDisabledMessage: "Edit disabled",
       },
@@ -77,7 +74,7 @@ describe("ChatDrawer", () => {
     expect(message!.attributes()).toMatchObject({ role, "aria-live": live, "aria-atomic": "true" });
     await message!.get('button[aria-label="Stäng"]').trigger("click");
 
-    for (const clearEvent of ["clearNotice", "clearError", "clearDisabled", "clearEditOpsError", "clearEditOpsDisabled"]) {
+    for (const clearEvent of ["clearNotice", "clearError", "clearEditOpsError", "clearEditOpsDisabled"]) {
       expect(wrapper.emitted(clearEvent)).toEqual(clearEvent === event ? [[]] : undefined);
     }
     await wrapper.setProps({ [prop]: null });
@@ -94,7 +91,6 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
-        disabledMessage: null,
         error: null,
         clearDraftToken: 0,
       },
@@ -136,7 +132,6 @@ describe("ChatDrawer", () => {
         isStreaming: false,
         isEditOpsLoading: true,
         editOpsIsSlow: true,
-        disabledMessage: null,
         error: null,
         clearDraftToken: 0,
       },
@@ -171,7 +166,6 @@ describe("ChatDrawer", () => {
         ],
         isStreaming: false,
         isEditOpsLoading: false,
-        disabledMessage: null,
         error: null,
         clearDraftToken: 0,
       },
@@ -189,50 +183,6 @@ describe("ChatDrawer", () => {
     expect(wrapper.text()).toContain("correlation-id: corr-123");
   });
 
-  it("renders a remote fallback prompt and emits actions", async () => {
-    const wrapper = mountWithContext(ChatDrawer, {
-      props: {
-        variant: "column",
-        isOpen: true,
-        isCollapsed: false,
-        messages: [],
-        isStreaming: false,
-        isEditOpsLoading: false,
-        disabledMessage: null,
-        error: null,
-        clearDraftToken: 0,
-        remoteFallbackPrompt: {
-          source: "chat",
-          message: "Aktivera externa AI-API:er (OpenAI) för att fortsätta.",
-        },
-      },
-    });
-
-    const prompt = wrapper.find("[data-editor-remote-fallback-prompt]");
-    expect(prompt.exists()).toBe(true);
-
-    const allowButton = prompt
-      .findAll("button")
-      .find((button) => button.text().includes("Aktivera"));
-    expect(allowButton, "Missing 'Aktivera' button").toBeTruthy();
-
-    await allowButton!.trigger("click");
-    expect(wrapper.emitted("allowRemoteFallbackPrompt")).toBeTruthy();
-
-    const denyButton = prompt
-      .findAll("button")
-      .find((button) => button.text().includes("Stäng av"));
-    expect(denyButton, "Missing 'Stäng av' button").toBeTruthy();
-
-    await denyButton!.trigger("click");
-    expect(wrapper.emitted("denyRemoteFallbackPrompt")).toBeTruthy();
-
-    const dismissButton = prompt.find('button[aria-label="Stäng"]');
-    expect(dismissButton.exists()).toBe(true);
-    await dismissButton.trigger("click");
-    expect(wrapper.emitted("dismissRemoteFallbackPrompt")).toBeTruthy();
-  });
-
   it("forwards the AI admin-only note through to the composer", () => {
     const wrapper = mountWithContext(ChatDrawer, {
       props: {
@@ -242,7 +192,6 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
-        disabledMessage: null,
         error: null,
         aiBlockedNote: AI_ADMIN_ONLY_NOTE,
       },

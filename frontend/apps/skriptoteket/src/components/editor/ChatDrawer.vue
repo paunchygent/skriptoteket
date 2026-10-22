@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { RouterLink } from "vue-router";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
-import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 import ChatComposer from "./ChatComposer.vue";
 import ChatMessageList from "./ChatMessageList.vue";
 import { SystemMessage, UiDenseActionButton, UiGlyph, type SystemMessageTone } from "../ui";
@@ -19,12 +17,10 @@ type ChatDrawerProps = {
   editOpsError?: string | null;
   editOpsDisabledMessage?: string | null;
   clearDraftToken?: number;
-  disabledMessage: string | null;
   error: string | null;
   aiBlockedNote?: string | null;
   noticeMessage?: string | null;
   noticeVariant?: Extract<SystemMessageTone, "info" | "warning">;
-  remoteFallbackPrompt?: RemoteFallbackPrompt | null;
 };
 
 const props = withDefaults(defineProps<ChatDrawerProps>(), {
@@ -36,7 +32,6 @@ const props = withDefaults(defineProps<ChatDrawerProps>(), {
   aiBlockedNote: null,
   noticeMessage: null,
   noticeVariant: "info",
-  remoteFallbackPrompt: null,
 });
 
 const emit = defineEmits<{
@@ -45,15 +40,11 @@ const emit = defineEmits<{
   (event: "cancel"): void;
   (event: "clear"): void;
   (event: "clearError"): void;
-  (event: "clearDisabled"): void;
   (event: "clearNotice"): void;
   (event: "clearEditOpsError"): void;
   (event: "clearEditOpsDisabled"): void;
   (event: "toggleCollapse"): void;
   (event: "requestEditOps", message: string): void;
-  (event: "allowRemoteFallbackPrompt"): void;
-  (event: "denyRemoteFallbackPrompt"): void;
-  (event: "dismissRemoteFallbackPrompt"): void;
 }>();
 
 const isColumnVariant = computed(() => props.variant === "column");
@@ -62,11 +53,9 @@ const isRailOnlyOnMobile = computed(() => isColumnVariant.value && props.isColla
 const hasStatusPanel = computed(
   () =>
     Boolean(props.error) ||
-    Boolean(props.disabledMessage) ||
     Boolean(props.noticeMessage) ||
     Boolean(props.editOpsError) ||
-    Boolean(props.editOpsDisabledMessage) ||
-    Boolean(props.remoteFallbackPrompt),
+    Boolean(props.editOpsDisabledMessage),
 );
 
 const assistantActivity = computed(() => {
@@ -154,16 +143,6 @@ const assistantActivity = computed(() => {
               @update:model-value="emit('clearError')"
             />
             <SystemMessage
-              v-if="disabledMessage"
-              :model-value="disabledMessage"
-              tone="warning"
-              dismissible
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-              @update:model-value="emit('clearDisabled')"
-            />
-            <SystemMessage
               v-if="props.editOpsError"
               :model-value="props.editOpsError"
               tone="failure"
@@ -180,55 +159,6 @@ const assistantActivity = computed(() => {
               aria-atomic="true"
               @update:model-value="emit('clearEditOpsDisabled')"
             />
-
-            <div
-              v-if="props.remoteFallbackPrompt"
-              class="border border-navy/20 bg-canvas px-3 py-3"
-              data-editor-remote-fallback-prompt
-            >
-              <div class="flex items-start justify-between gap-3">
-                <div class="space-y-1 min-w-0">
-                  <p class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
-                    Externa AI-API:er
-                  </p>
-                  <p class="text-sm text-navy">
-                    {{ props.remoteFallbackPrompt.message }}
-                  </p>
-                  <RouterLink
-                    to="/profile"
-                    class="text-xs text-[var(--huleedu-link-color)] underline underline-offset-[var(--huleedu-link-underline-offset)] font-[number:var(--huleedu-link-weight)]"
-                  >
-                    Öppna Profil och ändra inställningen
-                  </RouterLink>
-                </div>
-                <UiDenseActionButton
-                  label="Stäng"
-                  icon-only
-                  @click="emit('dismissRemoteFallbackPrompt')"
-                >
-                  <template #leading>
-                    <UiGlyph
-                      meaning="close"
-                      :size="16"
-                    />
-                  </template>
-                </UiDenseActionButton>
-              </div>
-
-              <div class="flex flex-wrap items-center gap-2 pt-3">
-                <UiDenseActionButton
-                  label="Aktivera"
-                  tone="primary"
-                  :disabled="props.isStreaming || props.isEditOpsLoading"
-                  @click="emit('allowRemoteFallbackPrompt')"
-                />
-                <UiDenseActionButton
-                  label="Stäng av"
-                  :disabled="props.isStreaming || props.isEditOpsLoading"
-                  @click="emit('denyRemoteFallbackPrompt')"
-                />
-              </div>
-            </div>
           </div>
 
           <div class="flex-1 min-h-0 overflow-y-auto px-3 py-2">

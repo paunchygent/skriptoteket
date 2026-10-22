@@ -20,7 +20,6 @@ import {
   createTestUser,
   mockJsonResponse,
   mockSharedSessionResponse,
-  TEST_AI_POLICY,
 } from "./authTestHelpers";
 
 describe("useAuthStore", () => {
@@ -61,7 +60,7 @@ describe("useAuthStore", () => {
           mockJsonResponse({
             local_user: mockUser,
             profile: mockProfile,
-            ai_policy: TEST_AI_POLICY,
+            ai_policy: { remote_providers_enabled: true },
             allow_remote_fallback: true,
             inline_completion_provider: "external",
           }),
@@ -84,14 +83,10 @@ describe("useAuthStore", () => {
       expect(store.hasAtLeastRole("contributor")).toBe(true);
       expect(store.grants).toEqual(["tools:run"]);
       expect(store.featureFlags).toEqual(["inline-completion"]);
-      expect(store.aiPolicy).toEqual(TEST_AI_POLICY);
-      expect(store.profile).toEqual(
-        expect.objectContaining({
-          user_id: mockUser.id,
-          allow_remote_fallback: true,
-          inline_completion_provider: "external",
-        }),
-      );
+      expect(store.$state).not.toHaveProperty("aiPolicy");
+      expect(store.profile).toEqual(expect.objectContaining({ user_id: mockUser.id }));
+      expect(store.profile).not.toHaveProperty("allow_remote_fallback");
+      expect(store.profile).not.toHaveProperty("inline_completion_provider");
       expect(fetch).toHaveBeenNthCalledWith(
         1,
         "https://api.hule.education/v1/auth/session",
@@ -146,9 +141,6 @@ describe("useAuthStore", () => {
           mockJsonResponse({
             local_user: mockUser,
             profile: mockProfile,
-            ai_policy: TEST_AI_POLICY,
-            allow_remote_fallback: true,
-            inline_completion_provider: "external",
           }),
         )
         .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }));
@@ -193,7 +185,7 @@ describe("useAuthStore", () => {
       expect(store.error).toBeNull();
     });
 
-    it("keeps remote AI failed closed when app-local continuation fails", async () => {
+    it("leaves no user or profile when app-local continuation fails", async () => {
       const store = useAuthStore();
       const mockUser = createTestUser();
 
@@ -218,7 +210,6 @@ describe("useAuthStore", () => {
       await store.bootstrap();
 
       expect(store.user).toBeNull();
-      expect(store.aiPolicy).toBeNull();
       expect(store.profile).toBeNull();
       expect(store.error).toBe("Local app state unavailable");
       expect(store.status).toBe("error");
@@ -268,7 +259,6 @@ describe("useAuthStore", () => {
 
       expect(store.user).toBeNull();
       expect(store.profile).toBeNull();
-      expect(store.aiPolicy).toBeNull();
       expect(store.status).toBe("provisioning_required");
       expect(store.isProvisioningRequired).toBe(true);
       expect(store.error).toBe("Skriptoteket-kontot är inte aktiverat.");
@@ -324,7 +314,6 @@ describe("useAuthStore", () => {
 
       expect(store.user).toBeNull();
       expect(store.profile).toBeNull();
-      expect(store.aiPolicy).toBeNull();
       expect(store.status).toBe("error");
       expect(store.isProvisioningRequired).toBe(false);
       expect(store.error).toBe("Inloggningen kunde inte slutföras.");

@@ -1,12 +1,17 @@
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
 import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
+import {
+  AI_USER_LIMIT_NOTE,
+  markAiDailyLimit,
+  resetAiDailyLimitForTests,
+} from "../../views/apps/exam-workspace/aiDailyLimit";
 import EditorSourceCodePanel from "./EditorSourceCodePanel.vue";
 
 type ApiRole = components["schemas"]["Role"];
@@ -121,6 +126,31 @@ describe("EditorSourceCodePanel AI access gate", () => {
     const wrapper = mountPanel({}, role);
 
     expect(intelligence.options?.ghostText?.enabled.value).toBe(expected);
+    wrapper.unmount();
+  });
+});
+
+describe("EditorSourceCodePanel daily limit note", () => {
+  beforeEach(() => {
+    resetAiDailyLimitForTests();
+  });
+
+  it("shows no note and keeps ghost text enabled while the door has refused nothing", () => {
+    const wrapper = mountPanel();
+
+    expect(wrapper.find('[data-test="editor-ai-limit-note"]').exists()).toBe(false);
+    expect(intelligence.options?.ghostText?.enabled.value).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("shows the door note inline and turns ghost text off once a limit is refused", async () => {
+    const wrapper = mountPanel();
+
+    markAiDailyLimit("user_share");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.get('[data-test="editor-ai-limit-note"]').text()).toBe(AI_USER_LIMIT_NOTE);
+    expect(intelligence.options?.ghostText?.enabled.value).toBe(false);
     wrapper.unmount();
   });
 });

@@ -57,7 +57,6 @@ describe("AuthLayout", () => {
       props: {
         user: { id: "user-1", email: "teacher@example.com", role: "user" },
         profile: null,
-        aiPolicy: null,
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,
@@ -83,7 +82,6 @@ describe("AuthLayout", () => {
       props: {
         user: { id: "user-1", email: "teacher@example.com", role: "user" },
         profile: null,
-        aiPolicy: null,
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,
@@ -110,7 +108,6 @@ describe("AuthLayout", () => {
       props: {
         user: { id: "user-1", email: "teacher@example.com", role: "user" },
         profile: null,
-        aiPolicy: null,
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,

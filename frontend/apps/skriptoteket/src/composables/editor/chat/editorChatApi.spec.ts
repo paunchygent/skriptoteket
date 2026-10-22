@@ -4,7 +4,7 @@ import { useAuthStore } from "../../../stores/auth";
 import { createTestUser } from "../../../stores/authTestHelpers";
 
 import { apiFetch, apiGet, resolveProtectedApiUrl } from "../../../api/client";
-import { clearChatHistory, fetchChatHistory, postChatStream, readChatErrorMessage } from "./editorChatApi";
+import { clearChatHistory, fetchChatHistory, postChatStream } from "./editorChatApi";
 
 const originalFetch = globalThis.fetch;
 
@@ -77,27 +77,5 @@ describe("editorChatApi", () => {
     expect(headers.get("X-Correlation-ID")).toBe("corr-1");
     expect(init?.credentials).toBe("include");
     expect(init?.method).toBe("POST");
-  });
-
-  it("reads error messages from json payloads", async () => {
-    const response = new Response(JSON.stringify({ error: { message: "Nope" } }), {
-      status: 400,
-      headers: { "content-type": "application/json" },
-    });
-
-    const message = await readChatErrorMessage(response);
-
-    expect(message).toBe("Nope");
-  });
-
-  it("falls back to validation error when detail is present", async () => {
-    const response = new Response(JSON.stringify({ detail: { field: "message" } }), {
-      status: 422,
-      headers: { "content-type": "application/json" },
-    });
-
-    const message = await readChatErrorMessage(response);
-
-    expect(message).toBe("Validation error");
   });
 });

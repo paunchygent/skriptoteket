@@ -6,10 +6,9 @@ import { apiFetch, apiGet } from "../api/client";
 import { updateClassroomPlannerSettings } from "../api/classroomPlannerSettings";
 import { useProfile } from "../composables/useProfile";
 import { useClassroomPlannerSmartPreferenceLane } from "../views/apps/useClassroomPlannerSmartPreferenceLane";
-import { useAiStore } from "./ai";
 import { SupersededAuthSessionError, useAuthStore } from "./auth";
 import { loadAppContinuation, loadSharedCsrfToken, loadSharedSessionSnapshot } from "./authBootstrap";
-import { createTestProfile, createTestUser, TEST_AI_POLICY } from "./authTestHelpers";
+import { createTestProfile, createTestUser } from "./authTestHelpers";
 import { useTutorialSeenSectionsStore } from "./tutorialSeenSections";
 
 vi.mock("../api/client", () => ({ apiFetch: vi.fn(), apiGet: vi.fn() }));
@@ -40,7 +39,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   setActivePinia(createPinia());
   auth = useAuthStore();
-  auth.$patch({ ...snapshotFor("teacher-a"), sharedSessionId: "session-a", bootstrapped: true, aiPolicy: TEST_AI_POLICY });
+  auth.$patch({ ...snapshotFor("teacher-a"), sharedSessionId: "session-a", bootstrapped: true });
 });
 
 describe("same-session response admission", () => {
@@ -60,15 +59,6 @@ describe("same-session response admission", () => {
     expect(auth.profile).toEqual(saved().profile);
     expect(profile.profile.value).toEqual(saved().profile);
     expect(auth.isCurrentSession(session)).toBe(true);
-  });
-
-  it("accepts the teacher's AI settings response", async () => {
-    const response = saved();
-    response.profile.allow_remote_fallback = true;
-    vi.mocked(apiFetch).mockResolvedValue(response);
-    await useAiStore().persistAiSettings({ remote_fallback_preference: "allow" });
-    expect(auth.profile).toEqual(response.profile);
-    expect(useAiStore().remoteFallbackPreference).toBe("allow");
   });
 
   it("accepts the teacher's queued Smart preference response", async () => {
@@ -97,14 +87,14 @@ describe("same-session response admission", () => {
     auth.bootstrapped = false;
     vi.mocked(loadSharedSessionSnapshot).mockResolvedValue({
       kind: "authenticated", snapshot: {
-        ...snapshotFor("teacher-a"), aiPolicy: TEST_AI_POLICY,
+        ...snapshotFor("teacher-a"),
         sharedSessionId: "session-a",
         grants: ["teacher-grant"], featureFlags: ["teacher-flag"],
       },
     });
     vi.mocked(loadAppContinuation).mockResolvedValue({
       kind: "ready", profile: saved().profile,
-      continuation: { local_user: saved().user, ai_policy: TEST_AI_POLICY } as Extract<Awaited<ReturnType<typeof loadAppContinuation>>, { kind: "ready" }>["continuation"],
+      continuation: { local_user: saved().user } as Extract<Awaited<ReturnType<typeof loadAppContinuation>>, { kind: "ready" }>["continuation"],
     });
     vi.mocked(loadSharedCsrfToken).mockResolvedValue({ kind: "ready", token: "teacher-token" });
   }
@@ -114,7 +104,6 @@ describe("same-session response admission", () => {
     await auth.bootstrap();
     expect(auth.user).toEqual(saved().user);
     expect(auth.profile).toEqual(saved().profile);
-    expect(auth.aiPolicy).toEqual(TEST_AI_POLICY);
     expect(auth.csrfToken).toBe("teacher-token");
     expect(auth.grants).toEqual(["teacher-grant"]);
     expect(auth.featureFlags).toEqual(["teacher-flag"]);
@@ -147,7 +136,6 @@ function supersede(transition: Transition): void {
     auth.$patch({
       ...snapshotFor(transition === "teacher change" ? "teacher-b" : "teacher-a"),
       bootstrapped: true,
-      aiPolicy: TEST_AI_POLICY,
     });
     auth.profile!.display_name = "new login profile";
   }
@@ -170,17 +158,6 @@ describe.each(transitions)("pending profile responses after %s", (transition) =>
     await expect(request).rejects.toBeInstanceOf(SupersededAuthSessionError);
     expect(auth.$state).toEqual(state);
     expect(profile.profile.value).toBeNull();
-  });
-
-  it("ignores the AI settings response", async () => {
-    const pending = deferred<ReturnType<typeof snapshotFor>>();
-    vi.mocked(apiFetch).mockReturnValue(pending.promise);
-    const request = useAiStore().persistAiSettings({ remote_fallback_preference: "allow" });
-    supersede(transition);
-    const state = copyAuthState();
-    pending.resolve(snapshotFor("teacher-a"));
-    await expect(request).rejects.toBeInstanceOf(SupersededAuthSessionError);
-    expect(auth.$state).toEqual(state);
   });
 
   it("ignores the classroom Smart preference response", async () => {
@@ -242,7 +219,7 @@ describe.each(transitions)("pending auth continuation after %s", (transition) =>
     if (kind === "rejected") pending.reject(new Error("old actor network failure"));
     else if (kind === "ready") pending.resolve({
       kind, profile: snapshotFor("teacher-a").profile,
-      continuation: { local_user: snapshotFor("teacher-a").user, ai_policy: TEST_AI_POLICY } as Extract<Awaited<ReturnType<typeof loadAppContinuation>>, { kind: "ready" }>["continuation"],
+      continuation: { local_user: snapshotFor("teacher-a").user } as Extract<Awaited<ReturnType<typeof loadAppContinuation>>, { kind: "ready" }>["continuation"],
     });
     else pending.resolve({ kind, error: continuationError });
     await request.catch(() => undefined);

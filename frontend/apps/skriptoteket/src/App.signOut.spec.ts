@@ -95,7 +95,6 @@ describe.each([
       isAuthenticated: true,
       user: { id: "user-1", email: "teacher@example.com", role: "admin" },
       profile: null,
-      aiPolicy: null,
       bootstrap: vi.fn().mockResolvedValue(undefined),
       logout: vi.fn(async () => {
         store.user = null;

@@ -30,12 +30,6 @@ import { useLayoutStore } from "../../stores/layout";
 
 const props = defineProps<{
   user: { id: string; email: string; role: string } | null;
-  profile: { allow_remote_fallback?: boolean | null; inline_completion_provider?: "local" | "external" | null } | null;
-  aiPolicy: {
-    remote_providers_enabled: boolean;
-    completion_external_available: boolean;
-    completion_local_available: boolean;
-  } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
   canSeeSuperuser: boolean;

@@ -14,7 +14,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
   const { toolId } = options;
   const messages = ref<EditorChatMessage[]>([]);
   const streaming = ref(false);
-  const disabledMessage = ref<string | null>(null);
   const error = ref<string | null>(null);
   const noticeMessage = ref<string | null>(null);
   const noticeVariant = ref<NoticeVariant>("info");
@@ -22,7 +21,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
   const { sendMessage, cancel, resetRequest } = useEditorChatRequest(options, {
     messages,
     streaming,
-    disabledMessage,
     error,
     noticeMessage,
     noticeVariant,
@@ -33,7 +31,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
   function resetLocal(): void {
     resetRequest();
     messages.value = [];
-    disabledMessage.value = null;
     error.value = null;
     noticeMessage.value = null;
     noticeVariant.value = "info";
@@ -42,10 +39,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
 
   function clearError(): void {
     error.value = null;
-  }
-
-  function clearDisabledMessage(): void {
-    disabledMessage.value = null;
   }
 
   function clearNoticeMessage(): void {
@@ -64,7 +57,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
     }
 
     error.value = null;
-    disabledMessage.value = null;
     clearNoticeMessage();
 
     try {
@@ -84,14 +76,12 @@ export function useEditorChat(options: UseEditorChatOptions) {
 
     if (!toolId.value) {
       messages.value = [];
-      disabledMessage.value = null;
-      error.value = null;
+        error.value = null;
       clearNoticeMessage();
       return;
     }
 
     error.value = null;
-    disabledMessage.value = null;
     clearNoticeMessage();
 
     try {
@@ -109,7 +99,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
   return {
     messages,
     streaming,
-    disabledMessage,
     error,
     noticeMessage,
     noticeVariant,
@@ -118,7 +107,6 @@ export function useEditorChat(options: UseEditorChatOptions) {
     cancel,
     clear,
     clearError,
-    clearDisabledMessage,
     clearNoticeMessage,
   };
 }

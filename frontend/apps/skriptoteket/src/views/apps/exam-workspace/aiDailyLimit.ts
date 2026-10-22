@@ -16,6 +16,12 @@
  *     suggestions, conversion, item retry); read by the components that own
  *     an AI button (header, export blockers, details drawer, open drawer,
  *     import box).
+ *   - The script editor shares the same page-session flag, because it is the
+ *     same door and the same teacher: ghost text, chat and edit-ops mark it
+ *     on a 429 (`skriptoteketGhostText`, `useEditorChatRequest`,
+ *     `useEditorEditOps`); `ScriptEditorAiPanel` shows the note beside the
+ *     disabled composer and `EditorSourceCodePanel` shows it inline over the
+ *     editor.
  */
 
 import { computed, readonly, ref } from "vue";
