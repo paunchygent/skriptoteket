@@ -41,6 +41,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -68,6 +69,8 @@ _REVIEW_INLINE_POINTS = {
     ("bf26_english_1_unit_test_kap_1_2_med_facit", "item_043"): "(1 p)",
     ("svenska_2_grammatik_omprov_variant_1_med_facit", "item_001"): "(6 p)",
     ("svenska_2_grammatik_omprov_variant_2_med_facit", "item_001"): "(6 p)",
+    # REP-0049 rereview F4, decision A: Fråga 5 goes to source review.
+    ("svenska_2_grammatik_omprov_variant_2_med_facit", "item_005"): "(6 p)",
 }
 Corruption = Callable[[dict[str, JsonValue]], None]
 
@@ -158,9 +161,15 @@ class _MutatedProvider(ReplayProvider):
         self._mutate = mutate
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await super().complete_structured(request=request, profile=profile)
+        response = await super().complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         # A converter batch is matched to its recording by anchors, so select the reply by the
         # recording batch that was served, not by the request id.
         if self.recording_ids.get(request.item_id) != self._batch:

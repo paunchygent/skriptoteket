@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import AiDailyLimit
 
 
 class ExamWorkspaceDocumentSummary(BaseModel):
@@ -71,6 +72,7 @@ class ExamWorkspaceConversionStatus(BaseModel):
     lineage_id: UUID
     state: Literal["queued", "running", "succeeded", "failed"]
     error_message: str | None
+    ai_limit: AiDailyLimit | None = None
     document_revision: int | None
     questions_total: int
     questions_done: int
@@ -146,6 +148,18 @@ class ExamCourseCatalogResponse(BaseModel):
     registered_course_keys: tuple[str, ...] = ()
 
 
+class ExamWorkspaceLimitsResponse(BaseModel):
+    """The exam size limit both modes enforce before sending work to the server.
+
+    ``max_exam_bytes`` is the backend-owned ``VAULT_MAX_FILE_BYTES`` setting,
+    so the editor never keeps a handwritten copy of the cap.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    max_exam_bytes: int = Field(ge=1, description="Largest accepted exam size in bytes.")
+
+
 class ExamWorkspaceEnrichmentState(StrEnum):
     """Teacher-facing state of one answer-key suggestion job."""
 
@@ -187,6 +201,7 @@ class ExamWorkspaceAnswerKeySuggestionsResponse(BaseModel):
     job_id: UUID | None = None
     lineage_id: UUID
     state: ExamWorkspaceEnrichmentState
+    ai_limit: AiDailyLimit | None = None
     message: str | None = None
     suggestions: tuple[ExamWorkspaceAnswerKeySuggestionItem, ...] = ()
 

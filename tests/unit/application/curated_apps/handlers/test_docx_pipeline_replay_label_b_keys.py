@@ -24,6 +24,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     recorded_exams,
     recording,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
@@ -95,20 +96,28 @@ async def test_a_changed_label_request_is_unmatched_and_the_original_is_served_o
 
     changed = replace(request, user_payload=request.user_payload + " ")
     with pytest.raises(MissingRecording, match="no unused label_b recording"):
-        await provider.complete_structured(request=changed, profile=_PROFILE)
+        await provider.complete_structured(
+            request=changed, profile=_PROFILE, caller=fixture_caller()
+        )
     heading = "### Question q1\n"
     reworded = replace(
         request, user_payload=request.user_payload.replace(heading, f"{heading}Poäng: 1 poäng\n")
     )
     with pytest.raises(MissingRecording, match="no unused label_b recording"):
-        await provider.complete_structured(request=reworded, profile=_PROFILE)
+        await provider.complete_structured(
+            request=reworded, profile=_PROFILE, caller=fixture_caller()
+        )
     assert provider.served == []
 
-    response = await provider.complete_structured(request=request, profile=_PROFILE)
+    response = await provider.complete_structured(
+        request=request, profile=_PROFILE, caller=fixture_caller()
+    )
     assert response.content == recording(_EXAM, name)
     assert provider.served == [(request.item_id, name)]
     with pytest.raises(MissingRecording, match="no unused label_b recording"):
-        await provider.complete_structured(request=request, profile=_PROFILE)
+        await provider.complete_structured(
+            request=request, profile=_PROFILE, caller=fixture_caller()
+        )
 
 
 async def test_a_recording_whose_stored_key_no_longer_ends_the_request_is_not_served(tmp_path):
@@ -122,7 +131,9 @@ async def test_a_recording_whose_stored_key_no_longer_ends_the_request_is_not_se
 
     provider = ReplayProvider(_EXAM, root=tmp_path)
     with pytest.raises(MissingRecording, match="no unused label_b recording"):
-        await provider.complete_structured(request=request, profile=_PROFILE)
+        await provider.complete_structured(
+            request=request, profile=_PROFILE, caller=fixture_caller()
+        )
     assert provider.served == []
 
 

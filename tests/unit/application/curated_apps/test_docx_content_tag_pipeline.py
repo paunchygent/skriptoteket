@@ -1,4 +1,4 @@
-"""Replay conversion recordings with synthetic content replies at the HTTP boundary."""
+"""Replay conversion recordings with synthetic content replies at the door seam."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ import json
 from dataclasses import replace
 from uuid import uuid4
 
-import httpx
 import pytest
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
@@ -28,23 +27,22 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import ExamCourseChoice
-from tests.fixtures.time_fixtures import FixedClock
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    _NOW,
-    GrantingLeases,
+    RECORDINGS,
     NoSleep,
     NoTransaction,
     RecordingProgress,
     ReplayProvider,
     corpus_chunks,
     corpus_docx,
-    decisions_client,
 )
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
     choice,
     conversion_update,
     placeholder,
 )
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, fixture_caller, json_reply
 
 pytestmark = pytest.mark.unit
 _EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
@@ -62,20 +60,35 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     # The snapshot is an offline input, not a mocked model answer. Only one course is
     # needed here; generator/source completeness is proved separately.
     monkeypatch.setattr(
-        "skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline."
+        "skriptoteket.application.curated_apps.handlers.exam_workspace_docx_content_suggest."
         "load_exam_content_catalog",
         lambda: {"SVESVE02": _CONTENT},
     )
-    labels = decisions_client(_EXAM)
+    recorded_bodies = [
+        json.loads(path.read_text())
+        for path in sorted(
+            (RECORDINGS / _EXAM).glob("decisions_*.json"),
+            key=lambda path: int(path.stem.rsplit("_", 1)[1]),
+        )
+    ]
     requests: list[dict] = []
     classifier_started = asyncio.Event()
     classifier_cancelled = asyncio.Event()
 
-    async def respond(request: httpx.Request) -> httpx.Response:
-        sent = json.loads(request.content)
-        if sent["questions"][0]["name"].startswith("kind_"):
-            return await labels.send(request)
-        requests.append(sent)
+    async def respond(sent: DoorSent) -> DoorReply:
+        assert sent.operation is DoorOperation.DECISIONS
+        payload = sent.payload
+        raw_questions = payload.get("questions")
+        assert isinstance(raw_questions, list)
+        names: list[str] = []
+        for raw_question in raw_questions:
+            assert isinstance(raw_question, dict)
+            name = raw_question.get("name")
+            assert isinstance(name, str)
+            names.append(name)
+        if names[0].startswith("kind_"):
+            return json_reply(recorded_bodies.pop(0))
+        requests.append(payload)
         if outcome in {"pending", "cancelled"}:
             classifier_started.set()
             try:
@@ -84,71 +97,65 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
                 classifier_cancelled.set()
             raise AssertionError("Pending classifier cannot finish normally")
         if outcome == "failure":
-            return httpx.Response(503, json={"error": "synthetic classifier outage"})
-        return httpx.Response(
-            200,
-            json={
+            return json_reply({"error": "synthetic classifier outage"}, status_code=503)
+        return json_reply(
+            {
                 "answers": [
                     {
                         "type": "choice",
-                        "name": q["name"],
+                        "name": name,
                         "choice": "c0",
                         "probabilities": [
                             {"value": "c0", "probability": 0.95},
                             {"value": "none", "probability": 0.05},
                         ],
                     }
-                    for q in sent["questions"]
+                    for name in names
                 ],
                 "usage": {"input_tokens": 91},
-            },
+            }
         )
 
     progress = RecordingProgress()
     provider = ReplayProvider(_EXAM)
-    async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
-        pipeline = build_docx_conversion_pipeline(
-            client=client,
-            provider=provider,
-            sleeper=NoSleep(),
-            leases=GrantingLeases(),
-            uow=SerializedUnitOfWork(NoTransaction()),
-            clock=FixedClock(_NOW),
-            settings=Settings.model_construct(
-                LLM_ANSWER_KEY_ENABLED=True,
-                OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",
-                LLM_DOCX_BATCH_FAMILIES=16,
-            ),
-            progress=progress,
-        )
-        source = corpus_docx(_EXAM)
-        job = DocxConversionJob(
-            origin_kind="docx_import",
-            job_id=uuid4(),
-            worker_id="content-replay",
-            document_id=uuid4(),
-            filename=f"{_EXAM}.docx",
-            source_sha256=hashlib.sha256(source).hexdigest(),
-            source_docx=source,
-            chunks=corpus_chunks(_EXAM),
-            course_key=None if outcome == "unknown_course" else "SVESVE02",
-        )
-        conversion = asyncio.create_task(pipeline.convert(job=job))
-        if outcome == "cancelled":
-            await asyncio.wait_for(classifier_started.wait(), timeout=5)
-            conversion.cancel()
-            with pytest.raises(asyncio.CancelledError):
-                await conversion
-            assert classifier_cancelled.is_set(), "Cancellation must join optional work"
-            await labels.aclose()
-            return
-        # This deadline is only a deadlock watchdog. The classifier never returns;
-        # cancellation/completion signals, not elapsed time, establish independence.
-        result = await asyncio.wait_for(conversion, timeout=5)
-        if outcome == "pending":
-            assert classifier_started.is_set()
-            assert classifier_cancelled.is_set(), "Completed conversion must clean up suggestions"
-    await labels.aclose()
+    pipeline = build_docx_conversion_pipeline(
+        door=RecordingDoor(respond),
+        provider=provider,
+        sleeper=NoSleep(),
+        uow=SerializedUnitOfWork(NoTransaction()),
+        settings=Settings.model_construct(
+            LLM_ANSWER_KEY_ENABLED=True,
+            LLM_DOCX_BATCH_FAMILIES=16,
+        ),
+        progress=progress,
+    )
+    source = corpus_docx(_EXAM)
+    job = DocxConversionJob(
+        origin_kind="docx_import",
+        job_id=uuid4(),
+        worker_id="content-replay",
+        document_id=uuid4(),
+        filename=f"{_EXAM}.docx",
+        source_sha256=hashlib.sha256(source).hexdigest(),
+        source_docx=source,
+        chunks=corpus_chunks(_EXAM),
+        course_key=None if outcome == "unknown_course" else "SVESVE02",
+        caller=fixture_caller(),
+    )
+    conversion = asyncio.create_task(pipeline.convert(job=job))
+    if outcome == "cancelled":
+        await asyncio.wait_for(classifier_started.wait(), timeout=5)
+        conversion.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await conversion
+        assert classifier_cancelled.is_set(), "Cancellation must join optional work"
+        return
+    # This deadline is only a deadlock watchdog. The classifier never returns;
+    # cancellation/completion signals, not elapsed time, establish independence.
+    result = await asyncio.wait_for(conversion, timeout=5)
+    if outcome == "pending":
+        assert classifier_started.is_set()
+        assert classifier_cancelled.is_set(), "Completed conversion must clean up suggestions"
 
     document = result.result.document
     assert document.items, "Classifier failure must not discard the converted exam"

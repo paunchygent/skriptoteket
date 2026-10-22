@@ -266,6 +266,14 @@ export type GateHistoryOptions = {
   noteLeaseLost?: () => void;
   noteConflict?: () => void;
   noteReloadFailed?: () => void;
+  /**
+   * The new-picture registry double the history stores through; defaults to
+   * an empty registry that records nothing.
+   */
+  newPictures?: {
+    bytesFor: (document: NativeExamDocument) => Record<string, Blob>;
+    noteSent: (assetIds: readonly string[]) => void;
+  };
 };
 
 export type GateHistoryFixture = {
@@ -364,6 +372,7 @@ export async function openGateHistory(options: GateHistoryOptions): Promise<Gate
       keptUnstored: () => requireGate().hasKeptEdit.value,
       isReadOnly: () => gateHolder.gate?.editingLocked.value ?? true,
       isReplacing: options.isReplacing ?? (() => false),
+      newPictures: options.newPictures ?? { bytesFor: () => ({}), noteSent: () => undefined },
       replaceCopy: options.replaceCopy ?? ((run) => run()),
       lineageId: () => lineage,
       noteExportBlockers: () => undefined,

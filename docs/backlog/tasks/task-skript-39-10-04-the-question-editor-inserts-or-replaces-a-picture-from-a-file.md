@@ -7,13 +7,19 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Independent review in retained root 01a1605d-5786-7434-9227-58fee29c2cc5 (evidence/reviews/review-39-10-04.md; F1 blocker rereview approved at 73d060cac in review-39-10-04-f1-rereview.md; F2 fixed at the production edge, 30m body limit; F3-F8 admitted on focused proof). Merged as 4f5554420; walk W1 caret fix e68e84a13 on the light route. Mac staging walk at 4f5554420 passed checks 1, 2, 3, 5, 6 and 7; the check 4 re-walk at fe2bc9b9c passed with a PNG and a JPEG. The user closes on walk pass (via Mac, 2026-10-22).'
 task_kind: story
 acceptance_criteria:
-  - The question editor has one picture control, Lägg till bild; choosing a picture file inserts it at the cursor, or replaces the selected picture, in every exam
+  - The question text and instruction editors have one picture control, Lägg till bild; choosing a picture file inserts it at the cursor, or replaces the selected picture, in every exam
+  - Dropping or pasting a picture file onto the text inserts it the same way
+  - A signed-in exam saves a new picture's bytes once, with the autosave that first references it, checked and stored together with the document
   - The control's look follows huleedu-ui-design and was approved by the user as a mock before the build
 story: ST-SKRIPT-39-10
 backlog_document_profile: contract-derived
@@ -21,11 +27,13 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The question editor gains one picture control, "Lägg till bild".
+The question text and instruction editors gain one picture control, "Lägg till bild" (T3).
 
 - With nothing selected, choosing a picture file inserts the picture at the cursor.
 - With a picture selected, the chosen file replaces it.
+- Dropping or pasting a picture file onto the text inserts it the same way (T4).
 - It works in every exam, whatever its source, not only PDF imports.
+- A signed-in exam's autosave carries a new picture's bytes once, checked and saved together with the document; no separate upload route (T5).
 
 The task runs in two steps:
 
@@ -59,13 +67,38 @@ A teacher places the cursor in a question, clicks "Lägg till bild", chooses a P
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                           |
-| --- | ------------------------------------------------------------------------------- |
-| T1  | ST-SKRIPT-39-10 P8 applies as written.                                          |
-| T2  | Mock first. The user approves it through the Mac orchestrator before any build. |
+| ID  | Decided contract term                                                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | ST-SKRIPT-39-10 P8 applies as written.                                                                                                                                                                                |
+| T2  | Mock first. The user approves it through the Mac orchestrator before any build.                                                                                                                                       |
+| T3  | The control is in the instruction editors as well as the question text editors (user decision 2026-10-22, relayed by the Hemma orchestrator).                                                                         |
+| T4  | Dropping or pasting a picture file onto the text also inserts it, in this task (user decision 2026-10-22, relayed by the Hemma orchestrator).                                                                         |
+| T5  | A signed-in exam's autosave carries a new picture's bytes once, checked and saved together with the document; the separate upload route stays rejected (user decision 2026-10-22, relayed by the Hemma orchestrator). |
 
 ## Progress
 
 ### 2026-10-21 (Hemma orchestrator)
 
 - Scaffolded from the ST-SKRIPT-39-10 story terms. The story is `ready` by the user's grilling of 2026-10-21, relayed by the Mac orchestrator. This task is `ready` for its mock step, and a lead session is assigned.
+
+### 2026-10-22 (lead)
+
+- The user reviewed mock v1 and did not approve it: the picture sat at the end of the text line, and the mock showed no real output. Decisions T3-T5 recorded. Mock v2, with real editor screenshots and real renders of every export, is in retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/mock/picture-control-mock-v2.html`; it proposes that a picture always gets its own paragraph and waits for the user's approval.
+- T2 met: the user approved mock v2 ("Approve, build it", 2026-10-22, relayed by the Hemma orchestrator). The build follows mock v2: each added picture gets its own paragraph. Accepted residuals: typing into a picture's paragraph puts the picture back into a text line, and imported inline pictures stay inline.
+- Built on branch `codex/task-skript-39-10-04` (39a061e8b, c87ae4f49, 1176ef41e, 5e60a639f, 7911012f1): "Lägg till bild" / "Byt bild" in the question text (also Kort svar) and both instruction editors; drop and paste; each picture in its own paragraph (end, start, split at the caret, empty paragraph, replace in place); busy state and the refused-file inline notice; the signed-in autosave carries a new picture's bytes once (`new_assets_by_id`, verified by the server); guest pictures are stored with the draft. The 20 MB limit is one frontend constant, `EXAM_FILE_MAX_BYTES`, mirroring the backend's `VAULT_MAX_FILE_BYTES`, because the server sends no exam setting that carries it. Focused proof: backend handler pytest 1895 passed, 58 skipped; Vitest 178 files, 1100 tests passed; fe-type-check, fe-lint, lint, typecheck and docs-validate clean. Evidence: retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/build/proof/`. Waiting for independent review.
+- User decision (2026-10-22, relayed by the Hemma orchestrator): when the picture size limit cannot be fetched from the server, the editor shows the inline notice "Bilden lades inte till. Försök igen." The user's words: "Yes, use "Bilden lades inte till. Försök igen." when the picture limit can't be fetched." This comes with the review F4 repair, which reads the limit from the backend setting `VAULT_MAX_FILE_BYTES` for both modes.
+- Review repair (findings F1 and F3-F8; F2 was resolved at the host, no code change), commits ef4d2d9aa..2c2d31141:
+  - F1: a picture counts as sent only while the working copy declares it, and a guest commit refuses a document that declares a picture whose bytes the draft does not hold.
+  - F3: each picture intake is bound to the opening and live target it started in.
+  - F4: the limit is read from `VAULT_MAX_FILE_BYTES` over a signed-in route and a public guest route, so the frontend holds no copy of the value.
+  - F5: a replacement is sized by its resulting document.
+  - F6: an unreadable file gets the type refusal.
+  - F7: the editor's picture handling and the picture specs are split by responsibility.
+  - F8: specs use coherent PNG/JPEG fixtures on complete documents.
+  - Accepted residual: an add in a new exam while the previous exam's read is still pending is ignored, and the teacher adds the picture again.
+  - Proof:
+    - Vitest exam-workspace 315 files, 2358 tests passed; views+api 522 files, 3703 tests passed before the final spec split.
+    - Backend limits and exam-workspace route pytest: 93 passed.
+    - fe-type-check, fe-lint, lint and typecheck clean.
+    - Evidence: retained root `01a1605d-5786-7434-9227-58fee29c2cc5`, `evidence/build/proof/`.
+  - F1 waits for independent rereview.

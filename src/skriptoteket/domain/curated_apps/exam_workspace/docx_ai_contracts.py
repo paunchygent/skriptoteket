@@ -14,6 +14,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
+from skriptoteket.domain.llm_door import AiDailyLimit
 
 
 class _Produced(BaseModel):
@@ -285,3 +286,4 @@ class DocxBuildResult:
     events: tuple[DocxBuildEvent, ...] = ()
     timings: tuple[DocxStageTiming, ...] = ()
     assets_by_id: Mapping[str, bytes] = MappingProxyType({})
+    ai_limit: AiDailyLimit | None = None

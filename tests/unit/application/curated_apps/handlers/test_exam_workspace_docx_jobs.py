@@ -41,7 +41,6 @@ from tests.fixtures.docx_corpus import CORPUS
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
-    InMemoryLeaseRepository,
     replayed_docx_job_handler,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import Replay
@@ -119,7 +118,7 @@ class JobEnvironment(_Env):
     processor: ProcessExamWorkspaceDocxJobHandler
 
 
-def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironment:
+def environment(*, enabled: bool = True) -> JobEnvironment:
     """The DOCX job over the production pipeline replaying the quiz's live recordings."""
     env = JobEnvironment()
     env.jobs = InMemoryEnrichmentJobRepository()
@@ -133,7 +132,6 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     )
     env.processor, env.replay = replayed_docx_job_handler(
         enrichment_jobs=env.jobs,
-        leases=InMemoryLeaseRepository(daily_token_limit=budget),
         vault_files=env.vault_files,
         vault_storage=env.vault_storage,
         codec=env.codec,
@@ -216,9 +214,8 @@ async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("enabled,budget", [(False, 1_000_000), (True, 1)])
-async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_docx(enabled, budget):
-    env = environment(enabled=enabled, budget=budget)
+async def test_disabled_provider_opens_review_source_and_deletes_docx():
+    env = environment(enabled=False)
     running = await claim(env)
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
@@ -251,7 +248,7 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
         "missing_points",
     }
     codes = {event["code"] for event in finished.diagnostics}
-    assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
+    assert codes == {"ai_disabled", "review_item"}
     answer_line_anchors = {c.anchor for c in chunks if is_answer_line_chunk(c)}
     named_by_review_item: set[str] = set()
     for event in finished.diagnostics:
@@ -261,11 +258,7 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     assert answer_line_anchors
     assert named_by_review_item.isdisjoint(answer_line_anchors)
     reason = opened.document.items[0].review.reasons[0]
-    assert reason == (
-        "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
-        if not enabled
-        else "Dagens AI-budget är förbrukad. Kontrollera källtexten manuellt."
-    )
+    assert reason == "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
 
 
 @pytest.mark.asyncio

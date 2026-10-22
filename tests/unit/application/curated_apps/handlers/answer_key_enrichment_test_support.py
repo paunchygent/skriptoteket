@@ -2,7 +2,7 @@
 
 Purpose:
     Give the enrichment lifecycle tests protocol fakes for the
-    enrichment and lease repositories, scripted structured providers,
+    enrichment repository, scripted structured providers,
     provider-route builders, and the DOCX import processor wiring the enrichment dispatcher
     requires.
 
@@ -13,7 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
@@ -35,7 +35,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
     StructuredLLMEndpointKind,
     StructuredLLMProviderProfile,
     StructuredLLMReasoningEffort,
@@ -43,14 +42,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseDayUsage,
-    AnswerKeyTokenLeaseState,
-    charged_lease_tokens,
-    lease_utc_day,
-    refuse_lease,
-)
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -221,70 +213,6 @@ class InMemoryEnrichmentJobRepository:
         return True
 
 
-class InMemoryLeaseRepository:
-    """In-memory mirror of the Postgres lease semantics for lifecycle tests."""
-
-    def __init__(self, *, daily_token_limit: int) -> None:
-        self._daily_token_limit = daily_token_limit
-        self.leases: dict[UUID, AnswerKeyTokenLease] = {}
-        self.profile_by_lease: dict[UUID, str] = {}
-
-    async def reserve(
-        self,
-        *,
-        now: datetime,
-        requested_tokens: int,
-        job_id: UUID,
-        item_id: str,
-        provider_profile_id: str,
-    ) -> AnswerKeyTokenLease:
-        utc_day = lease_utc_day(now)
-        usage = await self.day_usage(utc_day=utc_day)
-        if usage.available_tokens < requested_tokens:
-            raise refuse_lease(usage=usage, requested_tokens=requested_tokens)
-        lease = AnswerKeyTokenLease(
-            lease_id=uuid4(),
-            utc_day=utc_day,
-            reserved_tokens=requested_tokens,
-            state=AnswerKeyTokenLeaseState.RESERVED,
-        )
-        self.leases[lease.lease_id] = lease
-        self.profile_by_lease[lease.lease_id] = provider_profile_id
-        return lease
-
-    def leases_for_profile(self, provider_profile_id: str) -> list[AnswerKeyTokenLease]:
-        return [
-            lease
-            for lease_id, lease in self.leases.items()
-            if self.profile_by_lease[lease_id] == provider_profile_id
-        ]
-
-    async def reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
-        lease = self.leases[lease_id]
-        self.leases[lease_id] = AnswerKeyTokenLease(
-            lease_id=lease.lease_id,
-            utc_day=lease.utc_day,
-            reserved_tokens=lease.reserved_tokens,
-            state=AnswerKeyTokenLeaseState.RECONCILED,
-            actual_tokens=actual_tokens,
-        )
-
-    async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage:
-        charged = sum(
-            charged_lease_tokens(
-                reserved_tokens=lease.reserved_tokens,
-                actual_tokens=lease.actual_tokens,
-            )
-            for lease in self.leases.values()
-            if lease.utc_day == utc_day
-        )
-        return AnswerKeyTokenLeaseDayUsage(
-            utc_day=utc_day,
-            daily_token_limit=self._daily_token_limit,
-            charged_tokens=charged,
-        )
-
-
 class StubProvider:
     def __init__(self, *, content: dict[str, JsonValue], usage: StructuredLLMUsage) -> None:
         self._content = content
@@ -296,6 +224,7 @@ class StubProvider:
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.call_count += 1
         return StructuredLLMResponse(
@@ -307,8 +236,8 @@ class StubProvider:
 
 def _profile() -> StructuredLLMProviderProfile:
     return StructuredLLMProviderProfile(
-        provider_id="openai-gpt-5.6-luna",
-        model="gpt-5.6-luna",
+        provider_id="openai-gpt-6-luna-answer-key",
+        model="gpt-6-luna",
         endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
         is_remote=True,
         context_window_tokens=32_768,
@@ -317,28 +246,12 @@ def _profile() -> StructuredLLMProviderProfile:
     )
 
 
-def _failover_profile() -> StructuredLLMProviderProfile:
-    return StructuredLLMProviderProfile(
-        provider_id="openrouter-glm-5.3-flash",
-        model="z-ai/glm-5.3-flash",
-        endpoint_kind=StructuredLLMEndpointKind.CHAT_COMPLETIONS,
-        is_remote=True,
-        context_window_tokens=32_768,
-        max_output_tokens=4_096,
-    )
-
-
-def _route() -> AnswerKeyProviderRoute:
-    return AnswerKeyProviderRoute(primary=_profile(), failover=_failover_profile())
-
-
 DEFAULT_REPLAYED_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 
 
 def docx_job_handler(
     *,
     enrichment_jobs: InMemoryEnrichmentJobRepository,
-    leases: InMemoryLeaseRepository,
     provider: AnswerKeyStructuredProviderProtocol,
     vault_files: InMemoryVaultFileRepository,
     vault_storage: InMemoryVaultStorage,
@@ -347,7 +260,6 @@ def docx_job_handler(
     """The DOCX import processor the dispatcher requires; ``provider`` is unused (replayed)."""
     handler, _ = replayed_docx_job_handler(
         enrichment_jobs=enrichment_jobs,
-        leases=leases,
         vault_files=vault_files,
         vault_storage=vault_storage,
         codec=codec,
@@ -358,7 +270,6 @@ def docx_job_handler(
 def replayed_docx_job_handler(
     *,
     enrichment_jobs: InMemoryEnrichmentJobRepository,
-    leases: InMemoryLeaseRepository,
     vault_files: InMemoryVaultFileRepository,
     vault_storage: InMemoryVaultStorage,
     codec: ExamWorkspaceContainerCodecProtocol,
@@ -400,7 +311,7 @@ def replayed_docx_job_handler(
             id_generator=id_generator,
         )
     )
-    replay = build_replay(exam, progress=progress, leases=leases, enabled=enabled)
+    replay = build_replay(exam, progress=progress, enabled=enabled)
     handler = ProcessExamWorkspaceDocxJobHandler(
         jobs=enrichment_jobs,
         chunker=chunker if chunker is not None else PythonDocxExamChunker(),

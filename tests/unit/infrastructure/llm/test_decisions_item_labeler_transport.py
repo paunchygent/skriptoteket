@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import httpx
 import pytest
 
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabelerError
+from skriptoteket.protocols.llm_door import DoorReply
 from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     CORPUS_24,
     Harness,
@@ -80,7 +80,9 @@ async def test_non_retryable_status_fails_without_retry() -> None:
 async def test_non_json_success_body_raises_invalid_json() -> None:
     gateway_page = unavailable(504)["body"]
     assert isinstance(gateway_page, str)
-    harness = Harness(lambda _request: httpx.Response(200, text=gateway_page))
+    harness = Harness(
+        lambda _sent: DoorReply(status_code=200, headers={}, body=gateway_page.encode("utf-8"))
+    )
 
     with pytest.raises(ItemTypeLabelerError) as caught:
         await harness.labeler().label(request=request_for(load(CORPUS_24)))

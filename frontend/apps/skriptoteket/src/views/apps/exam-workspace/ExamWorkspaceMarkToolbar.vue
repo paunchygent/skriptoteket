@@ -25,6 +25,8 @@
  *     text from `examWorkspaceShortcutLabels`.
  */
 
+import { ref } from "vue";
+
 import { UiGlyph } from "../../../components/ui";
 import { BODY_MARKS, MARK_LABELS } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
@@ -49,8 +51,14 @@ withDefaults(
     emptyGapDisabledReason?: string | null;
     /** Whether the gap tool toggle reads pressed. */
     gapToolOn?: boolean;
+    /** Show the picture group after the headings: the host takes dropped and pasted pictures. */
+    showPicture?: boolean;
+    /** True while a whole picture is selected, so the button offers to replace it. */
+    pictureSelected?: boolean;
+    /** True while a chosen file is being read; the glyph spins and the button locks. */
+    pictureBusy?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false, showPicture: false, pictureSelected: false, pictureBusy: false },
 );
 
 const emit = defineEmits<{
@@ -59,6 +67,8 @@ const emit = defineEmits<{
   toggleGapTool: [];
   /** Tom lucka: the body editor inserts one empty gap at the caret. */
   insertEmptyGap: [];
+  /** A chosen picture file: the host hands it to the picture service. */
+  addPicture: [file: File];
 }>();
 
 const history = useExamWorkspaceHistoryKeys();
@@ -74,6 +84,28 @@ const HEADING_SHORTCUTS: Record<HeadingLevel, EditorShortcut> = {
 
 /** The viewer's platform, read once: macOS glyphs or Ctrl names in every tooltip. */
 const isMac = isMacPlatform();
+
+/** The hidden file picker the picture button opens. */
+const fileInput = ref<HTMLInputElement | null>(null);
+
+function openPicturePicker(): void {
+  fileInput.value?.click();
+}
+
+/**
+ * Hand the first chosen file to the host and reset the picker, so the same
+ * file can be chosen again.
+ */
+function handlePictureFile(): void {
+  const input = fileInput.value;
+  const file = input?.files?.[0];
+  if (input) {
+    input.value = "";
+  }
+  if (file) {
+    emit("addPicture", file);
+  }
+}
 </script>
 
 <template>
@@ -203,6 +235,37 @@ const isMac = isMacPlatform();
             :size="16"
           />
         </button>
+      </div>
+    </template>
+    <template v-if="showPicture">
+      <span
+        class="xw-toolsep"
+        aria-hidden="true"
+      />
+      <div class="xw-tools">
+        <button
+          type="button"
+          class="xw-tool"
+          :aria-label="pictureSelected ? 'Byt bild' : 'Lägg till bild'"
+          :title="pictureSelected ? 'Byt bild' : 'Lägg till bild'"
+          :disabled="disabled || pictureBusy"
+          data-test="exam-workspace-picture-tool"
+          @click="openPicturePicker"
+        >
+          <UiGlyph
+            :meaning="pictureBusy ? 'busy' : 'add-picture'"
+            :size="16"
+            :class="{ 'xw-spin': pictureBusy }"
+          />
+        </button>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/png,image/jpeg"
+          hidden
+          data-test="exam-workspace-picture-input"
+          @change="handlePictureFile"
+        >
       </div>
     </template>
   </div>

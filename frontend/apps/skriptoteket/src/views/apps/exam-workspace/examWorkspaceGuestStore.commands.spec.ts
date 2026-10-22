@@ -9,7 +9,7 @@
  *   429 reports the guest limit.
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
@@ -190,5 +190,17 @@ describe("examWorkspaceGuestStore structural commands", () => {
     expect(limited).toBe(limit);
     expect(isGuestLimitError(limited)).toBe(true);
     expect(await context.storage.load()).toEqual(persisted);
+  });
+});
+
+describe("examWorkspaceGuestStore shared limits", () => {
+  it("reads the exam size limit through the public limits route", async () => {
+    const context = setupGuestStore();
+    vi.mocked(context.api.getPublicExamWorkspaceLimits).mockResolvedValue({ max_exam_bytes: 7_000_000 });
+
+    const limits = await context.store.store.shared.getExamWorkspaceLimits();
+
+    expect(limits).toEqual({ max_exam_bytes: 7_000_000 });
+    expect(context.api.getPublicExamWorkspaceLimits).toHaveBeenCalledTimes(1);
   });
 });

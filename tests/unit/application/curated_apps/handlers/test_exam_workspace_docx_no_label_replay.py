@@ -12,7 +12,6 @@ from __future__ import annotations
 import copy
 import json
 
-import httpx
 import pytest
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
@@ -29,12 +28,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.unit.application.curated_apps.handlers import docx_pipeline_replay
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
     build_replay,
     corpus_chunks,
 )
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, json_reply
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
@@ -44,7 +46,7 @@ _QUESTION = "q21"
 _OWN = ("body:0093", "body:0094", "body:0096")
 
 
-def _refusing_decisions(exam: str, root=None) -> httpx.AsyncClient:
+def _refusing_decisions(exam: str, root=None) -> RecordingDoor:
     """Serve the current decisions payload with q21's answer rewritten to a refusal."""
     payload = copy.deepcopy(docx_pipeline_replay.recording(exam, "decisions_1"))
     answers = payload["answers"]
@@ -55,20 +57,26 @@ def _refusing_decisions(exam: str, root=None) -> httpx.AsyncClient:
     answer.clear()
     answer.update({"type": "refusal", "name": "kind_q21"})
 
-    def handle(request: httpx.Request) -> httpx.Response:
-        assert request.method == "POST" and request.url.path.endswith("/decisions")
-        return httpx.Response(200, json=payload)
+    def respond(sent: DoorSent) -> DoorReply:
+        assert sent.operation is DoorOperation.DECISIONS
+        return json_reply(payload)
 
-    return httpx.AsyncClient(transport=httpx.MockTransport(handle))
+    return RecordingDoor(respond)
 
 
 class _UnresolvedLabel(ReplayProvider):
     """Serve the fresh recordings with q21's second-pass label rewritten to unresolved."""
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
-        response = await super().complete_structured(request=request, profile=profile)
+        response = await super().complete_structured(
+            request=request, profile=profile, caller=caller
+        )
         if request.item_id != "label_b:q21":
             return response
         return StructuredLLMResponse(
@@ -79,7 +87,7 @@ class _UnresolvedLabel(ReplayProvider):
 
 
 async def test_a_question_neither_pass_labels_becomes_a_source_review_item(monkeypatch):
-    monkeypatch.setattr(docx_pipeline_replay, "decisions_client", _refusing_decisions)
+    monkeypatch.setattr(docx_pipeline_replay, "decisions_door", _refusing_decisions)
     provider = _UnresolvedLabel(_EXAM)
     replay = build_replay(_EXAM, provider=provider)
     outcome = await replay.pipeline.convert(job=replay.job())

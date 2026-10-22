@@ -1,4 +1,4 @@
-"""httpx OpenAI Decisions adapter for item-type labeling (TASK-SKRIPT-39-05-04).
+"""Door-backed OpenAI Decisions adapter for item-type labeling (TASK-SKRIPT-41-01-03).
 
 Purpose:
     Ask one ``choice`` question per item on ``POST /v1/decisions`` and route
@@ -28,7 +28,6 @@ import json
 import math
 from collections.abc import Coroutine, Iterable, Sequence
 
-import httpx
 from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
@@ -42,6 +41,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     GAP_FILL_DEFINITION,
     labeler_boundary_sentences,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.infrastructure.llm.openai.decisions_content_tags import (
     build_content_decisions_payload,
     parse_content_decisions_answers,
@@ -61,6 +61,13 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelRoute,
     MeteredItemTypeLabelerProtocol,
     label_route,
+)
+from skriptoteket.protocols.llm_door import (
+    DoorOperation,
+    DoorReply,
+    DoorRequestFailed,
+    DoorTimeout,
+    LlmDoorClientProtocol,
 )
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
@@ -125,29 +132,23 @@ LABEL_DESCRIPTIONS: dict[ItemTypeLabel, str] = {
 
 
 class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
-    """Async Decisions adapter; holds no lease and logs no request content."""
+    """Decisions adapter through the provider door; holds no key and logs no content."""
 
     def __init__(
         self,
         *,
-        client: httpx.AsyncClient,
-        base_url: str,
-        api_key: str,
+        door: LlmDoorClientProtocol,
         timeout_seconds: float,
         sleeper: SleeperProtocol,
         max_attempts: int = 3,
         base_delay_seconds: float = 1.0,
         max_delay_seconds: float = 8.0,
     ) -> None:
-        if not base_url.strip():
-            raise ValueError("Decisions labeler base_url must be non-empty.")
         if timeout_seconds <= 0:
             raise ValueError("Decisions labeler timeout_seconds must be positive.")
         if max_attempts < 1:
             raise ValueError("Decisions labeler max_attempts must be at least 1.")
-        self._client = client
-        self._base_url = base_url.strip().rstrip("/")
-        self._api_key = api_key.strip()
+        self._door = door
         self._timeout_seconds = timeout_seconds
         self._sleeper = sleeper
         self._max_attempts = max_attempts
@@ -168,12 +169,8 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
     async def label(self, *, request: LabelingRequest) -> ItemTypeLabeling:
         if not request.items:
             return ItemTypeLabeling(results=())
-        if not self._api_key:
-            raise ItemTypeLabelerError(
-                code="config_missing", message="Decisions labeler API key is not configured."
-            )
         outcomes = await self._gather(
-            self._label_chunk(build_decisions_payload(chunk), chunk)
+            self._label_chunk(build_decisions_payload(chunk), chunk, request.caller)
             for chunk in split_items(request.items)
         )
         results = [result for outcome in outcomes for result in outcome[0]]
@@ -207,14 +204,15 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
     ) -> ContentTagClassification:
         if not request.items or not request.content_items:
             return ContentTagClassification(results=())
-        if not self._api_key:
-            raise ItemTypeLabelerError(code="config_missing", message="Decisions API key missing.")
 
         async def classify(
             chunk: Sequence[LabelingItem],
         ) -> tuple[list[ContentTagChoice], int | None, int]:
             body, attempts = await self._post(
-                build_content_decisions_payload(chunk, request.content_items, model=DECISIONS_MODEL)
+                build_content_decisions_payload(
+                    chunk, request.content_items, model=DECISIONS_MODEL
+                ),
+                request.caller,
             )
             results, tokens = parse_content_decisions_answers(body, chunk, request.content_items)
             return results, tokens, attempts
@@ -243,17 +241,17 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
         return [outcome for outcome in outcomes if not isinstance(outcome, BaseException)]
 
     async def _label_chunk(
-        self, payload: _JsonObject, items: Sequence[LabelingItem]
+        self, payload: _JsonObject, items: Sequence[LabelingItem], caller: AiDoorCaller
     ) -> _ChunkOutcome:
-        body, attempts = await self._post(payload)
+        body, attempts = await self._post(payload, caller)
         results, input_tokens = parse_decisions_answers(body, items)
         return results, input_tokens, attempts
 
-    async def _post(self, payload: _JsonObject) -> tuple[JsonValue, int]:
+    async def _post(self, payload: _JsonObject, caller: AiDoorCaller) -> tuple[JsonValue, int]:
         attempt = 0
         while True:
             attempt += 1
-            response = await self._send(payload)
+            response = await self._send(payload, caller)
             if response.status_code in RETRYABLE_STATUS_CODES and attempt < self._max_attempts:
                 await self._sleeper.sleep(self._retry_delay(response, attempt))
                 continue
@@ -270,31 +268,31 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
                     status_code=response.status_code,
                 )
             try:
-                return response.json(), attempt
+                return json.loads(response.body), attempt
             except ValueError as exc:
                 raise ItemTypeLabelerError(
                     code="invalid_json", message="Decisions response body was not valid JSON."
                 ) from exc
 
-    async def _send(self, payload: _JsonObject) -> httpx.Response:
+    async def _send(self, payload: _JsonObject, caller: AiDoorCaller) -> DoorReply:
         try:
-            return await self._client.post(
-                f"{self._normalized_base_url}/decisions",
-                headers={"Authorization": f"Bearer {self._api_key}"},
-                json=payload,
-                timeout=self._timeout_seconds,
+            return await self._door.send(
+                operation=DoorOperation.DECISIONS,
+                payload=payload,
+                caller=caller,
+                timeout_seconds=self._timeout_seconds,
             )
-        except httpx.TimeoutException as exc:
+        except DoorTimeout as exc:
             raise ItemTypeLabelerError(
                 code="timeout", message="Decisions request timed out."
             ) from exc
-        except httpx.RequestError as exc:
+        except DoorRequestFailed as exc:
             raise ItemTypeLabelerError(
                 code="request_failed",
                 message="Decisions request failed before a response was received.",
             ) from exc
 
-    def _retry_delay(self, response: httpx.Response, attempt: int) -> float:
+    def _retry_delay(self, response: DoorReply, attempt: int) -> float:
         """Exponential backoff, or the server's retry-after, never above the cap."""
 
         delay = self._base_delay_seconds * 2 ** (attempt - 1)
@@ -307,12 +305,6 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             if math.isfinite(parsed) and parsed >= 0:
                 delay = parsed
         return float(min(delay, self._max_delay_seconds))
-
-    @property
-    def _normalized_base_url(self) -> str:
-        if self._base_url.endswith("/v1"):
-            return self._base_url
-        return f"{self._base_url}/v1"
 
 
 def split_items(items: Sequence[LabelingItem]) -> list[Sequence[LabelingItem]]:

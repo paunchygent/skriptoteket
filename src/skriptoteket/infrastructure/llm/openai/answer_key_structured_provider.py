@@ -1,9 +1,10 @@
-"""httpx OpenAI Responses adapter for structured answer-key completion.
+"""Door-backed Responses adapter for structured answer-key completion.
 
 Purpose:
-    Execute item-local structured answer-key requests against the OpenAI
-    Responses API with strict JSON Schema output, ported from
-    sir-convert-a-lot `76983339` and trimmed to the Responses lane.
+    Execute item-local structured answer-key requests through HuleEdu's LLM
+    provider door (ST-SKRIPT-41-01 B2): the Responses body is unchanged, the
+    door client owns the key, the teacher's user id, the exempt flag and the
+    paid-overage mode, and the relayed answer parses as before.
 
 Relationships:
     Implements ``protocols.exam_answer_key.AnswerKeyStructuredProviderProtocol``.
@@ -15,7 +16,6 @@ from __future__ import annotations
 
 import json
 
-import httpx
 from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
@@ -28,29 +28,31 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMUsage,
     input_content,
 )
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
+from skriptoteket.protocols.llm_door import (
+    DoorOperation,
+    DoorReply,
+    DoorRequestFailed,
+    DoorTimeout,
+    LlmDoorClientProtocol,
+)
 
 _JsonObject = dict[str, JsonValue]
 
 
 class OpenAIAnswerKeyStructuredProvider(AnswerKeyStructuredProviderProtocol):
-    """Async OpenAI Responses adapter for structured answer-key requests."""
+    """Structured answer-key requests sent through the provider door."""
 
     def __init__(
         self,
         *,
-        client: httpx.AsyncClient,
-        base_url: str,
-        api_key: str,
+        door: LlmDoorClientProtocol,
         timeout_seconds: float,
     ) -> None:
-        if not base_url.strip():
-            raise ValueError("Answer-key provider base_url must be non-empty.")
         if timeout_seconds <= 0:
             raise ValueError("Answer-key provider timeout_seconds must be positive.")
-        self._client = client
-        self._base_url = base_url.strip().rstrip("/")
-        self._api_key = api_key.strip()
+        self._door = door
         self._timeout_seconds = timeout_seconds
 
     async def complete_structured(
@@ -58,6 +60,7 @@ class OpenAIAnswerKeyStructuredProvider(AnswerKeyStructuredProviderProtocol):
         *,
         request: StructuredLLMRequest,
         profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         if profile.endpoint_kind is not StructuredLLMEndpointKind.RESPONSES:
             raise StructuredLLMProviderError(
@@ -65,56 +68,50 @@ class OpenAIAnswerKeyStructuredProvider(AnswerKeyStructuredProviderProtocol):
                 message="Only the OpenAI Responses endpoint is configured in this lane.",
                 provider_id=profile.provider_id,
             )
-        if not self._api_key:
-            raise StructuredLLMProviderError(
-                failure_code=StructuredLLMBackendFailureCode.PROVIDER_CONFIG_MISSING,
-                message="Answer-key provider API key is not configured.",
-                provider_id=profile.provider_id,
-            )
         payload = build_answer_key_responses_payload(profile=profile, request=request)
         try:
-            response = await self._client.post(
-                f"{self._normalized_base_url}/responses",
-                headers={"Authorization": f"Bearer {self._api_key}"},
-                json=payload,
-                timeout=self._timeout_seconds,
+            reply = await self._door.send(
+                operation=DoorOperation.RESPONSES,
+                payload=payload,
+                caller=caller,
+                timeout_seconds=self._timeout_seconds,
             )
-            response.raise_for_status()
-        except httpx.HTTPStatusError as exc:
-            raise StructuredLLMProviderError(
-                failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
-                message="Structured provider returned an unsuccessful HTTP status.",
-                provider_id=profile.provider_id,
-                status_code=exc.response.status_code,
-            ) from exc
-        except httpx.TimeoutException as exc:
+        except DoorTimeout as exc:
             raise StructuredLLMProviderError(
                 failure_code=StructuredLLMBackendFailureCode.PROVIDER_TIMEOUT,
                 message="Structured provider request timed out.",
                 provider_id=profile.provider_id,
             ) from exc
-        except httpx.RequestError as exc:
+        except DoorRequestFailed as exc:
             raise StructuredLLMProviderError(
                 failure_code=StructuredLLMBackendFailureCode.PROVIDER_REQUEST_FAILED,
                 message="Structured provider request failed before a response was received.",
                 provider_id=profile.provider_id,
             ) from exc
+        return _parse_door_reply(reply=reply, profile=profile)
 
-        try:
-            body: JsonValue = response.json()
-        except ValueError as exc:
-            raise StructuredLLMProviderError(
-                failure_code=StructuredLLMBackendFailureCode.PROVIDER_INVALID_JSON,
-                message="Structured provider response body was not valid JSON.",
-                provider_id=profile.provider_id,
-            ) from exc
-        return parse_answer_key_responses_payload(payload=body, profile=profile)
 
-    @property
-    def _normalized_base_url(self) -> str:
-        if self._base_url.endswith("/v1"):
-            return self._base_url
-        return f"{self._base_url}/v1"
+def _parse_door_reply(
+    *,
+    reply: DoorReply,
+    profile: StructuredLLMProviderProfile,
+) -> StructuredLLMResponse:
+    if not reply.is_success:
+        raise StructuredLLMProviderError(
+            failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
+            message="Structured provider returned an unsuccessful HTTP status.",
+            provider_id=profile.provider_id,
+            status_code=reply.status_code,
+        )
+    try:
+        body: JsonValue = json.loads(reply.body)
+    except ValueError as exc:
+        raise StructuredLLMProviderError(
+            failure_code=StructuredLLMBackendFailureCode.PROVIDER_INVALID_JSON,
+            message="Structured provider response body was not valid JSON.",
+            provider_id=profile.provider_id,
+        ) from exc
+    return parse_answer_key_responses_payload(payload=body, profile=profile)
 
 
 def build_answer_key_responses_payload(

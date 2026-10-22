@@ -1,21 +1,16 @@
 """DI bindings for exam answer-key enrichment.
 
-Enrichment job and token lease repositories, provider
-selection, the structured provider, and the enrichment job and workspace
-handlers.
+Enrichment job repository, the structured provider, and the enrichment job
+and workspace handlers.
 """
 
 from __future__ import annotations
 
-import httpx
 from dishka import Provider, Scope, provide
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_answer_key_lease_status import (
-    GetAnswerKeyLeaseStatusHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
     ProcessExamContentSuggestionsHandler,
@@ -32,37 +27,16 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     RequestExamWorkspaceAnswerKeySuggestionsHandler,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
-    AnswerKeyProviderRoute,
-)
-from skriptoteket.infrastructure.llm.answer_key_provider_dispatch import (
-    EndpointRoutedAnswerKeyProvider,
-)
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from skriptoteket.infrastructure.llm.openai.answer_key_profiles import build_luna_answer_key_profile
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
-from skriptoteket.infrastructure.llm.openrouter.answer_key_chat_provider import (
-    OpenRouterAnswerKeyChatProvider,
-)
-from skriptoteket.infrastructure.llm.openrouter.answer_key_profiles import (
-    build_glm_failover_answer_key_profile,
-)
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
-    PostgreSQLAnswerKeyTokenLeaseRepository,
-)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
-    AnswerKeyLeaseStatusHandlerProtocol,
-    AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
-    AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamWorkspaceSuggestionJobQueryProtocol,
 )
@@ -72,6 +46,8 @@ from skriptoteket.protocols.exam_workspace import (
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
@@ -91,63 +67,24 @@ class ExamAnswerKeyProvider(Provider):
     ) -> ExamWorkspaceSuggestionJobQueryProtocol:
         return PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
 
-    @provide(scope=Scope.REQUEST)
-    def exam_answer_key_token_lease_repository(
-        self,
-        session: AsyncSession,
-        settings: Settings,
-    ) -> AnswerKeyTokenLeaseRepositoryProtocol:
-        return PostgreSQLAnswerKeyTokenLeaseRepository(
-            session,
-            daily_token_limit=settings.LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def answer_key_lease_status_handler(
-        self,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        clock: ClockProtocol,
-    ) -> AnswerKeyLeaseStatusHandlerProtocol:
-        return GetAnswerKeyLeaseStatusHandler(leases=leases, clock=clock)
-
-    @provide(scope=Scope.APP)
-    def answer_key_provider_selector(self, settings: Settings) -> AnswerKeyProviderSelectorProtocol:
-        return FixedRouteAnswerKeyProviderSelector(
-            route=AnswerKeyProviderRoute(
-                primary=build_luna_answer_key_profile(settings),
-                failover=build_glm_failover_answer_key_profile(settings),
-            )
-        )
-
     @provide(scope=Scope.APP)
     def answer_key_structured_provider(
         self,
         settings: Settings,
-        client: httpx.AsyncClient,
+        door: LlmDoorClientProtocol,
     ) -> AnswerKeyStructuredProviderProtocol:
-        return EndpointRoutedAnswerKeyProvider(
-            responses_provider=OpenAIAnswerKeyStructuredProvider(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
-                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
-                timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
-            ),
-            chat_completions_provider=OpenRouterAnswerKeyChatProvider(
-                client=client,
-                base_url=settings.LLM_ANSWER_KEY_FAILOVER_BASE_URL,
-                api_key=settings.OPENROUTER_LLM_ANSWER_KEY_API_KEY,
-                timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
-                temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
-            ),
+        return OpenAIAnswerKeyStructuredProvider(
+            door=door,
+            timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
         )
 
     @provide(scope=Scope.REQUEST)
     def process_exam_answer_key_enrichment_job_handler(
         self,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        leases: AnswerKeyTokenLeaseRepositoryProtocol,
         provider: AnswerKeyStructuredProviderProtocol,
-        provider_selector: AnswerKeyProviderSelectorProtocol,
+        users: UserRepositoryProtocol,
+        settings: Settings,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
@@ -156,9 +93,9 @@ class ExamAnswerKeyProvider(Provider):
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
-            leases=leases,
             provider=provider,
-            provider_selector=provider_selector,
+            users=users,
+            answer_key_profile=build_luna_answer_key_profile(settings),
             uow=uow,
             clock=clock,
             docx_handler=docx_handler,

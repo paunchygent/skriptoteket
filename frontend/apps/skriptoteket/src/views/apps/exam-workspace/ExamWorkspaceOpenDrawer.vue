@@ -31,6 +31,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
 import { isGuestImportFile, useExamWorkspaceOpenBlocking } from "./useExamWorkspaceOpenBlocking";
+import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
@@ -80,7 +81,11 @@ const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
 /** Guest import stays visible and asks for sign-in; signed-in Word and PDF import follows the admin gate. */
 const isGuest = computed(() => store.teacher === null);
 /** PDF import is the Word import path: it shows wherever the Word import shows. */
-const showWordImport = computed(() => isGuest.value || canUseAi.value);
+/** The door's daily limit stops Word imports for the page session; DigiExam and QTI stay open. */
+const limitReached = aiDailyLimitReached;
+const showWordImport = computed(
+  () => (isGuest.value || canUseAi.value) && !limitReached.value,
+);
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -291,7 +296,12 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       </button>
       <small>eller dra hit filen</small>
       <small
-        v-if="!showWordImport"
+        v-if="limitReached && !isGuest"
+        class="xw-muted"
+        data-test="ai-daily-limit-note"
+      >{{ aiDailyLimitNote }}</small>
+      <small
+        v-else-if="!showWordImport"
         class="xw-muted"
       >{{ aiAdminOnlyNote }}</small>
     </div>

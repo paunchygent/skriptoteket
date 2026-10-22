@@ -284,6 +284,7 @@ def gap_paragraphs_from_source(
         members = grouped[(unit.anchor, unit.end)]
         if members[0] != index:
             continue
+        source.refuse_facit_shared(unit.start, unit.end)
         pictures = source.provenance.pictures_in(unit.anchor, unit.source_end)
         reply_pictures = Counter(
             segment.asset_id

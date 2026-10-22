@@ -145,6 +145,13 @@ def failed(
     return outcome
 
 
+def limited(run: DocxConversionRun, batch: ConversionBatch, code: str) -> BatchOutcome:
+    """A batch skipped after the job's first refusal: review items, no port call."""
+    outcome = reviewed(run, batch, _BATCH_FAILED_REASON)
+    outcome.state.record("batch", code, detail="limit_already_recorded")
+    return outcome
+
+
 def reviewed(run: DocxConversionRun, batch: ConversionBatch, reason: str) -> BatchOutcome:
     """Every question of the batch rebuilt from its source alone, with ``reason``."""
     state = batch_state(run, batch)

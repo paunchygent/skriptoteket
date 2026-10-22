@@ -23,6 +23,12 @@ import type {
 import { isApiError } from "../../../api/client";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
+import {
+  aiLimitFromError,
+  aiLimitFromStatus,
+  aiLimitNote,
+  markAiDailyLimit,
+} from "./aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -90,7 +96,17 @@ export function useExamWorkspaceContentSuggestions(deps: {
   function settle(request: Request, response: ExamWorkspaceContentSuggestions): void {
     busy.value = false;
     if (!deps.isOpen(request.opening)) return;
+    // The door's daily limit disables the control for the page session and
+    // says so in the drawer; unlike other failures it never toasts.
+    const settledLimit = aiLimitFromStatus(response);
+    if (settledLimit !== null) {
+      markAiDailyLimit(settledLimit);
+    }
     if (response.state === "failed") {
+      if (settledLimit !== null) {
+        message.value = aiLimitNote(settledLimit);
+        return;
+      }
       toast.failure(response.message ?? FAILURE_COPY);
       return;
     }
@@ -131,9 +147,17 @@ export function useExamWorkspaceContentSuggestions(deps: {
       }
       void teacher.getExamWorkspaceContentSuggestions(lineageId, response.job_id)
         .then((next) => follow(request, next))
-        .catch(() => {
+        .catch((error: unknown) => {
           busy.value = false;
-          if (!disposed && deps.isOpen(request.opening)) toast.failure(FAILURE_COPY);
+          if (!disposed && deps.isOpen(request.opening)) {
+            const pollLimit = aiLimitFromError(error);
+            if (pollLimit !== null) {
+              markAiDailyLimit(pollLimit);
+              message.value = aiLimitNote(pollLimit);
+              return;
+            }
+            toast.failure(FAILURE_COPY);
+          }
         });
     }, EXAM_WORKSPACE_CONTENT_POLL_MS);
   }
@@ -154,6 +178,12 @@ export function useExamWorkspaceContentSuggestions(deps: {
     } catch (error) {
       busy.value = false;
       if (!deps.isOpen(opening)) return;
+      const requestLimit = aiLimitFromError(error);
+      if (requestLimit !== null) {
+        markAiDailyLimit(requestLimit);
+        message.value = aiLimitNote(requestLimit);
+        return;
+      }
       toast.failure(isApiError(error) && error.status === 422 ? error.message : FAILURE_COPY);
     }
   }

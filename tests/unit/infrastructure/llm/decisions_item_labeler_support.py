@@ -1,20 +1,19 @@
 """Recorded-response support shared by the Decisions item-labeler adapter tests.
 
 The recordings hold historical first-pass outputs; ``replay`` serves them to the
-current first-pass requests and rejects any other request.
+current first-pass requests at the provider-door seam and rejects any other request.
 """
 
 from __future__ import annotations
 
 import copy
 import json
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 from typing import NotRequired, TypedDict
 from uuid import uuid4
 
-import httpx
-from pydantic import JsonValue
+from pydantic import JsonValue, TypeAdapter
 
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
@@ -22,13 +21,20 @@ from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     split_items,
 )
 from skriptoteket.protocols.item_type_labeler import LabelingItem, LabelingRequest
+from tests.unit.llm_door_fakes import (
+    DoorReply,
+    DoorResponder,
+    DoorSent,
+    RecordingDoor,
+    fixture_caller,
+)
 
 FIXTURES = Path("tests/fixtures/item_type_labeler")
 CORPUS_24 = "corpus_exam_24_questions.json"
 CORPUS_204 = "corpus_three_exams_204_questions.json"
 ACCEPT_BOUNDARY = 0.95
 
-Responder = Callable[[httpx.Request], httpx.Response]
+Responder = DoorResponder
 
 
 class Probability(TypedDict):
@@ -56,10 +62,31 @@ class Body(TypedDict):
     usage: Usage
 
 
+class Choice(TypedDict):
+    value: str
+    description: str
+
+
+class Question(TypedDict):
+    type: str
+    name: str
+    instructions: str
+    choices: list[Choice]
+
+
 class Sent(TypedDict):
     model: str
-    input: str
-    questions: list[dict[str, JsonValue]]
+    input: str | list[JsonValue]
+    questions: list[Question]
+
+
+_SENT_ADAPTER = TypeAdapter(Sent)
+
+
+def sent_payload(sent: DoorSent) -> Sent:
+    """The recorded request, validated into the Decisions request shape."""
+
+    return _SENT_ADAPTER.validate_python(sent.payload)
 
 
 class Exchange(TypedDict):
@@ -93,6 +120,7 @@ def load(name: str) -> Recording:
 def request_for(fixture: Recording) -> LabelingRequest:
     return LabelingRequest(
         job_id=uuid4(),
+        caller=fixture_caller(),
         items=tuple(
             LabelingItem(
                 item_id=item["item_id"],
@@ -109,14 +137,14 @@ def unavailable(status_code: int) -> Unavailable:
     return next(r for r in responses if r["status_code"] == status_code)
 
 
-def recorded_response(
-    recording: Exchange | Unavailable, status_code: int | None = None
-) -> httpx.Response:
-    status = recording["status_code"] if status_code is None else status_code
+def recorded_door_reply(recording: Exchange | Unavailable) -> DoorReply:
     body = recording["body"]
-    if isinstance(body, str):
-        return httpx.Response(status, headers=recording["headers"], text=body)
-    return httpx.Response(status, headers=recording["headers"], json=body)
+    raw = body.encode("utf-8") if isinstance(body, str) else json.dumps(body).encode("utf-8")
+    return DoorReply(
+        status_code=recording["status_code"],
+        headers=dict(recording["headers"]),
+        body=raw,
+    )
 
 
 def chosen_probability(answer: Answer) -> float:
@@ -144,36 +172,32 @@ class RecordingSleeper:
 
 
 class Harness:
-    def __init__(self, responder: Responder) -> None:
-        self.requests: list[Sent] = []
+    def __init__(self, responder: DoorResponder) -> None:
+        self.door = RecordingDoor(responder)
         self.sleeper = RecordingSleeper()
-        self._responder = responder
 
-    def handle(self, request: httpx.Request) -> httpx.Response:
-        assert request.method == "POST"
-        assert request.url.path == "/v1/decisions"
-        assert request.headers["Authorization"] == "Bearer fixture-key"
-        sent: Sent = json.loads(request.content)
-        self.requests.append(sent)
-        return self._responder(request)
+    @property
+    def requests(self) -> list[Sent]:
+        return [sent_payload(sent) for sent in self.door.sent]
+
+    @property
+    def sent(self) -> list[DoorSent]:
+        return self.door.sent
 
     def labeler(
         self,
         *,
-        api_key: str = "fixture-key",
         max_attempts: int = 3,
     ) -> OpenAIDecisionsItemTypeLabeler:
         return OpenAIDecisionsItemTypeLabeler(
-            client=httpx.AsyncClient(transport=httpx.MockTransport(self.handle)),
-            base_url="https://example.test",
-            api_key=api_key,
+            door=self.door,
             timeout_seconds=30,
             sleeper=self.sleeper,
             max_attempts=max_attempts,
         )
 
 
-def replay(exchanges: list[Exchange], *, fixture: Recording | None = None) -> Responder:
+def replay(exchanges: list[Exchange], *, fixture: Recording | None = None) -> DoorResponder:
     # Historical outputs exercise the current request/parser boundary only.
     # Their old request bodies are not evidence of requests made by this adapter.
     fixture = load(CORPUS_24) if fixture is None else fixture
@@ -187,30 +211,33 @@ def replay(exchanges: list[Exchange], *, fixture: Recording | None = None) -> Re
         )
         first_pass.append((build_decisions_payload(chunk), exchange))
 
-    def respond(request: httpx.Request) -> httpx.Response:
-        sent = json.loads(request.content)
-        matches = [exchange for payload, exchange in first_pass if payload == sent]
+    def respond(sent: DoorSent) -> DoorReply:
+        matches = [exchange for payload, exchange in first_pass if payload == sent.payload]
         assert len(matches) == 1, "unexpected current-source request"
-        return recorded_response(matches[0])
+        return recorded_door_reply(matches[0])
 
     return respond
 
 
-def sequence(*responders: Responder) -> Responder:
+def sequence(*responders: DoorResponder) -> DoorResponder:
     remaining = list(responders)
 
-    def respond(request: httpx.Request) -> httpx.Response:
+    def respond(sent: DoorSent) -> DoorReply | Awaitable[DoorReply]:
         current = remaining.pop(0) if len(remaining) > 1 else remaining[0]
-        return current(request)
+        return current(sent)
 
     return respond
 
 
-def always(recording: Exchange | Unavailable, status_code: int | None = None) -> Responder:
-    return lambda _request: recorded_response(recording, status_code)
+def always(recording: Exchange | Unavailable, status_code: int | None = None) -> DoorResponder:
+    status = status_code if status_code is not None else recording["status_code"]
+    body = recording["body"]
+    raw = body.encode("utf-8") if isinstance(body, str) else json.dumps(body).encode("utf-8")
+    reply = DoorReply(status_code=status, headers=dict(recording["headers"]), body=raw)
+    return lambda _sent: reply
 
 
-def with_mutated_body(mutate: Callable[[Body], None]) -> Responder:
+def with_mutated_body(mutate: Callable[[Body], None]) -> DoorResponder:
     exchange = copy.deepcopy(load(CORPUS_24)["exchanges"][0])
     mutate(exchange["body"])
     return replay([exchange])

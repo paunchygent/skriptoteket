@@ -27,7 +27,7 @@
  *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
  */
 
-import { computed, ref, shallowRef } from "vue";
+import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
@@ -37,6 +37,7 @@ import type {
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
+import { createExamWorkspaceNewPictures } from "./examWorkspaceNewPictures";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
@@ -208,7 +209,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     lineageId: () => summary.value?.lineage_id ?? null,
     settled: () => !isImporting.value && !isConverting.value,
   });
-  const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
+  // A suggestion or keyed spelling that lands in the copy is stored like
+  // typing after the pause; a copy this tab may not write (lease lost)
+  // schedules nothing.
+  function noteMachineWrite(before: NativeExamDocument): void {
+    if (!isReadOnly()) {
+      noteEdit(false, before);
+    }
+  }
+  const arrivals = useExamWorkspaceSaveArrivals({
+    convertingItemIds,
+    isOpen,
+    noteArrival: noteMachineWrite,
+    workspaceDocument,
+  });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
   /** A save, rename, retry, import or conversion holds the document; an open read is not one of them. */
@@ -243,10 +257,19 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     return current.items.find((item) => item.item_id === selectedItemId.value) ?? null;
   });
 
+  /** Pictures added from files this session, shown before their first save. */
+  const newPictures = createExamWorkspaceNewPictures(() => workspaceDocument.value);
+  /** Every install prunes the sent marks the working copy no longer declares. */
+  watch(workspaceDocument, (document) => newPictures.forgetUndeclared(document), { flush: "sync" });
+  /** A new opening forgets the previous exam's unsaved pictures. */
+  watch(openExam, () => newPictures.reset());
+  onScopeDispose(() => newPictures.reset());
+
   /** The open document's pictures by asset id, for the editor's image atoms. */
-  const assetUrls = computed(() =>
-    examWorkspaceAssetUrls(store.shared, workspaceDocument.value, summary.value?.lineage_id ?? null),
-  );
+  const assetUrls = computed(() => ({
+    ...examWorkspaceAssetUrls(store.shared, workspaceDocument.value, summary.value?.lineage_id ?? null),
+    ...newPictures.urls.value,
+  }));
 
   /** Whether `opening` is the exam opening in front of the teacher now. */
   function isOpen(opening: ExamWorkspaceOpening): boolean {
@@ -333,13 +356,19 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     if (!changed) {
       return false;
     }
-    workspaceDocument.value = withReferencedAssetsOnly({ ...current, items });
+    workspaceDocument.value = withReferencedAssetsOnly(newPictures.withDeclared({ ...current, items }));
     noteEdit(structural, current);
     return true;
   }
 
   // Every gap keying edit and its asynchronous misspelling reply.
-  const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
+  const keying = useExamWorkspaceGapKeying({
+    noteReply: noteMachineWrite,
+    openExam,
+    patchItem,
+    workspaceDocument,
+    shared: store.shared,
+  });
 
   // Reads that replace the open copy (undo, redo, server commands).
   const replacingScope = useExamWorkspaceDocumentReplacing({
@@ -398,7 +427,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     if (!current || isBusy.value || isReadOnly()) {
       return false;
     }
-    workspaceDocument.value = withReferencedAssetsOnly(edit(current));
+    workspaceDocument.value = withReferencedAssetsOnly(newPictures.withDeclared(edit(current)));
     if (selectId !== null) {
       selectedItemId.value = selectId;
     }
@@ -446,6 +475,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     noteExportBlockers,
     noteStored,
     notes,
+    newPictures,
     openDocument,
     openExam: computed(() => openExam.value),
     reloadDocument,

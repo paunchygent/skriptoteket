@@ -270,16 +270,35 @@ export function examWorkspaceIsOnlyQuestion(document: NativeExamDocument, itemId
 }
 
 /**
+ * How many times each picture is still cited (an item's body or retry
+ * source, the exam instruction, a part instruction): the one walk
+ * `withReferencedAssetsOnly` prunes by, shared with the new-pictures
+ * registry so a placed picture is declared by the same rule, and with the
+ * picture intake so a replacement credits the picture it removes.
+ */
+export function examWorkspaceAssetReferenceCounts(document: NativeExamDocument): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const assetId of [
+    ...document.items.flatMap(itemAssetIds),
+    ...bodyAssetIds(document.instructions),
+    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
+  ]) {
+    counts.set(assetId, (counts.get(assetId) ?? 0) + 1);
+  }
+  return counts;
+}
+
+export function examWorkspaceReferencedAssetIds(document: NativeExamDocument): Set<string> {
+  return new Set(examWorkspaceAssetReferenceCounts(document).keys());
+}
+
+/**
  * Keep only the pictures something still references (an item's body or retry
  * source, the exam instruction, a part instruction), as the server's rebuild
  * does; a picture an edit removed takes its asset record with it.
  */
 export function withReferencedAssetsOnly(document: NativeExamDocument): NativeExamDocument {
-  const referenced = new Set<string>([
-    ...document.items.flatMap(itemAssetIds),
-    ...bodyAssetIds(document.instructions),
-    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
-  ]);
+  const referenced = examWorkspaceReferencedAssetIds(document);
   const assets = document.assets.filter((asset) => referenced.has(asset.asset_id));
   return assets.length === document.assets.length ? document : { ...document, assets };
 }

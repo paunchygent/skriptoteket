@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "21c2622015d0162c6e001d4e54d4b84c7724d02631dd6e3d52ec6fb4f7ee17ea",
+  "source_set_digest": "927f7e5d60a8f102b09af292a81941daf0488ef712d9c60ba4321262402b47dd",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2597,6 +2597,27 @@
       }
     },
     {
+      "id": "ST-SKRIPT-41-03",
+      "type": "story",
+      "title": "Every signed-in teacher uses the exam and script-editor AI within the daily budget",
+      "path": "docs/backlog/stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-41",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-02-06-01",
       "type": "task",
       "title": "Swedish school domain allowlist for registration",
@@ -5151,7 +5172,7 @@
       "type": "task",
       "title": "Printed point totals reach their questions through one owner per points line",
       "path": "docs/backlog/tasks/task-skript-39-04-11-printed-point-totals-reach-their-questions-through-one-owner-per-points-line.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5162,7 +5183,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed it on 2026-10-22 (Mac AskUserQuestion, Close all three). Mac staging walk at fd2d911c passed (Svenska 2 kursavslutande import 066da8de, 24 questions, 36 p, printed_total 36, 0 export blockers; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md). Focused Validation suites on main 41691447 passed, 127 tests, with lint and typecheck exit 0 (retained root 01a160d3-ed0d-7269-a098-9d5dd88eff0a, evidence/). R6-1 accepted unfixed by the user on 2026-10-21."
       }
     },
     {
@@ -6421,7 +6446,7 @@
       "type": "task",
       "title": "The question editor inserts or replaces a picture from a file",
       "path": "docs/backlog/tasks/task-skript-39-10-04-the-question-editor-inserts-or-replaces-a-picture-from-a-file.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6432,7 +6457,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a1605d-5786-7434-9227-58fee29c2cc5 (evidence/reviews/review-39-10-04.md; F1 blocker rereview approved at 73d060cac in review-39-10-04-f1-rereview.md; F2 fixed at the production edge, 30m body limit; F3-F8 admitted on focused proof). Merged as 4f5554420; walk W1 caret fix e68e84a13 on the light route. Mac staging walk at 4f5554420 passed checks 1, 2, 3, 5, 6 and 7; the check 4 re-walk at fe2bc9b9c passed with a PNG and a JPEG. The user closes on walk pass (via Mac, 2026-10-22)."
       }
     },
     {
@@ -6871,7 +6900,7 @@
       "type": "task",
       "title": "Exported files are named after the exam title",
       "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6882,7 +6911,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after review f9239f80 (F1 repaired with the shared 238-character cap, admitted on focused proof and merged at 3eb5742f; F2 accepted unfixed by the user on 2026-10-21) and the Mac staging walk at aff7b005 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md, last addendum); the 2026-10-22 walk at fd2d911c shows the title-based names again (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
@@ -7022,7 +7055,7 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7033,7 +7066,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user closed the task on 2026-10-22 after merge 8d51a6ba, the K11 staging walk (Mac .artifacts/staging-walk-40-04-12/walk-record.md) and the K7 walk at fd2d911c: neither the student PDF nor the PDF med facit holds a line with only \"/\" under omprov Fråga 1c (Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md)."
       }
     },
     {
@@ -7335,8 +7372,8 @@
     {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
-      "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
-      "path": "docs/backlog/tasks/task-skript-41-01-02-the-script-editor-s-ai-runs-on-sol-6-1-low-through-the-sol-pool.md",
+      "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
+      "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
@@ -8665,7 +8702,7 @@
       "type": "task",
       "title": "A converted item never drops a sentence from its own source paragraph",
       "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8675,7 +8712,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a160cd-e60f-7a6f-8166-26210b7bf1db (evidence/reviews/review-rep-0049.md); rereview approved F1-F3, then F4 at 57a8c56a6 (review-rep-0049-rereview.md); F4 decision A by the user (D6). Merged as d9193a821; pre-push fix b8293abd1 on the light route. Mac staging walk at fe2bc9b9c passed: metodprov doc 092b8196 has 16 questions, 20 p, item 1 keeps its sentence, no body or choice carries facit; svenska_2 variant 2 imported with facit only in facit_text and gaps. The user closes on walk pass (via Mac, 2026-10-22)."
       }
     },
     {

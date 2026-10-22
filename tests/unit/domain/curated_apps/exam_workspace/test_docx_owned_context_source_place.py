@@ -47,6 +47,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from tests.unit.llm_door_fakes import fixture_caller
 
 pytestmark = pytest.mark.unit
 
@@ -76,6 +77,7 @@ def _run() -> DocxConversionRun:
         source_docx=b"",
         chunks=_CHUNKS,
         course_key=None,
+        caller=fixture_caller(),
     )
     run = DocxConversionRun(job, 0.0)
     run.contexts = (SharedContext("body:0003", "shared_passage", "q2", ("q2",)),)

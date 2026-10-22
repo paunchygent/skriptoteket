@@ -2,7 +2,7 @@
 
 Purpose:
     Prove that every remaining enrichment source kind runs on its own lane for
-    both a claimed job and an expired-lease job, that an unrecognised kind is
+    both a claimed job and an expired worker-lease job, that an unrecognised kind is
     rejected instead of falling through to a default lane, and that the job
     contract refuses a missing or retired (`dxe`) source kind.
 
@@ -41,17 +41,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMUsage,
 )
-from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
-    FixedRouteAnswerKeyProviderSelector,
-)
 from tests.fixtures.application_fixtures import FakeUow
+from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     _NOW,
     FixedClock,
     InMemoryEnrichmentJobRepository,
-    InMemoryLeaseRepository,
     StubProvider,
-    _route,
+    _profile,
 )
 
 pytestmark = pytest.mark.unit
@@ -91,9 +88,9 @@ def _handler(
     jobs = InMemoryEnrichmentJobRepository()
     handler = ProcessExamAnswerKeyEnrichmentJobHandler(
         enrichment_jobs=jobs,
-        leases=InMemoryLeaseRepository(daily_token_limit=1_000_000),
         provider=StubProvider(content={}, usage=StructuredLLMUsage(total_tokens=1)),
-        provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
+        users=UserRepositoryStub(),
+        answer_key_profile=_profile(),
         uow=FakeUow(),
         clock=FixedClock(_NOW),
         docx_handler=lanes.docx,

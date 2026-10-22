@@ -10,6 +10,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     NativeExamContentTag,
 )
+from skriptoteket.domain.llm_door import AiDailyLimit
 
 
 class ContentSuggestionsResponse(BaseModel):
@@ -19,5 +20,6 @@ class ContentSuggestionsResponse(BaseModel):
     document_revision: int
     course_key: str
     state: ExamAnswerKeyEnrichmentJobStatus
+    ai_limit: AiDailyLimit | None = None
     suggestions: tuple[NativeExamContentTag, ...] = ()
     message: str | None = None

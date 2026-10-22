@@ -46,6 +46,7 @@ import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
 import { GAP_TOOL_AT_CAP_REASON } from "./useExamWorkspaceMakeGap";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import {
@@ -62,6 +63,17 @@ const TOOL_AT_CAP = GAP_TOOL_AT_CAP_REASON;
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
+
+/** The pane's store double: the shared half reports a fixed server-owned limit. */
+function limitStore(): ExamWorkspaceStore {
+  return {
+    ...serverExamWorkspaceStore,
+    shared: {
+      ...serverExamWorkspaceStore.shared,
+      getExamWorkspaceLimits: async () => ({ max_exam_bytes: 20_000_000 }),
+    },
+  };
+}
 
 /** Mount the body editor inside a small owner that applies each edit like the real store. */
 function mountHarness(item: NativeExamItem, disabled = false): VueWrapper {
@@ -374,7 +386,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     };
     const pane = mount(ExamWorkspaceEditorPane, {
       attachTo: document.body,
-      global: { plugins: [examWorkspaceProvidersPlugin()] },
+      global: { plugins: [examWorkspaceProvidersPlugin({ store: limitStore() })] },
       props: {
         editing,
         workspaceDocument: exam(),

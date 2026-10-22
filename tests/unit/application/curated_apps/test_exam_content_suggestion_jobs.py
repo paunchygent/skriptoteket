@@ -12,7 +12,7 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.exam_content_tagging import (
-    MeteredExamContentTagClassifier,
+    ExamContentTagSuggester,
 )
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
@@ -35,6 +35,7 @@ from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRep
 from skriptoteket.protocols.exam_workspace import GetExamWorkspaceDocumentHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.profile_app_continuation_support import UserRepositoryStub
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import make_actor
 from tests.unit.application.curated_apps.handlers.workspace_suggestion_handler_support import (
     NOW,
@@ -138,7 +139,7 @@ async def test_worker_stores_tag_citations_on_job_row_without_saving_document(
         "load_exam_content_catalog",
         lambda: {"SVESVE02": _CONTENT},
     )
-    classifier = Mock(spec=MeteredExamContentTagClassifier)
+    classifier = Mock(spec=ExamContentTagSuggester)
     tag = NativeExamContentTag(
         id=_CONTENT[0].id,
         text=_CONTENT[0].text,
@@ -146,9 +147,12 @@ async def test_worker_stores_tag_citations_on_job_row_without_saving_document(
         question_ids=("item_001",),
     )
     classifier.suggest = AsyncMock(return_value=(tag,))
+    users = UserRepositoryStub()
+    users.user = setup.actor
     worker = ProcessExamContentSuggestionsHandler(
         classifier=classifier,
         jobs=setup.jobs,
+        users=users,
         uow=setup.uow,
         clock=setup.clock,
     )
@@ -160,6 +164,7 @@ async def test_worker_stores_tag_citations_on_job_row_without_saving_document(
     request = classifier.suggest.call_args.kwargs["request"]
     assert request.job_id == job.id
     assert request.content_items == _CONTENT
+    assert request.caller.user_id == setup.actor.id
     assert request.items[0].item_id == "item_001"
     assert "Sparad fråga" in request.items[0].source_text
     assert "eleverna" in request.items[0].source_text
@@ -178,11 +183,14 @@ async def test_worker_rejects_snapshot_bound_to_another_exam_version_or_course(
         "course": {"workspace_course_key": "SVESVE03"},
     }
     job = (await setup.enqueue()).model_copy(update=fields[binding])
-    classifier = Mock(spec=MeteredExamContentTagClassifier)
+    classifier = Mock(spec=ExamContentTagSuggester)
     classifier.suggest = AsyncMock()
+    users = UserRepositoryStub()
+    users.user = setup.actor
     worker = ProcessExamContentSuggestionsHandler(
         classifier=classifier,
         jobs=setup.jobs,
+        users=users,
         uow=setup.uow,
         clock=setup.clock,
     )

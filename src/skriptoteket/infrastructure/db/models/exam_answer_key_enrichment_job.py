@@ -79,6 +79,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
     locked_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
     locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_limit: Mapped[str | None] = mapped_column(String(32), nullable=True)
     diagnostics: Mapped[list[dict[str, JsonValue]]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
     )

@@ -16,12 +16,11 @@ import hashlib
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 from uuid import UUID, uuid4
 
-import httpx
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
@@ -41,21 +40,17 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMResponse,
     StructuredLLMUsage,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_lease import (
-    AnswerKeyTokenLease,
-    AnswerKeyTokenLeaseDayUsage,
-    AnswerKeyTokenLeaseState,
-)
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import AiDoorCaller
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
-from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
+from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
-from tests.fixtures.time_fixtures import FixedClock
+from tests.unit.llm_door_fakes import DoorSent, RecordingDoor, fixture_caller, json_reply
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 RECORDINGS = FIXTURES / "docx_key_provenance_v14"
@@ -103,7 +98,11 @@ class ReplayProvider:
         return [request.item_id for request in self.requests]
 
     async def complete_structured(
-        self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
+        self,
+        *,
+        request: StructuredLLMRequest,
+        profile: StructuredLLMProviderProfile,
+        caller: AiDoorCaller,
     ) -> StructuredLLMResponse:
         self.requests.append(request)
         if request.item_id in self._failures:
@@ -175,46 +174,22 @@ def _claimed(reply: Mapping[str, JsonValue]) -> set[str]:
     return anchors(dict(reply))
 
 
-def decisions_client(exam: str, root: Path = RECORDINGS) -> httpx.AsyncClient:
-    """Serve ``decisions_N.json`` in request order to POST .../decisions."""
+def decisions_door(exam: str, root: Path = RECORDINGS) -> RecordingDoor:
+    """Serve ``decisions_N.json`` in request order at the provider-door seam."""
     bodies = sorted(
         (root / exam).glob("decisions_*.json"),
         key=lambda path: int(path.stem.rsplit("_", 1)[1]),
     )
-    served = iter(bodies)
+    remaining = [json.loads(path.read_text()) for path in bodies]
 
-    def handle(request: httpx.Request) -> httpx.Response:
-        if request.method != "POST" or not request.url.path.endswith("/decisions"):
-            raise MissingRecording(f"{exam}: unexpected request {request.method} {request.url}")
-        path = next(served, None)
-        if path is None:
+    def respond(sent: DoorSent) -> DoorReply:
+        if sent.operation is not DoorOperation.DECISIONS:
+            raise MissingRecording(f"{exam}: unexpected door operation {sent.operation.value}")
+        if not remaining:
             raise MissingRecording(f"{exam}: more Decisions requests than {len(bodies)} recordings")
-        return httpx.Response(200, json=json.loads(path.read_text()))
+        return json_reply(remaining.pop(0))
 
-    return httpx.AsyncClient(transport=httpx.MockTransport(handle))
-
-
-class GrantingLeases:
-    """Grant every reservation."""
-
-    async def reserve(
-        self,
-        *,
-        now: datetime,
-        requested_tokens: int,
-        job_id: UUID,
-        item_id: str,
-        provider_profile_id: str,
-    ) -> AnswerKeyTokenLease:
-        return AnswerKeyTokenLease(
-            uuid4(), now.date(), requested_tokens, AnswerKeyTokenLeaseState.RESERVED
-        )
-
-    async def reconcile(self, *, lease_id: UUID, actual_tokens: int, now: datetime) -> None:
-        return None
-
-    async def day_usage(self, *, utc_day: date) -> AnswerKeyTokenLeaseDayUsage:
-        raise NotImplementedError("The DOCX converter never reads daily usage.")
+    return RecordingDoor(respond)
 
 
 class NoTransaction:
@@ -299,7 +274,7 @@ class Replay:
     progress: RecordingProgress
     corpus: Path | None = None
 
-    def job(self) -> DocxConversionJob:
+    def job(self, *, caller: AiDoorCaller | None = None) -> DocxConversionJob:
         content = corpus_docx(self.exam, self.corpus)
         return DocxConversionJob(
             origin_kind="docx_import",
@@ -311,6 +286,7 @@ class Replay:
             source_docx=content,
             chunks=corpus_chunks(self.exam, self.corpus),
             course_key=None,
+            caller=caller or fixture_caller(),
         )
 
 
@@ -319,7 +295,6 @@ def build_replay(
     *,
     progress: RecordingProgress | None = None,
     failures: Mapping[str, Exception] | None = None,
-    leases: AnswerKeyTokenLeaseRepositoryProtocol | None = None,
     enabled: bool = True,
     root: Path = RECORDINGS,
     corpus: Path | None = None,
@@ -330,15 +305,12 @@ def build_replay(
     provider = provider or ReplayProvider(exam, failures, root)
     progress = progress or RecordingProgress()
     pipeline = build_docx_conversion_pipeline(
-        client=decisions_client(exam, root),
+        door=decisions_door(exam, root),
         provider=provider,
         sleeper=NoSleep(),
-        leases=leases or GrantingLeases(),
         uow=SerializedUnitOfWork(NoTransaction()),
-        clock=FixedClock(_NOW),
         settings=Settings.model_construct(
             LLM_ANSWER_KEY_ENABLED=enabled,
-            OPENAI_LLM_ANSWER_KEY_API_KEY="replay-key",
             LLM_DOCX_BATCH_FAMILIES=families_per_batch,
         ),
         progress=progress,

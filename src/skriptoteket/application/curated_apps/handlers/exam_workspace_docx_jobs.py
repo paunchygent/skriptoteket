@@ -15,17 +15,22 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
-    DocxConversionPipeline,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
+    DocxConversionPipelineProtocol,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import (
     import_origin_kind,
 )
 from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiJobOverageCapReached,
+    ai_limit_note,
+    door_caller_for,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
@@ -52,7 +57,7 @@ class ProcessExamWorkspaceDocxJobHandler:
         *,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
         chunker: DocxExamChunkerProtocol,
-        pipeline: DocxConversionPipeline,
+        pipeline: DocxConversionPipelineProtocol,
         progress: DocxConversionProgressProtocol,
         store: ExamWorkspaceDocumentStore,
         users: UserRepositoryProtocol,
@@ -94,12 +99,24 @@ class ProcessExamWorkspaceDocxJobHandler:
                     source_docx=job.source_docx,
                     chunks=self._chunker.chunk(content=job.source_docx),
                     course_key=job.workspace_course_key,
+                    caller=door_caller_for(user=actor),
                     origin_kind=import_origin_kind(job.source_docx),
                 ),
                 fallback_reason=fallback_reason,
             )
             result = outcome.result
             observed = tuple(event.as_json() for event in result.events)
+            if outcome.ai_limit is not None:
+                # A door limit anywhere in the conversion ends the job as failed:
+                # already-published batches and teacher edits stay, but the partial
+                # or source-review document is never advertised as a completed conversion.
+                code = outcome.limit_code or "ai_daily_limit"
+                return await self._fail(
+                    job,
+                    ai_limit_note(outcome.ai_limit),
+                    _job_failure(code, outcome.ai_limit.value, observed),
+                    ai_limit=outcome.ai_limit,
+                )
             file_id = self._ids.new_uuid()
             async with self._store.transaction(
                 user_id=actor.id, lineage_id=job.workspace_lineage_id
@@ -139,6 +156,20 @@ class ProcessExamWorkspaceDocxJobHandler:
             return await self._fail(
                 job, error.message, _job_failure("domain_error", error.code.value, observed)
             )
+        except AiJobOverageCapReached:
+            return await self._fail(
+                job,
+                ai_limit_note(AiDailyLimit.POOL),
+                _job_failure("ai_overage_cap", "AiJobOverageCapReached", observed),
+                ai_limit=AiDailyLimit.POOL,
+            )
+        except AiDailyLimitReached as error:
+            return await self._fail(
+                job,
+                ai_limit_note(error.limit),
+                _job_failure("ai_daily_limit", type(error).__name__, observed),
+                ai_limit=error.limit,
+            )
         except Exception as error:
             logger.exception("DOCX conversion job crashed", job_id=str(job.id))
             return await self._fail(
@@ -159,7 +190,11 @@ class ProcessExamWorkspaceDocxJobHandler:
         )
 
     async def _fail(
-        self, job: ExamAnswerKeyEnrichmentJob, message: str, diagnostics: _Diagnostics
+        self,
+        job: ExamAnswerKeyEnrichmentJob,
+        message: str,
+        diagnostics: _Diagnostics,
+        ai_limit: AiDailyLimit | None = None,
     ) -> ExamAnswerKeyEnrichmentJob:
         logger.warning(
             "DOCX conversion job failed",
@@ -175,6 +210,8 @@ class ProcessExamWorkspaceDocxJobHandler:
             if not self._owns(current, job):
                 return current or job
             assert current is not None
+            if ai_limit is not None:
+                current = current.model_copy(update={"ai_limit": ai_limit})
             if job.locked_by is not None:
                 await self._progress.abandon(worker_id=job.locked_by, job_id=job.id, reason=message)
             finished = finish_enrichment_job(

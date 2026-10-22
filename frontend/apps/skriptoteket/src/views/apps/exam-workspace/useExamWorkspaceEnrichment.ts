@@ -31,6 +31,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
+import { aiLimitFromError, aiLimitFromStatus, markAiDailyLimit } from "./aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -150,6 +151,12 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     if (!isLive(opening)) {
       return;
     }
+    // The door's daily limit is terminal for the page session: the status
+    // message already says so, and the AI controls disable on the flag.
+    const limit = aiLimitFromStatus(status);
+    if (limit !== null) {
+      markAiDailyLimit(limit);
+    }
     pollFailures = 0;
     job.value = { opening, status };
     // A failed job still delivers the suggestions it produced before the
@@ -173,8 +180,14 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     try {
       const status = await teacher.getExamWorkspaceAnswerKeySuggestions(opening.lineageId, jobId);
       applyStatus(opening, status);
-    } catch {
+    } catch (error) {
       if (!isLive(opening)) {
+        return;
+      }
+      // No toast for the door's limit: the flag disables the AI controls.
+      const limit = aiLimitFromError(error);
+      if (limit !== null) {
+        markAiDailyLimit(limit);
         return;
       }
       if (pollFailures === 0) {
@@ -211,8 +224,13 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
         itemId,
       );
       applyStatus(opening, status);
-    } catch {
+    } catch (error) {
       if (!isLive(opening)) {
+        return;
+      }
+      const requestLimit = aiLimitFromError(error);
+      if (requestLimit !== null) {
+        markAiDailyLimit(requestLimit);
         return;
       }
       toast.failure(REQUEST_FAILURE_COPY);
@@ -240,7 +258,12 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
     let status: ExamWorkspaceAnswerKeySuggestionsStatus | null;
     try {
       status = await teacher.findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
-    } catch {
+    } catch (error) {
+      const lookupLimit = aiLimitFromError(error);
+      if (lookupLimit !== null) {
+        markAiDailyLimit(lookupLimit);
+        return;
+      }
       if (isLive(opening) && !ownJobStarted()) {
         lookupFailedIn.value = opening;
         toast.failure(LOOKUP_FAILURE_COPY);

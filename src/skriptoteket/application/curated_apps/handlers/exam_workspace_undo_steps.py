@@ -97,6 +97,7 @@ class StoreExamWorkspaceUndoStepHandler:
                 vault_files=self._vault_files,
                 codec=self._codec,
                 store=self._store,
+                new_assets_by_id=request.new_assets_by_id,
             )
             refuse_placeholder_changes(job=job, base=saved.document, saved=document)
             # A new step follows the snapshot the editor stands on and drops its redo steps;

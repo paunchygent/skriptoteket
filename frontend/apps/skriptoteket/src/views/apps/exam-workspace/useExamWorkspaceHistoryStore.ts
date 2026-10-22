@@ -65,6 +65,7 @@ export type ExamWorkspaceHistoryStoreDeps = Pick<
   | "isCurrent"
   | "keptUnstored"
   | "lineageId"
+  | "newPictures"
   | "noteExportBlockers"
   | "noteGateStored"
   | "noteLeaseLost"
@@ -300,12 +301,14 @@ export function createHistoryStore(
       sent: document,
       token,
     };
+    const newPictures = deps.newPictures.bytesFor(document);
     let settled: Awaited<ReturnType<typeof deps.transport.storeUndoStep>>;
     try {
       settled = await deps.transport.storeUndoStep(token, lineageId, {
         afterStepId: after,
         document,
         expectedCursor: cursor,
+        newPictures,
         tabId: deps.tabId(),
       });
     } catch {
@@ -345,6 +348,11 @@ export function createHistoryStore(
       }
       return "failed";
     }
+    // The transport answered with a committed value: the server stored the
+    // step and its picture bytes, even if this answer retires before it is
+    // installed. Mark the carried pictures sent before the token checks that
+    // may return early, so a retry never sends their bytes again.
+    deps.newPictures.noteSent(Object.keys(newPictures));
     const current = active.value;
     if (current === null || current.id !== attemptId || !deps.isCurrent(token)) {
       return "failed";

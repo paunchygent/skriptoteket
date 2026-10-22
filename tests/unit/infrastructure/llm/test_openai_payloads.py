@@ -1,18 +1,12 @@
 from __future__ import annotations
 
-from typing import cast
-
 import pytest
 
 from skriptoteket.infrastructure.llm.openai.payloads import (
     build_chat_payload,
     build_responses_payload,
 )
-from skriptoteket.infrastructure.llm.openai.types import (
-    ResponsesInputText,
-    ResponsesOutputText,
-    ResponsesTextFormat,
-)
+from skriptoteket.infrastructure.llm.openai.types import ResponsesJsonSchemaTextFormat
 
 
 @pytest.mark.unit
@@ -155,9 +149,9 @@ def test_build_responses_payload_maps_messages_and_instructions() -> None:
     assert "verbosity" in text
     assert text["verbosity"] == "low"
     assert payload["input"][0]["type"] == "message"
-    content = cast(ResponsesInputText, payload["input"][0]["content"][0])
-    assert content["text"] == "hi"
+    content = payload["input"][0]["content"][0]
     assert content["type"] == "input_text"
+    assert content["text"] == "hi"
     assert "temperature" not in payload
 
 
@@ -178,11 +172,11 @@ def test_build_responses_payload_maps_assistant_messages_as_output_text() -> Non
     )
 
     assert payload["input"][0]["role"] == "assistant"
-    assistant_content = cast(ResponsesOutputText, payload["input"][0]["content"][0])
+    assistant_content = payload["input"][0]["content"][0]
     assert assistant_content["type"] == "output_text"
     assert assistant_content["text"] == "previous"
     assert payload["input"][1]["role"] == "user"
-    user_content = cast(ResponsesInputText, payload["input"][1]["content"][0])
+    user_content = payload["input"][1]["content"][0]
     assert user_content["type"] == "input_text"
     assert user_content["text"] == "hi"
 
@@ -234,7 +228,13 @@ def test_build_responses_payload_merges_text_format_and_verbosity() -> None:
 
 
 @pytest.mark.unit
-def test_build_responses_payload_rejects_chat_response_format_shape() -> None:
+def test_build_responses_payload_rejects_json_schema_format_without_name() -> None:
+    empty_name_format: ResponsesJsonSchemaTextFormat = {
+        "type": "json_schema",
+        "name": "",
+        "schema": {},
+    }
+
     with pytest.raises(ValueError):
         build_responses_payload(
             model="gpt-5.2",
@@ -245,13 +245,7 @@ def test_build_responses_payload_rejects_chat_response_format_shape() -> None:
             reasoning_effort="low",
             text_verbosity="high",
             stream=False,
-            text_format=cast(
-                ResponsesTextFormat,
-                {
-                    "type": "json_schema",
-                    "json_schema": {"name": "test", "schema": {}},
-                },
-            ),
+            text_format=empty_name_format,
         )
 
 

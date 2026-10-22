@@ -41,11 +41,17 @@
  *   so the owner closes a popover first and
  *   the tool second.
  *
+ *   With the optional `pictures` prop the surface also takes pictures; the
+ *   picture drop, paste, selection and placement wiring lives in
+ *   `useExamWorkspaceRichTextPictures`.
+ *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
  *     `examWorkspaceRichTextDocument` maps the body to and from them.
  *   - `examWorkspaceRichTextEditKind` classifies a transaction as a discrete edit.
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
+ *   - `useExamWorkspaceRichTextPictures` owns the picture drop, paste,
+ *     selection and placement wiring.
  *   - `useExamWorkspaceMakeGap` owns the gap command, the Tom lucka
  *     command and the gap tool click path; it resolves words with
  *     `examWorkspaceGapWord`.
@@ -60,6 +66,7 @@ import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
+import { stableJson } from "../../../utils/stableJson";
 import { BODY_MARKS } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { useExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
@@ -77,6 +84,7 @@ import {
 } from "./examWorkspaceRichTextSchema";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
 import { useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
+import { useExamWorkspaceRichTextPictures } from "./useExamWorkspaceRichTextPictures";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel, RichTextTarget } from "./examWorkspaceRichTextTarget";
 
@@ -106,6 +114,8 @@ const props = withDefaults(
     nextGapId?: string | null;
     /** While true, a word click or a drag selection becomes a gap at once. */
     gapTool?: boolean;
+    /** While true, the surface takes dropped and pasted pictures and draws the drop line. */
+    pictures?: boolean;
   }>(),
   {
     disabled: false,
@@ -118,6 +128,7 @@ const props = withDefaults(
     gapsInteractive: false,
     nextGapId: undefined,
     gapTool: false,
+    pictures: false,
   },
 );
 
@@ -150,7 +161,8 @@ function atomKey(body: readonly NativeExamBodyParagraph[]): string {
   return JSON.stringify([placedGapIds(body), placedAssetIds(body)]);
 }
 
-let emitted = JSON.stringify(props.body);
+/** The last body this editor emitted or installed; key order is ignored, since a save returns the server's order. */
+let emitted = stableJson(props.body);
 let knownAtoms = atomKey(props.body);
 /** True while a toolbar click runs, so its one change is one undo step. */
 let toolbarEdit = false;
@@ -161,6 +173,12 @@ const marks: Ref<BodyMark[]> = ref([]);
 function canMakeGap(): boolean {
   return props.gapsInteractive && !props.disabled;
 }
+
+const pictures = useExamWorkspaceRichTextPictures({
+  pictures: () => props.pictures,
+  editor: () => editor.value,
+  target: () => target,
+});
 
 const editor = useEditor({
   content: editorContentFrom(props.body),
@@ -178,9 +196,11 @@ const editor = useEditor({
       emit("toggleGapTool");
       return true;
     },
+    dropCursor: props.pictures,
   }),
   editorProps: {
     attributes: surfaceAttributes(),
+    ...pictures.pictureEditorProps(),
     handleClickOn: (view, _pos, node, nodePos, event) => {
       if (node.type.name !== EXAM_GAP_NODE || !props.gapsInteractive || props.disabled) {
         return false;
@@ -273,7 +293,7 @@ const editor = useEditor({
     const atoms = atomKey(body);
     const creation = pendingGapCreation();
     const structural = toolbarEdit || atoms !== knownAtoms || isDiscreteEdit(transaction);
-    emitted = JSON.stringify(body);
+    emitted = stableJson(body);
     knownAtoms = atoms;
     if (creation !== null) {
       emit("createGap", body, creation.gapId, creation.seed);
@@ -283,6 +303,7 @@ const editor = useEditor({
   },
   onTransaction: ({ editor: current }) => {
     marks.value = BODY_MARKS.filter((mark) => current.isActive(mark));
+    pictures.updatePictureSelected();
   },
   onFocus: () => {
     registry.activate(target);
@@ -343,6 +364,10 @@ function asToolbarEdit(run: () => void): void {
 
 const target: RichTextTarget = {
   marks,
+  get acceptsPictures(): boolean {
+    return props.pictures;
+  },
+  selectedPictureId: pictures.selectedPictureId,
   headingLevel: currentHeadingLevel,
   toggleMark: (mark) => {
     asToolbarEdit(() => editor.value?.chain().focus().toggleMark(mark).run());
@@ -360,6 +385,10 @@ const target: RichTextTarget = {
   makeGap: (gapId) => {
     makeGap(gapId);
   },
+  placePicture: (assetId) => {
+    asToolbarEdit(() => pictures.placePictureAsset(assetId));
+  },
+  isLive: () => editor.value !== undefined && !editor.value.isDestroyed,
   // ProseMirror keeps its own selection while the toolbar has focus.
   release: () => undefined,
 };
@@ -371,7 +400,7 @@ onBeforeUnmount(() => {
 watch(
   () => props.body,
   (body) => {
-    const json = JSON.stringify(body);
+    const json = stableJson(body);
     if (json === emitted) {
       return;
     }
@@ -423,6 +452,8 @@ const wrapperClass = computed(() =>
 );
 
 defineExpose({
+  /** This surface as the formatting toolbar and the picture service see it. */
+  target,
   focus(): void {
     editor.value?.commands.focus("end");
   },
