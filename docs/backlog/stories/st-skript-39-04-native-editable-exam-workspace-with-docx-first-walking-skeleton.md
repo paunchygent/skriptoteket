@@ -122,7 +122,8 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    - `TASK-SKRIPT-39-04-21`: printed points wording at the end of a
      question becomes its points. Done.
    - `TASK-SKRIPT-39-04-22`: shapes drawn in a Word file (groups, single
-     shapes, canvases) land in their questions as pictures. Ready.
+     shapes, canvases) land in their questions as pictures, and Word export
+     writes the original shapes back. Ready.
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.

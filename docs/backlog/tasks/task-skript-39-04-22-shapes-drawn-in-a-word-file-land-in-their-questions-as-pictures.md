@@ -17,6 +17,7 @@ acceptance_criteria:
   a picture in its question
 - A figure holding an unsupported shape keeps today's descriptor and review warning
 - The Word import of metodprov_med_bilder.docx gives pictures in questions 5 and 6
+- Word export writes the figure's original shapes back, editable in Word
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -34,6 +35,11 @@ PDF import does since TASK-SKRIPT-39-10-02.
 - A figure holding any unsupported shape, fill or effect is left out whole, as today (D3).
 - A drawing made only of plain lines is no figure (D4).
 - From the picture chunk onwards, the Word path runs unchanged (D5).
+- The import also stores the figure's original Word shape markup with the picture's
+  asset. Display, Exam.net QTI, the student PDF and PDF med facit use the picture (D8).
+- Word (DOCX) export writes the stored shapes back instead of the picture, so the exported
+  file opens in Word with editable shapes (D9). Only self-contained markup is stored (D12).
+- When the teacher replaces or removes the picture, its stored shapes go with it (D10).
 - Non-goals: native Word charts (`c:chart`), SmartArt (`dgm`), custom geometry, gradient or
   picture fills, and VML-only legacy shapes.
 
@@ -73,7 +79,10 @@ Units, one junior each:
    and text-box labels. Anything unsupported is reported as such.
 2. Draw a figure model as SVG and turn it into a PNG through the existing render stack.
 3. Wire the chunker so a drawn-only block gets its picture, and apply D3 and D4.
-4. Prove fixture parity with the PDF import.
+4. Store the self-contained shape markup with the picture's asset, and drop it when the
+   picture is replaced or removed (D8, D10, D12).
+5. Make the Word export write the stored shapes in place of the picture (D9).
+6. Prove fixture parity with the PDF import.
 
 ## Validation
 
@@ -83,7 +92,11 @@ Units, one junior each:
 - The Word import of `metodprov_med_bilder.docx` gives pictures in questions 5 and 6 at the
   same places as its PDF import, and the labels are not question text.
 - The existing Word picture tests stay green.
-- A Mac staging walk of that Word import, including the PDF med facit export (D6).
+- A Word export of that import holds the original shape groups in questions 5 and 6, and
+  no stored shapes remain after a picture is replaced or removed.
+- A Mac staging walk of that Word import: the figures with their labels inside, parity
+  with the PDF import, the Exam.net and PDF exports showing the pictures, and a Word
+  export that opens in Word with editable shapes in questions 5 and 6 (D6, D9).
 
 ## Stop Conditions
 
@@ -102,6 +115,13 @@ Units, one junior each:
 | D5  | The drawn PNG is the drawing chunk's picture. From the picture chunk onwards, the Word path runs unchanged: grouping, labeling, exam picture node, asset rules and limits, export. The label text stays inside the picture and is not question text. No new AI call site. |
 | D6  | Proof: focused tests for each supported shape kind and container, plus one for an unsupported shape and one for a line-only drawing. The Word import of `metodprov_med_bilder.docx` gives pictures in questions 5 and 6 at the same places as its PDF import. The existing Word picture tests stay green. A Mac staging walk covers that Word import and its PDF med facit export. |
 | D7  | One independent review at most. Repairs are admitted on focused fail-first proof, with no rereview unless the user asks (user rule 2026-10-22). |
+| D8  | The import stores the figure's original Word shape markup with its picture's asset. Display, Exam.net QTI, the student PDF and PDF med facit use the picture. |
+| D9  | Word (DOCX) export writes the stored shapes back in place of the picture, so the exported file opens in Word with editable shapes. |
+| D10 | When the teacher replaces or removes the picture in the workspace, its stored shapes go with it; the new picture carries none. |
+| D11 | Questions 5 and 6 of `metodprov_med_bilder.docx` are no longer review items for a missing picture. |
+| D12 | Only self-contained shape markup is stored. Markup that references a relationship (an embedded picture, a hyperlink or another part) stores none, and its Word export writes the picture. |
 
-D1–D7 are orchestrator decisions under the user's delegation (2026-10-22, "Take care of it."),
-taken from the retained plan in root `01a162d4-76fc-7f54-bc33-c0dd63e13388`.
+D8–D11 are the user's decision (via the Mac orchestrator's AskUserQuestion, 2026-10-22,
+verbatim "Picture + keep shapes (Recommended)"; agent-planning:user-closure-gate). D1–D7
+and D12 are orchestrator decisions under the user's delegation (2026-10-22, "Take care of
+it."). All come from the retained plan in root `01a162d4-76fc-7f54-bc33-c0dd63e13388`.
