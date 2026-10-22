@@ -173,3 +173,24 @@ def test_chart_tick_is_a_label_while_title_stays_text() -> None:
         assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
         expected_aspect=160 / 123,
     )
+
+
+def test_two_triangles_side_by_side_keep_their_own_labels() -> None:
+    chunks = pdf_chunks(
+        "<p>1. Jämför trianglarna.</p>"
+        f"<p>{triangle_figure(('A', 'B', 'C'))}{triangle_figure(('D', 'E', 'F'))}</p>"
+        "<p>2. Fortsätt.</p>"
+    )
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "drawing", "paragraph"]
+    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 5)]
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert not (set(("A", "B", "C", "D", "E", "F")) & set(joined.split()))
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert drawings[0].anchor == "body:0002"
+    assert drawings[1].anchor == "body:0003"
+    first = assert_drawing_chunk(drawings[0], anchor="body:0002")
+    second = assert_drawing_chunk(drawings[1], anchor="body:0003")
+    assert first != second
+    _assert_generous_cut(first, expected_aspect=_TRIANGLE_ASPECT)
+    _assert_generous_cut(second, expected_aspect=_TRIANGLE_ASPECT)

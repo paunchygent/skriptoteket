@@ -6,12 +6,17 @@ label words, using only deterministic box predicates. No text is inspected.
 
 Rules:
     A figure owns the words whose centre lies inside its drawn outline grown by
-    ``_LABEL_INSIDE_POINTS``, plus the visual lines in one ring around it: a ring
-    line lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes sideways
+    ``_LABEL_INSIDE_POINTS``, plus the label runs in one ring around it. Each visual
+    line splits into runs at every horizontal gap between neighbouring words of at
+    least ``_RUN_GAP_RATIO`` body sizes; a run is the unit of label ownership. A run
+    with some words inside the grown hull and some outside gives none of its words;
+    a ring run lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes sideways
     and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, wholly within the side
-    reach, and never starts at the left text margin. A line straddling the grown
-    hull (some words inside, some outside) gives none of its words; a ring line is
-    always a whole line. The cut box covers the hull and the labels, grown by the
+    reach, and never starts at the left text margin (its first word). A word claimed
+    by more than one cut goes to the cut whose hull is nearest its run box
+    (horizontal gap plus vertical gap, 0 when overlapping); ties break by hull-centre
+    distance to the word centre, then the smaller hull top, then the smaller hull
+    left. The cut box covers the hull and the cut's own resolved labels, grown by the
     margin and stopped short of every non-label word. A cluster without images
     whose strokes all lie on the hull boundary is an outline-only figure: it owns
     no words inside it, but takes ring labels such as a dimension below it. Such a
@@ -28,6 +33,7 @@ Relationships:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from math import hypot
 from typing import Literal
 
 Box = tuple[float, float, float, float]  # x0, top, x1, bottom in points, page top-left origin
@@ -82,6 +88,9 @@ _LABEL_VERTICAL_RATIO = 0.5
 # a line reaches into a boundary box the box is a paragraph or page border, never a
 # figure.
 _MARGIN_START_POINTS = 1.0
+# A visual line splits into label runs at every horizontal gap between neighbouring
+# words of at least this many body sizes (word spaces are far smaller).
+_RUN_GAP_RATIO = 1.0
 _MARGIN_RATIO = 1.0  # a figure cut grows this many body sizes past hull and labels
 _WORD_CLEARANCE_POINTS = 1.0  # a figure margin stops this short of neighbouring words
 
@@ -227,39 +236,63 @@ def _on_boundary(stroke: PdfStroke, hull: Box) -> bool:
     return False
 
 
-def _figure_labels(
-    graphics: PageGraphics, hull: Box, grown_hull: Box, body_size: float
-) -> frozenset[int]:
-    """Hull-inside words plus the visual lines in the ring around the hull, one ring.
+def _label_runs(
+    graphics: PageGraphics, line: tuple[int, ...], body_size: float
+) -> list[tuple[int, ...]]:
+    """One visual line split into runs at every wide horizontal word gap.
 
-    A ring line lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes of it
+    Neighbouring words left to right form one run until the gap between them is at
+    least ``_RUN_GAP_RATIO`` body sizes; a run is the unit of label ownership.
+    """
+    members = [index for index in line if 0 <= index < len(graphics.words)]
+    if not members:
+        return []
+    ordered = sorted(members, key=lambda index: graphics.words[index][0])
+    threshold = _RUN_GAP_RATIO * body_size
+    runs: list[list[int]] = [[ordered[0]]]
+    for previous, current in zip(ordered, ordered[1:]):
+        if graphics.words[current][0] - graphics.words[previous][2] >= threshold:
+            runs.append([current])
+        else:
+            runs[-1].append(current)
+    return [tuple(run) for run in runs]
+
+
+def _figure_labels(
+    graphics: PageGraphics,
+    runs: tuple[tuple[int, ...], ...],
+    hull: Box,
+    grown_hull: Box,
+    body_size: float,
+) -> frozenset[int]:
+    """Hull-inside words plus the label runs in the ring around the hull, one ring.
+
+    A ring run lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes of it
     sideways and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, and wholly within
     the side reach left and right, so a wrapped text line beside the figure is no label.
-    A line starting at the left text margin is a paragraph, never a ring label. A visual
-    line with some words inside the grown hull and some outside gives none of its words:
-    the whole line stays text; a ring line is always a whole line.
+    A run starting at the left text margin (its first word) is a paragraph, never a
+    ring label. A run with some words inside the grown hull and some outside gives
+    none of its words: the run stays text.
     """
     side = _LABEL_SIDE_RATIO * body_size
     vertical = _LABEL_VERTICAL_RATIO * body_size
     labels = {
         index for index, word in enumerate(graphics.words) if _centre_inside(word, grown_hull)
     }
-    for line in graphics.lines:
-        members = tuple(index for index in line if 0 <= index < len(graphics.words))
-        if not members:
-            continue
-        inside = [index for index in members if index in labels]
+    for run in runs:
+        inside = [index for index in run if index in labels]
         if inside:
-            if len(inside) != len(members):
+            if len(inside) != len(run):
                 labels.difference_update(inside)
             continue
-        box = _union(tuple(graphics.words[index] for index in members))
+        box = _union(tuple(graphics.words[index] for index in run))
         horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
         vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
         within_reach = box[0] >= hull[0] - side and box[2] <= hull[2] + side
         at_margin = abs(box[0] - graphics.text_left) <= _MARGIN_START_POINTS
-        if horizontal_gap <= side and vertical_gap <= vertical and within_reach and not at_margin:
-            labels.update(members)
+        in_ring = horizontal_gap <= side and vertical_gap <= vertical
+        if in_ring and within_reach and not at_margin:
+            labels.update(run)
     return frozenset(labels)
 
 
@@ -306,6 +339,48 @@ def _figure_box(
     )
 
 
+def _nearest_owner(
+    graphics: PageGraphics,
+    run_box: dict[int, Box],
+    word: int,
+    hulls: list[Box],
+) -> int:
+    """Index into ``hulls`` of the cut owning ``word``: nearest hull to its run box.
+
+    Distance is the horizontal gap plus the vertical gap between the hull and the
+    word's run box (0 when they overlap). Ties break by hull-centre distance to the
+    word centre, then the smaller hull top, then the smaller hull left.
+    """
+    box = run_box.get(word, graphics.words[word])
+    centre = _centre(graphics.words[word])
+    best = 0
+    best_key: tuple[float, float, float, float] | None = None
+    for position, hull in enumerate(hulls):
+        horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
+        vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
+        hull_centre = _centre(hull)
+        key = (
+            horizontal_gap + vertical_gap,
+            hypot(centre[0] - hull_centre[0], centre[1] - hull_centre[1]),
+            hull[1],
+            hull[0],
+        )
+        if best_key is None or key < best_key:
+            best = position
+            best_key = key
+    return best
+
+
+def _run_boxes(graphics: PageGraphics, runs: tuple[tuple[int, ...], ...]) -> dict[int, Box]:
+    """Each word's run box: the union of the run it belongs to."""
+    boxes: dict[int, Box] = {}
+    for run in runs:
+        box = _union(tuple(graphics.words[index] for index in run))
+        for index in run:
+            boxes[index] = box
+    return boxes
+
+
 def _picture_labels(graphics: PageGraphics, hull: Box) -> frozenset[int]:
     """Words printed on a picture, or none when the picture lies behind a paragraph.
 
@@ -334,7 +409,9 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
     images = tuple(graphics.images)
     join = _JOIN_RATIO * body_size
     grown_hull_slack = _LABEL_INSIDE_POINTS
-    cuts: list[PdfCut] = []
+    runs = tuple(run for line in graphics.lines for run in _label_runs(graphics, line, body_size))
+    run_box = _run_boxes(graphics, runs)
+    pending: list[tuple[Literal["picture", "figure"], Box, frozenset[int]]] = []
     for member_strokes, member_images in _clusters(strokes, images, join):
         members: tuple[Box, ...] = (
             *[stroke.box for stroke in member_strokes],
@@ -356,28 +433,47 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
                     continue
                 outline_only = True
         elif all(_on_boundary(stroke, hull) for stroke in member_strokes):
-            cuts.append(PdfCut(kind="picture", box=hull, labels=_picture_labels(graphics, hull)))
+            pending.append(("picture", hull, _picture_labels(graphics, hull)))
             continue
         grown_hull = _grown(hull, grown_hull_slack)
-        labels = _figure_labels(graphics, hull, grown_hull, body_size)
+        labels = _figure_labels(graphics, runs, hull, grown_hull, body_size)
         if outline_only:
             labels = frozenset(
                 index for index in labels if not _centre_inside(graphics.words[index], grown_hull)
             )
-        union = _union((hull, *[graphics.words[index] for index in labels])) if labels else hull
-        cuts.append(
-            PdfCut(
-                kind="figure",
-                box=_figure_box(union, graphics, labels, body_size),
-                labels=labels,
+        pending.append(("figure", hull, labels))
+    # One word, one owner, decided by geometry before any cut box is computed: a
+    # word claimed by more than one cut goes to the nearest hull to its run box.
+    claims: dict[int, list[int]] = {}
+    for position, (_, _, labels) in enumerate(pending):
+        for index in labels:
+            claims.setdefault(index, []).append(position)
+    owned = [set(labels) for _, _, labels in pending]
+    for index, positions in claims.items():
+        if len(positions) > 1:
+            winner = positions[
+                _nearest_owner(
+                    graphics, run_box, index, [pending[position][1] for position in positions]
+                )
+            ]
+            for position in positions:
+                if position != winner:
+                    owned[position].discard(index)
+    cuts = []
+    for (kind, hull, _), kept in zip(pending, owned):
+        resolved = frozenset(kept)
+        if kind == "picture":
+            cuts.append(PdfCut(kind="picture", box=hull, labels=resolved))
+        else:
+            union = _union((hull, *[graphics.words[index] for index in resolved]))
+            if not resolved:
+                union = hull
+            cuts.append(
+                PdfCut(
+                    kind="figure",
+                    box=_figure_box(union, graphics, resolved, body_size),
+                    labels=resolved,
+                )
             )
-        )
     cuts.sort(key=lambda cut: (cut.box[1], cut.box[0]))
-    # One word, one owner: a word belongs to the first cut in output order.
-    claimed: set[int] = set()
-    ordered: list[PdfCut] = []
-    for cut in cuts:
-        fresh = frozenset(cut.labels - claimed)
-        claimed.update(fresh)
-        ordered.append(PdfCut(kind=cut.kind, box=cut.box, labels=fresh))
-    return tuple(ordered)
+    return tuple(cuts)

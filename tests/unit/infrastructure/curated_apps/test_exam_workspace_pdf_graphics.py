@@ -335,9 +335,11 @@ def test_axis_tick_is_label_while_title_one_ring_out_is_text() -> None:
 
 def test_line_straddling_hull_gives_none_of_its_words_while_inside_labels_stay() -> None:
     strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
+    # Words 0 and 1 share one run (their gap is below one body size) straddling the
+    # hull edge: word 0 sits inside the grown hull, word 1 reaches outside it.
     words = (
         (120.0, 120.0, 150.0, 130.0),
-        (210.0, 120.0, 250.0, 130.0),
+        (155.0, 120.0, 250.0, 130.0),
         (255.0, 120.0, 290.0, 130.0),
         (130.0, 150.0, 140.0, 160.0),
     )
@@ -353,3 +355,63 @@ def test_filled_rectangle_without_outline_is_a_figure() -> None:
     strokes = (_stroke((100.0, 100.0, 250.0, 200.0), kind="rect", stroked=False, filled=True),)
     cuts = page_cuts(_page(strokes=strokes), body_size=_BODY)
     assert [(cut.kind, cut.labels) for cut in cuts] == [("figure", frozenset())]
+
+
+def _moved_triangle(dx: float) -> tuple[PdfStroke, ...]:
+    return tuple(
+        _stroke((box[0] + dx, box[1], box[2] + dx, box[3]), stroke.kind)
+        for box, stroke in ((stroke.box, stroke) for stroke in _triangle())
+    )
+
+
+def test_side_by_side_triangles_keep_their_own_label_runs() -> None:
+    strokes = (*_triangle(), *_moved_triangle(200.0))
+    words = (
+        (120.0, 182.0, 134.0, 190.0),
+        (140.0, 182.0, 154.0, 190.0),
+        (320.0, 182.0, 334.0, 190.0),
+        (340.0, 182.0, 354.0, 190.0),
+        (140.0, 88.0, 154.0, 96.0),
+        (340.0, 88.0, 354.0, 96.0),
+    )
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1, 2, 3), (4, 5))),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 2
+    by_left = sorted(cuts, key=lambda cut: cut.box[0])
+    assert [cut.kind for cut in by_left] == ["figure", "figure"]
+    assert by_left[0].labels == frozenset({0, 1, 4})
+    assert by_left[1].labels == frozenset({2, 3, 5})
+
+
+def test_page_wide_line_inside_two_boxes_gives_each_its_own_word() -> None:
+    strokes = (
+        _stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),
+        _stroke((300.0, 100.0, 400.0, 180.0), kind="curve"),
+    )
+    words = ((130.0, 130.0, 150.0, 140.0), (330.0, 130.0, 350.0, 140.0))
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1),)),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 2
+    by_left = sorted(cuts, key=lambda cut: cut.box[0])
+    assert by_left[0].labels == frozenset({0})
+    assert by_left[1].labels == frozenset({1})
+
+
+def test_label_run_between_figures_goes_to_the_nearer_hull() -> None:
+    strokes = (
+        _stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),
+        _stroke((220.0, 100.0, 320.0, 180.0), kind="curve"),
+    )
+    words = ((207.0, 182.0, 216.0, 190.0),)
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0,),)),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 2
+    by_left = sorted(cuts, key=lambda cut: cut.box[0])
+    assert by_left[0].labels == frozenset()
+    assert by_left[1].labels == frozenset({0})
