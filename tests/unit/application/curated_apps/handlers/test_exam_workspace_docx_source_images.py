@@ -49,6 +49,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
 )
+from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from skriptoteket.protocols.item_type_labeler import ItemTypeLabel
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -312,6 +313,7 @@ async def _convert(
     grouping: Mapping[str, JsonValue],
     items: tuple[dict[str, JsonValue], ...] = (),
     title: dict[str, JsonValue] | None = None,
+    chunker: DocxExamChunkerProtocol | None = None,
 ) -> tuple[list[_DecisionsBody], _Provider, DocxConversionOutcome]:
     decisions: list[_DecisionsBody] = []
 
@@ -340,7 +342,7 @@ async def _convert(
             filename="prov.docx",
             source_sha256="0" * 64,
             source_docx=content,
-            chunks=PythonDocxExamChunker().chunk(content=content),
+            chunks=(chunker or PythonDocxExamChunker()).chunk(content=content),
             course_key=None,
             caller=fixture_caller(),
         )
