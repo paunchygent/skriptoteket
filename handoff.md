@@ -82,12 +82,11 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02: on main and production `8569092ba` (root `01a16352-c1aa-7200-beac-cdd64393cb32`);
-      walk fixes (edit proposal text, first question after Ny chatt) await the Mac re-walk.
     - Proposed follow-ups chosen by the user 2026-10-22: 41-03-02 ghost text, 41-03-03 chat
       Markdown, 39-04-24 rising import count.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
-      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 ready (retained `01a163e6`), starts when ST-41-01 is done.
+      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 ready (retained `01a163e6`);
+      ST-41-01 is done, the lead waits on the user's start.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
     in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
     one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.
@@ -123,6 +122,9 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done`: 41-01-02 script editor on Luna and Sol through the door, and ST-SKRIPT-41-01
+  (Mac re-walk `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
 
 - 2026-10-22 `done`: 41-01-04 AI capacity and try-again (`d44e946b5`; review F1-F8, retained
   `01a16352`; Mac walk `.artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md`). HuleEdu door
