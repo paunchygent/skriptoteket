@@ -24,9 +24,9 @@ from __future__ import annotations
 import re
 import statistics
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_graphics import (  # noqa: E501
     Box,
@@ -37,6 +37,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 
 if TYPE_CHECKING:
     from pdfplumber.page import Page
+    from pdfplumber.table import Table
 
 _BOLD = re.compile(r"bold|black|heavy|semibold|demibold", re.IGNORECASE)
 _ITALIC = re.compile(r"italic|oblique", re.IGNORECASE)
@@ -154,8 +155,13 @@ class PdfTable:
 class PdfPictureRegion:
     """One placed picture or drawn figure to cut out of its page, with its labels.
 
-    The box is in the page's word coordinates; ``origin`` is the page box's top-left
-    corner in them, so the rendered page's pixel grid starts there.
+    The box is in the page's word coordinates, clipped to ``visible``: the page's
+    CropBox in them, the box PDFium renders. The rendered page's pixel grid starts
+    at ``visible``'s top-left corner. ``mapped`` is False on a rotated page, whose
+    coordinates share no pixel mapping; such a region is never cut. ``erase`` holds
+    the boxes of every word on the page that overlaps the region's box and is not
+    one of this cut's labels: the cutter paints them white, so answer text never
+    reaches the picture's pixels.
     """
 
     page: int
@@ -165,7 +171,9 @@ class PdfPictureRegion:
     top: float
     x1: float
     bottom: float
-    origin: tuple[float, float]
+    visible: tuple[float, float, float, float]
+    mapped: bool
+    erase: tuple[tuple[float, float, float, float], ...] = ()
 
 
 PdfItem = PdfLine | PdfTable | PdfPictureRegion
@@ -215,7 +223,28 @@ def body_points(words: Iterable[PdfWord]) -> float:
     return sizes.most_common(1)[0][0] if sizes else _FALLBACK_BODY_POINTS
 
 
-def _visible(color: Any) -> bool:
+_Records = Sequence[Mapping[str, object]]  # pdfplumber drawing or image records
+
+
+class PdfLayoutError(ValueError):
+    """One pdfplumber graphics or table record the typed adapter cannot read."""
+
+
+def _object_box(raw: Mapping[str, object]) -> Box:
+    """One pdfplumber drawing or image record's box as typed geometry.
+
+    Raises PdfLayoutError naming the first missing or non-numeric edge.
+    """
+    values: list[float] = []
+    for key in ("x0", "top", "x1", "bottom"):
+        value = raw.get(key)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise PdfLayoutError(f"graphics record box has no numeric {key!r}")
+        values.append(float(value))
+    return (values[0], values[1], values[2], values[3])
+
+
+def _visible(color: object) -> bool:
     """A paint colour that shows on white paper: anything but white, in gray, RGB or CMYK.
 
     A missing colour is PDF's default black; a pattern or named colour counts as visible.
@@ -243,11 +272,8 @@ def _page_graphics(
 ) -> PageGraphics:
     """One page's pictures, vector paths, words, visual lines and text tables as boxes."""
 
-    def box(raw: Any) -> Box:
-        return (float(raw["x0"]), float(raw["top"]), float(raw["x1"]), float(raw["bottom"]))
-
     strokes: list[PdfStroke] = []
-    kinds: tuple[tuple[Literal["line", "rect", "curve"], Any], ...] = (
+    kinds: tuple[tuple[Literal["line", "rect", "curve"], _Records], ...] = (
         ("line", page.lines),
         ("rect", page.rects),
         ("curve", page.curves),
@@ -256,17 +282,18 @@ def _page_graphics(
         for raw in objects:
             strokes.append(
                 PdfStroke(
-                    box=box(raw),
+                    box=_object_box(raw),
                     kind=kind,
                     stroked=bool(raw.get("stroke")) and _visible(raw.get("stroking_color")),
                     filled=bool(raw.get("fill")) and _visible(raw.get("non_stroking_color")),
+                    evenodd=bool(raw.get("evenodd")),
                 )
             )
     index = {id(word): position for position, word in enumerate(words)}
     return PageGraphics(
         width=float(page.width),
         height=float(page.height),
-        images=tuple(box(raw) for raw in page.images),
+        images=tuple(_object_box(raw) for raw in page.images),
         strokes=tuple(strokes),
         words=tuple((word.x0, word.top, word.x1, word.bottom) for word in words),
         lines=tuple(tuple(index[id(word)] for word in line) for line in raw_lines(words)),
@@ -385,6 +412,16 @@ def _crosses(x0: float, x1: float, gutter: tuple[float, float]) -> bool:
     return x0 < gutter[1] and x1 > gutter[0]
 
 
+def _overlaps(first: Box, second: Box) -> bool:
+    """Two boxes share an area: touching edges do not overlap."""
+    return (
+        first[0] < second[2]
+        and second[0] < first[2]
+        and first[1] < second[3]
+        and second[1] < first[3]
+    )
+
+
 def _page_items(
     page: Page,
     page_index: int,
@@ -437,11 +474,42 @@ def _page_items(
                 items.append(PdfLine(page_index, column, part, *edges[column]))
     for table, box in zip(tables, table_boxes, strict=True):
         items.append(_table_item(table, box, words, page_index, column_of(box[0], box[2])))
-    origin = (float(page.bbox[0]), float(page.bbox[1]))
+    visible = (
+        float(page.cropbox[0]),
+        float(page.cropbox[1]),
+        float(page.cropbox[2]),
+        float(page.cropbox[3]),
+    )
+    mapped = page.rotation == 0
     for cut in cuts:
         x0, top, x1, bottom = cut.box
-        column = column_of(x0, x1)
-        items.append(PdfPictureRegion(page_index, column, cut.kind, x0, top, x1, bottom, origin))
+        clipped = (
+            max(x0, visible[0]),
+            max(top, visible[1]),
+            min(x1, visible[2]),
+            min(bottom, visible[3]),
+        )
+        column = column_of(clipped[0], clipped[2])
+        erase = tuple(
+            (word.x0, word.top, word.x1, word.bottom)
+            for position, word in enumerate(words)
+            if position not in cut.labels
+            and _overlaps((word.x0, word.top, word.x1, word.bottom), clipped)
+        )
+        items.append(
+            PdfPictureRegion(
+                page_index,
+                column,
+                cut.kind,
+                clipped[0],
+                clipped[1],
+                clipped[2],
+                clipped[3],
+                visible,
+                mapped,
+                erase,
+            )
+        )
     return float(page.height), _reading_order(items)
 
 
@@ -449,12 +517,12 @@ def _bbox(raw: Sequence[float]) -> tuple[float, float, float, float]:
     return (float(raw[0]), float(raw[1]), float(raw[2]), float(raw[3]))
 
 
-def _cell_count(table: Any) -> int:
+def _cell_count(table: Table) -> int:
     return sum(1 for row in table.rows for cell in row.cells if cell is not None)
 
 
 def _table_item(
-    table: Any,
+    table: Table,
     box: tuple[float, float, float, float],
     words: Sequence[PdfWord],
     page_index: int,

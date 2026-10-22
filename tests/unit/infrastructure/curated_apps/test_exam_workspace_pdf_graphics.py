@@ -68,7 +68,7 @@ def test_image_alone_is_picture_with_inside_label() -> None:
     assert cuts == (PdfCut(kind="picture", box=image, labels=frozenset({0})),)
 
 
-def test_triangle_with_zone_labels_is_figure() -> None:
+def test_triangle_with_outside_words_has_no_labels() -> None:
     words = (
         (84.0, 140.0, 98.0, 148.0),
         (202.0, 140.0, 214.0, 148.0),
@@ -81,9 +81,8 @@ def test_triangle_with_zone_labels_is_figure() -> None:
     assert len(cuts) == 1
     cut = cuts[0]
     assert cut.kind == "figure"
-    assert cut.labels == frozenset({0, 1, 2})
-    union = (84.0, 100.0, 214.0, 188.0)
-    assert cut.box == (union[0] - _BODY, union[1] - _BODY, union[2] + _BODY, union[3] + _BODY)
+    assert cut.labels == frozenset()
+    assert cut.box == (99.0, 89.0, 201.0, 181.0)
 
 
 def test_wide_sentence_line_is_not_label_and_stops_margin() -> None:
@@ -104,21 +103,24 @@ def test_wide_sentence_line_is_not_label_and_stops_margin() -> None:
     assert cut.box == (89.0, 89.0, 211.0, 184.0)
 
 
-def test_short_line_starting_at_the_text_margin_is_body_text_not_a_label() -> None:
+def test_short_lines_near_figure_are_body_text_not_labels() -> None:
     strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
     words = ((100.0, 182.0, 130.0, 193.0), (133.0, 182.0, 180.0, 193.0))
     margin_page = _page(strokes=strokes, words=words, lines=((0, 1),), text_left=100.0)
     indented_page = _page(strokes=strokes, words=words, lines=((0, 1),), text_left=70.0)
 
     assert page_cuts(margin_page, body_size=_BODY)[0].labels == frozenset()
-    assert page_cuts(indented_page, body_size=_BODY)[0].labels == frozenset({0, 1})
+    assert page_cuts(indented_page, body_size=_BODY)[0].labels == frozenset()
 
 
-def test_page_sized_picture_is_a_background_and_takes_no_text() -> None:
+def test_page_sized_picture_is_a_picture_cut_without_labels() -> None:
+    image = (0.0, 0.0, _WIDTH, _HEIGHT)
     words = ((70.0, 100.0, 120.0, 111.0), (125.0, 100.0, 200.0, 111.0))
-    page = _page(images=((0.0, 0.0, _WIDTH, _HEIGHT),), words=words, lines=((0, 1),))
+    page = _page(images=(image,), words=words, lines=((0, 1),), text_left=70.0)
 
-    assert page_cuts(page, body_size=_BODY) == ()
+    assert page_cuts(page, body_size=_BODY) == (
+        PdfCut(kind="picture", box=image, labels=frozenset()),
+    )
 
 
 def test_picture_behind_a_paragraph_claims_none_of_its_words() -> None:
@@ -141,7 +143,7 @@ def test_stacked_answer_lines_make_no_cut() -> None:
     assert page_cuts(_page(strokes=strokes), body_size=_BODY) == ()
 
 
-def test_frame_and_checkbox_make_no_cut() -> None:
+def test_box_holding_indented_word_is_figure_and_checkbox_makes_no_cut() -> None:
     strokes = (
         _stroke((100.0, 100.0, 300.0, 120.0), kind="rect"),
         _stroke((100.0, 200.0, 108.0, 208.0), kind="rect"),
@@ -154,7 +156,10 @@ def test_frame_and_checkbox_make_no_cut() -> None:
         ),
         body_size=_BODY,
     )
-    assert cuts == ()
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset()
+    assert cuts[0].box == (89.0, 89.0, 311.0, 131.0)
 
 
 def test_highlight_rect_behind_word_makes_no_cut() -> None:
@@ -190,12 +195,168 @@ def test_two_figures_sort_top_to_bottom() -> None:
     assert cuts[1].box == (89.0, 289.0, 211.0, 391.0)
 
 
-def test_page_sized_background_is_ignored() -> None:
+def test_page_border_rect_is_ignored_and_curve_stays_figure() -> None:
     strokes = (
         _stroke((0.0, 0.0, _WIDTH, _HEIGHT), kind="rect", filled=True),
         _stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),
     )
-    cuts = page_cuts(_page(strokes=strokes), body_size=_BODY)
+    words = ((70.0, 500.0, 120.0, 510.0), (125.0, 500.0, 180.0, 510.0))
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1),), text_left=70.0),
+        body_size=_BODY,
+    )
     assert len(cuts) == 1
     assert cuts[0].kind == "figure"
     assert cuts[0].box == (89.0, 89.0, 211.0, 191.0)
+
+
+def test_triangle_with_indented_answer_line_below_has_no_labels() -> None:
+    words = ((120.0, 183.0, 150.0, 193.0), (153.0, 183.0, 190.0, 193.0))
+    cuts = page_cuts(
+        _page(strokes=_triangle(), words=words, lines=((0, 1),), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    cut = cuts[0]
+    assert cut.kind == "figure"
+    assert cut.labels == frozenset()
+    assert cut.box[3] < 183.0
+
+
+def test_rect_with_word_below_is_figure_without_labels() -> None:
+    cuts = page_cuts(
+        _page(
+            strokes=(_stroke((40.0, 30.0, 190.0, 130.0), kind="rect"),),
+            words=((100.0, 133.0, 140.0, 143.0),),
+            lines=((0,),),
+            text_left=70.0,
+        ),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset()
+    assert cuts[0].box[3] < 133.0
+
+
+def test_four_lines_forming_box_is_figure() -> None:
+    strokes = (
+        _stroke((40.0, 30.0, 190.0, 32.0)),
+        _stroke((40.0, 128.0, 190.0, 130.0)),
+        _stroke((40.0, 30.0, 42.0, 130.0)),
+        _stroke((188.0, 30.0, 190.0, 130.0)),
+    )
+    cuts = page_cuts(_page(strokes=strokes), body_size=_BODY)
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+
+
+def test_rect_holding_indented_line_is_figure_without_labels() -> None:
+    words = ((60.0, 70.0, 100.0, 80.0), (105.0, 70.0, 150.0, 80.0))
+    cuts = page_cuts(
+        _page(
+            strokes=(_stroke((40.0, 30.0, 190.0, 130.0), kind="rect"),),
+            words=words,
+            lines=((0, 1),),
+            text_left=70.0,
+        ),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset()
+
+
+def test_rect_holding_margin_line_is_border_without_cut() -> None:
+    words = ((70.0, 70.0, 110.0, 80.0), (115.0, 70.0, 150.0, 80.0))
+    cuts = page_cuts(
+        _page(
+            strokes=(_stroke((40.0, 30.0, 190.0, 130.0), kind="rect"),),
+            words=words,
+            lines=((0, 1),),
+            text_left=70.0,
+        ),
+        body_size=_BODY,
+    )
+    assert cuts == ()
+
+
+def test_page_border_rect_is_dropped_and_inner_curve_is_figure() -> None:
+    strokes = (
+        _stroke((0.0, 0.0, _WIDTH, _HEIGHT), kind="rect"),
+        _stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),
+    )
+    words = ((70.0, 500.0, 120.0, 510.0), (125.0, 500.0, 180.0, 510.0))
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1),), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].box == (89.0, 89.0, 211.0, 191.0)
+
+
+def test_large_picture_between_paragraphs_is_picture() -> None:
+    image = (87.0, 100.0, 507.0, 710.0)
+    words = (
+        (70.0, 80.0, 120.0, 90.0),
+        (125.0, 80.0, 180.0, 90.0),
+        (70.0, 720.0, 120.0, 730.0),
+        (125.0, 720.0, 180.0, 730.0),
+    )
+    cuts = page_cuts(
+        _page(images=(image,), words=words, lines=((0, 1), (2, 3)), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert cuts == (PdfCut(kind="picture", box=image, labels=frozenset()),)
+
+
+def test_axis_with_tick_and_title_has_no_labels() -> None:
+    strokes = (
+        _stroke((40.0, 120.0, 200.0, 122.0)),
+        _stroke((40.0, 20.0, 42.0, 120.0)),
+        _stroke((50.0, 30.0, 190.0, 110.0), kind="curve"),
+    )
+    words = ((90.0, 123.0, 110.0, 133.0), (80.0, 145.0, 170.0, 155.0))
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0,), (1,)), text_left=70.0),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].kind == "figure"
+    assert cuts[0].labels == frozenset()
+    assert cuts[0].box[3] < 123.0
+
+
+def test_line_straddling_hull_gives_none_of_its_words_while_inside_labels_stay() -> None:
+    strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
+    words = (
+        (120.0, 120.0, 150.0, 130.0),
+        (210.0, 120.0, 250.0, 130.0),
+        (255.0, 120.0, 290.0, 130.0),
+        (130.0, 150.0, 140.0, 160.0),
+    )
+    cuts = page_cuts(
+        _page(strokes=strokes, words=words, lines=((0, 1, 2), (3,))),
+        body_size=_BODY,
+    )
+    assert len(cuts) == 1
+    assert cuts[0].labels == frozenset({3})
+
+
+def test_evenodd_border_ring_reads_as_its_thin_band_and_makes_no_cut() -> None:
+    strokes = (
+        PdfStroke(
+            box=(77.0, 139.0, 518.0, 157.0), kind="rect", stroked=False, filled=True, evenodd=True
+        ),
+        PdfStroke(
+            box=(77.0, 139.0, 518.0, 158.0), kind="rect", stroked=False, filled=True, evenodd=True
+        ),
+    )
+    assert page_cuts(_page(strokes=strokes), body_size=_BODY) == ()
+
+
+def test_filled_rectangle_without_outline_is_a_figure() -> None:
+    strokes = (_stroke((100.0, 100.0, 250.0, 200.0), kind="rect", stroked=False, filled=True),)
+    cuts = page_cuts(_page(strokes=strokes), body_size=_BODY)
+    assert [(cut.kind, cut.labels) for cut in cuts] == [("figure", frozenset())]

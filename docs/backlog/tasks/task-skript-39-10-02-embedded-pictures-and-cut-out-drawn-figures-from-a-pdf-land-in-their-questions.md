@@ -59,12 +59,16 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                   |
-| --- | ----------------------------------------------------------------------------------------------------------------------- |
-| T1  | ST-SKRIPT-39-10 P3, P5, P6 and P8 apply as written.                                                                     |
-| T2  | Pictures and cut figures enter through the Word import's picture chunk and the exam's existing picture node and limits. |
-| T3  | A cut figure includes its labels and a margin; its label text is not also read as question text.                        |
-| T4  | Real task: one independent review, at most one rereview per finding; staging walk by the Mac.                           |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | ST-SKRIPT-39-10 P3, P5, P6 and P8 apply as written.                                                                                                                                                                                                                                                                                                                                               |
+| T2  | Pictures and cut figures enter through the Word import's picture chunk and the exam's existing picture node and limits.                                                                                                                                                                                                                                                                           |
+| T3  | A cut figure includes its labels and a margin; its label text is not also read as question text.                                                                                                                                                                                                                                                                                                  |
+| T4  | Real task: one independent review, at most one rereview per finding; staging walk by the Mac.                                                                                                                                                                                                                                                                                                     |
+| T5  | Proposed, pending user confirmation (review F1, orchestrator 2026-10-22): narrows T3. A figure owns only the words inside its drawn outline; every word outside it stays question text and is never in the picture. Cost: labels outside the outline become a text line after the figure, for example A, B and C at a triangle's corners, a dimension under a shape, tick labels and axis titles. |
+| T6  | Proposed, pending user confirmation (rule 1): any word that stays text is painted white wherever it falls inside a cut picture, so answer text never reaches a picture's pixels. Cost: text lying over a picture leaves white areas in it.                                                                                                                                                        |
+| T7  | Proposed, pending user confirmation (rule 2, review F2): a drawing made only of its outline (a box or rectangle) is a picture; words inside it stay text and are painted white. A border that paragraphs run inside from the left text margin is decoration and makes no picture. Cost: every bordered text box also gives an empty-box picture.                                                  |
+| T8  | Proposed, pending user confirmation (rule 3, review F3): a placed picture of any size is a picture; text from a paragraph running over it stays text. Cost: a scanned or background-picture PDF gives one picture per page with its text areas painted white.                                                                                                                                     |
 
 ## Progress
 
@@ -100,3 +104,6 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
   condition did not trigger. Reading the PDF takes about 1.8 s, as before this task.
 - Residual (39-10-01, not this task): a non-breaking space Word kept on one line reads as
   a line break inside the paragraph ("100\\nelever").
+- Review `changes_requested` (F1-F7, retained root `evidence/reviews/review-39-10-02.md`):
+  repairs follow T5-T8. Residual under T5 (review F4): an axis title and the tick labels
+  outside a drawn chart's axes are read as question text after the picture, not inside it.

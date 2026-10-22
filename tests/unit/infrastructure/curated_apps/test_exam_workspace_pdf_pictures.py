@@ -5,8 +5,10 @@ from __future__ import annotations
 import base64
 import io
 
+import pdfplumber
 import pytest
 from PIL import Image
+from pypdf import PdfReader, PdfWriter
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -21,8 +23,8 @@ _PICTURE_ASPECT = 3 / 2
 _PICTURE_TOLERANCE = 0.05
 
 _TRIANGLE_CORNERS = ((20, 130), (180, 130), (100, 20))
-# Union of the triangle corners and the label anchors below: x 20..180, y 12..144.
-_TRIANGLE_ASPECT = 160 / 132
+# The triangle on its own, without its outside labels: x 20..180, y 20..130.
+_TRIANGLE_ONLY_ASPECT = 160 / 110
 _GENEROUS_CUT_TOLERANCE = 0.15
 _MIN_CUT_MARGIN_PX = 3
 
@@ -127,20 +129,26 @@ def test_embedded_picture_between_questions_becomes_one_drawing_chunk_between_th
     _assert_picture_aspect(_assert_drawing_chunk(chunks[1], anchor="body:0002"))
 
 
-def test_drawn_triangle_with_labels_becomes_one_generous_drawing_chunk() -> None:
+def test_drawn_triangle_with_outside_labels_keeps_a_generous_triangle_only_cut() -> None:
     chunks = _chunks(
         "<p>Fråga 1. Beskriv triangeln med hörnen.</p>"
         f"<p>{_triangle_figure(('A', 'B', 'C'))}</p>"
         "<p>Fråga 2. Gå vidare.</p>"
     )
 
-    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
-    assert [chunk.anchor for chunk in chunks] == ["body:0001", "body:0002", "body:0003"]
-    payload = _assert_drawing_chunk(chunks[1], anchor="body:0002")
-    _assert_generous_cut(payload, expected_aspect=_TRIANGLE_ASPECT)
+    assert [chunk.kind for chunk in chunks] == [
+        "paragraph",
+        "paragraph",
+        "drawing",
+        "paragraph",
+        "paragraph",
+    ]
+    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 6)]
+    payload = _assert_drawing_chunk(chunks[2], anchor="body:0003")
+    _assert_generous_cut(payload, expected_aspect=_TRIANGLE_ONLY_ASPECT)
 
 
-def test_figure_labels_are_not_emitted_as_text() -> None:
+def test_triangle_labels_outside_the_outline_are_read_as_text() -> None:
     labels = ("A", "B", "C")
     chunks = _chunks(
         "<p>Fråga 1. Beskriv triangeln med hörnen.</p>"
@@ -149,9 +157,11 @@ def test_figure_labels_are_not_emitted_as_text() -> None:
     )
 
     texts = [chunk.text for chunk in chunks if chunk.kind != "drawing"]
-    assert texts == ["Fråga 1. Beskriv triangeln med hörnen.", "Fråga 2. Gå vidare."]
-    words = {word for text in texts for word in text.split()}
-    assert not (set(labels) & words)
+    joined = " ".join(texts)
+    assert "Fråga 1. Beskriv triangeln med hörnen." in joined
+    assert "Fråga 2. Gå vidare." in joined
+    for label in labels:
+        assert label in joined.split()
 
 
 def test_drawn_answer_lines_under_svar_give_no_drawing_chunk() -> None:
@@ -172,15 +182,19 @@ def test_two_drawn_figures_separated_by_a_paragraph_give_two_drawing_chunks_in_o
 
     assert [chunk.kind for chunk in chunks] == [
         "paragraph",
-        "drawing",
         "paragraph",
         "drawing",
+        "paragraph",
+        "paragraph",
+        "paragraph",
+        "drawing",
+        "paragraph",
         "paragraph",
     ]
-    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 6)]
-    assert chunks[2].text == "Fråga 2. Jämför med nästa triangel."
-    first = _assert_drawing_chunk(chunks[1], anchor="body:0002")
-    second = _assert_drawing_chunk(chunks[3], anchor="body:0004")
+    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 10)]
+    assert chunks[4].text == "Fråga 2. Jämför med nästa triangel."
+    first = _assert_drawing_chunk(chunks[2], anchor="body:0003")
+    second = _assert_drawing_chunk(chunks[6], anchor="body:0007")
     assert first != second
 
 
@@ -267,6 +281,119 @@ def test_empty_bordered_table_becomes_one_drawing_chunk_and_no_table_chunk() -> 
     _assert_drawing_chunk(chunks[1], anchor="body:0002")
 
 
+_CROP_PREFIX = "<p>1. Beskriv figuren.</p>"
+_CROP_SUFFIX = "<p>2. Fortsätt.</p>"
+_CROP_BLUE: tuple[int, int, int] = (40, 90, 160)
+_CROP_BODY = (
+    _CROP_PREFIX
+    + f"<p>{_picture_tag(_solid_png(*_PICTURE_SIZE, color=_CROP_BLUE), 'width:120pt;height:80pt')}</p>"  # noqa: E501
+    + _CROP_SUFFIX
+)
+
+
+def _with_cropbox(
+    data: bytes,
+    lower_left: tuple[float, float],
+    upper_right: tuple[float, float],
+) -> bytes:
+    reader = PdfReader(io.BytesIO(data))
+    page = reader.pages[0]
+    page.cropbox.lower_left = lower_left
+    page.cropbox.upper_right = upper_right
+    writer = PdfWriter()
+    writer.add_page(page)
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def _with_rotation(data: bytes, angle: int) -> bytes:
+    reader = PdfReader(io.BytesIO(data))
+    reader.pages[0].rotation = angle
+    writer = PdfWriter()
+    writer.add_page(reader.pages[0])
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def _assert_solid_blue(payload: bytes) -> tuple[int, int]:
+    """The PNG is solid blue up to an anti-aliased 1 px rim."""
+    with Image.open(io.BytesIO(payload)) as shot:
+        size = shot.convert("RGB").size
+        data = list(shot.convert("RGB").getdata())
+    width, height = size
+    bad = sum(
+        1
+        for pixel in data
+        if max(abs(part - expected) for part, expected in zip(pixel, _CROP_BLUE)) > 8
+    )
+    assert bad <= 2 * (width + height)
+    return size
+
+
+def test_cropped_page_picture_is_solid_blue() -> None:
+    content = _with_cropbox(pdf_bytes(_CROP_BODY), (50, 50), (550, 800))
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    assert [chunk.text for chunk in chunks if chunk.kind != "drawing"] == [
+        "1. Beskriv figuren.",
+        "2. Fortsätt.",
+    ]
+    assert _assert_solid_blue(_assert_drawing_chunk(chunks[1], anchor="body:0002")) == (
+        round(120 * 2.5),
+        round(80 * 2.5),
+    )
+
+
+def test_uncropped_page_picture_is_the_same_solid_blue() -> None:
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        f"<p>{_picture_tag(_solid_png(*_PICTURE_SIZE, color=_CROP_BLUE), 'width:120pt;height:80pt')}</p>"  # noqa: E501
+        "<p>2. Fortsätt.</p>"
+    )
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    assert _assert_solid_blue(_assert_drawing_chunk(chunks[1], anchor="body:0002")) == (
+        round(120 * 2.5),
+        round(80 * 2.5),
+    )
+
+
+def test_cropbox_cutting_through_a_picture_gives_half_a_solid_picture() -> None:
+    data = pdf_bytes(_CROP_BODY)
+    with pdfplumber.open(io.BytesIO(data)) as pdf:
+        image = pdf.pages[0].images[0]
+        middle = (float(image["x0"]) + float(image["x1"])) / 2
+    reader = PdfReader(io.BytesIO(data))
+    mediabox = reader.pages[0].mediabox
+    content = _with_cropbox(
+        data, (middle, float(mediabox[1])), (float(mediabox[2]), float(mediabox[3]))
+    )
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    payload = _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor)
+    width, height = _assert_solid_blue(payload)
+    assert abs(width - round(120 * 2.5) / 2) <= 4
+    assert abs(height - round(80 * 2.5)) <= 2
+
+
+def test_rotated_page_picture_becomes_a_named_missing_picture() -> None:
+    content = _with_rotation(pdf_bytes(_CROP_BODY), 90)
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    joined = "".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "Beskriv" in joined.replace(" ", "")
+    assert "Fortsätt" in joined.replace(" ", "")
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    assert drawings[0].images == ()
+    assert [missing.reference for missing in drawings[0].missing_images] == ["PDF-sida 1: bild"]
+
+
 def test_a_picture_that_cannot_be_rendered_stays_as_a_named_missing_picture(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -292,3 +419,156 @@ def test_a_picture_that_cannot_be_rendered_stays_as_a_named_missing_picture(
     assert [missing.reference for missing in drawing.missing_images] == ["PDF-sida 1: bild"]
     assert source.images == {}
     assert source.unavailable == {"body:0002": "PDF-sida 1: bild"}
+
+
+def _white_pixels(payload: bytes) -> int:
+    """Pixels with every channel at least 250: painted-out text, not anti-aliasing."""
+    with Image.open(io.BytesIO(payload)) as shot:
+        data = list(shot.convert("RGB").getdata())
+    return sum(1 for pixel in data if min(pixel) >= 250)
+
+
+def test_italic_answer_line_under_a_triangle_stays_text() -> None:
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        '<svg width="240" height="180"><polygon points="40,130 200,130 120,20" '
+        'fill="none" stroke="black"/>'
+        '<text x="80" y="145" font-size="11" font-style="italic">Svar: 42 cm</text></svg>'
+        "<p>2. Fortsätt.</p>"
+    )
+
+    assert [chunk.kind for chunk in chunks] == [
+        "paragraph",
+        "drawing",
+        "paragraph",
+        "paragraph",
+    ]
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "Svar" in joined and "42" in joined
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    _assert_generous_cut(
+        _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
+        expected_aspect=160 / 110,
+    )
+
+
+def test_plain_rectangle_with_dimension_stays_a_figure_and_text() -> None:
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        '<svg width="240" height="180"><rect x="40" y="30" width="150" height="100" '
+        'fill="none" stroke="black"/>'
+        '<text x="90" y="150" font-size="12">8 cm</text></svg>'
+        "<p>2. Fortsätt.</p>"
+    )
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    assert drawings[0] is chunks[1]
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "8" in joined.split() or ("8" in joined and "cm" in joined)
+    _assert_generous_cut(
+        _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
+        expected_aspect=150 / 100,
+    )
+
+
+def test_chart_keeps_axes_and_reads_tick_and_title_as_text() -> None:
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        '<svg width="240" height="200">'
+        '<polyline points="40,20 40,130 200,130" fill="none" stroke="black"/>'
+        '<polyline points="40,120 90,100 140,70 200,40" fill="none" stroke="black"/>'
+        '<text x="90" y="143" font-size="12">10</text>'
+        '<text x="90" y="164" font-size="12">Tid (sekunder)</text></svg>'
+        "<p>2. Fortsätt.</p>"
+    )
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    rest = chunks[chunks.index(drawings[0]) + 1 :]
+    after = [chunk.text for chunk in rest if chunk.kind != "drawing"]
+    assert "10" in " ".join(after).split()
+    assert "Tid" in " ".join(after) and "sekunder" in " ".join(after)
+    _assert_generous_cut(
+        _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
+        expected_aspect=160 / 110,
+    )
+
+
+def test_large_placed_picture_stays_a_picture() -> None:
+    payload = _solid_png(420, 610)
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        f"<p>{_picture_tag(payload, 'width:420pt;height:610pt')}</p>"
+        "<p>2. Fortsätt.</p>"
+    )
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    image = _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor)
+    with Image.open(io.BytesIO(image)) as shot:
+        aspect = shot.size[0] / shot.size[1]
+    assert abs(aspect - 420 / 610) / (420 / 610) <= 0.05
+
+
+_OVERLAY_SENTENCE = "Texten ligger ovanpå bilden."
+
+
+def _overlay_body(*, with_sentence: bool) -> str:
+    picture = _picture_tag(_solid_png(300, 200, color=_CROP_BLUE), "width:300pt;height:200pt")
+    paragraph = (
+        f'<p style="position:absolute;top:50pt;left:0">{_OVERLAY_SENTENCE}</p>'
+        if with_sentence
+        else ""
+    )
+    return (
+        "<p>1. Beskriv figuren.</p>"
+        '<div style="position:relative">'
+        f"<p>{picture}</p>{paragraph}</div>"
+        "<p>2. Fortsätt.</p>"
+    )
+
+
+def test_text_over_a_picture_stays_text_and_paints_white_in_the_cut() -> None:
+    chunks = _chunks(_overlay_body(with_sentence=True))
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    assert _OVERLAY_SENTENCE in [chunk.text for chunk in chunks if chunk.kind != "drawing"]
+    payload = _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor)
+    assert _white_pixels(payload) >= 1000
+
+    control = _chunks(_overlay_body(with_sentence=False))
+    control_drawings = [chunk for chunk in control if chunk.kind == "drawing"]
+    assert len(control_drawings) == 1
+    _assert_solid_blue(
+        _assert_drawing_chunk(control_drawings[0], anchor=control_drawings[0].anchor)
+    )
+
+
+def test_boxed_answer_stays_text_and_interior_paints_white() -> None:
+    chunks = _chunks(
+        "<p>1. Beskriv figuren.</p>"
+        '<svg width="240" height="100" xmlns="http://www.w3.org/2000/svg">'
+        '<rect x="20" y="20" width="200" height="60" fill="none" '
+        'stroke="black" stroke-width="2"/>'
+        '<text x="120" y="55" text-anchor="middle" font-size="14">Svar: 42</text></svg>'
+        "<p>2. Fortsätt.</p>"
+    )
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "Svar" in joined and "42" in joined
+    payload = _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor)
+    (left, top, right, bottom), _ = _ink_box(payload)
+    with Image.open(io.BytesIO(payload)) as shot:
+        data = list(shot.convert("RGB").getdata())
+        width, _ = shot.size
+    inside = [
+        data[y * width + x] for y in range(top + 6, bottom - 5) for x in range(left + 6, right - 5)
+    ]
+    assert inside
+    assert all(min(pixel) >= 250 for pixel in inside)

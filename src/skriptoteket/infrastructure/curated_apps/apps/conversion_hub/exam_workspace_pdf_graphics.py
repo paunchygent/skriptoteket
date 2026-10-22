@@ -4,6 +4,19 @@ Purpose: turn one page's placed pictures, vector strokes, word boxes, visual
 lines and ruled-table boxes into cut regions (pictures and figures) with their
 label words, using only deterministic box predicates. No text is inspected.
 
+Rules:
+    A figure owns only the words whose centre lies inside its drawn outline
+    grown by ``_LABEL_INSIDE_POINTS``. A visual line straddling the grown hull
+    (some words inside, some outside) gives none of its words. The cut box is
+    the hull grown by the margin and stopped short of every non-label word.
+    A cluster without images whose strokes all lie on the hull boundary is a
+    figure with no labels, unless a visual line starting at the left text
+    margin reaches into it (a paragraph or page border, no cut). A ``rect``
+    stroke holding such a margin line is a border and is dropped before
+    clustering. A placed picture of any size is a picture cut. An even-odd filled
+    rect nested in another one paints only the bands between them, so a border drawn
+    that way is read as its thin bands.
+
 Relationships:
     The layout adapter builds ``PageGraphics`` from pdfplumber page objects;
     the chunker renders each returned ``PdfCut`` to PNG. This module imports
@@ -26,6 +39,9 @@ class PdfStroke:
     kind: Literal["line", "rect", "curve"]
     stroked: bool  # draws a visible (non-white) outline
     filled: bool  # draws a visible (non-white) fill
+    # Filled by the even-odd rule: a rect nested in another such rect paints only the
+    # band between the two, as a CSS border drawn as two filled rects does.
+    evenodd: bool = False
 
 
 @dataclass(frozen=True)
@@ -53,18 +69,10 @@ class PdfCut:
 
 _THIN_POINTS = 2.0  # a stroke at most this thick reads as a thin rule
 _TABLE_SLACK_POINTS = 2.0  # table boxes grow this far when swallowing their rules
-_PAGE_SHARE = 0.5  # a stroke or picture covering this share of the page is background
 _JOIN_RATIO = 0.5  # each graphic grows this many body sizes per side before joining
 _LABEL_INSIDE_POINTS = 1.0  # the hull grows this far when catching inside labels
-# A label line beside the drawing: at most this many body sizes away from the hull
-# sideways, and wholly within that reach left and right of it.
-_LABEL_SIDE_RATIO = 1.5
-# A label line above or below the drawing: at most this many body sizes of white space
-# from the hull. Body text after a figure usually sits further off; an axis title one
-# ring further out is read as text, a duplicate the teacher can delete.
-_LABEL_VERTICAL_RATIO = 0.5
-# A line starting this close to the document's left text margin is body text, never a
-# ring label: paragraphs start there, a figure's labels sit by the drawing.
+# A line starting this close to the document's left text margin is body text; when it
+# reaches into a boundary box the box is a paragraph or page border, never a figure.
 _MARGIN_START_POINTS = 1.0
 _MARGIN_RATIO = 1.0  # a figure cut grows this many body sizes past hull and labels
 _WORD_CLEARANCE_POINTS = 1.0  # a figure margin stops this short of neighbouring words
@@ -72,10 +80,6 @@ _WORD_CLEARANCE_POINTS = 1.0  # a figure margin stops this short of neighbouring
 
 def _centre(box: Box) -> tuple[float, float]:
     return ((box[0] + box[2]) / 2, (box[1] + box[3]) / 2)
-
-
-def _area(box: Box) -> float:
-    return max(0.0, box[2] - box[0]) * max(0.0, box[3] - box[1])
 
 
 def _grown(box: Box, amount: float) -> Box:
@@ -105,21 +109,78 @@ def _centre_inside(box: Box, outer: Box) -> bool:
     return outer[0] <= x <= outer[2] and outer[1] <= y <= outer[3]
 
 
-def _box_inside(inner: Box, outer: Box) -> bool:
-    return (
-        outer[0] <= inner[0]
-        and inner[2] <= outer[2]
-        and outer[1] <= inner[1]
-        and inner[3] <= outer[3]
-    )
+def _line_starts_at_margin(graphics: PageGraphics, line: tuple[int, ...]) -> bool:
+    """A visual line whose first word starts at the document's left text margin."""
+    if not line:
+        return False
+    first = line[0]
+    if not 0 <= first < len(graphics.words):
+        return False
+    return abs(graphics.words[first][0] - graphics.text_left) <= _MARGIN_START_POINTS
+
+
+def _box_holds_margin_line(graphics: PageGraphics, box: Box) -> bool:
+    """A margin-starting line with a word centre inside the box: a border, not a figure."""
+    for line in graphics.lines:
+        if not _line_starts_at_margin(graphics, line):
+            continue
+        if any(
+            0 <= index < len(graphics.words) and _centre_inside(graphics.words[index], box)
+            for index in line
+        ):
+            return True
+    return False
+
+
+def _is_evenodd_fill(stroke: PdfStroke) -> bool:
+    return stroke.kind == "rect" and stroke.evenodd and stroke.filled and not stroke.stroked
+
+
+def _painted(strokes: tuple[PdfStroke, ...]) -> tuple[PdfStroke, ...]:
+    """The strokes as painted: an even-odd filled rect nested in another one leaves
+    only the bands between the two, each a filled rect of its own."""
+    inner_of: dict[int, int] = {}
+    for outer_index, outer in enumerate(strokes):
+        if not _is_evenodd_fill(outer):
+            continue
+        for inner_index, inner in enumerate(strokes):
+            if (
+                inner_index != outer_index
+                and inner_index not in inner_of
+                and outer_index not in inner_of.values()
+                and _is_evenodd_fill(inner)
+                and inner.box != outer.box
+                and outer.box[0] <= inner.box[0]
+                and outer.box[1] <= inner.box[1]
+                and inner.box[2] <= outer.box[2]
+                and inner.box[3] <= outer.box[3]
+            ):
+                inner_of[inner_index] = outer_index
+                break
+    paired = set(inner_of) | set(inner_of.values())
+    painted = [stroke for index, stroke in enumerate(strokes) if index not in paired]
+    for inner_index, outer_index in inner_of.items():
+        (ox0, otop, ox1, obottom) = strokes[outer_index].box
+        (ix0, itop, ix1, ibottom) = strokes[inner_index].box
+        bands: tuple[Box, ...] = (
+            (ox0, otop, ox1, itop),
+            (ox0, ibottom, ox1, obottom),
+            (ox0, itop, ix0, ibottom),
+            (ix1, itop, ox1, ibottom),
+        )
+        painted.extend(
+            PdfStroke(box=band, kind="rect", stroked=False, filled=True)
+            for band in bands
+            if band[2] > band[0] and band[3] > band[1]
+        )
+    return tuple(painted)
 
 
 def _kept_strokes(graphics: PageGraphics) -> tuple[PdfStroke, ...]:
-    """Strokes that can start a cut; shading, table rules and background are out."""
-    page_area = graphics.width * graphics.height
+    """Strokes that can start a cut; shading, table rules and borders are out."""
     grown_tables = tuple(_grown(box, _TABLE_SLACK_POINTS) for box in graphics.tables)
     kept: list[PdfStroke] = []
-    for stroke in graphics.strokes:
+    for stroke in _painted(graphics.strokes):
         if not stroke.stroked and not stroke.filled:
             continue
         centre = _centre(stroke.box)
@@ -127,7 +188,7 @@ def _kept_strokes(graphics: PageGraphics) -> tuple[PdfStroke, ...]:
             box[0] <= centre[0] <= box[2] and box[1] <= centre[1] <= box[3] for box in grown_tables
         ):
             continue
-        if page_area > 0 and _area(stroke.box) >= _PAGE_SHARE * page_area:
+        if stroke.kind == "rect" and _box_holds_margin_line(graphics, stroke.box):
             continue
         if (
             stroke.kind == "rect"
@@ -202,19 +263,13 @@ def _on_boundary(stroke: PdfStroke, hull: Box) -> bool:
     return False
 
 
-def _figure_labels(
-    graphics: PageGraphics, hull: Box, grown_hull: Box, body_size: float
-) -> frozenset[int]:
-    """Hull-inside words plus the visual lines in the ring around the hull, one ring.
+def _figure_labels(graphics: PageGraphics, grown_hull: Box) -> frozenset[int]:
+    """Words inside the grown hull, except the words of a line that straddles it.
 
-    A ring line lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes of it
-    sideways and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, and wholly within
-    the side reach left and right, so a wrapped text line beside the figure is no label.
-    A line starting at the left text margin is a paragraph, never a ring label. A line
-    with a word inside the hull gives only its words inside the hull.
+    A figure owns only the words whose centre lies inside the hull grown by
+    ``_LABEL_INSIDE_POINTS``. A visual line with some words inside the grown hull and
+    some outside gives none of its words: the whole line stays text.
     """
-    side = _LABEL_SIDE_RATIO * body_size
-    vertical = _LABEL_VERTICAL_RATIO * body_size
     labels = {
         index for index, word in enumerate(graphics.words) if _centre_inside(word, grown_hull)
     }
@@ -222,15 +277,9 @@ def _figure_labels(
         members = tuple(index for index in line if 0 <= index < len(graphics.words))
         if not members:
             continue
-        if any(_centre_inside(graphics.words[index], grown_hull) for index in members):
-            continue
-        box = _union(tuple(graphics.words[index] for index in members))
-        horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
-        vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
-        within_reach = box[0] >= hull[0] - side and box[2] <= hull[2] + side
-        at_margin = abs(box[0] - graphics.text_left) <= _MARGIN_START_POINTS
-        if horizontal_gap <= side and vertical_gap <= vertical and within_reach and not at_margin:
-            labels.update(members)
+        inside = [index for index in members if index in labels]
+        if inside and len(inside) != len(members):
+            labels.difference_update(inside)
     return frozenset(labels)
 
 
@@ -296,14 +345,12 @@ def _picture_labels(graphics: PageGraphics, hull: Box) -> frozenset[int]:
 def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]:
     """Cut regions for one page's pictures and drawn figures, top to bottom then left.
 
-    A picture covering ``_PAGE_SHARE`` of the page is a background or watermark, never a
-    picture of its own: cutting it would take the page's whole text into pixels.
+    A placed picture of any size is a picture cut. A cluster without images whose
+    strokes all lie on the hull boundary is a figure with no labels, unless a
+    margin-starting line reaches into it (a paragraph or page border, no cut).
     """
     strokes = _kept_strokes(graphics)
-    page_area = graphics.width * graphics.height
-    images = tuple(
-        box for box in graphics.images if page_area <= 0 or _area(box) < _PAGE_SHARE * page_area
-    )
+    images = tuple(graphics.images)
     join = _JOIN_RATIO * body_size
     grown_hull_slack = _LABEL_INSIDE_POINTS
     cuts: list[PdfCut] = []
@@ -320,25 +367,33 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
                 continue
             if all(_is_vertical_thin(stroke.box) for stroke in member_strokes):
                 continue
-            if all(_on_boundary(stroke, hull) for stroke in member_strokes):
-                continue
             if width < body_size and height < body_size:
+                continue
+            if all(_on_boundary(stroke, hull) for stroke in member_strokes):
+                if _box_holds_margin_line(graphics, hull):
+                    continue
+                cuts.append(
+                    PdfCut(
+                        kind="figure",
+                        box=_figure_box(hull, graphics, frozenset(), body_size),
+                        labels=frozenset(),
+                    )
+                )
                 continue
         elif all(_on_boundary(stroke, hull) for stroke in member_strokes):
             cuts.append(PdfCut(kind="picture", box=hull, labels=_picture_labels(graphics, hull)))
             continue
         grown_hull = _grown(hull, grown_hull_slack)
-        labels = _figure_labels(graphics, hull, grown_hull, body_size)
-        union = _union((hull, *[graphics.words[index] for index in labels])) if labels else hull
+        labels = _figure_labels(graphics, grown_hull)
         cuts.append(
             PdfCut(
                 kind="figure",
-                box=_figure_box(union, graphics, labels, body_size),
+                box=_figure_box(hull, graphics, labels, body_size),
                 labels=labels,
             )
         )
     cuts.sort(key=lambda cut: (cut.box[1], cut.box[0]))
-    # One ring, one owner: a word belongs to the first cut in output order.
+    # One word, one owner: a word belongs to the first cut in output order.
     claimed: set[int] = set()
     ordered: list[PdfCut] = []
     for cut in cuts:
