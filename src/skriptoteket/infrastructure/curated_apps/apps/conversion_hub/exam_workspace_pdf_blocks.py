@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import re
 import statistics
-from collections import Counter
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 
@@ -47,6 +46,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PdfLine,
     PdfTable,
     PdfWord,
+    body_points,
     joined_words,
     raw_lines,
 )
@@ -86,7 +86,6 @@ _ROW_STEP = 1.15
 _HEADING_RATIO = 1.08
 _HEADING_MAX_CHARS = 200
 _POINTS_PER_INDENT_SPACE = 9.0
-_FALLBACK_BODY_POINTS = 11.0
 
 
 @dataclass(frozen=True)
@@ -405,22 +404,13 @@ def _render(paragraph: _Paragraph, *, left: float) -> _Rendered:
     return _Rendered(plain, marked, markdown, tuple(runs))
 
 
-def _body_points(items: Sequence[PdfBlockItem]) -> float:
-    sizes: Counter[float] = Counter()
-    for item in items:
-        if isinstance(item, PdfLine):
-            for word in item.words:
-                sizes[round(word.size, 1)] += len(word.text)
-    return sizes.most_common(1)[0][0] if sizes else _FALLBACK_BODY_POINTS
-
-
-def _heading_levels(paragraphs: Sequence[_Paragraph], body_points: float) -> dict[int, int]:
+def _heading_levels(paragraphs: Sequence[_Paragraph], body_size: float) -> dict[int, int]:
     """Heading level per paragraph index: distinct larger sizes ranked from the largest."""
     candidates: dict[int, float] = {}
     for index, paragraph in enumerate(paragraphs):
         size = min(word.size for line in paragraph.lines for word in line.words)
         length = sum(len(line.text) for line in paragraph.lines)
-        if size >= body_points * _HEADING_RATIO and length <= _HEADING_MAX_CHARS:
+        if size >= body_size * _HEADING_RATIO and length <= _HEADING_MAX_CHARS:
             candidates[index] = round(size)
     ranked = sorted(set(candidates.values()), reverse=True)
     return {index: min(3, ranked.index(size) + 1) for index, size in candidates.items()}
@@ -486,7 +476,9 @@ def _with_borderless_tables(items: Sequence[PdfBlockItem], spacing: _Spacing) ->
 def pdf_blocks(items: Sequence[PdfBlockItem]) -> tuple[PdfBlock, ...]:
     """Every block in reading order, anchored ``body:0001`` onward like the Word chunker."""
     spacing = _spacing(items)
-    body_points = _body_points(items)
+    body_size = body_points(
+        word for item in items if isinstance(item, PdfLine) for word in item.words
+    )
     left = min((item.x0 for item in items if isinstance(item, PdfLine)), default=0.0)
     # Consecutive lines group into paragraphs; a table or a picture always stands alone.
     sequence: list[_Paragraph | PdfTable | PdfPicture] = []
@@ -500,7 +492,7 @@ def pdf_blocks(items: Sequence[PdfBlockItem]) -> tuple[PdfBlock, ...]:
         if item is not None:
             sequence.append(item)
     levels = _heading_levels(
-        [entry for entry in sequence if isinstance(entry, _Paragraph)], body_points
+        [entry for entry in sequence if isinstance(entry, _Paragraph)], body_size
     )
     blocks: list[PdfBlock] = []
     paragraph_index = -1

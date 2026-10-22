@@ -193,7 +193,7 @@ def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
         min((word.x0 for word in every), default=0.0),
         max((word.x1 for word in every), default=0.0),
     )
-    body_size = _body_size(every)
+    body_size = body_points(every)
     laid_out = [
         _page_items(page, index, words[index], margins, body_size)
         for index, page in enumerate(pages)
@@ -207,7 +207,7 @@ def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
 # --- Page reading -------------------------------------------------------------------------
 
 
-def _body_size(words: Sequence[PdfWord]) -> float:
+def body_points(words: Iterable[PdfWord]) -> float:
     """The document's body font size: the most common word size, counted by characters."""
     sizes: Counter[float] = Counter()
     for word in words:
