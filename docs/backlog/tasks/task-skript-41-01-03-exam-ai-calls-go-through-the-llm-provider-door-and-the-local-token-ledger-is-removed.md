@@ -97,6 +97,6 @@ Before the REP-0044 gate opens AI to teachers, close this gap: the door's `allow
 - `origin/main` is merged in `188ebe30f`, `eb17850ed` and `cacc28e04`.
 - Proof at `cacc28e04`, run after the merge:
   - `pdm run lint`, `typecheck`, `fe-lint`, `check-migration-test-coverage` and `docs-validate` pass.
-  - Focused unit tests pass: 3576 in curated apps, LLM, workers, web, scripts, architecture and config, plus 2419 exam-workspace Vitest tests.
+  - Focused unit tests pass: 3576 in curated apps, LLM, workers, web, scripts, architecture and config; 3083 in domain, repositories and the dev compose contract; 2419 exam-workspace Vitest tests.
   - Docker integration passes 13 tests: the migration test plus the DOCX background and DigiExam suggestion modules.
   - Logs are in the lead's retained root, under `evidence/repair/`.
