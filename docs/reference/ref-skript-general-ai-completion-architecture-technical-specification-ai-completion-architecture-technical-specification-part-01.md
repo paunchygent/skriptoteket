@@ -40,6 +40,7 @@ model endpoint.
 - Chat-first editing uses “virtual files” (e.g. `tool.py`, `input_schema.json`, `settings_schema.json`) to prevent
   boundary violations while still allowing multi-document proposals
 - A door daily limit surfaces as HTTP 429 `AI_DAILY_LIMIT_REACHED` with the teacher note inline in the editor's AI area
+- A busy door surfaces as HTTP 429 `AI_TRY_AGAIN` with the try-again note; the AI controls stay enabled
 
 ______________________________________________________________________
 
@@ -139,17 +140,25 @@ constrained decoding are not used.
 `infrastructure/llm/openai/door_replies.py` maps a door answer to `EditorLlmProviderError`
 (`protocols/llm/common.py`):
 
-| Kind                      | Cause                                                                                    |
-| ------------------------- | ---------------------------------------------------------------------------------------- |
-| `timeout`                 | Door call exceeded `LLM_*_TIMEOUT_SECONDS`                                               |
-| `request_failed`          | Transport failed before an answer                                                        |
-| `context_window_exceeded` | Relayed OpenAI error code `context_length_exceeded`                                      |
-| `http_status`             | Any other unsuccessful relayed answer (a door capacity 429 included), with `status_code` |
-| `invalid_response`        | Answer or stream event that cannot be parsed, or a stream `error` event                  |
+| Kind                      | Cause                                                                   |
+| ------------------------- | ----------------------------------------------------------------------- |
+| `timeout`                 | Door call exceeded `LLM_*_TIMEOUT_SECONDS`                              |
+| `request_failed`          | Transport failed before an answer                                       |
+| `context_window_exceeded` | Relayed OpenAI error code `context_length_exceeded`                     |
+| `http_status`             | Any other unsuccessful relayed answer, with `status_code`               |
+| `invalid_response`        | Answer or stream event that cannot be parsed, or a stream `error` event |
 
 A door daily limit is never `EditorLlmProviderError`. The door client raises `AiDailyLimitReached(limit)`
 (`pool`, `user_share` or `usd_ceiling`), which the handlers turn into the 429 described in section 6.3. It is never
 retried.
+
+A busy door is never `EditorLlmProviderError` either. Every editor call, the chat stream included, shares
+TASK-SKRIPT-41-01-04's door bounds: the door client's connection pool sized by `LLM_DOOR_MAX_CONNECTIONS`, and the
+action and process slots bounded by `LLM_JOB_MAX_IN_FLIGHT` and `LLM_DOOR_MAX_IN_FLIGHT`. A chat stream holds its
+slots until the stream closes. A door capacity 429 is resent after its capped `Retry-After`; once the retries are
+spent, or when no process slot or pooled connection frees in time, the client raises `AiDoorBusy`, which the
+handlers turn into HTTP 429 `AI_TRY_AGAIN` with the try-again note (`Retry-After` when the door named one). Chat
+refuses before its first SSE event (S6).
 
 ______________________________________________________________________
 

@@ -82,7 +82,7 @@
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
     - 41-01-02 `in_progress`: lead on branch `codex/task-skript-41-01-02`, Hemma root
-      `01a16352-c1aa-7200-beac-cdd64393cb32`. main d44e946b5 (41-01-04) merged; next: the
+      `01a16352-c1aa-7200-beac-cdd64393cb32`, post-merge head in the lead summary there; next: the
       single review. Walk precondition: staging door rebuilt from HuleEdu main ca7ff9700
       (gpt-6.1-sol priced). 41-01-04 on main; HuleEdu door needs hypercorn `--backlog 2048`.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root

@@ -50,6 +50,8 @@ type GhostTextState = {
 - Debounce auto-trigger to reduce API load
 - A 429 `AI_DAILY_LIMIT_REACHED` answer marks the shared AI limit state; no further requests start until it clears, and
   the note shows inline in the AI area
+- A 429 `AI_TRY_AGAIN` answer shows the try-again note inline for chat and edit and leaves the controls enabled;
+  inline completion shows nothing and tries again on the next request
 
 ______________________________________________________________________
 
@@ -168,6 +170,7 @@ ______________________________________________________________________
 - The door meters the daily pools, per-user shares and the USD ceiling; Skriptoteket adds no request-rate limit of its
   own
 - A refusal reaches the teacher as HTTP 429 `AI_DAILY_LIMIT_REACHED` (section 6.3)
+- A busy door, or this process's door slots full, reaches the teacher as HTTP 429 `AI_TRY_AGAIN` (S6)
 - Chat allows one in-flight turn per `{user_id, tool_id}` in each process (`InProcessChatInFlightGuard`)
 
 ### 9.4 Privacy & Logging
@@ -234,6 +237,8 @@ ______________________________________________________________________
   `EditorLlmProviderError` kind
 - Unit: A door daily limit becomes 429 `AI_DAILY_LIMIT_REACHED` with the matching note and `details.limit`; chat
   refuses before its first SSE event
+- Unit: A busy door becomes 429 `AI_TRY_AGAIN` on all three paths; an open chat stream holds its door slot until it
+  closes, and the editor providers share the door client's sized pool
 - Integration: Endpoint requires auth + CSRF
 - Integration: Returns `enabled=false` when disabled
 - Integration: Truncated response returns empty completion
@@ -265,3 +270,4 @@ ______________________________________________________________________
 - Inline completion runs on `gpt-6-luna` (small-model pool, S2); chat, chat ops and edit run on `gpt-6.1-sol` at low
   reasoning (full-model pool, S1, S4).
 - A door daily limit is HTTP 429 `AI_DAILY_LIMIT_REACHED` with the teacher note inline, and no toast (S5).
+- A busy door is HTTP 429 `AI_TRY_AGAIN` with the try-again note; editor streams share the door bounds (S6).

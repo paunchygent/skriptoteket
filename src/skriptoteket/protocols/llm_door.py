@@ -109,8 +109,9 @@ class LlmDoorClientProtocol(Protocol):
     ) -> AbstractAsyncContextManager[DoorStream]:
         """Open one streamed call; the context closes the connection.
 
-        Raises ``AiDailyLimitReached`` on entry for a pool, user-share or
-        USD-ceiling 429, before any line is relayed; ``DoorTimeout`` and
+        Holds the caller's door slots until the context closes. Raises
+        ``AiDailyLimitReached`` on entry for a pool, user-share or USD-ceiling
+        429, before any line is relayed; ``AiDoorBusy``, ``DoorTimeout`` and
         ``DoorRequestFailed`` as ``send`` does. A success admits ``caller``
         on entry. The door sends no charge headers on a stream, so a stream
         records no overage charge.
