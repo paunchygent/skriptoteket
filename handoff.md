@@ -10,8 +10,8 @@
     since the 06:43 reboot (restart policy "no"); deploy needed a pulled
     `prom/alertmanager:v0.34.1`. HuleEdu prod `.env` still holds a stale
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
-  - 39-10-02 (lead `local_fa0c6b84`): second review S1-S5 mediums in repair;
-    admit on focused proof, then merge, staging, Mac walk.
+  - HuleEdu TASK-HULE-09-02-02 boot startup (lead `local_dc7f0214`): main
+    `57994328`; install/alertmanager/activate phases running on Hemma.
   - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
@@ -119,6 +119,9 @@
 
 ## Recent
 
+- 2026-10-22 `done`: 39-10-02 PDF pictures and figures (`7adde567`; Mac walk
+  `.artifacts/staging-walk-39-10-02-7adde567c/walk-record.md`; Word drawn
+  shapes still dropped with a review warning, no task yet).
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user). 41-01-03 exam AI through the door done (`fe2bc9b9` + D1 `2d16c24d`; HuleEdu staging door key `547e1deb`; B4 notes unit-proof only). REP-0049 done (`b8293abd`; Mac walk `.artifacts/staging-walk-overnight-fe2bc9b9/walk-record.md`). 39-10-04 Lägg till bild done (`4f555442` + W1 `e68e84a1`; Mac walks passed, check 4 re-walk at `fe2bc9b9`).
 
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
