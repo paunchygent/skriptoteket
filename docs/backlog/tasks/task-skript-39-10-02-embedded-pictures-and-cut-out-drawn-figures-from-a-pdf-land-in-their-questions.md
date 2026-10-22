@@ -71,3 +71,25 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
 ### 2026-10-22 (Hemma orchestrator)
 
 - Full contract written from the ST-SKRIPT-39-10 story terms, and status set to `ready` by the user's decision of 2026-10-22 (Mac AskUserQuestion, "39-10-02 + REP-0049"). A fresh lead session is assigned.
+
+### 2026-10-22 (implementation lead)
+
+- Built on `codex/task-skript-39-10-02`. `exam_workspace_pdf_graphics` decides each page's
+  pictures and drawn figures from the PDF's own drawing primitives (box geometry, no text
+  cues, no AI): placed pictures; figures with their labels; answer lines, rules, frames,
+  text shading, page-sized backgrounds and strokes in text tables are not figures; a ruled
+  grid without text is a drawing. `exam_workspace_pdf_pictures` cuts each region out of
+  the PDFium-rendered page (180 dpi PNG, only pages with pictures) and the blocks emit it
+  as the Word import's `drawing` chunk; the labeler gets the same PNG. A failed render is
+  a named missing picture. Header and footer pictures that recur are dropped. A PDF with
+  pictures and no text still stops with the no-text error.
+- A ring label beside or under a figure is taken only when it does not start at the left
+  text margin, so a paragraph right after a figure stays text; a picture behind a
+  paragraph claims none of its words.
+- Proof: fail-first (7 of 9 new reader tests fail on 41691447), classifier geometry tests,
+  a pipeline test that runs a PDF picture through grouping, labeling, conversion and the
+  native document, lint and typecheck. Logs in retained root
+  `01a160cd-e56d-72dd-a347-6c49957db10c` `evidence/proof/`.
+- Open: no Word fixture with a picture or drawn figure existed; corpus parity and the
+  figure-versus-answer-line-versus-table-rule stop condition wait on the Mac's Word-made
+  `metodprov_med_bilder` .docx and .pdf.

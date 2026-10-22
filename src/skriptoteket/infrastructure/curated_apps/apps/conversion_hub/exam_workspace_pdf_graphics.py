@@ -53,7 +53,7 @@ class PdfCut:
 
 _THIN_POINTS = 2.0  # a stroke at most this thick reads as a thin rule
 _TABLE_SLACK_POINTS = 2.0  # table boxes grow this far when swallowing their rules
-_PAGE_SHARE = 0.5  # a stroke covering this share of the page is background
+_PAGE_SHARE = 0.5  # a stroke or picture covering this share of the page is background
 _JOIN_RATIO = 0.5  # each graphic grows this many body sizes per side before joining
 _LABEL_INSIDE_POINTS = 1.0  # the hull grows this far when catching inside labels
 # A label line beside the drawing: at most this many body sizes away from the hull
@@ -277,13 +277,37 @@ def _figure_box(
     )
 
 
+def _picture_labels(graphics: PageGraphics, hull: Box) -> frozenset[int]:
+    """Words printed on a picture, or none when the picture lies behind a paragraph.
+
+    A visual line that reaches into the picture from the left text margin is a paragraph
+    the picture sits behind; its text stays text, so the picture claims no words.
+    """
+    inside = {index for index, word in enumerate(graphics.words) if _centre_inside(word, hull)}
+    for line in graphics.lines:
+        if any(index in inside for index in line) and any(
+            abs(graphics.words[index][0] - graphics.text_left) <= _MARGIN_START_POINTS
+            for index in line[:1]
+        ):
+            return frozenset()
+    return frozenset(inside)
+
+
 def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]:
-    """Cut regions for one page's pictures and drawn figures, top to bottom then left."""
+    """Cut regions for one page's pictures and drawn figures, top to bottom then left.
+
+    A picture covering ``_PAGE_SHARE`` of the page is a background or watermark, never a
+    picture of its own: cutting it would take the page's whole text into pixels.
+    """
     strokes = _kept_strokes(graphics)
+    page_area = graphics.width * graphics.height
+    images = tuple(
+        box for box in graphics.images if page_area <= 0 or _area(box) < _PAGE_SHARE * page_area
+    )
     join = _JOIN_RATIO * body_size
     grown_hull_slack = _LABEL_INSIDE_POINTS
     cuts: list[PdfCut] = []
-    for member_strokes, member_images in _clusters(strokes, graphics.images, join):
+    for member_strokes, member_images in _clusters(strokes, images, join):
         members: tuple[Box, ...] = (
             *[stroke.box for stroke in member_strokes],
             *member_images,
@@ -301,10 +325,7 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
             if width < body_size and height < body_size:
                 continue
         elif all(_on_boundary(stroke, hull) for stroke in member_strokes):
-            labels = frozenset(
-                index for index, word in enumerate(graphics.words) if _centre_inside(word, hull)
-            )
-            cuts.append(PdfCut(kind="picture", box=hull, labels=labels))
+            cuts.append(PdfCut(kind="picture", box=hull, labels=_picture_labels(graphics, hull)))
             continue
         grown_hull = _grown(hull, grown_hull_slack)
         labels = _figure_labels(graphics, hull, grown_hull, body_size)

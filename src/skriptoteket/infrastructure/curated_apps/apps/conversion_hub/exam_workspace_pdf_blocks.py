@@ -515,6 +515,7 @@ def pdf_blocks(items: Sequence[PdfBlockItem]) -> tuple[PdfBlock, ...]:
                 marked_text="",
                 images=(picture,) if isinstance(picture, DocxImage) else (),
                 missing_images=() if isinstance(picture, DocxImage) else (picture,),
+                paragraphs=(DocxSourceParagraph(offset=0, text=""),),
             )
             blocks.append(PdfBlock(chunk=chunk, markdown=""))
             continue

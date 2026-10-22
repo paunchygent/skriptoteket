@@ -114,6 +114,24 @@ def test_short_line_starting_at_the_text_margin_is_body_text_not_a_label() -> No
     assert page_cuts(indented_page, body_size=_BODY)[0].labels == frozenset({0, 1})
 
 
+def test_page_sized_picture_is_a_background_and_takes_no_text() -> None:
+    words = ((70.0, 100.0, 120.0, 111.0), (125.0, 100.0, 200.0, 111.0))
+    page = _page(images=((0.0, 0.0, _WIDTH, _HEIGHT),), words=words, lines=((0, 1),))
+
+    assert page_cuts(page, body_size=_BODY) == ()
+
+
+def test_picture_behind_a_paragraph_claims_none_of_its_words() -> None:
+    words = ((70.0, 100.0, 120.0, 111.0), (125.0, 100.0, 200.0, 111.0))
+    page = _page(
+        images=((100.0, 90.0, 300.0, 200.0),), words=words, lines=((0, 1),), text_left=70.0
+    )
+
+    cuts = page_cuts(page, body_size=_BODY)
+
+    assert [(cut.kind, cut.labels) for cut in cuts] == [("picture", frozenset())]
+
+
 def test_stacked_answer_lines_make_no_cut() -> None:
     strokes = (
         _stroke((100.0, 100.0, 300.0, 101.0)),

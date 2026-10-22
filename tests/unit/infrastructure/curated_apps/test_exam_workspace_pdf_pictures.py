@@ -265,3 +265,30 @@ def test_empty_bordered_table_becomes_one_drawing_chunk_and_no_table_chunk() -> 
     assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
     assert [chunk.text for chunk in chunks] == ["Före tabellen.", "", "Efter tabellen."]
     _assert_drawing_chunk(chunks[1], anchor="body:0002")
+
+
+def test_a_picture_that_cannot_be_rendered_stays_as_a_named_missing_picture(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+        exam_workspace_pdf_pictures,
+    )
+
+    def failing(pdf: bytes, *, scale: float, pages: object) -> tuple[Image.Image, ...]:
+        raise RuntimeError("pdfium failed")
+
+    monkeypatch.setattr(exam_workspace_pdf_pictures, "rasterize_pdf_pages", failing)
+    content = pdf_bytes(
+        "<p>Fråga 1. Titta på bilden.</p>"
+        f"<p>{_picture_tag(_solid_png(*_PICTURE_SIZE), 'width:120pt;height:80pt')}</p>"
+        "<p>Fråga 2. Gå vidare.</p>"
+    )
+
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+    source = PdfPlumberLabelerMarkdown().source(content=content)
+
+    drawing = chunks[1]
+    assert (drawing.kind, drawing.images) == ("drawing", ())
+    assert [missing.reference for missing in drawing.missing_images] == ["PDF-sida 1: bild"]
+    assert source.images == {}
+    assert source.unavailable == {"body:0002": "PDF-sida 1: bild"}
