@@ -6,7 +6,7 @@ Purpose:
     every element and attribute value it does not model raises ``UnsupportedShapeFigure`` that
     names it, so a figure is either complete or not returned at all (D3). ``a:extLst`` is the one
     exception: ECMA-376 makes extension lists ignorable, so the allowlists of the property
-    elements that carry one admit and skip it (``exam_workspace_docx_shape_colors`` lists them).
+    elements that carry one admit and skip it (``exam_workspace_docx_shape_xml`` lists them).
 
     Coordinates. The figure box is ``wp:extent``. A single shape fills the box. A group maps its
     child space onto the parent as ``x_parent = off.x + (x - chOff.x) * ext.cx / chExt.cx`` (the
@@ -15,9 +15,9 @@ Purpose:
 
 Relationships:
     - ``exam_workspace_docx_shape_figure`` holds the figure model the reader fills.
-    - ``exam_workspace_docx_shape_colors`` holds the exact XML helpers and resolves colours and
-      ``wps:style`` references through the theme; ``exam_workspace_docx_shape_labels`` reads the
-      text box labels.
+    - ``exam_workspace_docx_shape_xml`` holds the namespaces and the exact XML helpers;
+      ``exam_workspace_docx_shape_colors`` resolves colours and ``wps:style`` references through
+      the theme; ``exam_workspace_docx_shape_labels`` reads the text box labels.
     - ``exam_workspace_docx_chunker`` calls ``read_shape_figure`` for a drawing block without a
       picture; ``exam_workspace_docx_shape_drawing`` draws the figure.
 """
@@ -33,25 +33,7 @@ from docx.oxml.xmlchemy import BaseOxmlElement
 from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_colors import (  # noqa: E501
-    EXT_LST,
-    FILL_CHOICES,
-    WP,
-    WPC,
-    WPC_NS,
-    WPG,
-    WPG_NS,
-    WPS,
-    WPS_NS,
-    A,
-    Element,
     Theme,
-    elements,
-    flag,
-    int_attr,
-    int_attr_or,
-    only,
-    tag_name,
-    unsupported,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
     SUPPORTED_PRESETS,
@@ -67,27 +49,57 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_labels import (  # noqa: E501
     LabelReader,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_xml import (  # noqa: E501
+    DRAWINGML_NS,
+    EXT_LST,
+    WORD_CANVAS_NS,
+    WORD_CANVAS_URI,
+    WORD_DRAWING_NS,
+    WORD_GROUP_NS,
+    WORD_GROUP_URI,
+    WORD_SHAPE_NS,
+    WORD_SHAPE_URI,
+    Element,
+    elements,
+    flag,
+    int_attr,
+    int_attr_or,
+    only,
+    tag_name,
+    unsupported,
+)
 
 _DEFAULT_LINE_EMU = 9525
-_EFFECT_ELEMENTS = frozenset(f"{A}{name}" for name in ("effectLst", "effectDag", "scene3d", "sp3d"))
+_FILL_CHOICES = frozenset(
+    f"{DRAWINGML_NS}{name}"
+    for name in ("noFill", "solidFill", "gradFill", "blipFill", "pattFill", "grpFill")
+)
+_EFFECT_ELEMENTS = frozenset(
+    f"{DRAWINGML_NS}{name}" for name in ("effectLst", "effectDag", "scene3d", "sp3d")
+)
 _SP_PR_CHILDREN = (
-    FILL_CHOICES
+    _FILL_CHOICES
     | _EFFECT_ELEMENTS
-    | {f"{A}{n}" for n in ("xfrm", "prstGeom", "custGeom", "ln")}
+    | {f"{DRAWINGML_NS}{n}" for n in ("xfrm", "prstGeom", "custGeom", "ln")}
     | {EXT_LST}
 )
 _LN_CHILDREN = frozenset(
-    f"{A}{name}"
+    f"{DRAWINGML_NS}{name}"
     for name in (
         "noFill", "solidFill", "gradFill", "pattFill", "prstDash", "custDash",
         "round", "bevel", "miter", "headEnd", "tailEnd", "extLst",
     )
 )  # fmt: skip
 _WSP_CHILDREN = frozenset(
-    f"{WPS}{name}" for name in ("cNvPr", "cNvSpPr", "cNvCnPr", "spPr", "style", "txbx", "bodyPr")
+    f"{WORD_SHAPE_NS}{name}"
+    for name in ("cNvPr", "cNvSpPr", "cNvCnPr", "spPr", "style", "txbx", "bodyPr")
 )
-_STYLE_CHILDREN = frozenset(f"{A}{name}" for name in ("lnRef", "fillRef", "effectRef", "fontRef"))
-_GROUP_NON_VISUAL = frozenset(f"{WPG}{name}" for name in ("cNvPr", "cNvGrpSpPr", "grpSpPr"))
+_STYLE_CHILDREN = frozenset(
+    f"{DRAWINGML_NS}{name}" for name in ("lnRef", "fillRef", "effectRef", "fontRef")
+)
+_GROUP_NON_VISUAL = frozenset(
+    f"{WORD_GROUP_NS}{name}" for name in ("cNvPr", "cNvGrpSpPr", "grpSpPr")
+)
 _ARROWHEAD_KINDS = frozenset(get_args(ArrowheadKind))
 _ARROWHEAD_SIZES = frozenset(get_args(ArrowheadSize))
 _DASH_STYLES = frozenset(get_args(DashStyle))
@@ -116,9 +128,13 @@ class _Mapping:
         ``box`` replaces the group's own ``off`` and ``ext`` for the top-level group, which
         fills the figure box.
         """
-        properties = group.find(f"{WPG}grpSpPr")
-        children = [] if properties is None else only(properties, frozenset({f"{A}xfrm", EXT_LST}))
-        transform = next((c for c in children if c.tag == f"{A}xfrm"), None)
+        properties = group.find(f"{WORD_GROUP_NS}grpSpPr")
+        children = (
+            []
+            if properties is None
+            else only(properties, frozenset({f"{DRAWINGML_NS}xfrm", EXT_LST}))
+        )
+        transform = next((c for c in children if c.tag == f"{DRAWINGML_NS}xfrm"), None)
         if transform is None:
             raise unsupported("group without a:xfrm")
         if (
@@ -128,7 +144,7 @@ class _Mapping:
         ):
             raise unsupported("rotated or flipped group")
         off, ext, ch_off, ch_ext = (
-            transform.find(f"{A}{name}") for name in ("off", "ext", "chOff", "chExt")
+            transform.find(f"{DRAWINGML_NS}{name}") for name in ("off", "ext", "chOff", "chExt")
         )
         if off is None or ext is None or ch_off is None or ch_ext is None:
             raise unsupported("group a:xfrm without off, ext, chOff and chExt")
@@ -153,9 +169,11 @@ class _Mapping:
 def _check_canvas_layer(layer: Element) -> None:
     """``wpc:bg`` and ``wpc:whole`` may only say "no fill" and "no outline"."""
     for child in elements(layer):
-        if child.tag in (f"{A}noFill", EXT_LST):
+        if child.tag in (f"{DRAWINGML_NS}noFill", EXT_LST):
             continue
-        if child.tag == f"{A}ln" and all(c.tag in (f"{A}noFill", EXT_LST) for c in elements(child)):
+        if child.tag == f"{DRAWINGML_NS}ln" and all(
+            c.tag in (f"{DRAWINGML_NS}noFill", EXT_LST) for c in elements(child)
+        ):
             continue
         raise unsupported(f"{tag_name(layer)} carries {tag_name(child)}")
 
@@ -174,30 +192,33 @@ class _FigureReader:
 
     def read(self, drawing: Element) -> ShapeFigure:
         containers = elements(drawing)
-        if len(containers) != 1 or containers[0].tag not in (f"{WP}inline", f"{WP}anchor"):
+        if len(containers) != 1 or containers[0].tag not in (
+            f"{WORD_DRAWING_NS}inline",
+            f"{WORD_DRAWING_NS}anchor",
+        ):
             raise unsupported("drawing without exactly one wp:inline or wp:anchor")
         container = containers[0]
-        extent = container.find(f"{WP}extent")
+        extent = container.find(f"{WORD_DRAWING_NS}extent")
         if extent is None:
             raise unsupported("drawing without wp:extent")
         width, height = int_attr(extent, "cx"), int_attr(extent, "cy")
         # A straight horizontal or vertical line has a zero side; a figure needs one non-zero side.
         if min(width, height) < 0 or max(width, height) == 0:
             raise unsupported(f"wp:extent {width} x {height}")
-        data = container.find(f"{A}graphic/{A}graphicData")
+        data = container.find(f"{DRAWINGML_NS}graphic/{DRAWINGML_NS}graphicData")
         if data is None:
             raise unsupported("drawing without a:graphicData")
         uri = data.get("uri") or ""
         roots = elements(data)
         shapes: list[FigureShape] = []
-        if uri == WPS_NS:
-            root = self._single(roots, f"{WPS}wsp", "wps:wsp")
+        if uri == WORD_SHAPE_URI:
+            root = self._single(roots, f"{WORD_SHAPE_NS}wsp", "wps:wsp")
             shapes.append(self._shape(root, _Mapping(), box=(width, height)))
-        elif uri == WPG_NS:
-            root = self._single(roots, f"{WPG}wgp", "wpg:wgp")
+        elif uri == WORD_GROUP_URI:
+            root = self._single(roots, f"{WORD_GROUP_NS}wgp", "wpg:wgp")
             self._walk(root, _Mapping().nested(root, box=(width, height)), shapes)
-        elif uri == WPC_NS:
-            self._walk(self._single(roots, f"{WPC}wpc", "wpc:wpc"), _Mapping(), shapes)
+        elif uri == WORD_CANVAS_URI:
+            self._walk(self._single(roots, f"{WORD_CANVAS_NS}wpc", "wpc:wpc"), _Mapping(), shapes)
         else:
             raise unsupported(f"graphic data of kind {uri.rsplit('/', 1)[-1]} ({uri})")
         if not shapes:
@@ -212,15 +233,18 @@ class _FigureReader:
 
     def _walk(self, parent: Element, mapping: _Mapping, shapes: list[FigureShape]) -> None:
         for child in elements(parent):
-            if child.tag == f"{WPS}wsp":
+            if child.tag == f"{WORD_SHAPE_NS}wsp":
                 shapes.append(self._shape(child, mapping, box=None))
-            elif child.tag == f"{WPG}grpSp":
+            elif child.tag == f"{WORD_GROUP_NS}grpSp":
                 self._walk(child, mapping.nested(child, box=None), shapes)
-            elif child.tag == f"{WPG}cNvPr":
+            elif child.tag == f"{WORD_GROUP_NS}cNvPr":
                 _check_visible(child)
             elif child.tag in _GROUP_NON_VISUAL:
                 continue
-            elif parent.tag == f"{WPC}wpc" and child.tag in (f"{WPC}bg", f"{WPC}whole"):
+            elif parent.tag == f"{WORD_CANVAS_NS}wpc" and child.tag in (
+                f"{WORD_CANVAS_NS}bg",
+                f"{WORD_CANVAS_NS}whole",
+            ):
                 _check_canvas_layer(child)
             else:
                 raise unsupported(f"{tag_name(child)} in {tag_name(parent)}")
@@ -231,16 +255,16 @@ class _FigureReader:
         self, wsp: Element, mapping: _Mapping, *, box: tuple[int, int] | None
     ) -> FigureShape:
         children = only(wsp, _WSP_CHILDREN)
-        sp_pr = next((c for c in children if c.tag == f"{WPS}spPr"), None)
+        sp_pr = next((c for c in children if c.tag == f"{WORD_SHAPE_NS}spPr"), None)
         if sp_pr is None:
             raise unsupported("wps:wsp without wps:spPr")
-        _check_visible(wsp.find(f"{WPS}cNvPr"))
-        style = self._style(wsp.find(f"{WPS}style"))
+        _check_visible(wsp.find(f"{WORD_SHAPE_NS}cNvPr"))
+        style = self._style(wsp.find(f"{WORD_SHAPE_NS}style"))
         properties = only(sp_pr, _SP_PR_CHILDREN)
-        xfrm = next((c for c in properties if c.tag == f"{A}xfrm"), None)
+        xfrm = next((c for c in properties if c.tag == f"{DRAWINGML_NS}xfrm"), None)
         if xfrm is None:
             raise unsupported("wps:spPr without a:xfrm")
-        off, ext = xfrm.find(f"{A}off"), xfrm.find(f"{A}ext")
+        off, ext = xfrm.find(f"{DRAWINGML_NS}off"), xfrm.find(f"{DRAWINGML_NS}ext")
         if off is None or ext is None:
             raise unsupported("a:xfrm without a:off and a:ext")
         rotation = (int_attr_or(xfrm, "rot", 0) / 60000) % 360
@@ -274,17 +298,17 @@ class _FigureReader:
 
     @staticmethod
     def _geometry(properties: list[Element]) -> tuple[PresetGeometry, tuple[tuple[str, int], ...]]:
-        if any(c.tag == f"{A}custGeom" for c in properties):
+        if any(c.tag == f"{DRAWINGML_NS}custGeom" for c in properties):
             raise unsupported("a:custGeom")
-        geometry = next((c for c in properties if c.tag == f"{A}prstGeom"), None)
+        geometry = next((c for c in properties if c.tag == f"{DRAWINGML_NS}prstGeom"), None)
         if geometry is None:
             raise unsupported("shape without a:prstGeom geometry")
         name = geometry.get("prst") or ""
         if name not in SUPPORTED_PRESETS:
             raise unsupported(f"preset geometry {name!r}")
         guides: list[tuple[str, int]] = []
-        for container in only(geometry, frozenset({f"{A}avLst"})):
-            for guide in only(container, frozenset({f"{A}gd"})):
+        for container in only(geometry, frozenset({f"{DRAWINGML_NS}avLst"})):
+            for guide in only(container, frozenset({f"{DRAWINGML_NS}gd"})):
                 formula = _GUIDE.fullmatch(guide.get("fmla") or "")
                 if formula is None:
                     raise unsupported(f"a:gd fmla {guide.get('fmla')!r}")
@@ -300,33 +324,33 @@ class _FigureReader:
     # --- fill, outline, effects ---
 
     def _fill(self, properties: list[Element], style: dict[str, Element]) -> str | None:
-        fills = [c for c in properties if c.tag in FILL_CHOICES]
+        fills = [c for c in properties if c.tag in _FILL_CHOICES]
         if len(fills) > 1:
             raise unsupported("more than one fill in wps:spPr")
         if fills:
-            if fills[0].tag == f"{A}noFill":
+            if fills[0].tag == f"{DRAWINGML_NS}noFill":
                 return None
-            if fills[0].tag != f"{A}solidFill":
+            if fills[0].tag != f"{DRAWINGML_NS}solidFill":
                 raise unsupported(f"{tag_name(fills[0])} fill")
             return self._theme.solid(fills[0], None)
         index, color = self._theme.reference(style.get("fillRef"))
         if index == 0:
             return None
         entry = self._theme.style_entry("fillStyleLst", index)
-        if entry.tag != f"{A}solidFill":
+        if entry.tag != f"{DRAWINGML_NS}solidFill":
             raise unsupported(f"theme fill style {index} is {tag_name(entry)}")
         return self._theme.solid(entry, color)
 
     def _outline(self, properties: list[Element], style: dict[str, Element]) -> ShapeOutline | None:
-        line = next((c for c in properties if c.tag == f"{A}ln"), None)
+        line = next((c for c in properties if c.tag == f"{DRAWINGML_NS}ln"), None)
         fill = None
         if line is not None:
             if line.get("cmpd") not in (None, "sng"):
                 raise unsupported(f"compound line {line.get('cmpd')!r}")
-            fill = next((c for c in only(line, _LN_CHILDREN) if c.tag in FILL_CHOICES), None)
-            if fill is not None and fill.tag == f"{A}noFill":
+            fill = next((c for c in only(line, _LN_CHILDREN) if c.tag in _FILL_CHOICES), None)
+            if fill is not None and fill.tag == f"{DRAWINGML_NS}noFill":
                 return None
-            if fill is not None and fill.tag != f"{A}solidFill":
+            if fill is not None and fill.tag != f"{DRAWINGML_NS}solidFill":
                 raise unsupported(f"{tag_name(fill)} outline")
         index, color = self._theme.reference(style.get("lnRef"))
         entry = self._theme.style_entry("lnStyleLst", index) if index else None
@@ -336,8 +360,8 @@ class _FigureReader:
         if fill is None:
             if entry is None:
                 return None
-            fill = next((c for c in elements(entry) if c.tag in FILL_CHOICES), None)
-            if fill is None or fill.tag != f"{A}solidFill":
+            fill = next((c for c in elements(entry) if c.tag in _FILL_CHOICES), None)
+            if fill is None or fill.tag != f"{DRAWINGML_NS}solidFill":
                 found = "no fill" if fill is None else tag_name(fill)
                 raise unsupported(f"theme line style {index} has {found}, not a solid line")
         width = next(
@@ -357,9 +381,9 @@ class _FigureReader:
     @staticmethod
     def _dash(sources: list[Element]) -> DashStyle:
         for source in sources:
-            if source.find(f"{A}custDash") is not None:
+            if source.find(f"{DRAWINGML_NS}custDash") is not None:
                 raise unsupported("a:custDash")
-            dash = source.find(f"{A}prstDash")
+            dash = source.find(f"{DRAWINGML_NS}prstDash")
             if dash is not None:
                 value = dash.get("val") or ""
                 if value not in _DASH_STYLES:
@@ -369,7 +393,7 @@ class _FigureReader:
 
     @staticmethod
     def _arrowhead(sources: list[Element], tag: str) -> Arrowhead | None:
-        end = next((e for s in sources if (e := s.find(f"{A}{tag}")) is not None), None)
+        end = next((e for s in sources if (e := s.find(f"{DRAWINGML_NS}{tag}")) is not None), None)
         kind = "none" if end is None else end.get("type", "none")
         if end is None or kind == "none":
             return None
@@ -388,7 +412,10 @@ class _FigureReader:
         for effect in (c for c in properties if c.tag in _EFFECT_ELEMENTS):
             if not _is_empty(effect):
                 raise unsupported(f"{tag_name(effect)} with content")
-            own_list = own_list or effect.tag in (f"{A}effectLst", f"{A}effectDag")
+            own_list = own_list or effect.tag in (
+                f"{DRAWINGML_NS}effectLst",
+                f"{DRAWINGML_NS}effectDag",
+            )
         ref = style.get("effectRef")
         index = 0 if ref is None else int_attr(ref, "idx")
         if index and not own_list:

@@ -26,13 +26,15 @@ from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.oxml.xmlchemy import BaseOxmlElement
-from docx.styles.style import CharacterStyle
 from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxMissingImage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_picture import (  # noqa: E501
     picture_from_relationship,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
+    style_chain,
 )
 from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
 from skriptoteket.infrastructure.documents.pdfium_access import rasterize_pdf_pages
@@ -89,15 +91,6 @@ def _child(element: BaseOxmlElement | None, tag: str) -> BaseOxmlElement | None:
 
 def _val(element: BaseOxmlElement | None, attribute: str = "w:val") -> str | None:
     return None if element is None else element.get(qn(attribute))
-
-
-def style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
-    """Yield a style and its bases; Word ignores a basedOn cycle, so stop at a repeat."""
-    seen: set[str | None] = set()
-    while style is not None and style.style_id not in seen:
-        seen.add(style.style_id)
-        yield style
-        style = style.base_style
 
 
 def _shown_paragraphs(element: BaseOxmlElement) -> Iterator[BaseOxmlElement]:

@@ -168,8 +168,8 @@ def document_body_points(document: DocxDocument) -> float:
 def _merged_state(run: Run, paragraph: Paragraph, document: DocxDocument) -> _FontState:
     """The run's effective state: direct, character styles, paragraph styles, defaults."""
     states: list[_FontState] = [_font_state(run.font)]
-    states.extend(_font_state(style.font) for style in _style_chain(run.style))
-    states.extend(_font_state(style.font) for style in _style_chain(paragraph.style))
+    states.extend(_font_state(style.font) for style in style_chain(run.style))
+    states.extend(_font_state(style.font) for style in style_chain(paragraph.style))
     states.append(_defaults_state(document))
     bold: bool | None = None
     italic: bool | None = None
@@ -201,7 +201,7 @@ def _font_state(font: Font) -> _FontState:
     )
 
 
-def _style_chain(
+def style_chain(
     style: CharacterStyle | ParagraphStyle | None,
 ) -> Iterator[CharacterStyle | ParagraphStyle]:
     """Yield a style and its bases; Word ignores a basedOn cycle, so stop at a repeat."""

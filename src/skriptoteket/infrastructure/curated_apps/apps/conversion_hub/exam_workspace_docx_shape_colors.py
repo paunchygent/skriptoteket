@@ -1,10 +1,9 @@
-"""Colours, theme and exact XML reading for Word shape drawings (TASK-SKRIPT-39-04-22, D2, D3).
+"""Colours and theme for Word shape drawings (TASK-SKRIPT-39-04-22, D2, D3).
 
 Purpose:
-    The lowest layer of the shape reader. It holds the exact XML helpers every shape module uses
-    (each raises ``UnsupportedShapeFigure`` naming what it does not model) and resolves DrawingML
-    colours, through the document's theme part where a colour or a ``wps:style`` reference
-    points into it.
+    Resolves DrawingML colours, through the document's theme part where a colour or a
+    ``wps:style`` reference points into it. Any colour form it does not model raises
+    ``UnsupportedShapeFigure`` naming it.
 
     Colours. ``a:srgbClr``, ``a:sysClr/@lastClr``, ``a:schemeClr`` (through the theme part) and
     ``a:prstClr`` black or white, with the modifiers ``lumMod``, ``lumOff`` (HSL lightness
@@ -14,14 +13,10 @@ Purpose:
     mixes in linear-light sRGB, which is what Word draws (accent1 4472C4 with shade 50000 is
     2F528F in Word).
 
-    Extension lists. ``a:extLst`` is ignorable by ECMA-376; Word writes ``a14:hiddenFill`` and
-    ``a14:hiddenLine`` there for the VML fallback, which nothing draws. The allowlists of
-    ``a:spPr``, ``a:ln`` (shape and theme line styles), ``wpg:grpSpPr``, ``wps:bodyPr`` and the
-    canvas layers admit ``EXT_LST`` and read nothing from it.
-
 Relationships:
-    - ``exam_workspace_docx_shape_reader`` reads shapes, fills and outlines with these helpers.
-    - ``exam_workspace_docx_shape_labels`` reads text box labels and their font colour.
+    - ``exam_workspace_docx_shape_xml`` holds the namespaces and exact XML helpers used here.
+    - ``exam_workspace_docx_shape_reader`` resolves fills and outlines with ``Theme``.
+    - ``exam_workspace_docx_shape_labels`` resolves the label font colour with ``Theme``.
 """
 
 from __future__ import annotations
@@ -32,96 +27,29 @@ from typing import cast
 
 from docx.document import Document as DocxDocument
 from docx.opc.constants import RELATIONSHIP_TYPE
-from docx.oxml.xmlchemy import BaseOxmlElement
 from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
 
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
-    UnsupportedShapeFigure,
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_xml import (  # noqa: E501
+    DRAWINGML_NS,
+    Element,
+    elements,
+    int_attr,
+    tag_name,
+    unsupported,
 )
 
-Element = BaseOxmlElement
 Rgb = tuple[float, float, float]
 
-A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
-WP = "{http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing}"
-WPS_NS = "http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
-WPG_NS = "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
-WPC_NS = "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
-WPS, WPG, WPC = f"{{{WPS_NS}}}", f"{{{WPG_NS}}}", f"{{{WPC_NS}}}"
-W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
-EXT_LST = f"{A}extLst"
-FILL_CHOICES = frozenset(
-    f"{A}{name}" for name in ("noFill", "solidFill", "gradFill", "blipFill", "pattFill", "grpFill")
-)
 HEX = re.compile(r"[0-9A-Fa-f]{6}")
 
-_PREFIXES = {
-    A[1:-1]: "a",
-    WP[1:-1]: "wp",
-    W[1:-1]: "w",
-    WPS_NS: "wps",
-    WPG_NS: "wpg",
-    WPC_NS: "wpc",
-    "http://schemas.openxmlformats.org/drawingml/2006/picture": "pic",
-}
-_COLOR_ELEMENTS = frozenset(f"{A}{name}" for name in ("srgbClr", "sysClr", "schemeClr", "prstClr"))
+_COLOR_ELEMENTS = frozenset(
+    f"{DRAWINGML_NS}{name}" for name in ("srgbClr", "sysClr", "schemeClr", "prstClr")
+)
 _THEME_SLOTS = frozenset(
     {"dk1", "lt1", "dk2", "lt2", "accent1", "accent2", "accent3", "accent4", "accent5",
      "accent6", "hlink", "folHlink"}
 )  # fmt: skip
 _SCHEME_ALIASES = {"bg1": "lt1", "tx1": "dk1", "bg2": "lt2", "tx2": "dk2"}
-
-
-# --- exact XML reading -------------------------------------------------------------------------
-
-
-def unsupported(reason: str) -> UnsupportedShapeFigure:
-    return UnsupportedShapeFigure(reason)
-
-
-def tag_name(element: Element) -> str:
-    """The element's prefixed name as Word writes it, for the unsupported reason."""
-    qualified = etree.QName(element)
-    prefix = _PREFIXES.get(qualified.namespace or "")
-    return f"{prefix}:{qualified.localname}" if prefix else qualified.localname
-
-
-def elements(parent: Element) -> list[Element]:
-    """Child elements, without comments and processing instructions."""
-    return [child for child in parent if isinstance(child.tag, str)]
-
-
-def only(parent: Element, allowed: frozenset[str]) -> list[Element]:
-    """Return the child elements; any child outside ``allowed`` is unsupported."""
-    children = elements(parent)
-    for child in children:
-        if child.tag not in allowed:
-            raise unsupported(f"{tag_name(child)} in {tag_name(parent)}")
-    return children
-
-
-def int_attr(element: Element, attribute: str) -> int:
-    value = element.get(attribute)
-    try:
-        return int(value or "")
-    except ValueError:
-        raise unsupported(f"{tag_name(element)}/@{attribute}={value!r}") from None
-
-
-def int_attr_or(element: Element, attribute: str, default: int) -> int:
-    return default if element.get(attribute) is None else int_attr(element, attribute)
-
-
-def flag(element: Element, attribute: str) -> bool:
-    value = element.get(attribute)
-    if value is None or value in ("0", "false"):
-        return False
-    if value in ("1", "true"):
-        return True
-    raise unsupported(f"{tag_name(element)}/@{attribute}={value!r}")
-
-
-# --- colours ----------------------------------------------------------------------------------
 
 
 def _to_linear(channel: float) -> float:
@@ -136,11 +64,11 @@ def _from_linear(linear: float) -> float:
 
 def _literal_color(element: Element) -> Rgb | None:
     """Return the colour of ``srgbClr``, ``sysClr`` or ``prstClr``; None for any other element."""
-    if element.tag == f"{A}srgbClr":
+    if element.tag == f"{DRAWINGML_NS}srgbClr":
         value = element.get("val") or ""
-    elif element.tag == f"{A}sysClr":
+    elif element.tag == f"{DRAWINGML_NS}sysClr":
         value = element.get("lastClr") or ""
-    elif element.tag == f"{A}prstClr":
+    elif element.tag == f"{DRAWINGML_NS}prstClr":
         preset = element.get("val")
         if preset not in ("black", "white"):
             raise unsupported(f"preset colour {preset!r}")
@@ -157,16 +85,16 @@ def _modified(rgb: Rgb, element: Element) -> Rgb:
     for modifier in elements(element):
         amount = int_attr(modifier, "val") / 100000
         local = etree.QName(modifier).localname
-        if modifier.tag == f"{A}alpha" and amount == 1:
+        if modifier.tag == f"{DRAWINGML_NS}alpha" and amount == 1:
             continue
-        if modifier.tag == f"{A}lumMod" or modifier.tag == f"{A}lumOff":
+        if modifier.tag == f"{DRAWINGML_NS}lumMod" or modifier.tag == f"{DRAWINGML_NS}lumOff":
             hue, light, saturation = colorsys.rgb_to_hls(*(c / 255 for c in rgb))
             light = light * amount if local == "lumMod" else light + amount
             red, green, blue = colorsys.hls_to_rgb(hue, min(1.0, max(0.0, light)), saturation)
             rgb = (red * 255, green * 255, blue * 255)
-        elif modifier.tag == f"{A}shade":
+        elif modifier.tag == f"{DRAWINGML_NS}shade":
             rgb = cast(Rgb, tuple(_from_linear(_to_linear(c) * amount) for c in rgb))
-        elif modifier.tag == f"{A}tint":
+        elif modifier.tag == f"{DRAWINGML_NS}tint":
             rgb = cast(Rgb, tuple(_from_linear(_to_linear(c) * amount + 1 - amount) for c in rgb))
         else:
             raise unsupported(f"colour modifier {tag_name(modifier)} {modifier.get('val')}")
@@ -197,12 +125,14 @@ class Theme:
                 self._root = cast(Element, etree.fromstring(blob, parser))
             except etree.XMLSyntaxError:
                 raise unsupported("the theme part is not readable XML") from None
-            if self._root.tag != f"{A}theme":
+            if self._root.tag != f"{DRAWINGML_NS}theme":
                 raise unsupported("the theme part is not an a:theme")
         return self._root
 
     def scheme_color(self, slot: str) -> Rgb:
-        scheme = self.root.find(f"{A}themeElements/{A}clrScheme/{A}{slot}")
+        scheme = self.root.find(
+            f"{DRAWINGML_NS}themeElements/{DRAWINGML_NS}clrScheme/{DRAWINGML_NS}{slot}"
+        )
         children = [] if scheme is None else elements(scheme)
         color = _literal_color(children[0]) if len(children) == 1 else None
         if color is None:
@@ -211,7 +141,9 @@ class Theme:
 
     def style_entry(self, list_name: str, index: int) -> Element:
         """Return the 1-based entry of a theme ``fmtScheme`` style list (fill, ln or effect)."""
-        styles = self.root.find(f"{A}themeElements/{A}fmtScheme/{A}{list_name}")
+        styles = self.root.find(
+            f"{DRAWINGML_NS}themeElements/{DRAWINGML_NS}fmtScheme/{DRAWINGML_NS}{list_name}"
+        )
         entries = [] if styles is None else elements(styles)
         if not 1 <= index <= len(entries):
             raise unsupported(f"theme {list_name} has no entry {index}")
@@ -221,7 +153,7 @@ class Theme:
         """Resolve a colour element; ``phClr`` takes ``placeholder``, the style reference colour."""
         rgb = _literal_color(element)
         if rgb is None:
-            if element.tag != f"{A}schemeClr":
+            if element.tag != f"{DRAWINGML_NS}schemeClr":
                 raise unsupported(f"colour {tag_name(element)}")
             value = element.get("val") or ""
             if value == "phClr":
@@ -253,28 +185,4 @@ class Theme:
         return hex_color(self.color(colors[0], placeholder))
 
 
-__all__ = [
-    "A",
-    "EXT_LST",
-    "FILL_CHOICES",
-    "HEX",
-    "W",
-    "WP",
-    "WPC",
-    "WPC_NS",
-    "WPG",
-    "WPG_NS",
-    "WPS",
-    "WPS_NS",
-    "Element",
-    "Rgb",
-    "Theme",
-    "elements",
-    "flag",
-    "hex_color",
-    "int_attr",
-    "int_attr_or",
-    "only",
-    "tag_name",
-    "unsupported",
-]
+__all__ = ["HEX", "Rgb", "Theme", "hex_color"]

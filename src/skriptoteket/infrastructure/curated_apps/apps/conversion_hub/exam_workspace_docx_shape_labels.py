@@ -10,9 +10,9 @@ Purpose:
 
 Relationships:
     - ``exam_workspace_docx_shape_reader`` calls ``LabelReader.read`` for every shape.
-    - ``exam_workspace_docx_shape_colors`` holds the XML helpers and resolves the style font
-      colour through the theme.
-    - ``exam_workspace_labeler_block_image.style_chain`` walks the style ``basedOn`` chain.
+    - ``exam_workspace_docx_shape_xml`` holds the namespaces and the exact XML helpers.
+    - ``exam_workspace_docx_shape_colors`` resolves the style font colour through the theme.
+    - ``exam_workspace_docx_source_format.style_chain`` walks the style ``basedOn`` chain.
 """
 
 from __future__ import annotations
@@ -24,20 +24,9 @@ from docx.text.paragraph import Paragraph
 from docx.text.run import Run
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_colors import (  # noqa: E501
-    EXT_LST,
     HEX,
-    WPS,
-    A,
-    Element,
     Theme,
-    W,
-    elements,
-    flag,
     hex_color,
-    int_attr_or,
-    only,
-    tag_name,
-    unsupported,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
     LabelAlign,
@@ -46,7 +35,20 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     LabelRun,
     ShapeLabel,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_xml import (  # noqa: E501
+    DRAWINGML_NS,
+    EXT_LST,
+    WORD_SHAPE_NS,
+    WORDPROCESSINGML_NS,
+    Element,
+    elements,
+    flag,
+    int_attr_or,
+    only,
+    tag_name,
+    unsupported,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_source_format import (  # noqa: E501
     style_chain,
 )
 
@@ -58,10 +60,11 @@ _ALIGNMENTS: dict[str, LabelAlign] = {
 }  # fmt: skip
 _ANCHORS = frozenset(get_args(LabelAnchor))
 _PARAGRAPH_CHILDREN = frozenset(
-    f"{W}{name}" for name in ("pPr", "r", "bookmarkStart", "bookmarkEnd", "proofErr")
+    f"{WORDPROCESSINGML_NS}{name}"
+    for name in ("pPr", "r", "bookmarkStart", "bookmarkEnd", "proofErr")
 )
 _RUN_CHILDREN = frozenset(
-    f"{W}{name}"
+    f"{WORDPROCESSINGML_NS}{name}"
     for name in ("rPr", "t", "tab", "br", "cr", "noBreakHyphen", "lastRenderedPageBreak")
 )
 # Direct or inherited run marks that change what Word draws and that the label model lacks.
@@ -82,14 +85,17 @@ class LabelReader:
         ``style`` holds the shape's ``wps:style`` references by local name; ``fontRef`` gives
         the colour of runs set to ``auto``.
         """
-        text_box = next((c for c in children if c.tag == f"{WPS}txbx"), None)
+        text_box = next((c for c in children if c.tag == f"{WORD_SHAPE_NS}txbx"), None)
         if text_box is None:
             return None
-        content = only(text_box, frozenset({f"{W}txbxContent"}))
+        content = only(text_box, frozenset({f"{WORDPROCESSINGML_NS}txbxContent"}))
         if not content:
             return None
-        paragraphs = [self._paragraph(p, style) for p in only(content[0], frozenset({f"{W}p"}))]
-        body = next((c for c in children if c.tag == f"{WPS}bodyPr"), None)
+        paragraphs = [
+            self._paragraph(p, style)
+            for p in only(content[0], frozenset({f"{WORDPROCESSINGML_NS}p"}))
+        ]
+        body = next((c for c in children if c.tag == f"{WORD_SHAPE_NS}bodyPr"), None)
         insets, anchor = self._body(body)
         if not any(run.text for paragraph in paragraphs for run in paragraph.runs):
             return None
@@ -107,12 +113,12 @@ class LabelReader:
         if int_attr_or(body, "numCol", 1) != 1 or flag(body, "upright") or flag(body, "anchorCtr"):
             raise unsupported("wps:bodyPr with columns, upright or centred text")
         for fit in elements(body):
-            if fit.tag in (f"{A}noAutofit", f"{A}spAutoFit", EXT_LST):
+            if fit.tag in (f"{DRAWINGML_NS}noAutofit", f"{DRAWINGML_NS}spAutoFit", EXT_LST):
                 continue
-            if fit.tag == f"{A}normAutofit" and not fit.attrib:
+            if fit.tag == f"{DRAWINGML_NS}normAutofit" and not fit.attrib:
                 continue
             # Word writes "no text warp" into every text box it saves.
-            if fit.tag == f"{A}prstTxWarp" and fit.get("prst") == "textNoShape":
+            if fit.tag == f"{DRAWINGML_NS}prstTxWarp" and fit.get("prst") == "textNoShape":
                 continue
             raise unsupported(f"{tag_name(fit)} in wps:bodyPr")
         insets = tuple(
@@ -124,23 +130,27 @@ class LabelReader:
     def _paragraph(self, p: Element, style: dict[str, Element]) -> LabelParagraph:
         children = only(p, _PARAGRAPH_CHILDREN)
         paragraph = Paragraph(p, self._document)
-        properties = p.find(f"{W}pPr")
-        numbering = None if properties is None else properties.find(f"{W}numPr")
+        properties = p.find(f"{WORDPROCESSINGML_NS}pPr")
+        numbering = None if properties is None else properties.find(f"{WORDPROCESSINGML_NS}numPr")
         if numbering is not None:
-            number = numbering.find(f"{W}numId")
-            if number is None or number.get(f"{W}val") != "0":
+            number = numbering.find(f"{WORDPROCESSINGML_NS}numId")
+            if number is None or number.get(f"{WORDPROCESSINGML_NS}val") != "0":
                 raise unsupported("w:numPr in a label paragraph")
-        runs = [self._run(r, paragraph, style) for r in children if r.tag == f"{W}r"]
+        runs = [
+            self._run(r, paragraph, style) for r in children if r.tag == f"{WORDPROCESSINGML_NS}r"
+        ]
         return LabelParagraph(tuple(run for run in runs if run.text), self._alignment(p, paragraph))
 
     @staticmethod
     def _alignment(p: Element, paragraph: Paragraph) -> LabelAlign:
         sources = [p, *(s.element for s in style_chain(paragraph.style))]
         for source in sources:
-            properties = source.find(f"{W}pPr")
-            justification = None if properties is None else properties.find(f"{W}jc")
+            properties = source.find(f"{WORDPROCESSINGML_NS}pPr")
+            justification = (
+                None if properties is None else properties.find(f"{WORDPROCESSINGML_NS}jc")
+            )
             if justification is not None:
-                value = justification.get(f"{W}val") or ""
+                value = justification.get(f"{WORDPROCESSINGML_NS}val") or ""
                 if value not in _ALIGNMENTS:
                     raise unsupported(f"w:jc {value!r}")
                 return _ALIGNMENTS[value]
@@ -151,19 +161,23 @@ class LabelReader:
         marks = self._marks(r, paragraph)
         text = ""
         for part in parts:
-            if part.tag == f"{W}t":
+            if part.tag == f"{WORDPROCESSINGML_NS}t":
                 text += part.text or ""
-            elif part.tag == f"{W}tab":
+            elif part.tag == f"{WORDPROCESSINGML_NS}tab":
                 text += " "
-            elif part.tag == f"{W}noBreakHyphen":
+            elif part.tag == f"{WORDPROCESSINGML_NS}noBreakHyphen":
                 text += "-"
-            elif part.tag in (f"{W}br", f"{W}cr"):
-                if part.get(f"{W}type", "textWrapping") != "textWrapping":
-                    raise unsupported(f"w:br type {part.get(f'{W}type')!r}")
+            elif part.tag in (f"{WORDPROCESSINGML_NS}br", f"{WORDPROCESSINGML_NS}cr"):
+                if part.get(f"{WORDPROCESSINGML_NS}type", "textWrapping") != "textWrapping":
+                    raise unsupported(f"w:br type {part.get(f'{WORDPROCESSINGML_NS}type')!r}")
                 text += "\n"
         for mark in (*_UNMODELLED_MARKS, "vanish"):
             active = self._first(marks, mark)
-            if text and active is not None and active.get(f"{W}val") not in _MARK_OFF:
+            if (
+                text
+                and active is not None
+                and active.get(f"{WORDPROCESSINGML_NS}val") not in _MARK_OFF
+            ):
                 raise unsupported(f"w:{mark} on a label run")
         underline = self._first(marks, "u")
         return LabelRun(
@@ -172,7 +186,8 @@ class LabelReader:
             color=self._text_color(marks, style),
             bold=self._toggle(marks, "b"),
             italic=self._toggle(marks, "i"),
-            underline=underline is not None and underline.get(f"{W}val", "single") != "none",
+            underline=underline is not None
+            and underline.get(f"{WORDPROCESSINGML_NS}val", "single") != "none",
         )
 
     def _marks(self, r: Element, paragraph: Paragraph) -> list[Element]:
@@ -183,17 +198,23 @@ class LabelReader:
             *(s.element for s in style_chain(run.style)),
             *(s.element for s in style_chain(paragraph.style)),
         ]
-        return [rpr for source in sources if (rpr := source.find(f"{W}rPr")) is not None]
+        return [
+            rpr
+            for source in sources
+            if (rpr := source.find(f"{WORDPROCESSINGML_NS}rPr")) is not None
+        ]
 
     @staticmethod
     def _first(marks: list[Element], tag: str) -> Element | None:
-        return next((m for rpr in marks if (m := rpr.find(f"{W}{tag}")) is not None), None)
+        return next(
+            (m for rpr in marks if (m := rpr.find(f"{WORDPROCESSINGML_NS}{tag}")) is not None), None
+        )
 
     def _toggle(self, marks: list[Element], tag: str) -> bool:
         mark = self._first(marks, tag)
         if mark is None:
             return False
-        value = mark.get(f"{W}val", "1")
+        value = mark.get(f"{WORDPROCESSINGML_NS}val", "1")
         if value in ("1", "true", "on"):
             return True
         if value in ("0", "false", "off"):
@@ -204,15 +225,17 @@ class LabelReader:
         size = self._first(marks, "sz")
         if size is None:
             styles = self._document.styles.element
-            size = styles.find(f"{W}docDefaults/{W}rPrDefault/{W}rPr/{W}sz")
+            size = styles.find(
+                f"{WORDPROCESSINGML_NS}docDefaults/{WORDPROCESSINGML_NS}rPrDefault/{WORDPROCESSINGML_NS}rPr/{WORDPROCESSINGML_NS}sz"
+            )
         return _DEFAULT_SIZE_PT if size is None else _int_w(size) / 2
 
     def _text_color(self, marks: list[Element], style: dict[str, Element]) -> str:
         color = self._first(marks, "color")
         if color is not None:
-            value = color.get(f"{W}val") or ""
+            value = color.get(f"{WORDPROCESSINGML_NS}val") or ""
             # With a w:themeColor Word still stores the resolved colour in w:val.
-            if value == "auto" and color.get(f"{W}themeColor") is not None:
+            if value == "auto" and color.get(f"{WORDPROCESSINGML_NS}themeColor") is not None:
                 raise unsupported("w:color/@w:themeColor without a resolved w:val")
             if value != "auto":
                 if not HEX.fullmatch(value):
@@ -223,7 +246,7 @@ class LabelReader:
 
 
 def _int_w(element: Element) -> int:
-    value = element.get(f"{W}val")
+    value = element.get(f"{WORDPROCESSINGML_NS}val")
     try:
         return int(value or "")
     except ValueError:
