@@ -2,8 +2,20 @@
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
-- TASK-SKRIPT-40-04-19 two-tab CSRF fix: staging walk PASS; the user narrowed out
-  the 403-message half (2026-10-22). Hemma orchestrator closes it.
+- Hemma orchestrator overnight 2026-10-22 (user: deploy, then small planned items):
+  - Production runs `4f555442` (deployed 01:10 UTC after verified backup
+    `scheduled/20261022T010031Z`; migrations to `015a3af12871`; health green).
+    Main is ahead at `fe2bc9b9`; next deploy also needs HuleEdu prod via its
+    hemma-deploy for the 41-01-03 door (HuleEdu prod at `45d4a6f7`).
+  - On main, Mac walk owed, then close: 39-10-04 (check 4 re-walk after W1
+    `e68e84a1`), REP-0049 (`b8293abd`, F4 decision A), 41-01-03 (`fe2bc9b9`;
+    staging door key fixed by HuleEdu `547e1deb`). B4 limit notes are unit-proof
+    only (walk residual).
+  - 39-10-02 held unmerged at `688c5815`: F1-F3 still high after the one
+    rereview; user decides a further round and confirms T5-T8.
+  - 41-01-03 junior R6 (launcher PID 3010867) is stalled, not cancelled; user
+    decides the stop.
+  - Next lead: 39-10-03 when a slot frees.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
   all 82 Hemma task and verify worktrees hold no work missing from main
@@ -71,7 +83,7 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02, -03, -04: wait on HuleEdu TASK-HULE-14-03-01 on staging.
+    - 41-01-02, -04: ready; 41-01-03 merged (walk owed, above).
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
@@ -110,7 +122,7 @@
 
 ## Recent
 
-- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). Next leads: 39-10-02 and REP-0049 (user 2026-10-22), then 39-10-03.
+- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user).
 
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
 
@@ -145,7 +157,7 @@
 ## Facts
 
 - Session Date: 2026-10-15
-- Last Refreshed: 2026-10-21
+- Last Refreshed: 2026-10-22
 - Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, on Hemma the steps run directly with no ssh, an unverifiable push is blocked, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
