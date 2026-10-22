@@ -62,11 +62,16 @@ class SourceFormatting(SourceIndex):
         excluded: tuple[tuple[int, int], ...] = (),
         foreign: tuple[str, ...],
         released: tuple[str, ...] = (),
+        facit_shared: tuple[tuple[int, int], ...] = (),
     ) -> None:
         super().__init__(chunks, ignored=ignored, excluded=excluded)
         self.foreign_normalized = tuple(
             normalized_source_index(chunk_text)[0] for chunk_text in foreign
         )
+        # Source text the facit repeats and the reply did not emit: shared wording with
+        # unknown ownership, never excluded and never covered (rereview F4, decision A).
+        # A rebuild that would show such text raises through refuse_facit_shared instead.
+        self.facit_shared = facit_shared
         # Part lines moved out of the reply's entries: their copy is no paragraph of the item.
         self.released_normalized = tuple(
             normalized_source_index(chunk_text)[0] for chunk_text in released
@@ -78,6 +83,15 @@ class SourceFormatting(SourceIndex):
         # each paragraph of the body last produced (body, rebuild_body or the coverage
         # restore); -1 means it kept the model's wording without a unique source paragraph.
         self.projected: set[int] = set()
+        # Source offsets each reply paragraph was projected from: the exact path took
+        # its text from its own source paragraph, every other path did not (aligned,
+        # rebuilt, misplaced, gap or picture paragraphs).
+        self.exact_origins: set[int] = set()
+        self.other_origins: set[int] = set()
+        # Largest source end projected into an output with each exact origin: a joined
+        # row keeps its first cell's start as its origin, so the start alone never
+        # delimits the rendered extent (TASK-SKRIPT-REP-0049 review F2).
+        self.exact_extents: dict[int, int] = {}
         self.entry_spans: list[tuple[int, int]] = []
         self.output_anchors: list[int] = []
         self._entry_span: tuple[int, int] = (-1, -1)
@@ -109,12 +123,13 @@ class SourceFormatting(SourceIndex):
         return start, end
 
     def fragments(self, start: int, end: int) -> list[NativeParagraph]:
-        return [fragment for fragment, _ in self.sourced_fragments(start, end)]
+        return [fragment for fragment, _, _ in self.sourced_fragments(start, end)]
 
-    def sourced_fragments(self, start: int, end: int) -> list[tuple[NativeParagraph, int]]:
+    def sourced_fragments(self, start: int, end: int) -> list[tuple[NativeParagraph, int, int]]:
         """The visible source text in ``start``-``end`` as paragraphs, each with the start of
-        the source paragraph it begins in; table cells of one row join one paragraph."""
-        result: list[tuple[NativeParagraph, int]] = []
+        the source paragraph it begins in and the end of the last source paragraph joined
+        into it; table cells of one row join one paragraph (TASK-SKRIPT-REP-0049 review F2)."""
+        result: list[tuple[NativeParagraph, int, int]] = []
         previous_end: int | None = None
         for paragraph in self.paragraphs_in(start, end):
             left, right = max(start, paragraph.start), min(end, paragraph.end)
@@ -134,7 +149,7 @@ class SourceFormatting(SourceIndex):
                     and separator == " | "
                     and result[-1][0].heading_level == paragraph.heading
                 ):
-                    joined, origin = result[-1]
+                    joined, origin, _ = result[-1]
                     result[-1] = (
                         joined.model_copy(
                             update={
@@ -146,12 +161,14 @@ class SourceFormatting(SourceIndex):
                             }
                         ),
                         origin,
+                        right,
                     )
                 else:
                     result.append(
                         (
                             NativeParagraph(heading_level=paragraph.heading, segments=segments),
                             paragraph.start,
+                            right,
                         )
                     )
                 previous_end = right
@@ -175,8 +192,11 @@ class SourceFormatting(SourceIndex):
             # Each emitted paragraph with the start of the one source paragraph its text
             # was projected from, -1 when it keeps the model's wording.
             produced: list[tuple[NativeParagraph, int]]
+            pending_extents: dict[int, int] = {}
+            exact = False
             try:
-                produced = self._paragraph(paragraph, answers or {})
+                produced, pending_extents = self._paragraph(paragraph, answers or {})
+                exact = all(segment.kind == "text" for segment in paragraph.segments)
             except FormattingTransferError:
                 self.cursor = checkpoint
                 self.covered = coverage_before
@@ -200,6 +220,15 @@ class SourceFormatting(SourceIndex):
                         self.path = "rebuilt"
                         rebuilt = self._rebuild(paragraph, answers or {})
                         produced = [(output, self._entry_span[0]) for output in rebuilt]
+            for _, text_origin in produced:
+                if text_origin >= 0:
+                    (self.exact_origins if exact else self.other_origins).add(text_origin)
+            if exact:
+                for origin, end in pending_extents.items():
+                    if origin >= 0:
+                        self.exact_extents[origin] = max(
+                            self.exact_extents.get(origin, origin), end
+                        )
             self.entry_spans.append(self._entry_span)
             for output, text_origin in produced:
                 for origin, piece in self.provenance.pieces(output, text_origin):
@@ -209,12 +238,13 @@ class SourceFormatting(SourceIndex):
 
     def _paragraph(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
-    ) -> list[tuple[NativeParagraph, int]]:
+    ) -> tuple[list[tuple[NativeParagraph, int]], dict[int, int]]:
         if any(s.kind == "gap" for s in paragraph.segments) and ANSWER_LABEL.search(self.text):
             # Matching each fragment independently can steal a repeated word
             # from the question before its formatted inline-key expression.
             raise FormattingTransferError("inline key requires whole-paragraph alignment")
         result: list[tuple[NativeParagraph, int]] = []
+        extents: dict[int, int] = {}
         pending: list[NativeSegment] = []
         heading: int | None = None
         previous_block: int | None = None
@@ -230,7 +260,8 @@ class SourceFormatting(SourceIndex):
             fragments = self.sourced_fragments(start, end)
             if not fragments:
                 raise FormattingTransferError("span outside source paragraphs")
-            for index, (fragment, source_start) in enumerate(fragments):
+            for index, (fragment, source_start, source_end) in enumerate(fragments):
+                extents[source_start] = max(extents.get(source_start, source_start), source_end)
                 # A source paragraph break, not the model's typography, starts a block.
                 block = bisect_right(self._paragraph_ends, start) + index
                 crossed = previous_block is not None and block != previous_block
@@ -246,7 +277,7 @@ class SourceFormatting(SourceIndex):
                 previous_block = block
         if pending:
             result.append((NativeParagraph(heading_level=heading, segments=tuple(pending)), origin))
-        return result
+        return result, extents
 
     def _skip_gap(self, answers: tuple[str, ...]) -> None:
         # Only consume an answer/blank immediately after the preceding text.
@@ -310,6 +341,23 @@ class SourceFormatting(SourceIndex):
             self.cursor += 1
         return projected
 
+    def refuse_facit_shared(self, start: int, end: int) -> None:
+        """Raise when a source rebuild of ``start``-``end`` would show facit-shared text.
+
+        Any visible non-space character inside a facit_shared span has unknown
+        ownership (rereview F4, decision A): it may be key analysis or question
+        context, so the item goes to review instead of showing it silently.
+        """
+        for left, right in visible_intervals(start, end, self.excluded):
+            for index in range(left, right):
+                if not self.text[index].isspace() and any(
+                    shared_start <= index < shared_end
+                    for shared_start, shared_end in self.facit_shared
+                ):
+                    raise FormattingTransferError(
+                        "source reconstruction would show text the facit repeats"
+                    )
+
     def _rebuild(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
     ) -> list[NativeParagraph]:
@@ -338,6 +386,7 @@ class SourceFormatting(SourceIndex):
         self._entry_span = (source.start, source.end)
         if ANSWER_LABEL.search(self.text[source.start : source.end]):
             raise FormattingTransferError("source reconstruction would expose facit wording")
+        self.refuse_facit_shared(self.content_start(source), source.end)
         gaps = [s for s in paragraph.segments if s.kind == "gap"]
         placements = self._gap_placements(source, gaps, answers)
         segments: list[NativeSegment] = []
@@ -358,6 +407,7 @@ class SourceFormatting(SourceIndex):
         """Recover omitted marked material only when the whole body is source-safe."""
         if ANSWER_LABEL.search(self.text):
             raise FormattingTransferError("source reconstruction would expose facit wording")
+        self.refuse_facit_shared(0, len(self.text))
         gaps = [NativeGapSegment(gap_id=gap_id) for gap_id in answers]
         placements = self._gap_placements(SourceParagraph(0, len(self.text), None), gaps, answers)
         result: list[NativeParagraph] = []

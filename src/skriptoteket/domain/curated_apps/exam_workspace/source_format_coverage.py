@@ -244,6 +244,36 @@ def _entry_label_characters(
     return covered
 
 
+def accounted_characters(
+    chunks: tuple[DocxChunk, ...],
+    sources: Iterable[SourceFormatting],
+    body_source: SourceFormatting,
+    entries: Iterable[NativeSourceEntry],
+) -> set[int]:
+    """Every source character a native surface already shows, before any restore.
+
+    The union of every source's covered characters, the characters the native entry
+    structure already carries, the assembly-placed heading chunks' characters, and the
+    printed question label's span. Both ``complete_source_formatting`` and the
+    shortened-paragraph restore (TASK-SKRIPT-REP-0049) read this one set, so a
+    remainder one of them accounts for never counts as missing for the other.
+    """
+    covered = set().union(*(source.covered for source in sources))
+    covered.update(_entry_label_characters(body_source, entries))
+    offset = 0
+    for index, chunk in enumerate(chunks):
+        if index:
+            offset += 1
+        # Assembly deterministically places source heading chunks; they are not
+        # required to appear in the model's body before that placement happens.
+        if chunk.kind == "heading":
+            covered.update(range(offset, offset + len(chunk.text)))
+        offset += len(chunk.text)
+    if body_source.label_span is not None:
+        covered.update(range(*body_source.label_span))
+    return covered
+
+
 def complete_source_formatting(
     chunks: tuple[DocxChunk, ...],
     sources: Iterable[SourceFormatting],
@@ -256,8 +286,7 @@ def complete_source_formatting(
     entries: Iterable[NativeSourceEntry] = (),
 ) -> tuple[NativeParagraph, ...]:
     source_list = tuple(sources)
-    covered = set().union(*(source.covered for source in source_list))
-    covered.update(_entry_label_characters(body_source, entries))
+    covered = accounted_characters(chunks, source_list, body_source, entries)
     projected = set(body_source.projected)
     for source in source_list:
         projected.update(source.projected)
@@ -266,16 +295,11 @@ def complete_source_formatting(
     for index, chunk in enumerate(chunks):
         if index:
             offset += 1
-        # Assembly deterministically places source heading chunks; they are not
-        # required to appear in the model's body before that placement happens.
         if chunk.kind == "heading":
-            covered.update(range(offset, offset + len(chunk.text)))
             heading_chunk_paragraphs.update(
                 offset + paragraph.offset for paragraph in chunk.paragraphs
             )
         offset += len(chunk.text)
-    if body_source.label_span is not None:
-        covered.update(range(*body_source.label_span))
     # A source paragraph that is just a printed answer line is answer space, not an omitted
     # question (W10). It is unprojected only when no aligned paragraph, for example a
     # standalone gap, already owns it; either way its marked underscores are not missing.
@@ -317,6 +341,7 @@ def complete_source_formatting(
             start = paragraph.start
             if body_source.label_span is not None and start == body_source.label_span[0]:
                 start = body_source.label_span[1]
+            body_source.refuse_facit_shared(start, paragraph.end)
             restored = body_source.fragments(start, paragraph.end)
             insertion = next(
                 (index for index, (anchor, _) in enumerate(merged) if anchor > paragraph.start),
