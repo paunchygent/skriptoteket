@@ -209,7 +209,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     lineageId: () => summary.value?.lineage_id ?? null,
     settled: () => !isImporting.value && !isConverting.value,
   });
-  const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
+  // A suggestion or keyed spelling that lands in the copy is stored like
+  // typing after the pause; a copy this tab may not write (lease lost)
+  // schedules nothing.
+  function noteMachineWrite(before: NativeExamDocument): void {
+    if (!isReadOnly()) {
+      noteEdit(false, before);
+    }
+  }
+  const arrivals = useExamWorkspaceSaveArrivals({
+    convertingItemIds,
+    isOpen,
+    noteArrival: noteMachineWrite,
+    workspaceDocument,
+  });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.
   /** A save, rename, retry, import or conversion holds the document; an open read is not one of them. */
@@ -349,7 +362,13 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   // Every gap keying edit and its asynchronous misspelling reply.
-  const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
+  const keying = useExamWorkspaceGapKeying({
+    noteReply: noteMachineWrite,
+    openExam,
+    patchItem,
+    workspaceDocument,
+    shared: store.shared,
+  });
 
   // Reads that replace the open copy (undo, redo, server commands).
   const replacingScope = useExamWorkspaceDocumentReplacing({

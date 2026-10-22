@@ -17,9 +17,13 @@
  *   is read runs again on that document instead of being overwritten. Every write, first delivery and replay alike,
  *   checks at that moment that the exam opening the arrival was requested
  *   for is still open, so a job of another exam never writes into this one.
+ *   A write that changes the copy reports it through `noteArrival`, the
+ *   document owner's edit signal, so the suggestion is stored like typing
+ *   after the pause instead of waiting for the teacher's next edit.
  *
  * Relationships:
- *   - Used by `useExamWorkspaceDocument`, which owns the save lifecycle.
+ *   - Used by `useExamWorkspaceDocument`, which owns the save lifecycle and
+ *     turns `noteArrival` into its own edit signal.
  *   - Applies `withArrivingSuggestion` from `examWorkspaceItemEdits`.
  *   - Compares items with `sameValue` from `examWorkspaceConversionMerge`, so
  *     an arrival that changes nothing leaves the copy as it was. Dirty state
@@ -45,6 +49,12 @@ type NumberedArrival = {
 type SaveArrivalsBinding = {
   convertingItemIds: Readonly<Ref<ReadonlySet<string>>>;
   isOpen: (opening: ExamWorkspaceOpening) => boolean;
+  /**
+   * A write changed the copy: `before` is the copy just before it. The
+   * document owner schedules its store from it, so an arrival is saved like
+   * an edit; a first delivery and every replay report the same way.
+   */
+  noteArrival: (before: NativeExamDocument) => void;
   workspaceDocument: Ref<NativeExamDocument | null>;
 };
 
@@ -83,6 +93,7 @@ export function useExamWorkspaceSaveArrivals(binding: SaveArrivalsBinding) {
     });
     if (changed) {
       binding.workspaceDocument.value = { ...current, items };
+      binding.noteArrival(current);
     }
     return written;
   }
