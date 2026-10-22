@@ -25,8 +25,6 @@ _PICTURE_TOLERANCE = 0.05
 _TRIANGLE_CORNERS = ((20, 130), (180, 130), (100, 20))
 # Union of the triangle corners and the label anchors below: x 20..180, y 12..144.
 _TRIANGLE_ASPECT = 160 / 132
-# The triangle on its own, without its outside labels: x 20..180, y 20..130.
-_TRIANGLE_ONLY_ASPECT = 160 / 110
 _GENEROUS_CUT_TOLERANCE = 0.15
 _MIN_CUT_MARGIN_PX = 3
 
