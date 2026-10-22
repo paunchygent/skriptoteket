@@ -43,6 +43,8 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 type Tag = NativeExamContentTag;
 
+const requestLimits: AiDailyLimit[] = ["pool", "user_share"];
+
 function tag(id: string, questionIds: string[]): Tag {
   return { id, origin: "suggested", question_ids: questionIds, text: id };
 }
@@ -170,7 +172,7 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
     expect(harness.content.message.value).toBeNull();
   });
 
-  it.each(["pool", "user_share"] as const)(
+  it.each(requestLimits)(
     "marks the request 429 limit %s without a toast",
     async (limit) => {
       const harness = setup();

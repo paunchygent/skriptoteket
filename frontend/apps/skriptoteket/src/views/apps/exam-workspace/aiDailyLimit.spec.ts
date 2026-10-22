@@ -15,6 +15,9 @@ import {
   markAiDailyLimit,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
+import type { AiDailyLimit } from "./aiDailyLimit";
+
+const allLimits: AiDailyLimit[] = ["pool", "user_share", "usd_ceiling"];
 
 describe("aiDailyLimit", () => {
   beforeEach(() => {
@@ -36,7 +39,7 @@ describe("aiDailyLimit", () => {
     expect(aiLimitNote("usd_ceiling")).toBe(AI_APP_LIMIT_NOTE);
   });
 
-  it.each(["pool", "user_share", "usd_ceiling"] as const)("detects ai_limit %s", (ai_limit) => {
+  it.each(allLimits)("detects ai_limit %s", (ai_limit) => {
     expect(hasAiDailyLimit({ ai_limit })).toBe(true);
     expect(aiLimitFromStatus({ ai_limit })).toBe(ai_limit);
   });

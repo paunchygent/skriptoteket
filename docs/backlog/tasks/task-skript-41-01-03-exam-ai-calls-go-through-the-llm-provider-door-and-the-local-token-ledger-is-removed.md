@@ -92,7 +92,7 @@ Before the REP-0044 gate opens AI to teachers, close this gap: the door's `allow
 - F3, tooling overage only on approval: `fb6c3aaef` and `16446878a`. Tooling without `--allow-paid-overage` runs `FREE_ONLY` and never switches to paid overage; with the flag it runs `APPROVED_RUN`.
 - F4: the eval sends a typed `AiDailyLimitReached` to the CLI exit handler (`16446878a`).
 - F5: modules over 500 lines are split (the DOCX pipeline, the DOCX retry and `useExamWorkspaceConversion.ts`) in `16446878a`.
-- F6: `Any`, `cast` and type assertions are removed from the new code and tests (`16446878a`, `ea597a597`).
+- F6: `16446878a` and `ea597a597` remove `Any`, `cast` and partial-object `as` assertions from the new code and tests. The light-route commit after `d7ffdc30f` removes the six remaining `it.each([...] as const)` calls in the limit specs and the four existing `cast()` calls in `tests/unit/infrastructure/llm/test_openai_payloads.py`. The chat-shape rejection test there becomes an empty-name rejection test, because the type checker already refuses the chat shape.
 - The limit notes follow `error.limit`: `user_share` says "Du har nått din gräns för AI-hjälp i dag. Försök igen i morgon."; `pool` and `usd_ceiling` say "Appens AI-hjälp har nått dagens gräns. Försök igen i morgon." The answer-key profile id is now `openai-gpt-6-luna-answer-key` (`b76fb5c6e`).
 - `origin/main` is merged in `188ebe30f`, `eb17850ed` and `cacc28e04`.
 - Proof at `cacc28e04`, run after the merge:

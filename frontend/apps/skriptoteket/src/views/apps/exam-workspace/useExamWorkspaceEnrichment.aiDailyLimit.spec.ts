@@ -32,6 +32,8 @@ import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { AiDailyLimit } from "./aiDailyLimit";
 
+const requestLimits: AiDailyLimit[] = ["pool", "user_share"];
+
 function limitStatus(
   ai_limit: AiDailyLimit | null,
 ): ExamWorkspaceAnswerKeySuggestionsStatus {
@@ -149,7 +151,7 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     scope.stop();
   });
 
-  it.each(["pool", "user_share"] as const)(
+  it.each(requestLimits)(
     "marks the request 429 limit %s without a toast",
     async (limit) => {
       const { enrichment, scope } = setup(async () => {

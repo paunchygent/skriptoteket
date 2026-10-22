@@ -26,12 +26,15 @@ import {
   aiLimitNote,
   resetAiDailyLimitForTests,
 } from "./aiDailyLimit";
+import type { AiDailyLimit } from "./aiDailyLimit";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 
 const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
+
+const retryLimits: AiDailyLimit[] = ["pool", "user_share"];
 
 function retryableDocument(): NativeExamDocument {
   return {
@@ -144,7 +147,7 @@ beforeEach(() => {
 });
 
 describe("useExamWorkspaceItemRetry daily AI limit", () => {
-  it.each(["pool", "user_share"] as const)(
+  it.each(retryLimits)(
     "marks the retry 429 limit %s and fires no toast",
     async (limit) => {
       const { retry, scope } = setup(async () => {

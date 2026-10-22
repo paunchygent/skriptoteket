@@ -49,6 +49,9 @@ vi.mock("../../../api/examWorkspace", () => ({ ...api }));
 
 type Role = "admin";
 
+const allLimits: AiDailyLimit[] = ["pool", "user_share", "usd_ceiling"];
+const retryLimits: AiDailyLimit[] = ["pool", "user_share"];
+
 function queuedStatus(): ExamWorkspaceConversionStatus {
   return {
     job_id: "job-1",
@@ -129,7 +132,7 @@ afterEach(() => {
 });
 
 describe("useExamWorkspaceConversion daily AI limit", () => {
-  it.each(["pool", "user_share", "usd_ceiling"] as const)(
+  it.each(allLimits)(
     "marks the limit and fires no toast for ai_limit %s",
     async (ai_limit) => {
       const conversion = conversionFor();
@@ -160,7 +163,7 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
     expect(aiDailyLimitNote.value).toBe(aiLimitNote("user_share"));
   });
 
-  it.each(["pool", "user_share"] as const)(
+  it.each(retryLimits)(
     "marks the retry 429 limit %s without a toast",
     async (limit) => {
       const conversion = conversionFor();
