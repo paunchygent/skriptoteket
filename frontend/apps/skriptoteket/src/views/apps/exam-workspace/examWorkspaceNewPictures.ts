@@ -32,7 +32,7 @@ export type ExamWorkspaceNewPictures = ReturnType<typeof createExamWorkspaceNewP
  * known assets the document references but does not declare yet.
  */
 export function createExamWorkspaceNewPictures(
-  currentDocument: () => NativeExamDocument | null = () => null,
+  currentDocument: () => NativeExamDocument | null,
 ) {
   const entries = new Map<string, { asset: NativeExamAsset; blob: Blob }>();
   /** Pictures whose bytes a committed save already carried; pruned by `forgetUndeclared`. */

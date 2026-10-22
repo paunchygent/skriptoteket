@@ -224,7 +224,7 @@ function freeTextItem(): NativeExamItem {
 
 function standAloneService(item: NativeExamItem, assets: NativeExamAsset[] = []) {
   const document = ref<NativeExamDocument | null>(docWith(item, assets));
-  const newPictures = createExamWorkspaceNewPictures();
+  const newPictures = createExamWorkspaceNewPictures(() => document.value);
   const service = createExamWorkspacePictureService({
     document: () => document.value,
     newPictures,

@@ -150,7 +150,7 @@ describe("createExamWorkspaceNewPictures", () => {
     expect(registry.bytesFor(declared)).toEqual({ [asset.asset_id]: bytes });
   });
   it("declares a referenced picture in the same document object step", () => {
-    const registry = createExamWorkspaceNewPictures();
+    const registry = createExamWorkspaceNewPictures(() => null);
     const asset = picture("asset_aaaaaaaaaaaaaaaa");
     registry.declare(asset, blob());
 
@@ -160,7 +160,7 @@ describe("createExamWorkspaceNewPictures", () => {
   });
 
   it("returns the same document when the picture is not referenced", () => {
-    const registry = createExamWorkspaceNewPictures();
+    const registry = createExamWorkspaceNewPictures(() => null);
     registry.declare(picture("asset_aaaaaaaaaaaaaaaa"), blob());
     const document = documentWith([], [[{ heading_level: null, segments: [] }]]);
 
@@ -168,7 +168,7 @@ describe("createExamWorkspaceNewPictures", () => {
   });
 
   it("keeps one record and one URL when the same id is declared twice", () => {
-    const registry = createExamWorkspaceNewPictures();
+    const registry = createExamWorkspaceNewPictures(() => null);
     const asset = picture("asset_aaaaaaaaaaaaaaaa");
     registry.declare(asset, blob());
     const first = registry.urls.value[asset.asset_id];
@@ -183,7 +183,7 @@ describe("createExamWorkspaceNewPictures", () => {
   });
 
   it("bytesFor returns only unsent pictures the document declares", () => {
-    const registry = createExamWorkspaceNewPictures();
+    const registry = createExamWorkspaceNewPictures(() => null);
     const declared = picture("asset_aaaaaaaaaaaaaaaa");
     const undeclared = picture("asset_bbbbbbbbbbbbbbbb");
     const first = blob();
@@ -210,7 +210,7 @@ describe("createExamWorkspaceNewPictures", () => {
   });
 
   it("reset revokes every URL and forgets every picture", () => {
-    const registry = createExamWorkspaceNewPictures();
+    const registry = createExamWorkspaceNewPictures(() => null);
     const asset = picture("asset_aaaaaaaaaaaaaaaa");
     registry.declare(asset, blob());
     const url = registry.urls.value[asset.asset_id];
