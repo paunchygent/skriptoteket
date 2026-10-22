@@ -4,9 +4,8 @@
 picture (a chart PNG) in question 7 and two figures drawn with Word shapes and text-box
 labels in questions 5 and 6, made in Microsoft Word on macOS, and ``.pdf`` is Word's own
 export of it (real producer output). The Word import gives the drawn figures as drawing
-chunks without a picture, since Word shapes carry none; the PDF import cuts each of them
-out as a picture at the same place, so it holds every picture the Word import holds and
-more.
+chunks with a picture drawn from the shapes; the PDF import cuts each of them out as a
+picture at the same place, so both imports hold the same pictures.
 """
 
 from __future__ import annotations
@@ -74,14 +73,14 @@ def test_every_word_picture_and_figure_is_a_pdf_picture_in_the_same_place() -> N
 
     assert _places(pdf) == _places(docx)
     assert len(_places(pdf)) == 3
-    assert [len(chunk.images) for chunk in docx if chunk.kind == "drawing"] == [0, 0, 1]
+    assert [len(chunk.images) for chunk in docx if chunk.kind == "drawing"] == [1, 1, 1]
     assert [len(chunk.images) for chunk in pdf if chunk.kind == "drawing"] == [1, 1, 1]
     assert [chunk.anchor for chunk in pdf] == [chunk.anchor for chunk in docx]
 
 
 def test_the_placed_picture_keeps_its_shape() -> None:
     docx, pdf = _chunks()
-    (word,) = [image for chunk in docx for image in chunk.images]
+    word = [chunk for chunk in docx if chunk.kind == "drawing"][-1].images[0]
     pdf_drawings = [chunk for chunk in pdf if chunk.kind == "drawing"]
     cut = pdf_drawings[-1].images[0]
 
@@ -96,6 +95,13 @@ def test_text_is_the_word_text_and_figure_labels_are_not_read_as_text() -> None:
     assert [_words(chunk.text) for chunk in pdf] == [_words(chunk.text) for chunk in docx]
     for label in _FIGURE_LABELS:
         assert not any(label in _words(chunk.text) for chunk in pdf), label
+
+
+def test_figure_labels_are_in_the_pictures_not_in_the_word_text() -> None:
+    docx, _ = _chunks()
+
+    for label in _FIGURE_LABELS:
+        assert not any(label in _words(chunk.text) for chunk in docx), label
 
 
 def test_each_drawn_figure_is_cut_with_a_white_margin_on_every_side() -> None:

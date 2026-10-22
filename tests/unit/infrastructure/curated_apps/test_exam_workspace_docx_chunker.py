@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from docx import Document
 from docx.document import Document as DocxDocument
+from docx.oxml import parse_xml
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -173,3 +174,204 @@ def test_empty_docx_reports_swedish_domain_error(layout: str) -> None:
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert exc_info.value.message == "Word-dokumentet saknar läsbart innehåll."
+
+
+# --- drawn figures: Word shapes become pictures (TASK-SKRIPT-39-04-22 D1-D4) ---------------
+
+_PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+_NS = (
+    'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '
+    'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" '
+    'xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" '
+    'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" '
+    'xmlns:v="urn:schemas-microsoft-com:vml" '
+    'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" '
+    'xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" '
+    'xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"'
+)
+_URI = {
+    "wps": "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
+    "wpg": "http://schemas.microsoft.com/office/word/2010/wordprocessingGroup",
+    "wpc": "http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas",
+}
+_LINE = '<a:ln w="19050"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:ln>'
+
+
+def _wsp(
+    prst: str = "rect",
+    *,
+    off: tuple[int, int] = (0, 0),
+    ext: tuple[int, int] = (1905000, 952500),
+    label: str | None = None,
+    geometry: str | None = None,
+    line: str = _LINE,
+) -> str:
+    geometry = geometry or f'<a:prstGeom prst="{prst}"><a:avLst/></a:prstGeom>'
+    text = ""
+    if label is not None:
+        text = (
+            "<wps:txbx><w:txbxContent><w:p><w:r>"
+            f"<w:t>{label}</w:t></w:r></w:p></w:txbxContent></wps:txbx>"
+        )
+    return (
+        '<wps:wsp><wps:cNvPr id="2" name="s"/><wps:cNvSpPr/><wps:spPr>'
+        f'<a:xfrm><a:off x="{off[0]}" y="{off[1]}"/><a:ext cx="{ext[0]}" cy="{ext[1]}"/></a:xfrm>'
+        f'{geometry}<a:solidFill><a:srgbClr val="FFCC00"/></a:solidFill>{line}</wps:spPr>'
+        f"{text}<wps:bodyPr/></wps:wsp>"
+    )
+
+
+def _drawing(kind: str, shapes: str, *, ext: tuple[int, int] = (1905000, 952500)) -> str:
+    graphic = shapes
+    if kind == "wpg":
+        graphic = (
+            '<wpg:wgp><wpg:cNvPr id="3" name="g"/><wpg:cNvGrpSpPr/><wpg:grpSpPr>'
+            f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{ext[0]}" cy="{ext[1]}"/>'
+            f'<a:chOff x="0" y="0"/><a:chExt cx="{ext[0]}" cy="{ext[1]}"/></a:xfrm>'
+            f"</wpg:grpSpPr>{shapes}</wpg:wgp>"
+        )
+    elif kind == "wpc":
+        graphic = f"<wpc:wpc><wpc:bg><a:noFill/></wpc:bg>{shapes}</wpc:wpc>"
+    return (
+        "<w:drawing><wp:inline>"
+        f'<wp:extent cx="{ext[0]}" cy="{ext[1]}"/><wp:docPr id="1" name="d"/>'
+        f'<a:graphic><a:graphicData uri="{_URI[kind]}">{graphic}</a:graphicData></a:graphic>'
+        "</wp:inline></w:drawing>"
+    )
+
+
+def _group(*labels: str) -> str:
+    return _drawing(
+        "wpg",
+        "".join(
+            _wsp("ellipse", off=(index * 950000, 0), ext=(900000, 900000), label=label)
+            for index, label in enumerate(labels)
+        ),
+    )
+
+
+def _paragraph_with(*run_contents: str, text: str = "") -> bytes:
+    document = Document()
+    document.add_paragraph("Fråga 1")
+    paragraph = document.add_paragraph(text)
+    for content in run_contents:
+        paragraph._p.append(parse_xml(f"<w:r {_NS}>{content}</w:r>"))
+    document.add_paragraph("Fråga 2")
+    return _bytes(document)
+
+
+def _drawn_chunk(content: bytes) -> DocxChunk:
+    (chunk,) = [
+        c for c in PythonDocxExamChunker().chunk(content=content) if c.anchor == "body:0002"
+    ]
+    return chunk
+
+
+def test_a_group_of_shapes_with_labels_becomes_one_picture() -> None:
+    chunk = _drawn_chunk(_paragraph_with(_group("Population", "Urval")))
+
+    assert (chunk.kind, chunk.text, chunk.missing_images) == ("drawing", "", ())
+    (image,) = chunk.images
+    assert image.payload.startswith(_PNG_SIGNATURE)
+    assert image.media_type == "image/png"
+    assert (image.offset, image.marked_offset) == (0, 0)
+    assert image.width and image.height
+    assert image.docx_shapes is not None
+    assert "wpg:wgp" in image.docx_shapes
+    assert "Population" in image.docx_shapes
+
+
+@pytest.mark.parametrize("kind", ["wps", "wpc"])
+def test_a_single_shape_and_a_canvas_become_one_picture_each(kind: str) -> None:
+    shapes = _wsp("rect", label="Ruta")
+    chunk = _drawn_chunk(_paragraph_with(_drawing(kind, shapes)))
+
+    (image,) = chunk.images
+    assert (chunk.kind, chunk.text, chunk.missing_images) == ("drawing", "", ())
+    assert image.payload.startswith(_PNG_SIGNATURE)
+    assert image.docx_shapes is not None
+    assert "wps:wsp" in image.docx_shapes
+
+
+def test_the_choice_drawing_is_drawn_and_its_vml_fallback_ignored() -> None:
+    content = (
+        '<mc:AlternateContent><mc:Choice Requires="wpg">'
+        f"{_group('Population')}"
+        "</mc:Choice><mc:Fallback><w:pict><v:rect/></w:pict></mc:Fallback></mc:AlternateContent>"
+    )
+
+    chunk = _drawn_chunk(_paragraph_with(content))
+
+    (image,) = chunk.images
+    assert image.payload.startswith(_PNG_SIGNATURE)
+    assert chunk.missing_images == ()
+
+
+def test_a_group_with_a_custom_geometry_shape_keeps_the_drawing_chunk_without_a_picture() -> None:
+    custom = _wsp(
+        geometry=(
+            "<a:custGeom><a:avLst/><a:gdLst/><a:ahLst/><a:cxnLst/>"
+            '<a:rect l="0" t="0" r="r" b="b"/><a:pathLst/></a:custGeom>'
+        )
+    )
+    chunk = _drawn_chunk(_paragraph_with(_drawing("wpg", _wsp("rect") + custom)))
+
+    assert (chunk.kind, chunk.text, chunk.images, chunk.missing_images) == ("drawing", "", (), ())
+
+
+def test_a_drawing_of_plain_lines_gets_no_picture() -> None:
+    lines = _wsp("line") + _wsp("straightConnector1", off=(0, 100000))
+    chunk = _drawn_chunk(_paragraph_with(_drawing("wpg", lines)))
+
+    assert (chunk.kind, chunk.images, chunk.missing_images) == ("drawing", (), ())
+
+
+def test_two_figures_in_one_paragraph_give_two_pictures_in_order() -> None:
+    first = _drawing("wps", _wsp("rect", ext=(1905000, 952500)))
+    second = _drawing("wps", _wsp("ellipse", ext=(952500, 1905000)), ext=(952500, 1905000))
+
+    chunk = _drawn_chunk(_paragraph_with(first, second))
+
+    assert len(chunk.images) == 2
+    wide, tall = chunk.images
+    assert wide.width and wide.height and tall.width and tall.height
+    assert wide.width > wide.height
+    assert tall.height > tall.width
+    assert wide.docx_shapes is not None and "rect" in wide.docx_shapes
+    assert tall.docx_shapes is not None and "ellipse" in tall.docx_shapes
+
+
+def test_a_lines_only_figure_beside_a_shape_figure_leaves_one_picture() -> None:
+    lines = _drawing("wps", _wsp("line"))
+    shape = _drawing("wps", _wsp("rect"))
+
+    chunk = _drawn_chunk(_paragraph_with(lines, shape))
+
+    (image,) = chunk.images
+    assert image.docx_shapes is not None and "rect" in image.docx_shapes
+
+
+def test_an_unsupported_figure_drops_the_whole_paragraphs_pictures() -> None:
+    custom = _wsp(geometry="<a:custGeom><a:pathLst/></a:custGeom>")
+    chunk = _drawn_chunk(_paragraph_with(_drawing("wps", _wsp("rect")), _drawing("wps", custom)))
+
+    assert (chunk.kind, chunk.images, chunk.missing_images) == ("drawing", (), ())
+
+
+def test_vml_content_beside_a_drawing_keeps_todays_chunk() -> None:
+    chunk = _drawn_chunk(
+        _paragraph_with(_drawing("wps", _wsp("rect")), "<w:pict><v:rect/></w:pict>")
+    )
+
+    assert (chunk.kind, chunk.images, chunk.missing_images) == ("drawing", (), ())
+
+
+def test_a_paragraph_with_text_and_a_shape_is_unchanged() -> None:
+    chunk = _drawn_chunk(_paragraph_with(_drawing("wps", _wsp("rect")), text="Rita figuren"))
+
+    assert (chunk.kind, chunk.text, chunk.images, chunk.missing_images) == (
+        "paragraph",
+        "Rita figuren",
+        (),
+        (),
+    )
