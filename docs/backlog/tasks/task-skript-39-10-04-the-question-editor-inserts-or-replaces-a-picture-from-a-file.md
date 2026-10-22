@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Independent review in retained root 01a1605d-5786-7434-9227-58fee29c2cc5 (evidence/reviews/review-39-10-04.md; F1 blocker rereview approved at 73d060cac in review-39-10-04-f1-rereview.md; F2 fixed at the production edge, 30m body limit; F3-F8 admitted on focused proof). Merged as 4f5554420; walk W1 caret fix e68e84a13 on the light route. Mac staging walk at 4f5554420 passed checks 1, 2, 3, 5, 6 and 7; the check 4 re-walk at fe2bc9b9c passed with a PNG and a JPEG. The user closes on walk pass (via Mac, 2026-10-22).'
 task_kind: story
 acceptance_criteria:
   - The question text and instruction editors have one picture control, Lägg till bild; choosing a picture file inserts it at the cursor, or replaces the selected picture, in every exam
