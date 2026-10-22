@@ -19,6 +19,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
+import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
   aiDailyLimit,
   aiDailyLimitReached,
@@ -34,30 +35,85 @@ const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök ig
 
 function retryableDocument(): NativeExamDocument {
   return {
-    revision: 1,
+    assets: [],
+    document_id: "00000000-0000-4000-8000-000000000012",
+    header: { tags: [] },
+    instructions: [],
     items: [
-      {
-        item_id: "item_001",
-        retry_source: { label_kind: "gap_fill" },
-        review: { state: "review_required" },
-      },
+      buildFreeTextItem(1, {
+        retry_source: {
+          chunks: [],
+          context_chunks: [],
+          key_chunks: [],
+          label_kind: "gap_fill",
+          owned_context_anchors: [],
+        },
+        review: {
+          confidence: null,
+          parse_origin: "deterministic",
+          reasons: [],
+          state: "review_required",
+        },
+      }),
     ],
-  } as unknown as NativeExamDocument;
+    origin: { kind: "created" },
+    parents: [],
+    revision: 1,
+    schema_version: "native_exam_document_v11",
+    title: "Prov 1",
+  };
 }
 
-function setup(retryImpl: (...args: never[]) => Promise<never>) {
+/** Any teacher call the retry path is not meant to make fails loudly. */
+const unexpectedTeacherCall = (): Promise<never> =>
+  Promise.reject(new Error("unexpected teacher service call"));
+
+function teacherServices(
+  retryExamWorkspaceItem: ExamWorkspaceTeacherServices["retryExamWorkspaceItem"],
+): ExamWorkspaceTeacherServices {
+  return {
+    createExamWorkspaceBlank: unexpectedTeacherCall,
+    listExamWorkspaceDocuments: unexpectedTeacherCall,
+    importExamWorkspaceDocument: unexpectedTeacherCall,
+    getExamWorkspaceConversionStatus: unexpectedTeacherCall,
+    importExamWorkspaceDigiExam: unexpectedTeacherCall,
+    importExamWorkspaceQti: unexpectedTeacherCall,
+    copyExamWorkspaceDocument: unexpectedTeacherCall,
+    saveExamWorkspaceExport: unexpectedTeacherCall,
+    retryExamWorkspaceItem,
+    requestExamWorkspaceAnswerKeySuggestions: unexpectedTeacherCall,
+    getExamWorkspaceAnswerKeySuggestions: unexpectedTeacherCall,
+    findExamWorkspaceAnswerKeySuggestions: unexpectedTeacherCall,
+    requestExamWorkspaceContentSuggestions: unexpectedTeacherCall,
+    getExamWorkspaceContentSuggestions: unexpectedTeacherCall,
+    getExamCourseContent: unexpectedTeacherCall,
+    updateExamListOrdering: unexpectedTeacherCall,
+    renameVaultFile: unexpectedTeacherCall,
+    importExamWorkspaceGuestDraft: unexpectedTeacherCall,
+    fetchExamWorkspacePrintPreview: unexpectedTeacherCall,
+  };
+}
+
+function setup(retryImpl: () => Promise<never>) {
   const fence = createSyncFence();
-  const opening = { lineageId: "lineage-1" } as ExamWorkspaceOpening;
+  const opening: ExamWorkspaceOpening = { lineageId: "lineage-1" };
+  const summary: ExamWorkspaceDocumentSummary = {
+    course_key: null,
+    lineage_id: "lineage-1",
+    name: "Prov",
+    saved_at: "2026-10-22T00:00:00Z",
+    title: "Prov",
+    vault_file_id: "vault-1",
+    version: 1,
+  };
   const document = retryableDocument();
-  const teacher = {
-    retryExamWorkspaceItem: vi.fn(retryImpl),
-  } as unknown as ExamWorkspaceTeacherServices;
+  const teacher = teacherServices(vi.fn(retryImpl));
   const scope = effectScope();
   const retry = scope.run(() =>
     useExamWorkspaceItemRetry({
       workspaceDocument: ref<NativeExamDocument | null>(document),
       serverDocument: ref<NativeExamDocument | null>(document),
-      summary: ref({ lineage_id: "lineage-1" } as ExamWorkspaceDocumentSummary),
+      summary: ref<ExamWorkspaceDocumentSummary | null>(summary),
       openExam: shallowRef(opening),
       operationBusy: ref(false),
       isBusy: () => false,

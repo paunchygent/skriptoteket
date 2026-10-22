@@ -19,6 +19,7 @@ import type {
 import { ApiError } from "../../../api/client";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
+import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
   aiDailyLimit,
   aiDailyLimitReached,
@@ -48,9 +49,17 @@ function tag(id: string, questionIds: string[]): Tag {
 
 function documentWith(itemIds: string[], courseKey: string): NativeExamDocument {
   return {
+    assets: [],
+    document_id: "00000000-0000-4000-8000-000000000011",
     header: { course: { key: courseKey, name: courseKey }, tags: [] },
-    items: itemIds.map((item_id) => ({ item_id })),
-  } as unknown as NativeExamDocument;
+    instructions: [],
+    items: itemIds.map((item_id, index) => buildFreeTextItem(index + 1, { item_id })),
+    origin: { kind: "created" },
+    parents: [],
+    revision: 1,
+    schema_version: "native_exam_document_v11",
+    title: courseKey,
+  };
 }
 
 function response(
@@ -69,10 +78,14 @@ function response(
 }
 
 function setup() {
-  const state = {
-    opening: { lineageId: "lineage-a" } as ExamWorkspaceOpening | null,
-    document: documentWith(["q1", "q2"], "eng5") as NativeExamDocument | null,
-    revision: 1 as number | null,
+  const state: {
+    opening: ExamWorkspaceOpening | null;
+    document: NativeExamDocument;
+    revision: number | null;
+  } = {
+    opening: { lineageId: "lineage-a" },
+    document: documentWith(["q1", "q2"], "eng5"),
+    revision: 1,
   };
   const setTags = vi.fn();
   const scope = effectScope();
@@ -130,7 +143,7 @@ describe("useExamWorkspaceContentSuggestions daily AI limit", () => {
     ["pool", aiLimitNote("pool")],
     ["user_share", aiLimitNote("user_share")],
     ["usd_ceiling", aiLimitNote("usd_ceiling")],
-  ] as Array<[AiDailyLimit, string]>)(
+  ] satisfies Array<[AiDailyLimit, string]>)(
     "says the limit note and fires no toast for ai_limit %s",
     async (ai_limit, note) => {
       const harness = setup();

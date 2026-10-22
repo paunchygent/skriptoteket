@@ -8,7 +8,6 @@ only 503/504, and never retries a door limit or the overage cap.
 from __future__ import annotations
 
 import json
-from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -31,6 +30,7 @@ from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
     CORPUS_24,
     RecordingSleeper,
     load,
+    recorded_door_reply,
     request_for,
 )
 from tests.unit.llm_door_fakes import (
@@ -52,8 +52,10 @@ def _labeler(door: RecordingDoor, *, max_attempts: int = 3) -> OpenAIDecisionsIt
     )
 
 
-def _recorded_body() -> dict[str, Any]:
-    return dict(load(CORPUS_24)["exchanges"][0]["body"])
+def _recorded_reply() -> DoorReply:
+    """The corpus's first recorded Decisions exchange, replayed at the door."""
+
+    return recorded_door_reply(load(CORPUS_24)["exchanges"][0])
 
 
 async def test_label_sends_decisions_with_the_caller_and_the_unchanged_payload() -> None:
@@ -63,7 +65,7 @@ async def test_label_sends_decisions_with_the_caller_and_the_unchanged_payload()
 
     def respond(sent: DoorSent) -> DoorReply:
         seen.append(sent)
-        return json_reply(_recorded_body())
+        return _recorded_reply()
 
     labeling = await _labeler(RecordingDoor(respond)).label(request=request)
 
@@ -117,7 +119,7 @@ async def test_recorded_503_is_retried_once_at_the_door() -> None:
     fixture = load(CORPUS_24)
     door = RecordingDoor(
         lambda sent: (
-            json_reply(_recorded_body())
+            _recorded_reply()
             if len(door.sent) > 1
             else DoorReply(status_code=503, headers={}, body=b"{}")
         )
@@ -143,7 +145,7 @@ async def test_limit_refusal_is_never_retried() -> None:
 
 
 async def test_overage_cap_is_never_retried() -> None:
-    door = RecordingDoor(lambda sent: json_reply(_recorded_body()), cap_usd_micros=0)
+    door = RecordingDoor(lambda sent: _recorded_reply(), cap_usd_micros=0)
     caller = fixture_caller()
     caller.charge_overage(1)
     request = LabelingRequest(

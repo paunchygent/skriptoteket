@@ -12,16 +12,15 @@
 import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, ref } from "vue";
-import type { Ref } from "vue";
 
 import { ApiError } from "../../../api/client";
 import type {
-  ExamWorkspaceAnswerKeySuggestionItem,
   ExamWorkspaceAnswerKeySuggestionsStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
+import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import {
   aiDailyLimit,
   aiDailyLimitReached,
@@ -42,22 +41,57 @@ function limitStatus(
     state: "failed",
     ai_limit,
     message: ai_limit === null ? null : aiLimitNote(ai_limit),
-    suggestions: [] as ExamWorkspaceAnswerKeySuggestionItem[],
+    suggestions: [],
   };
 }
 
+function savedDocument(): NativeExamDocument {
+  return {
+    assets: [],
+    document_id: "00000000-0000-4000-8000-000000000013",
+    header: { tags: [] },
+    instructions: [],
+    items: [buildFreeTextItem(1)],
+    origin: { kind: "created" },
+    parents: [],
+    revision: 1,
+    schema_version: "native_exam_document_v11",
+    title: "Prov 1",
+  };
+}
+
+/** Any teacher call the enrichment path is not meant to make fails loudly. */
+const unexpectedTeacherCall = (): Promise<never> =>
+  Promise.reject(new Error("unexpected teacher service call"));
+
 function setup(requestImpl: () => Promise<ExamWorkspaceAnswerKeySuggestionsStatus>) {
-  const opening = { lineageId: "lineage-a" } as ExamWorkspaceOpening;
-  const teacher = {
+  const opening: ExamWorkspaceOpening = { lineageId: "lineage-a" };
+  const teacher: ExamWorkspaceTeacherServices = {
+    createExamWorkspaceBlank: unexpectedTeacherCall,
+    listExamWorkspaceDocuments: unexpectedTeacherCall,
+    importExamWorkspaceDocument: unexpectedTeacherCall,
+    getExamWorkspaceConversionStatus: unexpectedTeacherCall,
+    importExamWorkspaceDigiExam: unexpectedTeacherCall,
+    importExamWorkspaceQti: unexpectedTeacherCall,
+    copyExamWorkspaceDocument: unexpectedTeacherCall,
+    saveExamWorkspaceExport: unexpectedTeacherCall,
+    retryExamWorkspaceItem: unexpectedTeacherCall,
     requestExamWorkspaceAnswerKeySuggestions: vi.fn(requestImpl),
-    getExamWorkspaceAnswerKeySuggestions: vi.fn(),
-    findExamWorkspaceAnswerKeySuggestions: vi.fn(),
-  } as unknown as ExamWorkspaceTeacherServices;
+    getExamWorkspaceAnswerKeySuggestions: unexpectedTeacherCall,
+    findExamWorkspaceAnswerKeySuggestions: unexpectedTeacherCall,
+    requestExamWorkspaceContentSuggestions: unexpectedTeacherCall,
+    getExamWorkspaceContentSuggestions: unexpectedTeacherCall,
+    getExamCourseContent: unexpectedTeacherCall,
+    updateExamListOrdering: unexpectedTeacherCall,
+    renameVaultFile: unexpectedTeacherCall,
+    importExamWorkspaceGuestDraft: unexpectedTeacherCall,
+    fetchExamWorkspacePrintPreview: unexpectedTeacherCall,
+  };
   const scope = effectScope();
   const enrichment = scope.run(() =>
     useExamWorkspaceEnrichment({
       applySuggestions: () => undefined,
-      document: ref({}) as Ref<NativeExamDocument | null>,
+      document: ref<NativeExamDocument | null>(savedDocument()),
       isOpen: () => true,
       openExam: ref(opening),
       savedRevision: ref(1),
@@ -86,7 +120,7 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     ["pool", aiLimitNote("pool")],
     ["user_share", aiLimitNote("user_share")],
     ["usd_ceiling", aiLimitNote("usd_ceiling")],
-  ] as Array<[AiDailyLimit, string]>)(
+  ] satisfies Array<[AiDailyLimit, string]>)(
     "marks the limit, shows the note and fires no toast for ai_limit %s",
     async (ai_limit, note) => {
       const { enrichment, scope } = setup(async () => limitStatus(ai_limit));

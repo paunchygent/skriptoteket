@@ -19,12 +19,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Plugin } from "vue";
 
 import type {
+  ExamCourse,
   ExamCourseCatalogResponse,
   ExamCourseContent,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
+import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
@@ -63,7 +65,7 @@ vi.mock("../../../api/examWorkspaceUnreadableFiles", () => unreadableApiMocks);
 
 type Role = "admin";
 
-const COURSE = {
+const COURSE: ExamCourse = {
   code: "ENGENG05",
   key: "eng5",
   name: "Engelska 5",
@@ -73,16 +75,16 @@ const COURSE = {
   subject_name: "Engelska",
 };
 
-const CATALOG = {
+const CATALOG: ExamCourseCatalogResponse = {
   courses: [COURSE],
   generated_at: "2026-10-18T00:00:00Z",
   registered_course_keys: [],
-} as unknown as ExamCourseCatalogResponse;
+};
 
-const CONTENT = {
+const CONTENT: ExamCourseContent = {
   course_key: "eng5",
   items: [{ id: "c1", text: "Centralt innehåll" }],
-} as unknown as ExamCourseContent;
+};
 
 const LIMIT_CASES: Array<{ limit: AiDailyLimit; note: string }> = [
   { limit: "user_share", note: aiLimitNote("user_share") },
@@ -117,16 +119,25 @@ function courseDocument(): NativeExamDocument {
 }
 
 function reviewItem(): NativeExamItem {
-  return {
-    item_id: "item_001",
-    kind: "free_text",
-    retry_source: { label_kind: "gap_fill" },
-    review: { state: "review_required", reasons: [] },
+  return buildFreeTextItem(1, {
+    retry_source: {
+      chunks: [],
+      context_chunks: [],
+      key_chunks: [],
+      label_kind: "gap_fill",
+      owned_context_anchors: [],
+    },
+    review: {
+      confidence: null,
+      parse_origin: "deterministic",
+      reasons: [],
+      state: "review_required",
+    },
     import_record: {
       original_wording: { question_text: "Förklara begreppet.", answer_key_text: null },
       steps: [],
     },
-  } as unknown as NativeExamItem;
+  });
 }
 
 let pinia: Pinia;

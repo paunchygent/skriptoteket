@@ -10,10 +10,10 @@ import copy
 import json
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import NotRequired, TypedDict, cast
+from typing import NotRequired, TypedDict
 from uuid import uuid4
 
-from pydantic import JsonValue
+from pydantic import JsonValue, TypeAdapter
 
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
@@ -62,10 +62,31 @@ class Body(TypedDict):
     usage: Usage
 
 
+class Choice(TypedDict):
+    value: str
+    description: str
+
+
+class Question(TypedDict):
+    type: str
+    name: str
+    instructions: str
+    choices: list[Choice]
+
+
 class Sent(TypedDict):
     model: str
-    input: str
-    questions: list[dict[str, JsonValue]]
+    input: str | list[JsonValue]
+    questions: list[Question]
+
+
+_SENT_ADAPTER = TypeAdapter(Sent)
+
+
+def sent_payload(sent: DoorSent) -> Sent:
+    """The recorded request, validated into the Decisions request shape."""
+
+    return _SENT_ADAPTER.validate_python(sent.payload)
 
 
 class Exchange(TypedDict):
@@ -157,7 +178,7 @@ class Harness:
 
     @property
     def requests(self) -> list[Sent]:
-        return [cast(Sent, sent.payload) for sent in self.door.sent]
+        return [sent_payload(sent) for sent in self.door.sent]
 
     @property
     def sent(self) -> list[DoorSent]:

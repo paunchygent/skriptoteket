@@ -6,10 +6,10 @@ These replies prove parsing and request construction, not live model accuracy.
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Any
 from uuid import uuid4
 
 import pytest
+from pydantic import JsonValue
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     SourceImage,
@@ -25,7 +25,11 @@ from skriptoteket.protocols.item_type_labeler import (
     LabelingItem,
 )
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply
-from tests.unit.infrastructure.llm.decisions_item_labeler_support import Harness
+from tests.unit.infrastructure.llm.decisions_item_labeler_support import (
+    Harness,
+    Question,
+    sent_payload,
+)
 from tests.unit.llm_door_fakes import DoorSent, fixture_caller, json_reply
 
 pytestmark = pytest.mark.unit
@@ -63,20 +67,33 @@ def _request(count: int = 2, *, content=_CONTENT) -> ContentTagClassificationReq
     )
 
 
-def _answer(question: Any, *, choice_index: int = 0) -> dict:
+def _answer(question: Question, *, choice_index: int = 0) -> dict[str, JsonValue]:
     choices = question["choices"]
+    probabilities: list[JsonValue] = [
+        {
+            "value": choice["value"],
+            "probability": 0.95 if index == choice_index % len(choices) else 0.025,
+        }
+        for index, choice in enumerate(choices)
+    ]
     return {
         "type": "choice",
         "name": question["name"],
         "choice": choices[choice_index]["value"],
-        "probabilities": [
-            {
-                "value": choice["value"],
-                "probability": 0.95 if index == choice_index % len(choices) else 0.025,
-            }
-            for index, choice in enumerate(choices)
-        ],
+        "probabilities": probabilities,
     }
+
+
+def _probability_entries(answer: dict[str, JsonValue]) -> list[JsonValue]:
+    listed = answer["probabilities"]
+    assert isinstance(listed, list)
+    return listed
+
+
+def _first_probability(entries: list[JsonValue]) -> dict[str, JsonValue]:
+    first = entries[0]
+    assert isinstance(first, dict)
+    return first
 
 
 @pytest.mark.asyncio
@@ -87,16 +104,17 @@ async def test_content_choices_keep_every_course_bullet_and_none_for_every_quest
 
     def respond(sent: DoorSent) -> DoorReply:
         assert sent.operation is DoorOperation.DECISIONS
-        payload: Any = sent.payload
+        payload = sent_payload(sent)
         assert len(payload["questions"]) == 2
         for question in payload["questions"]:
-            assert len(question["choices"]) == 81, "Never silently truncate course content"
-            descriptions = [choice["description"] for choice in question["choices"]]
+            choices = question["choices"]
+            assert len(choices) == 81, "Never silently truncate course content"
+            descriptions = [choice["description"] for choice in choices]
             assert descriptions[:-1] == [item.text for item in content]
             assert "Inget av dessa" in descriptions[-1]
         assert "Källtext 0: åäö" in str(payload["input"])
         assert "Källtext 1: åäö" in str(payload["input"])
-        assert "reasoning" not in payload
+        assert "reasoning" not in sent.payload
         return json_reply({"answers": [_answer(q) for q in payload["questions"]]})
 
     result = await Harness(respond).labeler().classify_content(request=_request(content=content))
@@ -110,8 +128,7 @@ async def test_content_choices_keep_every_course_bullet_and_none_for_every_quest
 @pytest.mark.asyncio
 async def test_out_of_order_answers_keep_question_citations_and_none_stays_none() -> None:
     def respond(sent: DoorSent) -> DoorReply:
-        questions: Any = sent.payload["questions"]
-        assert isinstance(questions, list)
+        questions = sent_payload(sent)["questions"]
         return json_reply(
             {
                 "answers": [_answer(questions[1], choice_index=-1), _answer(questions[0])],
@@ -130,8 +147,7 @@ async def test_out_of_order_answers_keep_question_citations_and_none_stays_none(
 @pytest.mark.asyncio
 async def test_201_questions_split_without_losing_sources_choices_or_usage() -> None:
     def respond(sent: DoorSent) -> DoorReply:
-        questions: Any = sent.payload["questions"]
-        assert isinstance(questions, list)
+        questions = sent_payload(sent)["questions"]
         return json_reply(
             {
                 "answers": [_answer(q) for q in questions],
@@ -143,20 +159,15 @@ async def test_201_questions_split_without_losing_sources_choices_or_usage() -> 
     result = await harness.labeler().classify_content(request=_request(201))
     question_counts = []
     for sent in harness.requests:
-        questions: Any = sent["questions"]
-        assert isinstance(questions, list)
-        question_counts.append(len(questions))
+        question_counts.append(len(sent["questions"]))
     assert sorted(question_counts) == [1, 200]
     assert [r.item_id for r in result.results] == [f"teacher-question-{i}" for i in range(201)]
     assert result.usage.input_tokens == 201
     assert result.usage.requests == 2
     assert result.usage.attempts == 2
     for sent in harness.requests:
-        sent_questions: Any = sent["questions"]
-        for question in sent_questions:
-            choices = question["choices"]
-            assert isinstance(choices, list)
-            assert len(choices) == 3
+        for question in sent["questions"]:
+            assert len(question["choices"]) == 3
 
 
 @pytest.mark.asyncio
@@ -188,10 +199,9 @@ async def test_empty_inputs_never_call_decisions(empty: str) -> None:
 )
 async def test_invalid_answers_fail_closed_instead_of_manufacturing_tags(defect: str) -> None:
     def respond(sent: DoorSent) -> DoorReply:
-        payload: Any = sent.payload
-        assert isinstance(payload["questions"], list)
-        questions = payload["questions"]
-        answers: list[Any] = [_answer(q) for q in questions]
+        questions = sent_payload(sent)["questions"]
+        answers: list[dict[str, JsonValue]] = [_answer(q) for q in questions]
+        probabilities = _probability_entries(answers[0])
         if defect == "missing":
             answers.pop()
         elif defect == "duplicate":
@@ -201,18 +211,18 @@ async def test_invalid_answers_fail_closed_instead_of_manufacturing_tags(defect:
         elif defect == "unknown_choice":
             answers[0]["choice"] = "another-course:unknown-content"
         elif defect == "missing_probability":
-            answers[0]["probabilities"] = answers[0]["probabilities"][1:]
+            answers[0]["probabilities"] = probabilities[1:]
         elif defect == "duplicate_probability":
-            answers[0]["probabilities"].append(answers[0]["probabilities"][0])
+            answers[0]["probabilities"] = [*probabilities, probabilities[0]]
         elif defect == "not_top":
             answers[0]["choice"] = questions[0]["choices"][-1]["value"]
         else:
-            answers[0]["probabilities"][0]["probability"] = {
+            _first_probability(probabilities)["probability"] = {
                 "boolean": True,
                 "negative": -0.1,
                 "above_one": 1.01,
             }[defect]
-        return json_reply({"answers": answers})
+        return json_reply({"answers": [*answers]})
 
     with pytest.raises(ItemTypeLabelerError):
         await Harness(respond).labeler().classify_content(request=_request())
