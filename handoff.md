@@ -13,10 +13,12 @@
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
   - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, run
     passed 08:31Z, ntfy reaches the phone; Healthchecks ping open (user account).
-  - TASK-SKRIPT-39-04-22 (Word drawn shapes as pictures): six units implemented on
-    unpushed `codex/task-skript-39-04-22` (lead session; retained
-    `01a162df-23d2-79d3-a1ec-df55cbedd0d7`). Next: one review via the orchestrator,
-    then merge, staging rebuild and the Mac walk (Word export in Word, D9).
+  - TASK-SKRIPT-39-04-22 (Word drawn shapes as pictures): review changes_requested
+    (`evidence/reviews/task-skript-39-04-22-662397a95.md`); F1–F9 repaired with
+    fail-first proof (`evidence/repairs-39-04-22/`) on unpushed
+    `codex/task-skript-39-04-22` (retained `01a162df-23d2-79d3-a1ec-df55cbedd0d7`).
+    Next: orchestrator admission (no rereview, D7), merge, staging rebuild and the
+    Mac walk (Word export opens and edits in Word, D9).
   - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
