@@ -23,9 +23,9 @@ backlog_document_profile: contract-derived
 
 Skriptoteket's public offer is the exam workspace itself: a guest imports a QTI package or starts a blank exam, edits it in the same editor signed-in teachers use, and exports every format that costs no AI (QTI, print PDF, DOCX and the fallback Exam.net PDF). Signing in adds Mina filer and AI help. The sales argument is control and ownership of a fixed exam, not AI. Paid AI is never reachable without login (E1).
 
-Every paid AI call goes through the HuleEdu LLM provider service's metered OpenAI door (ST-HULE-14-03), which reserves each call once against the shared UTC-day pools, the teacher's share and Skriptoteket's USD ceiling (E2-E4). Skriptoteket keeps its own prompts and schemas and holds no OpenAI key. Skriptoteket and the door serve 10,000 users and 1,000 concurrent calls (E6). DigiExam conversion is part of the exam app behind login (E5).
+Every paid AI call goes through the HuleEdu LLM provider service's metered OpenAI door (ST-HULE-14-03), which reserves each call once against the shared UTC-day pools and the teacher's share (E2-E4). Skriptoteket keeps its own prompts and schemas and holds no OpenAI key. Skriptoteket and the door serve 10,000 users and 1,000 concurrent calls (E6). DigiExam conversion is part of the exam app behind login (E5).
 
-Non-goals: public AI (any later public AI is off by default and limited to one conversion, an item cap and one suggestion); textbook-grounded item generation (EPIC-SKRIPT-22); lifting the admin-only AI gate of TASK-SKRIPT-REP-0044, which is a separate user decision after both stories ship.
+Non-goals: public AI (any later public AI is off by default and limited to one conversion, an item cap and one suggestion); textbook-grounded item generation (EPIC-SKRIPT-22). ST-SKRIPT-41-03 lifts the admin-only AI gate of TASK-SKRIPT-REP-0044 for every signed-in teacher after ST-SKRIPT-41-01 (user decision 2026-10-22).
 
 ## Contract Inputs
 
@@ -40,8 +40,9 @@ Non-goals: public AI (any later public AI is off by default and limited to one c
 | ----- | -------- |
 | ST-SKRIPT-41-01 | Every paid call through the LLM provider door, the script editor on Sol 6.1 low, and capacity for 1,000 concurrent calls |
 | ST-SKRIPT-41-02 | Done 2026-10-22 (user closure): QTI import, the public workspace without login, and removal of the guest DigiExam line; every guest start and export walked on staging at `4b321fa1`, the untitled-draft sign-in handoff at `ede1ea0d` |
+| ST-SKRIPT-41-03 | Every signed-in teacher uses the exam and script-editor AI within the daily shares; the admin-only AI check is deleted |
 
-The two stories are built in parallel (user 2026-10-18).
+ST-SKRIPT-41-01 and ST-SKRIPT-41-02 are built in parallel (user 2026-10-18); ST-SKRIPT-41-03 follows ST-SKRIPT-41-01.
 
 ## Verification
 
@@ -53,7 +54,7 @@ Each story's verification holds; a staging walk proves a guest QTI import, edit 
 | --- | --------------------- |
 | E1  | No unauthenticated route reaches a paid AI provider. |
 | E2  | Every paid AI call goes through the HuleEdu LLM provider door over `hule-network` with the internal key; Skriptoteket holds no OpenAI key and keeps no token ledger of its own. |
-| E3  | The door's pools apply per UTC day, resetting at UTC midnight: 10,000,000 tokens for small models (Luna, Terra) and 1,000,000 tokens for full models (Sol). Each teacher may use 10% of the small pool and 1% of the full pool per day, and Skriptoteket's exam app stops at $1 per UTC day at OpenAI list prices. |
+| E3  | The door's pools apply per UTC day, resetting at UTC midnight: 10,000,000 tokens for small models (Luna, Terra) and 1,000,000 tokens for full models (Sol). Each teacher may use 20% of the small pool and 10% of the full pool per day; Skriptoteket has no USD ceiling of its own, and the pools are its shared limit (user decision 2026-10-22, ST-SKRIPT-41-03). |
 | E4  | Admin and staging test users meet only the pools. When a pool is exhausted, a call proceeds only with an explicit one-call paid-overage override that a person approves; agents running tests stop and ask the user. Deterministic fixture and corpus runs replay recordings and never call the door. |
 | E5  | DigiExam conversion lives only in the exam workspace behind login; the public guest DigiExam line is removed; the guest converter's URL opens the public workspace. |
 | E6  | Skriptoteket and the door serve 10,000 users and 1,000 concurrent AI calls, slowing down with a try-again answer instead of failing. |

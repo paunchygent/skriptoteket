@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7dd1d3a0167c800abbc8d1888678b467d53d49bde568f05847fc3b003f55d10a",
+  "source_set_digest": "0ee3133c9f55223b60f1591f5638188a752f4cb47205d14ee561db03267778b8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2594,6 +2594,27 @@
         "decided_at": "2026-10-22",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "The user closed the story on 2026-10-22: all six tasks TASK-SKRIPT-41-02-01 to TASK-SKRIPT-41-02-06 are done; every guest start and export was walked at 4b321fa1 (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md), and the owed untitled-draft sign-in item (TASK-SKRIPT-40-04-21 D12) passed at ede1ea0d (Mac .artifacts/staging-walk-closure-ede1ea0d/walk-record.md)."
+      }
+    },
+    {
+      "id": "ST-SKRIPT-41-03",
+      "type": "story",
+      "title": "Every signed-in teacher uses the exam and script-editor AI within the daily budget",
+      "path": "docs/backlog/stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-41",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
