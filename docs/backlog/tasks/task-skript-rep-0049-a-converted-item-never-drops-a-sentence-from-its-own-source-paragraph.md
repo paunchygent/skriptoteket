@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Independent review in retained root 01a160cd-e60f-7a6f-8166-26210b7bf1db (evidence/reviews/review-rep-0049.md); rereview approved F1-F3, then F4 at 57a8c56a6 (review-rep-0049-rereview.md); F4 decision A by the user (D6). Merged as d9193a821; pre-push fix b8293abd1 on the light route. Mac staging walk at fe2bc9b9c passed: metodprov doc 092b8196 has 16 questions, 20 p, item 1 keeps its sentence, no body or choice carries facit; svenska_2 variant 2 imported with facit only in facit_text and gaps. The user closes on walk pass (via Mac, 2026-10-22).'
 task_kind: repository
 acceptance_criteria:
   - metodprov 1 keeps the sentence 'Gruppen har slumpat fram 120 tvåor från en fullständig elevlista.' in its final item

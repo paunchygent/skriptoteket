@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "aa2b6bfd7b4523d283ad0c83b3327961b3379fe4d2ecaccf91ce2e9cd12f1d43",
+  "source_set_digest": "5bd5d9482f5681c45af0398f499c844abea555423cb39e2c6b38c303ce5aefb5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8702,7 +8702,7 @@
       "type": "task",
       "title": "A converted item never drops a sentence from its own source paragraph",
       "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8712,7 +8712,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Independent review in retained root 01a160cd-e60f-7a6f-8166-26210b7bf1db (evidence/reviews/review-rep-0049.md); rereview approved F1-F3, then F4 at 57a8c56a6 (review-rep-0049-rereview.md); F4 decision A by the user (D6). Merged as d9193a821; pre-push fix b8293abd1 on the light route. Mac staging walk at fe2bc9b9c passed: metodprov doc 092b8196 has 16 questions, 20 p, item 1 keeps its sentence, no body or choice carries facit; svenska_2 variant 2 imported with facit only in facit_text and gaps. The user closes on walk pass (via Mac, 2026-10-22)."
       }
     },
     {
