@@ -12,36 +12,50 @@
 
 import { describe, expect, it } from "vitest";
 
+import type { NativeExamDocument } from "../../../api/examWorkspace";
 import {
   DOCUMENT_ID,
+  exam,
   installGuestStoreObjectUrls,
   LEASE_TAB_ID,
   pictureExam,
   setupGuestStore,
   startBlank,
 } from "./examWorkspaceGuestStore.specSupport";
+import { TRANSPARENT_PNG_PICTURE } from "./examWorkspacePictureFixtures.specSupport";
 
 installGuestStoreObjectUrls();
+
+/** An accepted-case picture exam: the real fixture asset declared in the exam instruction. */
+function coherentPictureExam(title: string): NativeExamDocument {
+  const asset = TRANSPARENT_PNG_PICTURE.asset;
+  return {
+    ...exam(title),
+    assets: [asset],
+    instructions: [{ heading_level: null, segments: [{ asset_id: asset.asset_id, kind: "asset" }] }],
+  };
+}
 
 describe("examWorkspaceGuestStore new pictures", () => {
   it("writes new picture bytes in the same write as the step and serves them", async () => {
     const context = setupGuestStore();
     await startBlank(context, "Original");
     const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const pictureId = TRANSPARENT_PNG_PICTURE.asset.asset_id;
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
 
     const step = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
-      document: pictureExam("With picture"),
+      document: coherentPictureExam("With picture"),
       expectedCursor: opened.history_cursor,
-      newPictures: { asset_001: blob },
+      newPictures: { [pictureId]: blob },
       tabId: LEASE_TAB_ID,
     });
 
-    expect(step.document.assets.map((asset) => asset.asset_id)).toContain("asset_001");
+    expect(step.document.assets.map((asset) => asset.asset_id)).toContain(pictureId);
     const stored = await context.storage.load();
-    expect(stored?.assets["asset_001"]).toBe(blob);
-    expect(context.store.store.shared.examWorkspaceAssetUrl(DOCUMENT_ID, "asset_001")).toBe(
+    expect(stored?.assets[pictureId]).toBe(blob);
+    expect(context.store.store.shared.examWorkspaceAssetUrl(DOCUMENT_ID, pictureId)).toBe(
       "blob:picture",
     );
   });
@@ -50,31 +64,32 @@ describe("examWorkspaceGuestStore new pictures", () => {
     const context = setupGuestStore();
     await startBlank(context, "Original");
     const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const pictureId = TRANSPARENT_PNG_PICTURE.asset.asset_id;
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
 
     const first = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
-      document: pictureExam("With picture"),
+      document: coherentPictureExam("With picture"),
       expectedCursor: opened.history_cursor,
-      newPictures: { asset_001: blob },
+      newPictures: { [pictureId]: blob },
       tabId: LEASE_TAB_ID,
     });
     const second = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
-      document: pictureExam("With picture, edited"),
+      document: coherentPictureExam("With picture, edited"),
       expectedCursor: first.history.cursor,
       newPictures: {},
       tabId: LEASE_TAB_ID,
     });
-    expect((await context.storage.load())?.assets["asset_001"]).toBe(blob);
+    expect((await context.storage.load())?.assets[pictureId]).toBe(blob);
 
     const undone = await context.store.moveToHistoryStep(DOCUMENT_ID, {
       expectedCursor: second.history.cursor,
       stepId: first.history.position_step_id,
       tabId: LEASE_TAB_ID,
     });
-    expect((await context.storage.load())?.assets["asset_001"]).toBe(blob);
-    expect(context.store.store.shared.examWorkspaceAssetUrl(DOCUMENT_ID, "asset_001")).toBe(
+    expect((await context.storage.load())?.assets[pictureId]).toBe(blob);
+    expect(context.store.store.shared.examWorkspaceAssetUrl(DOCUMENT_ID, pictureId)).toBe(
       "blob:picture",
     );
 
@@ -84,9 +99,12 @@ describe("examWorkspaceGuestStore new pictures", () => {
       tabId: LEASE_TAB_ID,
     });
     expect(redone.history.position_step_id).toBe(second.history.position_step_id);
-    expect((await context.storage.load())?.assets["asset_001"]).toBe(blob);
+    expect((await context.storage.load())?.assets[pictureId]).toBe(blob);
   });
 
+  // Rejection case, deliberately malformed: `pictureExam` declares
+  // `asset_001` with a placeholder digest while no stored Blob backs it, so
+  // the store must refuse the step.
   it("refuses a step that declares a picture the stored assets do not hold", async () => {
     const context = setupGuestStore();
     await startBlank(context, "Original");

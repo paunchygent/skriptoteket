@@ -15,7 +15,6 @@ import { effectScope } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
-  NativeExamAsset,
   NativeExamBodyParagraph,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
@@ -26,6 +25,10 @@ import {
   buildResponse,
   buildSavedExamSummary,
 } from "./useExamWorkspaceDocument.specSupport";
+import {
+  RED_PNG_PICTURE,
+  TRANSPARENT_PNG_PICTURE,
+} from "./examWorkspacePictureFixtures.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -59,17 +62,6 @@ beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
 });
-
-function picture(id: string): NativeExamAsset {
-  return {
-    asset_id: id,
-    byte_length: 10,
-    height: 20,
-    media_type: "image/png",
-    sha256: "c".repeat(64),
-    width: 30,
-  };
-}
 
 function bodyWith(assetId: string): NativeExamBodyParagraph[] {
   return [{ heading_level: null, segments: [{ kind: "asset", asset_id: assetId }] }];
@@ -116,8 +108,8 @@ describe("new pictures in useExamWorkspaceDocument", () => {
   it("declares a placed picture in the same body edit", async () => {
     const onEdit = vi.fn();
     const { state } = await openDocument(onEdit);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    state.newPictures.declare(asset, new Blob(["bytes"], { type: "image/png" }));
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    state.newPictures.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
 
     state.updateItemBody("item_001", bodyWith(asset.asset_id), true);
 
@@ -127,10 +119,10 @@ describe("new pictures in useExamWorkspaceDocument", () => {
 
   it("replacing the picture drops the old record and adds the new one", async () => {
     const { state } = await openDocument(vi.fn());
-    const first = picture("asset_aaaaaaaaaaaaaaaa");
-    const second = picture("asset_bbbbbbbbbbbbbbbb");
-    state.newPictures.declare(first, new Blob(["one"], { type: "image/png" }));
-    state.newPictures.declare(second, new Blob(["two"], { type: "image/png" }));
+    const first = TRANSPARENT_PNG_PICTURE.asset;
+    const second = RED_PNG_PICTURE.asset;
+    state.newPictures.declare(first, TRANSPARENT_PNG_PICTURE.blob());
+    state.newPictures.declare(second, RED_PNG_PICTURE.blob());
     state.updateItemBody("item_001", bodyWith(first.asset_id), true);
 
     state.updateItemBody("item_001", bodyWith(second.asset_id), true);
@@ -141,8 +133,8 @@ describe("new pictures in useExamWorkspaceDocument", () => {
   it("declares a placed picture in the same instruction edit", async () => {
     const onEdit = vi.fn();
     const { state } = await openDocument(onEdit);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    state.newPictures.declare(asset, new Blob(["bytes"], { type: "image/png" }));
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    state.newPictures.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
 
     state.setExamInstructions(bodyWith(asset.asset_id), true);
 
@@ -152,8 +144,8 @@ describe("new pictures in useExamWorkspaceDocument", () => {
 
   it("shows the new picture from its own bytes at once", async () => {
     const { state } = await openDocument(vi.fn());
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    state.newPictures.declare(asset, new Blob(["bytes"], { type: "image/png" }));
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    state.newPictures.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
     const url = state.newPictures.urls.value[asset.asset_id];
     expect(url).toBeDefined();
 
@@ -164,8 +156,8 @@ describe("new pictures in useExamWorkspaceDocument", () => {
 
   it("opening another exam resets the registry", async () => {
     const { fence, state } = await openDocument(vi.fn());
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    state.newPictures.declare(asset, new Blob(["bytes"], { type: "image/png" }));
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    state.newPictures.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
     state.updateItemBody("item_001", bodyWith(asset.asset_id), true);
 
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(lineageResponse("lineage-2"));
@@ -178,8 +170,8 @@ describe("new pictures in useExamWorkspaceDocument", () => {
 
   it("prunes sent when an edit stops declaring the picture, so re-adding resends its bytes", async () => {
     const { state } = await openDocument(vi.fn());
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    const bytes = new Blob(["bytes"], { type: "image/png" });
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    const bytes = TRANSPARENT_PNG_PICTURE.blob();
     state.newPictures.declare(asset, bytes);
     state.updateItemBody("item_001", bodyWith(asset.asset_id), true);
     expect(state.workspaceDocument.value?.assets).toEqual([asset]);

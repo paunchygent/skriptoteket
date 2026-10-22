@@ -13,7 +13,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NativeExamAsset, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamItem } from "../../../api/examWorkspace";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import { nullRouteProjection } from "./examWorkspaceRouteProjection.specSupport";
 import { inScope, openEditing, stopScopes } from "./useExamWorkspaceEditing.history.specSupport";
@@ -33,6 +33,7 @@ import {
   LEASE_TAB_ID,
   liveAdmission,
 } from "./examWorkspaceGuestStore.specSupport";
+import { TRANSPARENT_PNG_PICTURE } from "./examWorkspacePictureFixtures.specSupport";
 
 const api = vi.hoisted(() => ({
   changeExamWorkspaceItemType: vi.fn(),
@@ -64,27 +65,7 @@ afterEach(() => {
   stopScopes();
 });
 
-/** Canonical asset ids: the server accepts `asset_` and sixteen hex digits. */
-const PNG_BASE64 =
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-const PNG_BYTES = Uint8Array.from(atob(PNG_BASE64), (char) => char.charCodeAt(0));
-const PNG_SHA256 = "c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77";
-const PICTURE = `asset_${PNG_SHA256.slice(0, 16)}`;
-
-function pictureAsset(): NativeExamAsset {
-  return {
-    asset_id: PICTURE,
-    byte_length: PNG_BYTES.length,
-    height: 1,
-    media_type: "image/png",
-    sha256: PNG_SHA256,
-    width: 1,
-  };
-}
-
-function pictureBlob(): Blob {
-  return new Blob([PNG_BYTES], { type: "image/png" });
-}
+const PICTURE = TRANSPARENT_PNG_PICTURE.asset.asset_id;
 
 function pictureBody(assetId: string): NativeExamItem["body"] {
   return [{ heading_level: null, segments: [{ kind: "asset", asset_id: assetId }] }];
@@ -107,8 +88,8 @@ function channel(): GuestEditLeaseChannel {
 describe("a declared picture reaches the signed-in autosave once", () => {
   it("carries the picture's bytes on the first store and nothing on the next", async () => {
     const { editing } = await openEditing(api);
-    const blob = pictureBlob();
-    const asset = pictureAsset();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
 
     editing.newPictures.declare(asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
@@ -128,9 +109,9 @@ describe("a declared picture reaches the signed-in autosave once", () => {
   it("carries the picture again when the first store fails", async () => {
     const { editing } = await openEditing(api);
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
-    const blob = pictureBlob();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
 
-    editing.newPictures.declare(pictureAsset(), blob);
+    editing.newPictures.declare(TRANSPARENT_PNG_PICTURE.asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
 
     expect(await editing.save()).toBe(true);
@@ -143,9 +124,9 @@ describe("a declared picture reaches the signed-in autosave once", () => {
 
   it("sends nothing when the picture is removed before the autosave runs", async () => {
     const { editing } = await openEditing(api);
-    const blob = pictureBlob();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
 
-    editing.newPictures.declare(pictureAsset(), blob);
+    editing.newPictures.declare(TRANSPARENT_PNG_PICTURE.asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), false);
     editing.updateItemBody("item_001", textBody(), false);
 
@@ -160,8 +141,8 @@ describe("a declared picture reaches the signed-in autosave once", () => {
 
   it("resends a picture re-added after undo and branching dropped its retained bytes", async () => {
     const { editing } = await openEditing(api);
-    const blob = pictureBlob();
-    const asset = pictureAsset();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
 
     editing.newPictures.declare(asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
@@ -225,8 +206,8 @@ describe("a declared picture reaches the guest draft store", () => {
     editing.applyCommandResponse(opened);
     await vi.waitFor(() => expect(editing.editingLocked.value).toBe(false));
 
-    const blob = pictureBlob();
-    const asset = pictureAsset();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
     editing.newPictures.declare(asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
     expect(await editing.save()).toBe(true);
@@ -266,8 +247,8 @@ describe("a declared picture reaches the guest draft store", () => {
     editing.applyCommandResponse(opened);
     await vi.waitFor(() => expect(editing.editingLocked.value).toBe(false));
 
-    const blob = pictureBlob();
-    const asset = pictureAsset();
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
     editing.newPictures.declare(asset, blob);
     editing.updateItemBody("item_001", pictureBody(PICTURE), true);
     expect(await editing.save()).toBe(true);

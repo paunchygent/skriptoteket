@@ -17,6 +17,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { setupHistory, type HistorySetupHooks } from "./useExamWorkspaceHistory.specSupport";
+import { TRANSPARENT_PNG_PICTURE } from "./examWorkspacePictureFixtures.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
@@ -41,14 +42,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-const PICTURE_ASSET = {
-  asset_id: "asset_001",
-  byte_length: 4,
-  height: 1,
-  media_type: "image/png",
-  sha256: "a".repeat(64),
-  width: 1,
-} as const;
+const PICTURE_ASSET = TRANSPARENT_PNG_PICTURE.asset;
 
 /** A registry double that only reports the picture while the document declares it unsent. */
 function registryDouble(blob: Blob) {
@@ -85,7 +79,7 @@ function declarePicture(document: NativeExamDocument, title: string): NativeExam
 
 describe("history new-picture save seam", () => {
   it("carries a declared new picture once, then never again", async () => {
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
     const newPictures = registryDouble(blob);
     const { history, workspaceDocument } = await setup({ newPictures });
     await flushPromises();
@@ -95,9 +89,9 @@ describe("history new-picture save seam", () => {
 
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledOnce();
     const first = apiMocks.storeExamWorkspaceUndoStep.mock.calls[0]![1];
-    expect(first.newPictures).toEqual({ asset_001: blob });
+    expect(first.newPictures).toEqual({ [PICTURE_ASSET.asset_id]: blob });
     expect(newPictures.seen[0]!.title).toBe("With picture");
-    expect(newPictures.noteSentCalls).toEqual([["asset_001"]]);
+    expect(newPictures.noteSentCalls).toEqual([[PICTURE_ASSET.asset_id]]);
 
     workspaceDocument.value = { ...workspaceDocument.value!, title: "With picture, edited" };
     await expect(history.flush(false)).resolves.toBe(true);
@@ -108,7 +102,7 @@ describe("history new-picture save seam", () => {
   });
 
   it("keeps the picture across a failed store and passes it again on retry", async () => {
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
     const newPictures = registryDouble(blob);
     const { history, workspaceDocument } = await setup({ newPictures });
     await flushPromises();
@@ -121,12 +115,12 @@ describe("history new-picture save seam", () => {
 
     await expect(history.flush(false)).resolves.toBe(true);
     const retry = apiMocks.storeExamWorkspaceUndoStep.mock.lastCall![1];
-    expect(retry.newPictures).toEqual({ asset_001: blob });
-    expect(newPictures.noteSentCalls).toEqual([["asset_001"]]);
+    expect(retry.newPictures).toEqual({ [PICTURE_ASSET.asset_id]: blob });
+    expect(newPictures.noteSentCalls).toEqual([[PICTURE_ASSET.asset_id]]);
   });
 
   it("keeps the picture across a 409 conflict and passes it again once re-declared", async () => {
-    const blob = new Blob(["png!"], { type: "image/png" });
+    const blob = TRANSPARENT_PNG_PICTURE.blob();
     const newPictures = registryDouble(blob);
     const { history, workspaceDocument } = await setup({ newPictures });
     await flushPromises();
@@ -146,7 +140,7 @@ describe("history new-picture save seam", () => {
     workspaceDocument.value = declarePicture(workspaceDocument.value ?? buildParentDocument(), "With picture");
     await expect(history.flush(false)).resolves.toBe(true);
     const retry = apiMocks.storeExamWorkspaceUndoStep.mock.lastCall![1];
-    expect(retry.newPictures).toEqual({ asset_001: blob });
-    expect(newPictures.noteSentCalls).toEqual([["asset_001"]]);
+    expect(retry.newPictures).toEqual({ [PICTURE_ASSET.asset_id]: blob });
+    expect(newPictures.noteSentCalls).toEqual([[PICTURE_ASSET.asset_id]]);
   });
 });

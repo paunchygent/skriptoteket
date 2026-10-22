@@ -11,6 +11,11 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument } from "../../../api/examWorkspace";
 import { createExamWorkspaceNewPictures } from "./examWorkspaceNewPictures";
+import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import {
+  RED_PNG_PICTURE,
+  TRANSPARENT_PNG_PICTURE,
+} from "./examWorkspacePictureFixtures.specSupport";
 
 beforeAll(() => {
   let next = 0;
@@ -18,72 +23,20 @@ beforeAll(() => {
   vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
 });
 
-function picture(id: string): NativeExamAsset {
-  return {
-    asset_id: id,
-    byte_length: 10,
-    height: 20,
-    media_type: "image/png",
-    sha256: "a".repeat(64),
-    width: 30,
-  };
-}
-
-function blob(): Blob {
-  return new Blob(["bytes"], { type: "image/png" });
-}
-
 function bodyWith(assetId: string): NativeExamBodyParagraph[] {
   return [{ heading_level: null, segments: [{ kind: "asset", asset_id: assetId }] }];
 }
 
-function documentWith(assets: NativeExamAsset[], bodies: NativeExamBodyParagraph[][]): NativeExamDocument {
+function documentWith(assets: NativeExamAsset[], bodyAssetId: string | null): NativeExamDocument {
+  const base = buildParentDocument();
+  const body =
+    bodyAssetId === null
+      ? [{ heading_level: null, segments: [] }]
+      : bodyWith(bodyAssetId);
   return {
+    ...base,
     assets,
-    document_id: "doc-1",
-    instructions: [],
-    items: [
-      {
-        ai_suggestion: null,
-        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
-        body: bodies[0] ?? [],
-        choices: [],
-        conflicting_source_points: [],
-        criteria: [],
-        facit_text: null,
-        gaps: [],
-        import_record: null,
-        item_id: "item_001",
-        kept_gaps: [],
-        kind: "free_text",
-        leftover_points_text: null,
-        match_left: [],
-        match_right: [],
-        points: null,
-        points_estimated: false,
-        print_order: [],
-        printed_label: null,
-        retry_source: null,
-        review: { confidence: 1, parse_origin: "teacher_created", reasons: [], state: "review_complete" },
-        sequence: 1,
-        source_anchor: null,
-        source_points: null,
-        suggested_kind: null,
-        tick_points: null,
-        writing_lines: null,
-      },
-    ],
-    origin: {
-      extractor_version: "none",
-      kind: "docx_import",
-      source_filename: "blank.zip",
-      source_sha256: "b".repeat(64),
-    },
-    parents: [],
-    revision: 1,
-    header: { tags: [] },
-    schema_version: "native_exam_document_v11",
-    title: "Exam",
+    items: base.items.map((item, index) => (index === 0 ? { ...item, body } : item)),
   };
 }
 
@@ -91,11 +44,11 @@ describe("createExamWorkspaceNewPictures", () => {
   function setupSent() {
     let current: NativeExamDocument | null = null;
     const registry = createExamWorkspaceNewPictures(() => current);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    const bytes = blob();
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    const bytes = TRANSPARENT_PNG_PICTURE.blob();
     registry.declare(asset, bytes);
-    const declared = documentWith([asset], [bodyWith(asset.asset_id)]);
-    const undeclared = documentWith([], [[{ heading_level: null, segments: [] }]]);
+    const declared = documentWith([asset], asset.asset_id);
+    const undeclared = documentWith([], null);
     return {
       asset,
       bytes,
@@ -151,31 +104,31 @@ describe("createExamWorkspaceNewPictures", () => {
   });
   it("declares a referenced picture in the same document object step", () => {
     const registry = createExamWorkspaceNewPictures(() => null);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    registry.declare(asset, blob());
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    registry.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
 
-    const next = registry.withDeclared(documentWith([], [bodyWith(asset.asset_id)]));
+    const next = registry.withDeclared(documentWith([], asset.asset_id));
 
     expect(next.assets).toEqual([asset]);
   });
 
   it("returns the same document when the picture is not referenced", () => {
     const registry = createExamWorkspaceNewPictures(() => null);
-    registry.declare(picture("asset_aaaaaaaaaaaaaaaa"), blob());
-    const document = documentWith([], [[{ heading_level: null, segments: [] }]]);
+    registry.declare(TRANSPARENT_PNG_PICTURE.asset, TRANSPARENT_PNG_PICTURE.blob());
+    const document = documentWith([], null);
 
     expect(registry.withDeclared(document)).toBe(document);
   });
 
   it("keeps one record and one URL when the same id is declared twice", () => {
     const registry = createExamWorkspaceNewPictures(() => null);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    registry.declare(asset, blob());
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    registry.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
     const first = registry.urls.value[asset.asset_id];
     const calls = vi.mocked(URL.createObjectURL).mock.calls.length;
-    registry.declare({ ...asset, byte_length: 99 }, blob());
+    registry.declare({ ...asset, byte_length: 99 }, TRANSPARENT_PNG_PICTURE.blob());
 
-    const next = registry.withDeclared(documentWith([], [bodyWith(asset.asset_id)]));
+    const next = registry.withDeclared(documentWith([], asset.asset_id));
 
     expect(next.assets).toEqual([asset]);
     expect(registry.urls.value[asset.asset_id]).toBe(first);
@@ -184,23 +137,23 @@ describe("createExamWorkspaceNewPictures", () => {
 
   it("bytesFor returns only unsent pictures the document declares", () => {
     const registry = createExamWorkspaceNewPictures(() => null);
-    const declared = picture("asset_aaaaaaaaaaaaaaaa");
-    const undeclared = picture("asset_bbbbbbbbbbbbbbbb");
-    const first = blob();
-    const second = blob();
+    const declared = TRANSPARENT_PNG_PICTURE.asset;
+    const undeclared = RED_PNG_PICTURE.asset;
+    const first = TRANSPARENT_PNG_PICTURE.blob();
+    const second = RED_PNG_PICTURE.blob();
     registry.declare(declared, first);
     registry.declare(undeclared, second);
 
-    expect(registry.bytesFor(documentWith([declared], [bodyWith(declared.asset_id)]))).toEqual({
+    expect(registry.bytesFor(documentWith([declared], declared.asset_id))).toEqual({
       [declared.asset_id]: first,
     });
   });
 
   it("noteSent removes bytes from bytesFor but keeps the URL", () => {
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    const document = documentWith([asset], [bodyWith(asset.asset_id)]);
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    const document = documentWith([asset], asset.asset_id);
     const registry = createExamWorkspaceNewPictures(() => document);
-    registry.declare(asset, blob());
+    registry.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
     const url = registry.urls.value[asset.asset_id];
 
     registry.noteSent([asset.asset_id]);
@@ -211,17 +164,17 @@ describe("createExamWorkspaceNewPictures", () => {
 
   it("reset revokes every URL and forgets every picture", () => {
     const registry = createExamWorkspaceNewPictures(() => null);
-    const asset = picture("asset_aaaaaaaaaaaaaaaa");
-    registry.declare(asset, blob());
+    const asset = TRANSPARENT_PNG_PICTURE.asset;
+    registry.declare(asset, TRANSPARENT_PNG_PICTURE.blob());
     const url = registry.urls.value[asset.asset_id];
-    const document = documentWith([asset], [bodyWith(asset.asset_id)]);
+    const document = documentWith([asset], asset.asset_id);
 
     registry.reset();
 
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(url);
     expect(registry.urls.value).toEqual({});
     expect(registry.bytesFor(document)).toEqual({});
-    const fresh = documentWith([], [bodyWith(asset.asset_id)]);
+    const fresh = documentWith([], asset.asset_id);
     expect(registry.withDeclared(fresh)).toBe(fresh);
   });
 });
