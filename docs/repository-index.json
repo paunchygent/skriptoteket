@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "97e4267fe1fd4becd111a56c682751c6aa56a8f0ea0d3a2424ad696849e060fa",
+  "source_set_digest": "3716f1b90a9d50ed8327313d2ce91963e4b1af911bff067ef80b9f4f23bdb8e9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5413,6 +5413,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User closed 39-04-21 on 2026-10-19 in the Hemma orchestrator session, with U4 (the offer line, D10) left parked as a later item and not built. Pi ruthless-reviewer 82849a3b rounds 1-4 (root 01a15594): R1-R6 fixed; rereview 4 ended changes_requested with mediums R7/R8 only, admitted by the parent on focused proof (123 files, 2651 passed) at f3bef38e. Full suite at 5c5b0503: backend 7898 passed, 59 skipped; frontend 3934 passed (root 01a1546f evidence/proof/full-suite-5c5b0503.log). Merged to main as 99378586 from dbcd9bcd; Mac staging walk PASS at 99378586 (Mac .artifacts/staging-walk-99378586/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-22",
+      "type": "task",
+      "title": "Shapes drawn in a Word file land in their questions as pictures",
+      "path": "docs/backlog/tasks/task-skript-39-04-22-shapes-drawn-in-a-word-file-land-in-their-questions-as-pictures.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
