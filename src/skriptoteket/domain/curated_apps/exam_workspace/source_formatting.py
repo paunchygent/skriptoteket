@@ -83,6 +83,10 @@ class SourceFormatting(SourceIndex):
         # rebuilt, misplaced, gap or picture paragraphs).
         self.exact_origins: set[int] = set()
         self.other_origins: set[int] = set()
+        # Largest source end projected into an output with each exact origin: a joined
+        # row keeps its first cell's start as its origin, so the start alone never
+        # delimits the rendered extent (TASK-SKRIPT-REP-0049 review F2).
+        self.exact_extents: dict[int, int] = {}
         self.entry_spans: list[tuple[int, int]] = []
         self.output_anchors: list[int] = []
         self._entry_span: tuple[int, int] = (-1, -1)
@@ -114,12 +118,13 @@ class SourceFormatting(SourceIndex):
         return start, end
 
     def fragments(self, start: int, end: int) -> list[NativeParagraph]:
-        return [fragment for fragment, _ in self.sourced_fragments(start, end)]
+        return [fragment for fragment, _, _ in self.sourced_fragments(start, end)]
 
-    def sourced_fragments(self, start: int, end: int) -> list[tuple[NativeParagraph, int]]:
+    def sourced_fragments(self, start: int, end: int) -> list[tuple[NativeParagraph, int, int]]:
         """The visible source text in ``start``-``end`` as paragraphs, each with the start of
-        the source paragraph it begins in; table cells of one row join one paragraph."""
-        result: list[tuple[NativeParagraph, int]] = []
+        the source paragraph it begins in and the end of the last source paragraph joined
+        into it; table cells of one row join one paragraph (TASK-SKRIPT-REP-0049 review F2)."""
+        result: list[tuple[NativeParagraph, int, int]] = []
         previous_end: int | None = None
         for paragraph in self.paragraphs_in(start, end):
             left, right = max(start, paragraph.start), min(end, paragraph.end)
@@ -139,7 +144,7 @@ class SourceFormatting(SourceIndex):
                     and separator == " | "
                     and result[-1][0].heading_level == paragraph.heading
                 ):
-                    joined, origin = result[-1]
+                    joined, origin, _ = result[-1]
                     result[-1] = (
                         joined.model_copy(
                             update={
@@ -151,12 +156,14 @@ class SourceFormatting(SourceIndex):
                             }
                         ),
                         origin,
+                        right,
                     )
                 else:
                     result.append(
                         (
                             NativeParagraph(heading_level=paragraph.heading, segments=segments),
                             paragraph.start,
+                            right,
                         )
                     )
                 previous_end = right
@@ -180,9 +187,10 @@ class SourceFormatting(SourceIndex):
             # Each emitted paragraph with the start of the one source paragraph its text
             # was projected from, -1 when it keeps the model's wording.
             produced: list[tuple[NativeParagraph, int]]
+            pending_extents: dict[int, int] = {}
             exact = False
             try:
-                produced = self._paragraph(paragraph, answers or {})
+                produced, pending_extents = self._paragraph(paragraph, answers or {})
                 exact = all(segment.kind == "text" for segment in paragraph.segments)
             except FormattingTransferError:
                 self.cursor = checkpoint
@@ -210,6 +218,12 @@ class SourceFormatting(SourceIndex):
             for _, text_origin in produced:
                 if text_origin >= 0:
                     (self.exact_origins if exact else self.other_origins).add(text_origin)
+            if exact:
+                for origin, end in pending_extents.items():
+                    if origin >= 0:
+                        self.exact_extents[origin] = max(
+                            self.exact_extents.get(origin, origin), end
+                        )
             self.entry_spans.append(self._entry_span)
             for output, text_origin in produced:
                 for origin, piece in self.provenance.pieces(output, text_origin):
@@ -219,12 +233,13 @@ class SourceFormatting(SourceIndex):
 
     def _paragraph(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
-    ) -> list[tuple[NativeParagraph, int]]:
+    ) -> tuple[list[tuple[NativeParagraph, int]], dict[int, int]]:
         if any(s.kind == "gap" for s in paragraph.segments) and ANSWER_LABEL.search(self.text):
             # Matching each fragment independently can steal a repeated word
             # from the question before its formatted inline-key expression.
             raise FormattingTransferError("inline key requires whole-paragraph alignment")
         result: list[tuple[NativeParagraph, int]] = []
+        extents: dict[int, int] = {}
         pending: list[NativeSegment] = []
         heading: int | None = None
         previous_block: int | None = None
@@ -240,7 +255,8 @@ class SourceFormatting(SourceIndex):
             fragments = self.sourced_fragments(start, end)
             if not fragments:
                 raise FormattingTransferError("span outside source paragraphs")
-            for index, (fragment, source_start) in enumerate(fragments):
+            for index, (fragment, source_start, source_end) in enumerate(fragments):
+                extents[source_start] = max(extents.get(source_start, source_start), source_end)
                 # A source paragraph break, not the model's typography, starts a block.
                 block = bisect_right(self._paragraph_ends, start) + index
                 crossed = previous_block is not None and block != previous_block
@@ -256,7 +272,7 @@ class SourceFormatting(SourceIndex):
                 previous_block = block
         if pending:
             result.append((NativeParagraph(heading_level=heading, segments=tuple(pending)), origin))
-        return result
+        return result, extents
 
     def _skip_gap(self, answers: tuple[str, ...]) -> None:
         # Only consume an answer/blank immediately after the preceding text.

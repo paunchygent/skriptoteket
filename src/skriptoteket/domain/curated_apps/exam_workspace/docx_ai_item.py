@@ -248,7 +248,6 @@ def aligned_native_item(
         body_source,
         formatted_body,
         entries=source_entries,
-        facit_text=_ITALIC_TAG.sub("", produced.facit_text) if produced.facit_text else None,
     )
     if produced.kind is NativeExamItemKind.GAP_FILL:
         formatted_body = gap_paragraphs_from_source(body_source, formatted_body)

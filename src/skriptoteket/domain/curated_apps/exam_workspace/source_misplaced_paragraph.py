@@ -30,6 +30,9 @@ if TYPE_CHECKING:
     from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
         SourceFormatting,
     )
+    from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
+        SourceParagraph,
+    )
 
 
 def is_misplaced(source: SourceFormatting, paragraph: NativeParagraph) -> bool:
@@ -126,6 +129,38 @@ def rebuild_misplaced(source: SourceFormatting) -> list[tuple[NativeParagraph, i
     return [(built, paragraph.start)]
 
 
+def own_source_span(
+    source: SourceFormatting, first: SourceParagraph, last: SourceParagraph
+) -> NativeParagraph | None:
+    """Build one output's whole source extent, never another question's source.
+
+    The span runs from ``content_start(first)`` to ``last.end`` through the shared
+    source_paragraph() builder, so a joined row rebuilds every cell it rendered with
+    the " | " separators and the D5 join rule (TASK-SKRIPT-REP-0049 review F2). A span
+    with a source picture or an inline answer key cannot be rebuilt and raises; only
+    a span with no visible text returns None. The whole span is marked covered and
+    projected."""
+    start = source.content_start(first)
+    end = last.end
+    if ANSWER_LABEL.search(source.text[start:end]):
+        raise FormattingTransferError(
+            "misplaced paragraph's own source cannot be rebuilt: inline answer key"
+        )
+    if source.provenance.pictures_in(first.start, last.end):
+        raise FormattingTransferError("misplaced paragraph's own source cannot be rebuilt: picture")
+    built = source_paragraph(source, start, end, first.heading)
+    if not any(segment.text.strip() for segment in built.segments if segment.kind == "text"):
+        return None
+    for left, right in visible_intervals(start, end, source.excluded):
+        source.covered.update(range(left, right))
+    source.projected.update(
+        fragment.start
+        for fragment in source.available_paragraphs
+        if first.start <= fragment.start < last.end
+    )
+    return built
+
+
 def own_source_paragraph(source: SourceFormatting, origin: int) -> NativeParagraph | None:
     """Build this item's own source paragraph, never another question's source: a
     paragraph whose text is another question's source is not this item's content (D4).
@@ -137,21 +172,4 @@ def own_source_paragraph(source: SourceFormatting, origin: int) -> NativeParagra
     paragraph = next((p for p in source.paragraphs if p.start <= origin < p.end), None)
     if paragraph is None:
         return None
-    start = source.content_start(paragraph)
-    if ANSWER_LABEL.search(source.text[start : paragraph.end]):
-        raise FormattingTransferError(
-            "misplaced paragraph's own source cannot be rebuilt: inline answer key"
-        )
-    if source.provenance.pictures_in(paragraph.start, paragraph.end):
-        raise FormattingTransferError("misplaced paragraph's own source cannot be rebuilt: picture")
-    built = source_paragraph(source, start, paragraph.end, paragraph.heading)
-    if not any(segment.text.strip() for segment in built.segments if segment.kind == "text"):
-        return None
-    for left, right in visible_intervals(start, paragraph.end, source.excluded):
-        source.covered.update(range(left, right))
-    source.projected.update(
-        fragment.start
-        for fragment in source.available_paragraphs
-        if paragraph.start <= fragment.start < paragraph.end
-    )
-    return built
+    return own_source_span(source, paragraph, paragraph)

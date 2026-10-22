@@ -50,6 +50,16 @@ def _runs_chunk(anchor: str, runs: tuple[tuple[str, tuple[str, ...]], ...]) -> D
     )
 
 
+def _table_chunk(anchor: str, *cells: str) -> DocxChunk:
+    text = " | ".join(cells)
+    paragraphs = []
+    offset = 0
+    for cell in cells:
+        paragraphs.append(DocxSourceParagraph(offset=offset, text=cell, heading_level=None))
+        offset += len(cell) + len(" | ")
+    return DocxChunk(anchor, "table", text, text, paragraphs=tuple(paragraphs))
+
+
 def _chunk(anchor: str, text: str) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text)
 
@@ -242,3 +252,41 @@ def test_a_reply_paragraph_with_a_gap_segment_is_unchanged():
     )
     (aligned, _) = state.accepted[0]
     assert body_plain_text(aligned.item.body) == "Fyll i [___]."
+
+
+def test_a_short_first_cell_of_an_exact_joined_row_is_restored_whole():
+    # REP-0049 review F2: the shortened cell's restore rebuilds the whole joined
+    # row, so the already-kept second cell is not lost.
+    left = "2. First sentence missing. Last sentence of first cell."
+    right = "Second cell kept."
+    chunks = (_table_chunk("body:0001", left, right),)
+    item = _admit(
+        chunks,
+        _item(("body:0001",), "2", [[_text("Last sentence of first cell. | Second cell kept.")]]),
+    )
+    assert (
+        body_plain_text(item.body)
+        == "First sentence missing. Last sentence of first cell. | Second cell kept."
+    )
+
+
+def test_a_short_second_cell_of_an_exact_joined_row_is_restored_whole():
+    left = "First cell kept."
+    right = "Second cell kept start. Second cell missing end."
+    chunks = (_table_chunk("body:0001", f"2. {left}", right),)
+    item = _admit(
+        chunks,
+        _item(("body:0001",), "2", [[_text(f"{left} | Second cell kept start.")]]),
+    )
+    assert body_plain_text(item.body) == f"{left} | {right}"
+
+
+def test_a_whole_exact_joined_row_is_unchanged():
+    left = "2. First cell whole."
+    right = "Second cell whole."
+    chunks = (_table_chunk("body:0001", left, right),)
+    item = _admit(
+        chunks,
+        _item(("body:0001",), "2", [[_text("First cell whole. | Second cell whole.")]]),
+    )
+    assert body_plain_text(item.body) == "First cell whole. | Second cell whole."

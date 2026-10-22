@@ -1,11 +1,14 @@
-"""A shortened own paragraph shows its whole own source paragraph (TASK-SKRIPT-REP-0049).
+"""A shortened own paragraph rebuilds its whole source extent (TASK-SKRIPT-REP-0049 review F2).
 
 After the coverage gate, a text-only body paragraph that the exact path projected from
-its own source paragraph, and whose own source paragraph holds visible text that no
-surface of the item shows, is replaced by its whole own source paragraph. Reworded
-(aligned-path) paragraphs keep the model's wording, and nothing is flagged. A remainder
-the item's facit shows stays out, as does a remainder that is only a blank run, an
-inline answer label's paragraph, or text a choice shows.
+its own source keeps only its rendered extent: the restore's unit is the output's whole
+source extent, from its origin to the largest source end projected into that origin, so
+a joined row rebuilds every cell it rendered. A reply that split one source paragraph
+into consecutive outputs restores as one group. Reworded (aligned-path) paragraphs keep
+the model's wording, and nothing is flagged. A remainder that a choice shows stays out,
+as does a remainder that is only a blank run, an inline answer label, or text a choice
+shows. Source-offset sets and the projection's recorded extents decide; the reply body
+wording is never compared, and no fuzzy matching is used.
 """
 
 from __future__ import annotations
@@ -26,11 +29,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage impo
     accounted_characters,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import (
-    normalized_source_index,
     visible_intervals,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_misplaced_paragraph import (
-    own_source_paragraph,
+    own_source_span,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
+    SourceParagraph,
 )
 
 if TYPE_CHECKING:
@@ -39,31 +44,24 @@ if TYPE_CHECKING:
     )
 
 
-def _missing_stretches(
+def _paragraph_has_missing(
     text: str,
-    start: int,
-    end: int,
+    paragraph: SourceParagraph,
+    content_start: int,
     excluded: tuple[tuple[int, int], ...],
-    missing: set[int],
-) -> list[tuple[int, int]]:
-    """Maximal missing runs separated only by whitespace, as source spans.
-
-    A non-whitespace accounted character ends a stretch; an excluded interval does too,
-    so a stretch never spans removed source text.
-    """
-    stretches: list[tuple[int, int]] = []
-    current: list[int] = []
-    for left, right in visible_intervals(start, end, excluded):
-        for index in range(left, right):
-            if index in missing:
-                current.append(index)
-            elif not text[index].isspace() and current:
-                stretches.append((current[0], current[-1] + 1))
-                current = []
-        if current:
-            stretches.append((current[0], current[-1] + 1))
-            current = []
-    return stretches
+    accounted: set[int],
+) -> bool:
+    """Whether the source paragraph holds visible text no surface shows."""
+    blank = {
+        index
+        for match in BLANK_RUN.finditer(text[paragraph.start : paragraph.end])
+        for index in range(paragraph.start + match.start(), paragraph.start + match.end())
+    }
+    return any(
+        not text[index].isspace() and index not in blank and index not in accounted
+        for left, right in visible_intervals(content_start, paragraph.end, excluded)
+        for index in range(left, right)
+    )
 
 
 def restore_shortened_paragraphs(
@@ -73,67 +71,93 @@ def restore_shortened_paragraphs(
     body: tuple[NativeParagraph, ...],
     *,
     entries: Iterable[NativeSourceEntry],
-    facit_text: str | None,
 ) -> tuple[NativeParagraph, ...]:
-    """Replace each shortened exact-path body paragraph by its whole own source paragraph.
+    """Replace each shortened exact-path output by its whole source extent.
 
-    A source paragraph is a candidate only when an exact-path origin lies inside it and
-    no other-path origin does. Decisions read source alignment, source classification
-    and the facit surface only; the reply body wording is never compared, and no fuzzy
-    matching is used.
+    An output is a candidate when its anchor is in ``exact_origins``. Its source extent
+    is ``[anchor, exact_extents[anchor])``; its source paragraphs are the body-source
+    paragraphs overlapping that extent. Consecutive outputs whose paragraph sets share
+    a paragraph form one group (a reply that split one source paragraph). A group with
+    an ``other_origins`` value in its paragraphs, an inline answer label, or a picture
+    is skipped. A group is restored when any of its paragraphs holds a missing
+    character, and is replaced by one paragraph built over the whole span.
     """
     accounted = accounted_characters(chunks, sources, body_source, entries)
-    facit, _ = normalized_source_index(facit_text) if facit_text else ("", [])
     text = body_source.text
-    for paragraph in body_source.paragraphs:
-        if not any(
-            paragraph.start <= origin < paragraph.end for origin in body_source.exact_origins
-        ):
+    merged = list(zip(body_source.output_anchors, body, strict=True))
+    extents = body_source.exact_extents
+    candidate_paras: dict[int, tuple[SourceParagraph, ...]] = {}
+    for index, (anchor, _) in enumerate(merged):
+        if anchor not in body_source.exact_origins or anchor not in extents:
             continue
-        if any(paragraph.start <= origin < paragraph.end for origin in body_source.other_origins):
+        end = extents[anchor]
+        if end <= anchor:
             continue
-        start = body_source.content_start(paragraph)
-        if ANSWER_LABEL.search(text, start, paragraph.end):
+        paras = tuple(
+            paragraph
+            for paragraph in body_source.paragraphs
+            if paragraph.start < end and paragraph.end > anchor
+        )
+        if paras:
+            candidate_paras[index] = paras
+    groups: list[list[int]] = []
+    for index in sorted(candidate_paras):
+        current = {paragraph.start for paragraph in candidate_paras[index]}
+        if groups and groups[-1][-1] == index - 1:
+            previous = {paragraph.start for paragraph in candidate_paras[groups[-1][-1]]}
+            if current & previous:
+                groups[-1].append(index)
+                continue
+        groups.append([index])
+    start_to_group = {group[0]: group for group in groups}
+    rebuilt = False
+    result: list[tuple[int, NativeParagraph]] = []
+    cursor = 0
+    while cursor < len(merged):
+        group = start_to_group.get(cursor)
+        if group is None:
+            result.append(merged[cursor])
+            cursor += 1
             continue
-        if body_source.provenance.pictures_in(paragraph.start, paragraph.end):
-            continue
-        blank = {
-            index
-            for match in BLANK_RUN.finditer(text[paragraph.start : paragraph.end])
-            for index in range(paragraph.start + match.start(), paragraph.start + match.end())
-        }
-        missing = {
-            index
-            for left, right in visible_intervals(start, paragraph.end, body_source.excluded)
-            for index in range(left, right)
-            if not text[index].isspace() and index not in blank and index not in accounted
-        }
-        if not missing:
-            continue
-        stretches = [
-            (left, right)
-            for left, right in _missing_stretches(
-                text, start, paragraph.end, body_source.excluded, missing
+        union = sorted(
+            {paragraph for index in group for paragraph in candidate_paras[index]},
+            key=lambda paragraph: paragraph.start,
+        )
+        first, last = union[0], union[-1]
+        skip = any(
+            any(paragraph.start <= origin < paragraph.end for paragraph in union)
+            for origin in body_source.other_origins
+        )
+        if not skip and ANSWER_LABEL.search(text, body_source.content_start(first), last.end):
+            skip = True
+        if not skip and body_source.provenance.pictures_in(first.start, last.end):
+            skip = True
+        if not skip and not any(
+            _paragraph_has_missing(
+                text,
+                paragraph,
+                body_source.content_start(paragraph),
+                body_source.excluded,
+                accounted,
             )
-            # The facit surface shows this remainder, so the body must not.
-            if normalized_source_index(text[left:right])[0] not in facit
-        ]
-        if not stretches:
+            for paragraph in union
+        ):
+            skip = True
+        if skip:
+            result.extend(merged[index] for index in group)
+            cursor = group[-1] + 1
             continue
-        merged = list(zip(body_source.output_anchors, body, strict=True))
-        positions = [
-            index
-            for index, (anchor, _) in enumerate(merged)
-            if paragraph.start <= anchor < paragraph.end
-        ]
-        if not positions:
-            continue
-        built = own_source_paragraph(body_source, paragraph.start)
+        built = own_source_span(body_source, first, last)
         if built is None:
+            result.extend(merged[index] for index in group)
+            cursor = group[-1] + 1
             continue
-        kept = [entry for index, entry in enumerate(merged) if index not in positions[1:]]
-        kept[positions[0]] = (paragraph.start, built)
-        body = tuple(value for _, value in kept)
-        body_source.output_anchors = [anchor for anchor, _ in kept]
-        body_source.path = "rebuilt"
+        result.append((first.start, built))
+        rebuilt = True
+        cursor = group[-1] + 1
+    if not rebuilt:
+        return body
+    body = tuple(value for _, value in result)
+    body_source.output_anchors = [anchor for anchor, _ in result]
+    body_source.path = "rebuilt"
     return body
