@@ -9,10 +9,17 @@ Purpose:
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
-from skriptoteket.application.editor.edit_ops.constants import INVALID_OPS_ERROR, MESSAGE_TOO_LONG
+from skriptoteket.application.editor.edit_ops.constants import (
+    GENERATION_ERROR,
+    INVALID_OPS_ERROR,
+    MESSAGE_TOO_LONG,
+    PROPOSAL_READY_MESSAGE,
+)
+from skriptoteket.application.editor.prompt_templates import PROMPT_TEMPLATES
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.llm_door import (
@@ -250,3 +257,31 @@ async def test_handle_leaves_role_admission_to_the_web_gate() -> None:
     assert result.assistant_message == "OK"
     harness.provider.complete_chat_ops.assert_awaited_once()
     harness.turns.create_turn.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+@pytest.mark.parametrize("model_message", ["", "   "])
+async def test_a_valid_proposal_without_a_model_message_never_shows_the_failure_text(
+    model_message: str,
+) -> None:
+    actor = make_user(role=Role.CONTRIBUTOR)
+    harness = make_harness(settings=make_settings(LLM_CHAT_OPS_ENABLED=True), actor_id=actor.id)
+    harness.provider.complete_chat_ops.return_value = LLMChatOpsResponse(
+        content=json.dumps({**_PATCH_RESPONSE, "assistant_message": model_message}),
+        finish_reason="stop",
+        raw_payload={},
+    )
+
+    result = await harness.handler.handle(actor=actor, command=_command(harness))
+
+    assert len(result.ops) == 1
+    assert result.assistant_message == PROPOSAL_READY_MESSAGE
+    assert result.assistant_message != GENERATION_ERROR
+
+
+@pytest.mark.unit
+def test_the_chat_ops_prompt_asks_for_a_swedish_proposal_message() -> None:
+    prompt = Path(PROMPT_TEMPLATES["editor_chat_ops_v1"].template_path).read_text(encoding="utf-8")
+
+    assert "assistant_message" in prompt

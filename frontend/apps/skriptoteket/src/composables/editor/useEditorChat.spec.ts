@@ -344,6 +344,45 @@ describe("useEditorChat", () => {
     expect(streaming.value).toBe(false);
   });
 
+  it("keeps a question sent while the chat is still being cleared", async () => {
+    setupAuth();
+
+    let finishDelete!: () => void;
+    vi.mocked(apiFetch).mockImplementationOnce(
+      () => new Promise<undefined>((done) => { finishDelete = () => done(undefined); }),
+    );
+    const { stream, push, close } = createControlledStream();
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(stream, { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+    );
+    globalThis.fetch = fetchMock;
+
+    const { messages, clear, sendMessage } = useEditorChat({
+      toolId: ref("tool-1"),
+      baseVersionId: ref<string | null>(null),
+    });
+    messages.value = [
+      { id: "old-1", role: "user", content: "Gammal fråga", createdAt: "2025-01-01T00:00:00Z" },
+    ];
+
+    const clearPromise = clear();
+    const sendPromise = sendMessage("Ny fråga");
+    await flushPromises();
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    finishDelete();
+    await clearPromise;
+    await flushPromises();
+    push("event: meta\ndata: {\"enabled\": true}\n\n");
+    push("event: done\ndata: {\"enabled\": true, \"reason\": \"stop\"}\n\n");
+    close();
+    await sendPromise;
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(messages.value.map((message) => message.content)).toContain("Ny fråga");
+    expect(messages.value.map((message) => message.content)).not.toContain("Gammal fråga");
+  });
+
   it("includes active_file + virtual_files in the chat request when provided", async () => {
     setupAuth();
 

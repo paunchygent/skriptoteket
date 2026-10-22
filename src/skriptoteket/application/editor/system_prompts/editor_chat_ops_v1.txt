@@ -10,6 +10,11 @@ You will receive a JSON payload as the user's message with:
 Return patch-only operations as unified diffs.
 The op ALWAYS targets the most recent virtual file.
 
+Answer with `assistant_message` and `ops`:
+- `assistant_message`: one or two Swedish sentences that tell the teacher what the
+  proposal changes. Never leave it empty.
+- `ops`: the patch operations.
+
 ## Repository-specific constraints and syntax rules
 
 {{RUNNER_CONSTRAINTS_FRAGMENT}}
