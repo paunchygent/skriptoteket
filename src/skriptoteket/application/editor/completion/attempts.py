@@ -13,8 +13,12 @@ from skriptoteket.application.editor.prompt_composer import (
     compose_system_prompt,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorCaller, ai_limit_note
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    AiDoorCaller,
+    door_refusal_error,
+)
 from skriptoteket.protocols.llm import (
     EditorLlmProviderError,
     InlineCompletionProviderProtocol,
@@ -66,19 +70,15 @@ async def try_complete(
     system_prompt: str,
     caller: AiDoorCaller,
 ) -> tuple[LLMCompletionResponse | None, AttemptFailure | None, int]:
-    """Make the one door call; a daily-limit refusal becomes the 429 limit error."""
+    """Make the one door call; a daily limit or a busy door becomes its 429 error."""
 
     start = time.perf_counter()
     try:
         response = await provider.complete_inline(
             request=request, system_prompt=system_prompt, caller=caller
         )
-    except AiDailyLimitReached as error:
-        raise DomainError(
-            code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-            message=ai_limit_note(error.limit),
-            details={"limit": error.limit.value},
-        ) from error
+    except (AiDailyLimitReached, AiDoorBusy) as error:
+        raise door_refusal_error(error) from error
     except EditorLlmProviderError as error:
         return None, classify_provider_error(error), elapsed_ms(start)
 

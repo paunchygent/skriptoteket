@@ -87,7 +87,8 @@ class AnswerKeyAttemptLedger:
         now = self._clock.now()
         async with self._uow:
             return await self._enrichment_jobs.update(
-                job=record_enrichment_attempt(job=job, now=now)
+                job=record_enrichment_attempt(job=job, now=now),
+                expected_worker_id=job.locked_by,
             )
 
     async def collect_proposals[P, R](

@@ -23,7 +23,8 @@ from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, tool
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (
     PythonDocxExamChunker,
 )
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
+from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 
 _CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
 
@@ -311,6 +312,8 @@ async def _main(args: argparse.Namespace) -> None:
             base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
             internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
             job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+            sleeper=AsyncioSleeper(),
+            bounds=DoorBounds.from_settings(settings),
         )
         client = OpenAIClient(door=door, caller=caller, timeout=300.0)
         if args.command == "probe":

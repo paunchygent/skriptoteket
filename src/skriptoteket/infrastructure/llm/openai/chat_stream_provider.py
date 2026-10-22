@@ -7,7 +7,8 @@ Purpose:
 
 Relationships:
     Implements ``protocols.llm.ChatStreamProviderProtocol``. A daily-limit
-    refusal raises ``AiDailyLimitReached`` before the first delta; every other
+    refusal raises ``AiDailyLimitReached`` and a busy door ``AiDoorBusy`` before
+    the first delta; every other
     failure raises ``EditorLlmProviderError``.
 """
 

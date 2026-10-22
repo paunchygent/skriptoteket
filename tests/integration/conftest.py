@@ -7,6 +7,7 @@ from tests.fixtures.database_fixtures import (
     fresh_database,
     migrated_db,
     migrated_template,
+    payload_guard_engine,
     postgres_server,
     session_factory,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "fresh_database",
     "migrated_db",
     "migrated_template",
+    "payload_guard_engine",
     "empty_module_database",
     "postgres_server",
     "session_factory",

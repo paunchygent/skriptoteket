@@ -10,10 +10,12 @@ import httpx
 import pytest
 from pydantic import JsonValue
 
+from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
     AiOverageAuthority,
@@ -22,7 +24,7 @@ from skriptoteket.domain.llm_door import (
     tooling_caller,
 )
 from skriptoteket.infrastructure.llm.door import client as door_client
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.protocols.llm_door import DoorOperation, DoorRequestFailed, DoorTimeout
 from tests.unit.llm_door_fakes import user_with_role
 
@@ -30,12 +32,19 @@ TEACHER = UUID("11111111-1111-1111-1111-111111111111")
 PAYLOAD: dict[str, JsonValue] = {"model": "gpt-6-luna", "input": "hej", "max_output_tokens": 64}
 
 
+class _InstantSleeper:
+    async def sleep(self, seconds: float) -> None:
+        del seconds
+
+
 def _client(handler: httpx.MockTransport) -> HuleEduLlmDoorClient:
     return HuleEduLlmDoorClient(
+        sleeper=_InstantSleeper(),
         client=httpx.AsyncClient(transport=handler),
         base_url="http://door.test:8080/",
         internal_api_key="internal-key",
         job_overage_cap_usd_micros=1_000_000,
+        bounds=DoorBounds.from_settings(Settings()),
     )
 
 
@@ -159,22 +168,20 @@ async def test_a_limit_429_raises_the_named_limit(code: str, limit: AiDailyLimit
         httpx.Response(429, json={"error": "rate limited"}),
     ],
 )
-async def test_a_429_that_names_no_limit_returns_as_an_ordinary_reply(
+async def test_a_429_that_names_no_limit_is_a_capacity_refusal_never_a_reply(
     response: httpx.Response,
 ) -> None:
     client = _client(httpx.MockTransport(lambda request: response))
 
-    reply = await client.send(
-        operation=DoorOperation.DECISIONS,
-        payload=PAYLOAD,
-        caller=AiDoorCaller(
-            user_id=TEACHER, exempt=True, authority=AiOverageAuthority.JOB_CONTINUATION
-        ),
-        timeout_seconds=5,
-    )
-
-    assert reply.status_code == 429
-    assert not reply.is_success
+    with pytest.raises(AiDoorBusy):
+        await client.send(
+            operation=DoorOperation.DECISIONS,
+            payload=PAYLOAD,
+            caller=AiDoorCaller(
+                user_id=TEACHER, exempt=True, authority=AiOverageAuthority.JOB_CONTINUATION
+            ),
+            timeout_seconds=5,
+        )
 
 
 async def test_transport_failures_become_typed_door_errors() -> None:
@@ -459,11 +466,11 @@ async def test_a_streamed_limit_429_raises_on_entry_and_leaves_the_caller_not_ad
     assert not caller.admitted
 
 
-async def test_a_streamed_capacity_429_yields_the_body_and_no_lines() -> None:
+async def test_a_streamed_failure_answer_yields_the_body_and_no_lines() -> None:
     caller = AiDoorCaller(
         user_id=TEACHER, exempt=True, authority=AiOverageAuthority.JOB_CONTINUATION
     )
-    refusal = _refusal("openai_door_admission_full")
+    refusal = httpx.Response(400, json={"error": {"code": "unknown_model"}})
     async with _client(httpx.MockTransport(lambda request: refusal)).stream(
         operation=DoorOperation.RESPONSES,
         payload=STREAM_PAYLOAD,
@@ -472,8 +479,8 @@ async def test_a_streamed_capacity_429_yields_the_body_and_no_lines() -> None:
     ) as door_stream:
         lines = [line async for line in door_stream.aiter_lines()]
         assert not door_stream.is_success
-        assert door_stream.status_code == 429
-        assert json.loads(door_stream.body)["error"]["code"] == "openai_door_admission_full"
+        assert door_stream.status_code == 400
+        assert json.loads(door_stream.body)["error"]["code"] == "unknown_model"
 
     assert lines == []
     assert not caller.admitted

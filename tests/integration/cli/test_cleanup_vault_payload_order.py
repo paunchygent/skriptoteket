@@ -26,6 +26,7 @@ from skriptoteket.cli.commands.cleanup_vault_files import (
     purge_expired_vault_files,
 )
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
+from skriptoteket.infrastructure.db.payload_guard_engine import PayloadGuardEngine
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -34,6 +35,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.integration.cli.test_cleanup_vault_files_linked_exports import (
     _CUTOFF,
     _NOW,
@@ -85,7 +87,9 @@ async def _seed_group(
         else:
             rows = [_file(owner, name="plain.pdf", file_bytes=5, deleted_at=_TRASHED_AT)]
         async with SQLAlchemyUnitOfWork(session):
-            repo = PostgreSQLUserVaultFileRepository(session)
+            repo = PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            )
             for row in rows:
                 await repo.create(file=row)
                 await storage.store_file(user_id=owner, file_id=row.id, content=b"payload")
@@ -97,7 +101,10 @@ async def _seed_group(
 
 @pytest.mark.parametrize("lineage", [False, True])
 async def test_failed_row_commit_keeps_every_payload_and_row(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path, lineage: bool
+    session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
+    tmp_path: Path,
+    lineage: bool,
 ) -> None:
     storage = LocalVaultStorage(vault_root=tmp_path)
     owner, rows = await _seed_group(session_factory, storage, lineage=lineage)
@@ -106,7 +113,9 @@ async def test_failed_row_commit_keeps_every_payload_and_row(
     async def scope() -> AsyncIterator[VaultCleanupScope]:
         async with session_factory() as session:
             yield VaultCleanupScope(
-                vault_files=PostgreSQLUserVaultFileRepository(session),
+                vault_files=PostgreSQLUserVaultFileRepository(
+                    session, unpooled_payload_guard_engine(session.bind)
+                ),
                 vault_usage=PostgreSQLUserVaultUsageRepository(session),
                 uow=_CommitFailsUow(session),
             )
@@ -117,14 +126,16 @@ async def test_failed_row_commit_keeps_every_payload_and_row(
         )
 
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         for row in rows:
             assert await repo.get_by_id(file_id=row.id) == row
             assert await storage.read_file(user_id=owner, file_id=row.id) == b"payload"
 
     # The failed group left nothing half-deleted, so a retry purges it completely.
     deleted, affected_users = await purge_expired_vault_files(
-        scope_factory=partial(open_vault_cleanup_scope, session_factory),
+        scope_factory=partial(open_vault_cleanup_scope, session_factory, payload_guard_engine),
         storage=storage,
         cutoff=_CUTOFF,
         now=_NOW,
@@ -136,7 +147,9 @@ async def test_failed_row_commit_keeps_every_payload_and_row(
 
 
 async def test_failed_payload_deletion_after_commit_is_logged_and_next_group_is_purged(
-    session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
+    session_factory: async_sessionmaker[AsyncSession],
+    payload_guard_engine: PayloadGuardEngine,
+    tmp_path: Path,
 ) -> None:
     class FailingStorage(LocalVaultStorage):
         def __init__(self, *, vault_root: Path, failing_file_id: UUID | None = None) -> None:
@@ -155,7 +168,7 @@ async def test_failed_payload_deletion_after_commit_is_logged_and_next_group_is_
 
     with capture_logs() as logs:
         deleted, affected_users = await purge_expired_vault_files(
-            scope_factory=partial(open_vault_cleanup_scope, session_factory),
+            scope_factory=partial(open_vault_cleanup_scope, session_factory, payload_guard_engine),
             storage=storage,
             cutoff=_CUTOFF,
             now=_NOW,
@@ -164,7 +177,9 @@ async def test_failed_payload_deletion_after_commit_is_logged_and_next_group_is_
     assert deleted == 1 + len(next_rows)
     assert affected_users == {failing_owner, next_owner}
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         assert await repo.get_by_id(file_id=failing_row.id) is None
         # The orphaned payload stays on disk; no row points at a missing file.
         assert await storage.exists_file(user_id=failing_owner, file_id=failing_row.id)

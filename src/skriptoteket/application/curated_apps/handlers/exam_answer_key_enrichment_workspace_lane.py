@@ -98,7 +98,8 @@ class ExamAnswerKeyEnrichmentWorkspaceLane:
         if not views:
             return await self.fail(job=job, last_error="workspace_no_enrichable_items")
 
-        owner = await self._users.get_by_id(job.owner_user_id)
+        async with self._uow:
+            owner = await self._users.get_by_id(job.owner_user_id)
         if owner is None:
             return await self.fail(job=job, last_error="owner_missing")
         caller = door_caller_for(user=owner)

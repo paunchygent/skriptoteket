@@ -58,6 +58,7 @@ from skriptoteket.protocols.identity import (
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as documents_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_docx_background_support import document_store
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
@@ -96,7 +97,9 @@ async def test_signed_in_teacher_creates_lists_and_reopens_a_blank_exam(
         )
         jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         uow = SQLAlchemyUnitOfWork(session)
-        vault = PostgreSQLUserVaultFileRepository(session)
+        vault = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         store = document_store(session, storage=storage, clock=clock, settings=settings, uow=uow)
         reader = GetExamWorkspaceDocumentHandler(
             vault_files=vault,

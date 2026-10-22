@@ -66,8 +66,8 @@ async def execute_chat_ops(
 ) -> ExecutionResult:
     """Make the one door call and turn its answer into the edit-ops outcome.
 
-    A provider failure becomes a failed outcome; ``AiDailyLimitReached`` is
-    not caught here and reaches the flow.
+    A provider failure becomes a failed outcome; ``AiDailyLimitReached`` and
+    ``AiDoorBusy`` are not caught here and reach the flow.
     """
 
     try:

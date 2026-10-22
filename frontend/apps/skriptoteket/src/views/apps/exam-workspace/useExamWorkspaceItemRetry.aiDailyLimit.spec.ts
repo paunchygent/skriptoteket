@@ -34,6 +34,8 @@ import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 
 const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
 
+const TRY_AGAIN_SENTENCE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.";
+
 const retryLimits: AiDailyLimit[] = ["pool", "user_share"];
 
 function retryableDocument(): NativeExamDocument {
@@ -192,6 +194,38 @@ describe("useExamWorkspaceItemRetry daily AI limit", () => {
 
     expect(aiDailyLimitReached.value).toBe(false);
     expect(toastMessages()).toEqual([RETRY_FAILURE_COPY]);
+    scope.stop();
+  });
+});
+
+describe("useExamWorkspaceItemRetry busy AI door", () => {
+  it("toasts the sentence for a retry refused with AI_TRY_AGAIN and lets the next retry apply", async () => {
+    let attempt = 0;
+    const { retry, scope, teacher } = setup(async () => {
+      attempt += 1;
+      if (attempt === 1) {
+        throw new ApiError({
+        code: "AI_TRY_AGAIN",
+        message: TRY_AGAIN_SENTENCE,
+        status: 429,
+        details: { retry_after_seconds: 5 },
+  });
+      }
+      return { lineage_id: "lineage-1", item: buildFreeTextItem(1) } as never;
+    });
+
+    const first = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
+
+    expect(first).toBe(false);
+    expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
+    expect(aiDailyLimitReached.value).toBe(false);
+
+    const second = await retry.retryItem("item_001", "matching" satisfies NativeExamItemKind);
+
+    expect(teacher.retryExamWorkspaceItem).toHaveBeenCalledTimes(2);
+    expect(second).toBe(true);
+    expect(toastMessages()).toEqual([TRY_AGAIN_SENTENCE]);
+    expect(aiDailyLimitReached.value).toBe(false);
     scope.stop();
   });
 });

@@ -3,8 +3,9 @@
 Purpose:
     Map what the LLM provider door returns for an editor Responses call to
     ``EditorLlmProviderError`` (kinds in ``protocols.llm.common``), so the
-    three editor providers fail the same way. A daily-limit refusal is not
-    mapped: ``AiDailyLimitReached`` propagates untouched.
+    three editor providers fail the same way. A daily-limit refusal and a busy
+    door are not mapped: ``AiDailyLimitReached`` and ``AiDoorBusy`` propagate
+    untouched.
 
 Relationships:
     Used by the inline completion, chat ops and chat stream providers.

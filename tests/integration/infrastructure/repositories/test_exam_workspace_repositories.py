@@ -54,6 +54,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
@@ -103,7 +104,9 @@ async def _insert_files(
     session_factory: async_sessionmaker[AsyncSession], files: list[VaultFile]
 ) -> None:
     async with session_factory() as session, session.begin():
-        repository = PostgreSQLUserVaultFileRepository(session)
+        repository = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         for file in files:
             await repository.create(file=file)
 
@@ -137,7 +140,9 @@ async def _save_document(
 ) -> VaultFile:
     async with session_factory() as session:
         store = ExamWorkspaceDocumentStore(
-            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_files=PostgreSQLUserVaultFileRepository(
+                session, unpooled_payload_guard_engine(session.bind)
+            ),
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=storage,
             index=PostgreSQLExamIndexRepository(session),
@@ -184,7 +189,9 @@ async def test_get_document_head_returns_the_one_active_exam_row_for_its_owner(
     await _insert_files(session_factory, [exam, trashed, export, foreign])
 
     async with session_factory() as session:
-        repository = PostgreSQLUserVaultFileRepository(session)
+        repository = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         head = await repository.get_document_head(user_id=owner.id, document_lineage_id=lineage_id)
         assert head is not None and head.id == exam.id
         foreign_head = await repository.get_document_head(
@@ -245,9 +252,9 @@ async def test_list_document_heads_returns_one_head_per_workspace_lineage(
     )
 
     async with session_factory() as session:
-        heads = await PostgreSQLUserVaultFileRepository(session).list_document_heads(
-            user_id=owner.id, source_artifact_prefix=_WORKSPACE_PREFIX
-        )
+        heads = await PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ).list_document_heads(user_id=owner.id, source_artifact_prefix=_WORKSPACE_PREFIX)
 
     assert [(head.document_lineage_id, head.document_version) for head in heads] == [
         (newer_lineage, 1),

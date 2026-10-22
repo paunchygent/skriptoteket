@@ -10,6 +10,7 @@ import {
   aiLimitFromError,
   aiLimitFromStatus,
   aiLimitNote,
+  aiTryAgainFromError,
   hasAiDailyLimit,
   isAiDailyLimitError,
   markAiDailyLimit,
@@ -104,5 +105,41 @@ describe("aiDailyLimit", () => {
       details: null,
     });
     expect(aiLimitFromError(error)).toBeNull();
+  });
+
+  it("reads the busy sentence from an AI_TRY_AGAIN refusal without marking a limit", () => {
+    const error = new ApiError({
+      code: "AI_TRY_AGAIN",
+      message: "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.",
+      status: 429,
+      details: { retry_after_seconds: 5 },
+    });
+    expect(aiTryAgainFromError(error)).toBe("AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.");
+    expect(aiLimitFromError(error)).toBeNull();
+    expect(isAiDailyLimitError(error)).toBe(false);
+    expect(aiDailyLimitReached.value).toBe(false);
+  });
+
+  it("reads the busy sentence when the refusal carries no details", () => {
+    const error = new ApiError({ code: "AI_TRY_AGAIN", message: "Vänta.", status: 429 });
+    expect(aiTryAgainFromError(error)).toBe("Vänta.");
+  });
+
+  it("reads no busy sentence from other errors", () => {
+    expect(
+      aiTryAgainFromError(
+        new ApiError({
+          code: "AI_DAILY_LIMIT_REACHED",
+          message: "refused",
+          status: 429,
+          details: { limit: "pool" },
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      aiTryAgainFromError(new ApiError({ code: "CONFLICT", message: "x", status: 409 })),
+    ).toBeNull();
+    expect(aiTryAgainFromError(new Error("network down"))).toBeNull();
+    expect(aiTryAgainFromError(null)).toBeNull();
   });
 });

@@ -27,6 +27,7 @@ import {
   aiLimitFromError,
   aiLimitFromStatus,
   aiLimitNote,
+  aiTryAgainFromError,
   markAiDailyLimit,
 } from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
@@ -156,6 +157,11 @@ export function useExamWorkspaceContentSuggestions(deps: {
               message.value = aiLimitNote(pollLimit);
               return;
             }
+            const pollTryAgain = aiTryAgainFromError(error);
+            if (pollTryAgain !== null) {
+              message.value = pollTryAgain;
+              return;
+            }
             toast.failure(FAILURE_COPY);
           }
         });
@@ -182,6 +188,11 @@ export function useExamWorkspaceContentSuggestions(deps: {
       if (requestLimit !== null) {
         markAiDailyLimit(requestLimit);
         message.value = aiLimitNote(requestLimit);
+        return;
+      }
+      const tryAgain = aiTryAgainFromError(error);
+      if (tryAgain !== null) {
+        message.value = tryAgain;
         return;
       }
       toast.failure(isApiError(error) && error.status === 422 ? error.message : FAILURE_COPY);

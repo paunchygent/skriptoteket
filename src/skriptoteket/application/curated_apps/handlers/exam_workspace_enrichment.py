@@ -48,7 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.llm_door import AiDailyLimit, ai_limit_note
+from skriptoteket.domain.llm_door import AiDailyLimit, ai_limit_note, ai_try_again_note
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
@@ -70,11 +70,13 @@ _FAILURE_MESSAGES: dict[str, str] = {
     "workspace_no_enrichable_items": "Dokumentet har inga frågor som saknar facit.",
     "workspace_request_missing": _DEFAULT_FAILURE_MESSAGE,
     "workspace_request_invalid": _DEFAULT_FAILURE_MESSAGE,
+    "ai_door_busy": ai_try_again_note(),
 }
 
 
 def _failure_message(job: ExamAnswerKeyEnrichmentJob) -> str:
-    """The teacher message for a failed job: the limit note from the job's limit."""
+    """The teacher message for a failed job: the limit note from the job's limit, else
+    the note for its last error (a busy door asks to try again)."""
     if job.ai_limit is not None:
         return ai_limit_note(job.ai_limit)
     return _FAILURE_MESSAGES.get(job.last_error or "", _DEFAULT_FAILURE_MESSAGE)

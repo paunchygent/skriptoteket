@@ -32,6 +32,8 @@ import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 
+const TRY_AGAIN_SENTENCE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.";
+
 const requestLimits: AiDailyLimit[] = ["pool", "user_share"];
 
 function limitStatus(
@@ -181,6 +183,53 @@ describe("useExamWorkspaceEnrichment daily AI limit", () => {
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
       "Det gick inte att begära facitförslag. Försök igen.",
     ]);
+    scope.stop();
+  });
+});
+
+describe("useExamWorkspaceEnrichment busy AI door", () => {
+  it("toasts the sentence for a request refused with AI_TRY_AGAIN, leaves the request enabled and clears it on success", async () => {
+    let attempt = 0;
+    const { enrichment, scope, teacher } = setup(async () => {
+      attempt += 1;
+      if (attempt === 1) {
+        throw new ApiError({
+    code: "AI_TRY_AGAIN",
+    message: TRY_AGAIN_SENTENCE,
+    status: 429,
+    details: { retry_after_seconds: 5 },
+  });
+      }
+      return { ...limitStatus(null), state: "succeeded", message: null };
+    });
+
+    await enrichment.requestSuggestionsForAll();
+
+    expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([TRY_AGAIN_SENTENCE]);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(enrichment.isRequesting.value).toBe(false);
+
+    await enrichment.requestSuggestionsForAll();
+
+    expect(teacher.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(enrichment.enrichmentMessage.value).toBe(
+      "Inga facitförslag kom tillbaka. Komplettera facit manuellt.",
+    );
+    scope.stop();
+  });
+
+  it("shows a failed job's own try-again sentence without a limit", async () => {
+    const { enrichment, scope } = setup(async () => ({
+      ...limitStatus(null),
+      message: TRY_AGAIN_SENTENCE,
+    }));
+
+    await enrichment.requestSuggestionsForAll();
+
+    expect(enrichment.enrichmentMessage.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(useToastStore().toasts).toEqual([]);
     scope.stop();
   });
 });

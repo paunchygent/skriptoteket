@@ -5,7 +5,8 @@ Purpose:
     and which daily limit refused it (ST-SKRIPT-41-01 B1, B4, B5). Every paid
     AI call carries its action's ``AiDoorCaller``; a door refusal for a pool,
     user share or USD ceiling becomes ``AiDailyLimitReached``, whose teacher
-    note ``ai_limit_note`` picks from the limit.
+    note ``ai_limit_note`` picks from the limit; a door with no room for the
+    call becomes ``AiDoorBusy`` with the try-again note (B7).
 
 Relationships:
     Built by the application handlers that run AI jobs from the job owner and
@@ -18,6 +19,7 @@ from __future__ import annotations
 from enum import StrEnum
 from uuid import UUID
 
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.domain.identity.role_guards import has_at_least_role
 
@@ -46,7 +48,14 @@ class AiDoorCaller:
     the door's pools (B5).
     """
 
-    __slots__ = ("_admitted", "_overage_usd_micros", "authority", "exempt", "user_id")
+    __slots__ = (
+        "__weakref__",
+        "_admitted",
+        "_overage_usd_micros",
+        "authority",
+        "exempt",
+        "user_id",
+    )
 
     def __init__(self, *, user_id: UUID, exempt: bool, authority: AiOverageAuthority) -> None:
         self.user_id = user_id
@@ -172,3 +181,49 @@ class AiJobOverageCapReached(Exception):
         )
         self.overage_usd_micros = overage_usd_micros
         self.cap_usd_micros = cap_usd_micros
+
+
+_TRY_AGAIN_NOTE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund."
+
+
+class AiDoorBusy(Exception):
+    """The door, or this process's share of it, had no room for a call (B7).
+
+    Raised after the door client's bounded Retry-After retries; the AI action
+    stops and shows ``ai_try_again_note``. ``retry_after_seconds`` is the
+    door's last Retry-After, or None when the door named none.
+    """
+
+    def __init__(self, *, retry_after_seconds: int | None) -> None:
+        super().__init__(f"AI door busy; retry after {retry_after_seconds} seconds")
+        self.retry_after_seconds = retry_after_seconds
+
+
+def ai_try_again_note() -> str:
+    """The teacher note for a busy door: try again in a moment."""
+
+    return _TRY_AGAIN_NOTE
+
+
+def door_refusal_error(error: AiDailyLimitReached | AiDoorBusy) -> DomainError:
+    """The 429 error a door refusal ends an AI action with.
+
+    A daily limit carries its limit's note; a busy door carries the try-again
+    note and the door's last Retry-After when it named one.
+    """
+
+    if isinstance(error, AiDoorBusy):
+        return DomainError(
+            code=ErrorCode.AI_TRY_AGAIN,
+            message=ai_try_again_note(),
+            details=(
+                {"retry_after_seconds": error.retry_after_seconds}
+                if error.retry_after_seconds is not None
+                else None
+            ),
+        )
+    return DomainError(
+        code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+        message=ai_limit_note(error.limit),
+        details={"limit": error.limit.value},
+    )

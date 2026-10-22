@@ -15,7 +15,12 @@ import pytest
 from skriptoteket.application.editor.edit_ops.constants import INVALID_OPS_ERROR, MESSAGE_TOO_LONG
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorBusy,
+    ai_try_again_note,
+)
 from skriptoteket.protocols.llm import (
     EditOpsCommand,
     EditOpsCursor,
@@ -135,6 +140,28 @@ async def test_edit_ops_door_limit_refusal_raises_limit_error_and_fails_the_turn
     assert update_kwargs["failure_outcome"] == "ai_daily_limit_reached"
     content_kwargs = harness.messages.update_message_content_if_pending_turn.await_args.kwargs
     assert content_kwargs["content"] == note
+    assert harness.guard.released == harness.guard.acquired
+    assert len(harness.guard.released) == 1
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_edit_ops_busy_door_raises_try_again_and_fails_the_turn() -> None:
+    actor = make_user(role=Role.CONTRIBUTOR)
+    harness = make_harness(settings=make_settings(LLM_CHAT_OPS_ENABLED=True), actor_id=actor.id)
+    harness.provider.complete_chat_ops.side_effect = AiDoorBusy(retry_after_seconds=3)
+
+    with pytest.raises(DomainError) as raised:
+        await harness.handler.handle(actor=actor, command=_command(harness))
+
+    assert raised.value.code is ErrorCode.AI_TRY_AGAIN
+    assert raised.value.message == ai_try_again_note()
+    assert raised.value.details == {"retry_after_seconds": 3}
+    update_kwargs = harness.turns.update_status.await_args.kwargs
+    assert update_kwargs["status"] == "failed"
+    assert update_kwargs["failure_outcome"] == "ai_door_busy"
+    content_kwargs = harness.messages.update_message_content_if_pending_turn.await_args.kwargs
+    assert content_kwargs["content"] == ai_try_again_note()
     assert harness.guard.released == harness.guard.acquired
     assert len(harness.guard.released) == 1
 

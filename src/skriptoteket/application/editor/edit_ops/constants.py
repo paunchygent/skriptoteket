@@ -9,6 +9,7 @@ THREAD_TTL = timedelta(days=30)
 PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
 TURN_PROVIDER = "door"
 AI_LIMIT_FAILURE_OUTCOME = "ai_daily_limit_reached"
+AI_DOOR_BUSY_FAILURE_OUTCOME = "ai_door_busy"
 
 IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."

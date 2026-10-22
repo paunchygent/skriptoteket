@@ -47,7 +47,7 @@ from skriptoteket.domain.llm_door import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
     PythonDocxLabelerMarkdown,
 )
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
     OpenAIDecisionsItemTypeLabeler,
     build_decisions_payload,
@@ -234,6 +234,8 @@ async def run_one(
             base_url=settings.HULEEDU_LLM_PROVIDER_BASE_URL,
             internal_api_key=settings.HULEEDU_INTERNAL_API_KEY,
             job_overage_cap_usd_micros=round(settings.LLM_JOB_OVERAGE_CAP_USD * 1_000_000),
+            sleeper=AsyncioSleeper(),
+            bounds=DoorBounds.from_settings(settings),
         )
         labeler = OpenAIDecisionsItemTypeLabeler(
             door=door,

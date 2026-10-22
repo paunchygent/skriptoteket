@@ -86,6 +86,19 @@ export function aiLimitFromError(error: unknown): AiDailyLimit | null {
 }
 
 /**
+ * The door's own busy sentence when a 429 refusal is AI_TRY_AGAIN, or null for
+ * any other failure. Unlike a daily limit, the refusal clears at once: callers
+ * show the sentence inline and keep the AI control enabled so the teacher can
+ * retry immediately.
+ */
+export function aiTryAgainFromError(error: unknown): string | null {
+  if (!isApiError(error) || error.code !== "AI_TRY_AGAIN") {
+    return null;
+  }
+  return error.message;
+}
+
+/**
  * The first door limit refused in this page session, or null while no AI
  * action has been refused. Module state on purpose: it lives exactly as long
  * as the page, and a reload clears it.

@@ -10,6 +10,7 @@ from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 pytestmark = [
     pytest.mark.integration,
@@ -51,7 +52,9 @@ async def test_collision_query_handles_null_lineages_owner_trash_and_each_exclus
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         other_owner = await _owner(session)
         lineage = uuid4()
@@ -97,7 +100,9 @@ async def test_rename_lineage_renames_the_exam_row_including_trash_and_spares_sa
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         other_owner = await _owner(session)
         lineage = uuid4()

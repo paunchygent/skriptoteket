@@ -14,6 +14,7 @@ PENDING_TURN_ABANDONED_OUTCOME = "abandoned_by_new_request"
 BASE_VERSION_KEY = "base_version_id"
 CHAT_TURN_PROVIDER = "door"
 DAILY_LIMIT_OUTCOME = "daily_limit"
+DOOR_BUSY_OUTCOME = "door_busy"
 
 VIRTUAL_FILE_IDS: tuple[VirtualFileId, ...] = (
     "tool.py",

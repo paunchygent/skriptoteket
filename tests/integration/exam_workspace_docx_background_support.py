@@ -37,7 +37,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     ExamWorkspaceContainerCodec,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.llm.door.client import HuleEduLlmDoorClient
+from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -60,6 +60,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 API_KEY = "fixture-key"
 
@@ -215,6 +216,8 @@ def build_pipeline(
         base_url="https://door.test",
         internal_api_key=API_KEY,
         job_overage_cap_usd_micros=1_000_000,
+        sleeper=sleeper,
+        bounds=DoorBounds.from_settings(settings),
     )
     return build_docx_conversion_pipeline(
         door=door,
@@ -238,7 +241,9 @@ def document_store(
     uow: SQLAlchemyUnitOfWork | None = None,
 ) -> ExamWorkspaceDocumentStore:
     return ExamWorkspaceDocumentStore(
-        vault_files=PostgreSQLUserVaultFileRepository(session),
+        vault_files=PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        ),
         vault_usage=PostgreSQLUserVaultUsageRepository(session),
         vault_storage=storage,
         index=PostgreSQLExamIndexRepository(session),

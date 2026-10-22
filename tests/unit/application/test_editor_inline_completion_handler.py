@@ -9,7 +9,12 @@ from skriptoteket.application.editor.completion_handler import InlineCompletionH
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorBusy,
+    ai_try_again_note,
+)
 from skriptoteket.protocols.llm import (
     EditorLlmProviderError,
     InlineCompletionCommand,
@@ -589,6 +594,21 @@ async def test_inline_completion_limit_refusal_raises_the_429_domain_error(
     assert raised.value.code is ErrorCode.AI_DAILY_LIMIT_REACHED
     assert raised.value.message == message
     assert raised.value.details == {"limit": limit.value}
+    provider.complete_inline.assert_awaited_once()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_inline_completion_busy_door_raises_the_try_again_error() -> None:
+    provider = AsyncMock()
+    provider.complete_inline.side_effect = AiDoorBusy(retry_after_seconds=None)
+
+    with pytest.raises(DomainError) as raised:
+        await _handler(provider).handle(actor=make_user(role=Role.CONTRIBUTOR), command=_COMMAND)
+
+    assert raised.value.code is ErrorCode.AI_TRY_AGAIN
+    assert raised.value.message == ai_try_again_note()
+    assert raised.value.details == {}
     provider.complete_inline.assert_awaited_once()
 
 

@@ -30,7 +30,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { aiLimitFromError, markAiDailyLimit } from "../../../composables/aiDailyLimit";
+import { aiLimitFromError, aiTryAgainFromError, markAiDailyLimit } from "../../../composables/aiDailyLimit";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
@@ -135,9 +135,10 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
         return false;
       }
       const serverCopy =
-        isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
+        aiTryAgainFromError(error) ??
+        (isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
           ? error.message
-          : null;
+          : null);
       toast.failure(serverCopy || RETRY_FAILURE_COPY);
       return false;
     } finally {

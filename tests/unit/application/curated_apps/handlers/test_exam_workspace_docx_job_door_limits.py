@@ -5,6 +5,10 @@ keeps ``ai_limit`` and ``last_error``, the progress port abandons instead of pub
 a final document, and already-published batches stay. A completely refused first
 grouping call still fails the job with the note and no published document; abandoning
 with no outline is a no-op under the existing progress contract.
+
+A busy door anywhere in a DOCX job ends it as failed with the try-again note and no
+``ai_limit`` (TASK-SKRIPT-41-01-04 B7); it is never the generic crash message and never a
+review item.
 """
 
 from __future__ import annotations
@@ -26,8 +30,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
@@ -160,3 +166,47 @@ async def test_docx_job_handler_maps_an_escaped_cap_to_overage_cap() -> None:
     assert finished.ai_limit is AiDailyLimit.POOL
     assert finished.last_error == ai_limit_note(AiDailyLimit.POOL)
     assert any(event.get("code") == "ai_overage_cap" for event in finished.diagnostics)
+
+
+def _assert_failed_busy(finished) -> None:
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.ai_limit is None
+    assert finished.last_error == ai_try_again_note()
+    assert finished.source_docx is None
+    assert any(event.get("code") == "ai_door_busy" for event in finished.diagnostics)
+    assert not any(event.get("code") == "unexpected_error" for event in finished.diagnostics)
+
+
+async def test_docx_job_handler_maps_an_escaped_busy_door_to_the_try_again_note() -> None:
+    env = environment()
+    running = await claim(env)
+    processor = _processor_with(env, _RaisingPipeline(AiDoorBusy(retry_after_seconds=3)))
+
+    finished = await processor.handle(job=running)
+
+    _assert_failed_busy(finished)
+
+
+async def test_busy_grouping_fails_the_docx_job_with_the_try_again_note() -> None:
+    env = environment()
+    env.replay.provider._failures["docx_grouping_1"] = AiDoorBusy(retry_after_seconds=None)
+    running = await claim(env)
+
+    finished = await env.processor.handle(job=running)
+
+    _assert_failed_busy(finished)
+    assert env.replay.provider.requests[-1].item_id == "docx_grouping_1", "grouping is not retried"
+    assert env.replay.progress.calls == ["abandon"]
+    assert env.replay.progress.finals == []
+
+
+async def test_busy_batch_fails_the_docx_job_instead_of_becoming_a_review_item() -> None:
+    env = environment()
+    env.replay.provider._failures["docx_w1-03"] = AiDoorBusy(retry_after_seconds=7)
+    running = await claim(env)
+
+    finished = await env.processor.handle(job=running)
+
+    _assert_failed_busy(finished)
+    assert "abandon" in env.replay.progress.calls
+    assert env.replay.progress.finals == [], "no document is published as a completed conversion"

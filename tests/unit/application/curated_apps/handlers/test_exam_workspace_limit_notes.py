@@ -6,6 +6,9 @@ Purpose:
     user-share refusal and the app note for pool, USD ceiling and the
     overage-cap (recorded as pool); the content-suggestion response and the
     answer-key status response do the same from the failed job's ``ai_limit``.
+    A busy door carries the try-again note on the same paths: the retry 429
+    ``AI_TRY_AGAIN`` with the door's Retry-After, and the content and answer-key
+    status responses from the failed job's ``ai_door_busy`` last error.
 
 Relationships:
     - Exercises ``RetryExamWorkspaceItemHandler`` over a refusal exchange,
@@ -63,9 +66,11 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
 )
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
@@ -173,6 +178,24 @@ async def test_retry_429_for_the_overage_cap_carries_the_app_note() -> None:
     assert error.details == {"limit": AiDailyLimit.POOL.value}
 
 
+@pytest.mark.asyncio
+async def test_retry_busy_door_carries_the_try_again_note_and_retry_after() -> None:
+    error = await _retry_error(AiDoorBusy(retry_after_seconds=12))
+
+    assert error.code is ErrorCode.AI_TRY_AGAIN
+    assert error.message == ai_try_again_note()
+    assert error.details == {"retry_after_seconds": 12}
+
+
+@pytest.mark.asyncio
+async def test_retry_busy_door_without_retry_after_carries_no_details() -> None:
+    error = await _retry_error(AiDoorBusy(retry_after_seconds=None))
+
+    assert error.code is ErrorCode.AI_TRY_AGAIN
+    assert error.message == ai_try_again_note()
+    assert error.details == {}
+
+
 def _content_job(
     *, last_error: str | None, limit: AiDailyLimit | None
 ) -> ExamAnswerKeyEnrichmentJob:
@@ -211,12 +234,38 @@ def test_content_response_uses_the_app_note_for_the_overage_cap() -> None:
     assert response.message == ai_limit_note(AiDailyLimit.POOL)
 
 
+def test_content_response_uses_the_try_again_note_for_a_busy_door() -> None:
+    response = content_response(_content_job(last_error="ai_door_busy", limit=None))
+
+    assert response.ai_limit is None
+    assert response.message == ai_try_again_note()
+
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "limit",
     [AiDailyLimit.USER_SHARE, AiDailyLimit.POOL, AiDailyLimit.USD_CEILING],
 )
 async def test_content_worker_records_the_limit_for_the_note(limit: AiDailyLimit) -> None:
+    finished = await _run_content_worker(AiDailyLimitReached(limit=limit))
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "ai_daily_limit"
+    assert finished.ai_limit is limit
+    assert content_response(finished).message == ai_limit_note(limit)
+
+
+@pytest.mark.asyncio
+async def test_content_worker_fails_a_busy_door_with_the_try_again_note() -> None:
+    finished = await _run_content_worker(AiDoorBusy(retry_after_seconds=5))
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "ai_door_busy"
+    assert finished.ai_limit is None
+    assert content_response(finished).message == ai_try_again_note()
+
+
+async def _run_content_worker(error: Exception) -> ExamAnswerKeyEnrichmentJob:
     actor = make_actor()
     lineage_id = uuid4()
     unsaved_course = suggestion_document(
@@ -247,7 +296,7 @@ async def test_content_worker_records_the_limit_for_the_note(limit: AiDailyLimit
     jobs = AsyncMock(spec=ExamAnswerKeyEnrichmentJobRepositoryProtocol)
     jobs.update.side_effect = lambda *, job, expected_worker_id: job
     classifier = Mock(spec=ExamContentTagSuggester)
-    classifier.suggest = AsyncMock(side_effect=AiDailyLimitReached(limit=limit))
+    classifier.suggest = AsyncMock(side_effect=error)
     users = UserRepositoryStub()
     users.user = actor
     uow = AsyncMock(spec=UnitOfWorkProtocol)
@@ -261,12 +310,7 @@ async def test_content_worker_records_the_limit_for_the_note(limit: AiDailyLimit
         clock=clock,
     )
 
-    finished = await worker.handle(job=job)
-
-    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
-    assert finished.last_error == "ai_daily_limit"
-    assert finished.ai_limit is limit
-    assert content_response(finished).message == ai_limit_note(limit)
+    return await worker.handle(job=job)
 
 
 def _failed_workspace_job(
@@ -318,6 +362,17 @@ def test_answer_key_status_response_uses_the_app_note_for_the_overage_cap() -> N
 
     assert response.state is ExamWorkspaceEnrichmentState.FAILED
     assert response.message == ai_limit_note(AiDailyLimit.POOL)
+
+
+def test_answer_key_status_response_uses_the_try_again_note_for_a_busy_door() -> None:
+    response = suggestions_response_for_job(
+        _failed_workspace_job(last_error="ai_door_busy", limit=None),
+        lineage_id=uuid4(),
+    )
+
+    assert response.state is ExamWorkspaceEnrichmentState.FAILED
+    assert response.ai_limit is None
+    assert response.message == ai_try_again_note()
 
 
 def test_answer_key_status_response_keeps_the_generic_note_without_a_limit() -> None:

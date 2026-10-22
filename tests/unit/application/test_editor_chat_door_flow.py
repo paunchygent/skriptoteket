@@ -7,7 +7,13 @@ import pytest
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, ai_limit_note
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorBusy,
+    ai_limit_note,
+    ai_try_again_note,
+)
 from skriptoteket.protocols.llm import (
     EditorChatCommand,
     EditorChatDeltaEvent,
@@ -100,6 +106,41 @@ async def test_door_limit_on_first_iteration_raises_before_any_event_and_frees_t
     assert status_call["turn_id"] == harness.turn_id
     assert status_call["status"] == "failed"
     assert status_call["failure_outcome"] == "daily_limit"
+
+    events = await _collect(harness, user_id=user_id, tool_id=tool_id)
+    assert [event.event for event in events] == ["meta", "delta", "done"]
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_busy_door_on_first_iteration_raises_try_again_before_any_event() -> None:
+    user_id = uuid4()
+    tool_id = uuid4()
+    harness = make_chat_handler_harness(tool_id=tool_id, user_id=user_id)
+
+    async def busy() -> AsyncIterator[str]:
+        raise AiDoorBusy(retry_after_seconds=7)
+        yield ""
+
+    async def answered() -> AsyncIterator[str]:
+        yield "Svar"
+
+    harness.provider.stream_chat.side_effect = [busy(), answered()]
+    stream = harness.handler.stream(
+        actor=make_user(role=Role.ADMIN, user_id=user_id),
+        command=EditorChatCommand(tool_id=tool_id, message="Hej"),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        await anext(stream)
+
+    assert exc_info.value.code == ErrorCode.AI_TRY_AGAIN
+    assert exc_info.value.message == ai_try_again_note()
+    assert exc_info.value.details == {"retry_after_seconds": 7}
+    assert harness.guard.held == set()
+    status_call = harness.turns.update_status.call_args.kwargs
+    assert status_call["status"] == "failed"
+    assert status_call["failure_outcome"] == "door_busy"
 
     events = await _collect(harness, user_id=user_id, tool_id=tool_id)
     assert [event.event for event in events] == ["meta", "delta", "done"]

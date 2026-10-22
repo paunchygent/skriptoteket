@@ -31,7 +31,12 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { aiLimitFromError, aiLimitFromStatus, markAiDailyLimit } from "../../../composables/aiDailyLimit";
+import {
+  aiLimitFromError,
+  aiLimitFromStatus,
+  aiTryAgainFromError,
+  markAiDailyLimit,
+} from "../../../composables/aiDailyLimit";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -191,7 +196,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
         return;
       }
       if (pollFailures === 0) {
-        toast.failure(STATUS_FAILURE_COPY);
+        toast.failure(aiTryAgainFromError(error) ?? STATUS_FAILURE_COPY);
       }
       pollFailures += 1;
       if (isPending(enrichmentStatus.value)) {
@@ -233,7 +238,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
         markAiDailyLimit(requestLimit);
         return;
       }
-      toast.failure(REQUEST_FAILURE_COPY);
+      toast.failure(aiTryAgainFromError(error) ?? REQUEST_FAILURE_COPY);
     } finally {
       if (requestingIn.value === opening) {
         requestingIn.value = null;
@@ -266,7 +271,7 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
       }
       if (isLive(opening) && !ownJobStarted()) {
         lookupFailedIn.value = opening;
-        toast.failure(LOOKUP_FAILURE_COPY);
+        toast.failure(aiTryAgainFromError(error) ?? LOOKUP_FAILURE_COPY);
       }
       return;
     }

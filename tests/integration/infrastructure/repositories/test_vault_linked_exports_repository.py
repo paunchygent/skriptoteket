@@ -25,6 +25,7 @@ from skriptoteket.infrastructure.db.models.user import UserModel
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
+from tests.fixtures.payload_guard_fixtures import unpooled_payload_guard_engine
 
 pytestmark = [
     pytest.mark.integration,
@@ -105,7 +106,9 @@ async def test_list_for_user_excludes_saved_exports_in_both_states_before_paging
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         active_lineage = uuid4()
         trashed_lineage = uuid4()
@@ -163,7 +166,9 @@ async def test_list_exam_files_returns_the_document_row_first_and_filters_the_tr
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         other_owner = await _owner(session)
         lineage = uuid4()
@@ -201,7 +206,9 @@ async def test_delete_purges_the_named_row_and_the_exam_history_only(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         lineage = uuid4()
         exam = _exam(owner, lineage_id=lineage)
@@ -242,7 +249,9 @@ async def test_update_moves_the_trash_flag_and_an_overwrite_keeps_it(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
-        repo = PostgreSQLUserVaultFileRepository(session)
+        repo = PostgreSQLUserVaultFileRepository(
+            session, unpooled_payload_guard_engine(session.bind)
+        )
         owner = await _owner(session)
         lineage = uuid4()
         export = _export(owner, lineage_id=lineage, export_format="qti")

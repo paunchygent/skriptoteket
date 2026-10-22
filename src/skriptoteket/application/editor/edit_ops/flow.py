@@ -8,9 +8,13 @@ from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.prompt_composer import PromptTemplateError
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.llm_door import AiDailyLimitReached, ai_limit_note, door_caller_for
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    door_caller_for,
+    door_refusal_error,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -37,7 +41,12 @@ from .budgeting import (
     build_user_payload,
 )
 from .capture import build_capture_context, resolve_capture_id
-from .constants import AI_LIMIT_FAILURE_OUTCOME, DISABLED_MESSAGE, TURN_PROVIDER
+from .constants import (
+    AI_DOOR_BUSY_FAILURE_OUTCOME,
+    AI_LIMIT_FAILURE_OUTCOME,
+    DISABLED_MESSAGE,
+    TURN_PROVIDER,
+)
 from .execution import execute_chat_ops
 from .logging import EditOpsLogContext
 from .over_budget import handle_over_budget
@@ -227,7 +236,13 @@ class EditOpsFlow:
                 system_prompt=system_prompt,
                 caller=caller,
             )
-        except AiDailyLimitReached as error:
+        except (AiDailyLimitReached, AiDoorBusy) as error:
+            refusal = door_refusal_error(error)
+            failure_outcome = (
+                AI_DOOR_BUSY_FAILURE_OUTCOME
+                if isinstance(error, AiDoorBusy)
+                else AI_LIMIT_FAILURE_OUTCOME
+            )
             await update_turn_failure_with_message(
                 uow=self._uow,
                 messages=self._messages,
@@ -235,9 +250,9 @@ class EditOpsFlow:
                 tool_session_id=prepared.tool_session_id,
                 turn_id=prepared.turn_id,
                 assistant_message_id=prepared.assistant_message_id,
-                assistant_message=ai_limit_note(error.limit),
+                assistant_message=refusal.message,
                 provider=TURN_PROVIDER,
-                failure_outcome=AI_LIMIT_FAILURE_OUTCOME,
+                failure_outcome=failure_outcome,
                 correlation_id=prepared.correlation_id,
             )
             log_context.log_result(
@@ -246,13 +261,9 @@ class EditOpsFlow:
                 finish_reason=None,
                 parse_ok=False,
                 ops_count=0,
-                outcome=AI_LIMIT_FAILURE_OUTCOME,
+                outcome=failure_outcome,
             )
-            raise DomainError(
-                code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-                message=ai_limit_note(error.limit),
-                details={"limit": error.limit.value},
-            ) from error
+            raise refusal from error
 
         await complete_turn(
             uow=self._uow,

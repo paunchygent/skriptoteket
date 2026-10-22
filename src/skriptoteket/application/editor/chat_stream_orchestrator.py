@@ -10,14 +10,19 @@ import structlog
 from skriptoteket.application.editor.chat_shared import (
     CHAT_TURN_PROVIDER,
     DAILY_LIMIT_OUTCOME,
+    DOOR_BUSY_OUTCOME,
     STREAM_FLUSH_MAX_INTERVAL_SECONDS,
     STREAM_FLUSH_MIN_CHARS,
 )
 from skriptoteket.application.editor.chat_stream.capture import capture_chat_request_context
 from skriptoteket.config import Settings
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.llm_door import AiDailyLimitReached, ai_limit_note, door_caller_for
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    door_caller_for,
+    door_refusal_error,
+)
 from skriptoteket.protocols.editor_chat import (
     EditorChatStreamOrchestratorProtocol,
     PreparedEditorChatRequest,
@@ -109,7 +114,7 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         assistant_chunks: list[str] = []
         failure_outcome: str | None = None
         failure_status_code: int | None = None
-        limit_refusal: AiDailyLimitReached | None = None
+        door_refusal: AiDailyLimitReached | AiDoorBusy | None = None
 
         last_flush_at = time.monotonic()
         last_flushed_len = 0
@@ -165,8 +170,8 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
             )
         )
         # The meta event waits for the provider's first answer: the door refuses a daily
-        # limit before that answer, and the refusal must reach the web layer as an HTTP
-        # error before any event opens the SSE response.
+        # limit, and a busy door refuses the stream, before that answer, and the refusal
+        # must reach the web layer as an HTTP error before any event opens the SSE response.
         meta_sent = False
 
         try:
@@ -201,8 +206,11 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
             )
             raise
         except AiDailyLimitReached as exc:
-            limit_refusal = exc
+            door_refusal = exc
             failure_outcome = DAILY_LIMIT_OUTCOME
+        except AiDoorBusy as exc:
+            door_refusal = exc
+            failure_outcome = DOOR_BUSY_OUTCOME
         except EditorLlmProviderError as exc:
             failure_outcome = _failure_outcome(exc)
             failure_status_code = exc.status_code
@@ -224,12 +232,8 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
                 partial=saw_delta,
                 elapsed_ms=elapsed_ms,
             )
-            if limit_refusal is not None and not meta_sent:
-                raise DomainError(
-                    code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-                    message=ai_limit_note(limit_refusal.limit),
-                    details={"limit": limit_refusal.limit.value},
-                ) from limit_refusal
+            if door_refusal is not None and not meta_sent:
+                raise door_refusal_error(door_refusal) from door_refusal
             if not meta_sent:
                 yield meta_event
             yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="error"))

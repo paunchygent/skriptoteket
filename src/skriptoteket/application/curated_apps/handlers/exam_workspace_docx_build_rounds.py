@@ -26,7 +26,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_model_source import ma
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
-from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorCaller, AiJobOverageCapReached
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    AiDoorCaller,
+    AiJobOverageCapReached,
+)
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
 )
@@ -154,7 +159,8 @@ class DocxBuildRoundExchange(DocxBuildExchangeProtocol):
                 code=error.failure_code.value,
                 detail=f"provider={error.provider_id} status={error.status_code}",
             ) from error
-        except (AiDailyLimitReached, AiJobOverageCapReached):
+        except (AiDailyLimitReached, AiJobOverageCapReached, AiDoorBusy):
+            # A door refusal or a busy door stops the action; it is not a provider failure.
             raise
         except Exception as error:
             logger.exception("DOCX build provider unavailable", job_id=request.job_id)
