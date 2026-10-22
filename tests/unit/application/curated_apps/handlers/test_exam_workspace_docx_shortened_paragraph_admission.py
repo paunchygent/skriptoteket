@@ -27,8 +27,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import FORMATTING_REASON
 
 pytestmark = pytest.mark.unit
 
@@ -131,6 +133,59 @@ def _accepted(state: DocxBuildState):
     return aligned.item
 
 
+def _reviewed(state: DocxBuildState):
+    (aligned, _) = state.accepted[0]
+    assert aligned.item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert aligned.item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert aligned.item.review.reasons == (FORMATTING_REASON,)
+    assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []
+    return aligned.item
+
+
+def test_a_question_sentence_the_facit_repeats_goes_to_source_review_with_its_text():
+    chunks = (_chunk("body:0001", "2. A coin was tossed twice. Determine the number of outcomes."),)
+    state = _state(*chunks)
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ("body:0001",),
+                    "2",
+                    [[_text("Determine the number of outcomes.")]],
+                    facit_text="A coin was tossed twice. There are four possible outcomes.",
+                )
+            ]
+        },
+        state,
+    )
+    item = _reviewed(state)
+    assert "A coin was tossed twice. Determine the number of outcomes." in body_plain_text(
+        item.body
+    )
+
+
+def test_a_gap_instruction_the_facit_repeats_goes_to_source_review_with_its_text():
+    chunks = (_chunk("body:0001", "2. Read the passage. Water is ____."),)
+    state = _state(*chunks)
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ("body:0001",),
+                    "2",
+                    [[_text("Water is "), _gap("a liquid"), _text(".")]],
+                    kind="gap_fill",
+                    key_source="copied",
+                    facit_text="Read the passage. Water is a liquid.",
+                )
+            ]
+        },
+        state,
+    )
+    item = _reviewed(state)
+    assert "Read the passage." in body_plain_text(item.body)
+
+
 def test_an_exact_first_sentence_only_reply_shows_the_whole_own_paragraph_with_its_marks():
     chunks = (
         _runs_chunk(
@@ -157,22 +212,27 @@ def test_a_reworded_reply_keeps_the_models_wording_without_a_left_out_mark():
     assert body_plain_text(item.body) == "Förklara hur ånga bildas."
 
 
-def test_a_remainder_the_facit_shows_stays_out():
+def test_a_remainder_the_facit_repeats_goes_to_source_review_with_its_text():
     chunks = (_chunk("body:0001", "2. Klassen läste inte texten. Analys: Klassen (S) läste."),)
-    item = _admit(
-        chunks,
-        _item(
-            ("body:0001",),
-            "2",
-            [[_text("Klassen läste inte texten. Analys:")]],
-            facit_text="Klassen (S) läste.",
-        ),
+    state = _state(*chunks)
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ("body:0001",),
+                    "2",
+                    [[_text("Klassen läste inte texten. Analys:")]],
+                    facit_text="Klassen (S) läste.",
+                )
+            ]
+        },
+        state,
     )
-    assert body_plain_text(item.body) == "Klassen läste inte texten. Analys:"
-    assert item.facit_text == "Klassen (S) läste."
+    item = _reviewed(state)
+    assert "Klassen läste inte texten. Analys:" in body_plain_text(item.body)
 
 
-def test_a_missing_instruction_beside_a_facit_remainder_restores_only_the_instruction():
+def test_a_missing_instruction_beside_a_facit_remainder_goes_to_source_review_with_its_text():
     chunks = (
         _chunk(
             "body:0001",
@@ -180,18 +240,22 @@ def test_a_missing_instruction_beside_a_facit_remainder_restores_only_the_instru
             "Analys: Klassen (S) läste (P).",
         ),
     )
-    item = _admit(
-        chunks,
-        _item(
-            ("body:0001",),
-            "2",
-            [[_text("Klassen läste inte texten.")], [_text("Analys:")]],
-            facit_text="Klassen (S) läste (P).",
-        ),
+    state = _state(*chunks)
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ("body:0001",),
+                    "2",
+                    [[_text("Klassen läste inte texten.")], [_text("Analys:")]],
+                    facit_text="Klassen (S) läste (P).",
+                )
+            ]
+        },
+        state,
     )
+    item = _reviewed(state)
     assert "Klassen läste inte texten. Markera subjekt och predikat." in body_plain_text(item.body)
-    assert "(S)" not in body_plain_text(item.body)
-    assert item.facit_text == "Klassen (S) läste (P)."
 
 
 def test_a_remainder_that_is_only_a_blank_run_stays_out():

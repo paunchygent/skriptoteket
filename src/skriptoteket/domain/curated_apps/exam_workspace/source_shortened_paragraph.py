@@ -80,7 +80,10 @@ def restore_shortened_paragraphs(
     a paragraph form one group (a reply that split one source paragraph). A group with
     an ``other_origins`` value in its paragraphs, an inline answer label, or a picture
     is skipped. A group is restored when any of its paragraphs holds a missing
-    character, and is replaced by one paragraph built over the whole span.
+    character, and is replaced by one paragraph built over the whole span. A group
+    whose missing characters lie in a facit_shared span is restored too, so
+    ``own_source_span`` raises and the item goes to review instead of showing
+    text the facit repeats (rereview F4, decision A).
     """
     accounted = accounted_characters(chunks, sources, body_source, entries)
     text = body_source.text

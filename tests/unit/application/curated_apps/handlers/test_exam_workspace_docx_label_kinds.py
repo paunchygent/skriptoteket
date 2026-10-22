@@ -68,6 +68,8 @@ _REVIEW_INLINE_POINTS = {
     ("bf26_english_1_unit_test_kap_1_2_med_facit", "item_043"): "(1 p)",
     ("svenska_2_grammatik_omprov_variant_1_med_facit", "item_001"): "(6 p)",
     ("svenska_2_grammatik_omprov_variant_2_med_facit", "item_001"): "(6 p)",
+    # REP-0049 rereview F4, decision A: Fråga 5 goes to source review.
+    ("svenska_2_grammatik_omprov_variant_2_med_facit", "item_005"): "(6 p)",
 }
 Corruption = Callable[[dict[str, JsonValue]], None]
 

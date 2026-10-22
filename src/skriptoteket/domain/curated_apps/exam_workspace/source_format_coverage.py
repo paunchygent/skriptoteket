@@ -341,6 +341,7 @@ def complete_source_formatting(
             start = paragraph.start
             if body_source.label_span is not None and start == body_source.label_span[0]:
                 start = body_source.label_span[1]
+            body_source.refuse_facit_shared(start, paragraph.end)
             restored = body_source.fragments(start, paragraph.end)
             insertion = next(
                 (index for index, (anchor, _) in enumerate(merged) if anchor > paragraph.start),

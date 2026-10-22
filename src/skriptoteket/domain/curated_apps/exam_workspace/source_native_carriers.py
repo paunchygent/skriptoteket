@@ -89,7 +89,7 @@ def _occurrence_in_regions(
         start = found + 1
 
 
-def _facit_carrier_spans(
+def _facit_shared_spans(
     text: str,
     *,
     normalized: str,
@@ -128,7 +128,6 @@ def native_carrier_spans(
     emitted: frozenset[int] = frozenset(),
     regions: tuple[tuple[int, int], ...] = (),
     body_regions: tuple[tuple[int, int], ...] = (),
-    facit: str | None = None,
 ) -> tuple[tuple[int, int], ...]:
     """Classify omitted metadata inside complete source owners.
 
@@ -141,17 +140,6 @@ def native_carrier_spans(
     provenance cannot leak its value into a source reconstruction. Projection
     retains authority over the model's visible wording. Answer values are
     never recovered into a native facit field.
-
-    Source text the item's facit copies verbatim, and that the reply did not emit,
-    is a recovered key carrier too (TASK-SKRIPT-REP-0049 review F3/F1): the reply
-    contract keeps the teacher's facit wording verbatim while text segments never
-    carry inline facit, so such text is key-owned. Each longest run of consecutive
-    facit sentences found whitespace-folded in one owner or body region, on word
-    boundaries and with none of its wording emitted by the reply, becomes one span:
-    a run the reply partly emitted still shows its question through the reply's own
-    projection (a gap carries the answer), so gap_fill facits that restate the
-    question change nothing. Exact substring search over the normalized index only;
-    no fuzzy match, no token overlap, no wording list.
     """
     mask = quoted_mask(text)
     spans: list[tuple[int, int]] = []
@@ -198,16 +186,38 @@ def native_carrier_spans(
                 spans.append((match.start(), match.end()))
     # Labels and scores are atomic metadata units. A recovered label owns
     # its answer tail even if a word elsewhere in the model happens to match.
-    if facit:
-        normalized, positions = normalized_source_index(text)
-        spans.extend(
-            _facit_carrier_spans(
+    return tuple(sorted(spans))
+
+
+def facit_shared_spans(
+    text: str,
+    *,
+    facit: str,
+    emitted: frozenset[int] = frozenset(),
+    search: tuple[tuple[int, int], ...] = (),
+) -> tuple[tuple[int, int], ...]:
+    """Source spans whose wording the facit repeats and the reply did not emit.
+
+    Exact containment proves shared wording, not key ownership, so these spans are
+    never excluded: a rebuild that would show one sends the item to review instead
+    (TASK-SKRIPT-REP-0049 rereview F4, decision A). Each longest run of consecutive
+    facit sentences found whitespace-folded in one search region, on word boundaries
+    and with none of its wording emitted by the reply, becomes one span: a run the
+    reply partly emitted still shows its question through the reply's own projection
+    (a gap carries the answer), so gap_fill facits that restate the question change
+    nothing. Exact substring search over the normalized index only; no fuzzy match,
+    no token overlap, no wording list.
+    """
+    normalized, positions = normalized_source_index(text)
+    return tuple(
+        sorted(
+            _facit_shared_spans(
                 text,
                 normalized=normalized,
                 positions=positions,
                 sentences=_facit_sentences(facit),
-                search=(*regions, *body_regions),
+                search=search,
                 emitted=emitted,
             )
         )
-    return tuple(sorted(spans))
+    )

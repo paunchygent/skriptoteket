@@ -62,11 +62,16 @@ class SourceFormatting(SourceIndex):
         excluded: tuple[tuple[int, int], ...] = (),
         foreign: tuple[str, ...],
         released: tuple[str, ...] = (),
+        facit_shared: tuple[tuple[int, int], ...] = (),
     ) -> None:
         super().__init__(chunks, ignored=ignored, excluded=excluded)
         self.foreign_normalized = tuple(
             normalized_source_index(chunk_text)[0] for chunk_text in foreign
         )
+        # Source text the facit repeats and the reply did not emit: shared wording with
+        # unknown ownership, never excluded and never covered (rereview F4, decision A).
+        # A rebuild that would show such text raises through refuse_facit_shared instead.
+        self.facit_shared = facit_shared
         # Part lines moved out of the reply's entries: their copy is no paragraph of the item.
         self.released_normalized = tuple(
             normalized_source_index(chunk_text)[0] for chunk_text in released
@@ -336,6 +341,23 @@ class SourceFormatting(SourceIndex):
             self.cursor += 1
         return projected
 
+    def refuse_facit_shared(self, start: int, end: int) -> None:
+        """Raise when a source rebuild of ``start``-``end`` would show facit-shared text.
+
+        Any visible non-space character inside a facit_shared span has unknown
+        ownership (rereview F4, decision A): it may be key analysis or question
+        context, so the item goes to review instead of showing it silently.
+        """
+        for left, right in visible_intervals(start, end, self.excluded):
+            for index in range(left, right):
+                if not self.text[index].isspace() and any(
+                    shared_start <= index < shared_end
+                    for shared_start, shared_end in self.facit_shared
+                ):
+                    raise FormattingTransferError(
+                        "source reconstruction would show text the facit repeats"
+                    )
+
     def _rebuild(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
     ) -> list[NativeParagraph]:
@@ -364,6 +386,7 @@ class SourceFormatting(SourceIndex):
         self._entry_span = (source.start, source.end)
         if ANSWER_LABEL.search(self.text[source.start : source.end]):
             raise FormattingTransferError("source reconstruction would expose facit wording")
+        self.refuse_facit_shared(self.content_start(source), source.end)
         gaps = [s for s in paragraph.segments if s.kind == "gap"]
         placements = self._gap_placements(source, gaps, answers)
         segments: list[NativeSegment] = []
@@ -384,6 +407,7 @@ class SourceFormatting(SourceIndex):
         """Recover omitted marked material only when the whole body is source-safe."""
         if ANSWER_LABEL.search(self.text):
             raise FormattingTransferError("source reconstruction would expose facit wording")
+        self.refuse_facit_shared(0, len(self.text))
         gaps = [NativeGapSegment(gap_id=gap_id) for gap_id in answers]
         placements = self._gap_placements(SourceParagraph(0, len(self.text), None), gaps, answers)
         result: list[NativeParagraph] = []

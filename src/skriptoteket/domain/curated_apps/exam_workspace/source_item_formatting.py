@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_entries im
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 from skriptoteket.domain.curated_apps.exam_workspace.source_native_carriers import (
     emitted_positions,
+    facit_shared_spans,
     native_carrier_spans,
 )
 
@@ -118,7 +119,11 @@ def item_source_formatting(
         emitted=emitted,
         regions=regions,
         body_regions=body_regions,
-        facit=produced.facit_text,
+    )
+    facit_shared = (
+        facit_shared_spans(text, facit=produced.facit_text, emitted=emitted, search=body_regions)
+        if produced.facit_text
+        else ()
     )
     surfaces = tuple(
         EntrySurface(
@@ -137,6 +142,7 @@ def item_source_formatting(
         excluded=tuple(sorted((*ownership.exclusion_ranges(), *carrier_spans))),
         foreign=tuple(chunk.text for chunk in foreign_chunks),
         released=tuple(chunk.text for chunk in released_chunks),
+        facit_shared=facit_shared,
     )
     for start, end in carrier_spans:
         body.covered.update(range(start, end))

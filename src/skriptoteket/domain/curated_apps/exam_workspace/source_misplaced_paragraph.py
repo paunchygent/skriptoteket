@@ -146,6 +146,7 @@ def own_source_span(
         raise FormattingTransferError(
             "misplaced paragraph's own source cannot be rebuilt: inline answer key"
         )
+    source.refuse_facit_shared(start, end)
     if source.provenance.pictures_in(first.start, last.end):
         raise FormattingTransferError("misplaced paragraph's own source cannot be rebuilt: picture")
     built = source_paragraph(source, start, end, first.heading)

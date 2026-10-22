@@ -1,4 +1,4 @@
-"""The TASK-SKRIPT-39-04-17 guard helper admits exactly the one decided event."""
+"""The replay guard helper admits exactly the decided 39-04-17 and REP-0049 events."""
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
@@ -8,6 +8,9 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support
     TASK_SKRIPT_39_04_17_ADMITTED_ANCHORS,
     TASK_SKRIPT_39_04_17_ADMITTED_CODE,
     TASK_SKRIPT_39_04_17_ADMITTED_EXAMS,
+    TASK_SKRIPT_REP_0049_ADMITTED_ANCHORS,
+    TASK_SKRIPT_REP_0049_ADMITTED_CODE,
+    TASK_SKRIPT_REP_0049_ADMITTED_EXAM,
     unexpected_build_events,
 )
 
@@ -43,3 +46,22 @@ def test_other_admission_code_on_the_same_anchors_is_still_unexpected():
 def test_decided_event_on_another_exam_is_still_unexpected():
     event = _event()
     assert unexpected_build_events("chapter_4_poetry_and_lyrics_quiz_med_facit", [event]) == [event]
+
+
+def test_decided_rep_0049_admission_on_variant_2_is_expected():
+    event = _event(
+        code=TASK_SKRIPT_REP_0049_ADMITTED_CODE, anchors=TASK_SKRIPT_REP_0049_ADMITTED_ANCHORS
+    )
+    assert unexpected_build_events(TASK_SKRIPT_REP_0049_ADMITTED_EXAM, [event]) == []
+
+
+def test_decided_rep_0049_admission_on_variant_1_is_still_unexpected():
+    event = _event(
+        code=TASK_SKRIPT_REP_0049_ADMITTED_CODE, anchors=TASK_SKRIPT_REP_0049_ADMITTED_ANCHORS
+    )
+    assert unexpected_build_events(TASK_SKRIPT_39_04_17_ADMITTED_EXAMS[0], [event]) == [event]
+
+
+def test_rep_0049_code_with_other_anchors_is_still_unexpected():
+    event = _event(code=TASK_SKRIPT_REP_0049_ADMITTED_CODE, anchors=("body:0045",))
+    assert unexpected_build_events(TASK_SKRIPT_REP_0049_ADMITTED_EXAM, [event]) == [event]
