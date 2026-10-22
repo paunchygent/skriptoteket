@@ -63,7 +63,11 @@ from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_docx_grouping_profile,
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
-from skriptoteket.protocols.docx_conversion_progress import ConversionOutline, ConversionUpdate
+from skriptoteket.protocols.docx_conversion_progress import (
+    ConversionOutline,
+    ConversionPhase,
+    ConversionUpdate,
+)
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 
 from .compare import ExamComparison, compare_exam, compare_native_exam
@@ -134,6 +138,9 @@ class _CountedProgress:
 
     def __init__(self) -> None:
         self.batches_ready = 0
+
+    async def phase(self, *, worker_id: str, job_id: UUID, phase: ConversionPhase) -> None:
+        return None
 
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:
         return None
