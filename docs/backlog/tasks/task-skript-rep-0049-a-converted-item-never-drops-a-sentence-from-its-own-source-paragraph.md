@@ -50,13 +50,14 @@ A teacher imports metodprov 1 (`tests/fixtures/exam_conversion/docx_corpus/metod
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | metodprov 1 keeps "Gruppen har slumpat fram 120 tvåor från en fullständig elevlista." in the final item built from `body:0006`.             |
-| D2  | The cause of the shortened own paragraph is named with evidence and fixed at that cause, never by a patch on the output.                    |
-| D3  | Meaning-preserving rewording stays as the model wrote it and is not flagged; 39-04-14 D7 marking and the 39-04-15 D4 rule stay as they are. |
-| D4  | Proof replays the recorded conversion; new paid model calls or re-recordings need the user's decision.                                      |
-| D5  | Real task: one independent review, at most one rereview per finding; staging import by the Mac.                                             |
+| ID  | Decided contract term                                                                                                                                                                                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | metodprov 1 keeps "Gruppen har slumpat fram 120 tvåor från en fullständig elevlista." in the final item built from `body:0006`.                                                                                                                                              |
+| D2  | The cause of the shortened own paragraph is named with evidence and fixed at that cause, never by a patch on the output.                                                                                                                                                     |
+| D3  | Meaning-preserving rewording stays as the model wrote it and is not flagged; 39-04-14 D7 marking and the 39-04-15 D4 rule stay as they are.                                                                                                                                  |
+| D4  | Proof replays the recorded conversion; new paid model calls or re-recordings need the user's decision.                                                                                                                                                                       |
+| D5  | Real task: one independent review, at most one rereview per finding; staging import by the Mac.                                                                                                                                                                              |
+| D6  | A converted item whose source text the facit repeats and the reply did not show becomes the printed review item; question text stays intact and no review_complete item carries facit (user decision "A: review item", via Mac 2026-10-22; D7 of 39-04-14 stays as written). |
 
 ## Progress
 
