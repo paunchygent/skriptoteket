@@ -1,10 +1,11 @@
 ## Current
 
-- 39-04-24 `in_progress`, parent Codex `01a1647b`, managed task worktree:
-  user adopted Astra's lean receipt plan at batch16 and authorized implementation.
-  Pi implementation/checks pass; Opus5.5 reviewed, medium repairs admitted.
-  MacBook parent owns Word/PDF walk; no production changes or live-proof claim.
-  Retained `01a1647c-736c-7c8c-827d-c8b616ccb074`, evidence/implementation/macbook-walk-handoff.md.
+- 39-04-24 `in_progress`, owner Codex `01a1647b`: production deployed 2026-10-22
+  at Skriptoteket `50a7b84e3`, paired HuleEdu door `9d4ae61f9`; readiness passed.
+  Batch16; AI output received stays separate from saved/editable status.
+  Pi implemented; Opus5.5 reviewed; medium repairs admitted on focused proof.
+  Next: MacBook parent walks Word/PDF. Retained `01a1647c-736c-7c8c-827d-c8b616ccb074`,
+  evidence/implementation/production-release.md and macbook-walk-handoff.md.
 
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
