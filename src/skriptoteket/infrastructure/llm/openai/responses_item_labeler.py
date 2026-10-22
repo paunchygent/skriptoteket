@@ -4,7 +4,7 @@ Purpose:
     Decide one question's label alone (D23 pass B): gpt-6-luna at low
     reasoning effort and low verbosity answers a label-only schema object whose
     ``label`` property carries the label descriptions. Ported from variant B of
-    the hard-item experiment, measured 2026-10-11. Timeouts, 429 and 5xx retry
+    the hard-item experiment, measured 2026-10-11. Timeouts and 5xx retry
     with bounded exponential backoff; a provider refusal becomes an unresolved,
     refused label. No request content or API key is logged.
 
@@ -101,7 +101,7 @@ def _is_transient(error: StructuredLLMProviderError) -> bool:
     return (
         error.failure_code is StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR
         and status is not None
-        and (status == 429 or 500 <= status <= 599)
+        and 500 <= status <= 599
     )
 
 

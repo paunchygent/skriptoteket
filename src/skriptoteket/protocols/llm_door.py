@@ -33,7 +33,7 @@ class DoorOperation(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class DoorReply:
-    """One relayed door answer: OpenAI's, or a door refusal that is not a limit."""
+    """One relayed door answer: OpenAI's, or a door refusal that is not a limit or capacity 429."""
 
     status_code: int
     headers: Mapping[str, str]
@@ -66,8 +66,10 @@ class LlmDoorClientProtocol(Protocol):
         """Return the relayed answer.
 
         Raises ``AiDailyLimitReached`` for a pool, user-share or USD-ceiling
-        429, ``DoorTimeout`` on timeout and ``DoorRequestFailed`` when no
-        answer arrived. Every other answer, a capacity 429 included, returns
-        as a ``DoorReply``.
+        429, ``AiDoorBusy`` when no room is found for the call (a process or
+        connection slot not free in time, or a door capacity 429 still
+        refused after its Retry-After retries), ``DoorTimeout`` on timeout and
+        ``DoorRequestFailed`` when no answer arrived. Every other answer
+        returns as a ``DoorReply``; a capacity 429 never does.
         """
         ...

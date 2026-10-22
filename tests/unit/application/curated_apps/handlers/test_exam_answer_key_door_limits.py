@@ -6,8 +6,9 @@ Purpose:
     later item keeps the suggestions already collected and ends the job with
     the limit note and ``ai_limit`` set, a started job finishes as paid
     overage while a later job meets the limit, and the per-job overage cap
-    stops a job through the same failure path. Also proves the DOCX job
-    carries the owner's caller.
+    stops a job through the same failure path, and a busy door on a later item
+    ends the job with the try-again note and no ``ai_limit``. Also proves the
+    DOCX job carries the owner's caller.
 
 Relationships:
     Exercises the enrichment workspace lane and the DOCX job handler with a
@@ -61,7 +62,13 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import answer_key_item_views
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, ai_limit_note
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorBusy,
+    ai_limit_note,
+    ai_try_again_note,
+)
 from skriptoteket.domain.scripting.vault import VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -255,6 +262,34 @@ async def test_limit_on_the_second_item_with_user_share_uses_the_user_note() -> 
     response = suggestions_response_for_job(finished, lineage_id=document.document_id)
     assert response.state is ExamWorkspaceEnrichmentState.FAILED
     assert response.message == ai_limit_note(AiDailyLimit.USER_SHARE)
+
+
+async def test_busy_door_on_the_second_item_ends_the_job_with_the_try_again_note() -> None:
+    document = three_unkeyed_choice_document(document_id=uuid4())
+
+    def respond(sent: DoorSent) -> DoorReply:
+        if len(door.sent) == 2:
+            raise AiDoorBusy(retry_after_seconds=4)
+        return json_reply(_responses_body(2))
+
+    door = RecordingDoor(respond)
+    harness = DoorHarness(door=door, document=document)
+    job = await harness.seed_claimed_job()
+
+    finished = await harness.handler.handle(job=job)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.last_error == "ai_door_busy"
+    assert finished.ai_limit is None
+    assert len(door.sent) == 2, "no third call after a busy door"
+    payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
+        finished.workspace_suggestions_json
+    )
+    assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
+    response = suggestions_response_for_job(finished, lineage_id=document.document_id)
+    assert response.state is ExamWorkspaceEnrichmentState.FAILED
+    assert response.ai_limit is None
+    assert response.message == ai_try_again_note()
 
 
 async def test_started_job_finishes_as_overage_while_a_later_job_meets_the_limit() -> None:

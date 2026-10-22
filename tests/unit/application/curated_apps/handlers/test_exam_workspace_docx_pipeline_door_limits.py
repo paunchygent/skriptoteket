@@ -4,14 +4,16 @@ Proves the limit rule for multi-call jobs through a synthetic four-question exam
 scripted provider door: a refused batch fails only its items and stops later calls, a
 content refusal keeps the conversion, a grouping refusal fails everything pending, the
 overage cap stops the crossing call itself, and a job admitted before the pool ran out
-finishes as paid overage while the next job is refused at grouping.
+finishes as paid overage while the next job is refused at grouping. A busy door is no
+limit: a busy grouping or batch call stops the conversion with ``AiDoorBusy`` instead of
+becoming a review item, and busy optional content tags drop silently.
 """
 
 from __future__ import annotations
 
 import pytest
 
-from skriptoteket.domain.llm_door import AiDailyLimit
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDoorBusy
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -169,3 +171,43 @@ async def test_started_conversion_finishes_as_overage_then_next_is_refused_at_gr
     assert len(script.door.sent) == first_sent + 1, "only the refused grouping call"
     assert second_outcome.result.document.items
     assert all(item.review.reasons for item in second_outcome.result.document.items)
+
+
+async def test_busy_grouping_propagates_and_is_never_retried(monkeypatch) -> None:
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), busy_grouping=True)
+
+    with pytest.raises(AiDoorBusy):
+        await convert_with(script, monkeypatch)
+
+    assert len(script.door.sent) == 1, "grouping is not retried against a busy door"
+
+
+async def test_busy_batch_stops_the_conversion_instead_of_becoming_a_review_item(
+    monkeypatch,
+) -> None:
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), busy_batch_calls=(2,))
+
+    with pytest.raises(AiDoorBusy) as caught:
+        await convert_with(script, monkeypatch, course_key="SVESVE02")
+
+    assert caught.value.retry_after_seconds == 6
+
+
+async def test_busy_content_tags_drop_silently_and_keep_the_conversion(monkeypatch) -> None:
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    grouping = grouping_for([c.anchor for c in chunks])
+    baseline, _ = await convert_with(
+        DoorScript(grouping=grouping), monkeypatch, course_key="SVESVE02"
+    )
+    outcome, _ = await convert_with(
+        DoorScript(grouping=grouping, busy_content=True), monkeypatch, course_key="SVESVE02"
+    )
+
+    assert outcome.ai_limit is None
+    assert outcome.limit_code is None
+    assert outcome.result.document.header.tags == ()
+    assert [i.source_anchor for i in outcome.result.document.items if i.review.reasons] == [
+        i.source_anchor for i in baseline.result.document.items if i.review.reasons
+    ], "the busy tags add no review item"

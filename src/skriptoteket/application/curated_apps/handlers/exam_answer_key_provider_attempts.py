@@ -29,9 +29,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.llm_door import (
     AiDailyLimit,
     AiDailyLimitReached,
+    AiDoorBusy,
     AiDoorCaller,
     AiJobOverageCapReached,
     ai_limit_note,
+    ai_try_again_note,
 )
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
@@ -81,7 +83,7 @@ class AnswerKeyProviderAttemptRunner:
         profile: StructuredLLMProviderProfile,
         caller: AiDoorCaller,
     ) -> ProviderAttempt | EnrichmentFailure:
-        """Call the provider once; a door limit ends the job with the limit note."""
+        """Call the provider once; a door limit or a busy door ends the job with its note."""
 
         try:
             response = await self._provider.complete_structured(
@@ -100,6 +102,11 @@ class AnswerKeyProviderAttemptRunner:
                 teacher_message=ai_limit_note(AiDailyLimit.POOL),
                 last_error="ai_overage_cap",
                 ai_limit=AiDailyLimit.POOL,
+            )
+        except AiDoorBusy:
+            return EnrichmentFailure(
+                teacher_message=ai_try_again_note(),
+                last_error="ai_door_busy",
             )
         except StructuredLLMProviderError as exc:
             _log_provider_failure(item_id=candidate.item_id, error=exc)

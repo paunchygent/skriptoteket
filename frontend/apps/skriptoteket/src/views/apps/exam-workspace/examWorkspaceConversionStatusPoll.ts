@@ -20,6 +20,7 @@ import { computed } from "vue";
 import type { ExamWorkspaceConversionStatus } from "../../../api/examWorkspace";
 import {
   aiLimitFromError,
+  aiTryAgainFromError,
   aiLimitFromStatus,
   aiLimitNote,
   markAiDailyLimit,
@@ -182,7 +183,7 @@ export function createConversionStatusPoll(
         markAiDailyLimit(limit);
         runtime.conversionError.value = aiLimitNote(limit);
       } else {
-        runtime.conversionError.value = STATUS_FAILURE_COPY;
+        runtime.conversionError.value = aiTryAgainFromError(error) ?? STATUS_FAILURE_COPY;
       }
       runtime.poll.failures += 1;
       scheduleConversionPoll(runtime, pollGeneration, (gen) => {

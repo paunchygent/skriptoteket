@@ -47,7 +47,14 @@ class AiDoorCaller:
     the door's pools (B5).
     """
 
-    __slots__ = ("_admitted", "_overage_usd_micros", "authority", "exempt", "user_id")
+    __slots__ = (
+        "__weakref__",
+        "_admitted",
+        "_overage_usd_micros",
+        "authority",
+        "exempt",
+        "user_id",
+    )
 
     def __init__(self, *, user_id: UUID, exempt: bool, authority: AiOverageAuthority) -> None:
         self.user_id = user_id

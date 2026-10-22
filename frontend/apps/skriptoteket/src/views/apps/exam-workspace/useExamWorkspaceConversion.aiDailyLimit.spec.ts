@@ -49,6 +49,8 @@ vi.mock("../../../api/examWorkspace", () => ({ ...api }));
 
 type Role = "admin";
 
+const TRY_AGAIN_SENTENCE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund.";
+
 const allLimits: AiDailyLimit[] = ["pool", "user_share", "usd_ceiling"];
 const retryLimits: AiDailyLimit[] = ["pool", "user_share"];
 
@@ -212,5 +214,80 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
 
     expect(api.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(aiDailyLimitReached.value).toBe(false);
+  });
+});
+
+describe("useExamWorkspaceConversion busy AI door", () => {
+  function tryAgainError(): ApiError {
+    return new ApiError({
+      code: "AI_TRY_AGAIN",
+      message: TRY_AGAIN_SENTENCE,
+      status: 429,
+      details: { retry_after_seconds: 5 },
+    });
+  }
+
+  it("shows the sentence inline on an import refused with AI_TRY_AGAIN, without a toast or limit", async () => {
+    const conversion = conversionFor();
+    api.importExamWorkspaceDocument.mockRejectedValueOnce(tryAgainError());
+
+    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+
+    expect(conversion.conversionError.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(conversion.conversionMessage.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(toastMessages()).toEqual([]);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(conversion.isImporting.value).toBe(false);
+
+    // The control stays enabled: the next import starts and clears the sentence.
+    api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
+    api.getExamWorkspaceConversionStatus.mockResolvedValue({
+      ...queuedStatus(),
+      state: "failed",
+      error_message: "Konverteringen misslyckades.",
+    });
+    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+
+    expect(api.importExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(conversion.conversionError.value).toBeNull();
+    expect(aiDailyLimitReached.value).toBe(false);
+  });
+
+  it("shows the sentence for a status poll refused with AI_TRY_AGAIN and clears it on success", async () => {
+    const conversion = conversionFor();
+    api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
+    api.getExamWorkspaceConversionStatus.mockRejectedValueOnce(tryAgainError());
+
+    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+
+    expect(conversion.conversionError.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(toastMessages()).toEqual([]);
+
+    api.getExamWorkspaceConversionStatus.mockResolvedValue({
+      ...queuedStatus(),
+      state: "running",
+    });
+    conversion.retryConversionStatus();
+    await vi.waitFor(() => expect(conversion.conversionError.value).toBeNull());
+
+    expect(aiDailyLimitReached.value).toBe(false);
+  });
+
+  it("shows a failed job's own try-again sentence from error_message without a limit", async () => {
+    const conversion = conversionFor();
+    api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
+    api.getExamWorkspaceConversionStatus.mockResolvedValue({
+      ...queuedStatus(),
+      state: "failed",
+      error_message: TRY_AGAIN_SENTENCE,
+      ai_limit: null,
+    });
+
+    await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
+
+    expect(conversion.conversionMessage.value).toBe(TRY_AGAIN_SENTENCE);
+    expect(aiDailyLimitReached.value).toBe(false);
+    expect(toastMessages()).toEqual([]);
   });
 });

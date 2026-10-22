@@ -41,7 +41,7 @@ from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import ExamCourseChoice
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorBusy
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -210,6 +210,9 @@ class DoorScript:
         refuse_batch_calls: tuple[int, ...] = (),
         refuse_content: bool = False,
         refuse_non_overage_after_first: bool = False,
+        busy_grouping: bool = False,
+        busy_batch_calls: tuple[int, ...] = (),
+        busy_content: bool = False,
     ) -> None:
         self._grouping = grouping
         self._batch_charge = batch_charge_usd_micros
@@ -217,6 +220,9 @@ class DoorScript:
         self._refuse_batch_calls = refuse_batch_calls
         self._refuse_content = refuse_content
         self._refuse_non_overage_after_first = refuse_non_overage_after_first
+        self._busy_grouping = busy_grouping
+        self._busy_batch_calls = busy_batch_calls
+        self._busy_content = busy_content
         self.calls = 0
         self.batch_calls = 0
         self.door = RecordingDoor(self.respond)
@@ -231,6 +237,8 @@ class DoorScript:
                 return json_reply({"answers": [free_text_answer(name) for name in names]})
             if self._refuse_content:
                 raise AiDailyLimitReached(limit=AiDailyLimit.USER_SHARE)
+            if self._busy_content:
+                raise AiDoorBusy(retry_after_seconds=1)
             return json_reply(
                 {
                     "answers": [
@@ -262,6 +270,8 @@ class DoorScript:
             self.batch_calls += 1
             if self.batch_calls in self._refuse_batch_calls:
                 raise AiDailyLimitReached(limit=AiDailyLimit.POOL)
+            if self.batch_calls in self._busy_batch_calls:
+                raise AiDoorBusy(retry_after_seconds=6)
             raw_questions = inner.get("questions")
             assert isinstance(raw_questions, list)
             converted: JsonValue = [
@@ -281,6 +291,8 @@ class DoorScript:
             )
         if self._refuse_grouping:
             raise AiDailyLimitReached(limit=AiDailyLimit.POOL)
+        if self._busy_grouping:
+            raise AiDoorBusy(retry_after_seconds=None)
         return json_reply(responses_envelope(self._grouping))
 
 

@@ -101,7 +101,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError
-from skriptoteket.domain.llm_door import AiDailyLimitReached, AiJobOverageCapReached
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorBusy, AiJobOverageCapReached
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
@@ -218,7 +218,9 @@ class DocxConversionPipeline:
         try:
             async with asyncio.TaskGroup() as tasks:
                 tasks.create_task(self._label_and_convert(run, request, unlabeled, tasks))
-        except* DomainError as group:
+        except* (DomainError, AiDoorBusy) as group:
+            # A busy door stops the conversion like a domain error: the job handler
+            # fails the job with the try-again note, and in-flight batches are cancelled.
             raise group.exceptions[0] from group
         finally:
             # This conversion owns the optional request's entire lifetime. Keep
@@ -400,6 +402,9 @@ class DocxConversionPipeline:
             )
             with_type_check_mark(outcome.state)
             validated(outcome.state)
+        except AiDoorBusy:
+            # A busy door ends the conversion; it never becomes a review item.
+            raise
         except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
             code = run.note_limit(exc)
             # One refused batch never fails the conversion (D25): its items fail as for

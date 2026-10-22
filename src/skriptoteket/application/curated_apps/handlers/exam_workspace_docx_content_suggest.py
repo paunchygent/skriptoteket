@@ -27,7 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
 )
-from skriptoteket.domain.llm_door import AiDailyLimitReached, AiJobOverageCapReached
+from skriptoteket.domain.llm_door import AiDailyLimitReached, AiDoorBusy, AiJobOverageCapReached
 from skriptoteket.protocols.item_type_labeler import (
     ContentTagClassificationRequest,
     LabelingRequest,
@@ -44,7 +44,8 @@ async def suggest_content_tags(
 ) -> None:
     """Suggest content tags for the conversion without ever failing it.
 
-    A refusal records the run's first limit; any other failure only logs.
+    A refusal records the run's first limit; a busy door drops the tags with a warning,
+    since optional work never fails the conversion; any other failure only logs.
     """
     if run.ai_limit is not None:
         return
@@ -66,6 +67,11 @@ async def suggest_content_tags(
         )
     except (AiDailyLimitReached, AiJobOverageCapReached) as exc:
         run.note_limit(exc)
+    except AiDoorBusy:
+        logger.warning(
+            "Import content suggestions dropped at a busy door; conversion continues",
+            job_id=str(run.job.job_id),
+        )
     except Exception:
         logger.exception(
             "Import content suggestions failed; conversion continues",

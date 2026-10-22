@@ -114,6 +114,14 @@ services:
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://huleedu_llm_provider_service:8080}
       HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
+      # 1,000 concurrent AI calls (TASK-SKRIPT-41-01-04): uvicorn runs
+      # WEB_CONCURRENCY processes. shared-postgres allows 100 connections for
+      # every app on Hemma; Skriptoteket keeps web 4 x (4 + 4) plus worker 8 = 40.
+      WEB_CONCURRENCY: ${SKRIPTOTEKET_WEB_CONCURRENCY:-4}
+      DATABASE_POOL_SIZE: ${SKRIPTOTEKET_WEB_DATABASE_POOL_SIZE:-4}
+      DATABASE_MAX_OVERFLOW: ${SKRIPTOTEKET_WEB_DATABASE_MAX_OVERFLOW:-4}
+      LLM_DOOR_MAX_IN_FLIGHT: ${SKRIPTOTEKET_WEB_LLM_DOOR_MAX_IN_FLIGHT:-240}
+      LLM_DOOR_MAX_CONNECTIONS: ${SKRIPTOTEKET_WEB_LLM_DOOR_MAX_CONNECTIONS:-260}
       # Conversion Hub -> Sir Convert-a-Lot v2
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
@@ -168,6 +176,14 @@ services:
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://huleedu_llm_provider_service:8080}
       HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
+      # Eight AI jobs at once, each with at most eight door calls in flight
+      # (TASK-SKRIPT-41-01-04); a job holds a connection only while it writes.
+      LLM_WORKER_JOB_CONCURRENCY: ${SKRIPTOTEKET_LLM_WORKER_JOB_CONCURRENCY:-8}
+      LLM_JOB_MAX_IN_FLIGHT: ${SKRIPTOTEKET_LLM_JOB_MAX_IN_FLIGHT:-8}
+      LLM_DOOR_MAX_IN_FLIGHT: ${SKRIPTOTEKET_WORKER_LLM_DOOR_MAX_IN_FLIGHT:-64}
+      LLM_DOOR_MAX_CONNECTIONS: ${SKRIPTOTEKET_WORKER_LLM_DOOR_MAX_CONNECTIONS:-80}
+      DATABASE_POOL_SIZE: ${SKRIPTOTEKET_WORKER_DATABASE_POOL_SIZE:-4}
+      DATABASE_MAX_OVERFLOW: ${SKRIPTOTEKET_WORKER_DATABASE_MAX_OVERFLOW:-4}
       # Keep worker runtime on the same canonical Sir Convert v2 env
       # contract as web
       # so queue/CLI flows never depend on stale aliases or partial recreates.
