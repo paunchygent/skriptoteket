@@ -12,7 +12,8 @@ Relationships:
     - ``exam_print_house_template`` owns every dimension; the print PDF/preview renders the
       same template (W1, ruling 2026-10-18).
     - ``exam_workspace_docx_writer`` applies the template to each new export before it
-      renders the student copy.
+      renders the student copy. It also stamps Word 2013+ compatibility mode (15), so the
+      export never opens in Compatibility Mode.
 """
 
 from __future__ import annotations
@@ -69,6 +70,32 @@ def apply_house_template(output: DocxDocument) -> None:
         _apply_house_text_color(heading)
         set_style_spacing(heading.paragraph_format, geometry.spacing)
         heading.paragraph_format.keep_with_next = True
+
+    _apply_compatibility_mode(output)
+
+
+def _apply_compatibility_mode(output: DocxDocument) -> None:
+    """Word 2013+ compatibility mode, so the export opens without Compatibility Mode.
+
+    python-docx's default template ships ``compatibilityMode`` 14 (Word 2010); Word
+    then opens the exam workspace export in Compatibility Mode (TASK-SKRIPT-39-04-22
+    Mac staging walk at 74eeceb2d, 2026-10-22). Every export carries mode 15 instead;
+    the other compat settings ship untouched.
+    """
+    settings = output.settings.element
+    compat = settings.find(qn("w:compat"))
+    if compat is None:
+        compat = OxmlElement("w:compat")
+        settings.append(compat)
+    for setting in compat.findall(qn("w:compatSetting")):
+        if setting.get(qn("w:name")) == "compatibilityMode":
+            setting.set(qn("w:val"), "15")
+            return
+    mode = OxmlElement("w:compatSetting")
+    mode.set(qn("w:name"), "compatibilityMode")
+    mode.set(qn("w:uri"), "http://schemas.microsoft.com/office/word")
+    mode.set(qn("w:val"), "15")
+    compat.append(mode)
 
 
 def _apply_house_font(style: ParagraphStyle) -> None:
