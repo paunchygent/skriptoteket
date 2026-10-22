@@ -81,10 +81,10 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02 `in_progress`: lead on branch `codex/task-skript-41-01-02`, Hemma root
-      `01a16352-c1aa-7200-beac-cdd64393cb32`, post-merge head in the lead summary there; next: the
-      single review. Walk precondition: staging door rebuilt from HuleEdu main ca7ff9700
-      (gpt-6.1-sol priced). 41-01-04 on main; HuleEdu door needs hypercorn `--backlog 2048`.
+    - 41-01-02: review F1-F6 repaired (`ab453737f`, root `01a16352-c1aa-7200-beac-cdd64393cb32`);
+      merged to main, staging walk next.
+    - 39-04-23 import phases and live signal: lead `local_d5b9c69f` on `codex/task-skript-39-04-23`,
+      review repairs in progress.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
@@ -122,6 +122,11 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done`: 41-01-04 AI capacity and try-again (`d44e946b5`; review F1-F8, retained
+  `01a16352`; Mac walk `.artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md`). HuleEdu door
+  14-03-04/05/06 on main `ca7ff9700` (overage, gpt-6.1-sol price, cache writes, backlog 2048);
+  staging door rebuilt, production not deployed.
 
 - 2026-10-22 `done`: 39-04-22 Word drawn shapes as pictures, shapes kept
   for Word export (`74eeceb2d`; review F1-F9 repaired on fail-first proof, retained

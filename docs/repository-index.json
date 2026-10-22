@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9661e0b6a29aa581719f69db501942d07a6264111148a771eeb66221aafda327",
+  "source_set_digest": "302c107cc6280b663bd4c4ebab409397048ecdffdde867a4994bad36ac492630",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5439,6 +5439,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-23",
+      "type": "task",
+      "title": "The exam import shows each phase and a live signal while it works",
+      "path": "docs/backlog/tasks/task-skript-39-04-23-the-exam-import-shows-each-phase-and-a-live-signal-while-it-works.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -7443,7 +7462,7 @@
       "type": "task",
       "title": "Skriptoteket serves a thousand concurrent AI calls with bounded fan-out and a try-again message",
       "path": "docs/backlog/tasks/task-skript-41-01-04-skriptoteket-serves-a-thousand-concurrent-ai-calls-with-bounded-fan-out-and-a-try-again-message.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -7454,7 +7473,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "One review (D7 rule) in retained root 01a16352: changes_requested F1-F8 (evidence/reviews/task-skript-41-01-04-9b729d9dd-review.md); F1-F4 and F6-F8 repaired on fail-first proof (evidence/repairs/README.md), F5 assigned to TASK-SKRIPT-41-01-02, no rereview per the user rule \"Now it's enough.\"; mock load proof run 4 1,120/1,120 with 0 paid calls; merged as d44e946b5; HuleEdu door backlog 2048 in ca7ff9700; Mac staging walk 2026-10-22 at d44e946b5 passed checks 1-4 (Mac .artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md); the try-again note rests on unit tests and the load proof."
       }
     },
     {
