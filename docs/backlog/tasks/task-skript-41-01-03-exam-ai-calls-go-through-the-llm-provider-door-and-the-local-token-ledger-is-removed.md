@@ -100,3 +100,12 @@ Before the REP-0044 gate opens AI to teachers, close this gap: the door's `allow
   - Focused unit tests pass: 3576 in curated apps, LLM, workers, web, scripts, architecture and config; 3083 in domain, repositories and the dev compose contract; 2419 exam-workspace Vitest tests.
   - Docker integration passes 13 tests: the migration test plus the DOCX background and DigiExam suggestion modules.
   - Logs are in the lead's retained root, under `evidence/repair/`.
+
+2026-10-22, staging door walk at `fe2bc9b9c` (orchestrator and the Mac): every door step passed. In the Hemma worker log, all 22 door calls returned 200 (16 to responses, 6 to decisions), with no `DoorRequestFailed`, `DoorTimeout` or missing-charge warning.
+
+- Walk finding D1, repaired by the light route: an arriving facit suggestion scheduled no autosave. The header showed "Sparar …" until the teacher's next edit, and a reload before that edit lost the paid suggestion. `useExamWorkspaceSaveArrivals` now reports every write that changes the copy (first delivery and replays) through `noteArrival`, and the document stores it like typing after the pause; a read-only copy schedules nothing. Gap-answer misspelling replies had the same cause and report through `noteReply` the same way. Content tags and question retry already scheduled their store.
+- D1 proof: fail-first Vitest in `useExamWorkspaceEditing.suggestionAutosave.spec.ts` (a suggestion with no further edit, a replay after a replacing read, and misspellings arriving after the stored edit each issue one store and end saved; an unchanged suggestion and another exam's suggestion issue none). Exam-workspace Vitest passes 2424 tests; `fe-type-check` and `fe-lint` pass. Log: `evidence/repair/d1-proof.log` in the lead's retained root.
+- Residual observations, not fixed:
+  - "Konvertera igen" that ends `review_required` again shows no visible sign that the retry ran.
+  - A DOCX revision-sync merge while the saved baseline stands ahead of the merge base leaves the merged copy dirty with no store scheduled until the next edit; the teacher's own pieces were already stored and the server holds the conversion's.
+- The B4 notes and a charge cannot be walked on staging today: AI in the UI is admin-only (REP-0044) and admins are exempt (C8), so they meet only the pool, the door sends no charge headers for them, and no staging setting can force a pool refusal. The notes stay proven by unit tests.

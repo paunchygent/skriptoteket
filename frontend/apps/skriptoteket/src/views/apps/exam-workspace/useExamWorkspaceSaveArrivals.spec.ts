@@ -12,7 +12,7 @@
  */
 
 import { ref, shallowRef } from "vue";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type {
   NativeAnswerKeySuggestion,
@@ -69,6 +69,7 @@ function setup(item: NativeExamItem) {
   const arrivals = useExamWorkspaceSaveArrivals({
     convertingItemIds,
     isOpen: (candidate) => openExam.value === candidate,
+    noteArrival: vi.fn(),
     workspaceDocument,
   });
   function deliver(arriving: NativeAnswerKeySuggestion): void {

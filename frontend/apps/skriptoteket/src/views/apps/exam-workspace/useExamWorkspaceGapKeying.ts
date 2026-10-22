@@ -19,8 +19,10 @@
  *   response or conflict reload installs a document the payload was read
  *   without; likewise for an undo, redo or server command, whose document
  *   must still hold the gap's keyed values for the reply to apply. A reply the payload already held is never replayed, so a
- *   teacher-removed spelling never returns from an earlier reply. A failed
- *   request that still stands reports Swedish copy.
+ *   teacher-removed spelling never returns from an earlier reply. A reply
+ *   that changes the copy reports it through `noteReply`, so the document
+ *   stores the spellings instead of waiting for the teacher's next edit. A
+ *   failed request that still stands reports Swedish copy.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which owns the copy and its one
@@ -61,6 +63,12 @@ export type ExamWorkspaceGapKeyingBinding = {
   patchItem: (itemId: string, patch: (item: NativeExamItem) => NativeExamItem) => boolean;
   /** The shared store half the misspelling request runs through. */
   shared: ExamWorkspaceSharedStore;
+  /**
+   * A reply changed the copy: `before` is the copy just before it. The
+   * document owner schedules its store from it, so merged spellings are saved
+   * like an edit; a first merge and every replay report the same way.
+   */
+  noteReply: (before: NativeExamDocument) => void;
 };
 
 /** One keying request, identified so a reply that lost its place can be refused. */
@@ -134,6 +142,7 @@ export function useExamWorkspaceGapKeying(binding: ExamWorkspaceGapKeyingBinding
     });
     if (changed) {
       binding.workspaceDocument.value = { ...current, items };
+      binding.noteReply(current);
     }
   }
 
