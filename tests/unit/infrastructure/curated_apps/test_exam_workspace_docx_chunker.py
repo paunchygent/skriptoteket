@@ -4,16 +4,35 @@ import io
 import zipfile
 from dataclasses import replace
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from docx import Document
 from docx.document import Document as DocxDocument
+from docx.opc.constants import RELATIONSHIP_TYPE
 from docx.oxml import parse_xml
+from lxml import etree  # type: ignore[import-untyped]  # transitive of python-docx, no stubs
 
+from skriptoteket.domain.curated_apps.exam_workspace.docx_build_assets import asset_manifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
+    ExamWorkspaceDocxWriter,
+)
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    make_free_text_item,
 )
 
 _QUIZ = Path(
@@ -205,6 +224,7 @@ def _wsp(
     label: str | None = None,
     geometry: str | None = None,
     line: str = _LINE,
+    properties: str = "",
 ) -> str:
     geometry = geometry or f'<a:prstGeom prst="{prst}"><a:avLst/></a:prstGeom>'
     text = ""
@@ -214,7 +234,7 @@ def _wsp(
             f"<w:t>{label}</w:t></w:r></w:p></w:txbxContent></wps:txbx>"
         )
     return (
-        '<wps:wsp><wps:cNvPr id="2" name="s"/><wps:cNvSpPr/><wps:spPr>'
+        f'<wps:wsp><wps:cNvPr id="2" name="s">{properties}</wps:cNvPr><wps:cNvSpPr/><wps:spPr>'
         f'<a:xfrm><a:off x="{off[0]}" y="{off[1]}"/><a:ext cx="{ext[0]}" cy="{ext[1]}"/></a:xfrm>'
         f'{geometry}<a:solidFill><a:srgbClr val="FFCC00"/></a:solidFill>{line}</wps:spPr>'
         f"{text}<wps:bodyPr/></wps:wsp>"
@@ -375,3 +395,110 @@ def test_a_paragraph_with_text_and_a_shape_is_unchanged() -> None:
         (),
         (),
     )
+
+
+# --- a figure tied to another part of the file (TASK-SKRIPT-39-04-22 D12) ----------------
+
+_NS_R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+_XPATH_NS = {
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "wps": _URI["wps"],
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "r": _NS_R,
+}
+
+
+def _shape_with_hyperlink(*, linked: bool) -> bytes:
+    """A paragraph holding one rectangle; when ``linked`` its ``wps:cNvPr`` carries an
+    ``a:hlinkClick`` that cites a real hyperlink relationship of the document part."""
+    document = Document()
+    document.add_paragraph("Fråga 1")
+    paragraph = document.add_paragraph()
+    properties = ""
+    if linked:
+        relationship_id = document.part.relate_to(
+            "https://example.org/", RELATIONSHIP_TYPE.HYPERLINK, is_external=True
+        )
+        properties = f'<a:hlinkClick xmlns:r="{_NS_R}" r:id="{relationship_id}"/>'
+    run = f"<w:r {_NS}>{_drawing('wps', _wsp('rect', properties=properties))}</w:r>"
+    paragraph._p.append(parse_xml(run))
+    document.add_paragraph("Fråga 2")
+    return _bytes(document)
+
+
+def test_a_shape_that_cites_a_relationship_gets_a_picture_and_no_shapes() -> None:
+    chunk = _drawn_chunk(_shape_with_hyperlink(linked=True))
+
+    (image,) = chunk.images
+    assert (chunk.kind, chunk.text, chunk.missing_images) == ("drawing", "", ())
+    assert image.payload.startswith(_PNG_SIGNATURE)
+    assert image.docx_shapes is None
+
+
+def _figure_paragraph(chunk: DocxChunk) -> NativeParagraph:
+    (image,) = chunk.images
+    return NativeParagraph(
+        heading_level=None,
+        segments=(
+            NativeTextSegment(text="Se figuren", marks=()),
+            NativeAssetSegment(asset_id=image.asset_id),
+        ),
+    )
+
+
+def _native_document(chunk: DocxChunk) -> tuple[NativeExamDocument, dict[str, bytes]]:
+    """The asset manifest of the chunk's figure and a one-question document that cites it."""
+    item = make_free_text_item().model_copy(update={"body": (_figure_paragraph(chunk),)})
+    assets, payloads = asset_manifest((item,), (chunk,))
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Bildprov",
+        items=(item,),
+        assets=assets,
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+    return document, dict(payloads)
+
+
+def test_the_asset_of_a_shape_that_cites_a_relationship_carries_no_shapes() -> None:
+    document, payloads = _native_document(_drawn_chunk(_shape_with_hyperlink(linked=True)))
+
+    (asset,) = document.assets
+    assert asset.docx_shapes is None
+    assert payloads[asset.asset_id].startswith(_PNG_SIGNATURE)
+
+
+def _word_export(*, linked: bool) -> tuple[DocxChunk, bytes]:
+    """Word import to Word export: the real chunker, asset manifest and Word writer."""
+    chunk = _drawn_chunk(_shape_with_hyperlink(linked=linked))
+    document, payloads = _native_document(chunk)
+    writer = ExamWorkspaceDocxWriter()
+    content = writer.build_docx_bytes(document, assets_by_id=payloads)
+    writer.validate_docx_bytes(content, expected_item_count=1)
+    return chunk, content
+
+
+def _export_root(content: bytes) -> etree._Element:
+    with zipfile.ZipFile(io.BytesIO(content)) as archive:
+        return etree.fromstring(archive.read("word/document.xml"))
+
+
+def test_the_word_export_writes_a_shape_that_cites_a_relationship_as_its_picture() -> None:
+    chunk, content = _word_export(linked=True)
+    root = _export_root(content)
+
+    assert root.xpath("//wps:wsp", namespaces=_XPATH_NS) == []
+    (embed,) = root.xpath("//a:blip/@r:embed", namespaces=_XPATH_NS)
+    assert Document(io.BytesIO(content)).part.related_parts[str(embed)].blob == (
+        chunk.images[0].payload
+    )
+
+
+def test_the_word_export_writes_a_shape_without_a_relationship_as_shapes() -> None:
+    """The control: the same figure without the hyperlink is written back as its shape."""
+    _, content = _word_export(linked=False)
+    root = _export_root(content)
+
+    assert len(root.xpath("//wps:wsp", namespaces=_XPATH_NS)) == 1
+    assert root.xpath("//a:blip", namespaces=_XPATH_NS) == []
