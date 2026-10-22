@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-22'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'One review (D7) by the Pi ruthless-reviewer, changes_requested with one medium finding (edit-ops test module over 500 lines), repaired in 5d924da2d with no rereview; pre-push fixture leak repaired on fail-first proof in 78765d330 (retained root 01a163e6-36e6-7bdf-8c46-7fdd1ce94cf1, evidence/implementation/TASK-SKRIPT-41-03-01/closeout-evidence.md). Eval mode keeps its admin-only guard on the completion and edit-ops routes (orchestrator decision 2026-10-22; not an AI gate). HuleEdu door policy 4e5b010c2. Mac staging walk at 78765d330 as skriptoteket-proof-user and skriptoteket-proof-contributor passed checks 1-5 (Mac .artifacts/staging-walk-41-03-01-78765d330/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - A non-admin teacher uses exam and script-editor AI on staging; the admin-only check and its note are gone; the door policy gives Skriptoteket 20% small and 10% full share with no USD ceiling

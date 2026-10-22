@@ -81,8 +81,8 @@
     - Proposed follow-ups chosen by the user 2026-10-22: 41-03-02 ghost text, 41-03-03 chat
       Markdown, 39-04-24 rising import count.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
-      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 ready (retained `01a163e6`);
-      ST-41-01 is done, the lead waits on the user's start.
+      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 done on main `78765d330` and staging,
+      not in production (HuleEdu door policy `4e5b010c2` likewise); next 41-03-02/03 proposed.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
     in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
     one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.
@@ -118,6 +118,9 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
+  `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); production deploy pending.
 
 - 2026-10-22 `done`: 39-04-23 import phases and live signal (retained `01a1639f`; Mac re-walk
   `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
