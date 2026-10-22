@@ -64,6 +64,10 @@ services:
       # Answer-key completion lane. Off unless the untracked staging .env sets
       # LLM_ANSWER_KEY_ENABLED=true together with HULEEDU_INTERNAL_API_KEY.
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
+      # Editor AI (completion, chat, chat ops) through the door; off unless the staging .env sets them.
+      LLM_COMPLETION_ENABLED: ${LLM_COMPLETION_ENABLED:-false}
+      LLM_CHAT_ENABLED: ${LLM_CHAT_ENABLED:-false}
+      LLM_CHAT_OPS_ENABLED: ${LLM_CHAT_OPS_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://llm_provider_service:8080}
       HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
       # Staging runs web as several processes like production
