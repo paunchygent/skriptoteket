@@ -3293,6 +3293,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/apps/documents.conversion_hub/exam-converter/workspace/limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Public Exam Workspace Limits */
+        get: operations["get_public_exam_workspace_limits_api_v1_public_apps_documents_conversion_hub_exam_converter_workspace_limits_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/apps/documents.conversion_hub/exam-converter/workspace/parents": {
         parameters: {
             query?: never;
@@ -6091,6 +6108,20 @@ export interface components {
              * Format: uuid
              */
             lineage_id: string;
+        };
+        /**
+         * ExamWorkspaceLimitsResponse
+         * @description The exam size limit both modes enforce before sending work to the server.
+         *
+         *     ``max_exam_bytes`` is the backend-owned ``VAULT_MAX_FILE_BYTES`` setting,
+         *     so the editor never keeps a handwritten copy of the cap.
+         */
+        ExamWorkspaceLimitsResponse: {
+            /**
+             * Max Exam Bytes
+             * @description Largest accepted exam size in bytes.
+             */
+            max_exam_bytes: number;
         };
         /** ExamWorkspaceMisspellingsRequest */
         ExamWorkspaceMisspellingsRequest: {
@@ -17324,6 +17355,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicExamWorkspaceQtiImportResponse"];
+                };
+            };
+        };
+    };
+    get_public_exam_workspace_limits_api_v1_public_apps_documents_conversion_hub_exam_converter_workspace_limits_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceLimitsResponse"];
                 };
             };
         };

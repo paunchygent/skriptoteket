@@ -18,7 +18,10 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, ValidationError
 from starlette.datastructures import UploadFile
 
-from skriptoteket.application.curated_apps.exam_workspace import ExamCourseCatalogResponse
+from skriptoteket.application.curated_apps.exam_workspace import (
+    ExamCourseCatalogResponse,
+    ExamWorkspaceLimitsResponse,
+)
 from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
@@ -402,6 +405,22 @@ async def answer_public_exam_workspace_misspellings(
         request=request, settings=settings, model=ExamWorkspaceMisspellingsRequest
     )
     return handler.handle(request=body)
+
+
+@router.get("/workspace/limits", response_model=ExamWorkspaceLimitsResponse)
+async def get_public_exam_workspace_limits(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    admit_handler: FromDishka[AdmitPublicRequestHandlerProtocol],
+) -> ExamWorkspaceLimitsResponse:
+    await admit_guest_request(
+        request=request,
+        registry=registry,
+        admit_handler=admit_handler,
+        bucket=PublicRequestBucket.GUEST_EDIT,
+    )
+    return ExamWorkspaceLimitsResponse(max_exam_bytes=settings.VAULT_MAX_FILE_BYTES)
 
 
 @router.get("/workspace/courses", response_model=ExamCourseCatalogResponse)

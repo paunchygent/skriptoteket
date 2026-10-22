@@ -25,6 +25,7 @@ import {
   deletePublicExamWorkspaceParent,
   downloadPublicExamWorkspaceExport,
   getPublicExamCourseCatalog,
+  getExamWorkspaceLimits,
   getPublicExamWorkspaceExportChecklist,
   groupPublicExamWorkspaceItems,
   importPublicExamWorkspaceQti,
@@ -216,6 +217,15 @@ describe("publicExamWorkspace transport", () => {
 
     expect(publicApiGetMock).toHaveBeenCalledWith(`${WORKSPACE_ROOT}/courses`);
     expect(result).toBe(catalog);
+  });
+
+  it("reads the backend-owned exam size limit without credentials", async () => {
+    publicApiGetMock.mockResolvedValueOnce({ max_exam_bytes: 7_000_000 });
+
+    const result = await getExamWorkspaceLimits();
+
+    expect(publicApiGetMock).toHaveBeenCalledWith(`${WORKSPACE_ROOT}/limits`);
+    expect(result).toEqual({ max_exam_bytes: 7_000_000 });
   });
 
   it("downloads an export from the document JSON and one asset part per declared picture", async () => {
