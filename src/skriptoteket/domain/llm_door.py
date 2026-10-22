@@ -5,7 +5,8 @@ Purpose:
     and which daily limit refused it (ST-SKRIPT-41-01 B1, B4, B5). Every paid
     AI call carries its action's ``AiDoorCaller``; a door refusal for a pool,
     user share or USD ceiling becomes ``AiDailyLimitReached``, whose teacher
-    note ``ai_limit_note`` picks from the limit.
+    note ``ai_limit_note`` picks from the limit; a door with no room for the
+    call becomes ``AiDoorBusy`` with the try-again note (B7).
 
 Relationships:
     Built by the application handlers that run AI jobs from the job owner and
@@ -172,3 +173,25 @@ class AiJobOverageCapReached(Exception):
         )
         self.overage_usd_micros = overage_usd_micros
         self.cap_usd_micros = cap_usd_micros
+
+
+_TRY_AGAIN_NOTE = "AI-hjälpen har många förfrågningar just nu. Försök igen om en stund."
+
+
+class AiDoorBusy(Exception):
+    """The door, or this process's share of it, had no room for a call (B7).
+
+    Raised after the door client's bounded Retry-After retries; the AI action
+    stops and shows ``ai_try_again_note``. ``retry_after_seconds`` is the
+    door's last Retry-After, or None when the door named none.
+    """
+
+    def __init__(self, *, retry_after_seconds: int | None) -> None:
+        super().__init__(f"AI door busy; retry after {retry_after_seconds} seconds")
+        self.retry_after_seconds = retry_after_seconds
+
+
+def ai_try_again_note() -> str:
+    """The teacher note for a busy door: try again in a moment."""
+
+    return _TRY_AGAIN_NOTE
