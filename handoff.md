@@ -4,9 +4,9 @@
 
 - Hemma orchestrator 2026-10-22:
 
-  - Production runs `8569092ba` (deployed 14:05 UTC by user decision; migration
-    `aa30c309b36c`; seating gate and /healthz green). HuleEdu prod runs `ca7ff9700`
-    (door 14-03-04/05/06, deployed 14:04 UTC first). HuleEdu prod `.env` still holds a stale
+  - Production runs `976d89b5b` (deployed 16:2x UTC by user decision; AI open to every
+    signed-in teacher; migration `aa30c309b36c`; seating gate and /healthz green). HuleEdu prod
+    runs `4e5b010c2` (door: skriptoteket 20% small, 10% full, no USD ceiling). HuleEdu prod `.env` still holds a stale
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
   - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, ntfy
     reaches the phone, Healthchecks check "Hemma" up with receipt verified (`4d8ebe9d`).
@@ -81,8 +81,8 @@
     - Proposed follow-ups chosen by the user 2026-10-22: 41-03-02 ghost text, 41-03-03 chat
       Markdown, 39-04-24 rising import count.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
-      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 done on main `78765d330` and staging,
-      not in production (HuleEdu door policy `4e5b010c2` likewise); next 41-03-02/03 proposed.
+      `01a160e1-08de-706a-8728-3510b9547579`): 41-03-01 done and in production;
+      next 41-03-02/03 proposed.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan
     in Mac root `01a1602d-173d-72ed-b3ac-83c6a24e9070`); owner Hemma orchestrator,
     one lead per task. Real PDF exams from the user go in `.artifacts/pdf-import-proof/`.
@@ -120,7 +120,7 @@
 ## Recent
 
 - 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
-  `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); production deploy pending.
+  `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); in production at `976d89b5b`.
 
 - 2026-10-22 `done`: 39-04-23 import phases and live signal (retained `01a1639f`; Mac re-walk
   `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
