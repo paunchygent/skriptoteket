@@ -13,6 +13,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import source_tokens
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import ANSWER_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import (
+    normalized_source_index,
+)
+
+_ITALIC_TAG = re.compile(r"</?i>")
+_FACIT_SENTENCE_SPLIT = re.compile(r"\r?\n|(?<=[.?!;])\s+")
 
 
 def emitted_positions(source: str, emitted: str, offset: int = 0) -> frozenset[int]:
@@ -44,6 +50,77 @@ def _recovered(text: str, start: int, end: int, emitted: frozenset[int]) -> bool
     )
 
 
+def _facit_sentences(facit: str) -> list[str]:
+    """The facit's sentences after its italic tags are stripped, like the reply contract."""
+    cleaned = _ITALIC_TAG.sub("", facit)
+    return [part.strip() for part in _FACIT_SENTENCE_SPLIT.split(cleaned) if part.strip()]
+
+
+def _wholly_unemitted(text: str, start: int, end: int, emitted: frozenset[int]) -> bool:
+    """Whether the reply emitted none of the span: a facit run the reply partly emitted
+    still shows its question through the reply's own projection (a gap carries the answer),
+    so only a wholly unemitted run is key-owned."""
+    return all(
+        position not in emitted for position in range(start, end) if not text[position].isspace()
+    )
+
+
+def _occurrence_in_regions(
+    normalized: str,
+    positions: list[int],
+    needle: str,
+    text: str,
+    search: tuple[tuple[int, int], ...],
+) -> tuple[int, int] | None:
+    """First needle occurrence wholly inside one search region, on word boundaries."""
+    start = 0
+    while True:
+        found = normalized.find(needle, start)
+        if found < 0:
+            return None
+        source_start = positions[found]
+        source_end = positions[found + len(needle) - 1] + 1
+        if (
+            any(left <= source_start and source_end <= right for left, right in search)
+            and (source_start == 0 or text[source_start - 1].isspace())
+            and (source_end == len(text) or text[source_end].isspace())
+        ):
+            return source_start, source_end
+        start = found + 1
+
+
+def _facit_carrier_spans(
+    text: str,
+    *,
+    normalized: str,
+    positions: list[int],
+    sentences: list[str],
+    search: tuple[tuple[int, int], ...],
+    emitted: frozenset[int],
+) -> list[tuple[int, int]]:
+    """Longest facit sentence runs the reply did not emit, as source spans."""
+    spans: list[tuple[int, int]] = []
+    index = 0
+    while index < len(sentences):
+        matched: tuple[int, tuple[int, int]] | None = None
+        for stop in range(len(sentences) - 1, index - 1, -1):
+            needle, _ = normalized_source_index(" ".join(sentences[index : stop + 1]))
+            if not needle:
+                continue
+            found = _occurrence_in_regions(normalized, positions, needle, text, search)
+            if found is not None:
+                matched = (stop, found)
+                break
+        if matched is None:
+            index += 1
+            continue
+        stop, (start, end) = matched
+        if _wholly_unemitted(text, start, end, emitted):
+            spans.append((start, end))
+        index = stop + 1
+    return spans
+
+
 def native_carrier_spans(
     text: str,
     *,
@@ -51,6 +128,7 @@ def native_carrier_spans(
     emitted: frozenset[int] = frozenset(),
     regions: tuple[tuple[int, int], ...] = (),
     body_regions: tuple[tuple[int, int], ...] = (),
+    facit: str | None = None,
 ) -> tuple[tuple[int, int], ...]:
     """Classify omitted metadata inside complete source owners.
 
@@ -63,6 +141,17 @@ def native_carrier_spans(
     provenance cannot leak its value into a source reconstruction. Projection
     retains authority over the model's visible wording. Answer values are
     never recovered into a native facit field.
+
+    Source text the item's facit copies verbatim, and that the reply did not emit,
+    is a recovered key carrier too (TASK-SKRIPT-REP-0049 review F3/F1): the reply
+    contract keeps the teacher's facit wording verbatim while text segments never
+    carry inline facit, so such text is key-owned. Each longest run of consecutive
+    facit sentences found whitespace-folded in one owner or body region, on word
+    boundaries and with none of its wording emitted by the reply, becomes one span:
+    a run the reply partly emitted still shows its question through the reply's own
+    projection (a gap carries the answer), so gap_fill facits that restate the
+    question change nothing. Exact substring search over the normalized index only;
+    no fuzzy match, no token overlap, no wording list.
     """
     mask = quoted_mask(text)
     spans: list[tuple[int, int]] = []
@@ -109,4 +198,16 @@ def native_carrier_spans(
                 spans.append((match.start(), match.end()))
     # Labels and scores are atomic metadata units. A recovered label owns
     # its answer tail even if a word elsewhere in the model happens to match.
+    if facit:
+        normalized, positions = normalized_source_index(text)
+        spans.extend(
+            _facit_carrier_spans(
+                text,
+                normalized=normalized,
+                positions=positions,
+                sentences=_facit_sentences(facit),
+                search=(*regions, *body_regions),
+                emitted=emitted,
+            )
+        )
     return tuple(sorted(spans))

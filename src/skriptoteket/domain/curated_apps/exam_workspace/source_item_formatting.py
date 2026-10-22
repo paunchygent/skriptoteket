@@ -118,6 +118,7 @@ def item_source_formatting(
         emitted=emitted,
         regions=regions,
         body_regions=body_regions,
+        facit=produced.facit_text,
     )
     surfaces = tuple(
         EntrySurface(

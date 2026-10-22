@@ -162,6 +162,28 @@ def test_a_remainder_the_facit_shows_stays_out():
     assert item.facit_text == "Klassen (S) läste."
 
 
+def test_a_missing_instruction_beside_a_facit_remainder_restores_only_the_instruction():
+    chunks = (
+        _chunk(
+            "body:0001",
+            "2. Klassen läste inte texten. Markera subjekt och predikat. "
+            "Analys: Klassen (S) läste (P).",
+        ),
+    )
+    item = _admit(
+        chunks,
+        _item(
+            ("body:0001",),
+            "2",
+            [[_text("Klassen läste inte texten.")], [_text("Analys:")]],
+            facit_text="Klassen (S) läste (P).",
+        ),
+    )
+    assert "Klassen läste inte texten. Markera subjekt och predikat." in body_plain_text(item.body)
+    assert "(S)" not in body_plain_text(item.body)
+    assert item.facit_text == "Klassen (S) läste (P)."
+
+
 def test_a_remainder_that_is_only_a_blank_run_stays_out():
     chunks = (_chunk("body:0001", "2. Fyll i ____."),)
     item = _admit(chunks, _item(("body:0001",), "2", [[_text("Fyll i.")]]))
