@@ -2,9 +2,10 @@
 
 A teacher's exam saved as PDF from Word or Google Docs carries its words as positioned
 characters. The PDF is read locally with pdfplumber into the chunk sequence the Word
-chunker produces (paragraphs, headings, tables), so the existing Word conversion path,
-its AI grouping, labeling, conversion and review, runs on it unchanged; reading the PDF
-adds no AI call. Pictures and drawn figures are not read (TASK-SKRIPT-39-10-02).
+chunker produces (paragraphs, headings, tables, pictures), so the existing Word
+conversion path, its AI grouping, labeling, conversion and review, runs on it unchanged;
+reading the PDF adds no AI call. Placed pictures and drawn figures are cut out of the
+rendered page as pictures at their place in the reading order (TASK-SKRIPT-39-10-02).
 
 Relationships:
     - ``PdfPlumberExamChunker`` implements ``DocxExamChunkerProtocol`` and
@@ -12,6 +13,7 @@ Relationships:
       same blocks, so the labeler's chunks carry the chunker's anchors.
     - ``exam_workspace_import_source`` sends PDF bytes here and DOCX bytes to the Word
       chunker and labeler.
+    - ``exam_workspace_pdf_pictures`` renders the pages that hold pictures.
     - pdfplumber is imported on first use, so the Word path never loads it.
 """
 
@@ -29,6 +31,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_layout import (  # noqa: E501
     read_pages,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_pictures import (  # noqa: E501
+    with_pictures,
+)
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     LabelerSource,
@@ -40,7 +45,8 @@ def read_pdf_blocks(content: bytes) -> tuple[PdfBlock, ...]:
     """Every block of one text PDF in reading order, anchored like the Word chunker.
 
     Raises the Word chunker's two validation errors in PDF wording: a file that cannot be
-    read as a PDF, and a PDF with no text.
+    read as a PDF, and a PDF with no text. Pictures alone are no readable content: a PDF
+    without text is the no-text case even when it holds pictures.
     """
     import pdfplumber
     from pdfminer.pdfparser import PDFSyntaxError
@@ -62,8 +68,8 @@ def read_pdf_blocks(content: bytes) -> tuple[PdfBlock, ...]:
             code=ErrorCode.VALIDATION_ERROR,
             message="Filen kunde inte läsas som en PDF-fil (.pdf).",
         ) from error
-    blocks = pdf_blocks(items)
-    if not blocks:
+    blocks = pdf_blocks(with_pictures(content, items))
+    if not any(block.chunk.text.strip() for block in blocks):
         raise DomainError(
             code=ErrorCode.VALIDATION_ERROR,
             message="PDF-filen saknar läsbart innehåll.",
@@ -81,12 +87,20 @@ class PdfPlumberExamChunker(DocxExamChunkerProtocol):
 class PdfPlumberLabelerMarkdown(LabelerSourceProtocol):
     """The labeler's faithful source of a text PDF (D14): every block as markdown.
 
-    A PDF block is text the reader rebuilt, so markdown always carries it; no block needs
-    a rendered image and none is unavailable.
+    A text block is text the reader rebuilt, so markdown carries it. A picture block has
+    no markdown and its cut picture as its image, as the Word labeler images a drawn
+    block; a picture that could not be cut is unavailable under its name.
     """
 
     def source(self, *, content: bytes) -> LabelerSource:
-        chunks = tuple(
-            replace(block.chunk, marked_text=block.markdown) for block in read_pdf_blocks(content)
-        )
-        return LabelerSource(chunks=chunks, images={}, unavailable={})
+        chunks: list[DocxChunk] = []
+        images: dict[str, bytes] = {}
+        unavailable: dict[str, str] = {}
+        for block in read_pdf_blocks(content):
+            chunk = block.chunk
+            chunks.append(replace(chunk, marked_text=block.markdown))
+            for image in chunk.images:
+                images[chunk.anchor] = image.payload
+            for missing in chunk.missing_images:
+                unavailable[chunk.anchor] = missing.reference
+        return LabelerSource(chunks=tuple(chunks), images=images, unavailable=unavailable)

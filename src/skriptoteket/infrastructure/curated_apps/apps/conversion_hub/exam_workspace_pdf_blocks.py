@@ -15,6 +15,8 @@ runs on them unchanged:
 - Tables: a ruled table, or two or more rows whose cells start at the same places (a
   table Word drew without borders), become one table chunk, cells joined with `` | `` and
   rows with a newline like the Word chunker; a cell's paragraphs join with a newline.
+- Pictures: a cut picture or figure is a chunk of its own, ``kind="drawing"`` with empty
+  text and the picture, as the Word chunker gives a paragraph holding only a picture.
 
 Bold and italic come from the font name, the only marks a PDF keeps reliably. Italic is
 wrapped in ``<i>...</i>`` in ``marked_text`` exactly as the Word chunker does, because it
@@ -32,6 +34,7 @@ from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
+    DocxImage,
     DocxSourceParagraph,
     DocxSourceRun,
 )
@@ -41,12 +44,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import 
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_layout import (  # noqa: E501
     WORD_SPACE_RATIO,
-    PdfItem,
     PdfLine,
     PdfTable,
     PdfWord,
     joined_words,
     raw_lines,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_pictures import (  # noqa: E501
+    PdfBlockItem,
+    PdfPicture,
 )
 
 _BULLET_CHARACTERS = (
@@ -100,11 +106,16 @@ class _Spacing:
     spaced: bool
 
 
-def _spacing(items: Sequence[PdfItem]) -> _Spacing:
-    """The low end of line steps is the wrap pitch; larger steps show paragraph spacing."""
+def _spacing(items: Sequence[PdfBlockItem]) -> _Spacing:
+    """The low end of line steps is the wrap pitch; larger steps show paragraph spacing.
+
+    Only lines next to each other in the reading order count: the step across a table
+    or a picture between them is that item's height, not paragraph spacing.
+    """
     ratios: list[float] = []
-    lines = [item for item in items if isinstance(item, PdfLine)]
-    for previous, line in zip(lines, lines[1:], strict=False):
+    for previous, line in zip(items, items[1:], strict=False):
+        if not isinstance(previous, PdfLine) or not isinstance(line, PdfLine):
+            continue
         if (line.page, line.column) == (previous.page, previous.column) and abs(
             line.size - previous.size
         ) <= _SIZE_CHANGE_POINTS:
@@ -394,7 +405,7 @@ def _render(paragraph: _Paragraph, *, left: float) -> _Rendered:
     return _Rendered(plain, marked, markdown, tuple(runs))
 
 
-def _body_points(items: Sequence[PdfItem]) -> float:
+def _body_points(items: Sequence[PdfBlockItem]) -> float:
     sizes: Counter[float] = Counter()
     for item in items:
         if isinstance(item, PdfLine):
@@ -457,9 +468,9 @@ def _table_block(
     return "".join(plain), "".join(marked), "\n".join(markdown_rows), paragraphs, runs
 
 
-def _with_borderless_tables(items: Sequence[PdfItem], spacing: _Spacing) -> list[PdfItem]:
-    """Each run of lines between ruled tables, with its borderless tables found."""
-    result: list[PdfItem] = []
+def _with_borderless_tables(items: Sequence[PdfBlockItem], spacing: _Spacing) -> list[PdfBlockItem]:
+    """Each run of lines between ruled tables and pictures, with its borderless tables found."""
+    result: list[PdfBlockItem] = []
     run: list[PdfLine] = []
     for item in [*items, None]:
         if isinstance(item, PdfLine):
@@ -472,13 +483,13 @@ def _with_borderless_tables(items: Sequence[PdfItem], spacing: _Spacing) -> list
     return result
 
 
-def pdf_blocks(items: Sequence[PdfItem]) -> tuple[PdfBlock, ...]:
+def pdf_blocks(items: Sequence[PdfBlockItem]) -> tuple[PdfBlock, ...]:
     """Every block in reading order, anchored ``body:0001`` onward like the Word chunker."""
     spacing = _spacing(items)
     body_points = _body_points(items)
     left = min((item.x0 for item in items if isinstance(item, PdfLine)), default=0.0)
-    # Consecutive lines group into paragraphs; a table always stands alone.
-    sequence: list[_Paragraph | PdfTable] = []
+    # Consecutive lines group into paragraphs; a table or a picture always stands alone.
+    sequence: list[_Paragraph | PdfTable | PdfPicture] = []
     pending: list[PdfLine] = []
     for item in [*_with_borderless_tables(items, spacing), None]:
         if isinstance(item, PdfLine):
@@ -495,6 +506,18 @@ def pdf_blocks(items: Sequence[PdfItem]) -> tuple[PdfBlock, ...]:
     paragraph_index = -1
     for entry in sequence:
         anchor = f"body:{len(blocks) + 1:04d}"
+        if isinstance(entry, PdfPicture):
+            picture = entry.picture
+            chunk = DocxChunk(
+                anchor=anchor,
+                kind="drawing",
+                text="",
+                marked_text="",
+                images=(picture,) if isinstance(picture, DocxImage) else (),
+                missing_images=() if isinstance(picture, DocxImage) else (picture,),
+            )
+            blocks.append(PdfBlock(chunk=chunk, markdown=""))
+            continue
         if isinstance(entry, PdfTable):
             text, marked, markdown, paragraphs, runs = _table_block(entry, spacing)
             if not text.replace("|", "").strip():

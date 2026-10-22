@@ -142,3 +142,24 @@ def test_real_pdf_yields_one_usable_image() -> None:
     # Pixels stay readable after the document closed and the lock was released.
     image.load()
     assert isinstance(image.convert("L").getpixel((10, 10)), int)
+
+
+def test_selected_pages_render_alone_in_the_order_asked() -> None:
+    from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
+
+    pdf = render_html_to_pdf_bytes(
+        html=(
+            "<!doctype html><html><head><style>@page { size: 200pt 100pt; margin: 0 }"
+            " section { page-break-after: always; height: 100pt }</style></head><body>"
+            '<section style="background: #f00"></section>'
+            '<section style="background: #0f0"></section>'
+            '<section style="background: #00f"></section></body></html>'
+        )
+    )
+
+    images = pdfium_access.rasterize_pdf_pages(pdf, scale=1.0, pages=[2, 0])
+
+    assert [image.convert("RGB").getpixel((100, 50)) for image in images] == [
+        (0, 0, 255),
+        (255, 0, 0),
+    ]

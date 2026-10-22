@@ -3,14 +3,20 @@
 Each page's words, with their font size and bold or italic font, group into visual lines.
 A page whose words leave a clear gutter near the middle reads the left column, then the
 right, between any full-width lines. Ruled tables found by pdfplumber keep their cells; a
-single ruled box is a bordered paragraph, not a table, and reads as lines. A line at the
-top or bottom of the page that recurs at the same place on most pages (a header or
-footer) and a page number there (``3``, ``Sida 3 av 5``) are dropped. Vector graphics,
-such as drawn answer lines, carry no text and never become a line.
+single ruled box is a bordered paragraph, not a table, and reads as lines, and a ruled
+grid without text is a drawing. Placed pictures and figures drawn with lines become
+picture regions at their place in the reading order; a figure's labels belong to its
+region and are not read as lines. A line at the top or bottom of the page that recurs
+at the same place on most pages (a header or footer) and a page number there (``3``,
+``Sida 3 av 5``) are dropped, as is a picture region recurring there (a header logo).
+Drawn answer lines, rules and frames carry no text and become neither a line nor a
+picture.
 
 Relationships:
-    ``exam_workspace_pdf_blocks`` turns the laid-out lines and tables into Word-shaped
-    chunks; ``exam_workspace_pdf_chunker`` opens the PDF and calls both.
+    ``exam_workspace_pdf_graphics`` decides each page's picture regions from the
+    geometry this module reads; ``exam_workspace_pdf_pictures`` cuts them out of the
+    rendered pages; ``exam_workspace_pdf_blocks`` turns the laid-out items into
+    Word-shaped chunks; ``exam_workspace_pdf_chunker`` opens the PDF and calls them.
 """
 
 from __future__ import annotations
@@ -20,7 +26,14 @@ import statistics
 from collections import Counter
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
+
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_graphics import (  # noqa: E501
+    Box,
+    PageGraphics,
+    PdfStroke,
+    page_cuts,
+)
 
 if TYPE_CHECKING:
     from pdfplumber.page import Page
@@ -69,6 +82,9 @@ _COLUMN_MIN_SHARE = 0.25
 _COLUMN_MIN_LINES = 3
 # Word space: a gap between two words on one line wider than this share of the font size.
 WORD_SPACE_RATIO = 0.15
+# A colour component this close to white draws nothing visible on white paper.
+_WHITE_LEVEL = 0.95
+_FALLBACK_BODY_POINTS = 11.0
 
 # A line's column: 0 spans the page (or the page has one column), 1 is left, 2 is right.
 FULL_WIDTH = 0
@@ -134,7 +150,25 @@ class PdfTable:
     """Each row's cells; each cell its lines in reading order."""
 
 
-PdfItem = PdfLine | PdfTable
+@dataclass(frozen=True)
+class PdfPictureRegion:
+    """One placed picture or drawn figure to cut out of its page, with its labels.
+
+    The box is in the page's word coordinates; ``origin`` is the page box's top-left
+    corner in them, so the rendered page's pixel grid starts there.
+    """
+
+    page: int
+    column: int
+    kind: Literal["picture", "figure"]
+    x0: float
+    top: float
+    x1: float
+    bottom: float
+    origin: tuple[float, float]
+
+
+PdfItem = PdfLine | PdfTable | PdfPictureRegion
 
 
 def joined_words(words: Sequence[PdfWord]) -> str:
@@ -159,7 +193,11 @@ def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
         min((word.x0 for word in every), default=0.0),
         max((word.x1 for word in every), default=0.0),
     )
-    laid_out = [_page_items(page, index, words[index], margins) for index, page in enumerate(pages)]
+    body_size = _body_size(every)
+    laid_out = [
+        _page_items(page, index, words[index], margins, body_size)
+        for index, page in enumerate(pages)
+    ]
     kept = _without_page_furniture(
         [items for _, items in laid_out], [height for height, _ in laid_out]
     )
@@ -167,6 +205,74 @@ def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
 
 
 # --- Page reading -------------------------------------------------------------------------
+
+
+def _body_size(words: Sequence[PdfWord]) -> float:
+    """The document's body font size: the most common word size, counted by characters."""
+    sizes: Counter[float] = Counter()
+    for word in words:
+        sizes[round(word.size, 1)] += len(word.text)
+    return sizes.most_common(1)[0][0] if sizes else _FALLBACK_BODY_POINTS
+
+
+def _visible(color: Any) -> bool:
+    """A paint colour that shows on white paper: anything but white, in gray, RGB or CMYK.
+
+    A missing colour is PDF's default black; a pattern or named colour counts as visible.
+    """
+    if color is None:
+        return True
+    if isinstance(color, (int, float)):
+        color = (color,)
+    if not isinstance(color, (tuple, list)) or not all(
+        isinstance(part, (int, float)) for part in color
+    ):
+        return True
+    if len(color) in (1, 3):
+        return not all(part >= _WHITE_LEVEL for part in color)
+    if len(color) == 4:
+        return not all(part <= 1 - _WHITE_LEVEL for part in color)
+    return True
+
+
+def _page_graphics(
+    page: Page,
+    words: Sequence[PdfWord],
+    tables: Sequence[tuple[float, float, float, float]],
+    text_left: float,
+) -> PageGraphics:
+    """One page's pictures, vector paths, words, visual lines and text tables as boxes."""
+
+    def box(raw: Any) -> Box:
+        return (float(raw["x0"]), float(raw["top"]), float(raw["x1"]), float(raw["bottom"]))
+
+    strokes: list[PdfStroke] = []
+    kinds: tuple[tuple[Literal["line", "rect", "curve"], Any], ...] = (
+        ("line", page.lines),
+        ("rect", page.rects),
+        ("curve", page.curves),
+    )
+    for kind, objects in kinds:
+        for raw in objects:
+            strokes.append(
+                PdfStroke(
+                    box=box(raw),
+                    kind=kind,
+                    stroked=bool(raw.get("stroke")) and _visible(raw.get("stroking_color")),
+                    filled=bool(raw.get("fill")) and _visible(raw.get("non_stroking_color")),
+                )
+            )
+    index = {id(word): position for position, word in enumerate(words)}
+    return PageGraphics(
+        width=float(page.width),
+        height=float(page.height),
+        images=tuple(box(raw) for raw in page.images),
+        strokes=tuple(strokes),
+        words=tuple((word.x0, word.top, word.x1, word.bottom) for word in words),
+        lines=tuple(tuple(index[id(word)] for word in line) for line in raw_lines(words)),
+        tables=tuple(tables),
+        text_left=text_left,
+    )
 
 
 def _font_marks(fontname: str) -> tuple[bool, bool]:
@@ -280,16 +386,31 @@ def _crosses(x0: float, x1: float, gutter: tuple[float, float]) -> bool:
 
 
 def _page_items(
-    page: Page, page_index: int, words: Sequence[PdfWord], margins: tuple[float, float]
+    page: Page,
+    page_index: int,
+    words: Sequence[PdfWord],
+    margins: tuple[float, float],
+    body_size: float,
 ) -> tuple[float, list[PdfItem]]:
-    """One page's lines and tables in reading order, with the page height.
+    """One page's lines, tables and picture regions in reading order, with the page height.
 
     A line's edges are its column's: the document's text margins for a full-width line
-    and the outer side of a column, the gutter's sides for the inner side.
+    and the outer side of a column, the gutter's sides for the inner side. A ruled grid
+    with no word in it is no table: its rules reach the picture regions as a drawing.
     """
-    tables = [table for table in page.find_tables() if _cell_count(table) > 1]
+    tables = [
+        table
+        for table in page.find_tables()
+        if _cell_count(table) > 1 and any(_inside(word, _bbox(table.bbox)) for word in words)
+    ]
     table_boxes = [_bbox(table.bbox) for table in tables]
-    body = [word for word in words if not any(_inside(word, box) for box in table_boxes)]
+    cuts = page_cuts(_page_graphics(page, words, table_boxes, margins[0]), body_size=body_size)
+    labels = {position for cut in cuts for position in cut.labels}
+    body = [
+        word
+        for position, word in enumerate(words)
+        if position not in labels and not any(_inside(word, box) for box in table_boxes)
+    ]
     gutter = _gutter(body, float(page.height))
 
     def column_of(x0: float, x1: float) -> int:
@@ -316,6 +437,11 @@ def _page_items(
                 items.append(PdfLine(page_index, column, part, *edges[column]))
     for table, box in zip(tables, table_boxes, strict=True):
         items.append(_table_item(table, box, words, page_index, column_of(box[0], box[2])))
+    origin = (float(page.bbox[0]), float(page.bbox[1]))
+    for cut in cuts:
+        x0, top, x1, bottom = cut.box
+        column = column_of(x0, x1)
+        items.append(PdfPictureRegion(page_index, column, cut.kind, x0, top, x1, bottom, origin))
     return float(page.height), _reading_order(items)
 
 
@@ -357,7 +483,7 @@ def _item_top(item: PdfItem) -> float:
 
 
 def _item_bottom(item: PdfItem) -> float:
-    if isinstance(item, PdfLine):
+    if isinstance(item, PdfLine | PdfPictureRegion):
         return item.bottom
     cells = [line.bottom for row in item.rows for cell in row for line in cell]
     return max(cells, default=item.top)
@@ -566,4 +692,36 @@ def _without_page_furniture(
         for line in lines
         if _line_shape(line) in repeated or _is_page_number(line, page, len(pages), body)
     }
+    dropped |= _repeated_regions(pages, heights, needed)
     return [[item for item in items if id(item) not in dropped] for items in pages]
+
+
+def _repeated_regions(
+    pages: Sequence[Sequence[PdfItem]], heights: Sequence[float], needed: int
+) -> set[int]:
+    """Ids of picture regions in the page-furniture band that recur at the same place.
+
+    A header or footer logo prints on every page; Word keeps it in the header part, which
+    the Word import never reads, so the PDF import drops it too.
+    """
+    banded = [
+        (page, item)
+        for page, (items, height) in enumerate(zip(pages, heights, strict=True))
+        for item in items
+        if isinstance(item, PdfPictureRegion)
+        and (item.bottom <= height * _FURNITURE_BAND or item.top >= height * (1 - _FURNITURE_BAND))
+    ]
+
+    def same_place(a: PdfPictureRegion, b: PdfPictureRegion) -> bool:
+        return all(
+            abs(left - right) <= _FURNITURE_PLACE_POINTS
+            for left, right in zip(
+                (a.x0, a.top, a.x1, a.bottom), (b.x0, b.top, b.x1, b.bottom), strict=True
+            )
+        )
+
+    return {
+        id(item)
+        for _, item in banded
+        if len({page for page, other in banded if same_place(item, other)}) >= needed
+    }

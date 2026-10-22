@@ -11,8 +11,9 @@ Purpose:
     caller rasterizes through.
 
 Relationships:
-    ``WeasyPrintExamPrintRenderer._page_pngs`` (print preview) and
-    ``DocxBlockImageRenderer.render`` (labeler block images) both call
+    ``WeasyPrintExamPrintRenderer._page_pngs`` (print preview),
+    ``DocxBlockImageRenderer.render`` (labeler block images) and the PDF import's
+    ``exam_workspace_pdf_pictures.with_pictures`` (cut pictures) all call
     ``rasterize_pdf_pages``. It is the only Skriptoteket module that imports
     pypdfium2; nothing pypdfium2-typed escapes the lock, and callers encode or
     crop the returned PIL images outside it.
@@ -21,6 +22,7 @@ Relationships:
 from __future__ import annotations
 
 import threading
+from collections.abc import Sequence
 
 import pypdfium2
 from PIL import Image
@@ -28,8 +30,10 @@ from PIL import Image
 _PDFIUM_LOCK = threading.Lock()
 
 
-def rasterize_pdf_pages(pdf: bytes, *, scale: float) -> tuple[Image.Image, ...]:
-    """Render every page of ``pdf`` to an independent PIL image at ``scale``.
+def rasterize_pdf_pages(
+    pdf: bytes, *, scale: float, pages: Sequence[int] | None = None
+) -> tuple[Image.Image, ...]:
+    """Render the pages of ``pdf`` to independent PIL images at ``scale``.
 
     The whole open/render/close sequence holds the process-wide PDFium lock.
     Each bitmap is copied into a fresh PIL image so the result owns its pixels and
@@ -39,16 +43,16 @@ def rasterize_pdf_pages(pdf: bytes, *, scale: float) -> tuple[Image.Image, ...]:
     Args:
         pdf: Complete PDF bytes to rasterize.
         scale: Pixels per PDF point; 1.0 renders at 72 dpi.
+        pages: Zero-based indices of the pages to render, in the order wanted; None
+            renders every page.
 
     Returns:
-        One independent PIL image per page, in page order.
+        One independent PIL image per rendered page, in the order of ``pages``.
     """
     with _PDFIUM_LOCK:
         document = pypdfium2.PdfDocument(pdf)
         try:
-            return tuple(
-                document[index].render(scale=scale).to_pil().copy()
-                for index in range(len(document))
-            )
+            indices = range(len(document)) if pages is None else pages
+            return tuple(document[index].render(scale=scale).to_pil().copy() for index in indices)
         finally:
             document.close()
