@@ -91,7 +91,7 @@ def _val(element: BaseOxmlElement | None, attribute: str = "w:val") -> str | Non
     return None if element is None else element.get(qn(attribute))
 
 
-def _style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
+def style_chain(style: CharacterStyle | None) -> Iterator[CharacterStyle]:
     """Yield a style and its bases; Word ignores a basedOn cycle, so stop at a repeat."""
     seen: set[str | None] = set()
     while style is not None and style.style_id not in seen:
@@ -194,7 +194,7 @@ class DocxBlockImageRenderer:
         """Resolve numPr like Word: paragraph pPr first, then the paragraph style chain."""
         properties = _child(_child(p, "w:pPr"), "w:numPr")
         if properties is None:
-            for style in _style_chain(Paragraph(p, self._document).style):
+            for style in style_chain(Paragraph(p, self._document).style):
                 properties = _child(_child(style.element, "w:pPr"), "w:numPr")
                 if properties is not None:
                     break
@@ -302,7 +302,7 @@ class DocxBlockImageRenderer:
         direct = getattr(run.font, name)
         if direct is not None:
             return bool(direct)
-        for style in (*_style_chain(run.style), *_style_chain(paragraph.style)):
+        for style in (*style_chain(run.style), *style_chain(paragraph.style)):
             flag = getattr(style.font, name)
             if flag is not None:
                 return bool(flag)

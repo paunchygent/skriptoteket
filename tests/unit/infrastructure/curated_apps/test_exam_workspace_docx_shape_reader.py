@@ -51,7 +51,8 @@ _NS = (
     'xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" '
     'xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" '
     'xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" '
-    'xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"'
+    'xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" '
+    'xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"'
 )
 _URI = {
     "wps": "http://schemas.microsoft.com/office/word/2010/wordprocessingShape",
@@ -1078,3 +1079,67 @@ def test_a_shrinking_text_fit_is_unsupported() -> None:
     body = '<wps:bodyPr><a:normAutofit fontScale="92500" lnSpcReduction="10000"/></wps:bodyPr>'
 
     _rejected_shape(_wsp(**_label(_para("t"), body=body)), "normAutofit")
+
+
+# --- extension lists ---------------------------------------------------------------------------
+
+# Word writes the VML fallback's fill and line into a:extLst; nothing draws them, so the reader
+# ignores the list. The hidden colours differ from the visible ones so a leak would show.
+_EXT_LST = (
+    '<a:extLst><a:ext uri="{909E8E84-426E-40DD-AFC4-6F175D3DCCD1}"><a14:hiddenFill>'
+    '<a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a14:hiddenFill></a:ext>'
+    '<a:ext uri="{91240B29-F687-4F45-9708-019B960494DF}"><a14:hiddenLine w="38100">'
+    '<a:solidFill><a:srgbClr val="FF0000"/></a:solidFill></a14:hiddenLine></a:ext></a:extLst>'
+)
+
+
+def test_an_extension_list_in_the_shape_properties_is_ignored() -> None:
+    assert _read_one(_wsp(sp_extra=_EXT_LST)) == _read_one(_wsp())
+
+
+def test_an_extension_list_in_the_outline_is_ignored() -> None:
+    line = _BLACK_LINE.replace("</a:ln>", f"{_EXT_LST}</a:ln>")
+
+    assert _read_one(_wsp(line=line)) == _read_one(_wsp())
+
+
+def test_an_extension_list_in_a_theme_line_style_is_ignored() -> None:
+    plain = _theme()
+    extended = plain.replace(b"</a:ln>", _EXT_LST.encode() + b"</a:ln>", 1).replace(
+        b"<a:theme ", b'<a:theme xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" '
+    )
+    assert extended != plain
+    shape = _wsp(line="", style=_style(ln=1, fill=0))
+
+    assert _read_one(shape, document=_document(extended)) == _read_one(
+        shape, document=_document(plain)
+    )
+
+
+def test_an_extension_list_in_the_group_properties_is_ignored() -> None:
+    plain = _group(_wsp())
+    extended = plain.replace("</a:xfrm></wpg:grpSpPr>", f"</a:xfrm>{_EXT_LST}</wpg:grpSpPr>")
+    assert extended != plain
+
+    assert read_shape_figure(_drawing(extended, uri="wpg"), _document()) == read_shape_figure(
+        _drawing(plain, uri="wpg"), _document()
+    )
+
+
+def test_an_extension_list_in_the_body_properties_is_ignored() -> None:
+    plain = _wsp(**_label(_para("t"), body="<wps:bodyPr/>"))
+    extended = _wsp(**_label(_para("t"), body=f"<wps:bodyPr>{_EXT_LST}</wps:bodyPr>"))
+
+    assert _read_one(extended) == _read_one(plain)
+
+
+def test_an_extension_list_in_the_canvas_layers_is_ignored() -> None:
+    plain = _canvas(_wsp())
+    extended = plain.replace(
+        "<a:ln><a:noFill/></a:ln>", f"<a:ln><a:noFill/>{_EXT_LST}</a:ln>{_EXT_LST}"
+    ).replace("<wpc:bg><a:noFill/></wpc:bg>", f"<wpc:bg><a:noFill/>{_EXT_LST}</wpc:bg>")
+    assert extended.count("a:extLst>") == 6
+
+    assert read_shape_figure(_drawing(extended, uri="wpc"), _document()) == read_shape_figure(
+        _drawing(plain, uri="wpc"), _document()
+    )
