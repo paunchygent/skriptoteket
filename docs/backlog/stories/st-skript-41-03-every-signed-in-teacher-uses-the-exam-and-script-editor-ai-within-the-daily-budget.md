@@ -1,12 +1,11 @@
 ---
 type: story
 id: ST-SKRIPT-41-03
-title: Every signed-in teacher uses the exam and script-editor AI within the daily
-  budget
+title: Every signed-in teacher uses the exam and script-editor AI within the daily budget
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-22'
 status: ready
 closeout_review:
@@ -14,8 +13,7 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-41
 acceptance_criteria:
-- A signed-in teacher who is not an admin uses the AI features on staging within the
-  daily budget
+  - A signed-in teacher who is not an admin uses the AI features on staging within the daily budget
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -38,9 +36,11 @@ Non-goals: a remaining-today indicator; a school-domain allowlist for sign-up or
 
 ## Tasks
 
-| Task                 | Delivers                                                                                                                                                                                                  | Depends on        |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| Task                 | Delivers                                                                                                                                                                                                           | Depends on           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- |
 | TASK-SKRIPT-41-03-01 | Walking skeleton: Skriptoteket's door policy at 20% small and 10% full share with no USD ceiling, the admin-only AI check and its note deleted, and a non-admin teacher using exam and script-editor AI on staging | ST-SKRIPT-41-01 done |
+| TASK-SKRIPT-41-03-02 | Ghost text in the script editor appears within two seconds of the last keystroke                                                                                                                                   | TASK-SKRIPT-41-03-01 |
+| TASK-SKRIPT-41-03-03 | The script editor chat shows its answers as formatted text and code blocks                                                                                                                                         | TASK-SKRIPT-41-03-01 |
 
 ## Verification
 
@@ -48,11 +48,11 @@ Focused tests for the door policy and for the AI routes accepting a non-admin us
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | S1  | Every signed-in account that reaches Skriptoteket uses the AI of the screens its role opens: the exam AI for every user, the script-editor AI for everyone who opens the script editor. Signing in with a verified HuleEdu account is the only gate; there is no school-domain check (user decisions 2026-10-22). |
-| S2  | The REP-0044 admin-only AI check and its admin-only note are deleted; no AI-specific role rule remains. |
-| S3  | The door gives each Skriptoteket teacher 20% of the small-model pool (about 2M GPT-6 Luna tokens) and 10% of the full-model pool per UTC day. Exam AI and script-editor inline completion use the small share; script-editor chat, chat ops and edit ops use the full share (ST-SKRIPT-41-01 B3). |
-| S4  | Skriptoteket's USD ceiling is removed from its door policy; the pools are the shared daily limit. The USD 1 overage cap per running job of ST-SKRIPT-41-01 B4 stays. |
-| S5  | A limit shows the ST-SKRIPT-41-01 B4 notes only; teachers see no remaining-today indicator. |
-| S6  | The work starts when ST-SKRIPT-41-01 is done, is proven by a staging walk as a non-admin teacher, and reaches production with the next production deploy. |
+| S2  | The REP-0044 admin-only AI check and its admin-only note are deleted; no AI-specific role rule remains.                                                                                                                                                                                                           |
+| S3  | The door gives each Skriptoteket teacher 20% of the small-model pool (about 2M GPT-6 Luna tokens) and 10% of the full-model pool per UTC day. Exam AI and script-editor inline completion use the small share; script-editor chat, chat ops and edit ops use the full share (ST-SKRIPT-41-01 B3).                 |
+| S4  | Skriptoteket's USD ceiling is removed from its door policy; the pools are the shared daily limit. The USD 1 overage cap per running job of ST-SKRIPT-41-01 B4 stays.                                                                                                                                              |
+| S5  | A limit shows the ST-SKRIPT-41-01 B4 notes only; teachers see no remaining-today indicator.                                                                                                                                                                                                                       |
+| S6  | The work starts when ST-SKRIPT-41-01 is done, is proven by a staging walk as a non-admin teacher, and reaches production with the next production deploy.                                                                                                                                                         |

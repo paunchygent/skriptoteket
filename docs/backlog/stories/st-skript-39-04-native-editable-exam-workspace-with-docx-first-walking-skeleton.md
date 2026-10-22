@@ -4,8 +4,8 @@ id: ST-SKRIPT-39-04
 title: Native editable exam workspace with DOCX-first walking skeleton
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-05'
 status: active
 closeout_review:
@@ -13,14 +13,11 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-- A teacher imports a DOCX source, reviews and edits questions, creates items from
-  scratch, saves and reopens a native exam document kept as one file per exam in Mina
-  filer that Spara overwrites and Spara som copies, and exports QTI, PDF, and DOCX on
-  demand or saves them to Mina filer as one file per format per exam
+  - A teacher imports a DOCX source, reviews and edits questions, creates items from scratch, saves and reopens a native exam document kept as one file per exam in Mina filer that Spara overwrites and Spara som copies, and exports QTI, PDF, and DOCX on demand or saves them to Mina filer as one file per format per exam
 links:
   decisions:
-  - ADR-SKRIPT-0090
-  - ADR-SKRIPT-0091
+    - ADR-SKRIPT-0090
+    - ADR-SKRIPT-0091
 backlog_document_profile: contract-derived
 ---
 
@@ -75,60 +72,64 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 ## Tasks
 
-1. `TASK-SKRIPT-39-04-01`: DOCX walking skeleton (import, native edit and
-   create, save and reopen, export) with a genuine unchanged teacher DOCX.
-   Done 2026-10-10.
-2. `TASK-SKRIPT-39-04-02`: two-mode exam workspace layout (Filer and
-   Redigera). Done 2026-10-10.
-3. `TASK-SKRIPT-39-04-03`: AI item interpretation at DOCX import (canceled;
-   superseded by ST-SKRIPT-39-05, user decision 2026-10-10).
-4. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves.
-   Done; its workspace carry-forward was replaced by 39-04-07.
-5. `TASK-SKRIPT-39-04-05`: restyle the exam workspace to the shared design
-   direction (superseded by ST-SKRIPT-40-04, user decision G1 2026-10-17).
-6. `TASK-SKRIPT-39-04-06`: backend lane: each imported question's original
-   wording and a few readable steps (chosen type, answer-key source,
-   retries) in the saved exam and the workspace API, for DOCX and DigiExam
-   imports alike; the import box is ST-SKRIPT-40-04's. Done.
-7. `TASK-SKRIPT-39-04-07`: keep AI answer-key suggestions on each question
-   and request them per question. Done 2026-10-13: the suggestion is stored
-   on the question, becomes the key only under T5/P12/P13, survives save
-   and reopen, and the workspace no longer uses the proposed-overlay table.
-8. `TASK-SKRIPT-39-04-08`: backend lane: the save model. One file per exam
-   that `Spara` overwrites, `Spara som` copies, at most 10 undo steps stored
-   on the server, and one saved export per format per exam in Mina filer;
-   the controls and shortcuts are ST-SKRIPT-40-04's. Done.
-9. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
-   reload and block importing over unsaved edits. Done 2026-10-13: the page
-   finds the latest job for the current saved version on open, a running job
-   is reused, import is impossible while the exam has unsaved changes, worker
-   logs name the job kind, and each gap carries its printed label.
+01. `TASK-SKRIPT-39-04-01`: DOCX walking skeleton (import, native edit and
+    create, save and reopen, export) with a genuine unchanged teacher DOCX.
+    Done 2026-10-10.
+02. `TASK-SKRIPT-39-04-02`: two-mode exam workspace layout (Filer and
+    Redigera). Done 2026-10-10.
+03. `TASK-SKRIPT-39-04-03`: AI item interpretation at DOCX import (canceled;
+    superseded by ST-SKRIPT-39-05, user decision 2026-10-10).
+04. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves.
+    Done; its workspace carry-forward was replaced by 39-04-07.
+05. `TASK-SKRIPT-39-04-05`: restyle the exam workspace to the shared design
+    direction (superseded by ST-SKRIPT-40-04, user decision G1 2026-10-17).
+06. `TASK-SKRIPT-39-04-06`: backend lane: each imported question's original
+    wording and a few readable steps (chosen type, answer-key source,
+    retries) in the saved exam and the workspace API, for DOCX and DigiExam
+    imports alike; the import box is ST-SKRIPT-40-04's. Done.
+07. `TASK-SKRIPT-39-04-07`: keep AI answer-key suggestions on each question
+    and request them per question. Done 2026-10-13: the suggestion is stored
+    on the question, becomes the key only under T5/P12/P13, survives save
+    and reopen, and the workspace no longer uses the proposed-overlay table.
+08. `TASK-SKRIPT-39-04-08`: backend lane: the save model. One file per exam
+    that `Spara` overwrites, `Spara som` copies, at most 10 undo steps stored
+    on the server, and one saved export per format per exam in Mina filer;
+    the controls and shortcuts are ST-SKRIPT-40-04's. Done.
+09. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
+    reload and block importing over unsaved edits. Done 2026-10-13: the page
+    finds the latest job for the current saved version on open, a running job
+    is reused, import is impossible while the exam has unsaved changes, worker
+    logs name the job kind, and each gap carries its printed label.
 10. `TASK-SKRIPT-39-04-10`: a Mina filer file restored from the trash is
-   never deleted by the expiry cleanup that selected it.
+    never deleted by the expiry cleanup that selected it.
 11. `TASK-SKRIPT-39-04-11`: printed point totals reach their questions
-   through one owner per points line: part totals take one path, a points
-   line belongs to its question in every stage, and code reads the exam
-   total (root-cause repair of DOCX import variation, user 2026-10-17).
-   In progress: on main, staging import and closeout owed.
-   DOCX conversion repairs that followed, each its own task:
-   - `TASK-SKRIPT-39-04-12`: grammar exams place each lead-in, exam-wide text,
-     question and table (done 2026-10-22: rounds 1-2 on main, user closure; the mid-paragraph fragment case is an accepted residual).
-   - `TASK-SKRIPT-39-04-13` to `TASK-SKRIPT-39-04-19`: section instructions,
-     governing chunks, body paragraphs, gap paragraphs, inline answer keys
-     and left-out marks follow source alignment, never wording. Done.
-   - `TASK-SKRIPT-39-04-20`: a paragraph holding only a score field is the
-     points source and leaves no slash (in progress: on main `f7eeada5`,
-     staging check and closeout owed).
-   - `TASK-SKRIPT-39-04-21`: printed points wording at the end of a
-     question becomes its points. Done.
-   - `TASK-SKRIPT-39-04-22`: shapes drawn in a Word file (groups, single
-     shapes, canvases) land in their questions as pictures, and Word export
-     writes the original shapes back. Done.
-   - `TASK-SKRIPT-39-04-23`: a Word or PDF import shows each phase and a
-     live signal while it works, so no wait looks frozen. Ready.
+    through one owner per points line: part totals take one path, a points
+    line belongs to its question in every stage, and code reads the exam
+    total (root-cause repair of DOCX import variation, user 2026-10-17).
+    In progress: on main, staging import and closeout owed.
+    DOCX conversion repairs that followed, each its own task:
+
+- `TASK-SKRIPT-39-04-12`: grammar exams place each lead-in, exam-wide text,
+  question and table (done 2026-10-22: rounds 1-2 on main, user closure; the mid-paragraph fragment case is an accepted residual).
+- `TASK-SKRIPT-39-04-13` to `TASK-SKRIPT-39-04-19`: section instructions,
+  governing chunks, body paragraphs, gap paragraphs, inline answer keys
+  and left-out marks follow source alignment, never wording. Done.
+- `TASK-SKRIPT-39-04-20`: a paragraph holding only a score field is the
+  points source and leaves no slash (in progress: on main `f7eeada5`,
+  staging check and closeout owed).
+- `TASK-SKRIPT-39-04-21`: printed points wording at the end of a
+  question becomes its points. Done.
+- `TASK-SKRIPT-39-04-22`: shapes drawn in a Word file (groups, single
+  shapes, canvases) land in their questions as pictures, and Word export
+  writes the original shapes back. Done.
+- `TASK-SKRIPT-39-04-23`: a Word or PDF import shows each phase and a
+  live signal while it works, so no wait looks frozen. Ready.
+- `TASK-SKRIPT-39-04-24`: the import count rises in steps while the
+  questions convert, instead of jumping from 0 to all at the end. Proposed.
+
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
-   intake reusing the same native document and review path; deferred
-   scanned-PDF behavior once its handling is decided.
+    intake reusing the same native document and review path; deferred
+    scanned-PDF behavior once its handling is decided.
 
 ## Verification
 
@@ -146,10 +147,10 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --------------------- |
-| S1 | The DOCX walking skeleton proves the full import, edit/create, save/reopen, export vertical before any breadth work. |
-| S2 | DOCX implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done. |
-| S3 | Each native exam document is one file in Mina filer; `Spara` overwrites it and `Spara som` creates a separately edited copy. QTI, PDF, and DOCX are on-demand exports that can also be saved to Mina filer as one file per format per exam (amended by user 2026-10-17, G15, G18). |
-| S4 | AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is export-eligible without teacher approval, with visible provenance and undo. AI-invented answer keys, low-confidence items and unresolved items require teacher review before export eligibility (amended by user decision 2026-10-10). |
-| S5 | OCR/scanned-PDF handling is deferred out of this story; digital PDF follows as the next slice. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | The DOCX walking skeleton proves the full import, edit/create, save/reopen, export vertical before any breadth work.                                                                                                                                                                                                                         |
+| S2  | DOCX implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done.                                                                                                                                                                                                                         |
+| S3  | Each native exam document is one file in Mina filer; `Spara` overwrites it and `Spara som` creates a separately edited copy. QTI, PDF, and DOCX are on-demand exports that can also be saved to Mina filer as one file per format per exam (amended by user 2026-10-17, G15, G18).                                                           |
+| S4  | AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is export-eligible without teacher approval, with visible provenance and undo. AI-invented answer keys, low-confidence items and unresolved items require teacher review before export eligibility (amended by user decision 2026-10-10). |
+| S5  | OCR/scanned-PDF handling is deferred out of this story; digital PDF follows as the next slice.                                                                                                                                                                                                                                               |
