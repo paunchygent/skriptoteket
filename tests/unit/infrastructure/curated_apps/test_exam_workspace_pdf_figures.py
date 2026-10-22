@@ -195,3 +195,24 @@ def test_two_triangles_side_by_side_keep_their_own_labels() -> None:
     assert first != second
     _assert_generous_cut(first, expected_aspect=_TRIANGLE_ASPECT)
     _assert_generous_cut(second, expected_aspect=_TRIANGLE_ASPECT)
+
+
+def test_figures_side_by_side_are_read_left_to_right() -> None:
+    # A short rectangle left of a taller triangle: the triangle's top is higher, so
+    # ordering by top alone would read the right figure first.
+    chunks = pdf_chunks(
+        "<p>1. Jämför figurerna.</p>"
+        '<p><svg width="200" height="100"><rect x="20" y="40" width="160" height="50" '
+        'fill="none" stroke="black" stroke-width="2"/></svg>'
+        f"{triangle_figure(('A', 'B', 'C'))}</p>"
+        "<p>2. Fortsätt.</p>"
+    )
+
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "drawing", "paragraph"]
+    _assert_generous_cut(
+        assert_drawing_chunk(drawings[0], anchor="body:0002"), expected_aspect=160 / 50
+    )
+    _assert_generous_cut(
+        assert_drawing_chunk(drawings[1], anchor="body:0003"), expected_aspect=_TRIANGLE_ASPECT
+    )

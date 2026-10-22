@@ -131,7 +131,7 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
 - Second review `changes_requested` (S1-S5 medium, `evidence/reviews/review-39-10-02-second.md`);
   repaired with fail-first focused tests: outer labels such as an axis title and a
   dimension under a shape stay in the figure (S1, T10); figures side by side keep their own
-  labels (S2, T10); a CSS border-bottom is an answer line again through the one-operation
+  labels (S2, T10); pictures side by side are read left to right (found while proving S2); a CSS border-bottom is an answer line again through the one-operation
   band rule (S3, T9); the picture-reader tests are split by responsibility and the fill
   fixture is typed without `ignore` (S4, S5). No further independent review (T4). Proof in
   `evidence/proof/repair/second/`.

@@ -262,17 +262,52 @@ def _page_items(
     return float(page.height), _reading_order(items)
 
 
+def _pictures_left_to_right(items: list[PdfItem]) -> list[PdfItem]:
+    """Neighbouring pictures that overlap vertically form one row, read left to right.
+
+    Pictures placed side by side rarely share an exact top, so ordering by top alone
+    would read a taller right-hand figure first.
+    """
+    ordered: list[PdfItem] = []
+    row: list[PdfPictureRegion] = []
+    for item in [*items, None]:
+        if (
+            isinstance(item, PdfPictureRegion)
+            and row
+            and item.top < max(picture.bottom for picture in row)
+        ):
+            row.append(item)
+            continue
+        row.sort(key=lambda picture: picture.x0)
+        ordered.extend(row)
+        row = []
+        if isinstance(item, PdfPictureRegion):
+            row.append(item)
+        elif item is not None:
+            ordered.append(item)
+    return ordered
+
+
 def _reading_order(items: list[PdfItem]) -> list[PdfItem]:
-    """Full-width items top to bottom; between two of them, the left column then the right."""
-    spanning = sorted((item for item in items if item.column == 0), key=item_top)
+    """Full-width items top to bottom; between two of them, the left column then the right.
+
+    Pictures side by side in one row are read left to right.
+    """
+    spanning = _pictures_left_to_right(
+        sorted((item for item in items if item.column == 0), key=item_top)
+    )
     columns = [item for item in items if item.column != 0]
     ordered: list[PdfItem] = []
     previous = float("-inf")
     for boundary in [*spanning, None]:
-        limit = float("inf") if boundary is None else boundary.top
+        # A row read left to right can put a lower top first; the limit never moves
+        # back up, so each column item lands in exactly one segment.
+        limit = float("inf") if boundary is None else max(previous, boundary.top)
         segment = [item for item in columns if previous <= item.top < limit]
-        ordered.extend(sorted(segment, key=lambda item: (item.column, item.top)))
+        ordered.extend(
+            _pictures_left_to_right(sorted(segment, key=lambda item: (item.column, item.top)))
+        )
         if boundary is not None:
             ordered.append(boundary)
-            previous = boundary.top
+            previous = limit
     return ordered
