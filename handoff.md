@@ -13,8 +13,6 @@
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
   - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, ntfy
     reaches the phone, Healthchecks check "Hemma" up with receipt verified (`4d8ebe9d`).
-  - Word export opens in Compatibility Mode (Mac walk 39-04-22 observation); not
-    triaged.
   - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
@@ -125,6 +123,9 @@
 - 2026-10-22 `done`: 39-04-22 Word drawn shapes as pictures, shapes kept
   for Word export (`74eeceb2d`; review F1-F9 repaired on fail-first proof, retained
   `01a162df`; Mac walk `.artifacts/staging-walk-39-04-22-74eeceb2d/walk-record.md`).
+  Follow-up `cae867222`: Word export writes compatibilityMode 15, no Compatibility
+  Mode; Mac walk `.artifacts/staging-walk-39-04-22-cae867222/walk-record.md` also
+  moved a Q6 box and edited a label by hand in Word.
 
 - 2026-10-22 `done`: 39-10-02 PDF pictures and figures (`7adde567`; Mac walk
   `.artifacts/staging-walk-39-10-02-7adde567c/walk-record.md`; Word drawn
