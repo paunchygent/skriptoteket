@@ -11,7 +11,6 @@ Relationships:
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Literal
 from uuid import UUID, uuid4
 
 import pytest
@@ -42,8 +41,6 @@ def make_user(
 def make_user_profile(
     *,
     user_id: UUID,
-    allow_remote_fallback: bool | None = None,
-    inline_completion_provider: Literal["local", "external"] | None = None,
     classroom_planner_smart_enabled: bool | None = None,
     classroom_planner_use_history: bool | None = None,
     classroom_planner_grouping_seating_distance_enabled: bool | None = None,
@@ -55,8 +52,6 @@ def make_user_profile(
         first_name=None,
         last_name=None,
         display_name=None,
-        allow_remote_fallback=allow_remote_fallback,
-        inline_completion_provider=inline_completion_provider,
         classroom_planner_smart_enabled=classroom_planner_smart_enabled,
         classroom_planner_use_history=classroom_planner_use_history,
         classroom_planner_grouping_seating_distance_enabled=(

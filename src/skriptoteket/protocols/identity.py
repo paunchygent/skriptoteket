@@ -31,8 +31,6 @@ from skriptoteket.application.identity.commands import (
     GetProfileResult,
     RegisterUserCommand,
     RegisterUserResult,
-    UpdateAiSettingsCommand,
-    UpdateAiSettingsResult,
     UpdateClassroomPlannerSettingsCommand,
     UpdateClassroomPlannerSettingsResult,
     UpdateExamCoursesCommand,
@@ -86,8 +84,6 @@ ProfileUpdateField = Literal[
     "last_name",
     "display_name",
     "locale",
-    "allow_remote_fallback",
-    "inline_completion_provider",
     "classroom_planner_smart_enabled",
     "classroom_planner_use_history",
     "classroom_planner_grouping_seating_distance_enabled",
@@ -197,10 +193,6 @@ class GetProfileHandlerProtocol(Protocol):
 
 class UpdateProfileHandlerProtocol(Protocol):
     async def handle(self, command: UpdateProfileCommand) -> UpdateProfileResult: ...
-
-
-class UpdateAiSettingsHandlerProtocol(Protocol):
-    async def handle(self, command: UpdateAiSettingsCommand) -> UpdateAiSettingsResult: ...
 
 
 class UpdateClassroomPlannerSettingsHandlerProtocol(Protocol):

@@ -1,7 +1,7 @@
 """Repo-owned fixture bank for AI prompt evaluation (non-sensitive).
 
 Fixtures include synthetic editor contexts (prefix/suffix/selection/instruction) intended to
-exercise prompt composition, budgeting, and llama.cpp behavior through the real HTTP pipeline.
+exercise prompt composition and budgeting through the real HTTP pipeline.
 
 Important: This module may contain code-like strings, but they must be non-sensitive and must
 never be written to `.artifacts/` by the harness (artifacts are metadata-only).

@@ -4,15 +4,13 @@ id: RUN-SKRIPT-runbook-editor-ai-pipeline-completion-chat-edit-ops
 title: 'Runbook: Editor AI pipeline (completion/chat/edit-ops)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-editor-ai-pipeline
-summary: 'Use this runbook when you need to understand, debug, or extend the editor
-  AI features: - Inline completions ("ghost text") - Editor chat ("Kodassistenten")
-  - Edit-ops (patch-only diffs + preview/apply) This document i…'
+  - RUN-editor-ai-pipeline
+summary: 'Use this runbook when you need to understand, debug, or extend the editor AI features: - Inline completions ("ghost text") - Editor chat ("Kodassistenten") - Edit-ops (patch-only diffs + preview/apply) This document i…'
 system: skriptoteket
 ---
 
@@ -39,7 +37,7 @@ The source does not state separate preconditions.
 ### Inline completion (ghost text)
 
 - Frontend triggers `POST /api/v1/editor/completions`
-- Backend calls the configured LLM provider (Chat Completions or Responses)
+- Backend calls the HuleEdu LLM provider door on the Responses route (`gpt-6-luna`, reasoning `none`)
 - Backend returns a completion string plus normalization metadata
 
 Key implementation files:
@@ -76,18 +74,19 @@ Key implementation files:
 - Unified diff apply/matching: `src/skriptoteket/infrastructure/editor/unified_diff/apply_patch.py`
 - Historical Playwright diagnose script (not a proof lane): `scripts/diagnose_edit_ops.py`
 
-### Source: LLM routing: Responses vs Chat Completions (and local llama)
+### Source: LLM routing: the HuleEdu LLM provider door
 
-We use different upstream APIs depending on the configured base URL:
+Every editor AI call goes to the HuleEdu LLM provider door on the Responses route with the
+teacher's user id. There is no local model endpoint, no in-process failover and no remote-provider
+consent:
 
-- **OpenAI base URL** → `/v1/responses` (Responses API)
-- **Local llama server** → `/v1/chat/completions` (Chat Completions-compatible API, supports `grammar`)
+- Inline completion: `gpt-6-luna`, reasoning `none`
+- Chat, chat ops and edit-ops: `gpt-6.1-sol`, reasoning `low`
 
-Routing logic:
+Settings (`LLM_COMPLETION_*`, `LLM_CHAT_*`, `LLM_CHAT_OPS_*`, `HULEEDU_LLM_PROVIDER_BASE_URL`,
+`HULEEDU_INTERNAL_API_KEY`) live in `src/skriptoteket/config.py`.
 
-- `src/skriptoteket/infrastructure/llm/openai/common.py`:
-  - `is_openai_api_base_url()`
-  - `is_local_llama_server()`
+- Door client: `src/skriptoteket/infrastructure/llm/door/client.py`
 - Providers:
   - `src/skriptoteket/infrastructure/llm/openai/inline_completion_provider.py`
   - `src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py`
@@ -204,7 +203,7 @@ Relevant code:
 
 ### Source: Rollback
 
-- If a change breaks editor AI behaviors, first disable remote fallback and/or switch to the known-good
-  local provider in `.env` while you investigate.
-- For structured output issues, prefer reverting *only* the payload shaping logic for the affected API
-  (Responses vs Chat Completions) rather than touching prompts or diff application logic.
+- If a change breaks editor AI behaviors, set `LLM_COMPLETION_ENABLED`, `LLM_CHAT_ENABLED` or
+  `LLM_CHAT_OPS_ENABLED` to `false` in `.env` for the affected feature while you investigate.
+- For structured output issues, prefer reverting *only* the Responses payload shaping logic
+  rather than touching prompts or diff application logic.

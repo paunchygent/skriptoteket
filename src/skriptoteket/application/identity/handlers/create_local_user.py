@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from skriptoteket.application.identity.commands import CreateLocalUserCommand, CreateLocalUserResult
 from skriptoteket.application.identity.local_user_creation import create_local_user
-from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import UserProfile
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -19,7 +18,6 @@ class CreateLocalUserHandler(CreateLocalUserHandlerProtocol):
     def __init__(
         self,
         *,
-        settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
@@ -27,7 +25,6 @@ class CreateLocalUserHandler(CreateLocalUserHandlerProtocol):
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
-        self._settings = settings
         self._uow = uow
         self._users = users
         self._profiles = profiles
@@ -45,20 +42,12 @@ class CreateLocalUserHandler(CreateLocalUserHandlerProtocol):
                 command=command,
             )
             now = self._clock.now()
-            allow_remote_fallback = (
-                True
-                if self._settings.AI_REMOTE_PROVIDERS_ENABLED
-                and self._settings.AI_DEFAULT_ALLOW_REMOTE_FALLBACK
-                else None
-            )
             await self._profiles.create(
                 profile=UserProfile(
                     user_id=result.user.id,
                     first_name=None,
                     last_name=None,
                     display_name=None,
-                    allow_remote_fallback=allow_remote_fallback,
-                    inline_completion_provider=None,
                     locale="sv-SE",
                     created_at=now,
                     updated_at=now,

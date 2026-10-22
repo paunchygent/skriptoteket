@@ -107,8 +107,9 @@ and the
 - Municipal self-host adaptability is a first-class constraint: air-gap LLM
   switch, pluggable SMTP relay, `ARTIFACTS_ROOT` retention, optional separate
   runner host, `/metrics` and `/healthz` surfaces (`README.md`).
-- Remote LLM providers are gated by `AI_REMOTE_PROVIDERS_ENABLED` plus
-  per-user opt-in; NULL counts as deny.
+- Every paid AI call goes through the HuleEdu LLM provider door, which meters
+  the daily pools, shares and USD ceiling; Skriptoteket calls no model endpoint
+  itself and keeps no remote-provider consent.
 - Single-operator reality (product-owner-supplied fact, recorded here as
   context for external advisers): one person owns product direction, code, and
   operations. Prefer solutions that one person can build, run, and repair;

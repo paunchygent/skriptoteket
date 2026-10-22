@@ -33,8 +33,6 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
             first_name=profile.first_name,
             last_name=profile.last_name,
             display_name=profile.display_name,
-            allow_remote_fallback=profile.allow_remote_fallback,
-            inline_completion_provider=profile.inline_completion_provider,
             classroom_planner_smart_enabled=profile.classroom_planner_smart_enabled,
             classroom_planner_use_history=profile.classroom_planner_use_history,
             classroom_planner_grouping_seating_distance_enabled=(

@@ -3,9 +3,9 @@
 Purpose:
     Keep exam OpenAI traffic on the door's relayed routes (ST-SKRIPT-41-01):
     no module posts directly to OpenAI or OpenRouter, and only the door
-    client owns httpx in the LLM lane. The script-editor providers still call
-    OpenAI directly until TASK-SKRIPT-41-01-02 moves them; they are named below.
-    Exam modules must never be allowlisted.
+    client owns httpx in the LLM lane. The script-editor providers go through
+    the door too (TASK-SKRIPT-41-01-02). Exam and editor modules must never be
+    allowlisted.
 
 Relationships:
     - Scans ``src/skriptoteket/**/*.py`` and ``scripts/**/*.py``.
@@ -25,18 +25,7 @@ LLM_LANE = SRC_ROOT / "infrastructure" / "llm"
 
 _DIRECT_URL_MARKERS = ("api.openai.com", "openrouter.ai", "/internal/v1/openai")
 
-ALLOWLIST: dict[str, str] = {
-    "src/skriptoteket/infrastructure/llm/openai/chat_stream_provider.py": (
-        "script editor, TASK-SKRIPT-41-01-02"
-    ),
-    "src/skriptoteket/infrastructure/llm/openai/chat_ops_provider.py": (
-        "script editor, TASK-SKRIPT-41-01-02"
-    ),
-    "src/skriptoteket/infrastructure/llm/openai/inline_completion_provider.py": (
-        "script editor, TASK-SKRIPT-41-01-02"
-    ),
-    "scripts/llm_harness/inline_completion_harness.py": "script editor, TASK-SKRIPT-41-01-02",
-}
+ALLOWLIST: dict[str, str] = {}
 
 
 def _string_literals(source: str) -> list[str]:

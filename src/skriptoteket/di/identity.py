@@ -27,7 +27,6 @@ from skriptoteket.application.identity.handlers.list_users import ListUsersHandl
 from skriptoteket.application.identity.handlers.provision_local_user import (
     ProvisionLocalUserHandler,
 )
-from skriptoteket.application.identity.handlers.update_ai_settings import UpdateAiSettingsHandler
 from skriptoteket.application.identity.handlers.update_classroom_planner_settings import (
     UpdateClassroomPlannerSettingsHandler,
 )
@@ -60,7 +59,6 @@ from skriptoteket.protocols.identity import (
     PasswordHasherProtocol,
     ProfileRepositoryProtocol,
     ProvisionLocalUserHandlerProtocol,
-    UpdateAiSettingsHandlerProtocol,
     UpdateClassroomPlannerSettingsHandlerProtocol,
     UpdateExamCoursesHandlerProtocol,
     UpdateExamListOrderingHandlerProtocol,
@@ -114,7 +112,6 @@ class IdentityProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def create_local_user_handler(
         self,
-        settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
@@ -123,7 +120,6 @@ class IdentityProvider(Provider):
         id_generator: IdGeneratorProtocol,
     ) -> CreateLocalUserHandlerProtocol:
         return CreateLocalUserHandler(
-            settings=settings,
             uow=uow,
             users=users,
             profiles=profiles,
@@ -135,7 +131,6 @@ class IdentityProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def provision_local_user_handler(
         self,
-        settings: Settings,
         uow: UnitOfWorkProtocol,
         users: UserRepositoryProtocol,
         profiles: ProfileRepositoryProtocol,
@@ -144,7 +139,6 @@ class IdentityProvider(Provider):
         id_generator: IdGeneratorProtocol,
     ) -> ProvisionLocalUserHandlerProtocol:
         return ProvisionLocalUserHandler(
-            settings=settings,
             uow=uow,
             users=users,
             profiles=profiles,
@@ -171,23 +165,6 @@ class IdentityProvider(Provider):
         clock: ClockProtocol,
     ) -> UpdateProfileHandlerProtocol:
         return UpdateProfileHandler(uow=uow, users=users, profiles=profiles, clock=clock)
-
-    @provide(scope=Scope.REQUEST)
-    def update_ai_settings_handler(
-        self,
-        settings: Settings,
-        uow: UnitOfWorkProtocol,
-        users: UserRepositoryProtocol,
-        profiles: ProfileRepositoryProtocol,
-        clock: ClockProtocol,
-    ) -> UpdateAiSettingsHandlerProtocol:
-        return UpdateAiSettingsHandler(
-            settings=settings,
-            uow=uow,
-            users=users,
-            profiles=profiles,
-            clock=clock,
-        )
 
     @provide(scope=Scope.REQUEST)
     def update_classroom_planner_settings_handler(

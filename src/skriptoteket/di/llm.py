@@ -24,7 +24,6 @@ from skriptoteket.config import Settings
 from skriptoteket.infrastructure.editor.unified_diff_applier import NativeUnifiedDiffApplier
 from skriptoteket.infrastructure.llm.capture_store import ArtifactsLlmCaptureStore
 from skriptoteket.infrastructure.llm.chat_budget_resolver import SettingsBasedChatBudgetResolver
-from skriptoteket.infrastructure.llm.chat_failover_router import InProcessChatFailoverRouter
 from skriptoteket.infrastructure.llm.chat_inflight_guard import InProcessChatInFlightGuard
 from skriptoteket.infrastructure.llm.chat_ops_budget_resolver import (
     SettingsBasedChatOpsBudgetResolver,
@@ -34,12 +33,6 @@ from skriptoteket.infrastructure.llm.openai_provider import (
     OpenAIChatOpsProvider,
     OpenAIChatStreamProvider,
     OpenAIInlineCompletionProvider,
-)
-from skriptoteket.infrastructure.llm.provider_sets import (
-    ChatOpsProviders,
-    ChatStreamProviders,
-    InlineCompletionProviders,
-    is_remote_llm_endpoint,
 )
 from skriptoteket.infrastructure.llm.token_counter_resolver import SettingsBasedTokenCounterResolver
 from skriptoteket.protocols.clock import ClockProtocol
@@ -53,11 +46,10 @@ from skriptoteket.protocols.editor_patches import UnifiedDiffApplierProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatBudgetResolverProtocol,
-    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatOpsBudgetResolverProtocol,
-    ChatOpsProvidersProtocol,
-    ChatStreamProvidersProtocol,
+    ChatOpsProviderProtocol,
+    ChatStreamProviderProtocol,
     EditOpsApplyHandlerProtocol,
     EditOpsHandlerProtocol,
     EditOpsPreviewHandlerProtocol,
@@ -65,7 +57,7 @@ from skriptoteket.protocols.llm import (
     EditorChatHandlerProtocol,
     EditorChatHistoryHandlerProtocol,
     InlineCompletionHandlerProtocol,
-    InlineCompletionProvidersProtocol,
+    InlineCompletionProviderProtocol,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.llm_door import LlmDoorClientProtocol
@@ -117,36 +109,12 @@ class LlmProvider(Provider):
         )
 
     @provide(scope=Scope.APP)
-    def inline_completion_providers(
+    def inline_completion_provider(
         self,
         settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> InlineCompletionProvidersProtocol:
-        primary = OpenAIInlineCompletionProvider(settings=settings, client=client)
-
-        fallback = None
-        fallback_base_url = settings.LLM_COMPLETION_FALLBACK_BASE_URL.strip()
-        fallback_model = settings.LLM_COMPLETION_FALLBACK_MODEL.strip()
-        if fallback_base_url and fallback_model:
-            fallback = OpenAIInlineCompletionProvider(
-                settings=settings,
-                client=client,
-                base_url=fallback_base_url,
-                model=fallback_model,
-                reasoning_effort=settings.LLM_COMPLETION_FALLBACK_REASONING_EFFORT,
-            )
-
-        primary_base_url = settings.LLM_COMPLETION_BASE_URL.strip()
-        return InlineCompletionProviders(
-            primary=primary,
-            primary_is_remote=is_remote_llm_endpoint(primary_base_url),
-            fallback=fallback,
-            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
-        )
-
-    @provide(scope=Scope.APP)
-    def chat_failover_router(self, settings: Settings) -> ChatFailoverRouterProtocol:
-        return InProcessChatFailoverRouter(settings=settings)
+        door: LlmDoorClientProtocol,
+    ) -> InlineCompletionProviderProtocol:
+        return OpenAIInlineCompletionProvider(settings=settings, door=door)
 
     @provide(scope=Scope.APP)
     def chat_ops_budget_resolver(self, settings: Settings) -> ChatOpsBudgetResolverProtocol:
@@ -157,56 +125,20 @@ class LlmProvider(Provider):
         return SettingsBasedChatBudgetResolver(settings=settings)
 
     @provide(scope=Scope.APP)
-    def chat_stream_providers(
+    def chat_stream_provider(
         self,
         settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> ChatStreamProvidersProtocol:
-        primary = OpenAIChatStreamProvider(settings=settings, client=client)
-
-        fallback = None
-        fallback_base_url = settings.LLM_CHAT_FALLBACK_BASE_URL.strip()
-        fallback_model = settings.LLM_CHAT_FALLBACK_MODEL.strip()
-        if fallback_base_url and fallback_model:
-            fallback = OpenAIChatStreamProvider(
-                settings=settings,
-                client=client,
-                base_url=fallback_base_url,
-                model=fallback_model,
-                reasoning_effort=settings.LLM_CHAT_FALLBACK_REASONING_EFFORT,
-            )
-
-        return ChatStreamProviders(
-            primary=primary,
-            fallback=fallback,
-            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
-        )
+        door: LlmDoorClientProtocol,
+    ) -> ChatStreamProviderProtocol:
+        return OpenAIChatStreamProvider(settings=settings, door=door)
 
     @provide(scope=Scope.APP)
-    def chat_ops_providers(
+    def chat_ops_provider(
         self,
         settings: Settings,
-        client: httpx.AsyncClient,
-    ) -> ChatOpsProvidersProtocol:
-        primary = OpenAIChatOpsProvider(settings=settings, client=client)
-
-        fallback = None
-        fallback_base_url = settings.LLM_CHAT_OPS_FALLBACK_BASE_URL.strip()
-        fallback_model = settings.LLM_CHAT_OPS_FALLBACK_MODEL.strip()
-        if fallback_base_url and fallback_model:
-            fallback = OpenAIChatOpsProvider(
-                settings=settings,
-                client=client,
-                base_url=fallback_base_url,
-                model=fallback_model,
-                reasoning_effort=settings.LLM_CHAT_OPS_FALLBACK_REASONING_EFFORT,
-            )
-
-        return ChatOpsProviders(
-            primary=primary,
-            fallback=fallback,
-            fallback_is_remote=is_remote_llm_endpoint(fallback_base_url) if fallback else False,
-        )
+        door: LlmDoorClientProtocol,
+    ) -> ChatOpsProviderProtocol:
+        return OpenAIChatOpsProvider(settings=settings, door=door)
 
     @provide(scope=Scope.APP)
     def chat_inflight_guard(self) -> ChatInFlightGuardProtocol:
@@ -216,13 +148,13 @@ class LlmProvider(Provider):
     def inline_completion_handler(
         self,
         settings: Settings,
-        providers: InlineCompletionProvidersProtocol,
+        provider: InlineCompletionProviderProtocol,
         capture_store: LlmCaptureStoreProtocol,
         token_counters: TokenCounterResolverProtocol,
     ) -> InlineCompletionHandlerProtocol:
         return InlineCompletionHandler(
             settings=settings,
-            providers=providers,
+            provider=provider,
             capture_store=capture_store,
             token_counters=token_counters,
         )
@@ -231,11 +163,10 @@ class LlmProvider(Provider):
     def edit_ops_handler(
         self,
         settings: Settings,
-        providers: ChatOpsProvidersProtocol,
+        provider: ChatOpsProviderProtocol,
         budget_resolver: ChatOpsBudgetResolverProtocol,
         payload_parser: EditOpsPayloadParserProtocol,
         guard: ChatInFlightGuardProtocol,
-        failover: ChatFailoverRouterProtocol,
         capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
@@ -247,11 +178,10 @@ class LlmProvider(Provider):
     ) -> EditOpsHandlerProtocol:
         return EditOpsHandler(
             settings=settings,
-            providers=providers,
+            provider=provider,
             budget_resolver=budget_resolver,
             payload_parser=payload_parser,
             guard=guard,
-            failover=failover,
             capture_store=capture_store,
             uow=uow,
             sessions=sessions,
@@ -286,9 +216,7 @@ class LlmProvider(Provider):
     def editor_chat_handler(
         self,
         settings: Settings,
-        providers: ChatStreamProvidersProtocol,
         guard: ChatInFlightGuardProtocol,
-        failover: ChatFailoverRouterProtocol,
         budget_resolver: ChatBudgetResolverProtocol,
         turn_preparer: EditorChatTurnPreparerProtocol,
         stream_orchestrator: EditorChatStreamOrchestratorProtocol,
@@ -296,9 +224,7 @@ class LlmProvider(Provider):
     ) -> EditorChatHandlerProtocol:
         return EditorChatHandler(
             settings=settings,
-            providers=providers,
             guard=guard,
-            failover=failover,
             budget_resolver=budget_resolver,
             turn_preparer=turn_preparer,
             stream_orchestrator=stream_orchestrator,
@@ -333,8 +259,7 @@ class LlmProvider(Provider):
         self,
         settings: Settings,
         capture_store: LlmCaptureStoreProtocol,
-        providers: ChatStreamProvidersProtocol,
-        failover: ChatFailoverRouterProtocol,
+        provider: ChatStreamProviderProtocol,
         uow: UnitOfWorkProtocol,
         turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
@@ -342,8 +267,7 @@ class LlmProvider(Provider):
         return EditorChatStreamOrchestrator(
             settings=settings,
             capture_store=capture_store,
-            providers=providers,
-            failover=failover,
+            provider=provider,
             uow=uow,
             turns=turns,
             messages=messages,

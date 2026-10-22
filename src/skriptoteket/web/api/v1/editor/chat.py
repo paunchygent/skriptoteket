@@ -5,7 +5,8 @@ Purpose:
 
 Relationships:
     - Uses editor application handlers for chat orchestration and history.
-    - Reads remote fallback consent from request-scoped profile preferences.
+    - A door daily-limit refusal reaches the client as HTTP 429 before the SSE
+      response opens, because the first handler event is awaited first.
 """
 
 import json
@@ -26,7 +27,6 @@ from skriptoteket.protocols.llm import (
     EditorChatHistoryQuery,
     EditorChatStreamEvent,
 )
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_ai_api,
     require_app_contributor_api,
@@ -56,14 +56,12 @@ async def stream_editor_chat(
     handler: FromDishka[EditorChatHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
     user: User = Depends(require_app_ai_api),
-    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)
     command = EditorChatCommand(
         tool_id=tool_id,
         message=payload.message,
         base_version_id=payload.base_version_id,
-        allow_remote_fallback=ai_preferences.allow_remote_fallback,
         active_file=payload.active_file,
         virtual_files=payload.virtual_files.as_map() if payload.virtual_files is not None else None,
     )

@@ -1,7 +1,7 @@
-"""OpenAI-compatible provider implementations (stable import path).
+"""Script-editor providers on the LLM provider door (stable import path).
 
 The implementation is split into smaller modules under `infrastructure/llm/openai/`.
-This module re-exports the public provider classes to avoid churn in DI wiring and tests.
+This module re-exports the public provider classes for DI wiring.
 """
 
 from __future__ import annotations

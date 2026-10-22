@@ -2,12 +2,11 @@
 
 Purpose:
     Verify editor inline-completion API auth, CSRF, response mapping, and
-    request-scoped AI preference propagation.
+    the 429 daily-limit mapping.
 
 Relationships:
     - Exercises the FastAPI route module directly with Dishka protocol stubs.
-    - Freezes that AI preferences come from profile state rather than session
-      fields during the HuleEdu auth cutover.
+    - Freezes that the command carries only prefix, suffix and active file.
 """
 
 from __future__ import annotations
@@ -25,7 +24,9 @@ from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.llm_door import AiDailyLimit
 from skriptoteket.protocols.llm import (
     InlineCompletionHandlerProtocol,
     InlineCompletionResult,
@@ -205,44 +206,7 @@ async def test_inline_completion_includes_replace_suffix_chars(
 
 
 @pytest.mark.asyncio
-async def test_inline_completion_passes_ai_settings_to_handler(
-    client: httpx.AsyncClient,
-    private_key: rsa.RSAPrivateKey,
-    clock: ClockStub,
-    users: UserRepositoryStub,
-    profiles: ProfileRepositoryStub,
-    handler: AsyncMock,
-    now: datetime,
-) -> None:
-    seed_huleedu_projection(
-        users=users,
-        profiles=profiles,
-        role=Role.ADMIN,
-        now=now,
-        allow_remote_fallback=True,
-        inline_completion_provider="external",
-    )
-
-    handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
-
-    response = await client.post(
-        "/api/v1/editor/completions",
-        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
-        json={
-            "prefix": "def x():\n    ",
-            "suffix": "",
-        },
-    )
-
-    assert response.status_code == 200
-    handler.handle.assert_awaited_once()
-    called = handler.handle.call_args.kwargs["command"]
-    assert called.allow_remote_fallback is True
-    assert called.inline_completion_provider == "external"
-
-
-@pytest.mark.asyncio
-async def test_inline_completion_includes_notice_fields_when_present(
+async def test_inline_completion_passes_only_the_editor_text_to_handler(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
@@ -252,12 +216,50 @@ async def test_inline_completion_includes_notice_fields_when_present(
     now: datetime,
 ) -> None:
     seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
-    handler.handle.return_value = InlineCompletionResult(
-        completion="",
-        enabled=True,
-        notice_code="remote_fallback_required",
-        notice_variant="warning",
-        notice_message="Enable external AI",
+    handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
+
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"prefix": "def x():\n    ", "suffix": "", "active_file": "tool.py"},
+    )
+
+    assert response.status_code == 200
+    command = handler.handle.call_args.kwargs["command"]
+    assert command.model_dump() == {
+        "prefix": "def x():\n    ",
+        "suffix": "",
+        "active_file": "tool.py",
+    }
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("limit", "message"),
+    [
+        (
+            AiDailyLimit.USER_SHARE,
+            "Du har nått din gräns för AI-hjälp i dag. Försök igen i morgon.",
+        ),
+        (AiDailyLimit.POOL, "Appens AI-hjälp har nått dagens gräns. Försök igen i morgon."),
+    ],
+)
+async def test_inline_completion_daily_limit_answers_429(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    now: datetime,
+    limit: AiDailyLimit,
+    message: str,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
+    handler.handle.side_effect = DomainError(
+        code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+        message=message,
+        details={"limit": limit.value},
     )
 
     response = await client.post(
@@ -266,14 +268,11 @@ async def test_inline_completion_includes_notice_fields_when_present(
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
-    assert response.status_code == 200
-    assert response.json() == {
-        "completion": "",
-        "enabled": True,
-        "notice_code": "remote_fallback_required",
-        "notice_variant": "warning",
-        "notice_message": "Enable external AI",
-    }
+    assert response.status_code == 429
+    error = response.json()["error"]
+    assert error["code"] == "AI_DAILY_LIMIT_REACHED"
+    assert error["message"] == message
+    assert error["details"] == {"limit": limit.value}
 
 
 @pytest.mark.asyncio

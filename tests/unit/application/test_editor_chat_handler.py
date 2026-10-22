@@ -5,7 +5,6 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
-import httpx
 import pytest
 
 from skriptoteket.application.editor.chat_handler import EditorChatHandler
@@ -24,9 +23,6 @@ from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
     ChatBudget,
     ChatBudgetResolverProtocol,
-    ChatFailoverDecision,
-    ChatFailoverProvider,
-    ChatFailoverRouterProtocol,
     ChatInFlightGuardProtocol,
     ChatMessage,
     ChatStreamProviderProtocol,
@@ -36,6 +32,7 @@ from skriptoteket.protocols.llm import (
     EditorChatDoneEnabledData,
     EditorChatDoneEvent,
     EditorChatMetaEvent,
+    EditorLlmProviderError,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
@@ -62,40 +59,11 @@ class DummyChatGuard(ChatInFlightGuardProtocol):
         return None
 
 
-class DummyFailover(ChatFailoverRouterProtocol):
-    async def decide_route(
-        self,
-        *,
-        user_id: UUID,
-        tool_id: UUID,
-        allow_remote_fallback: bool | None,
-        fallback_available: bool,
-        fallback_is_remote: bool,
-    ) -> ChatFailoverDecision:
-        return ChatFailoverDecision(provider="primary", reason="primary_default")
-
-    async def acquire_inflight(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def release_inflight(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def record_success(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def record_failure(self, *, provider: ChatFailoverProvider) -> None:
-        return None
-
-    async def mark_fallback_used(self, *, user_id: UUID, tool_id: UUID) -> None:
-        return None
-
-
 class DummyChatBudgetResolver(ChatBudgetResolverProtocol):
     def __init__(self, *, settings: Settings) -> None:
         self._settings = settings
 
-    def resolve_chat_budget(self, *, provider: ChatFailoverProvider) -> ChatBudget:
-        del provider
+    def resolve_chat_budget(self) -> ChatBudget:
         return ChatBudget(
             context_window_tokens=self._settings.LLM_CHAT_CONTEXT_WINDOW_TOKENS,
             max_output_tokens=self._settings.LLM_CHAT_MAX_TOKENS,
@@ -105,9 +73,8 @@ class DummyChatBudgetResolver(ChatBudgetResolverProtocol):
 def _make_handler(
     *,
     settings: Settings,
-    providers,
+    provider: ChatStreamProviderProtocol,
     guard: ChatInFlightGuardProtocol,
-    failover: ChatFailoverRouterProtocol,
     uow: UnitOfWorkProtocol,
     sessions: ToolSessionRepositoryProtocol,
     turns: ToolSessionTurnRepositoryProtocol,
@@ -132,17 +99,14 @@ def _make_handler(
     stream_orchestrator = EditorChatStreamOrchestrator(
         settings=settings,
         capture_store=capture_store,
-        providers=providers,
-        failover=failover,
+        provider=provider,
         uow=uow,
         turns=turns,
         messages=messages,
     )
     return EditorChatHandler(
         settings=settings,
-        providers=providers,
         guard=guard,
-        failover=failover,
         budget_resolver=DummyChatBudgetResolver(settings=settings),
         turn_preparer=turn_preparer,
         stream_orchestrator=stream_orchestrator,
@@ -218,16 +182,10 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -262,7 +220,7 @@ async def test_editor_chat_returns_done_disabled_when_disabled() -> None:
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
@@ -274,16 +232,10 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
         del template_id
         raise OSError("missing system prompt")
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -319,7 +271,7 @@ async def test_editor_chat_returns_done_disabled_when_system_prompt_unavailable(
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
 
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
@@ -385,16 +337,10 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
 
     provider.stream_chat.return_value = stream()
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -462,7 +408,7 @@ async def test_editor_chat_streams_meta_delta_done_and_persists_turn() -> None:
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
 
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
@@ -522,21 +468,12 @@ async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -
         tool_session_id=session.id, turn_id=turn_id, message_id=user_message_id
     )
 
-    provider.stream_chat.side_effect = httpx.ReadTimeout(
-        "timeout",
-        request=httpx.Request("POST", "http://test"),
-    )
-
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
+    provider.stream_chat.side_effect = EditorLlmProviderError(kind="timeout")
 
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -571,7 +508,7 @@ async def test_editor_chat_emits_done_error_on_timeout_and_marks_turn_failed() -
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_deltas() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
 
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
@@ -633,20 +570,14 @@ async def test_editor_chat_persists_partial_assistant_message_on_timeout_after_d
 
     async def stream() -> AsyncIterator[str]:
         yield "Hej"
-        raise httpx.ReadTimeout("timeout", request=httpx.Request("POST", "http://test"))
+        raise EditorLlmProviderError(kind="timeout")
 
     provider.stream_chat.return_value = stream()
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -709,6 +640,7 @@ def test_apply_chat_budget_drops_oldest_turns_and_never_truncates_system_prompt(
 async def test_editor_chat_raises_validation_error_when_message_too_long() -> None:
     settings = Settings(
         LLM_CHAT_ENABLED=True,
+        HULEEDU_INTERNAL_API_KEY="test-door-key",
         LLM_CHAT_CONTEXT_WINDOW_TOKENS=5,
         LLM_CHAT_MAX_TOKENS=0,
         LLM_CHAT_CONTEXT_SAFETY_MARGIN_TOKENS=0,
@@ -729,16 +661,10 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
     clock = MagicMock(spec=ClockProtocol)
     id_generator = MagicMock(spec=IdGeneratorProtocol)
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -771,7 +697,7 @@ async def test_editor_chat_raises_validation_error_when_message_too_long() -> No
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_editor_chat_drops_expired_thread_history() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
     sessions.get = AsyncMock()
@@ -821,11 +747,6 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
 
     provider.stream_chat.return_value = stream()
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     turn_id = uuid4()
     user_message_id = uuid4()
     assistant_message_id = uuid4()
@@ -833,9 +754,8 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
 
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,
@@ -869,7 +789,7 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_stream_leaves_role_admission_to_the_web_gate() -> None:
-    settings = Settings(LLM_CHAT_ENABLED=True)
+    settings = Settings(LLM_CHAT_ENABLED=True, HULEEDU_INTERNAL_API_KEY="test-door-key")
     provider = MagicMock(spec=ChatStreamProviderProtocol)
 
     sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
@@ -934,16 +854,10 @@ async def test_stream_leaves_role_admission_to_the_web_gate() -> None:
 
     provider.stream_chat.return_value = stream()
 
-    providers = MagicMock()
-    providers.primary = provider
-    providers.fallback = None
-    providers.fallback_is_remote = False
-
     handler = _make_handler(
         settings=settings,
-        providers=providers,
+        provider=provider,
         guard=DummyChatGuard(),
-        failover=DummyFailover(),
         uow=DummyUow(),
         sessions=sessions,
         turns=turns,

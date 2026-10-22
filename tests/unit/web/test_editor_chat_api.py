@@ -15,6 +15,7 @@ from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, ai_limit_note
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
@@ -28,6 +29,7 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.web.api.v1.editor import chat as chat_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
+from tests.fixtures.editor_chat_handler_harness import make_chat_handler_harness
 from tests.fixtures.profile_app_continuation_support import (
     ClockStub,
     ProfileContinuationApiProvider,
@@ -310,3 +312,49 @@ async def test_editor_chat_ai_gate_admits_admin_roles(
 
     assert response.status_code == 200
     chat_handler.stream.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_editor_chat_door_limit_answers_429_before_any_sse_event_and_frees_the_slot(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    chat_handler: AsyncMock,
+    now: datetime,
+) -> None:
+    user = seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
+    tool_id = uuid4()
+    harness = make_chat_handler_harness(tool_id=tool_id, user_id=user.id)
+    chat_handler.stream.side_effect = harness.handler.stream
+
+    async def refused() -> AsyncIterator[str]:
+        raise AiDailyLimitReached(limit=AiDailyLimit.USER_SHARE)
+        yield ""
+
+    async def answered() -> AsyncIterator[str]:
+        yield "Svar"
+
+    harness.provider.stream_chat.side_effect = [refused(), answered()]
+    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
+
+    refused_response = await client.post(
+        f"/api/v1/editor/tools/{tool_id}/chat", headers=headers, json={"message": "Hej"}
+    )
+
+    assert refused_response.status_code == 429
+    assert refused_response.headers["content-type"].startswith("application/json")
+    error = refused_response.json()["error"]
+    assert error["code"] == "AI_DAILY_LIMIT_REACHED"
+    assert error["message"] == ai_limit_note(AiDailyLimit.USER_SHARE)
+    assert error["details"] == {"limit": "user_share"}
+    assert harness.guard.held == set()
+
+    second_response = await client.post(
+        f"/api/v1/editor/tools/{tool_id}/chat", headers=headers, json={"message": "Hej igen"}
+    )
+
+    assert second_response.status_code == 200
+    assert second_response.headers["content-type"].startswith("text/event-stream")
+    assert "event: delta" in second_response.text

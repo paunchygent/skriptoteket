@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-huleedu-skriptoteket-integration-on-hemma
 title: 'Runbook: HuleEdu + Skriptoteket Integration on Hemma'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-huleedu-integration
+  - RUN-huleedu-integration
 summary: 'Runbook: HuleEdu + Skriptoteket Integration on Hemma'
 system: hemma.hule.education
 ---
@@ -75,11 +75,11 @@ system: hemma.hule.education
 
 ### Source: Network Configuration
 
-| Network | Purpose | Services |
-|---------|---------|----------|
-| `hule-network` | External, shared infra | nginx-proxy, shared-postgres, jaeger, prometheus |
-| `huleedu_internal_network` | HuleEdu microservices | All HuleEdu services, Kafka, Redis |
-| Host | GPU inference | llama-server, tabby |
+| Network                    | Purpose                | Services                                         |
+| -------------------------- | ---------------------- | ------------------------------------------------ |
+| `hule-network`             | External, shared infra | nginx-proxy, shared-postgres, jaeger, prometheus |
+| `huleedu_internal_network` | HuleEdu microservices  | All HuleEdu services, Kafka, Redis               |
+| Host                       | GPU inference          | llama-server, tabby                              |
 
 Docker containers access host GPU via `host.docker.internal:8082`.
 
@@ -89,7 +89,7 @@ All databases run in `shared-postgres` on `hule-network`.
 
 ### Source: Environment Variables (HuleEdu .env)
 
-```bash
+````bash
 
 ### Steps
 
@@ -148,7 +148,7 @@ CREATE DATABASE huleedu_nlp;
 CREATE DATABASE huleedu_result_aggregator;
 CREATE DATABASE huleedu_spellchecker;
 \""
-```
+````
 
 ### Source: Create Database User
 
@@ -209,7 +209,8 @@ EMAIL_SMTP_HOST=mail.privateemail.com
 EMAIL_SMTP_PORT=587
 EMAIL_SMTP_USERNAME=<username>
 EMAIL_SMTP_PASSWORD=<password>
-```
+
+````
 
 ### Source: Skriptoteket ↔ HuleEdu Integration
 
@@ -233,39 +234,37 @@ networks = ["huleedu_internal_network"]
 
 ### Source: http://nlp_service:8000/api/v1/...
 
-```
+````
 
 ### Source: GPU Access
 
-Both applications access the same GPU via `host.docker.internal`:
+HuleEdu services access the GPU via `host.docker.internal`. Skriptoteket calls no GPU endpoint: its
+editor AI and exam AI go through `llm_provider_service` on `hule-network`.
 
-| Application | Service | GPU Access |
-|-------------|---------|------------|
-| Skriptoteket | web | `http://host.docker.internal:8082` (completions) |
-| HuleEdu | nlp_service | `http://host.docker.internal:8082` (inference) |
-| HuleEdu | llm_provider_service | `http://host.docker.internal:8082` (small tasks) |
+| Application | Service              | GPU Access                                       |
+| ----------- | -------------------- | ------------------------------------------------ |
+| HuleEdu     | nlp_service          | `http://host.docker.internal:8082` (inference)   |
+| HuleEdu     | llm_provider_service | `http://host.docker.internal:8082` (small tasks) |
 
 ### Source: Domain Configuration
 
-
-
 ### Source: DNS Records (Namecheap)
 
-| Subdomain | Type | Target |
-|-----------|------|--------|
-| `skriptoteket.hule.education` | A | hemma IP (via ddclient) |
-| `huleedu.hule.education` | A | hemma IP |
-| `api.huleedu.hule.education` | A | hemma IP |
-| `ws.huleedu.hule.education` | A | hemma IP |
+| Subdomain                     | Type | Target                  |
+| ----------------------------- | ---- | ----------------------- |
+| `skriptoteket.hule.education` | A    | hemma IP (via ddclient) |
+| `huleedu.hule.education`      | A    | hemma IP                |
+| `api.huleedu.hule.education`  | A    | hemma IP                |
+| `ws.huleedu.hule.education`   | A    | hemma IP                |
 
 ### Source: nginx-proxy Routing
 
-| Domain | Container | Port |
-|--------|-----------|------|
-| `skriptoteket.hule.education` | skriptoteket-web | 8000 |
-| `huleedu.hule.education` | huleedu_bff_teacher_service | 4101 |
-| `api.huleedu.hule.education` | huleedu_api_gateway_service | 8080 |
-| `ws.huleedu.hule.education` | huleedu_websocket_service | 8080 |
+| Domain                        | Container                   | Port |
+| ----------------------------- | --------------------------- | ---- |
+| `skriptoteket.hule.education` | skriptoteket-web            | 8000 |
+| `huleedu.hule.education`      | huleedu_bff_teacher_service | 4101 |
+| `api.huleedu.hule.education`  | huleedu_api_gateway_service | 8080 |
+| `ws.huleedu.hule.education`   | huleedu_websocket_service   | 8080 |
 
 ### Source: Skriptoteket
 

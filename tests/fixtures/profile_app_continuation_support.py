@@ -15,7 +15,7 @@ import base64
 import json
 from collections.abc import Iterable, Mapping
 from datetime import datetime
-from typing import Literal, cast
+from typing import cast
 from uuid import UUID, uuid4
 
 from cryptography.hazmat.primitives import hashes
@@ -477,8 +477,6 @@ def seed_huleedu_projection(
     now: datetime | None = None,
     subject: str = CONTEXT_SUBJECT,
     email: str = "teacher@example.test",
-    allow_remote_fallback: bool | None = None,
-    inline_completion_provider: Literal["local", "external"] | None = None,
 ) -> User:
     """Seed the local projection expected after HuleEdu gateway verification."""
 
@@ -495,8 +493,6 @@ def seed_huleedu_projection(
     )
     profiles.result = make_user_profile(
         user_id=user.id,
-        allow_remote_fallback=allow_remote_fallback,
-        inline_completion_provider=inline_completion_provider,
         now=now,
     )
     return user

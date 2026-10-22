@@ -26,7 +26,9 @@ from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
 from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.llm_door import AiDailyLimit, ai_limit_note
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
     EditOpsApplyHandlerProtocol,
@@ -281,6 +283,41 @@ async def test_edit_ops_ai_gate_admits_admin_roles(
     assert response.status_code == 200
     assert response.json()["enabled"] is True
     handler.handle.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_edit_ops_door_limit_refusal_is_a_429_with_the_limit_note(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
+    handler.handle.side_effect = DomainError(
+        code=ErrorCode.AI_DAILY_LIMIT_REACHED,
+        message=ai_limit_note(AiDailyLimit.POOL),
+        details={"limit": AiDailyLimit.POOL.value},
+    )
+
+    response = await client.post(
+        "/api/v1/editor/edit-ops",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={
+            "tool_id": str(uuid4()),
+            "message": "Patch this",
+            "active_file": "tool.py",
+            "virtual_files": _virtual_files("print('hi')\n"),
+        },
+    )
+
+    assert response.status_code == 429
+    error = response.json()["error"]
+    assert error["code"] == "AI_DAILY_LIMIT_REACHED"
+    assert error["message"] == "Appens AI-hjälp har nått dagens gräns. Försök igen i morgon."
+    assert error["details"] == {"limit": "pool"}
 
 
 @pytest.mark.asyncio

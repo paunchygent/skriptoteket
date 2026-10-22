@@ -33,25 +33,25 @@ central logging, approved SMTP relays, strict data retention).
 
 Roles:
 
-| Role | Intended use (current enforcement) |
-|------|-----------------------------------|
-| `user` | Browse and run tools, manage profile/favorites |
-| `contributor` | `user` + author tools (editor + sandbox), submit drafts for review, submit suggestions |
-| `admin` | `contributor` + review suggestions, publish/depublish tools, publish/request-changes on versions |
-| `superuser` | `admin` + user administration and version rollback |
+| Role          | Intended use (current enforcement)                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| `user`        | Browse and run tools, manage profile/favorites                                                   |
+| `contributor` | `user` + author tools (editor + sandbox), submit drafts for review, submit suggestions           |
+| `admin`       | `contributor` + review suggestions, publish/depublish tools, publish/request-changes on versions |
+| `superuser`   | `admin` + user administration and version rollback                                               |
 
 ## Quick start (local development)
 
 Prereqs: Python **3.13+**, PDM, Docker, Node **22+** + pnpm.
 
-1) Install deps
+1. Install deps
 
 ```bash
 pdm install -G monorepo-tools
 pdm run fe-install
 ```
 
-2) Configure environment
+2. Configure environment
 
 - Copy `.env.example` → `.env` and adjust values as needed.
 - Create a local artifacts dir (required for tool execution):
@@ -60,20 +60,20 @@ pdm run fe-install
 mkdir -p /tmp/skriptoteket/artifacts
 ```
 
-3) Start PostgreSQL + migrate
+3. Start PostgreSQL + migrate
 
 ```bash
 docker compose up -d db
 pdm run db-upgrade
 ```
 
-4) Bootstrap the first superuser (local dev)
+4. Bootstrap the first superuser (local dev)
 
 ```bash
 pdm run bootstrap-superuser
 ```
 
-5) Run backend + SPA (two terminals)
+5. Run backend + SPA (two terminals)
 
 ```bash
 # Terminal A
@@ -118,44 +118,43 @@ Skriptoteket is intended to run as a small “core” with optional add-ons. The
 
 ### Minimum production checklist
 
-1) **DNS + TLS**: put the web service behind your standard reverse proxy / ingress. Set:
+1. **DNS + TLS**: put the web service behind your standard reverse proxy / ingress. Set:
 
 - `COOKIE_SECURE=true`
 - `EMAIL_VERIFICATION_BASE_URL=https://<your-domain>`
 
-1) **Database**: configure `DATABASE_URL` and ensure backups + PITR align with your policies.
+1. **Database**: configure `DATABASE_URL` and ensure backups + PITR align with your policies.
 
-2) **Artifacts / retention**: mount a persistent directory/volume and set `ARTIFACTS_ROOT`.
+2. **Artifacts / retention**: mount a persistent directory/volume and set `ARTIFACTS_ROOT`.
 
 - Schedule retention jobs (cron/systemd timers) using:
   - `pdm run artifacts-prune`
   - `pdm run cleanup-session-files`
   - `pdm run cleanup-sandbox-snapshots`
 
-1) **Email**: configure `EMAIL_PROVIDER=smtp` and point to your municipal SMTP relay.
+1. **Email**: configure `EMAIL_PROVIDER=smtp` and point to your municipal SMTP relay.
 
-2) **Runner security**: decide how you want to host tool execution.
+2. **Runner security**: decide how you want to host tool execution.
 
 - Same host: mount `/var/run/docker.sock` into the web container.
 - Separate host: point the web service at a dedicated runner Docker Engine using `DOCKER_HOST` (protect it with TLS and
   network policy; it’s equivalent to root on that host).
 
-1) **Observability**:
+1. **Observability**:
 
 - Logs: set `LOG_FORMAT=json` and ship stdout/stderr to your log platform.
 - Metrics: scrape `/metrics`.
 - Health: probe `/healthz`.
 - Tracing (optional): set `OTEL_TRACING_ENABLED=true` and `OTEL_EXPORTER_OTLP_ENDPOINT=...`.
 
-1) **AI features (optional)**:
+1. **AI features (optional)**:
 
 - For air‑gapped environments: set `LLM_*_ENABLED=false`.
-- For self-hosted inference: point `LLM_*_BASE_URL` / `LLM_*_FALLBACK_BASE_URL` to your OpenAI‑compatible gateways
-  (llama.cpp, etc.). The default dev/prod examples use local `Devstral-Small-2-24B` and external OpenAI models
-  (`gpt-5-nano` for completions; `gpt-5.2` for chat/chat-ops).
-- Remote providers are gated by `AI_REMOTE_PROVIDERS_ENABLED` and per-user opt-in (`profile.allow_remote_fallback=true`;
-  NULL counts as deny).
-- Avoid remote providers unless you have a clear DPIA/legal basis for sending prompt data to external services.
+- Every AI call goes through HuleEdu's LLM provider door (`HULEEDU_LLM_PROVIDER_BASE_URL`,
+  `HULEEDU_INTERNAL_API_KEY`) with the teacher's user id; the door meters the daily pools and shares.
+  Script-editor inline completion runs on `gpt-6-luna`; editor chat, chat ops and edit run on `gpt-6.1-sol`
+  at low reasoning.
+- Enabling AI sends prompt data to OpenAI through the door; do so only with a clear DPIA/legal basis.
 
 ### Production via Docker Compose (starting point)
 

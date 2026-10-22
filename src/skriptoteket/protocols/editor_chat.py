@@ -8,7 +8,6 @@ from uuid import UUID
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import (
     ChatBudget,
-    ChatFailoverDecision,
     ChatMessage,
     EditorChatCommand,
     EditorChatStreamEvent,
@@ -87,6 +86,5 @@ class EditorChatStreamOrchestratorProtocol(Protocol):
         actor: User,
         command: EditorChatCommand,
         prepared: PreparedEditorChatRequest,
-        decision: ChatFailoverDecision,
         template_id: str,
     ) -> AsyncIterator[EditorChatStreamEvent]: ...

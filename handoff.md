@@ -81,7 +81,10 @@
   - Closed by the user 2026-10-20: TASK-SKRIPT-40-04-10 and ST-SKRIPT-40-03.
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
-    - 41-01-02, -04: ready, unblocked by 41-01-03 (done).
+    - 41-01-02 `in_progress`: lead on branch `codex/task-skript-41-01-02`, Hemma root
+      `01a16352-c1aa-7200-beac-cdd64393cb32`. Next: the orchestrator's single review, then the
+      merge. Walk precondition: a priced gpt-6.1-sol entry in the HuleEdu door manifest.
+    - 41-01-04: in progress in its own worktree.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
   - ST-SKRIPT-39-10 digital-PDF import `ready` (user grilling 2026-10-21, plan

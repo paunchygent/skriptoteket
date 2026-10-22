@@ -68,7 +68,6 @@ async def _provision_user_async(
             raise
 
         handler = ProvisionLocalUserHandler(
-            settings=settings,
             uow=uow,
             users=users,
             profiles=profiles,

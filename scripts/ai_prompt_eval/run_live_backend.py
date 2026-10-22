@@ -82,7 +82,7 @@ def _parse_args() -> HarnessConfig:
     default_email, default_password = _get_credentials(dotenv=dotenv)
 
     parser = argparse.ArgumentParser(
-        description="AI prompt evaluation harness (live backend + llama.cpp)",
+        description="AI prompt evaluation harness (live backend)",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[pre_parser],
     )

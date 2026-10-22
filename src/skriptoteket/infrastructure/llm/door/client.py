@@ -7,7 +7,9 @@ Purpose:
     caller's AI action on its first successful call, count its paid overage from
     the door's charge headers and stop it once a charge passes the per-job cap
     (C7), and turn a limit 429 into ``AiDailyLimitReached`` with its
-    ``error.limit``.
+    ``error.limit``. A streamed call (``stream``) relays the upstream SSE lines
+    and admits the caller on a 2xx; the door sends no charge headers on a
+    stream, so a stream records no overage charge.
 
 Relationships:
     Implements ``protocols.llm_door.LlmDoorClientProtocol``; composed in
@@ -17,7 +19,8 @@ Relationships:
 from __future__ import annotations
 
 import json
-from collections.abc import Mapping
+from collections.abc import AsyncIterator, Iterator, Mapping
+from contextlib import AsyncExitStack, asynccontextmanager, contextmanager
 
 import httpx
 import structlog
@@ -32,6 +35,7 @@ from skriptoteket.protocols.llm_door import (
     DoorOperation,
     DoorReply,
     DoorRequestFailed,
+    DoorStream,
     DoorTimeout,
     LlmDoorClientProtocol,
 )
@@ -105,6 +109,80 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
         )
         settle_door_reply(caller, reply, cap_usd_micros=self._cap_usd_micros)
         return reply
+
+    @asynccontextmanager
+    async def stream(
+        self,
+        *,
+        operation: DoorOperation,
+        payload: Mapping[str, JsonValue],
+        caller: AiDoorCaller,
+        timeout_seconds: float,
+    ) -> AsyncIterator[DoorStream]:
+        caller.require_within_overage_cap(cap_usd_micros=self._cap_usd_micros)
+        async with AsyncExitStack() as connection:
+            body = b""
+            with _door_transport_errors():
+                response = await connection.enter_async_context(
+                    self._client.stream(
+                        "POST",
+                        f"{self._base_url}{_DOOR_PATH}/{operation.value}",
+                        headers=_caller_headers(self._internal_api_key, caller),
+                        json=dict(payload),
+                        timeout=timeout_seconds,
+                    )
+                )
+                if response.status_code >= 400:
+                    body = await response.aread()
+            if response.status_code == 429:
+                limit = _limit_of(body)
+                if limit is not None:
+                    raise AiDailyLimitReached(limit=limit)
+            door_stream = _HttpxDoorStream(response=response, body=body)
+            if door_stream.is_success:
+                caller.admit()
+            yield door_stream
+
+
+class _HttpxDoorStream(DoorStream):
+    """One open httpx streamed answer; a failed answer carries its body and no lines."""
+
+    def __init__(self, *, response: httpx.Response, body: bytes) -> None:
+        self._response = response
+        self._body = body
+
+    @property
+    def status_code(self) -> int:
+        return self._response.status_code
+
+    @property
+    def headers(self) -> Mapping[str, str]:
+        return self._response.headers
+
+    @property
+    def body(self) -> bytes:
+        return self._body
+
+    @property
+    def is_success(self) -> bool:
+        return 200 <= self._response.status_code < 300
+
+    async def aiter_lines(self) -> AsyncIterator[str]:
+        if not self.is_success:
+            return
+        with _door_transport_errors():
+            async for line in self._response.aiter_lines():
+                yield line
+
+
+@contextmanager
+def _door_transport_errors() -> Iterator[None]:
+    try:
+        yield
+    except httpx.TimeoutException as exc:
+        raise DoorTimeout("LLM provider door call timed out.") from exc
+    except httpx.RequestError as exc:
+        raise DoorRequestFailed("LLM provider door call failed before an answer.") from exc
 
 
 def _caller_headers(internal_api_key: str, caller: AiDoorCaller) -> dict[str, str]:
