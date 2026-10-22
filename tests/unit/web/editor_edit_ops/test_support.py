@@ -4,9 +4,8 @@ Purpose:
     Build the virtual-file payload the edit-ops routes accept.
 
 Relationships:
-    - Used by `test_editor_edit_ops_generation_api.py` and
-      `test_editor_edit_ops_preview_apply_api.py`; their app fixtures live in
-      `tests.fixtures.editor_edit_ops_api_app`.
+    - Used by `test_generation_api.py` and `test_preview_apply_api.py`; their
+      app fixtures live in `conftest.py` in this directory.
 """
 
 from __future__ import annotations

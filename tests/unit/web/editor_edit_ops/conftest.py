@@ -7,7 +7,8 @@ Purpose:
 Relationships:
     - Exercises `skriptoteket.web.api.v1.editor.edit_ops` with Dishka protocol
       stubs and the HuleEdu app-projection fixtures.
-    - Keeps split test modules below the repo file-size budget.
+    - Directory-scoped so its `app`, `client` and `settings` fixtures never
+      override other route tests' fixtures of the same names.
 """
 
 from __future__ import annotations

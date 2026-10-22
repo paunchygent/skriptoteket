@@ -5,8 +5,8 @@ Purpose:
     eval-mode authorization and door-limit refusal at the FastAPI boundary.
 
 Relationships:
-    - Fixtures live in `tests.fixtures.editor_edit_ops_api_app`.
-    - Preview and apply live in `test_editor_edit_ops_preview_apply_api.py`.
+    - Fixtures live in `conftest.py` in this directory.
+    - Preview and apply live in `test_preview_apply_api.py`.
 """
 
 from __future__ import annotations
@@ -33,9 +33,7 @@ from tests.fixtures.profile_app_continuation_support import (
     seed_huleedu_projection,
     signed_huleedu_headers,
 )
-from tests.unit.web.editor_edit_ops_test_support import virtual_files
-
-pytest_plugins = ("tests.fixtures.editor_edit_ops_api_app",)
+from tests.unit.web.editor_edit_ops.test_support import virtual_files
 
 
 @pytest.mark.asyncio
