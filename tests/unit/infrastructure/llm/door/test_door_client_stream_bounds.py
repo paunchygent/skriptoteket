@@ -2,12 +2,13 @@
 
 A streamed call holds its door slots until the stream closes, retries a
 capacity 429 on open as ``send`` does, and ends a pooled-connection wait as
-``AiDoorBusy``. The production DI hands every editor provider the one door
-client whose pool is sized from ``LLM_DOOR_MAX_CONNECTIONS``.
+``AiDoorBusy``. In the production DI every editor provider calls through the one
+door client whose transport is built with ``LLM_DOOR_MAX_CONNECTIONS``.
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from typing import TypedDict, Unpack
 from uuid import uuid4
@@ -22,16 +23,36 @@ from skriptoteket.di.llm import LlmProvider
 from skriptoteket.domain.llm_door import AiDoorBusy, AiDoorCaller, AiOverageAuthority
 from skriptoteket.infrastructure.llm.door.client import DoorBounds, HuleEduLlmDoorClient
 from skriptoteket.protocols.llm import (
+    ChatMessage,
     ChatOpsProviderProtocol,
     ChatStreamProviderProtocol,
     InlineCompletionProviderProtocol,
+    LLMChatRequest,
+    LLMCompletionRequest,
 )
-from skriptoteket.protocols.llm_door import DoorOperation, LlmDoorClientProtocol
+from skriptoteket.protocols.llm_door import DoorOperation
 from skriptoteket.protocols.sleeper import SleeperProtocol
 
 PAYLOAD: dict[str, JsonValue] = {"model": "gpt-6.1-sol", "input": "hej", "stream": True}
 CAPACITY_BODY = {"error": {"type": "huleedu_openai_door", "code": "openai_door_admission_full"}}
-SSE = b'event: response.output_text.delta\ndata: {"delta": "hej"}\n\n'
+SSE = (
+    b"event: response.output_text.delta\n"
+    b'data: {"type": "response.output_text.delta", "delta": "hej"}\n\n'
+    b"event: response.completed\n"
+    b'data: {"type": "response.completed"}\n\n'
+)
+COMPLETED: dict[str, JsonValue] = {
+    "status": "completed",
+    "output": [
+        {
+            "type": "message",
+            "role": "assistant",
+            "content": [{"type": "output_text", "text": "done"}],
+        }
+    ],
+}
+CHAT_REQUEST = LLMChatRequest(messages=[ChatMessage(role="user", content="hej")])
+COMPLETION_REQUEST = LLMCompletionRequest(prefix="def f(", suffix=")", active_file="tool.py")
 
 
 class BoundOverrides(TypedDict, total=False):
@@ -176,15 +197,34 @@ class _Runtime(Provider):
         return RecordingSleeper()
 
 
-def _pool_max_connections(door: LlmDoorClientProtocol) -> int:
-    assert isinstance(door, HuleEduLlmDoorClient)
-    transport = door._client._transport  # noqa: SLF001 - the wiring under test
-    assert isinstance(transport, httpx.AsyncHTTPTransport)
-    return transport._pool._max_connections  # noqa: SLF001
+class _RecordedTransports:
+    """Stands in for ``httpx.AsyncHTTPTransport``: records each one built and every request.
+
+    Every request is answered as the door would: an SSE stream for a streamed body,
+    otherwise one completed Responses answer.
+    """
+
+    def __init__(self) -> None:
+        self.limits: list[httpx.Limits] = []
+        self.requests: list[httpx.Request] = []
+
+    def __call__(self, *, limits: httpx.Limits) -> httpx.AsyncBaseTransport:
+        self.limits.append(limits)
+        return httpx.MockTransport(self._answer)
+
+    def _answer(self, request: httpx.Request) -> httpx.Response:
+        self.requests.append(request)
+        if json.loads(request.content).get("stream"):
+            return _sse(request)
+        return httpx.Response(200, json=COMPLETED)
 
 
 @pytest.mark.unit
-async def test_every_editor_provider_gets_the_door_client_with_the_sized_pool() -> None:
+async def test_every_editor_provider_calls_through_the_door_client_with_the_sized_pool(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transports = _RecordedTransports()
+    monkeypatch.setattr(httpx, "AsyncHTTPTransport", transports)
     settings = Settings(
         HULEEDU_LLM_PROVIDER_BASE_URL="http://door.test:8080",
         HULEEDU_INTERNAL_API_KEY="internal-key",
@@ -192,14 +232,26 @@ async def test_every_editor_provider_gets_the_door_client_with_the_sized_pool() 
     )
     container = make_async_container(LlmProvider(), _Runtime(settings), skip_validation=True)
     try:
-        door = await container.get(LlmDoorClientProtocol)
-        providers: list[object] = [
-            await container.get(ChatStreamProviderProtocol),
-            await container.get(ChatOpsProviderProtocol),
-            await container.get(InlineCompletionProviderProtocol),
-        ]
+        completion = await container.get(InlineCompletionProviderProtocol)
+        chat_ops = await container.get(ChatOpsProviderProtocol)
+        chat_stream = await container.get(ChatStreamProviderProtocol)
 
-        assert _pool_max_connections(door) == 260
-        assert all(provider._door is door for provider in providers)  # type: ignore[attr-defined]  # noqa: SLF001
+        await completion.complete_inline(
+            request=COMPLETION_REQUEST, system_prompt="sys", caller=_caller()
+        )
+        await chat_ops.complete_chat_ops(
+            request=CHAT_REQUEST, system_prompt="sys", caller=_caller()
+        )
+        deltas = [
+            delta
+            async for delta in chat_stream.stream_chat(
+                request=CHAT_REQUEST, system_prompt="sys", caller=_caller()
+            )
+        ]
     finally:
         await container.close()
+
+    assert [limits.max_connections for limits in transports.limits] == [260]
+    assert deltas == ["hej"]
+    assert len(transports.requests) == 3
+    assert {request.url.host for request in transports.requests} == {"door.test"}
