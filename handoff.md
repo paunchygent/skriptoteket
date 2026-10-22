@@ -11,14 +11,10 @@
     since the 06:43 reboot (restart policy "no"); deploy needed a pulled
     `prom/alertmanager:v0.34.1`. HuleEdu prod `.env` still holds a stale
     `LLM_PROVIDER_SERVICE_USE_MOCK_LLM=true` (compose pins "false").
-  - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, run
-    passed 08:31Z, ntfy reaches the phone; Healthchecks ping open (user account).
-  - TASK-SKRIPT-39-04-22 (Word drawn shapes as pictures): review changes_requested
-    (`evidence/reviews/task-skript-39-04-22-662397a95.md`); F1–F9 repaired with
-    fail-first proof (`evidence/repairs-39-04-22/`) on unpushed
-    `codex/task-skript-39-04-22` (retained `01a162df-23d2-79d3-a1ec-df55cbedd0d7`).
-    Next: orchestrator admission (no rereview, D7), merge, staging rebuild and the
-    Mac walk (Word export opens and edits in Word, D9).
+  - HuleEdu TASK-HULE-09-02-02 done (`a9e6eeaa`): boot startup installed, ntfy
+    reaches the phone, Healthchecks check "Hemma" up with receipt verified (`4d8ebe9d`).
+  - Word export opens in Compatibility Mode (Mac walk 39-04-22 observation); not
+    triaged.
   - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
 - Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
@@ -125,6 +121,10 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-22 `done`: 39-04-22 Word drawn shapes as pictures, shapes kept
+  for Word export (`74eeceb2d`; review F1-F9 repaired on fail-first proof, retained
+  `01a162df`; Mac walk `.artifacts/staging-walk-39-04-22-74eeceb2d/walk-record.md`).
 
 - 2026-10-22 `done`: 39-10-02 PDF pictures and figures (`7adde567`; Mac walk
   `.artifacts/staging-walk-39-10-02-7adde567c/walk-record.md`; Word drawn

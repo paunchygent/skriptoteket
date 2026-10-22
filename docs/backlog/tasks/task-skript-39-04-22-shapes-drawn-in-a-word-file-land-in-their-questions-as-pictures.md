@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-22'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'One review (D7) in retained root 01a162df: changes_requested, F1-F9 (evidence/reviews/task-skript-39-04-22-662397a95.md); all nine repaired on fail-first proof (evidence/repairs-39-04-22/), no rereview per the user rule "Now it''s enough."; merged as 74eeceb2d; Mac staging walk 2026-10-22 at 74eeceb2d passed checks 1-5 with metodprov_med_bilder.docx and .pdf (Mac .artifacts/staging-walk-39-04-22-74eeceb2d/walk-record.md); Word opened the export with no repair dialog and reports Q5/Q6 as shape groups, but no shape was moved or edited by hand.'
 task_kind: story
 acceptance_criteria:
 - A shape group, a single shape or a drawing canvas made of supported shapes becomes
