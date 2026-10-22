@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c95ddaacc36d38119151ab9e92e4d9cc13674dae50e2356860e122466f87ad0a",
+  "source_set_digest": "578e7a1da5c8a9ca0a0c77f18f3aaec79dcc47bc66f542fcc9b885f2e28cfdab",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7640,7 +7640,7 @@
       "type": "task",
       "title": "Every signed-in teacher uses exam and script-editor AI within the daily budget",
       "path": "docs/backlog/tasks/task-skript-41-03-01-every-signed-in-teacher-uses-exam-and-script-editor-ai-within-the-daily-budget.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-03",
       "owners": [
