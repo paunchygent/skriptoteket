@@ -33,7 +33,12 @@ from skriptoteket.protocols.llm.chat import (
     LLMChatOpsResponse,
     LLMChatRequest,
 )
-from skriptoteket.protocols.llm.common import SystemMessageVariant, VirtualFileId
+from skriptoteket.protocols.llm.common import (
+    EditorLlmFailureKind,
+    EditorLlmProviderError,
+    SystemMessageVariant,
+    VirtualFileId,
+)
 from skriptoteket.protocols.llm.completion import (
     InlineCompletionCommand,
     InlineCompletionHandlerProtocol,
@@ -61,6 +66,8 @@ from skriptoteket.protocols.llm.edit_ops import (
 from skriptoteket.protocols.llm.eval import PromptEvalMeta, PromptEvalOutcome
 
 __all__ = [
+    "EditorLlmFailureKind",
+    "EditorLlmProviderError",
     "ChatBudget",
     "ChatBudgetResolverProtocol",
     "ChatInFlightGuardProtocol",
