@@ -28,6 +28,7 @@ PDF_MODULES = (
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_furniture.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_graphics.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_pictures.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_fill_bands.py",  # noqa: E501
     "src/skriptoteket/infrastructure/documents/pdfium_access.py",
 )
 

@@ -52,12 +52,15 @@ def read_pdf_blocks(content: bytes) -> tuple[PdfBlock, ...]:
     from pdfminer.pdfparser import PDFSyntaxError
     from pdfminer.psexceptions import PSException
     from pdfplumber.utils.exceptions import PdfminerException
+    from pypdf import PdfReader
+    from pypdf.errors import PdfReadError
 
     try:
         with pdfplumber.open(io.BytesIO(content)) as pdf:
-            items = read_pages(pdf.pages)
+            items = read_pages(pdf.pages, list(PdfReader(io.BytesIO(content)).pages))
     except (
         PdfminerException,
+        PdfReadError,
         PDFSyntaxError,
         PSException,
         ValueError,

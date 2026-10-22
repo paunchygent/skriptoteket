@@ -22,6 +22,10 @@ import statistics
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_fill_bands import (  # noqa: E501
+    CompoundFill,
+    compound_fills,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_furniture import (  # noqa: E501
     FURNITURE_BAND,
     without_page_furniture,
@@ -44,12 +48,14 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     cell_count,
     float_box,
     page_graphics,
+    page_has_nested_fill,
     read_words,
     table_item,
 )
 
 if TYPE_CHECKING:
     from pdfplumber.page import Page
+    from pypdf import PageObject
 
 # Two columns: the gutter lies in the middle share of the text width and is at least this
 # wide (or this many font sizes); each side holds at least this share of the page's
@@ -63,7 +69,7 @@ _COLUMN_MIN_SHARE = 0.25
 _COLUMN_MIN_LINES = 3
 
 
-def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
+def read_pages(pages: Sequence[Page], pypdf_pages: Sequence[PageObject]) -> list[PdfItem]:
     """Every page's lines and tables in reading order, page furniture dropped.
 
     Full-width lines and the columns' outer sides share the document's text margins, so a
@@ -77,7 +83,7 @@ def read_pages(pages: Sequence[Page]) -> list[PdfItem]:
     )
     body_size = body_points(every)
     laid_out = [
-        _page_items(page, index, words[index], margins, body_size)
+        _page_items(page, index, words[index], margins, body_size, pypdf_pages[index])
         for index, page in enumerate(pages)
     ]
     kept = without_page_furniture(
@@ -165,6 +171,7 @@ def _page_items(
     words: Sequence[PdfWord],
     margins: tuple[float, float],
     body_size: float,
+    pypdf_page: PageObject,
 ) -> tuple[float, list[PdfItem]]:
     """One page's lines, tables and picture regions in reading order, with the page height.
 
@@ -178,7 +185,12 @@ def _page_items(
         if cell_count(table) > 1 and any(word_inside(word, float_box(table.bbox)) for word in words)
     ]
     table_boxes = [float_box(table.bbox) for table in tables]
-    cuts = page_cuts(page_graphics(page, words, table_boxes, margins[0]), body_size=body_size)
+    fills: tuple[CompoundFill, ...] = ()
+    if page_has_nested_fill(page):
+        fills = compound_fills(pypdf_page, float(page.height))
+    cuts = page_cuts(
+        page_graphics(page, words, table_boxes, margins[0], fills), body_size=body_size
+    )
     labels = {position for cut in cuts for position in cut.labels}
     body = [
         word

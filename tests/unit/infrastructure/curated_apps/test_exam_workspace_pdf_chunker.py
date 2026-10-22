@@ -394,6 +394,20 @@ def test_drawn_underscore_lines_are_their_own_answer_line_chunks() -> None:
         "<p>1. Vad heter huvudpersonen?</p>"
         "<p>__________________________________________________</p>"
         "<p>__________________________________________________</p>"
+        '<div style="border-bottom: 1px solid black; height: 18pt"></div>'
+        "<p>2. Nästa fråga.</p>"
+    )
+
+    assert [is_answer_line_chunk(chunk) for chunk in chunks] == [False, True, True, False]
+    assert _texts(chunks)[0] == "1. Vad heter huvudpersonen?"
+    assert _texts(chunks)[-1] == "2. Nästa fråga."
+
+
+def test_drawn_svg_line_is_dropped_without_a_chunk() -> None:
+    chunks = _chunks(
+        "<p>1. Vad heter huvudpersonen?</p>"
+        "<p>__________________________________________________</p>"
+        "<p>__________________________________________________</p>"
         '<svg width="440" height="20"><line x1="0" y1="18" x2="440" y2="18" '
         'stroke="black" stroke-width="1"/></svg>'
         "<p>2. Nästa fråga.</p>"

@@ -18,6 +18,11 @@ import re
 from collections.abc import Mapping, Sequence
 from typing import TYPE_CHECKING, Literal
 
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_fill_bands import (  # noqa: E501
+    CompoundFill,
+    matches,
+    nested,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_graphics import (  # noqa: E501
     Box,
     PageGraphics,
@@ -88,6 +93,7 @@ def page_graphics(
     words: Sequence[PdfWord],
     tables: Sequence[tuple[float, float, float, float]],
     text_left: float,
+    fills: Sequence[CompoundFill],
 ) -> PageGraphics:
     """One page's pictures, vector paths, words, visual lines and text tables as boxes."""
 
@@ -107,6 +113,8 @@ def page_graphics(
                     filled=bool(raw.get("fill")) and _visible(raw.get("non_stroking_color")),
                 )
             )
+    if fills:
+        strokes = _expand_compound_fills(strokes, fills)
     index = {id(word): position for position, word in enumerate(words)}
     return PageGraphics(
         width=float(page.width),
@@ -118,6 +126,44 @@ def page_graphics(
         tables=tuple(tables),
         text_left=text_left,
     )
+
+
+def page_has_nested_fill(page: Page) -> bool:
+    """Two filled rects, one inside the other: the page may hold a compound even-odd fill.
+
+    A cheap check before the content-stream scan, so ordinary pages pay nothing.
+    """
+    boxes = [_object_box(raw) for raw in page.rects if raw.get("fill")]
+    return any(
+        nested(first, second) for index, first in enumerate(boxes) for second in boxes[index + 1 :]
+    )
+
+
+def _expand_compound_fills(
+    strokes: list[PdfStroke], fills: Sequence[CompoundFill]
+) -> list[PdfStroke]:
+    """Filled rects matching a recorded rectangle become their compound fill's bands.
+
+    Each fill's matching rects collapse into one copy of its bands, so the split
+    rects never cluster into a solid figure; the thin bands read as drawn lines.
+    """
+    used: list[int] = []
+    kept: list[PdfStroke] = []
+    for stroke in strokes:
+        hit: int | None = None
+        if stroke.kind == "rect" and stroke.filled:
+            for index, fill in enumerate(fills):
+                if any(matches(recorded, stroke.box) for recorded in fill.rects):
+                    hit = index
+                    break
+        if hit is None:
+            kept.append(stroke)
+        elif hit not in used:
+            used.append(hit)
+    for index in used:
+        for band in fills[index].bands:
+            kept.append(PdfStroke(box=band, kind="rect", stroked=False, filled=True))
+    return kept
 
 
 def _font_marks(fontname: str) -> tuple[bool, bool]:
