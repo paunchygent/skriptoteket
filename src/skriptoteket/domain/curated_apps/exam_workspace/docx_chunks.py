@@ -16,7 +16,9 @@ class DocxImage:
 
     ``offset`` is the picture's position in the block's plain text and ``marked_offset``
     its position in ``marked_text``; both count the characters before the picture, so a
-    picture mid-paragraph splits the text instead of moving to the end.
+    picture mid-paragraph splits the text instead of moving to the end. ``docx_shapes`` is
+    the self-contained ``w:drawing`` markup of the Word shapes a drawn picture was made
+    from (TASK-SKRIPT-39-04-22 D8, D12), else None.
     """
 
     payload: bytes
@@ -25,6 +27,7 @@ class DocxImage:
     marked_offset: int = 0
     width: int | None = None
     height: int | None = None
+    docx_shapes: str | None = None
 
     @property
     def asset_id(self) -> str:
