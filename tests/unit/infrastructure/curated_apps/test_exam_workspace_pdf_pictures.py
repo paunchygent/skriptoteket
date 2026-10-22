@@ -548,6 +548,90 @@ def test_text_over_a_picture_stays_text_and_paints_white_in_the_cut() -> None:
     )
 
 
+def _with_blue_ops(base: bytes, ops: bytes) -> bytes:
+    from pypdf.generic import DecodedStreamObject
+
+    reader = PdfReader(io.BytesIO(base))
+    writer = PdfWriter()
+    page = writer.add_page(reader.pages[0])
+    contents = page.get_contents()
+    assert contents is not None
+    stream = DecodedStreamObject()
+    stream.set_data(contents.get_data() + b"\nq 0 0 1 rg " + ops + b" Q\n")
+    page.replace_contents(stream)  # type: ignore[arg-type]
+    output = io.BytesIO()
+    writer.write(output)
+    return output.getvalue()
+
+
+def _two_paragraph_base() -> bytes:
+    return pdf_bytes(
+        '<p>1. Beskriv rektangeln.</p><div style="height:350pt"></div><p>2. Fortsätt.</p>'
+    )
+
+
+def _assert_centre_blue(payload: bytes) -> None:
+    with Image.open(io.BytesIO(payload)) as shot:
+        rgb = shot.convert("RGB")
+        width, height = rgb.size
+        points = [
+            (width // 2, height // 2),
+            (width // 2 - 10, height // 2),
+            (width // 2 + 10, height // 2),
+            (width // 2, height // 2 - 10),
+            (width // 2, height // 2 + 10),
+        ]
+        for point in points:
+            pixel = rgb.getpixel(point)
+            assert isinstance(pixel, tuple)
+            assert pixel[2] > 200 and pixel[0] < 80 and pixel[1] < 80, (point, pixel)
+
+
+def test_two_independent_fills_make_one_solid_blue_figure() -> None:
+    content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re f* 100 201 200 79 re f*")
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    _assert_centre_blue(_assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor))
+
+
+def test_one_compound_evenodd_fill_makes_one_figure() -> None:
+    content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re 100 201 200 79 re f*")
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    payload = _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor)
+    _ink_box(payload)
+
+
+def test_single_fill_makes_one_figure() -> None:
+    content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re f*")
+    chunks = PdfPlumberExamChunker().chunk(content=content)
+
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
+    assert len(drawings) == 1
+    _assert_centre_blue(_assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor))
+
+
+def test_fill_only_box_behind_text_is_shading_not_a_picture() -> None:
+    chunks = _chunks(
+        "<p>1. Läs rutan.</p>"
+        '<svg width="240" height="150">'
+        '<rect x="40" y="30" width="150" height="100" fill="blue"/>'
+        '<text x="70" y="80" font-size="12">Svar: 42</text></svg>'
+        "<p>2. Fortsätt.</p>"
+    )
+
+    assert all(chunk.kind != "drawing" for chunk in chunks)
+    joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
+    assert "Svar" in joined and "42" in joined
+
+
 def test_boxed_answer_stays_text_and_interior_paints_white() -> None:
     chunks = _chunks(
         "<p>1. Beskriv figuren.</p>"

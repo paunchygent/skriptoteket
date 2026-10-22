@@ -344,18 +344,6 @@ def test_line_straddling_hull_gives_none_of_its_words_while_inside_labels_stay()
     assert cuts[0].labels == frozenset({3})
 
 
-def test_evenodd_border_ring_reads_as_its_thin_band_and_makes_no_cut() -> None:
-    strokes = (
-        PdfStroke(
-            box=(77.0, 139.0, 518.0, 157.0), kind="rect", stroked=False, filled=True, evenodd=True
-        ),
-        PdfStroke(
-            box=(77.0, 139.0, 518.0, 158.0), kind="rect", stroked=False, filled=True, evenodd=True
-        ),
-    )
-    assert page_cuts(_page(strokes=strokes), body_size=_BODY) == ()
-
-
 def test_filled_rectangle_without_outline_is_a_figure() -> None:
     strokes = (_stroke((100.0, 100.0, 250.0, 200.0), kind="rect", stroked=False, filled=True),)
     cuts = page_cuts(_page(strokes=strokes), body_size=_BODY)

@@ -105,7 +105,6 @@ def page_graphics(
                     kind=kind,
                     stroked=bool(raw.get("stroke")) and _visible(raw.get("stroking_color")),
                     filled=bool(raw.get("fill")) and _visible(raw.get("non_stroking_color")),
-                    evenodd=bool(raw.get("evenodd")),
                 )
             )
     index = {id(word): position for position, word in enumerate(words)}

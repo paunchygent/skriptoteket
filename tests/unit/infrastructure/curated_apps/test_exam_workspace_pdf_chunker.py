@@ -394,7 +394,8 @@ def test_drawn_underscore_lines_are_their_own_answer_line_chunks() -> None:
         "<p>1. Vad heter huvudpersonen?</p>"
         "<p>__________________________________________________</p>"
         "<p>__________________________________________________</p>"
-        '<div style="border-bottom: 1px solid black; height: 18pt"></div>'
+        '<svg width="440" height="20"><line x1="0" y1="18" x2="440" y2="18" '
+        'stroke="black" stroke-width="1"/></svg>'
         "<p>2. Nästa fråga.</p>"
     )
 

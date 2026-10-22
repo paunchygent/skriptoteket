@@ -13,9 +13,7 @@ Rules:
     figure with no labels, unless a visual line starting at the left text
     margin reaches into it (a paragraph or page border, no cut). A ``rect``
     stroke holding such a margin line is a border and is dropped before
-    clustering. A placed picture of any size is a picture cut. An even-odd filled
-    rect nested in another one paints only the bands between them, so a border drawn
-    that way is read as its thin bands.
+    clustering. A placed picture of any size is a picture cut.
 
 Relationships:
     The layout adapter builds ``PageGraphics`` from pdfplumber page objects;
@@ -39,9 +37,6 @@ class PdfStroke:
     kind: Literal["line", "rect", "curve"]
     stroked: bool  # draws a visible (non-white) outline
     filled: bool  # draws a visible (non-white) fill
-    # Filled by the even-odd rule: a rect nested in another such rect paints only the
-    # band between the two, as a CSS border drawn as two filled rects does.
-    evenodd: bool = False
 
 
 @dataclass(frozen=True)
@@ -132,55 +127,11 @@ def _box_holds_margin_line(graphics: PageGraphics, box: Box) -> bool:
     return False
 
 
-def _is_evenodd_fill(stroke: PdfStroke) -> bool:
-    return stroke.kind == "rect" and stroke.evenodd and stroke.filled and not stroke.stroked
-
-
-def _painted(strokes: tuple[PdfStroke, ...]) -> tuple[PdfStroke, ...]:
-    """The strokes as painted: an even-odd filled rect nested in another one leaves
-    only the bands between the two, each a filled rect of its own."""
-    inner_of: dict[int, int] = {}
-    for outer_index, outer in enumerate(strokes):
-        if not _is_evenodd_fill(outer):
-            continue
-        for inner_index, inner in enumerate(strokes):
-            if (
-                inner_index != outer_index
-                and inner_index not in inner_of
-                and outer_index not in inner_of.values()
-                and _is_evenodd_fill(inner)
-                and inner.box != outer.box
-                and outer.box[0] <= inner.box[0]
-                and outer.box[1] <= inner.box[1]
-                and inner.box[2] <= outer.box[2]
-                and inner.box[3] <= outer.box[3]
-            ):
-                inner_of[inner_index] = outer_index
-                break
-    paired = set(inner_of) | set(inner_of.values())
-    painted = [stroke for index, stroke in enumerate(strokes) if index not in paired]
-    for inner_index, outer_index in inner_of.items():
-        (ox0, otop, ox1, obottom) = strokes[outer_index].box
-        (ix0, itop, ix1, ibottom) = strokes[inner_index].box
-        bands: tuple[Box, ...] = (
-            (ox0, otop, ox1, itop),
-            (ox0, ibottom, ox1, obottom),
-            (ox0, itop, ix0, ibottom),
-            (ix1, itop, ox1, ibottom),
-        )
-        painted.extend(
-            PdfStroke(box=band, kind="rect", stroked=False, filled=True)
-            for band in bands
-            if band[2] > band[0] and band[3] > band[1]
-        )
-    return tuple(painted)
-
-
 def _kept_strokes(graphics: PageGraphics) -> tuple[PdfStroke, ...]:
     """Strokes that can start a cut; shading, table rules and borders are out."""
     grown_tables = tuple(_grown(box, _TABLE_SLACK_POINTS) for box in graphics.tables)
     kept: list[PdfStroke] = []
-    for stroke in _painted(graphics.strokes):
+    for stroke in graphics.strokes:
         if not stroke.stroked and not stroke.filled:
             continue
         centre = _centre(stroke.box)
