@@ -1,5 +1,10 @@
 ## Current
 
+- 39-04-24 planning, owner Codex `01a1647b`: user accepted AI-output-received
+  counts; batches stay 16, saved/editable status stays separate. Decisions closed;
+  next: publish task contract. Streamed charge settlement is an execution dependency.
+  Retained `01a1647c-736c-7c8c-827d-c8b616ccb074`, evidence/planning/accepted-progress-contract.md.
+
 - 41-02-05 follow-up (unscheduled): D24 a server claim per draft_id.
 
 - Hemma orchestrator 2026-10-22:
