@@ -23,6 +23,8 @@ _PICTURE_ASPECT = 3 / 2
 _PICTURE_TOLERANCE = 0.05
 
 _TRIANGLE_CORNERS = ((20, 130), (180, 130), (100, 20))
+# Union of the triangle corners and the label anchors below: x 20..180, y 12..144.
+_TRIANGLE_ASPECT = 160 / 132
 # The triangle on its own, without its outside labels: x 20..180, y 20..130.
 _TRIANGLE_ONLY_ASPECT = 160 / 110
 _GENEROUS_CUT_TOLERANCE = 0.15
@@ -129,26 +131,20 @@ def test_embedded_picture_between_questions_becomes_one_drawing_chunk_between_th
     _assert_picture_aspect(_assert_drawing_chunk(chunks[1], anchor="body:0002"))
 
 
-def test_drawn_triangle_with_outside_labels_keeps_a_generous_triangle_only_cut() -> None:
+def test_drawn_triangle_with_labels_becomes_one_generous_drawing_chunk() -> None:
     chunks = _chunks(
         "<p>Fråga 1. Beskriv triangeln med hörnen.</p>"
         f"<p>{_triangle_figure(('A', 'B', 'C'))}</p>"
         "<p>Fråga 2. Gå vidare.</p>"
     )
 
-    assert [chunk.kind for chunk in chunks] == [
-        "paragraph",
-        "paragraph",
-        "drawing",
-        "paragraph",
-        "paragraph",
-    ]
-    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 6)]
-    payload = _assert_drawing_chunk(chunks[2], anchor="body:0003")
-    _assert_generous_cut(payload, expected_aspect=_TRIANGLE_ONLY_ASPECT)
+    assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
+    assert [chunk.anchor for chunk in chunks] == ["body:0001", "body:0002", "body:0003"]
+    payload = _assert_drawing_chunk(chunks[1], anchor="body:0002")
+    _assert_generous_cut(payload, expected_aspect=_TRIANGLE_ASPECT)
 
 
-def test_triangle_labels_outside_the_outline_are_read_as_text() -> None:
+def test_figure_labels_are_not_emitted_as_text() -> None:
     labels = ("A", "B", "C")
     chunks = _chunks(
         "<p>Fråga 1. Beskriv triangeln med hörnen.</p>"
@@ -157,11 +153,9 @@ def test_triangle_labels_outside_the_outline_are_read_as_text() -> None:
     )
 
     texts = [chunk.text for chunk in chunks if chunk.kind != "drawing"]
-    joined = " ".join(texts)
-    assert "Fråga 1. Beskriv triangeln med hörnen." in joined
-    assert "Fråga 2. Gå vidare." in joined
-    for label in labels:
-        assert label in joined.split()
+    assert texts == ["Fråga 1. Beskriv triangeln med hörnen.", "Fråga 2. Gå vidare."]
+    words = {word for text in texts for word in text.split()}
+    assert not (set(labels) & words)
 
 
 def test_drawn_answer_lines_under_svar_give_no_drawing_chunk() -> None:
@@ -182,19 +176,15 @@ def test_two_drawn_figures_separated_by_a_paragraph_give_two_drawing_chunks_in_o
 
     assert [chunk.kind for chunk in chunks] == [
         "paragraph",
-        "paragraph",
         "drawing",
         "paragraph",
-        "paragraph",
-        "paragraph",
         "drawing",
-        "paragraph",
         "paragraph",
     ]
-    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 10)]
-    assert chunks[4].text == "Fråga 2. Jämför med nästa triangel."
-    first = _assert_drawing_chunk(chunks[2], anchor="body:0003")
-    second = _assert_drawing_chunk(chunks[6], anchor="body:0007")
+    assert [chunk.anchor for chunk in chunks] == [f"body:{index:04d}" for index in range(1, 6)]
+    assert chunks[2].text == "Fråga 2. Jämför med nästa triangel."
+    first = _assert_drawing_chunk(chunks[1], anchor="body:0002")
+    second = _assert_drawing_chunk(chunks[3], anchor="body:0004")
     assert first != second
 
 
@@ -428,7 +418,7 @@ def _white_pixels(payload: bytes) -> int:
     return sum(1 for pixel in data if min(pixel) >= 250)
 
 
-def test_italic_answer_line_under_a_triangle_stays_text() -> None:
+def test_italic_answer_line_under_a_triangle_is_a_label_accepted_residual() -> None:
     chunks = _chunks(
         "<p>1. Beskriv figuren.</p>"
         '<svg width="240" height="180"><polygon points="40,130 200,130 120,20" '
@@ -441,15 +431,15 @@ def test_italic_answer_line_under_a_triangle_stays_text() -> None:
         "paragraph",
         "drawing",
         "paragraph",
-        "paragraph",
     ]
     joined = " ".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
-    assert "Svar" in joined and "42" in joined
+    assert "Svar" not in joined and "42" not in joined
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
     assert len(drawings) == 1
+    # The cut covers the triangle (y 20..130) and the answer under it (to about y 148).
     _assert_generous_cut(
         _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
-        expected_aspect=160 / 110,
+        expected_aspect=160 / 128,
     )
 
 
@@ -473,7 +463,7 @@ def test_plain_rectangle_with_dimension_stays_a_figure_and_text() -> None:
     )
 
 
-def test_chart_keeps_axes_and_reads_tick_and_title_as_text() -> None:
+def test_chart_tick_is_a_label_while_title_stays_text() -> None:
     chunks = _chunks(
         "<p>1. Beskriv figuren.</p>"
         '<svg width="240" height="200">'
@@ -488,11 +478,12 @@ def test_chart_keeps_axes_and_reads_tick_and_title_as_text() -> None:
     assert len(drawings) == 1
     rest = chunks[chunks.index(drawings[0]) + 1 :]
     after = [chunk.text for chunk in rest if chunk.kind != "drawing"]
-    assert "10" in " ".join(after).split()
+    assert "10" not in " ".join(after).split()
     assert "Tid" in " ".join(after) and "sekunder" in " ".join(after)
+    # The cut covers the axes (y 20..130) and the tick under them (to about y 143).
     _assert_generous_cut(
         _assert_drawing_chunk(drawings[0], anchor=drawings[0].anchor),
-        expected_aspect=160 / 110,
+        expected_aspect=160 / 123,
     )
 
 

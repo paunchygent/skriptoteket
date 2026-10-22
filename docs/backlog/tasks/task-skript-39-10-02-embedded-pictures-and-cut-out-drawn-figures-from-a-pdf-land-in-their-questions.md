@@ -118,3 +118,12 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
   (F6). The reviewer's probes are reader tests that fail on ce01ebcd9 and pass now.
   Proof in retained root `evidence/proof/repair/`, with before and after examples of each
   cost in `examples/`.
+- Rereview `changes_requested` (F1-F3, `evidence/reviews/review-39-10-02-rereview.md`);
+  second repair round by the user's decisions T5 and T9, replacing two first-round rules
+  above: the even-odd band rule is removed, so two nested fills are one filled figure
+  (T9); a figure again keeps its ring labels, so a triangle's A, B and C and an axis tick
+  are in the picture and not in the text (T5, T3 as written). A box drawing takes ring
+  labels but no words inside it (T7). F1 and F3 are accepted residuals (T5). Measured
+  limit: a line more than half a body size above or below a figure (an axis title one
+  line further down, "8 cm" 8 pt under a rectangle) stays text. Proof in
+  `evidence/proof/repair/r5b/`.

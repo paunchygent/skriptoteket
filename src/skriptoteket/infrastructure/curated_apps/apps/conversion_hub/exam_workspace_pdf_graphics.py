@@ -5,15 +5,19 @@ lines and ruled-table boxes into cut regions (pictures and figures) with their
 label words, using only deterministic box predicates. No text is inspected.
 
 Rules:
-    A figure owns only the words whose centre lies inside its drawn outline
-    grown by ``_LABEL_INSIDE_POINTS``. A visual line straddling the grown hull
-    (some words inside, some outside) gives none of its words. The cut box is
-    the hull grown by the margin and stopped short of every non-label word.
-    A cluster without images whose strokes all lie on the hull boundary is a
-    figure with no labels, unless a visual line starting at the left text
-    margin reaches into it (a paragraph or page border, no cut). A ``rect``
-    stroke holding such a margin line is a border and is dropped before
-    clustering. A placed picture of any size is a picture cut.
+    A figure owns the words whose centre lies inside its drawn outline grown by
+    ``_LABEL_INSIDE_POINTS``, plus the visual lines in one ring around it: a ring
+    line lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes sideways
+    and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, wholly within the side
+    reach, and never starts at the left text margin. A line straddling the grown
+    hull (some words inside, some outside) gives none of its words; a ring line is
+    always a whole line. The cut box covers the hull and the labels, grown by the
+    margin and stopped short of every non-label word. A cluster without images
+    whose strokes all lie on the hull boundary is an outline-only figure: it owns
+    no words inside it, but takes ring labels such as a dimension below it. Such a
+    box holding a margin-starting line is a paragraph or page border (no cut), and
+    a ``rect`` stroke holding one is dropped before clustering. A placed picture of
+    any size is a picture cut. An axis title one ring further out is read as text.
 
 Relationships:
     The layout adapter builds ``PageGraphics`` from pdfplumber page objects;
@@ -66,8 +70,17 @@ _THIN_POINTS = 2.0  # a stroke at most this thick reads as a thin rule
 _TABLE_SLACK_POINTS = 2.0  # table boxes grow this far when swallowing their rules
 _JOIN_RATIO = 0.5  # each graphic grows this many body sizes per side before joining
 _LABEL_INSIDE_POINTS = 1.0  # the hull grows this far when catching inside labels
-# A line starting this close to the document's left text margin is body text; when it
-# reaches into a boundary box the box is a paragraph or page border, never a figure.
+# A label line beside the drawing: at most this many body sizes away from the hull
+# sideways, and wholly within that reach left and right of it.
+_LABEL_SIDE_RATIO = 1.5
+# A label line above or below the drawing: at most this many body sizes of white space
+# from the hull. Body text after a figure usually sits further off; an axis title one
+# ring further out is read as text, a duplicate the teacher can delete.
+_LABEL_VERTICAL_RATIO = 0.5
+# A line starting this close to the document's left text margin is body text, never a
+# ring label: paragraphs start there, a figure's labels sit by the drawing. When such
+# a line reaches into a boundary box the box is a paragraph or page border, never a
+# figure.
 _MARGIN_START_POINTS = 1.0
 _MARGIN_RATIO = 1.0  # a figure cut grows this many body sizes past hull and labels
 _WORD_CLEARANCE_POINTS = 1.0  # a figure margin stops this short of neighbouring words
@@ -214,13 +227,20 @@ def _on_boundary(stroke: PdfStroke, hull: Box) -> bool:
     return False
 
 
-def _figure_labels(graphics: PageGraphics, grown_hull: Box) -> frozenset[int]:
-    """Words inside the grown hull, except the words of a line that straddles it.
+def _figure_labels(
+    graphics: PageGraphics, hull: Box, grown_hull: Box, body_size: float
+) -> frozenset[int]:
+    """Hull-inside words plus the visual lines in the ring around the hull, one ring.
 
-    A figure owns only the words whose centre lies inside the hull grown by
-    ``_LABEL_INSIDE_POINTS``. A visual line with some words inside the grown hull and
-    some outside gives none of its words: the whole line stays text.
+    A ring line lies outside the hull, within ``_LABEL_SIDE_RATIO`` body sizes of it
+    sideways and ``_LABEL_VERTICAL_RATIO`` body sizes above or below, and wholly within
+    the side reach left and right, so a wrapped text line beside the figure is no label.
+    A line starting at the left text margin is a paragraph, never a ring label. A visual
+    line with some words inside the grown hull and some outside gives none of its words:
+    the whole line stays text; a ring line is always a whole line.
     """
+    side = _LABEL_SIDE_RATIO * body_size
+    vertical = _LABEL_VERTICAL_RATIO * body_size
     labels = {
         index for index, word in enumerate(graphics.words) if _centre_inside(word, grown_hull)
     }
@@ -229,8 +249,17 @@ def _figure_labels(graphics: PageGraphics, grown_hull: Box) -> frozenset[int]:
         if not members:
             continue
         inside = [index for index in members if index in labels]
-        if inside and len(inside) != len(members):
-            labels.difference_update(inside)
+        if inside:
+            if len(inside) != len(members):
+                labels.difference_update(inside)
+            continue
+        box = _union(tuple(graphics.words[index] for index in members))
+        horizontal_gap = max(0.0, box[0] - hull[2], hull[0] - box[2])
+        vertical_gap = max(0.0, box[1] - hull[3], hull[1] - box[3])
+        within_reach = box[0] >= hull[0] - side and box[2] <= hull[2] + side
+        at_margin = abs(box[0] - graphics.text_left) <= _MARGIN_START_POINTS
+        if horizontal_gap <= side and vertical_gap <= vertical and within_reach and not at_margin:
+            labels.update(members)
     return frozenset(labels)
 
 
@@ -297,7 +326,8 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
     """Cut regions for one page's pictures and drawn figures, top to bottom then left.
 
     A placed picture of any size is a picture cut. A cluster without images whose
-    strokes all lie on the hull boundary is a figure with no labels, unless a
+    strokes all lie on the hull boundary is an outline-only figure: it owns no words
+    inside it, but takes ring labels such as a dimension below it, unless a
     margin-starting line reaches into it (a paragraph or page border, no cut).
     """
     strokes = _kept_strokes(graphics)
@@ -313,6 +343,7 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
         hull = _union(members)
         width = hull[2] - hull[0]
         height = hull[3] - hull[1]
+        outline_only = False
         if not member_images:
             if all(_is_horizontal_thin(stroke.box) for stroke in member_strokes):
                 continue
@@ -323,23 +354,21 @@ def page_cuts(graphics: PageGraphics, *, body_size: float) -> tuple[PdfCut, ...]
             if all(_on_boundary(stroke, hull) for stroke in member_strokes):
                 if _box_holds_margin_line(graphics, hull):
                     continue
-                cuts.append(
-                    PdfCut(
-                        kind="figure",
-                        box=_figure_box(hull, graphics, frozenset(), body_size),
-                        labels=frozenset(),
-                    )
-                )
-                continue
+                outline_only = True
         elif all(_on_boundary(stroke, hull) for stroke in member_strokes):
             cuts.append(PdfCut(kind="picture", box=hull, labels=_picture_labels(graphics, hull)))
             continue
         grown_hull = _grown(hull, grown_hull_slack)
-        labels = _figure_labels(graphics, grown_hull)
+        labels = _figure_labels(graphics, hull, grown_hull, body_size)
+        if outline_only:
+            labels = frozenset(
+                index for index in labels if not _centre_inside(graphics.words[index], grown_hull)
+            )
+        union = _union((hull, *[graphics.words[index] for index in labels])) if labels else hull
         cuts.append(
             PdfCut(
                 kind="figure",
-                box=_figure_box(hull, graphics, labels, body_size),
+                box=_figure_box(union, graphics, labels, body_size),
                 labels=labels,
             )
         )

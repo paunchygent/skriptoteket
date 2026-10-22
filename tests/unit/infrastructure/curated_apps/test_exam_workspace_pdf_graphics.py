@@ -68,7 +68,7 @@ def test_image_alone_is_picture_with_inside_label() -> None:
     assert cuts == (PdfCut(kind="picture", box=image, labels=frozenset({0})),)
 
 
-def test_triangle_with_outside_words_has_no_labels() -> None:
+def test_triangle_with_ring_labels_owns_them() -> None:
     words = (
         (84.0, 140.0, 98.0, 148.0),
         (202.0, 140.0, 214.0, 148.0),
@@ -81,8 +81,8 @@ def test_triangle_with_outside_words_has_no_labels() -> None:
     assert len(cuts) == 1
     cut = cuts[0]
     assert cut.kind == "figure"
-    assert cut.labels == frozenset()
-    assert cut.box == (99.0, 89.0, 201.0, 181.0)
+    assert cut.labels == frozenset({0, 1, 2})
+    assert cut.box == (73.0, 89.0, 225.0, 199.0)
 
 
 def test_wide_sentence_line_is_not_label_and_stops_margin() -> None:
@@ -103,14 +103,18 @@ def test_wide_sentence_line_is_not_label_and_stops_margin() -> None:
     assert cut.box == (89.0, 89.0, 211.0, 184.0)
 
 
-def test_short_lines_near_figure_are_body_text_not_labels() -> None:
+def test_short_indented_line_is_label_while_margin_line_is_body_text() -> None:
     strokes = (_stroke((100.0, 100.0, 200.0, 180.0), kind="curve"),)
     words = ((100.0, 182.0, 130.0, 193.0), (133.0, 182.0, 180.0, 193.0))
     margin_page = _page(strokes=strokes, words=words, lines=((0, 1),), text_left=100.0)
     indented_page = _page(strokes=strokes, words=words, lines=((0, 1),), text_left=70.0)
 
-    assert page_cuts(margin_page, body_size=_BODY)[0].labels == frozenset()
-    assert page_cuts(indented_page, body_size=_BODY)[0].labels == frozenset()
+    margin_cut = page_cuts(margin_page, body_size=_BODY)[0]
+    assert margin_cut.labels == frozenset()
+    assert margin_cut.box == (89.0, 89.0, 211.0, 181.0)
+    indented_cut = page_cuts(indented_page, body_size=_BODY)[0]
+    assert indented_cut.labels == frozenset({0, 1})
+    assert indented_cut.box == (89.0, 89.0, 211.0, 204.0)
 
 
 def test_page_sized_picture_is_a_picture_cut_without_labels() -> None:
@@ -210,7 +214,7 @@ def test_page_border_rect_is_ignored_and_curve_stays_figure() -> None:
     assert cuts[0].box == (89.0, 89.0, 211.0, 191.0)
 
 
-def test_triangle_with_indented_answer_line_below_has_no_labels() -> None:
+def test_triangle_with_indented_answer_line_below_reads_it_as_label_accepted_residual() -> None:
     words = ((120.0, 183.0, 150.0, 193.0), (153.0, 183.0, 190.0, 193.0))
     cuts = page_cuts(
         _page(strokes=_triangle(), words=words, lines=((0, 1),), text_left=70.0),
@@ -219,11 +223,11 @@ def test_triangle_with_indented_answer_line_below_has_no_labels() -> None:
     assert len(cuts) == 1
     cut = cuts[0]
     assert cut.kind == "figure"
-    assert cut.labels == frozenset()
-    assert cut.box[3] < 183.0
+    assert cut.labels == frozenset({0, 1})
+    assert cut.box == (89.0, 89.0, 211.0, 204.0)
 
 
-def test_rect_with_word_below_is_figure_without_labels() -> None:
+def test_rect_with_dimension_below_reads_dimension_as_label() -> None:
     cuts = page_cuts(
         _page(
             strokes=(_stroke((40.0, 30.0, 190.0, 130.0), kind="rect"),),
@@ -235,8 +239,8 @@ def test_rect_with_word_below_is_figure_without_labels() -> None:
     )
     assert len(cuts) == 1
     assert cuts[0].kind == "figure"
-    assert cuts[0].labels == frozenset()
-    assert cuts[0].box[3] < 133.0
+    assert cuts[0].labels == frozenset({0})
+    assert cuts[0].box == (29.0, 19.0, 201.0, 154.0)
 
 
 def test_four_lines_forming_box_is_figure() -> None:
@@ -311,7 +315,7 @@ def test_large_picture_between_paragraphs_is_picture() -> None:
     assert cuts == (PdfCut(kind="picture", box=image, labels=frozenset()),)
 
 
-def test_axis_with_tick_and_title_has_no_labels() -> None:
+def test_axis_tick_is_label_while_title_one_ring_out_is_text() -> None:
     strokes = (
         _stroke((40.0, 120.0, 200.0, 122.0)),
         _stroke((40.0, 20.0, 42.0, 120.0)),
@@ -324,8 +328,9 @@ def test_axis_with_tick_and_title_has_no_labels() -> None:
     )
     assert len(cuts) == 1
     assert cuts[0].kind == "figure"
-    assert cuts[0].labels == frozenset()
-    assert cuts[0].box[3] < 123.0
+    assert cuts[0].labels == frozenset({0})
+    assert cuts[0].box == (29.0, 9.0, 211.0, 144.0)
+    assert cuts[0].box[3] < 145.0
 
 
 def test_line_straddling_hull_gives_none_of_its_words_while_inside_labels_stay() -> None:
