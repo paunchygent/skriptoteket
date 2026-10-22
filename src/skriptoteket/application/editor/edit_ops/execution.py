@@ -18,6 +18,7 @@ from .constants import (
     INVALID_OPS_ERROR,
     MESSAGE_TOO_LONG,
     PATCH_ONLY_REQUIRED_ERROR,
+    PROPOSAL_READY_MESSAGE,
 )
 
 
@@ -142,7 +143,10 @@ def _answer_outcome(
             log_outcome = "non_patch_ops"
         else:
             ops = parsed.ops
-            assistant_message = parsed.assistant_message.strip() or assistant_message
+            # A valid proposal without the model's own words gets a neutral
+            # message, never the failure text.
+            fallback = PROPOSAL_READY_MESSAGE if ops else assistant_message
+            assistant_message = parsed.assistant_message.strip() or fallback
             eval_outcome = "ok" if ops else "empty"
             log_outcome = eval_outcome
 

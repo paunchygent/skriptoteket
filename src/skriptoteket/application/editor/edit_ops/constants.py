@@ -14,6 +14,7 @@ AI_DOOR_BUSY_FAILURE_OUTCOME = "ai_door_busy"
 IN_FLIGHT_MESSAGE = "En chatförfrågan pågår redan. Försök igen om en stund."
 DISABLED_MESSAGE = "AI-redigering är inte tillgänglig just nu. Försök igen senare."
 MESSAGE_TOO_LONG = "För långt meddelande: korta ned eller starta en ny chatt."
+PROPOSAL_READY_MESSAGE = "Här är mitt ändringsförslag."
 GENERATION_ERROR = "Jag kunde inte skapa ett ändringsförslag just nu. Försök igen."
 INVALID_OPS_ERROR = "Jag kunde inte skapa ett giltigt ändringsförslag. Försök igen."
 PATCH_ONLY_REQUIRED_ERROR = (

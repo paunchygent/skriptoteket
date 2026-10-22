@@ -16,7 +16,7 @@ export function useEditorChat(options: UseEditorChatOptions) {
   const streaming = ref(false);
   const error = ref<string | null>(null);
   const { scheduleRevealTick, resetReveal } = useEditorChatReveal(messages);
-  const { sendMessage, cancel, resetRequest } = useEditorChatRequest(options, {
+  const { sendMessage: sendRequest, cancel, resetRequest } = useEditorChatRequest(options, {
     messages,
     streaming,
     error,
@@ -58,6 +58,30 @@ export function useEditorChat(options: UseEditorChatOptions) {
     }
   }
 
+  // A question sent while "Ny chatt" is still deleting waits for the delete, so the
+  // clear never wipes it and the server never sees the turn before the delete.
+  let pendingClear: Promise<void> | null = null;
+
+  async function sendMessage(message: string): Promise<void> {
+    if (pendingClear) {
+      await pendingClear;
+    }
+    await sendRequest(message);
+  }
+
+  async function clearRemote(id: string): Promise<void> {
+    try {
+      await clearChatHistory(id);
+      messages.value = [];
+    } catch (err: unknown) {
+      if (isApiError(err)) {
+        error.value = err.message;
+      } else {
+        error.value = CLEAR_ERROR_MESSAGE;
+      }
+    }
+  }
+
   async function clear(): Promise<void> {
     cancel();
 
@@ -69,14 +93,13 @@ export function useEditorChat(options: UseEditorChatOptions) {
 
     error.value = null;
 
+    const run = clearRemote(toolId.value);
+    pendingClear = run;
     try {
-      await clearChatHistory(toolId.value);
-      messages.value = [];
-    } catch (err: unknown) {
-      if (isApiError(err)) {
-        error.value = err.message;
-      } else {
-        error.value = CLEAR_ERROR_MESSAGE;
+      await run;
+    } finally {
+      if (pendingClear === run) {
+        pendingClear = null;
       }
     }
   }
