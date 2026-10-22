@@ -357,7 +357,7 @@ def _drawn_figures(document: DocxDocument, element: CT_P, *, anchor: str) -> tup
                     marked_offset=0,
                     width=width,
                     height=height,
-                    docx_shapes=self_contained_shapes(drawing),
+                    docx_shapes=self_contained_shapes(drawing, figure),
                 )
             )
     except (UnsupportedShapeFigure, LabelerSourceImageUnavailable):

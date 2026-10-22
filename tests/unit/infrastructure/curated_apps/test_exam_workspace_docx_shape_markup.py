@@ -9,8 +9,14 @@ from docx.oxml.ns import qn
 from docx.oxml.xmlchemy import BaseOxmlElement
 from lxml import etree  # type: ignore[import-untyped]
 
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_figure import (  # noqa: E501
+    ShapeFigure,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_markup import (  # noqa: E501
     self_contained_shapes,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_shape_reader import (  # noqa: E501
+    read_shape_figure,
 )
 
 _FIXTURE = Path("tests/fixtures/exam_conversion/pdf_corpus/metodprov_med_bilder.docx")
@@ -24,8 +30,9 @@ _NS = (
 )
 
 
-def _fixture_drawings() -> list[BaseOxmlElement]:
-    body = Document(str(_FIXTURE)).element.body
+def _fixture_drawings() -> list[tuple[BaseOxmlElement, ShapeFigure]]:
+    document = Document(str(_FIXTURE))
+    body = document.element.body
     drawings = [
         drawing
         for child in body
@@ -33,11 +40,14 @@ def _fixture_drawings() -> list[BaseOxmlElement]:
         if next(drawing.iter(_WPG), None) is not None
     ]
     assert len(drawings) == 2
-    return drawings
+    return [(drawing, read_shape_figure(drawing, document)) for drawing in drawings]
 
 
 def _drawing(inner: str) -> BaseOxmlElement:
     return parse_xml(f"<w:drawing {_NS}>{inner}</w:drawing>")
+
+
+_NO_FIGURE = ShapeFigure(width_emu=1, height_emu=1, shapes=())
 
 
 def _canonical(element: BaseOxmlElement) -> bytes:
@@ -48,7 +58,7 @@ def _canonical(element: BaseOxmlElement) -> bytes:
 def test_fixture_drawings_come_back_as_standalone_group_markup() -> None:
     first, second = _fixture_drawings()
 
-    markups = [self_contained_shapes(first), self_contained_shapes(second)]
+    markups = [self_contained_shapes(*first), self_contained_shapes(*second)]
 
     for markup, labels in zip(
         markups,
@@ -70,39 +80,59 @@ def test_fixture_drawings_come_back_as_standalone_group_markup() -> None:
         assert "urn:schemas-microsoft-com:vml" not in markup
 
 
-def test_returned_markup_reparses_to_the_original_subtree() -> None:
-    for drawing in _fixture_drawings():
+def test_returned_markup_keeps_the_subtree_apart_from_what_it_states_itself() -> None:
+    for drawing, figure in _fixture_drawings():
         before = _canonical(drawing)
 
-        markup = self_contained_shapes(drawing)
+        markup = self_contained_shapes(drawing, figure)
 
         assert markup is not None
         reparsed = etree.fromstring(
             markup.encode(), etree.XMLParser(resolve_entities=False, no_network=True)
         )
-        assert _canonical(reparsed) == before
+        assert [e.get("id") for e in reparsed.iter(qn("wp:docPr"))] == [
+            e.get("id") for e in drawing.iter(qn("wp:docPr"))
+        ]
+        assert [e.get("prst") for e in reparsed.iter("{*}prstGeom")] == [
+            e.get("prst") for e in drawing.iter("{*}prstGeom")
+        ]
+        assert [t.text for t in reparsed.iter(qn("w:t"))] == [
+            t.text for t in drawing.iter(qn("w:t"))
+        ]
+        assert next(reparsed.iter("{*}schemeClr"), None) is None
+        assert next(reparsed.iter("{*}style"), None) is None
         assert _canonical(drawing) == before
 
 
 def test_source_tree_is_left_untouched_by_the_serialization() -> None:
-    drawing = _fixture_drawings()[0]
+    drawing, figure = _fixture_drawings()[0]
     parent = drawing.getparent()
+    before = _canonical(drawing)
 
-    self_contained_shapes(drawing)
+    self_contained_shapes(drawing, figure)
 
     assert drawing.getparent() is parent
+    assert _canonical(drawing) == before
+
+
+def test_shapes_that_do_not_pair_with_the_figure_are_not_stored() -> None:
+    drawing, figure = _fixture_drawings()[0]
+
+    assert (
+        self_contained_shapes(drawing, ShapeFigure(figure.width_emu, figure.height_emu, ())) is None
+    )
 
 
 def test_picture_embed_makes_the_drawing_not_self_contained() -> None:
     drawing = _drawing('<a:blip r:embed="rId5"/>')
 
-    assert self_contained_shapes(drawing) is None
+    assert self_contained_shapes(drawing, _NO_FIGURE) is None
 
 
 def test_hyperlink_relationship_makes_the_drawing_not_self_contained() -> None:
     drawing = _drawing('<a:hlinkClick r:id="rId7"/>')
 
-    assert self_contained_shapes(drawing) is None
+    assert self_contained_shapes(drawing, _NO_FIGURE) is None
 
 
 @pytest.mark.parametrize(
@@ -118,13 +148,13 @@ def test_hyperlink_relationship_makes_the_drawing_not_self_contained() -> None:
 def test_references_to_other_parts_make_the_drawing_not_self_contained(inner: str) -> None:
     drawing = _drawing(f"<w:txbxContent><w:p>{inner}</w:p></w:txbxContent>")
 
-    assert self_contained_shapes(drawing) is None
+    assert self_contained_shapes(drawing, _NO_FIGURE) is None
 
 
-def test_plain_text_box_drawing_is_returned() -> None:
+def test_a_drawing_without_shapes_is_returned_whole() -> None:
     drawing = _drawing("<w:txbxContent><w:p><w:r><w:t>Hej</w:t></w:r></w:p></w:txbxContent>")
 
-    markup = self_contained_shapes(drawing)
+    markup = self_contained_shapes(drawing, _NO_FIGURE)
 
     assert markup is not None
     assert "Hej" in markup
