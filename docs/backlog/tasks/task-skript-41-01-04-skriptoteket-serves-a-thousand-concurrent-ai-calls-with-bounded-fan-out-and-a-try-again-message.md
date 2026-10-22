@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-22'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'One review (D7 rule) in retained root 01a16352: changes_requested F1-F8 (evidence/reviews/task-skript-41-01-04-9b729d9dd-review.md); F1-F4 and F6-F8 repaired on fail-first proof (evidence/repairs/README.md), F5 assigned to TASK-SKRIPT-41-01-02, no rereview per the user rule "Now it''s enough."; mock load proof run 4 1,120/1,120 with 0 paid calls; merged as d44e946b5; HuleEdu door backlog 2048 in ca7ff9700; Mac staging walk 2026-10-22 at d44e946b5 passed checks 1-4 (Mac .artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md); the try-again note rests on unit tests and the load proof.'
 task_kind: story
 acceptance_criteria:
   - Web runs several processes and workers run jobs concurrently with bounded fan-out inside a job
