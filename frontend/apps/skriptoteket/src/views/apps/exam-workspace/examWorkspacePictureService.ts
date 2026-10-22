@@ -23,8 +23,9 @@ import { computed, inject, provide, ref } from "vue";
 import type { ComputedRef, InjectionKey, Ref } from "vue";
 
 import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
-import { readPicture } from "./examWorkspacePictureIntake";
+import { readPicture, PICTURE_LIMIT_UNAVAILABLE_COPY } from "./examWorkspacePictureIntake";
 import type { RichTextTarget } from "./examWorkspaceRichTextTarget";
+import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
 export type ExamWorkspacePictureService = {
@@ -57,6 +58,12 @@ export type ExamWorkspacePictureServiceDeps = {
   newPictures: { declare(asset: NativeExamAsset, blob: Blob): void };
   /** False while the pane is disabled: `add` does nothing. */
   canEdit: () => boolean;
+  /** The opening the intake belongs to, or null while none is open. */
+  opening: () => ExamWorkspaceOpening | null;
+  /** Whether `opening` is still the exam opening in front of the teacher. */
+  isOpen: (opening: ExamWorkspaceOpening) => boolean;
+  /** The server-owned whole-exam byte cap, loaded once per service and retried after a failure. */
+  maxExamBytes: () => Promise<number>;
   /** The intake check; defaults to `readPicture`. */
   read?: typeof readPicture;
 };
@@ -66,6 +73,12 @@ export type ExamWorkspacePictureServiceDeps = {
  * order on `target`: the first refusal sets the notice and stops, so nothing
  * is placed. A picture is declared for the open exam and placed on the
  * target, clearing the notice. A second `add` while one runs is ignored.
+ * One `add` belongs to the opening it started in: after every await it
+ * continues only while that opening is still open, editing is still allowed
+ * and the target is still live. A stale result is retired without declaring
+ * or placing anything, leaving the notice unchanged and dropping the rest of
+ * the batch. A limit the loader cannot read refuses with the unavailable
+ * copy and is asked for again on the next `add`.
  */
 export function createExamWorkspacePictureService(
   deps: ExamWorkspacePictureServiceDeps,
@@ -73,9 +86,27 @@ export function createExamWorkspacePictureService(
   const busy = ref(false);
   const notice = ref<ExamWorkspaceNotice | null>(null);
   const read = deps.read ?? readPicture;
+  let limitPromise: Promise<number> | null = null;
+
+  /** The server-owned cap, loaded once per service; a rejected load is forgotten so the next `add` asks again. */
+  async function loadMaxExamBytes(): Promise<number> {
+    limitPromise ??= deps.maxExamBytes();
+    try {
+      return await limitPromise;
+    } catch (error) {
+      limitPromise = null;
+      throw error;
+    }
+  }
+
+  /** True while `opening` still owns this intake: still open, still editable, still live. */
+  function isLiveIntake(opening: ExamWorkspaceOpening, target: RichTextTarget): boolean {
+    return deps.isOpen(opening) && deps.canEdit() && target.isLive();
+  }
 
   async function add(target: RichTextTarget, files: readonly File[]): Promise<void> {
-    if (!deps.canEdit() || busy.value) {
+    const opening = deps.opening();
+    if (opening === null || !deps.canEdit() || busy.value) {
       return;
     }
     if (deps.document() === null || !target.acceptsPictures) {
@@ -83,14 +114,33 @@ export function createExamWorkspacePictureService(
     }
     busy.value = true;
     try {
+      let maxExamBytes: number;
+      try {
+        maxExamBytes = await loadMaxExamBytes();
+      } catch {
+        if (isLiveIntake(opening, target)) {
+          notice.value = { kind: "refused", text: PICTURE_LIMIT_UNAVAILABLE_COPY };
+        }
+        return;
+      }
       for (const file of files) {
+        if (!isLiveIntake(opening, target)) {
+          return;
+        }
         // Each file's size check counts the pictures placed before it, and a
         // replacement credits the selected picture it removes.
         const document = deps.document();
         if (document === null) {
           return;
         }
-        const intake = await read(file, document, undefined, target.selectedPictureId.value);
+        const intake = await read(
+          file,
+          document,
+          { maxExamBytes, replacing: target.selectedPictureId.value },
+        );
+        if (!isLiveIntake(opening, target)) {
+          return;
+        }
         if (intake.kind === "refused") {
           notice.value = { kind: "refused", text: intake.copy };
           return;

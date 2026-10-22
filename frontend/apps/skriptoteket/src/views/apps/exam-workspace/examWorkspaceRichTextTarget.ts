@@ -52,6 +52,8 @@ export type RichTextTarget = {
    * one undo step.
    */
   placePicture(assetId: string): void;
+  /** True while the target's editor exists and is not destroyed: a retired surface takes no intake. */
+  isLive(): boolean;
   /** Drop the target's saved selection; the registry calls it when another surface takes over. */
   release(): void;
 };

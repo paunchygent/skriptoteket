@@ -17,11 +17,11 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
-  EXAM_FILE_MAX_BYTES,
-  PICTURE_SIZE_REFUSED_COPY,
   PICTURE_TYPE_REFUSED_COPY,
+  pictureSizeRefusedCopy,
   readPicture,
   type PictureIntakeDeps,
+  type PictureIntakeOptions,
 } from "./examWorkspacePictureIntake";
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -96,11 +96,18 @@ function documentWith(assets: NativeExamAsset[]): NativeExamDocument {
   return { ...buildParentDocument(), assets };
 }
 
+/** The server-owned limit under test: the intake enforces whatever the caller passes. */
+const LIMIT = 20_000_000;
+
+function options(replacing: string | null = null, maxExamBytes = LIMIT): PictureIntakeOptions {
+  return { maxExamBytes, replacing };
+}
+
 describe("readPicture accepted pictures", () => {
   it("accepts PNG bytes with its asset record and a PNG-typed Blob", async () => {
     const file = pngBytes();
 
-    const result = await readPicture(file, documentWith([]), stubDeps({ width: 640, height: 480 }, SHA_A));
+    const result = await readPicture(file, documentWith([]), options(), stubDeps({ width: 640, height: 480 }, SHA_A));
 
     expect(result.kind).toBe("picture");
     if (result.kind !== "picture") {
@@ -126,10 +133,11 @@ describe("readPicture accepted pictures", () => {
       png,
     );
 
-    const jpegResult = await readPicture(jpeg, documentWith([]), stubDeps({ width: 10, height: 20 }, SHA_B));
+    const jpegResult = await readPicture(jpeg, documentWith([]), options(), stubDeps({ width: 10, height: 20 }, SHA_B));
     const renamedResult = await readPicture(
       renamedPng,
       documentWith([]),
+      options(),
       stubDeps({ width: 30, height: 40 }, SHA_A),
     );
 
@@ -154,7 +162,7 @@ describe("readPicture refused type", () => {
     const empty = blobOf([]);
 
     for (const file of [gif, text, empty]) {
-      const result = await readPicture(file, documentWith([]), stubDeps({ width: 1, height: 1 }, SHA_A));
+      const result = await readPicture(file, documentWith([]), options(), stubDeps({ width: 1, height: 1 }, SHA_A));
       expect(result).toEqual({ kind: "refused", copy: PICTURE_TYPE_REFUSED_COPY });
     }
   });
@@ -162,15 +170,17 @@ describe("readPicture refused type", () => {
   it("refuses PNG-signature garbage the decoder rejects, and zero pixel sizes", async () => {
     const garbage = pngBytes([9, 9, 9]);
 
-    const undecodable = await readPicture(garbage, documentWith([]), stubDeps(null, SHA_A));
+    const undecodable = await readPicture(garbage, documentWith([]), options(), stubDeps(null, SHA_A));
     const zeroWidth = await readPicture(
       garbage,
       documentWith([]),
+      options(),
       stubDeps({ width: 0, height: 10 }, SHA_A),
     );
     const zeroHeight = await readPicture(
       garbage,
       documentWith([]),
+      options(),
       stubDeps({ width: 10, height: 0 }, SHA_A),
     );
 
@@ -181,27 +191,29 @@ describe("readPicture refused type", () => {
 });
 
 describe("readPicture size limit", () => {
-  it("refuses a picture that would push the exam file past the vault cap", async () => {
-    const almostFull = documentWith([declaredAsset({ asset_id: "asset_other", byte_length: EXAM_FILE_MAX_BYTES - 50 })]);
+  it("refuses a picture that would push the exam file past the passed limit", async () => {
+    const almostFull = documentWith([declaredAsset({ asset_id: "asset_other", byte_length: LIMIT - 50 })]);
 
     const result = await readPicture(
       pngBytes(new Array(100).fill(7)),
       almostFull,
+      options(),
       stubDeps({ width: 640, height: 480 }, SHA_A),
     );
 
-    expect(result).toEqual({ kind: "refused", copy: PICTURE_SIZE_REFUSED_COPY });
+    expect(result).toEqual({ kind: "refused", copy: pictureSizeRefusedCopy(LIMIT) });
   });
 
   it("accepts the same over-limit picture when the document already declares it", async () => {
     const assetId = `asset_${SHA_A.slice(0, 16)}`;
     const full = documentWith([
-      declaredAsset({ asset_id: assetId, byte_length: EXAM_FILE_MAX_BYTES - 50 }),
+      declaredAsset({ asset_id: assetId, byte_length: LIMIT - 50 }),
     ]);
 
     const result = await readPicture(
       pngBytes(new Array(100).fill(7)),
       full,
+      options(),
       stubDeps({ width: 640, height: 480 }, SHA_A),
     );
 
@@ -209,6 +221,35 @@ describe("readPicture size limit", () => {
     if (result.kind === "picture") {
       expect(result.asset.asset_id).toBe(assetId);
     }
+  });
+
+  it("accepts a picture under one passed limit and refuses it under a smaller one", async () => {
+    const declared = documentWith([declaredAsset({ asset_id: "asset_other", byte_length: 1_000_000 })]);
+    const file = pngBytes(new Array(100).fill(7));
+
+    const accepted = await readPicture(
+      file,
+      declared,
+      options(null, 10_000_000),
+      stubDeps({ width: 640, height: 480 }, SHA_A),
+    );
+    const refused = await readPicture(
+      file,
+      declared,
+      options(null, 1_000_000),
+      stubDeps({ width: 640, height: 480 }, SHA_A),
+    );
+
+    expect(accepted.kind).toBe("picture");
+    expect(refused).toEqual({ kind: "refused", copy: pictureSizeRefusedCopy(1_000_000) });
+  });
+
+  it("formats the passed limit in Swedish megabytes", async () => {
+    expect(pictureSizeRefusedCopy(7_000_000)).toContain("högst 7 MB");
+    expect(pictureSizeRefusedCopy(2_500_000)).toContain("högst 2,5 MB");
+    expect(pictureSizeRefusedCopy(20_000_000)).toBe(
+      "Bilden lades inte till. Provet får vara högst 20 MB med alla bilder. Välj en mindre bild.",
+    );
   });
 });
 
@@ -237,8 +278,8 @@ describe("readPicture replacement sizing and unreadable files", () => {
     const result = await readPicture(
       newPng(),
       replacementDocument(1),
+      options(OLD_ID),
       stubDeps({ width: 640, height: 480 }, NEW_SHA),
-      OLD_ID,
     );
 
     expect(result.kind).toBe("picture");
@@ -251,19 +292,19 @@ describe("readPicture replacement sizing and unreadable files", () => {
     const result = await readPicture(
       newPng(),
       replacementDocument(2),
+      options(OLD_ID),
       stubDeps({ width: 640, height: 480 }, NEW_SHA),
-      OLD_ID,
     );
 
-    expect(result).toEqual({ kind: "refused", copy: PICTURE_SIZE_REFUSED_COPY });
+    expect(result).toEqual({ kind: "refused", copy: pictureSizeRefusedCopy(LIMIT) });
   });
 
   it("counts replacing with the same file once", async () => {
     const result = await readPicture(
       newPng(),
       replacementDocument(2),
+      options(OLD_ID),
       stubDeps({ width: 640, height: 480 }, SHA_A),
-      OLD_ID,
     );
 
     expect(result.kind).toBe("picture");
@@ -281,7 +322,7 @@ describe("readPicture replacement sizing and unreadable files", () => {
       },
     });
 
-    const result = await readPicture(unreadable, documentWith([]), stubDeps({ width: 1, height: 1 }, SHA_A));
+    const result = await readPicture(unreadable, documentWith([]), options(), stubDeps({ width: 1, height: 1 }, SHA_A));
 
     expect(result).toEqual({ kind: "refused", copy: PICTURE_TYPE_REFUSED_COPY });
   });
@@ -296,7 +337,7 @@ describe("readPicture replacement sizing and unreadable files", () => {
     });
 
     await expect(
-      readPicture(broken, documentWith([]), stubDeps({ width: 1, height: 1 }, SHA_A)),
+      readPicture(broken, documentWith([]), options(), stubDeps({ width: 1, height: 1 }, SHA_A)),
     ).rejects.toThrow("offline");
   });
 });
@@ -314,7 +355,7 @@ const hasSubtle =
     .map((value) => value.toString(16).padStart(2, "0"))
     .join("");
 
-  const result = await readPicture(file, documentWith([]), {
+  const result = await readPicture(file, documentWith([]), options(), {
     decodeSize: async () => ({ width: 3, height: 4 }),
     digest: (bytes) => globalThis.crypto.subtle.digest("SHA-256", bytes),
   });

@@ -141,7 +141,7 @@ export function useExamWorkspaceRichTextPictures(options: {
    */
   function placePictureAsset(assetId: string): void {
     const current = options.editor();
-    if (!current) {
+    if (!current || current.isDestroyed) {
       return;
     }
     const transaction = picturePlacement(current.state, assetId);

@@ -26,6 +26,7 @@ import {
   createExamWorkspacePictureService,
   provideExamWorkspacePictures,
 } from "./examWorkspacePictureService";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -62,12 +63,16 @@ const emit = defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
+const store = useInjectedExamWorkspaceStore();
 
 /** The open exam's picture service: the toolbar, drop and paste read it. */
 const pictures = createExamWorkspacePictureService({
   document: () => props.editing.workspaceDocument.value,
   newPictures: props.editing.newPictures,
   canEdit: () => !props.disabled,
+  opening: () => props.editing.openExam.value,
+  isOpen: props.editing.isOpen,
+  maxExamBytes: () => store.shared.getExamWorkspaceLimits().then((limits) => limits.max_exam_bytes),
 });
 provideExamWorkspacePictures(pictures);
 

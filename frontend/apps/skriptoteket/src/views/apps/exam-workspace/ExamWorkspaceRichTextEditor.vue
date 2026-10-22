@@ -386,6 +386,7 @@ const target: RichTextTarget = {
   placePicture: (assetId) => {
     asToolbarEdit(() => pictures.placePictureAsset(assetId));
   },
+  isLive: () => editor.value !== undefined && !editor.value.isDestroyed,
   // ProseMirror keeps its own selection while the toolbar has focus.
   release: () => undefined,
 };

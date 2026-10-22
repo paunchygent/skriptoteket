@@ -436,6 +436,9 @@ export function createGuestExamWorkspaceStore(
     async getExamCourseCatalog() {
       return await api.getPublicExamCourseCatalog();
     },
+    async getExamWorkspaceLimits() {
+      return await api.getPublicExamWorkspaceLimits();
+    },
     examWorkspaceAssetUrl(lineageId, assetId) {
       if (openLineageId !== lineageId) {
         return "";

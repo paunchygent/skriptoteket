@@ -29,6 +29,7 @@ function fakeTarget(marks: BodyMark[], heading: RichTextHeadingLevel | null): Ri
     toggleHeading: vi.fn(),
     makeGap: vi.fn(),
     placePicture: vi.fn(),
+    isLive: () => true,
     release: vi.fn(),
   };
 }

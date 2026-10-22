@@ -7,7 +7,7 @@
  *   (never the name, extension or `file.type`), decode it for its pixel size,
  *   name it `asset_` plus its sha256 prefix, and refuse it with the exact
  *   inline copy when the type is wrong or the whole exam file would grow past
- *   the server's vault cap. It changes no state: the caller records the
+ *   the passed cap. It changes no state: the caller records the
  *   returned asset and Blob, or shows the returned copy.
  *
  * Relationships:
@@ -15,18 +15,25 @@
  *     toolbar, drop and paste paths; the registry and save seam take over
  *     once `readPicture` accepts a picture.
  *   - `NativeExamAsset` and `NativeExamDocument` come from `api/examWorkspace`;
- *     the size cap mirrors the server's `VAULT_MAX_FILE_BYTES`.
+ *     the size cap comes from the server's limits route through the caller:
+ *     this module owns no limit number.
  */
 
 import type { NativeExamAsset, NativeExamDocument } from "../../../api/examWorkspace";
 import { examWorkspaceAssetReferenceCounts } from "./examWorkspaceStructure";
 
-/** Mirrors the server's `VAULT_MAX_FILE_BYTES` (src/skriptoteket/config.py), which caps the whole exam file; the exam workspace receives no setting that carries it. */
-export const EXAM_FILE_MAX_BYTES = 20_000_000;
-
 export const PICTURE_TYPE_REFUSED_COPY = "Bilden lades inte till. Välj en PNG- eller JPEG-bild.";
-export const PICTURE_SIZE_REFUSED_COPY =
-  "Bilden lades inte till. Provet får vara högst 20 MB med alla bilder. Välj en mindre bild.";
+
+/** The inline refusal while the server-owned limit cannot be read: the picture is held back, never guessed at. */
+export const PICTURE_LIMIT_UNAVAILABLE_COPY = "Bilden lades inte till. Försök igen.";
+
+/** The size refusal for `maxExamBytes`, formatted in Swedish megabytes (20_000_000 → "20", 2_500_000 → "2,5"). */
+export function pictureSizeRefusedCopy(maxExamBytes: number): string {
+  const mb = new Intl.NumberFormat("sv-SE", { maximumFractionDigits: 1 }).format(
+    maxExamBytes / 1_000_000,
+  );
+  return `Bilden lades inte till. Provet får vara högst ${mb} MB med alla bilder. Välj en mindre bild.`;
+}
 
 export type PictureIntake =
   | { kind: "picture"; asset: NativeExamAsset; blob: Blob }
@@ -35,6 +42,14 @@ export type PictureIntake =
 export type PictureIntakeDeps = {
   decodeSize: (blob: Blob) => Promise<{ width: number; height: number } | null>;
   digest: (bytes: ArrayBuffer) => Promise<ArrayBuffer>;
+};
+
+/** The intake's per-call authority: the server-owned whole-exam cap and the selected picture a replace removes. */
+export type PictureIntakeOptions = {
+  /** The whole-exam byte cap from the server's limits route; the only size authority. */
+  maxExamBytes: number;
+  /** The selected picture's asset id when replacing, else null. */
+  replacing: string | null;
 };
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -89,8 +104,8 @@ export const browserPictureIntakeDeps: PictureIntakeDeps = {
 export async function readPicture(
   file: Blob,
   document: NativeExamDocument,
+  options: PictureIntakeOptions,
   deps: PictureIntakeDeps = browserPictureIntakeDeps,
-  replacing: string | null = null,
 ): Promise<PictureIntake> {
   let bytes: ArrayBuffer;
   try {
@@ -118,6 +133,7 @@ export async function readPicture(
   const assetId = `asset_${sha256.slice(0, 16)}`;
   if (!document.assets.some((asset) => asset.asset_id === assetId)) {
     const declared = document.assets.reduce((sum, asset) => sum + asset.byte_length, 0);
+    const { replacing, maxExamBytes } = options;
     const replaced =
       replacing === null
         ? undefined
@@ -130,8 +146,8 @@ export async function readPicture(
         ? replaced.byte_length
         : 0;
     const jsonLength = new TextEncoder().encode(JSON.stringify(document)).length;
-    if (declared + bytes.byteLength - removedBytes + jsonLength > EXAM_FILE_MAX_BYTES) {
-      return { kind: "refused", copy: PICTURE_SIZE_REFUSED_COPY };
+    if (declared + bytes.byteLength - removedBytes + jsonLength > maxExamBytes) {
+      return { kind: "refused", copy: pictureSizeRefusedCopy(maxExamBytes) };
     }
   }
   return {

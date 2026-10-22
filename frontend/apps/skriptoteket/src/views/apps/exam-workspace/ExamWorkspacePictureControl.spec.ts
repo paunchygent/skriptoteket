@@ -56,6 +56,8 @@ import {
   liveAdmission,
 } from "./examWorkspaceGuestStore.specSupport";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import { createInMemoryGuestEditLeaseStorage } from "./examWorkspaceGuestEditLeaseMemory";
@@ -89,6 +91,18 @@ installGuestStoreObjectUrls();
 const TYPE_COPY = "Bilden lades inte till. Välj en PNG- eller JPEG-bild.";
 const SIZE_COPY =
   "Bilden lades inte till. Provet får vara högst 20 MB med alla bilder. Välj en mindre bild.";
+/** The server-owned limit the pane's store double reports for the mounted pane cases. */
+const LIMIT_BYTES = 20_000_000;
+
+function limitStore(): ExamWorkspaceStore {
+  return {
+    ...serverExamWorkspaceStore,
+    shared: {
+      ...serverExamWorkspaceStore.shared,
+      getExamWorkspaceLimits: async () => ({ max_exam_bytes: LIMIT_BYTES }),
+    },
+  };
+}
 
 let mounted: VueWrapper | null = null;
 
@@ -147,7 +161,7 @@ const stubDeps: PictureIntakeDeps = {
 };
 
 function read(file: Blob, document: NativeExamDocument): Promise<PictureIntake> {
-  return readPicture(file, document, stubDeps);
+  return readPicture(file, document, { maxExamBytes: LIMIT_BYTES, replacing: null }, stubDeps);
 }
 
 function docWith(item: NativeExamItem, assets: NativeExamAsset[] = []): NativeExamDocument {
@@ -225,10 +239,14 @@ function freeTextItem(): NativeExamItem {
 function standAloneService(item: NativeExamItem, assets: NativeExamAsset[] = []) {
   const document = ref<NativeExamDocument | null>(docWith(item, assets));
   const newPictures = createExamWorkspaceNewPictures(() => document.value);
+  const opening = { lineageId: "control-lineage" };
   const service = createExamWorkspacePictureService({
     document: () => document.value,
     newPictures,
     canEdit: () => true,
+    opening: () => opening,
+    isOpen: (candidate) => candidate === opening,
+    maxExamBytes: async () => LIMIT_BYTES,
     read,
   });
   return { document, newPictures, service };
@@ -257,6 +275,7 @@ function stubTarget() {
     acceptsPictures: true,
     selectedPictureId: ref(null),
     placePicture,
+    isLive: () => true,
     release: vi.fn(),
   };
   return { placePicture, target };
@@ -467,7 +486,7 @@ describe("ExamWorkspacePictureControl", () => {
     });
     mounted = mount(ExamWorkspaceEditorPane, {
       attachTo: document.body,
-      global: { plugins: [examWorkspaceProvidersPlugin()] },
+      global: { plugins: [examWorkspaceProvidersPlugin({ store: limitStore() })] },
       props: {
         editing,
         workspaceDocument: stored(),
@@ -524,7 +543,7 @@ describe("ExamWorkspacePictureControl", () => {
     });
     mounted = mount(ExamWorkspaceEditorPane, {
       attachTo: document.body,
-      global: { plugins: [examWorkspaceProvidersPlugin()] },
+      global: { plugins: [examWorkspaceProvidersPlugin({ store: limitStore() })] },
       props: {
         editing,
         workspaceDocument: stored(),
@@ -594,6 +613,9 @@ describe("ExamWorkspacePictureControl", () => {
       document: () => editing.workspaceDocument.value,
       newPictures: editing.newPictures,
       canEdit: () => true,
+      opening: () => editing.openExam.value,
+      isOpen: editing.isOpen,
+      maxExamBytes: async () => LIMIT_BYTES,
       read,
     });
     const { placePicture, target } = stubTarget();
