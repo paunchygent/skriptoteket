@@ -8,10 +8,13 @@ Purpose:
     exception: ECMA-376 makes extension lists ignorable, so the allowlists of the property
     elements that carry one admit and skip it (``exam_workspace_docx_shape_xml`` lists them).
 
-    Coordinates. The figure box is ``wp:extent``. A single shape fills the box. A group maps its
-    child space onto the parent as ``x_parent = off.x + (x - chOff.x) * ext.cx / chExt.cx`` (the
-    same for y); nested groups compose their mappings and the top-level group maps onto the
-    figure box. A canvas child is already in EMU of the box.
+    Coordinates. The figure box is ``wp:extent``. A single shape takes the size of its own
+    ``a:xfrm/a:ext`` and is centred in the box (its ``off`` is ignored): Word sizes ``wp:extent``
+    to the rotated bounding box, so a rotated shape is smaller than the box, and an ``a:ext``
+    equal to the extent fills it. A group maps its child space onto the parent as
+    ``x_parent = off.x + (x - chOff.x) * ext.cx / chExt.cx`` (the same for y); nested groups
+    compose their mappings and the top-level group maps onto the figure box. A canvas child is
+    already in EMU of the box.
 
 Relationships:
     - ``exam_workspace_docx_shape_figure`` holds the figure model the reader fills.
@@ -269,7 +272,8 @@ class _FigureReader:
             raise unsupported("a:xfrm without a:off and a:ext")
         rotation = (int_attr_or(xfrm, "rot", 0) / 60000) % 360
         if box is not None:
-            x, y, width, height = 0.0, 0.0, float(box[0]), float(box[1])
+            width, height = float(int_attr(ext, "cx")), float(int_attr(ext, "cy"))
+            x, y = (box[0] - width) / 2, (box[1] - height) / 2
         else:
             if rotation % 180 and not mapping.uniform:
                 raise unsupported("rotated shape in a group scaled unevenly in x and y")

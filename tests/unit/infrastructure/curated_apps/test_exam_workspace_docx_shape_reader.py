@@ -297,14 +297,43 @@ def test_a_picture_drawing_of_the_fixture_is_outside_d2() -> None:
 # --- containers ------------------------------------------------------------------------------
 
 
-def test_single_shape_fills_the_figure_box_whatever_its_own_offset() -> None:
-    drawing = _drawing(_wsp(off=(777, 888), ext=(10, 20)), cx=4000, cy=2000)
+def test_single_shape_with_ext_equal_to_the_extent_fills_the_box_whatever_its_offset() -> None:
+    drawing = _drawing(_wsp(off=(777, 888), ext=(4000, 2000)), cx=4000, cy=2000)
 
     figure = read_shape_figure(drawing, _document())
 
     assert (figure.width_emu, figure.height_emu) == (4000, 2000)
     shape = figure.shapes[0]
     assert (shape.x_emu, shape.y_emu, shape.width_emu, shape.height_emu) == (0, 0, 4000, 2000)
+
+
+def test_rotated_single_shape_keeps_its_own_ext_centred_in_the_extent_box() -> None:
+    # Word sizes wp:extent to the rotated bounding box: a 1000000 square turned 45 degrees.
+    drawing = _drawing(
+        _wsp(xfrm_attrs='rot="2700000"', off=(777, 888), ext=(1000000, 1000000)),
+        cx=1414214,
+        cy=1414214,
+    )
+
+    figure = read_shape_figure(drawing, _document())
+
+    assert (figure.width_emu, figure.height_emu) == (1414214, 1414214)
+    shape = figure.shapes[0]
+    assert (shape.x_emu, shape.y_emu, shape.width_emu, shape.height_emu) == (
+        207107,
+        207107,
+        1000000,
+        1000000,
+    )
+    assert shape.rotation_deg == 45.0
+
+
+def test_single_shape_ext_centres_independently_in_x_and_y() -> None:
+    drawing = _drawing(_wsp(ext=(3000, 500)), cx=4000, cy=2000)
+
+    shape = read_shape_figure(drawing, _document()).shapes[0]
+
+    assert (shape.x_emu, shape.y_emu, shape.width_emu, shape.height_emu) == (500, 750, 3000, 500)
 
 
 def test_an_anchored_drawing_reads_like_an_inline_one() -> None:
