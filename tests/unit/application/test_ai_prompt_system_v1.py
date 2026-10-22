@@ -66,8 +66,8 @@ def test_validate_prompt_templates_passes() -> None:
 def test_editor_chat_ops_system_prompt_fits_default_budget() -> None:
     settings = Settings()
     token_counter = ConservativeTokenCounter(
-        system_overhead_tokens=settings.LLM_DEVSTRAL_SYSTEM_MESSAGE_OVERHEAD_TOKENS,
-        message_overhead_tokens=settings.LLM_DEVSTRAL_MESSAGE_OVERHEAD_TOKENS,
+        system_overhead_tokens=settings.LLM_GPT5_SYSTEM_MESSAGE_OVERHEAD_TOKENS,
+        message_overhead_tokens=settings.LLM_GPT5_MESSAGE_OVERHEAD_TOKENS,
         chars_per_token=2,
     )
     composed = compose_system_prompt(

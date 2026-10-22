@@ -6,7 +6,8 @@ Purpose:
 
 Relationships:
     - Signed HuleEdu-derived authentication stays in web dependencies.
-    - AI consent/provider preferences come from request-scoped profile state.
+    - A daily-limit refusal from the LLM provider door surfaces as the 429
+      ``AI_DAILY_LIMIT_REACHED`` DomainError mapped by the error middleware.
 """
 
 from fastapi import APIRouter, Depends, Header, Response
@@ -15,7 +16,6 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import InlineCompletionCommand, InlineCompletionHandlerProtocol
-from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
     require_app_ai_api,
 )
@@ -39,7 +39,6 @@ async def create_inline_completion(
     handler: FromDishka[InlineCompletionHandlerProtocol],
     settings: FromDishka[Settings],
     user: User = Depends(require_app_ai_api),
-    ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorInlineCompletionResponse:
     if eval_mode == "1" and settings.ENVIRONMENT == "production":
@@ -53,8 +52,6 @@ async def create_inline_completion(
             prefix=payload.prefix,
             suffix=payload.suffix,
             active_file=payload.active_file,
-            allow_remote_fallback=ai_preferences.allow_remote_fallback,
-            inline_completion_provider=ai_preferences.inline_completion_provider,
         ),
     )
     if eval_mode == "1" and result.eval_meta is not None:
@@ -113,7 +110,4 @@ async def create_inline_completion(
         completion=result.completion,
         enabled=result.enabled,
         replace_suffix_chars=result.replace_suffix_chars,
-        notice_message=result.notice_message,
-        notice_variant=result.notice_variant,
-        notice_code=result.notice_code,
     )

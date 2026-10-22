@@ -40,7 +40,7 @@ from skriptoteket.domain.llm_door import (
     AiDoorCaller,
     AiJobOverageCapReached,
     ai_limit_note,
-    ai_try_again_note,
+    door_refusal_error,
 )
 
 
@@ -64,25 +64,11 @@ async def convert_retry_batch_with_limit(
             profile=profile,
             caller=caller,
         )
-    except AiDailyLimitReached as error:
-        raise DomainError(
-            code=ErrorCode.AI_DAILY_LIMIT_REACHED,
-            message=ai_limit_note(error.limit),
-            details={"limit": error.limit.value},
-        ) from error
+    except (AiDailyLimitReached, AiDoorBusy) as error:
+        raise door_refusal_error(error) from error
     except AiJobOverageCapReached as error:
         raise DomainError(
             code=ErrorCode.AI_DAILY_LIMIT_REACHED,
             message=ai_limit_note(AiDailyLimit.POOL),
             details={"limit": AiDailyLimit.POOL.value},
-        ) from error
-    except AiDoorBusy as error:
-        raise DomainError(
-            code=ErrorCode.AI_TRY_AGAIN,
-            message=ai_try_again_note(),
-            details=(
-                {"retry_after_seconds": error.retry_after_seconds}
-                if error.retry_after_seconds is not None
-                else None
-            ),
         ) from error

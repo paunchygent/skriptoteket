@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import structlog
 
-from skriptoteket.protocols.llm import InlineCompletionProviderPreference, PromptEvalMeta
+from skriptoteket.protocols.llm import PromptEvalMeta
 
 from .attempts import PreparedAttempt
 from .normalization import DropReason
@@ -50,7 +50,6 @@ def build_eval_meta(
 def log_inline_completion_normalized(
     *,
     attempt: PreparedAttempt,
-    provider_kind: InlineCompletionProviderPreference,
     raw_completion: str,
     normalized_completion: str,
     prefix_overlap_chars: int = 0,
@@ -66,8 +65,6 @@ def log_inline_completion_normalized(
     logger.debug(
         "ai_inline_completion_normalized",
         template_id=attempt.template_id,
-        provider_slot=attempt.slot,
-        provider_kind=provider_kind,
         model=attempt.model,
         raw_chars=len(raw_completion),
         normalized_chars=len(normalized_completion),
@@ -87,7 +84,6 @@ def log_inline_completion_normalized(
 def log_inline_completion_truncated(
     *,
     attempt: PreparedAttempt,
-    provider_kind: InlineCompletionProviderPreference,
     finish_reason: str | None,
     raw_completion: str,
     prepare_ms: int | None = None,
@@ -98,8 +94,6 @@ def log_inline_completion_truncated(
     logger.debug(
         "ai_inline_completion_truncated",
         template_id=attempt.template_id,
-        provider_slot=attempt.slot,
-        provider_kind=provider_kind,
         model=attempt.model,
         finish_reason=finish_reason,
         raw_chars=len(raw_completion),

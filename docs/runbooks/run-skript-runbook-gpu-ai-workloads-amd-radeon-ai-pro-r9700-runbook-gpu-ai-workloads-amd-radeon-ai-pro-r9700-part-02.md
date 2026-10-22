@@ -4,35 +4,12 @@ id: RUN-SKRIPT-runbook-gpu-ai-workloads-amd-radeon-ai-pro-r9700-PART-02
 title: 'Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700) — part 02'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: RUN-SKRIPT-runbook-gpu-ai-workloads-amd-radeon-ai-pro-r9700
 part: 2
 ---
-
-Purpose: model-level behavior check against Kodassistenten constraints (runner limits, UI payload contract,
-toolkit usage, action/state flow). This runs **directly** against llama.cpp for stable prompts.
-
-Harness docs:
-- `scripts/ai_prompt_eval/README.md`
-
-Fixture source:
-- `docs/reference/reports/artifacts/llama-kodassistent-eval-v2/llama-kodassistent-eval-v2-20260131T150000Z/`
-
-Run (example):
-
-```bash
-python3 scripts/ai_prompt_eval/llama_kodassistent_eval.py --label glm
-python3 scripts/ai_prompt_eval/llama_kodassistent_eval.py --label devstral --output-dir <same-run-dir>
-```
-
-Outputs include `comparison.json` (usage/timing) and `validation.json` (pass/fail + reasons).
-The harness runs two patch steps: `diff_tool` (tool.py only) and `diff_schema` (input_schema.json + usage).
-
-Notes:
-- By default the harness injects the Kodassistenten system prompt (editor_chat_v1). Use `--no-system` to disable.
-- If system prompt composition fails due to missing dependencies, run via `pdm run python ...`.
 
 ### Source: Maintenance
 
@@ -115,8 +92,8 @@ docker exec skriptoteket-web curl -s http://host.docker.internal:8082/completion
 
 ### Port Reference
 
-| Service      | Host Port | Container URL                       |
-|--------------|-----------|-------------------------------------|
+| Service      | Host Port | Container URL                      |
+| ------------ | --------- | ---------------------------------- |
 | llama-server | 8082      | `http://host.docker.internal:8082` |
 | Tabby        | 8083      | `http://host.docker.internal:8083` |
 

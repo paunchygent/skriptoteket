@@ -6,7 +6,7 @@ that step started, so the status poll can show a live phase (TASK-SKRIPT-39-04-2
 Both columns are nullable: a job that has reported no phase carries neither.
 
 Revision ID: aa30c309b36c
-Revises: 9f3c7a1b4e02
+Revises: e5b1d7a3c9f2
 """
 
 from collections.abc import Sequence
@@ -14,7 +14,7 @@ from collections.abc import Sequence
 from alembic import op
 
 revision: str = "aa30c309b36c"
-down_revision: str | Sequence[str] | None = "9f3c7a1b4e02"
+down_revision: str | Sequence[str] | None = "e5b1d7a3c9f2"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

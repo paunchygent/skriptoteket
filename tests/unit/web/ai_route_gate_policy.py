@@ -81,11 +81,8 @@ PAID_LLM_PROTOCOLS: frozenset[type] = frozenset(
         MeteredItemTypeLabelerProtocol,
         SecondPassItemTypeLabelerProtocol,
         llm_protocols.InlineCompletionProviderProtocol,
-        llm_protocols.InlineCompletionProvidersProtocol,
         llm_protocols.ChatStreamProviderProtocol,
-        llm_protocols.ChatStreamProvidersProtocol,
         llm_protocols.ChatOpsProviderProtocol,
-        llm_protocols.ChatOpsProvidersProtocol,
     }
 )
 

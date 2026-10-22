@@ -45,11 +45,7 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
 ) -> None:
     correlation_id = UUID("3fa85f64-5717-4562-b3fc-2c963f66afa6")
     user = seed_huleedu_projection(users=users, profiles=profiles)
-    profile = make_user_profile(
-        user_id=user.id,
-        allow_remote_fallback=True,
-        inline_completion_provider="external",
-    )
+    profile = make_user_profile(user_id=user.id)
     profiles.result = profile
 
     headers = build_headers(
@@ -63,14 +59,12 @@ async def test_profile_app_continuation_accepts_valid_huleedu_context_without_lo
     assert response.json() == {
         "local_user": user.model_dump(mode="json"),
         "profile": profile.model_dump(mode="json"),
-        "ai_policy": {
-            "remote_providers_enabled": True,
-            "completion_external_available": False,
-            "completion_local_available": True,
-        },
-        "allow_remote_fallback": True,
-        "inline_completion_provider": "external",
     }
+    assert "ai_policy" not in response.json()
+    assert "allow_remote_fallback" not in response.json()
+    assert "inline_completion_provider" not in response.json()
+    assert "allow_remote_fallback" not in response.json()["profile"]
+    assert "inline_completion_provider" not in response.json()["profile"]
     assert users.projections.lookup_calls == [("skriptoteket_standalone", CONTEXT_SUBJECT)]
     assert profiles.get_by_user_id_calls == [user.id]
     assert users.projection_events.created[-1].correlation_id == correlation_id
@@ -104,8 +98,6 @@ async def test_profile_app_continuation_creates_missing_profile_for_existing_pro
 
     assert response.status_code == 200
     assert response.json()["profile"]["user_id"] == str(user.id)
-    assert response.json()["allow_remote_fallback"] is None
-    assert response.json()["inline_completion_provider"] is None
     assert profiles.created is not None
     assert profiles.created.user_id == user.id
 
@@ -303,3 +295,25 @@ async def test_application_rbac_denial_records_after_user_dependency(
     assert auth_outcomes.rbac_decisions == [
         ("denied", "admin_or_superuser", "contributor", "api", correlation_id)
     ]
+
+
+@pytest.mark.asyncio
+async def test_profile_ai_settings_route_is_removed(
+    client: httpx.AsyncClient,
+    clock: ClockStub,
+    private_key: rsa.RSAPrivateKey,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles)
+
+    response = await client.patch(
+        "/api/v1/profile/ai-settings",
+        headers=build_headers(
+            private_key=private_key,
+            now_ts=int(clock.now().timestamp()),
+        ),
+        json={"remote_fallback_preference": "allow"},
+    )
+
+    assert response.status_code in {404, 405}

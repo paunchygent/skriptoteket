@@ -18,17 +18,15 @@ import type {
   ExamWorkspaceConversionStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import type { AiDailyLimit } from "./aiDailyLimit";
+import type { AiDailyLimit } from "../../../composables/aiDailyLimit";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import {
-  aiDailyLimit,
-  aiDailyLimitNote,
-  aiDailyLimitReached,
+  aiDailyLimitFor,
   aiLimitNote,
   markAiDailyLimit,
   resetAiDailyLimitForTests,
-} from "./aiDailyLimit";
+} from "../../../composables/aiDailyLimit";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { createSyncFence } from "./examWorkspaceSyncFence";
 import type { ExamWorkspaceRouteOpenOutcome } from "./examWorkspaceReplacementTypes";
@@ -36,6 +34,8 @@ import {
   useExamWorkspaceConversion,
   type ExamWorkspaceConversionBinding,
 } from "./useExamWorkspaceConversion";
+
+const smallAllowance = aiDailyLimitFor("small");
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -146,11 +146,12 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
 
       await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(ai_limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(ai_limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(ai_limit === "usd_ceiling");
       expect(conversion.conversionStatus.value?.ai_limit).toBe(ai_limit);
       expect(conversion.conversionMessage.value).toBe(aiLimitNote(ai_limit));
-      expect(aiDailyLimitNote.value).toBe(aiLimitNote(ai_limit));
+      expect(smallAllowance.note.value).toBe(aiLimitNote(ai_limit));
       expect(toastMessages()).toEqual([]);
     },
   );
@@ -160,11 +161,11 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
     api.importExamWorkspaceDocument.mockResolvedValue(queuedStatus());
     api.getExamWorkspaceConversionStatus.mockResolvedValueOnce(limitStatus("user_share"));
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
-    expect(aiDailyLimit.value).toBe("user_share");
+    expect(smallAllowance.limit.value).toBe("user_share");
 
-    markAiDailyLimit("pool");
-    expect(aiDailyLimit.value).toBe("user_share");
-    expect(aiDailyLimitNote.value).toBe(aiLimitNote("user_share"));
+    markAiDailyLimit("small", "pool");
+    expect(smallAllowance.limit.value).toBe("user_share");
+    expect(smallAllowance.note.value).toBe(aiLimitNote("user_share"));
   });
 
   it.each(retryLimits)(
@@ -183,8 +184,9 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
 
       await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
-      expect(aiDailyLimitReached.value).toBe(true);
-      expect(aiDailyLimit.value).toBe(limit);
+      expect(smallAllowance.reached.value).toBe(true);
+      expect(smallAllowance.limit.value).toBe(limit);
+      expect(aiDailyLimitFor("full").reached.value).toBe(limit === "usd_ceiling");
       expect(conversion.conversionError.value).toBe(aiLimitNote(limit));
       expect(toastMessages()).toEqual([]);
     },
@@ -192,7 +194,7 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
 
   it("starts no Word import while the limit is marked", async () => {
     const conversion = conversionFor();
-    markAiDailyLimit("pool");
+    markAiDailyLimit("small", "pool");
 
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
@@ -215,7 +217,7 @@ describe("useExamWorkspaceConversion daily AI limit", () => {
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
     expect(api.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
   });
 });
 
@@ -238,7 +240,7 @@ describe("useExamWorkspaceConversion busy AI door", () => {
     expect(conversion.conversionError.value).toBe(TRY_AGAIN_SENTENCE);
     expect(conversion.conversionMessage.value).toBe(TRY_AGAIN_SENTENCE);
     expect(toastMessages()).toEqual([]);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(conversion.isImporting.value).toBe(false);
 
     // The control stays enabled: the next import starts and clears the sentence.
@@ -252,7 +254,7 @@ describe("useExamWorkspaceConversion busy AI door", () => {
 
     expect(api.importExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(conversion.conversionError.value).toBeNull();
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
   });
 
   it("shows the sentence for a status poll refused with AI_TRY_AGAIN and clears it on success", async () => {
@@ -263,7 +265,7 @@ describe("useExamWorkspaceConversion busy AI door", () => {
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
     expect(conversion.conversionError.value).toBe(TRY_AGAIN_SENTENCE);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(toastMessages()).toEqual([]);
 
     api.getExamWorkspaceConversionStatus.mockResolvedValue({
@@ -273,7 +275,7 @@ describe("useExamWorkspaceConversion busy AI door", () => {
     conversion.retryConversionStatus();
     await vi.waitFor(() => expect(conversion.conversionError.value).toBeNull());
 
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
   });
 
   it("shows a failed job's own try-again sentence from error_message without a limit", async () => {
@@ -289,7 +291,7 @@ describe("useExamWorkspaceConversion busy AI door", () => {
     await conversion.importDocument(new File(["prov"], "NO_Prov_HT25.docx"), null);
 
     expect(conversion.conversionMessage.value).toBe(TRY_AGAIN_SENTENCE);
-    expect(aiDailyLimitReached.value).toBe(false);
+    expect(smallAllowance.reached.value).toBe(false);
     expect(toastMessages()).toEqual([]);
   });
 });

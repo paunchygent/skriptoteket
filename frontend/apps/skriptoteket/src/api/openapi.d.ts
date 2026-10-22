@@ -2953,23 +2953,6 @@ export interface paths {
         patch: operations["update_profile_api_v1_profile_patch"];
         trace?: never;
     };
-    "/api/v1/profile/ai-settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /** Update Ai Settings */
-        patch: operations["update_ai_settings_api_v1_profile_ai_settings_patch"];
-        trace?: never;
-    };
     "/api/v1/profile/app-continuation": {
         parameters: {
             query?: never;
@@ -3870,15 +3853,6 @@ export interface components {
          * @enum {string}
          */
         AiDailyLimit: "pool" | "user_share" | "usd_ceiling";
-        /** AiPolicyResponse */
-        AiPolicyResponse: {
-            /** Completion External Available */
-            completion_external_available: boolean;
-            /** Completion Local Available */
-            completion_local_available: boolean;
-            /** Remote Providers Enabled */
-            remote_providers_enabled: boolean;
-        };
         /** AmbiguousRow */
         AmbiguousRow: {
             /** Raw Text */
@@ -5497,12 +5471,6 @@ export interface components {
             completion: string;
             /** Enabled */
             enabled: boolean;
-            /** Notice Code */
-            notice_code?: string | null;
-            /** Notice Message */
-            notice_message?: string | null;
-            /** Notice Variant */
-            notice_variant?: ("info" | "warning") | null;
             /** Replace Suffix Chars */
             replace_suffix_chars?: number | null;
         };
@@ -8359,11 +8327,6 @@ export interface components {
         };
         /** ProfileAppContinuationResponse */
         ProfileAppContinuationResponse: {
-            ai_policy: components["schemas"]["AiPolicyResponse"];
-            /** Allow Remote Fallback */
-            allow_remote_fallback?: boolean | null;
-            /** Inline Completion Provider */
-            inline_completion_provider?: ("local" | "external") | null;
             local_user: components["schemas"]["User"];
             profile: components["schemas"]["UserProfile"];
         };
@@ -10545,13 +10508,6 @@ export interface components {
             kind: "vega_lite";
             spec: components["schemas"]["JsonValue"];
         };
-        /** UpdateAiSettingsRequest */
-        UpdateAiSettingsRequest: {
-            /** Inline Completion Provider Preference */
-            inline_completion_provider_preference?: ("unset" | "local" | "external") | null;
-            /** Remote Fallback Preference */
-            remote_fallback_preference?: ("unset" | "allow" | "deny") | null;
-        };
         /** UpdateClassroomPlannerSettingsRequest */
         UpdateClassroomPlannerSettingsRequest: {
             /** Grouping Seating Distance Enabled */
@@ -10748,8 +10704,6 @@ export interface components {
          * @description User profile data aligned with HuleEdu identity expectations.
          */
         UserProfile: {
-            /** Allow Remote Fallback */
-            allow_remote_fallback?: boolean | null;
             /** Classroom Planner Grouping Seating Distance Enabled */
             classroom_planner_grouping_seating_distance_enabled?: boolean | null;
             /** Classroom Planner Smart Enabled */
@@ -10774,8 +10728,6 @@ export interface components {
             exam_list_ordering: "course" | "newest";
             /** First Name */
             first_name?: string | null;
-            /** Inline Completion Provider */
-            inline_completion_provider?: ("local" | "external") | null;
             /** Last Name */
             last_name?: string | null;
             /**
@@ -16858,39 +16810,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateProfileRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ProfileResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    update_ai_settings_api_v1_profile_ai_settings_patch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpdateAiSettingsRequest"];
             };
         };
         responses: {

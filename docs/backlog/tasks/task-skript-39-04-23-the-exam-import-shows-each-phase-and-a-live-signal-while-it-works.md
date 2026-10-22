@@ -111,3 +111,11 @@ delegation (2026-10-22, "Take care of it."). All come from the retained plan in 
 - Proof: lint, typecheck, backend unit 2649 passed, integration (phase, progress, migration)
   6 passed, Vitest exam-workspace and api 2743 passed. Logs in the retained root's
   `evidence/39-04-23-*.log`. Staging walk not yet done.
+- 2026-10-22 review `5878cca92` changes_requested (record
+  `evidence/reviews/task-skript-39-04-23-review-5878cca92.md` in the retained root); F1-F4
+  repaired in `09a3146f8` on fail-first proof (D7): F1 the upload wait shows "Laddar upp
+  filen" with the busy glyph; F2 batches that start converting wait for the phase write
+  before any provider call; F3 files split under 500 lines; F4 the status row has a truncating
+  message slot with its tooltip and a fixed clock slot (geometry checked on the Mac walk). The
+  queued null phase keeps its spinner without a timer (reviewer ruling). Main merged;
+  `aa30c309b36c` now revises `e5b1d7a3c9f2` (single head, migration cycle test green).

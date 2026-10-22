@@ -20,7 +20,7 @@ beforeEach(() => {
     if (url.endsWith("/auth/session")) return mockSharedSessionResponse(sharedSession);
     if (url.endsWith("/auth/csrf")) return mockJsonResponse({ csrf_token: sharedToken });
     if (url.endsWith("/profile/app-continuation")) return mockJsonResponse({
-      local_user: createTestUser({ id: sharedSession }), profile: createTestProfile(), ai_policy: null,
+      local_user: createTestUser({ id: sharedSession }), profile: createTestProfile(),
     });
     if (init?.method === "PUT" || init?.method === "POST") {
       if (new Headers(init.headers).get("X-CSRF-Token") !== sharedToken) {

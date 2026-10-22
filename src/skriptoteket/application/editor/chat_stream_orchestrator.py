@@ -2,42 +2,43 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
+from contextlib import aclosing
 from typing import Literal
 
-import httpx
 import structlog
 
 from skriptoteket.application.editor.chat_shared import (
-    REMOTE_FALLBACK_REQUIRED_CODE,
-    REMOTE_FALLBACK_REQUIRED_MESSAGE,
+    CHAT_TURN_PROVIDER,
+    DAILY_LIMIT_OUTCOME,
+    DOOR_BUSY_OUTCOME,
     STREAM_FLUSH_MAX_INTERVAL_SECONDS,
     STREAM_FLUSH_MIN_CHARS,
 )
 from skriptoteket.application.editor.chat_stream.capture import capture_chat_request_context
-from skriptoteket.application.editor.chat_stream.http_errors import is_context_window_error
-from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    door_caller_for,
+    door_refusal_error,
+)
 from skriptoteket.protocols.editor_chat import (
     EditorChatStreamOrchestratorProtocol,
     PreparedEditorChatRequest,
 )
 from skriptoteket.protocols.llm import (
-    ChatFailoverDecision,
-    ChatFailoverRouterProtocol,
-    ChatStreamProvidersProtocol,
+    ChatStreamProviderProtocol,
     EditorChatCommand,
     EditorChatDeltaData,
     EditorChatDeltaEvent,
-    EditorChatDoneDisabledData,
     EditorChatDoneEnabledData,
     EditorChatDoneEvent,
     EditorChatMetaData,
     EditorChatMetaEvent,
-    EditorChatNoticeData,
-    EditorChatNoticeEvent,
     EditorChatStreamEvent,
+    EditorLlmProviderError,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
 from skriptoteket.protocols.tool_session_messages import ToolSessionMessageRepositoryProtocol
@@ -47,22 +48,28 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 logger = structlog.get_logger(__name__)
 
 
+def _failure_outcome(error: EditorLlmProviderError) -> str:
+    if error.kind == "timeout":
+        return "timeout"
+    if error.kind == "context_window_exceeded":
+        return "over_budget"
+    return "error"
+
+
 class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
     def __init__(
         self,
         *,
         settings: Settings,
         capture_store: LlmCaptureStoreProtocol,
-        providers: ChatStreamProvidersProtocol,
-        failover: ChatFailoverRouterProtocol,
+        provider: ChatStreamProviderProtocol,
         uow: UnitOfWorkProtocol,
         turns: ToolSessionTurnRepositoryProtocol,
         messages: ToolSessionMessageRepositoryProtocol,
     ) -> None:
         self._settings = settings
         self._capture_store = capture_store
-        self._providers = providers
-        self._failover = failover
+        self._provider = provider
         self._uow = uow
         self._turns = turns
         self._messages = messages
@@ -73,13 +80,8 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         actor: User,
         command: EditorChatCommand,
         prepared: PreparedEditorChatRequest,
-        decision: ChatFailoverDecision,
         template_id: str,
-    ) -> AsyncIterator[EditorChatStreamEvent]:
-        consent = RemoteFallbackConsent(
-            allow_remote_fallback=command.allow_remote_fallback,
-            remote_providers_enabled=self._settings.AI_REMOTE_PROVIDERS_ENABLED,
-        )
+    ) -> AsyncGenerator[EditorChatStreamEvent, None]:
         request = prepared.request
         system_prompt = prepared.system_prompt
         system_prompt_chars = len(system_prompt)
@@ -113,6 +115,7 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
         assistant_chunks: list[str] = []
         failure_outcome: str | None = None
         failure_status_code: int | None = None
+        door_refusal: AiDailyLimitReached | AiDoorBusy | None = None
 
         last_flush_at = time.monotonic()
         last_flushed_len = 0
@@ -142,7 +145,6 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
             *,
             status: Literal["complete", "failed", "cancelled"],
             failure_outcome: str | None,
-            provider: str | None,
         ) -> None:
             content = "".join(assistant_chunks)
             async with self._uow:
@@ -158,70 +160,33 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
                     status=status,
                     correlation_id=prepared.correlation_id,
                     failure_outcome=failure_outcome,
-                    provider=provider,
+                    provider=CHAT_TURN_PROVIDER,
                 )
 
-        yield EditorChatMetaEvent(
+        meta_event = EditorChatMetaEvent(
             data=EditorChatMetaData(
                 correlation_id=prepared.correlation_id,
                 turn_id=prepared.turn_id,
                 assistant_message_id=prepared.assistant_message_id,
             )
         )
+        # The meta event waits for the provider's first answer: the door refuses a daily
+        # limit, and a busy door refuses the stream, before that answer, and the refusal
+        # must reach the web layer as an HTTP error before any event opens the SSE response.
+        meta_sent = False
 
         try:
-
-            def is_retryable_status(exc: httpx.HTTPStatusError) -> bool:
-                if exc.response is None:
-                    return False
-                status = exc.response.status_code
-                return status == 429 or status >= 500
-
-            NoticeVariant = Literal["info", "warning"]
-
-            def notice_for(reason: str) -> tuple[str, NoticeVariant]:
-                if reason == "breaker_open":
-                    return (
-                        "Lokala modellen verkar nere. Använder externa API:er (OpenAI).",
-                        "warning",
-                    )
-                if reason == "load_shed":
-                    return (
-                        "Lokala modellen är hårt belastad. Använder externa API:er (OpenAI).",
-                        "warning",
-                    )
-                if reason == "sticky_fallback":
-                    return (
-                        "Fortsätter med externa API:er (OpenAI) för den här chatten.",
-                        "info",
-                    )
-                return (
-                    "Använder externa API:er (OpenAI).",
-                    "info",
-                )
-
-            provider_key = decision.provider
-            provider = (
-                self._providers.primary if provider_key == "primary" else self._providers.fallback
-            )
-            if provider is None:
-                provider_key = "primary"
-                provider = self._providers.primary
-
-            if provider_key == "fallback":
-                await self._failover.mark_fallback_used(user_id=actor.id, tool_id=command.tool_id)
-                if self._providers.fallback_is_remote:
-                    message, variant = notice_for(decision.reason)
-                    yield EditorChatNoticeEvent(
-                        data=EditorChatNoticeData(message=message, variant=variant)
-                    )
-
-            await self._failover.acquire_inflight(provider=provider_key)
-            try:
-                async for delta in provider.stream_chat(
+            async with aclosing(
+                self._provider.stream_chat(
                     request=request,
                     system_prompt=system_prompt,
-                ):
+                    caller=door_caller_for(user=actor),
+                )
+            ) as deltas:
+                async for delta in deltas:
+                    if not meta_sent:
+                        meta_sent = True
+                        yield meta_event
                     if not delta:
                         continue
                     saw_delta = True
@@ -229,15 +194,10 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
                     assistant_chunks.append(delta)
                     await flush_assistant_content()
                     yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
-            finally:
-                await self._failover.release_inflight(provider=provider_key)
-            await self._failover.record_success(provider=provider_key)
-        except asyncio.CancelledError:
-            await finalize_turn(
-                status="cancelled",
-                failure_outcome="cancelled",
-                provider=provider_key,
-            )
+        except (asyncio.CancelledError, GeneratorExit):
+            # A cancelled task or a consumer that closed this generator (a dropped
+            # client): the provider stream is already closed; end the turn as cancelled.
+            await finalize_turn(status="cancelled", failure_outcome="cancelled")
             elapsed_ms = int((time.perf_counter() - start) * 1000)
             logger.info(
                 "ai_chat_cancelled",
@@ -251,123 +211,18 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
                 elapsed_ms=elapsed_ms,
             )
             raise
-        except httpx.TimeoutException:
-            failure_outcome = "timeout"
-            await self._failover.record_failure(provider=provider_key)
-            retryable = True
-        except httpx.HTTPStatusError as exc:
-            failure_outcome = "over_budget" if is_context_window_error(exc) else "error"
-            if exc.response is not None:
-                failure_status_code = exc.response.status_code
-            retryable = is_retryable_status(exc)
-            if retryable:
-                await self._failover.record_failure(provider=provider_key)
-        except (httpx.RequestError, ValueError):
-            failure_outcome = "error"
-            await self._failover.record_failure(provider=provider_key)
-            retryable = True
-
-        if (
-            failure_outcome is not None
-            and not saw_delta
-            and provider_key == "primary"
-            and retryable
-            and self._providers.fallback is not None
-            and (consent.remote_allowed or not self._providers.fallback_is_remote)
-        ):
-            provider_key = "fallback"
-            provider = self._providers.fallback
-            if provider is not None:
-                await self._failover.mark_fallback_used(user_id=actor.id, tool_id=command.tool_id)
-                if self._providers.fallback_is_remote:
-                    yield EditorChatNoticeEvent(
-                        data=EditorChatNoticeData(
-                            message=(
-                                "Byter till externa API:er (OpenAI) eftersom den lokala "
-                                "modellen inte svarade."
-                            ),
-                            variant="warning",
-                        )
-                    )
-                failure_outcome = None
-                failure_status_code = None
-                try:
-                    await self._failover.acquire_inflight(provider=provider_key)
-                    try:
-                        async for delta in provider.stream_chat(
-                            request=request,
-                            system_prompt=system_prompt,
-                        ):
-                            if not delta:
-                                continue
-                            saw_delta = True
-                            output_chars += len(delta)
-                            assistant_chunks.append(delta)
-                            await flush_assistant_content()
-                            yield EditorChatDeltaEvent(data=EditorChatDeltaData(text=delta))
-                    finally:
-                        await self._failover.release_inflight(provider=provider_key)
-                except asyncio.CancelledError:
-                    await finalize_turn(
-                        status="cancelled",
-                        failure_outcome="cancelled",
-                        provider=provider_key,
-                    )
-                    elapsed_ms = int((time.perf_counter() - start) * 1000)
-                    logger.info(
-                        "ai_chat_cancelled",
-                        template_id=template_id,
-                        system_prompt_chars=system_prompt_chars,
-                        message_count=len(request.messages),
-                        messages_chars=messages_chars,
-                        output_chars=output_chars,
-                        user_id=str(actor.id),
-                        tool_id=str(command.tool_id),
-                        elapsed_ms=elapsed_ms,
-                    )
-                    raise
-                except httpx.TimeoutException:
-                    failure_outcome = "timeout"
-                    await self._failover.record_failure(provider=provider_key)
-                except httpx.HTTPStatusError as exc:
-                    failure_outcome = "over_budget" if is_context_window_error(exc) else "error"
-                    if exc.response is not None:
-                        failure_status_code = exc.response.status_code
-                    if is_retryable_status(exc):
-                        await self._failover.record_failure(provider=provider_key)
-                except (httpx.RequestError, ValueError):
-                    failure_outcome = "error"
-                    await self._failover.record_failure(provider=provider_key)
-                else:
-                    await self._failover.record_success(provider=provider_key)
-
-        if (
-            failure_outcome is not None
-            and not saw_delta
-            and provider_key == "primary"
-            and self._providers.fallback is not None
-            and self._providers.fallback_is_remote
-            and consent.should_prompt
-        ):
-            await finalize_turn(
-                status="failed",
-                failure_outcome=REMOTE_FALLBACK_REQUIRED_CODE,
-                provider=provider_key,
-            )
-            yield EditorChatDoneEvent(
-                data=EditorChatDoneDisabledData(
-                    message=REMOTE_FALLBACK_REQUIRED_MESSAGE,
-                    code=REMOTE_FALLBACK_REQUIRED_CODE,
-                )
-            )
-            return
+        except AiDailyLimitReached as exc:
+            door_refusal = exc
+            failure_outcome = DAILY_LIMIT_OUTCOME
+        except AiDoorBusy as exc:
+            door_refusal = exc
+            failure_outcome = DOOR_BUSY_OUTCOME
+        except EditorLlmProviderError as exc:
+            failure_outcome = _failure_outcome(exc)
+            failure_status_code = exc.status_code
 
         if failure_outcome is not None:
-            await finalize_turn(
-                status="failed",
-                failure_outcome=failure_outcome,
-                provider=provider_key,
-            )
+            await finalize_turn(status="failed", failure_outcome=failure_outcome)
             elapsed_ms = int((time.perf_counter() - start) * 1000)
             logger.info(
                 "ai_chat_failed",
@@ -383,15 +238,16 @@ class EditorChatStreamOrchestrator(EditorChatStreamOrchestratorProtocol):
                 partial=saw_delta,
                 elapsed_ms=elapsed_ms,
             )
-
+            if door_refusal is not None and not meta_sent:
+                raise door_refusal_error(door_refusal) from door_refusal
+            if not meta_sent:
+                yield meta_event
             yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="error"))
             return
 
-        await finalize_turn(
-            status="complete",
-            failure_outcome=None,
-            provider=provider_key,
-        )
+        if not meta_sent:
+            yield meta_event
+        await finalize_turn(status="complete", failure_outcome=None)
         elapsed_ms = int((time.perf_counter() - start) * 1000)
         logger.info(
             "ai_chat_done",

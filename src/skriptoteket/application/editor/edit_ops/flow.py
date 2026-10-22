@@ -7,17 +7,21 @@ import structlog
 from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.prompt_composer import PromptTemplateError
-from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    door_caller_for,
+    door_refusal_error,
+)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.llm import (
-    ChatFailoverRouterProtocol,
     ChatMessage,
     ChatOpsBudgetResolverProtocol,
-    ChatOpsProvidersProtocol,
+    ChatOpsProviderProtocol,
     EditOpsCommand,
     EditOpsResult,
     LLMChatRequest,
@@ -37,13 +41,17 @@ from .budgeting import (
     build_user_payload,
 )
 from .capture import build_capture_context, resolve_capture_id
-from .constants import DISABLED_MESSAGE, REMOTE_FALLBACK_REQUIRED_MESSAGE
+from .constants import (
+    AI_DOOR_BUSY_FAILURE_OUTCOME,
+    AI_LIMIT_FAILURE_OUTCOME,
+    DISABLED_MESSAGE,
+    TURN_PROVIDER,
+)
 from .execution import execute_chat_ops
 from .logging import EditOpsLogContext
 from .over_budget import handle_over_budget
 from .persistence import complete_turn, update_turn_failure_with_message
 from .preflight_orchestrator import prepare_preflight_context
-from .routing import resolve_model_for_counting
 
 logger = structlog.get_logger(__name__)
 
@@ -53,10 +61,9 @@ class EditOpsFlow:
         self,
         *,
         settings: Settings,
-        providers: ChatOpsProvidersProtocol,
+        provider: ChatOpsProviderProtocol,
         budget_resolver: ChatOpsBudgetResolverProtocol,
         payload_parser: EditOpsPayloadParserProtocol,
-        failover: ChatFailoverRouterProtocol,
         capture_store: LlmCaptureStoreProtocol,
         uow: UnitOfWorkProtocol,
         sessions: ToolSessionRepositoryProtocol,
@@ -68,10 +75,9 @@ class EditOpsFlow:
         system_prompt_loader: Callable[[str], str] | None = None,
     ) -> None:
         self._settings = settings
-        self._providers = providers
+        self._provider = provider
         self._budget_resolver = budget_resolver
         self._payload_parser = payload_parser
-        self._failover = failover
         self._capture_store = capture_store
         self._uow = uow
         self._sessions = sessions
@@ -108,8 +114,6 @@ class EditOpsFlow:
             template_id=template_id,
             user_id=actor.id,
             tool_id=command.tool_id,
-            fallback_is_remote=self._providers.fallback_is_remote,
-            allow_remote_fallback=command.allow_remote_fallback,
             message_len=message_len,
             virtual_files_bytes=virtual_files_bytes,
             started_at=started_at,
@@ -117,8 +121,6 @@ class EditOpsFlow:
 
         if not self._settings.LLM_CHAT_OPS_ENABLED:
             log_context.log_result(
-                provider="primary",
-                failover_reason="feature_disabled",
                 system_prompt_chars=0,
                 prompt_messages_count=0,
                 finish_reason=None,
@@ -138,58 +140,12 @@ class EditOpsFlow:
                 ),
             )
 
-        consent = RemoteFallbackConsent(
-            allow_remote_fallback=command.allow_remote_fallback,
-            remote_providers_enabled=self._settings.AI_REMOTE_PROVIDERS_ENABLED,
-        )
-        decision = await self._failover.decide_route(
-            user_id=actor.id,
-            tool_id=command.tool_id,
-            allow_remote_fallback=command.allow_remote_fallback,
-            fallback_available=(
-                self._providers.fallback is not None
-                and (
-                    self._settings.AI_REMOTE_PROVIDERS_ENABLED
-                    or not self._providers.fallback_is_remote
-                )
-            ),
-            fallback_is_remote=self._providers.fallback_is_remote,
-        )
-        if decision.blocked == "remote_fallback_required":
-            log_context.log_result(
-                provider=decision.provider,
-                failover_reason=decision.reason,
-                system_prompt_chars=0,
-                prompt_messages_count=0,
-                finish_reason=None,
-                parse_ok=False,
-                ops_count=0,
-                outcome="error",
-            )
-            return EditOpsResult(
-                enabled=False,
-                assistant_message=REMOTE_FALLBACK_REQUIRED_MESSAGE,
-                ops=[],
-                base_fingerprints=base_fingerprints,
-                eval_meta=PromptEvalMeta(
-                    template_id=template_id,
-                    outcome="error",
-                    system_prompt_chars=0,
-                ),
-            )
-
-        model_for_counting = resolve_model_for_counting(
-            settings=self._settings,
-            decision=decision,
-        )
         user_payload = build_user_payload(command=command)
         try:
             preflight_context = await prepare_preflight_context(
                 settings=self._settings,
-                providers=self._providers,
                 budget_resolver=self._budget_resolver,
                 token_counters=self._token_counters,
-                failover=self._failover,
                 uow=self._uow,
                 sessions=self._sessions,
                 turns=self._turns,
@@ -198,14 +154,10 @@ class EditOpsFlow:
                 id_generator=self._id_generator,
                 command=command,
                 actor_id=actor.id,
-                decision=decision,
                 template_id=template_id,
                 system_prompt_loader=self._system_prompt_loader,
                 user_payload=user_payload,
                 capture_id=capture_id,
-                remote_allowed=consent.remote_allowed,
-                message_len=message_len,
-                virtual_files_bytes=virtual_files_bytes,
             )
         except (OSError, PromptTemplateError) as exc:
             logger.warning(
@@ -217,8 +169,6 @@ class EditOpsFlow:
                 system_prompt_max_tokens=self._settings.LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS,
             )
             log_context.log_result(
-                provider=decision.provider,
-                failover_reason=decision.reason,
                 system_prompt_chars=0,
                 prompt_messages_count=0,
                 finish_reason=None,
@@ -238,21 +188,17 @@ class EditOpsFlow:
                 ),
             )
 
-        decision = preflight_context.decision
         prepared = preflight_context.prepared
         prompt_messages_count = preflight_context.prompt_messages_count
         system_prompt = preflight_context.system_prompt
         budget = preflight_context.budget
         token_counter = preflight_context.token_counter
-        model_for_counting = preflight_context.model_for_counting
 
         if prepared is None:
             return await handle_over_budget(
                 settings=self._settings,
                 actor=actor,
                 command=command,
-                decision=decision,
-                model_for_counting=model_for_counting,
                 system_prompt=system_prompt,
                 user_payload=user_payload,
                 budget=budget,
@@ -280,19 +226,23 @@ class EditOpsFlow:
             virtual_files_bytes=virtual_files_bytes,
         )
 
-        execution = await execute_chat_ops(
-            providers=self._providers,
-            failover=self._failover,
-            payload_parser=self._payload_parser,
-            command=command,
-            request=request,
-            system_prompt=system_prompt,
-            decision=decision,
-            consent=consent,
-            user_id=actor.id,
-        )
-
-        if execution.requires_remote_fallback:
+        caller = door_caller_for(user=actor)
+        try:
+            execution = await execute_chat_ops(
+                provider=self._provider,
+                payload_parser=self._payload_parser,
+                command=command,
+                request=request,
+                system_prompt=system_prompt,
+                caller=caller,
+            )
+        except (AiDailyLimitReached, AiDoorBusy) as error:
+            refusal = door_refusal_error(error)
+            failure_outcome = (
+                AI_DOOR_BUSY_FAILURE_OUTCOME
+                if isinstance(error, AiDoorBusy)
+                else AI_LIMIT_FAILURE_OUTCOME
+            )
             await update_turn_failure_with_message(
                 uow=self._uow,
                 messages=self._messages,
@@ -300,32 +250,20 @@ class EditOpsFlow:
                 tool_session_id=prepared.tool_session_id,
                 turn_id=prepared.turn_id,
                 assistant_message_id=prepared.assistant_message_id,
-                assistant_message=REMOTE_FALLBACK_REQUIRED_MESSAGE,
-                provider=execution.provider_key,
-                failure_outcome="remote_fallback_required",
+                assistant_message=refusal.message,
+                provider=TURN_PROVIDER,
+                failure_outcome=failure_outcome,
                 correlation_id=prepared.correlation_id,
             )
             log_context.log_result(
-                provider="fallback",
-                failover_reason="retryable_primary_failure",
                 system_prompt_chars=len(system_prompt),
                 prompt_messages_count=prompt_messages_count,
                 finish_reason=None,
                 parse_ok=False,
                 ops_count=0,
-                outcome="error",
+                outcome=failure_outcome,
             )
-            return EditOpsResult(
-                enabled=False,
-                assistant_message=REMOTE_FALLBACK_REQUIRED_MESSAGE,
-                ops=[],
-                base_fingerprints=base_fingerprints,
-                eval_meta=PromptEvalMeta(
-                    template_id=template_id,
-                    outcome="error",
-                    system_prompt_chars=len(system_prompt),
-                ),
-            )
+            raise refusal from error
 
         await complete_turn(
             uow=self._uow,
@@ -335,7 +273,7 @@ class EditOpsFlow:
             turn_id=prepared.turn_id,
             assistant_message_id=prepared.assistant_message_id,
             assistant_message=execution.assistant_message,
-            provider=execution.provider_key,
+            provider=TURN_PROVIDER,
             outcome=execution.log_outcome,
             correlation_id=prepared.correlation_id,
         )
@@ -347,10 +285,6 @@ class EditOpsFlow:
                     "template_id": template_id,
                     "user_id": str(actor.id),
                     "tool_id": str(command.tool_id),
-                    "provider": execution.provider_key,
-                    "failover_reason": execution.failover_reason,
-                    "fallback_is_remote": self._providers.fallback_is_remote,
-                    "allow_remote_fallback": command.allow_remote_fallback,
                     "message_len": message_len,
                     "virtual_files_bytes": virtual_files_bytes,
                     "base_hash": base_hash,
@@ -374,10 +308,6 @@ class EditOpsFlow:
                     "template_id": template_id,
                     "user_id": str(actor.id),
                     "tool_id": str(command.tool_id),
-                    "provider": execution.provider_key,
-                    "failover_reason": execution.failover_reason,
-                    "fallback_is_remote": self._providers.fallback_is_remote,
-                    "allow_remote_fallback": command.allow_remote_fallback,
                     "message_len": message_len,
                     "virtual_files_bytes": virtual_files_bytes,
                     "base_hash": base_hash,
@@ -397,8 +327,6 @@ class EditOpsFlow:
             )
 
         log_context.log_result(
-            provider=execution.provider_key,
-            failover_reason=execution.failover_reason,
             system_prompt_chars=len(system_prompt),
             prompt_messages_count=prompt_messages_count,
             finish_reason=execution.finish_reason,

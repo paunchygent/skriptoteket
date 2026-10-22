@@ -193,15 +193,8 @@ def main() -> None:
         expect(
             page.get_by_role("heading", name=re.compile(r"Profil", re.IGNORECASE))
         ).to_be_visible()
-        ai_settings_heading = page.get_by_role(
-            "heading", name=re.compile(r"AI-inställningar", re.IGNORECASE)
-        ).first
-        expect(ai_settings_heading).to_be_visible()
         _wait_for_page_fade_in(page)
         page.screenshot(path=str(artifacts_dir / "profile-desktop.png"), full_page=True)
-        ai_settings_heading.scroll_into_view_if_needed()
-        _wait_for_page_fade_in(page)
-        page.screenshot(path=str(artifacts_dir / "profile-ai-settings-desktop.png"), full_page=True)
 
         context.close()
         browser.close()

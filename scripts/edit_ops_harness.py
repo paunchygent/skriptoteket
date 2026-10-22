@@ -74,7 +74,6 @@ class Scenario:
     tool_slug: str | None
     message: str | None
     active_file: str
-    allow_remote_fallback: bool
     selection: dict[str, int] | None
     cursor: dict[str, int] | None
     ops: list[dict[str, Any]] | None
@@ -86,7 +85,6 @@ class Scenario:
             tool_slug=payload.get("tool_slug"),
             message=payload.get("message"),
             active_file=payload.get("active_file", "tool.py"),
-            allow_remote_fallback=bool(payload.get("allow_remote_fallback", False)),
             selection=payload.get("selection"),
             cursor=payload.get("cursor"),
             ops=payload.get("ops"),
@@ -237,7 +235,6 @@ def main() -> int:
                     "tool_slug": tool_slug,
                     "message": scenario.message,
                     "active_file": scenario.active_file,
-                    "allow_remote_fallback": scenario.allow_remote_fallback,
                     "selection": scenario.selection,
                     "cursor": scenario.cursor,
                     "ops": scenario.ops,
@@ -252,7 +249,6 @@ def main() -> int:
             edit_ops_request = {
                 "tool_id": tool_id,
                 "message": scenario.message,
-                "allow_remote_fallback": scenario.allow_remote_fallback,
                 "active_file": scenario.active_file,
                 "virtual_files": virtual_files,
             }

@@ -31,7 +31,6 @@ type MockAuthStore = {
   isAuthenticated: boolean;
   user: { id: string; email: string; role: string } | null;
   profile: null;
-  aiPolicy: null;
   bootstrap: ReturnType<typeof vi.fn>;
   logout: ReturnType<typeof vi.fn>;
   hasAtLeastRole: ReturnType<typeof vi.fn>;
@@ -99,7 +98,6 @@ describe("App", () => {
       isAuthenticated: true,
       user: { id: "user-1", email: "teacher@example.com", role: "user" },
       profile: null,
-      aiPolicy: null,
       bootstrap: vi.fn().mockResolvedValue(undefined),
       logout: vi.fn().mockResolvedValue(undefined),
       hasAtLeastRole: vi.fn().mockReturnValue(false),

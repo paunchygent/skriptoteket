@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "be2f231dc1d938461eddcd28584f3e10bc2a2796a1a4c851e3019e060befb091",
+  "source_set_digest": "876c891949954a61f7b86e0b65566762d5b5cf23e92210d8c7944e5b2a69f29e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7420,7 +7420,7 @@
       "type": "task",
       "title": "Script-editor completion runs on GPT-6 Luna and chat and edits on Sol 6.1 low through the door",
       "path": "docs/backlog/tasks/task-skript-41-01-02-script-editor-completion-runs-on-gpt-6-luna-and-chat-and-edits-on-sol-6-1-low-through-the-door.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -7462,7 +7462,7 @@
       "type": "task",
       "title": "Skriptoteket serves a thousand concurrent AI calls with bounded fan-out and a try-again message",
       "path": "docs/backlog/tasks/task-skript-41-01-04-skriptoteket-serves-a-thousand-concurrent-ai-calls-with-bounded-fan-out-and-a-try-again-message.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-01",
       "owners": [
@@ -7473,7 +7473,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-22",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "One review (D7 rule) in retained root 01a16352: changes_requested F1-F8 (evidence/reviews/task-skript-41-01-04-9b729d9dd-review.md); F1-F4 and F6-F8 repaired on fail-first proof (evidence/repairs/README.md), F5 assigned to TASK-SKRIPT-41-01-02, no rereview per the user rule \"Now it's enough.\"; mock load proof run 4 1,120/1,120 with 0 paid calls; merged as d44e946b5; HuleEdu door backlog 2048 in ca7ff9700; Mac staging walk 2026-10-22 at d44e946b5 passed checks 1-4 (Mac .artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md); the try-again note rests on unit tests and the load proof."
       }
     },
     {
@@ -11362,23 +11366,6 @@
       ],
       "retired_ids": [
         "REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08"
-      ]
-    },
-    {
-      "id": "REF-SKRIPT-GENERAL-reference-inline-completion-harness",
-      "type": "reference",
-      "title": "Reference: Inline completion harness",
-      "path": "docs/reference/ref-skript-general-reference-inline-completion-harness-reference-inline-completion-harness.md",
-      "status": "active",
-      "reference_kind": "general",
-      "owners": [
-        {
-          "kind": "service",
-          "id": "skriptoteket"
-        }
-      ],
-      "retired_ids": [
-        "REF-ai-inline-completion-harness"
       ]
     },
     {

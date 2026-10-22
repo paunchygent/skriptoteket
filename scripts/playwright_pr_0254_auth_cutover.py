@@ -2,9 +2,9 @@
 
 Purpose:
     Certify the final local shared-session cutover across Skriptoteket SPA,
-    HuleEdu Gateway auth entry, HuleEdu browser session/CSRF, Gateway-signed
-    app continuation, Skriptoteket local projection/RBAC, write protection,
-    and shared logout invalidation.
+    HuleEdu Gateway auth entry, HuleEdu browser session, Gateway-signed
+    app continuation, Skriptoteket local projection/RBAC, and shared logout
+    invalidation.
 
 Relationships:
     - Targets PR-0254 / ST-28-04 cutover evidence.
@@ -467,7 +467,6 @@ def _run(config: AuthCutoverConfig) -> Path:
         callback_assertions=_section(primary, "callback_assertions"),
         projection_assertions=_section(primary, "projection_assertions"),
         local_role_assertions=_section(primary, "local_role_assertions"),
-        csrf_write_assertions=_section(primary, "csrf_write_assertions"),
         logout_assertions=logout_assertions,
         lane_assertions=lane_assertions,
         artifacts=retained_artifacts,

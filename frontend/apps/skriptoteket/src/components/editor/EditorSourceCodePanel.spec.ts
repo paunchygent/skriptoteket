@@ -1,12 +1,18 @@
 import { createPinia, setActivePinia } from "pinia";
 import { defineComponent } from "vue";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { components } from "../../api/openapi";
 import { useAuthStore } from "../../stores/auth";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
 import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
+import {
+  AI_APP_LIMIT_NOTE,
+  AI_USER_LIMIT_NOTE,
+  markAiDailyLimit,
+  resetAiDailyLimitForTests,
+} from "../../composables/aiDailyLimit";
 import EditorSourceCodePanel from "./EditorSourceCodePanel.vue";
 
 type ApiRole = components["schemas"]["Role"];
@@ -123,4 +129,57 @@ describe("EditorSourceCodePanel AI access gate", () => {
     expect(intelligence.options?.ghostText?.enabled.value).toBe(expected);
     wrapper.unmount();
   });
+});
+
+describe("EditorSourceCodePanel daily limit note", () => {
+  beforeEach(() => {
+    resetAiDailyLimitForTests();
+  });
+
+  it("shows no note and keeps ghost text enabled while the door has refused nothing", () => {
+    const wrapper = mountPanel();
+
+    expect(wrapper.find('[data-test="editor-ai-limit-note"]').exists()).toBe(false);
+    expect(intelligence.options?.ghostText?.enabled.value).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("shows the door note inline and turns ghost text off once a limit is refused", async () => {
+    const wrapper = mountPanel();
+
+    markAiDailyLimit("small", "user_share");
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.get('[data-test="editor-ai-limit-note"]').text()).toBe(AI_USER_LIMIT_NOTE);
+    expect(intelligence.options?.ghostText?.enabled.value).toBe(false);
+    wrapper.unmount();
+  });
+
+  it.each(["pool", "user_share"] as const)(
+    "keeps ghost text enabled and the note hidden after a full-allowance %s refusal",
+    async (limit) => {
+      const wrapper = mountPanel();
+
+      markAiDailyLimit("full", limit);
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find('[data-test="editor-ai-limit-note"]').exists()).toBe(false);
+      expect(intelligence.options?.ghostText?.enabled.value).toBe(true);
+      wrapper.unmount();
+    },
+  );
+
+  it.each(["small", "full"] as const)(
+    "turns ghost text off after a usd_ceiling refusal from the %s allowance",
+    async (allowance) => {
+      const wrapper = mountPanel();
+
+      markAiDailyLimit(allowance, "usd_ceiling");
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.get('[data-test="editor-ai-limit-note"]').text()).toBe(AI_APP_LIMIT_NOTE);
+      expect(intelligence.options?.ghostText?.enabled.value).toBe(false);
+      wrapper.unmount();
+    },
+  );
 });

@@ -54,7 +54,7 @@ describe("consumeChatStream", () => {
     expect(result).toEqual({ sawDelta: true, sawDone: true });
   });
 
-  it("ignores invalid json and normalizes notice variants", async () => {
+  it("ignores invalid json and unknown events", async () => {
     const { stream, push, close } = createControlledStream();
     const events: unknown[] = [];
     const controller = new AbortController();
@@ -75,8 +75,7 @@ describe("consumeChatStream", () => {
 
     const result = await resultPromise;
 
-    expect(events).toHaveLength(1);
-    expect(events[0]).toMatchObject({ kind: "notice", message: "Heads up", variant: "warning" });
+    expect(events).toEqual([]);
     expect(result).toEqual({ sawDelta: false, sawDone: false });
   });
 

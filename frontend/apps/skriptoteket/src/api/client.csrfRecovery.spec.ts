@@ -35,7 +35,7 @@ beforeEach(async () => {
   vi.mocked(fetch).mockReset();
   vi.mocked(fetch).mockResolvedValueOnce(serverSession())
     .mockResolvedValueOnce(mockJsonResponse({
-      local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
+      local_user: createTestUser(), profile: createTestProfile(),
     }))
     .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }))
     .mockResolvedValueOnce(serverSession());
@@ -137,7 +137,7 @@ describe.each(transports)("$name CSRF recovery", ({ name: transportName, request
     auth.bootstrapped = false;
     vi.mocked(fetch).mockResolvedValueOnce(serverSession(null))
       .mockResolvedValueOnce(mockJsonResponse({
-        local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
+        local_user: createTestUser(), profile: createTestProfile(),
       }))
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }));
     await auth.bootstrap();

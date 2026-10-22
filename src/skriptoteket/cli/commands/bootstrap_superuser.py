@@ -33,7 +33,6 @@ async def _bootstrap_superuser_async(*, email: str, password: str) -> None:
         users = PostgreSQLUserRepository(session)
         profiles = PostgreSQLProfileRepository(session)
         handler = CreateLocalUserHandler(
-            settings=settings,
             uow=uow,
             users=users,
             profiles=profiles,

@@ -8,7 +8,7 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import (
     InlineCompletionCommand,
     InlineCompletionHandlerProtocol,
-    InlineCompletionProvidersProtocol,
+    InlineCompletionProviderProtocol,
     InlineCompletionResult,
 )
 from skriptoteket.protocols.llm_captures import LlmCaptureStoreProtocol
@@ -20,14 +20,14 @@ class InlineCompletionHandler(InlineCompletionHandlerProtocol):
         self,
         *,
         settings: Settings,
-        providers: InlineCompletionProvidersProtocol,
+        provider: InlineCompletionProviderProtocol,
         capture_store: LlmCaptureStoreProtocol,
         token_counters: TokenCounterResolverProtocol,
         system_prompt_loader: Callable[[str, str], str] | None = None,
     ) -> None:
         self._flow = InlineCompletionFlow(
             settings=settings,
-            providers=providers,
+            provider=provider,
             capture_store=capture_store,
             token_counters=token_counters,
             system_prompt_loader=system_prompt_loader,

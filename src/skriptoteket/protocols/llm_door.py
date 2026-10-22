@@ -14,7 +14,8 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import AsyncIterator, Mapping
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import Protocol
@@ -44,6 +45,30 @@ class DoorReply:
         return 200 <= self.status_code < 300
 
 
+class DoorStream(Protocol):
+    """One open streamed door answer (``stream: true`` Responses call).
+
+    ``status_code`` and ``headers`` are the relayed answer's; a success
+    yields the upstream SSE lines unchanged through ``aiter_lines``. A
+    failed answer (status 400 or above) has its body read into ``body``
+    and yields no lines.
+    """
+
+    @property
+    def status_code(self) -> int: ...
+
+    @property
+    def headers(self) -> Mapping[str, str]: ...
+
+    @property
+    def body(self) -> bytes: ...
+
+    @property
+    def is_success(self) -> bool: ...
+
+    def aiter_lines(self) -> AsyncIterator[str]: ...
+
+
 class DoorTimeout(Exception):
     """The door call timed out."""
 
@@ -71,5 +96,24 @@ class LlmDoorClientProtocol(Protocol):
         refused after its Retry-After retries), ``DoorTimeout`` on timeout and
         ``DoorRequestFailed`` when no answer arrived. Every other answer
         returns as a ``DoorReply``; a capacity 429 never does.
+        """
+        ...
+
+    def stream(
+        self,
+        *,
+        operation: DoorOperation,
+        payload: Mapping[str, JsonValue],
+        caller: AiDoorCaller,
+        timeout_seconds: float,
+    ) -> AbstractAsyncContextManager[DoorStream]:
+        """Open one streamed call; the context closes the connection.
+
+        Holds the caller's door slots until the context closes. Raises
+        ``AiDailyLimitReached`` on entry for a pool, user-share or USD-ceiling
+        429, before any line is relayed; ``AiDoorBusy``, ``DoorTimeout`` and
+        ``DoorRequestFailed`` as ``send`` does. A success admits ``caller``
+        on entry. The door sends no charge headers on a stream, so a stream
+        records no overage charge.
         """
         ...

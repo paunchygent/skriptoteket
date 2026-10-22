@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useProfile } from "../composables/useProfile";
 import { SupersededAuthSessionError, useAuthStore } from "../stores/auth";
-import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse, TEST_AI_POLICY } from "../stores/authTestHelpers";
+import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse } from "../stores/authTestHelpers";
 import { apiFetch, apiFetchBlob, apiFetchBlobResponse } from "./client";
 
 function deferred<T>() {
@@ -22,7 +22,7 @@ function admitTeacher(id: string, csrfToken: string | null = `${id}-csrf`) {
       user_id: id, display_name: id,
       exam_courses: { school_forms: ["grundskolan"], course_keys: [`${id}-course`] },
     }),
-    sharedSessionId: `${id}-session`, csrfToken, aiPolicy: TEST_AI_POLICY,
+    sharedSessionId: `${id}-session`, csrfToken,
     grants: [`${id}-grant`], featureFlags: [`${id}-flag`],
     bootstrapped: true,
   });
@@ -55,7 +55,6 @@ describe.each(clients)("$name request session ownership", ({ request }) => {
     expect(auth.csrfToken).toBeNull();
     expect(auth.grants).toEqual([]);
     expect(auth.featureFlags).toEqual([]);
-    expect(auth.aiPolicy).toBeNull();
   });
 
   it("does not expire B when A's delayed 401 arrives", async () => {
@@ -102,7 +101,7 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     vi.mocked(fetch).mockImplementation(async (input) => {
       if (String(input).includes("/auth/session")) return mockSharedSessionResponse("teacher-b-session");
       if (String(input).includes("/profile/app-continuation")) return mockJsonResponse({
-        local_user: teacherB, profile: profileB, ai_policy: null,
+        local_user: teacherB, profile: profileB,
       });
       if (String(input).includes("/auth/csrf")) return mockJsonResponse({ csrf_token: "b-only-csrf" });
       if (String(input).includes("/profile/exam-courses")) return mockJsonResponse({ user: teacherB, profile: savedProfile });
@@ -113,7 +112,6 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     expect(auth.isCurrentSession(oldSession)).toBe(false);
     expect(auth.sharedSessionId).toBe("teacher-b-session");
     expect(auth.csrfToken).toBe("b-only-csrf");
-    expect(auth.aiPolicy).toBeNull();
     expect(auth.grants).toEqual([]);
     expect(auth.featureFlags).toEqual([]);
     await profile.updateExamCourses({ school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] });
@@ -133,7 +131,7 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     vi.mocked(fetch).mockImplementation(async (input) => {
       if (String(input).includes("/auth/session")) return mockSharedSessionResponse("teacher-b-session");
       if (String(input).includes("/profile/app-continuation")) return mockJsonResponse({
-        local_user: teacherB, profile: profileB, ai_policy: null,
+        local_user: teacherB, profile: profileB,
       });
       if (String(input).includes("/auth/csrf")) return mockJsonResponse({ csrf_token: "b-only-csrf" });
       return mockJsonResponse({ profile: profileB, user: teacherB });
@@ -147,7 +145,6 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     expect(auth.csrfToken).toBe("b-only-csrf");
     expect(auth.grants).toEqual([]);
     expect(auth.featureFlags).toEqual([]);
-    expect(auth.aiPolicy).toBeNull();
   });
 
   it("hydrates CSRF and admits its own course PATCH without ending the session (positive control)", async () => {

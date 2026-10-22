@@ -1,9 +1,10 @@
 import type { Ref } from "vue";
 
 import { createCorrelationId } from "../../api/correlation";
-import { isApiError } from "../../api/client";
+import { isApiError, toApiError } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
-import { postChatStream, readChatErrorMessage } from "./chat/editorChatApi";
+import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
+import { postChatStream } from "./chat/editorChatApi";
 import { consumeChatStream } from "./chat/editorChatStreamClient";
 import {
   appendMessage,
@@ -16,7 +17,6 @@ import type {
   EditorChatMessage,
   EditorChatRequest,
   EditorVirtualFiles,
-  NoticeVariant,
   VirtualFileId,
 } from "./chat/editorChatTypes";
 
@@ -35,11 +35,7 @@ const EMPTY_MESSAGE_ERROR = "Skriv ett meddelande forst.";
 type EditorChatRequestState = {
   messages: Ref<EditorChatMessage[]>;
   streaming: Ref<boolean>;
-  disabledMessage: Ref<string | null>;
   error: Ref<string | null>;
-  noticeMessage: Ref<string | null>;
-  noticeVariant: Ref<NoticeVariant>;
-  clearNoticeMessage: () => void;
   scheduleRevealTick: () => void;
 };
 
@@ -49,11 +45,7 @@ export function useEditorChatRequest(
   {
     messages,
     streaming,
-    disabledMessage,
     error,
-    noticeMessage,
-    noticeVariant,
-    clearNoticeMessage,
     scheduleRevealTick,
   }: EditorChatRequestState,
 ) {
@@ -90,8 +82,6 @@ export function useEditorChatRequest(
 
     const requestSession = auth.captureSession();
     error.value = null;
-    disabledMessage.value = null;
-    clearNoticeMessage();
 
     const userMessage = createUserMessage(trimmed);
     messages.value = appendMessage(messages.value, userMessage);
@@ -132,9 +122,22 @@ export function useEditorChatRequest(
 
       if (!auth.isCurrentSession(requestSession)) return;
       if (!response.ok || !response.body) {
-        const messageText = await readChatErrorMessage(response);
+        const refusal = await toApiError(response);
         if (!auth.isCurrentSession(requestSession)) return;
         if (response.status === 401) auth.clear(requestSession);
+        const limit = aiLimitFromError(refusal);
+        if (limit) {
+          // The door's limit note shows beside the disabled composer, not as a chat bubble.
+          markAiDailyLimit("full", limit);
+          finalizeTurn({
+            messages: messages.value,
+            userMessage,
+            activeAssistantMessage: null,
+            status: "failed",
+          });
+          return;
+        }
+        const messageText = refusal.message;
         const result = ensureAssistantMessage({
           messages: messages.value,
           activeAssistantMessage,
@@ -196,11 +199,6 @@ export function useEditorChatRequest(
                 activeAssistantMessage.correlationId = event.correlationId;
               }
               scheduleRevealTick();
-              break;
-            }
-            case "notice": {
-              noticeMessage.value = event.message;
-              noticeVariant.value = event.variant ?? "info";
               break;
             }
             case "done": {

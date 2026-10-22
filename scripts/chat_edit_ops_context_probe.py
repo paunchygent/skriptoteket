@@ -23,7 +23,6 @@ class Scenario:
     chat_message: str
     edit_ops_message: str
     active_file: str
-    allow_remote_fallback: bool
 
     @classmethod
     def from_payload(cls, payload: dict[str, Any]) -> "Scenario":
@@ -33,7 +32,6 @@ class Scenario:
             chat_message=payload.get("chat_message", ""),
             edit_ops_message=payload.get("edit_ops_message", ""),
             active_file=payload.get("active_file", "tool.py"),
-            allow_remote_fallback=bool(payload.get("allow_remote_fallback", False)),
         )
 
 
@@ -173,7 +171,6 @@ def main() -> int:
 
         chat_payload = {
             "message": scenario.chat_message,
-            "allow_remote_fallback": scenario.allow_remote_fallback,
             "active_file": scenario.active_file,
             "virtual_files": virtual_files,
         }
@@ -196,7 +193,6 @@ def main() -> int:
         edit_ops_payload = {
             "tool_id": tool_id,
             "message": scenario.edit_ops_message,
-            "allow_remote_fallback": scenario.allow_remote_fallback,
             "active_file": scenario.active_file,
             "virtual_files": virtual_files,
         }
@@ -221,7 +217,6 @@ def main() -> int:
             "chat_message": scenario.chat_message,
             "edit_ops_message": scenario.edit_ops_message,
             "active_file": scenario.active_file,
-            "allow_remote_fallback": scenario.allow_remote_fallback,
         }
 
         _write_json(output_record_dir / "meta.json", record)

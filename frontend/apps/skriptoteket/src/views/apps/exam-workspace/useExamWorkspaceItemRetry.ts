@@ -30,7 +30,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { aiLimitFromError, aiTryAgainFromError, markAiDailyLimit } from "./aiDailyLimit";
+import { aiLimitFromError, aiTryAgainFromError, markAiDailyLimit } from "../../../composables/aiDailyLimit";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { FenceToken, SyncFence } from "./examWorkspaceSyncFence";
@@ -131,7 +131,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
       // No toast for the door's limit: the flag disables the retry control.
       const limit = aiLimitFromError(error);
       if (limit !== null) {
-        markAiDailyLimit(limit);
+        markAiDailyLimit("small", limit);
         return false;
       }
       const serverCopy =

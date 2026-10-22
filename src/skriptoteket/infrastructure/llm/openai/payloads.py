@@ -1,37 +1,33 @@
+"""Responses API request bodies for the script-editor providers.
+
+Purpose:
+    Build the OpenAI Responses body the editor providers send through the LLM
+    provider door. Neither editor model (GPT-6 Luna, Sol 6.1) accepts
+    temperature, and the door owns prompt caching, so the body carries neither.
+"""
+
 from __future__ import annotations
 
 from typing import Literal
 
-from skriptoteket.infrastructure.llm.model_families import (
-    is_gpt5_family_model,
-    supports_prompt_cache_key,
-    supports_prompt_cache_retention,
-    supports_stop_sequences,
-)
-from skriptoteket.infrastructure.llm.openai.types import (
-    ResponsesInputMessage,
-    ResponsesJsonSchemaTextFormat,
-    ResponsesMessageContent,
-    ResponsesPayload,
-    ResponsesTextConfig,
-    ResponsesTextFormat,
-)
+from pydantic import JsonValue
+
+from skriptoteket.infrastructure.llm.openai.types import ResponsesTextFormat
 
 _RESPONSES_TEXT_FORMAT_ERROR = "Invalid structured output format for Responses API (text.format)."
 
 
 def _validate_responses_text_format(
     text_format: ResponsesTextFormat,
-) -> ResponsesTextFormat:
+) -> dict[str, JsonValue]:
     """Validate text.format for /v1/responses.
 
     Canonical docs:
     - Responses API: https://platform.openai.com/docs/api-reference/responses
-    - Chat Completions API: https://platform.openai.com/docs/api-reference/chat
-    - Local runbook: docs/runbooks/runbook-openai-responses-api.md
+    - Local runbook: RUN-SKRIPT-runbook-openai-responses-api-prompt-caching in docs/runbooks/
 
-    NOTE: We intentionally do *not* accept Chat Completions `response_format` shapes here.
-    `/v1/responses` requires the `text.format` shape:
+    `/v1/responses` requires the `text.format` shape (not the Chat Completions
+    `response_format` shape):
       {"type":"json_schema","name":"...","schema":{...}}
     """
 
@@ -47,7 +43,7 @@ def _validate_responses_text_format(
     schema = text_format.get("schema")
     if not isinstance(schema, dict):
         raise ValueError(_RESPONSES_TEXT_FORMAT_ERROR)
-    out_format: ResponsesJsonSchemaTextFormat = {
+    out_format: dict[str, JsonValue] = {
         "type": "json_schema",
         "name": name,
         "schema": schema,
@@ -61,84 +57,35 @@ def _validate_responses_text_format(
     return out_format
 
 
-def build_chat_payload(
-    *,
-    model: str,
-    messages: list[dict[str, str]],
-    max_tokens: int,
-    temperature: float,
-    reasoning_effort: str | None,
-    stream: bool,
-    stop: list[str] | None = None,
-    cache_prompt: bool = False,
-    prompt_cache_retention: str | None = None,
-    prompt_cache_key: str | None = None,
-    allow_prompt_cache_params: bool = True,
-) -> dict[str, object]:
-    payload: dict[str, object] = {
-        "model": model,
-        "messages": messages,
-        "stream": stream,
-    }
-
-    if is_gpt5_family_model(model=model):
-        payload["max_completion_tokens"] = max_tokens
-        if reasoning_effort:
-            payload["reasoning_effort"] = reasoning_effort
-    else:
-        payload["max_tokens"] = max_tokens
-        payload["temperature"] = temperature
-
-    if stop and supports_stop_sequences(model=model):
-        payload["stop"] = stop
-    if cache_prompt:
-        payload["cache_prompt"] = True
-    if allow_prompt_cache_params:
-        if prompt_cache_retention and supports_prompt_cache_retention(model=model):
-            payload["prompt_cache_retention"] = prompt_cache_retention
-        if prompt_cache_key and supports_prompt_cache_key(model=model):
-            payload["prompt_cache_key"] = prompt_cache_key
-
-    return payload
-
-
 def build_responses_payload(
     *,
     model: str,
     messages: list[dict[str, str]],
     instructions: str | None,
     max_tokens: int,
-    temperature: float,
     reasoning_effort: str | None,
     text_verbosity: str | None,
     stream: bool,
     store: bool | None = None,
     truncation: Literal["auto", "disabled"] | None = None,
-    stop: list[str] | None = None,
-    prompt_cache_retention: str | None = None,
-    prompt_cache_key: str | None = None,
-    allow_prompt_cache_params: bool = True,
     text_format: ResponsesTextFormat | None = None,
-) -> ResponsesPayload:
-    input_items: list[ResponsesInputMessage] = []
+) -> dict[str, JsonValue]:
+    input_items: list[JsonValue] = []
     for message in messages:
         role = message.get("role")
         content = message.get("content")
         if not isinstance(role, str) or not isinstance(content, str):
             continue
-        if role == "assistant":
-            content_item: ResponsesMessageContent = {"type": "output_text", "text": content}
-        else:
-            content_item = {"type": "input_text", "text": content}
+        content_type = "output_text" if role == "assistant" else "input_text"
         input_items.append(
             {
                 "type": "message",
                 "role": role,
-                "content": [content_item],
+                "content": [{"type": content_type, "text": content}],
             }
         )
 
-    payload: ResponsesPayload = {
+    payload: dict[str, JsonValue] = {
         "model": model,
         "input": input_items,
         "stream": stream,
@@ -150,28 +97,15 @@ def build_responses_payload(
         payload["store"] = store
     if truncation:
         payload["truncation"] = truncation
+    if reasoning_effort:
+        payload["reasoning"] = {"effort": reasoning_effort}
 
-    text_config: ResponsesTextConfig = {}
-    if is_gpt5_family_model(model=model):
-        if reasoning_effort:
-            payload["reasoning"] = {"effort": reasoning_effort}
-        if text_verbosity:
-            text_config["verbosity"] = text_verbosity
-    else:
-        payload["temperature"] = temperature
-
+    text_config: dict[str, JsonValue] = {}
+    if text_verbosity:
+        text_config["verbosity"] = text_verbosity
     if text_format:
         text_config["format"] = _validate_responses_text_format(text_format)
     if text_config:
         payload["text"] = text_config
-
-    if stop and supports_stop_sequences(model=model):
-        payload["stop"] = stop
-
-    if allow_prompt_cache_params:
-        if prompt_cache_retention and supports_prompt_cache_retention(model=model):
-            payload["prompt_cache_retention"] = prompt_cache_retention
-        if prompt_cache_key and supports_prompt_cache_key(model=model):
-            payload["prompt_cache_key"] = prompt_cache_key
 
     return payload

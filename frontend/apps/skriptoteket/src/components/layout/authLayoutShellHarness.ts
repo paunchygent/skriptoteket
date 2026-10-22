@@ -49,7 +49,6 @@ export function createShellHarness(route: ShellRoute) {
       props: {
         user: { id: options.userId ?? "user-1", email: "teacher@example.com", role: "user" },
         profile: null,
-        aiPolicy: null,
         canSeeContributor: false,
         canSeeAdmin: false,
         canSeeSuperuser: false,

@@ -4,7 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 
 import { apiFetch } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
-import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse, TEST_AI_POLICY } from "../../stores/authTestHelpers";
+import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse } from "../../stores/authTestHelpers";
 import { useEditorChat } from "./useEditorChat";
 
 const originalFetch = globalThis.fetch;
@@ -80,7 +80,7 @@ function admitReplacementTeacher() {
       school_forms: ["grundskolan"], course_keys: ["B-course"],
     } }),
     sharedSessionId: "session-b",
-    csrfToken: "B-csrf", aiPolicy: TEST_AI_POLICY,
+    csrfToken: "B-csrf",
     grants: ["B-grant"], featureFlags: ["B-flag"],
   });
   return JSON.parse(JSON.stringify(auth.$state));
@@ -251,7 +251,7 @@ describe("useEditorChat", () => {
 
     const toolId = ref("tool-1");
     const baseVersionId = ref<string | null>(null);
-    const { disabledMessage, messages, sendMessage } = useEditorChat({
+    const { messages, sendMessage } = useEditorChat({
       toolId,
       baseVersionId,
     });
@@ -262,19 +262,18 @@ describe("useEditorChat", () => {
       "event: meta\ndata: {\"enabled\": true, \"correlation_id\": \"corr-123\", \"turn_id\": \"turn-123\", \"assistant_message_id\": \"assistant-123\"}\n\n",
     );
     push(
-      "event: done\ndata: {\"enabled\": false, \"message\": \"Den lokala AI-modellen är inte tillgänglig.\", \"code\": \"remote_fallback_required\"}\n\n",
+      "event: done\ndata: {\"enabled\": false, \"message\": \"Den lokala AI-modellen är inte tillgänglig.\", \"code\": \"model_unavailable\"}\n\n",
     );
     close();
 
     await sendPromise;
 
-    expect(disabledMessage.value).toBeNull();
     expect(messages.value.length).toBe(2);
     expect(messages.value[1].role).toBe("assistant");
     expect(messages.value[1].content).toContain("Den lokala AI-modellen");
     expect(messages.value[1].correlationId).toBe("corr-123");
     expect(messages.value[1].status).toBe("failed");
-    expect(messages.value[1].failureOutcome).toBe("remote_fallback_required");
+    expect(messages.value[1].failureOutcome).toBe("model_unavailable");
   });
 
   it("cancels a stream without applying late deltas", async () => {
@@ -389,7 +388,6 @@ describe("useEditorChat", () => {
 
     const payload = JSON.parse(String(init?.body ?? "")) as Record<string, unknown>;
     expect(payload.message).toBe("Hej");
-    expect(payload).not.toHaveProperty("allow_remote_fallback");
     expect(payload.base_version_id).toBe("version-1");
     expect(payload.active_file).toBe("tool.py");
     expect(payload.virtual_files).toEqual(virtualFiles.value);

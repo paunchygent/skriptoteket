@@ -24,7 +24,7 @@ import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 import AiDailyLimitNote from "./AiDailyLimitNote.vue";
-import { aiDailyLimitNote, aiDailyLimitReached } from "./aiDailyLimit";
+import { aiDailyLimitFor } from "../../../composables/aiDailyLimit";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [
@@ -52,7 +52,7 @@ const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 /** The door's daily limit disables the retry for the page session. */
-const limitReached = aiDailyLimitReached;
+const { note: aiDailyLimitNote, reached: limitReached } = aiDailyLimitFor("small");
 
 function handleRetry(): void {
   if (limitReached.value) {

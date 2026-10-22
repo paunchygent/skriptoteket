@@ -1,71 +1,12 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping
+from typing import Final
 
-
-def extract_first_choice_content(payload: Mapping[str, object]) -> tuple[str, str | None]:
-    choices = payload.get("choices")
-    if not isinstance(choices, list) or not choices:
-        raise ValueError("Upstream LLM response is missing choices")
-
-    first = choices[0]
-    if not isinstance(first, dict):
-        raise ValueError("Upstream LLM response choice is not an object")
-
-    finish_reason = first.get("finish_reason")
-    if finish_reason is not None and not isinstance(finish_reason, str):
-        finish_reason = None
-
-    message = first.get("message")
-    if isinstance(message, dict):
-        content = message.get("content")
-        if isinstance(content, str):
-            return content, finish_reason
-
-    text = first.get("text")
-    if isinstance(text, str):
-        return text, finish_reason
-
-    return "", finish_reason
-
-
-def extract_first_choice_delta(payload: Mapping[str, object]) -> tuple[str, str | None]:
-    choices = payload.get("choices")
-    if not isinstance(choices, list) or not choices:
-        raise ValueError("Upstream LLM stream chunk is missing choices")
-
-    first = choices[0]
-    if not isinstance(first, dict):
-        raise ValueError("Upstream LLM stream chunk choice is not an object")
-
-    finish_reason = first.get("finish_reason")
-    if finish_reason is not None and not isinstance(finish_reason, str):
-        finish_reason = None
-
-    delta = first.get("delta")
-    if isinstance(delta, dict):
-        content = delta.get("content")
-        if isinstance(content, str):
-            return content, finish_reason
-
-        if isinstance(content, list):
-            text_parts: list[str] = []
-            for part in content:
-                if not isinstance(part, dict):
-                    continue
-                if part.get("type") != "text":
-                    continue
-                text = part.get("text")
-                if isinstance(text, str):
-                    text_parts.append(text)
-            if text_parts:
-                return "".join(text_parts), finish_reason
-
-    text = first.get("text")
-    if isinstance(text, str):
-        return text, finish_reason
-
-    return "", finish_reason
+_TERMINAL_EVENTS: Final = frozenset(
+    {"response.completed", "response.incomplete", "response.failed"}
+)
 
 
 def _extract_response_finish_reason(payload: Mapping[str, object]) -> str | None:
@@ -123,21 +64,62 @@ def extract_response_output_text(payload: Mapping[str, object]) -> tuple[str, st
     return "".join(text_parts), finish_reason
 
 
+def _terminal_failure(event: str, payload: Mapping[str, object]) -> str | None:
+    """Why a terminal event is not a successful completion, or ``None`` for one."""
+
+    response = payload.get("response")
+    if event == "response.completed":
+        if not isinstance(response, Mapping):
+            return None
+        status = response.get("status")
+        if isinstance(status, str) and status != "completed":
+            return f"response.completed carried a response with status {status}"
+        return None
+
+    if event == "response.incomplete":
+        reason = "unknown"
+        if isinstance(response, Mapping):
+            details = response.get("incomplete_details")
+            if isinstance(details, Mapping) and isinstance(details.get("reason"), str):
+                reason = str(details["reason"])
+        return f"response.incomplete: {reason}"
+
+    error = response.get("error") if isinstance(response, Mapping) else None
+    if error is None:
+        return f"response.failed: {json.dumps(payload, default=str)}"
+    return f"response.failed: {json.dumps(error, default=str)}"
+
+
 def extract_response_stream_delta(
     payload: Mapping[str, object],
     *,
     event_type: str | None = None,
 ) -> tuple[str, bool]:
+    """Read one Responses stream event as ``(text delta, completed)``.
+
+    Only ``response.completed`` is the successful end of a stream. A stream
+    ``error`` event, ``response.failed``, ``response.incomplete``, a
+    ``response.completed`` whose response did not complete and a delta that is
+    not text raise ``ValueError`` with a message for the failure detail.
+    """
+
     event = payload.get("type")
     if not isinstance(event, str):
         event = event_type or ""
 
+    if event == "error" or "error" in payload:
+        raise ValueError(f"stream error event: {json.dumps(payload, default=str)}")
+
     if event == "response.output_text.delta":
         delta = payload.get("delta")
-        if isinstance(delta, str):
-            return delta, False
+        if not isinstance(delta, str):
+            raise ValueError(f"stream delta is not text: {json.dumps(payload, default=str)}")
+        return delta, False
 
-    if event in {"response.completed", "response.incomplete", "response.failed"}:
+    if event in _TERMINAL_EVENTS:
+        failure = _terminal_failure(event, payload)
+        if failure is not None:
+            raise ValueError(failure)
         return "", True
 
     return "", False

@@ -11,13 +11,13 @@ import {
 } from "@codemirror/view";
 
 import { apiFetch } from "../../api/client";
+import { aiLimitFromError, markAiDailyLimit } from "../aiDailyLimit";
 import type { SkriptoteketIntelligenceConfig } from "./skriptoteketIntelligence";
 
 type GhostTextConfig = {
   enabled: boolean;
   autoTrigger: boolean;
   debounceMs: number;
-  onNotice?: (params: { message: string; variant: "info" | "warning"; code?: string | null }) => void;
 };
 
 type GhostTextState = {
@@ -136,9 +136,6 @@ type CompletionResponse = {
   completion: string;
   enabled: boolean;
   replace_suffix_chars?: number | null;
-  notice_message?: string | null;
-  notice_variant?: "info" | "warning" | null;
-  notice_code?: string | null;
 };
 
 function getPrefixSuffix(state: EditorState): { prefix: string; suffix: string; from: number } | null {
@@ -161,8 +158,6 @@ class GhostTextController {
   private abortController: AbortController | null = null;
   private requestSeq = 0;
   private disabledByServer = false;
-  private lastNoticeAt = 0;
-  private lastNoticeKey: string | null = null;
 
   public constructor(
     private readonly view: EditorView,
@@ -226,23 +221,6 @@ class GhostTextController {
     this.abortController = null;
   }
 
-  private maybeEmitNotice(params: { message: string; variant: "info" | "warning"; code?: string | null }): void {
-    if (!this.config.onNotice) return;
-
-    const now = Date.now();
-    const key = params.code?.trim() || params.message.trim();
-    if (!key) return;
-
-    const cooldownMs = 30_000;
-    if (this.lastNoticeKey === key && now - this.lastNoticeAt < cooldownMs) {
-      return;
-    }
-
-    this.lastNoticeKey = key;
-    this.lastNoticeAt = now;
-    this.config.onNotice(params);
-  }
-
   private async requestCompletion(state: EditorState): Promise<void> {
     if (!this.config.enabled) return;
     if (this.disabledByServer) return;
@@ -270,8 +248,15 @@ class GhostTextController {
         },
         signal: abortController.signal,
       });
-    } catch {
+    } catch (error: unknown) {
       if (abortController.signal.aborted) return;
+      const limit = aiLimitFromError(error);
+      if (limit) {
+        // The door refused for the day: stop asking; the editor shows the note inline.
+        markAiDailyLimit("small", limit);
+        this.disabledByServer = true;
+        clearGhostText(this.view);
+      }
       return;
     } finally {
       if (this.abortController === abortController) {
@@ -289,14 +274,6 @@ class GhostTextController {
       this.disabledByServer = true;
       clearGhostText(this.view);
       return;
-    }
-
-    if (response.notice_message) {
-      this.maybeEmitNotice({
-        message: response.notice_message,
-        variant: response.notice_variant === "warning" ? "warning" : "info",
-        code: response.notice_code ?? null,
-      });
     }
 
     if (!response.completion) {

@@ -8,7 +8,6 @@ import structlog
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import (
-    ChatFailoverDecision,
     ChatOpsBudget,
     EditOpsCommand,
     EditOpsResult,
@@ -30,8 +29,6 @@ async def handle_over_budget(
     settings: Settings,
     actor: User,
     command: EditOpsCommand,
-    decision: ChatFailoverDecision,
-    model_for_counting: str,
     system_prompt: str,
     user_payload: str,
     budget: ChatOpsBudget,
@@ -55,9 +52,7 @@ async def handle_over_budget(
         template_id=log_context.template_id,
         user_id=str(actor.id),
         tool_id=str(command.tool_id),
-        provider=decision.provider,
-        failover_reason=decision.reason,
-        model=model_for_counting,
+        model=settings.LLM_CHAT_OPS_MODEL,
         context_window_tokens=budget.context_window_tokens,
         max_output_tokens=budget.max_output_tokens,
         safety_margin_tokens=settings.LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS,
@@ -70,8 +65,6 @@ async def handle_over_budget(
         virtual_files_bytes=log_context.virtual_files_bytes,
     )
     log_context.log_result(
-        provider=decision.provider,
-        failover_reason=decision.reason,
         system_prompt_chars=len(system_prompt),
         prompt_messages_count=prompt_messages_count,
         finish_reason=None,
@@ -87,10 +80,6 @@ async def handle_over_budget(
             "template_id": log_context.template_id,
             "user_id": str(actor.id),
             "tool_id": str(command.tool_id),
-            "provider": decision.provider,
-            "failover_reason": decision.reason,
-            "fallback_is_remote": log_context.fallback_is_remote,
-            "allow_remote_fallback": log_context.allow_remote_fallback,
             "message_len": log_context.message_len,
             "virtual_files_bytes": log_context.virtual_files_bytes,
             "base_hash": base_hash,

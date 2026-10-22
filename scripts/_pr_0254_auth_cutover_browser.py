@@ -29,7 +29,6 @@ PUBLIC_CLASSROOM_APP_PATH = "/public/apps/classroom.group-seating-studio"
 PROTECTED_NEXT_PATH = "/apps/classroom.group-seating-studio"
 PROTECTED_ROUTE_HEADING = "Klassrumskartan"
 APP_CONTINUATION_PATH = "/api/v1/profile/app-continuation"
-AI_SETTINGS_PATH = "/api/v1/profile/ai-settings"
 HULEEDU_SESSION_COOKIE = "huleedu_session"
 RETIRED_LOCAL_SESSION_COOKIE = "skriptoteket_session"
 
@@ -90,7 +89,6 @@ def _sanitize_observed_response(response: Response, lane: LoopbackLane) -> dict[
         "/v1/auth/logout",
         "/api/v1/public/apps/classroom.group-seating-studio",
         APP_CONTINUATION_PATH,
-        AI_SETTINGS_PATH,
         "/auth/callback",
     )
     if not any(marker in parsed.path for marker in markers):
@@ -328,47 +326,6 @@ def _assert_projection_and_role(
     return projection, local_role
 
 
-def _assert_csrf_write(
-    page: Page, *, lane: LoopbackLane, forbidden_values: list[str]
-) -> dict[str, object]:
-    payload: dict[str, object] = {"remote_fallback_preference": "deny"}
-    negative = _browser_fetch(page, target=AI_SETTINGS_PATH, method="PATCH", body=payload)
-    if negative["status"] != 403:
-        raise AssertionError(
-            "Expected missing-CSRF write to be rejected at Gateway with 403, "
-            f"got {negative['status']}"
-        )
-
-    csrf = _browser_fetch(page, target=f"{lane.huleedu_auth_origin}/v1/auth/csrf")
-    csrf_payload = csrf.get("payload")
-    if csrf["status"] != 200 or not isinstance(csrf_payload, dict):
-        raise AssertionError(f"Expected shared CSRF fetch 200, got {csrf['status']}")
-    csrf_value = csrf_payload.get("csrf_token")
-    if not isinstance(csrf_value, str) or not csrf_value:
-        raise AssertionError("Shared CSRF response did not include a token")
-    forbidden_values.append(csrf_value)
-
-    positive = _browser_fetch(
-        page,
-        target=AI_SETTINGS_PATH,
-        method="PATCH",
-        headers={"X-CSRF-Token": csrf_value},
-        body=payload,
-    )
-    if positive["status"] != 200:
-        raise AssertionError(f"Expected CSRF-protected write 200, got {positive['status']}")
-    return {
-        "write_route": AI_SETTINGS_PATH,
-        "unsafe_method": "PATCH",
-        "missing_csrf_status": negative["status"],
-        "missing_csrf_rejected_before_or_at_gateway": True,
-        "shared_csrf_fetch_status": csrf["status"],
-        "csrf_value_retained": False,
-        "csrf_protected_write_status": positive["status"],
-        "csrf_protected_write_succeeded": True,
-    }
-
-
 def _assert_logout(
     page: Page,
     context: BrowserContext,
@@ -479,7 +436,6 @@ def run_lane(
             expected_local_role=expected_local_role,
             forbidden_values=forbidden_values,
         )
-        csrf_write = _assert_csrf_write(page, lane=lane, forbidden_values=forbidden_values)
         logout = _assert_logout(page, context, lane=lane)
         context.close()
         browser.close()
@@ -495,8 +451,6 @@ def run_lane(
         "protected_app_continuation_route": APP_CONTINUATION_PATH,
         "app_continuation_status": app_status,
         "gateway_signed_context_accepted": True,
-        "protected_ai_settings_route": AI_SETTINGS_PATH,
-        "csrf_edge_rejection_observed": csrf_write["missing_csrf_rejected_before_or_at_gateway"],
         "direct_backend_shortcut_observed": False,
         "browser_identity_headers_retained": False,
         "observed_route_summaries": observed,
@@ -514,8 +468,6 @@ def run_lane(
                 "lane": lane.name,
                 "public_bootstrap_status": public_route["bootstrap_status"],
                 "callback_final_path": callback["final_path"],
-                "csrf_missing_status": csrf_write["missing_csrf_status"],
-                "csrf_write_status": csrf_write["csrf_protected_write_status"],
                 "logout_session_status": logout["huleedu_session_status_after_logout"],
             },
             "public_route_assertions": public_route,
@@ -524,7 +476,6 @@ def run_lane(
             "callback_assertions": callback,
             "projection_assertions": projection,
             "local_role_assertions": local_role,
-            "csrf_write_assertions": csrf_write,
             "logout_assertions": logout,
             "session_authority_assertions": cookie_assertions,
             "artifacts": [str(screenshot_path)],

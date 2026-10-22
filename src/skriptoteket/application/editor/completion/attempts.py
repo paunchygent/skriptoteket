@@ -7,38 +7,35 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
-import httpx
-
 from skriptoteket.application.editor.prompt_budget import apply_inline_completion_budget
 from skriptoteket.application.editor.prompt_composer import (
     PromptTemplateError,
     compose_system_prompt,
 )
 from skriptoteket.config import Settings
-from skriptoteket.infrastructure.llm.model_families import is_gpt5_family_model
+from skriptoteket.domain.llm_door import (
+    AiDailyLimitReached,
+    AiDoorBusy,
+    AiDoorCaller,
+    door_refusal_error,
+)
 from skriptoteket.protocols.llm import (
-    InlineCompletionProviderPreference,
+    EditorLlmProviderError,
     InlineCompletionProviderProtocol,
-    InlineCompletionProvidersProtocol,
     LLMCompletionRequest,
     LLMCompletionResponse,
 )
 from skriptoteket.protocols.token_counter import TokenCounterResolverProtocol
 
-ProviderSlot = Literal["primary", "fallback"]
-
 
 @dataclass(frozen=True, slots=True)
 class AttemptFailure:
     outcome: Literal["timeout", "over_budget", "error"]
-    retryable: bool
     status_code: int | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class PreparedAttempt:
-    slot: ProviderSlot
-    provider: InlineCompletionProviderProtocol
     model: str
     template_id: str
     system_prompt: str
@@ -54,25 +51,16 @@ def elapsed_ms(start: float) -> int:
     return int(round((time.perf_counter() - start) * 1000))
 
 
-def _is_context_window_error(exc: httpx.HTTPStatusError) -> bool:
-    response = exc.response
-    if response is None:
-        return False
-    if response.status_code != 400:
-        return False
-    try:
-        payload = response.json()
-    except ValueError:
-        payload = None
-    haystack = str(payload) if payload is not None else response.text
-    return "exceed_context_size_error" in haystack.lower()
+def classify_provider_error(error: EditorLlmProviderError) -> AttemptFailure:
+    """Map the door provider's failure kind to the completion outcome."""
 
-
-def _is_retryable_http_status(exc: httpx.HTTPStatusError) -> bool:
-    response = exc.response
-    if response is None:
-        return False
-    return response.status_code == 429 or 500 <= response.status_code <= 599
+    match error.kind:
+        case "timeout":
+            return AttemptFailure(outcome="timeout")
+        case "context_window_exceeded":
+            return AttemptFailure(outcome="over_budget")
+        case _:
+            return AttemptFailure(outcome="error", status_code=error.status_code)
 
 
 async def try_complete(
@@ -80,28 +68,19 @@ async def try_complete(
     provider: InlineCompletionProviderProtocol,
     request: LLMCompletionRequest,
     system_prompt: str,
+    caller: AiDoorCaller,
 ) -> tuple[LLMCompletionResponse | None, AttemptFailure | None, int]:
+    """Make the one door call; a daily limit or a busy door becomes its 429 error."""
+
     start = time.perf_counter()
     try:
-        response = await provider.complete_inline(request=request, system_prompt=system_prompt)
-    except httpx.TimeoutException:
-        return None, AttemptFailure(outcome="timeout", retryable=True), elapsed_ms(start)
-    except httpx.HTTPStatusError as exc:
-        if _is_context_window_error(exc):
-            return None, AttemptFailure(outcome="over_budget", retryable=False), elapsed_ms(start)
-        return (
-            None,
-            AttemptFailure(
-                outcome="error",
-                retryable=_is_retryable_http_status(exc),
-                status_code=exc.response.status_code if exc.response is not None else None,
-            ),
-            elapsed_ms(start),
+        response = await provider.complete_inline(
+            request=request, system_prompt=system_prompt, caller=caller
         )
-    except httpx.RequestError:
-        return None, AttemptFailure(outcome="error", retryable=True), elapsed_ms(start)
-    except ValueError:
-        return None, AttemptFailure(outcome="error", retryable=False), elapsed_ms(start)
+    except (AiDailyLimitReached, AiDoorBusy) as error:
+        raise door_refusal_error(error) from error
+    except EditorLlmProviderError as error:
+        return None, classify_provider_error(error), elapsed_ms(start)
 
     return response, None, elapsed_ms(start)
 
@@ -111,12 +90,10 @@ class InlineCompletionAttemptPlanner:
         self,
         *,
         settings: Settings,
-        providers: InlineCompletionProvidersProtocol,
         token_counters: TokenCounterResolverProtocol,
         system_prompt_loader: Callable[[str, str], str] | None = None,
     ) -> None:
         self._settings = settings
-        self._providers = providers
         self._token_counters = token_counters
         self._system_prompt_loader = system_prompt_loader
 
@@ -128,64 +105,22 @@ class InlineCompletionAttemptPlanner:
         )
         return budget if budget > 0 else 0
 
-    def model_for_slot(self, slot: ProviderSlot) -> str:
-        if slot == "primary":
-            return self._settings.LLM_COMPLETION_MODEL.strip()
-        model = self._settings.LLM_COMPLETION_FALLBACK_MODEL.strip()
-        return model or self._settings.LLM_COMPLETION_MODEL.strip()
+    def model(self) -> str:
+        return self._settings.LLM_COMPLETION_MODEL.strip()
 
-    def provider_for_slot(self, slot: ProviderSlot) -> InlineCompletionProviderProtocol:
-        if slot == "primary":
-            return self._providers.primary
-        if self._providers.fallback is None:
-            raise ValueError("Fallback provider is not configured")
-        return self._providers.fallback
-
-    def template_id_for_model(self, model: str) -> str:
-        if is_gpt5_family_model(model=model):
-            configured = self._settings.LLM_COMPLETION_GPT5_TEMPLATE_ID.strip()
-            if configured:
-                return configured
+    def template_id(self) -> str:
         return self._settings.LLM_COMPLETION_TEMPLATE_ID.strip()
-
-    def slot_is_remote(self, slot: ProviderSlot) -> bool:
-        if slot == "primary":
-            return self._providers.primary_is_remote
-        return self._providers.fallback_is_remote
-
-    def slot_kind(self, slot: ProviderSlot) -> InlineCompletionProviderPreference:
-        return "external" if self.slot_is_remote(slot) else "local"
-
-    def resolve_provider_slots(self) -> tuple[ProviderSlot | None, ProviderSlot | None]:
-        """Return (local_slot, external_slot) if available."""
-
-        local_slot: ProviderSlot | None = None
-        external_slot: ProviderSlot | None = None
-
-        if self._providers.primary_is_remote:
-            external_slot = "primary"
-        else:
-            local_slot = "primary"
-
-        if self._providers.fallback is not None:
-            if self._providers.fallback_is_remote and external_slot is None:
-                external_slot = "fallback"
-            elif not self._providers.fallback_is_remote and local_slot is None:
-                local_slot = "fallback"
-
-        return local_slot, external_slot
 
     def prepare_attempt(
         self,
         *,
-        slot: ProviderSlot,
         prefix: str,
         suffix: str,
         active_file: str,
     ) -> PreparedAttempt:
-        model = self.model_for_slot(slot)
+        model = self.model()
         token_counter = self._token_counters.for_model(model=model)
-        template_id = self.template_id_for_model(model)
+        template_id = self.template_id()
         if self._system_prompt_loader is not None:
             system_prompt = self._system_prompt_loader(template_id, model)
         else:
@@ -216,10 +151,7 @@ class InlineCompletionAttemptPlanner:
             suffix=budgeted_suffix,
             active_file=active_file,
         )
-        provider = self.provider_for_slot(slot)
         return PreparedAttempt(
-            slot=slot,
-            provider=provider,
             model=model,
             template_id=template_id,
             system_prompt=system_prompt,
@@ -236,8 +168,8 @@ __all__ = [
     "AttemptFailure",
     "InlineCompletionAttemptPlanner",
     "PreparedAttempt",
-    "ProviderSlot",
     "PromptTemplateError",
     "elapsed_ms",
+    "classify_provider_error",
     "try_complete",
 ]
