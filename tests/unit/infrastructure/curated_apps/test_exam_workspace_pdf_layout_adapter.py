@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_layout import (  # noqa: E501
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_page_adapter import (  # noqa: E501
     PdfLayoutError,
     _object_box,
     _visible,

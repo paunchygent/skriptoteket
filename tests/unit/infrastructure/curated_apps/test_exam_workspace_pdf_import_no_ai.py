@@ -20,7 +20,12 @@ PDF_MODULES = (
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_import_source.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_chunker.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_blocks.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_paragraphs.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_block_tables.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_layout.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_items.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_page_adapter.py",  # noqa: E501
+    "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_furniture.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_graphics.py",  # noqa: E501
     "src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/exam_workspace_pdf_pictures.py",  # noqa: E501
     "src/skriptoteket/infrastructure/documents/pdfium_access.py",

@@ -25,7 +25,7 @@ from dataclasses import dataclass
 from PIL import Image, ImageDraw
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxImage, DocxMissingImage
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_layout import (  # noqa: E501
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_items import (  # noqa: E501
     PdfItem,
     PdfLine,
     PdfPictureRegion,

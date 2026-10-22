@@ -107,3 +107,14 @@ A teacher drops a Word corpus exam with a picture and a drawn figure, saved as P
 - Review `changes_requested` (F1-F7, retained root `evidence/reviews/review-39-10-02.md`):
   repairs follow T5-T8. Residual under T5 (review F4): an axis title and the tick labels
   outside a drawn chart's axes are read as question text after the picture, not inside it.
+- Repairs: a figure owns only words inside its outline and its cut stops short of the
+  rest (F1, F4); words that stay text are painted white in every cut (T6); a box drawing
+  is a picture, a paragraph or page border is not, and even-odd filled rect pairs read as
+  their painted bands (F2); pictures and strokes have no size limit (F3); regions map
+  through the CropBox PDFium renders, and a rotated page or a bitmap of the wrong size
+  gives a named missing picture (F5); the pdfplumber adapter narrows its records without
+  `Any` (F7); the layout and blocks modules are split by responsibility into items, page
+  adapter, furniture, layout, paragraphs, block tables and blocks, each under 500 lines
+  (F6). The reviewer's probes are reader tests that fail on ce01ebcd9 and pass now.
+  Proof in retained root `evidence/proof/repair/`, with before and after examples of each
+  cost in `examples/`.
