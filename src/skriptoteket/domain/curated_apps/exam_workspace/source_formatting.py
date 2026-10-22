@@ -78,6 +78,11 @@ class SourceFormatting(SourceIndex):
         # each paragraph of the body last produced (body, rebuild_body or the coverage
         # restore); -1 means it kept the model's wording without a unique source paragraph.
         self.projected: set[int] = set()
+        # Source offsets each reply paragraph was projected from: the exact path took
+        # its text from its own source paragraph, every other path did not (aligned,
+        # rebuilt, misplaced, gap or picture paragraphs).
+        self.exact_origins: set[int] = set()
+        self.other_origins: set[int] = set()
         self.entry_spans: list[tuple[int, int]] = []
         self.output_anchors: list[int] = []
         self._entry_span: tuple[int, int] = (-1, -1)
@@ -175,8 +180,10 @@ class SourceFormatting(SourceIndex):
             # Each emitted paragraph with the start of the one source paragraph its text
             # was projected from, -1 when it keeps the model's wording.
             produced: list[tuple[NativeParagraph, int]]
+            exact = False
             try:
                 produced = self._paragraph(paragraph, answers or {})
+                exact = all(segment.kind == "text" for segment in paragraph.segments)
             except FormattingTransferError:
                 self.cursor = checkpoint
                 self.covered = coverage_before
@@ -200,6 +207,9 @@ class SourceFormatting(SourceIndex):
                         self.path = "rebuilt"
                         rebuilt = self._rebuild(paragraph, answers or {})
                         produced = [(output, self._entry_span[0]) for output in rebuilt]
+            for _, text_origin in produced:
+                if text_origin >= 0:
+                    (self.exact_origins if exact else self.other_origins).add(text_origin)
             self.entry_spans.append(self._entry_span)
             for output, text_origin in produced:
                 for origin, piece in self.provenance.pieces(output, text_origin):

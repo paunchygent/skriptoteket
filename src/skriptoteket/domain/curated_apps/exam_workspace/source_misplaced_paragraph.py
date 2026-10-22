@@ -117,7 +117,7 @@ def rebuild_misplaced(source: SourceFormatting) -> list[tuple[NativeParagraph, i
     )
     if paragraph is None:
         return []
-    built = _source_paragraph(source, paragraph.start)
+    built = own_source_paragraph(source, paragraph.start)
     if built is None:
         return []
     source.path = "rebuilt"
@@ -126,7 +126,7 @@ def rebuild_misplaced(source: SourceFormatting) -> list[tuple[NativeParagraph, i
     return [(built, paragraph.start)]
 
 
-def _source_paragraph(source: SourceFormatting, origin: int) -> NativeParagraph | None:
+def own_source_paragraph(source: SourceFormatting, origin: int) -> NativeParagraph | None:
     """Build this item's own source paragraph, never another question's source: a
     paragraph whose text is another question's source is not this item's content (D4).
 
