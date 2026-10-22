@@ -2,8 +2,8 @@
 
 ``RecordingDoor`` implements ``LlmDoorClientProtocol``: it records each
 operation, payload, caller and the paid-overage mode sent, answers from a
-responder, and admits the caller, counts its overage charge and enforces the
-per-job cap as the real client does,
+responder, and settles each answer on the caller exactly as the real client
+does (admission, overage charge, per-job cap after each charge),
 so replays serve recorded OpenAI bodies at the door seam and never reach the
 door (B6).
 """
@@ -20,17 +20,26 @@ from uuid import UUID
 from pydantic import JsonValue
 
 from skriptoteket.domain.identity.models import AuthProvider, Role, User
-from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, AiDoorCaller
-from skriptoteket.infrastructure.llm.door.client import record_door_charge
+from skriptoteket.domain.llm_door import (
+    AiDailyLimit,
+    AiDailyLimitReached,
+    AiDoorCaller,
+    AiOverageAuthority,
+)
+from skriptoteket.infrastructure.llm.door.client import settle_door_reply
 from skriptoteket.protocols.llm_door import DoorOperation, DoorReply, LlmDoorClientProtocol
 
 FIXTURE_USER_ID = UUID("00000000-0000-0000-0000-00000000a11e")
 
 
-def fixture_caller(*, exempt: bool = True, overage_approved: bool = False) -> AiDoorCaller:
+def fixture_caller(
+    *,
+    exempt: bool = True,
+    authority: AiOverageAuthority = AiOverageAuthority.JOB_CONTINUATION,
+) -> AiDoorCaller:
     """A fresh caller for one AI action (callers carry per-action admission)."""
 
-    return AiDoorCaller(user_id=FIXTURE_USER_ID, exempt=exempt, overage_approved=overage_approved)
+    return AiDoorCaller(user_id=FIXTURE_USER_ID, exempt=exempt, authority=authority)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,9 +119,7 @@ class RecordingDoor(LlmDoorClientProtocol):
         reply = self._responder(sent)
         if inspect.isawaitable(reply):
             reply = await reply
-        if reply.is_success:
-            caller.admit()
-        record_door_charge(caller, reply.headers)
+        settle_door_reply(caller, reply, cap_usd_micros=self._cap_usd_micros)
         return reply
 
 

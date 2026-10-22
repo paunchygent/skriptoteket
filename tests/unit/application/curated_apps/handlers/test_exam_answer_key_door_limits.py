@@ -285,14 +285,14 @@ async def test_overage_under_the_cap_completes() -> None:
     assert len(door.sent) == 3
 
 
-async def test_overage_past_the_cap_stops_at_the_next_call() -> None:
+async def test_a_last_call_whose_overage_passes_the_cap_fails_the_job() -> None:
     document = three_unkeyed_choice_document(document_id=uuid4())
     calls = 0
 
     def respond(sent):
         nonlocal calls
         calls += 1
-        if calls == 1:
+        if calls < 3:
             return json_reply(_responses_body(2))
         return json_reply(_responses_body(2), overage_usd_micros=1_100_000)
 
@@ -305,7 +305,7 @@ async def test_overage_past_the_cap_stops_at_the_next_call() -> None:
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "ai_overage_cap"
     assert finished.ai_limit is AiDailyLimit.POOL
-    assert len(door.sent) == 2
+    assert len(door.sent) == 3
     payload = WorkspaceAnswerKeySuggestionsPayload.model_validate(
         finished.workspace_suggestions_json
     )

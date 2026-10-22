@@ -5,8 +5,9 @@ Purpose:
     (ST-HULE-14-03 D1-D5) with Skriptoteket's internal key, service id, the
     teacher's user id, the exempt flag and the paid-overage mode, admit the
     caller's AI action on its first successful call, count its paid overage from
-    the door's charge headers and stop it past the per-job cap (C7), and turn a
-    limit 429 into ``AiDailyLimitReached``.
+    the door's charge headers and stop it once a charge passes the per-job cap
+    (C7), and turn a limit 429 into ``AiDailyLimitReached`` with its
+    ``error.limit``.
 
 Relationships:
     Implements ``protocols.llm_door.LlmDoorClientProtocol``; composed in
@@ -44,11 +45,13 @@ _OVERAGE = "overage"
 _DOOR_PATH = "/internal/v1/openai"
 _FREE_ALLOWANCE_ONLY = "free_allowance_only"
 _ALLOW_PAID_OVERAGE = "allow_paid_overage"
-_LIMIT_BY_CODE: dict[str, AiDailyLimit] = {
-    "openai_complimentary_allowance_exceeded": AiDailyLimit.POOL,
-    "openai_caller_user_share_exceeded": AiDailyLimit.USER_SHARE,
-    "openai_caller_usd_ceiling_exceeded": AiDailyLimit.USD_CEILING,
-}
+_LIMIT_CODES = frozenset(
+    {
+        "openai_complimentary_allowance_exceeded",
+        "openai_caller_user_share_exceeded",
+        "openai_caller_usd_ceiling_exceeded",
+    }
+)
 
 
 class HuleEduLlmDoorClient(LlmDoorClientProtocol):
@@ -95,14 +98,13 @@ class HuleEduLlmDoorClient(LlmDoorClientProtocol):
             limit = _limit_of(response.content)
             if limit is not None:
                 raise AiDailyLimitReached(limit=limit)
-        if response.is_success:
-            caller.admit()
-        record_door_charge(caller, response.headers)
-        return DoorReply(
+        reply = DoorReply(
             status_code=response.status_code,
             headers=dict(response.headers),
             body=response.content,
         )
+        settle_door_reply(caller, reply, cap_usd_micros=self._cap_usd_micros)
+        return reply
 
 
 def _caller_headers(internal_api_key: str, caller: AiDoorCaller) -> dict[str, str]:
@@ -120,7 +122,11 @@ def _caller_headers(internal_api_key: str, caller: AiDoorCaller) -> dict[str, st
 
 
 def _limit_of(body: bytes) -> AiDailyLimit | None:
-    """Read the limit a door 429 names; a capacity 429 names none."""
+    """Read the limit a door limit 429 names in ``error.limit``.
+
+    Only the three limit refusal codes carry a limit; a capacity 429
+    (``openai_door_admission_full``) names none and returns as a reply.
+    """
 
     try:
         decoded: object = json.loads(body)
@@ -132,7 +138,27 @@ def _limit_of(body: bytes) -> AiDailyLimit | None:
     if not isinstance(error, dict):
         return None
     code = error.get("code")
-    return _LIMIT_BY_CODE.get(code) if isinstance(code, str) else None
+    limit = error.get("limit")
+    if code not in _LIMIT_CODES or not isinstance(limit, str):
+        return None
+    try:
+        return AiDailyLimit(limit)
+    except ValueError:
+        return None
+
+
+def settle_door_reply(caller: AiDoorCaller, reply: DoorReply, *, cap_usd_micros: int) -> None:
+    """Settle one door answer on its AI action.
+
+    A success admits the action; the call's overage charge is added; a charge
+    that takes an app job past the cap stops it now, so the call that crosses
+    the cap never returns as an ordinary success (C7).
+    """
+
+    if reply.is_success:
+        caller.admit()
+    record_door_charge(caller, reply.headers)
+    caller.require_within_overage_cap(cap_usd_micros=cap_usd_micros)
 
 
 def record_door_charge(caller: AiDoorCaller, headers: Mapping[str, str]) -> None:
