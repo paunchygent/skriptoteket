@@ -82,8 +82,9 @@
   - Ready, not started:
     - 39-06-09: waits on 39-06-08.
     - 41-01-02 `in_progress`: lead on branch `codex/task-skript-41-01-02`, Hemma root
-      `01a16352-c1aa-7200-beac-cdd64393cb32`. Next: the orchestrator's single review, then the
-      merge. Walk precondition: a priced gpt-6.1-sol entry in the HuleEdu door manifest.
+      `01a16352-c1aa-7200-beac-cdd64393cb32`, head 01e0aef7d. Next: merge main once 41-01-04
+      lands, adapt the door stream to its slots, then the single review. Walk precondition:
+      staging door rebuilt from HuleEdu main ca7ff9700 (gpt-6.1-sol priced).
     - 41-01-04: in progress in its own worktree.
     - ST-SKRIPT-41-03 AI for every signed-in teacher (user grilling 2026-10-22, Mac root
       `01a160e1-08de-706a-8728-3510b9547579`): one task, 41-03-01, starts when ST-41-01 is done.
