@@ -33,6 +33,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     LabelRun,
     ShapeFigure,
     ShapeOutline,
+    UnsupportedShapeFigure,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_block_image import (  # noqa: E501
     cropped_page_png,
@@ -60,6 +61,8 @@ _DASHES: dict[DashStyle, tuple[float, ...]] = {
 # text box gives up on each side: the box is inscribed at 45 degrees.
 _INSCRIBED = 1 - math.cos(math.radians(45))
 _PAGE_PADDING_PX = 2.0
+# Word's largest page side, 22 inches at 96 px per inch: a bigger drawing is not rasterized.
+_MAX_PAGE_SIDE_PX = 22 * 96
 _JUSTIFY = {"t": "flex-start", "ctr": "center", "b": "flex-end"}
 
 
@@ -89,27 +92,45 @@ def draw_shape_figure(figure: ShapeFigure, *, anchor: str) -> bytes:
     """Return a PNG of the figure, cropped to its drawn content.
 
     Raises:
+        UnsupportedShapeFigure: the page the figure needs is larger than Word's largest page.
         LabelerSourceImageUnavailable: the figure draws nothing.
     """
-    return cropped_page_png(_page(figure), anchor=anchor)
+    bounds = _bounds(figure)
+    left, top, right, bottom = bounds
+    side = max(right - left, bottom - top)
+    if not side <= _MAX_PAGE_SIDE_PX:
+        raise UnsupportedShapeFigure(
+            f"the drawing needs a {side:.0f} px page, over the {_MAX_PAGE_SIDE_PX} px limit"
+        )
+    return cropped_page_png(_page(figure, bounds), anchor=anchor)
 
 
-def _page(figure: ShapeFigure) -> str:
-    left, top, right, bottom = _bounds(figure)
+def _page(figure: ShapeFigure, bounds: Rect) -> str:
+    left, top, right, bottom = bounds
     width, height = math.ceil(right - left), math.ceil(bottom - top)
-    svg = "".join(_shape_svg(shape, left, top) for shape in figure.shapes)
-    labels = "".join(_label_div(shape, left, top) for shape in figure.shapes if shape.label)
+    layers = "".join(_shape_layer(shape, left, top, width, height) for shape in figure.shapes)
     return (
         '<!doctype html><html><head><meta charset="utf-8"><style>'
         f"@page {{ size: {width}px {height}px; margin: 0 }} "
         "html, body { margin: 0; padding: 0; background: #fff } "
         "body { font-family: sans-serif } "
-        "svg { display: block } "
+        "svg { position: absolute; left: 0; top: 0 } "
         "</style></head><body>"
         f'<div style="position:relative;width:{width}px;height:{height}px">'
-        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
-        f'viewBox="0 0 {width} {height}">{svg}</svg>{labels}</div></body></html>'
+        f"{layers}</div></body></html>"
     )
+
+
+def _shape_layer(shape: FigureShape, left: float, top: float, width: int, height: int) -> str:
+    """One shape's body and label as the next layer of the page, so DOM order is paint order."""
+    body = _shape_svg(shape, left, top)
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}">{body}</svg>'
+        if body
+        else ""
+    )
+    return svg + _label_div(shape, left, top)
 
 
 def _bounds(figure: ShapeFigure) -> Rect:
