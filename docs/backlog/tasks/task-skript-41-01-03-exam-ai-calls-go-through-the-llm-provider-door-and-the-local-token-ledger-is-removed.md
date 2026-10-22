@@ -84,3 +84,19 @@ Before the REP-0044 gate opens AI to teachers, close this gap: the door's `allow
   2. The guard test allowlists `scripts/llm_harness/inline_completion_harness.py`, script-editor tooling owned by TASK-SKRIPT-41-01-02.
   3. The live scripts exit with code 2 and the approval message on a pool refusal, and with code 1 naming the limit on any other limit; they send the caller as exempt.
   4. A DOCX job stopped by a door refusal keeps the user-facing limit note in `last_error`, and the job's first refusal wins.
+
+2026-10-22, implementation lead: the review (`changes_requested`, F1-F6) is repaired in one round. F1-F3 go to one independent rereview; F4-F6 and the limit notes are admitted on focused proof.
+
+- F1, the cap after each charge: `fb6c3aaef`. The client settles every door answer: a success admits the action, the overage charge is recorded, and the call that takes an app job past the $1 cap raises `AiJobOverageCapReached` itself.
+- F2, a DOCX limit ends the job as a failure: `16446878a`. A door limit or the cap anywhere in a conversion fails the job with the limit note; published batches and teacher edits stay, and the job is never `SUCCEEDED` or published as final.
+- F3, tooling overage only on approval: `fb6c3aaef` and `16446878a`. Tooling without `--allow-paid-overage` runs `FREE_ONLY` and never switches to paid overage; with the flag it runs `APPROVED_RUN`.
+- F4: the eval sends a typed `AiDailyLimitReached` to the CLI exit handler (`16446878a`).
+- F5: modules over 500 lines are split (the DOCX pipeline, the DOCX retry and `useExamWorkspaceConversion.ts`) in `16446878a`.
+- F6: `Any`, `cast` and type assertions are removed from the new code and tests (`16446878a`, `ea597a597`).
+- The limit notes follow `error.limit`: `user_share` says "Du har nått din gräns för AI-hjälp i dag. Försök igen i morgon."; `pool` and `usd_ceiling` say "Appens AI-hjälp har nått dagens gräns. Försök igen i morgon." The answer-key profile id is now `openai-gpt-6-luna-answer-key` (`b76fb5c6e`).
+- `origin/main` is merged in `188ebe30f`, `eb17850ed` and `cacc28e04`.
+- Proof at `cacc28e04`, run after the merge:
+  - `pdm run lint`, `typecheck`, `fe-lint`, `check-migration-test-coverage` and `docs-validate` pass.
+  - Focused unit tests pass: 3576 in curated apps, LLM, workers, web, scripts, architecture and config, plus 2419 exam-workspace Vitest tests.
+  - Docker integration passes 13 tests: the migration test plus the DOCX background and DigiExam suggestion modules.
+  - Logs are in the lead's retained root, under `evidence/repair/`.
