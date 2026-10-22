@@ -69,7 +69,7 @@ Stop and report if the Hemma host cannot hold the process and pool sizes, with t
 - Review repairs (review record `evidence/reviews/task-skript-41-01-04-9b729d9dd-review.md`, fail-first evidence under `evidence/repairs/`):
   - F1: the door client checks the job overage cap after a call gets its slot, so calls queued behind the slot no longer pass a stale check.
   - F2: the DOCX, content-tag and workspace answer-key jobs read their owner in a short Unit of Work of their own, so no job holds a DB connection while it waits for the provider.
-  - F3: the enrichment job `update` with an expected worker id locks the row (`FOR UPDATE`) before it checks the lease, so a stale slot gets a conflict instead of overwriting a reclaimed job.
+  - F3: the enrichment job `update` with an expected worker id locks the row (`FOR UPDATE`) before it checks the lease, so a stale slot gets a conflict instead of overwriting a reclaimed job. Recording an attempt now passes the expected worker id too.
   - F4: payload guards take connections from a bounded per-process guard pool. A request takes its application connection before it waits for a guard, so the two pools cannot deadlock.
   - F6: a busy Decisions chunk cancels and joins its sibling chunks in first-pass labelling and content classification. A daily limit still lets every chunk finish and raises the first failure in call order.
   - Load proof run 4 after the repairs: 1,120 of 1,120 calls completed, the door served a peak of 1,000 active calls and no call reached OpenAI.

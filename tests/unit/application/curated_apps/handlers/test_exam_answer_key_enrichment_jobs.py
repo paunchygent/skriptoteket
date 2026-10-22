@@ -26,8 +26,14 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
 )
 from skriptoteket.application.curated_apps.handlers import exam_answer_key_enrichment_jobs
+from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_attempts import (
+    AnswerKeyAttemptLedger,
+)
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_attempts import (
+    AnswerKeyProviderAttemptRunner,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
     ProcessExamContentSuggestionsHandler,
@@ -117,6 +123,25 @@ def _running_job(kind: ExamAnswerKeySourceKind) -> ExamAnswerKeyEnrichmentJob:
         created_at=_NOW,
         updated_at=_NOW,
     )
+
+
+async def test_a_stale_slot_cannot_record_an_attempt_on_a_reclaimed_job() -> None:
+    jobs = InMemoryEnrichmentJobRepository()
+    stale = _running_job(ExamAnswerKeySourceKind.DIGIEXAM_IMPORT)
+    await jobs.create(job=stale.model_copy(update={"locked_by": "worker-2"}))
+    ledger = AnswerKeyAttemptLedger(
+        enrichment_jobs=jobs,
+        attempts=AnswerKeyProviderAttemptRunner(
+            provider=StubProvider(content={}, usage=StructuredLLMUsage(total_tokens=1))
+        ),
+        uow=FakeUow(),
+        clock=FixedClock(_NOW),
+    )
+
+    with pytest.raises(AssertionError, match="no longer owned"):
+        await ledger.record_attempt(job=stale)
+
+    assert jobs.jobs[stale.id].locked_by == "worker-2"
 
 
 @pytest.mark.parametrize("kind", _ALL_KINDS)
