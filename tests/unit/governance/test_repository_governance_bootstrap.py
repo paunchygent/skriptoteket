@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib.metadata
 import json
 import re
 import tomllib
@@ -14,34 +13,30 @@ from repository_governance.routine.bindings import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-DEPENDENCY_PATTERN = re.compile(
-    r"repository-governance @ "
-    r"git\+https://github\.com/paunchygent/skill-repository\.git"
-    r"@(?P<revision>[0-9a-f]{40})"
-    r"#subdirectory=packages/repository_governance"
-)
 
 
-def test_selected_package_identity_is_exact() -> None:
+def test_repository_governance_is_not_pinned() -> None:
     project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     lock = tomllib.loads((ROOT / "pdm.lock").read_text(encoding="utf-8"))
 
-    dependencies = [
-        dependency
-        for dependency in project["dependency-groups"]["monorepo-tools"]
-        if dependency.startswith("repository-governance @ ")
+    requirements = [
+        *project["project"].get("dependencies", []),
+        *(
+            item
+            for group in project["project"].get("optional-dependencies", {}).values()
+            for item in group
+        ),
+        *(
+            item
+            for group in project["dependency-groups"].values()
+            for item in group
+            if isinstance(item, str)
+        ),
     ]
-    assert len(dependencies) == 1
-    match = DEPENDENCY_PATTERN.fullmatch(dependencies[0])
-    assert match is not None
-    selected_revision = match.group("revision")
-
-    package = next(item for item in lock["package"] if item["name"] == "repository-governance")
-    assert package["git"] == "https://github.com/paunchygent/skill-repository.git"
-    assert package["subdirectory"] == "packages/repository_governance"
-    assert package["ref"] == selected_revision
-    assert package["revision"] == selected_revision
-    assert importlib.metadata.version("repository-governance") == package["version"]
+    assert not [
+        item for item in requirements if item.replace("_", "-").startswith("repository-governance")
+    ]
+    assert not [item for item in lock["package"] if item["name"] == "repository-governance"]
 
 
 def test_repository_facts_and_generated_bindings_are_complete() -> None:
