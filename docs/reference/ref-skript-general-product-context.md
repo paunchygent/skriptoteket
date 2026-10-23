@@ -110,6 +110,9 @@ and the
 - Every paid AI call goes through the HuleEdu LLM provider door, which meters
   the daily pools, shares and USD ceiling; Skriptoteket calls no model endpoint
   itself and keeps no remote-provider consent.
+- No signed-out route calls paid AI by default. A future public AI route
+  needs an off-by-default switch, per-caller and pooled global limits, and a
+  path to sign-in.
 - Single-operator reality (product-owner-supplied fact, recorded here as
   context for external advisers): one person owns product direction, code, and
   operations. Prefer solutions that one person can build, run, and repair;

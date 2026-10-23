@@ -69,7 +69,7 @@ Add a hash from the table below to open a specific state.
 | `q=4c&menu=more`                           | A deluppgift's ⋮ menu: Flytta upp, Flytta ned, Ta bort deluppgiften               | `36-deluppgift-more-*`                             |
 | `q=11`                                     | A stored suggested type: 'Gör om till Lucktext'                                   | `10-suggested-type-*`                              |
 | `q=12&keepconverting`                      | A question that is still converting (finishes after 9 s without `keepconverting`) | `11-converting-*`                                  |
-| `change=fritext`                           | Change type: the notice that names the dropped content, with Ångra                | `12-change-type-notice-*`                          |
+| `change=fritext`                           | Change type: the inline notice in the question that names the dropped content; the header Ångra reverts it | `12-change-type-notice-*`                          |
 | `menu=type`                                | Byt frågetyp menu, with the reserved Ordning entry                                | `13-type-menu-*`                                   |
 | `menu=new`                                 | Ny uppgift menu, with the reserved Ordning entry                                  | `14-new-menu-*`                                    |
 | `q=4&menu=child`                           | + Deluppgift menu, without Ordning                                                | `38-deluppgift-new-menu-*`                         |
@@ -89,9 +89,9 @@ Add a hash from the table below to open a specific state.
 | `help`                                     | Help panel with the keyboard shortcuts                                            | `27-help-*`                                        |
 | `list`                                     | Phone question list                                                               | `28-phone-list-phone`                              |
 | `nav`                                      | Phone navigation drawer                                                           | `29-phone-nav-phone`                               |
-| `toast=resume`                             | A suggestion that was running before reload, resumed                              | `30-resumed-suggestion-*`                          |
-| `ready&toast=qti`                          | QTI saved to Mina filer, with Visa listan                                         | `31-qti-saved-toast-*`                             |
-| `ready&toast=reviewed`                     | All questions reviewed, with Exportera                                            | `32-all-reviewed-toast-*`                          |
+| `toast=resume`                             | A suggestion that was running before reload, resumed: the header AI button is busy again, no toast | `30-resumed-suggestion-*`                          |
+| `ready&toast=qti`                          | QTI saved to Mina filer: the Exportera drawer lists what the last export made, no toast | `31-qti-saved-toast-*`                             |
+| `ready&toast=reviewed`                     | All questions reviewed: every list row shows the success glyph, no toast | `32-all-reviewed-toast-*`                          |
 | `dirty&drawer=open`                        | The file picker disabled while edits are unsaved                                  | `33-open-while-unsaved-*`                          |
 | `empty&menu=course`                        | The course picker at import                                                       | `34-import-course-picker-*`                        |
 
@@ -162,17 +162,17 @@ the build:
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Saved                         | Status slot: check glyph and 'Sparat 17 okt 14:05' in muted text                                                                                              |
 | Unsaved                       | The same slot: status-modified glyph and 'Osparat' in warning colour; the tooltip says edits are saved as a draft and Spara overwrites the exam in Mina filer |
-| Saving                        | The same slot: busy glyph and 'Sparar …'; a toast 'Provet är sparat.' follows                                                                                 |
+| Saving                        | The same slot: busy glyph and 'Sparar …', then 'Sparat' with the time; no toast |
 | Undo or redo unavailable      | The button is disabled with the tooltip 'Inget att ångra' or 'Inget att göra om'                                                                              |
 | Needs review                  | List row: warning glyph; a blocker reason in failure colour after the type, such as 'facit ej granskat' or 'poäng saknas'                                     |
 | Reviewed                      | List row: success glyph; the review check in the editor is filled                                                                                             |
 | AI-suggested key              | Sparkles on the list row and beside the chosen option; 'Facit tolkat av AI ur …' with 'Ångra AI-tolkningen'                                                   |
 | Suggestion out of date        | A dot on the Alternativ Sparkles button                                                                                                                       |
-| Suggesting for all questions  | The header AI button shows busy and is disabled; after a reload the run resumes with a 'Facitförslagen tas fram …' toast                                      |
+| Suggesting for all questions  | The header AI button shows busy and is disabled; after a reload the run resumes and the button is busy again, with no toast |
 | Unbuilt question              | Type button in failure colour 'Ej konverterad' and one failure line under the header                                                                          |
 | Converting                    | Muted list row with busy glyph; a warning-surface notice; read-only fields                                                                                    |
 | Export blocked                | The export menu starts with 'Kan inte exporteras ännu' and links to each blocking question; the format rows are disabled                                      |
-| Total mismatch                | Warning glyph on the instruction row and 'Provet anger 60 p' in the list footer                                                                               |
+| Total mismatch                | One plain line per printed total that differs from its questions' sum, above the list footer: the exam first, then each differing part in order. Each line has the glyph-only actions 'Godta frågornas summa' and 'Visa frågorna'. It never blocks Spara or export |
 | Picker disabled while unsaved | Course, drop zone and Välj provfil are disabled, with 'Spara det öppna provet innan du importerar eller öppnar ett annat.'                                    |
 | No exam open                  | Header 'Inget prov öppet'; every action except Öppna is disabled; the editor shows the empty state; the Öppna drawer opens                                    |
 | Importing                     | The drop zone becomes a progress card: 'Konverterar provet: 4 av 12 frågor klara.'                                                                            |
@@ -209,9 +209,11 @@ the build:
     Import, review, ⋮. Field-level actions sit at their field: + Alternativ,
     - Lucka, + Kriterium, + Deluppgift, remove. Exam properties are in
       Provets uppgifter, which the exam title opens.
-08. **Notices.** A change that removed content shows a toast that names
-    what was removed and offers Ångra. It stays until it is closed. Short
-    confirmations close by themselves after about 4 s.
+08. **Notices.** A toast appears only when an action fails and carries no
+    Ångra or other action. A change that removed content is noted inline in
+    that element, and the header Ångra reverts it. The
+    [exam workspace contract](ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md) owns the
+    notice rules.
 09. **Keyboard.** Ctrl/Cmd+S runs Spara. Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z
     undo and redo, including inside text fields. Up and down arrows outside a
     text field move between list rows; inside an open menu, the arrows, Home
@@ -251,7 +253,7 @@ fakes (the save toast and the 9 s conversion).
 | Top bar, sidebar, page frame                                            | Shell                                                                                                                                                                              | `01`, `26`, `29`                    |
 | Estimated-points hint                                                   | Poäng row of question 10                                                                                                                                                           | `35`                                |
 | Unbuilt-question blocker                                                | Question header and list row                                                                                                                                                       | `09`                                |
-| Exam and part total mismatch                                            | List footer, instruction row and instruction editor                                                                                                                                | `01`, `04`                          |
+| Exam and part total mismatch                                            | Lines above the list footer, instruction row and instruction editor | `01`, `04`                          |
 | Course hint                                                             | Provets uppgifter under Kurs ('Ämne: Svenska')                                                                                                                                     | `21`                                |
 | Per-question Konvertera igen                                            | Import box, with the type select                                                                                                                                                   | `03`                                |
 | Pictures in questions                                                   | Frågetext of question 10                                                                                                                                                           | `35`                                |
@@ -261,17 +263,17 @@ fakes (the save toast and the 9 s conversion).
 | Kategorisera grid with points per tick                                  | Answer section of question 8                                                                                                                                                       | `08`                                |
 | Fritext criteria                                                        | Bedömningskriterier                                                                                                                                                                | `05`                                |
 | Kort svar under Ny fråga                                                | Ny uppgift menu                                                                                                                                                                    | `14`                                |
-| Export checklist after QTI                                              | Export drawer and the QTI toast                                                                                                                                                    | `20`, `31`                          |
+| Export checklist after QTI                                              | Export drawer, which lists what the last export made | `20`, `31`                          |
 | Metadata drawer opened from the exam title                              | Title button → Provets uppgifter                                                                                                                                                   | `21`                                |
 | Course picker at import                                                 | Öppna drawer, Kurs (valfritt)                                                                                                                                                      | `34`                                |
 | File picker disabled while unsaved                                      | Öppna drawer                                                                                                                                                                       | `33`                                |
-| Pending suggestion resumed after reload                                 | Header AI button + toast                                                                                                                                                           | `30`                                |
+| Pending suggestion resumed after reload                                 | Header AI button, busy again after the reload | `30`                                |
 | Öppna drawer exam list: by course, newest first, sort toggle, Utan kurs | Öppna drawer, Prov                                                                                                                                                                 | `02`, `02b` (shows Utan kurs), `37` |
 | Spara and Spara som                                                     | Header split button; dialog                                                                                                                                                        | `15`, `16`, `17`                    |
 | Undo and redo, 10 steps, shortcuts                                      | Right end of the header; help panel                                                                                                                                                | `12`, `15`, `27`                    |
 | Ctrl/Cmd+S                                                              | Spara tooltip, Spara menu, help panel                                                                                                                                              | `15`, `27`                          |
 | Import box with steps, DOCX and DigiExam                                | Question header Import → inline box                                                                                                                                                | `03`                                |
-| Change type with the dropped-content notice                             | Type button → Byt frågetyp; toast with Ångra                                                                                                                                       | `13`, `12`                          |
+| Change type with the dropped-content notice                             | Type button → Byt frågetyp; inline notice in the question, reverted by the header Ångra | `13`, `12`                          |
 | Gör om till [type]                                                      | Question header of question 11                                                                                                                                                     | `10`                                |
 | Ny uppgift and + Deluppgift                                             | List header; Deluppgifter heading                                                                                                                                                  | `14`, `04`                          |
 | Add, delete and reorder deluppgifter                                    | Instruction editor rows; ⋮ on a deluppgift                                                                                                                                         | `04`, `36`                          |
@@ -302,6 +304,10 @@ browser. The lead checks their screens against the screenshots here.
 - Planned-control contracts: ST-SKRIPT-39-06 (P13, P15),
   TASK-SKRIPT-39-06-02 to 39-06-06, TASK-SKRIPT-39-07-01,
   TASK-SKRIPT-39-08-02 to 39-08-04, TASK-SKRIPT-39-04-06 and 39-04-08.
+- [Exam workspace contract](ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md):
+  later user rulings on notices, printed totals, exports and conversion. The
+  static prototype and its screenshots still show the superseded toasts and
+  the footer-only total line.
 
 The user settled the prototype's 23 open questions in the 2026-10-17
 grilling. They are TASK-SKRIPT-40-04-01's Decided Contract Terms T6–T28; T29
