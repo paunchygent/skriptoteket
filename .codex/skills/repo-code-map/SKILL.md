@@ -21,7 +21,7 @@ read for orientation and the only map in this lane.
 The overview states topology and links onward. It does not restate routes,
 commands, or engineering rules. For those, read the authority directly:
 
-- Repository routes, invariants, and command policy: `AGENTS.md`.
+- Repository identity, commands, product facts, and routes: `AGENTS.md`.
 - Backend architecture, DI, Unit of Work, runner contracts:
   `.codex/skills/skriptoteket-backend-dev/SKILL.md`.
 - Test strategy, fixtures, and lane selection:

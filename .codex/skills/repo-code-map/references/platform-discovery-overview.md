@@ -18,7 +18,7 @@ Top-level layout:
 
 | Path             | Holds                                                          |
 | ---------------- | -------------------------------------------------------------- |
-| `AGENTS.md`      | Repository route list and command policy; the boot router      |
+| `AGENTS.md`      | Identity, commands, product facts, local routes; the boot file |
 | `CLAUDE.md`      | Symlink to `AGENTS.md`, so Claude Code reads the same router   |
 | `handoff.md`     | Volatile current-state pointers, kept under 200 lines          |
 | `src/`           | The `skriptoteket` application package (all backend layers)    |
@@ -149,8 +149,8 @@ Skriptoteket reference.
   skills are authored in the canonical skill repository and reached through the
   harness alias; repo facts belong in a shared skill's Skriptoteket reference,
   not in a copied local skill.
-- `.claude/skills` is a symlink to `.codex/skills`, so the Claude harness
-  discovers this lane at session start. The sanctioned symlink direction is
+- `.claude/skills` and `.agents/skills` are symlinks to `.codex/skills`, so the
+  Claude and Codex harnesses discover this lane at session start. The sanctioned symlink direction is
   local skill source into a harness configuration folder; installing shared-skill
   shims into this repository stays forbidden.
 - Identity is split: HuleEdu owns the browser-session login ceremony,
@@ -166,6 +166,20 @@ Skriptoteket reference.
 `fe-type-check`, `fe-lint`, `fe-build`, and the Vitest lanes for the SPA;
 `docs-validate` for the `docs/` contract; `skills-validate` for
 `.codex/skills/`; `handoff-validate` for `handoff.md`; `check-md` and
-`format-md` for changed markdown. `AGENTS.md` states which set a given change
-closes on; `local-devops` and its Skriptoteket reference carry the local
-development and command-wrapper detail.
+`format-md` for changed markdown. `local-devops` and its Skriptoteket
+reference carry the local development and command-wrapper detail.
+
+Default close-out by change:
+
+- Docs-only: `pdm run docs-validate`.
+- Skill surface: `pdm run skills-validate` and `pdm run docs-validate`.
+- Handoff update: `pdm run handoff-validate` and `pdm run docs-validate`.
+- Backend: `pdm run lint`, `pdm run typecheck`, and focused tests.
+- Frontend: the focused Vitest, typecheck and build checks that
+  `integrated-frontend-stack` names.
+
+A code push from Hemma runs the full suite in the pre-push hook
+(`scripts/hemma_pre_push_check.sh`). Run it in the background and call the push
+verified only after `~/logs/pre-push-<sha9>.log` shows the steps passed. A push
+that changes only Markdown or `docs/` since the last passing commit reuses that
+commit's result and writes no new log.

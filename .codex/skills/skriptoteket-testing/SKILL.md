@@ -51,6 +51,10 @@ Every other UI change closes on an approved review plus unit tests, without
 a walk. That covers restyle and style-token work, other curated apps,
 admin and editor surfaces, and user-generated script tools.
 
+Flunk-Out Frenzy is outside the user's focus: never ask the user about its
+look, never walk it, and never hold a story for a finding that touches only
+it. That work closes on review and unit proof.
+
 ## Reference Router
 
 | Test area                                                          | Load                                |

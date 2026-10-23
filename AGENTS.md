@@ -1,113 +1,40 @@
-# Skriptoteket Agent Entrypoint
+# Skriptoteket
 
-Skriptoteket is a teacher-first Script Hub with a FastAPI/PostgreSQL backend and
-a Vue/Vite SPA. HuleEdu owns shared browser-session login and identity context;
-Skriptoteket keeps roles local. Curated apps are first-class application modules
-with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
+## Identity
 
-## Repo Invariants
+Skriptoteket is a teacher-first Script Hub: a FastAPI/PostgreSQL backend, a
+Vue/Vite SPA and curated apps, which are first-class application modules with
+bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
 
-- Skriptoteket is an unreleased, iterative testbed: backward compatibility is
-  never a requirement. Keep no readers, defaults, aliases, fallbacks or dual
-  paths for older data, schemas, payloads, settings or stored client state;
-  change the format and delete the old path. Compatibility applies only where
-  the user states it explicitly for a named app. This lasts until release:
-  older stored formats are development intermediates, not user data, so plans
-  and questions never raise lost saved data. Once teachers use the app, the
-  user requires that data they depend on is migrated or kept readable.
-- Paid AI is admin and superuser only until the AI spend limits ship
-  (TASK-SKRIPT-REP-0044). Plan, walk and judge features as if AI is on for
-  teachers; behaviour that exists only because of that temporary gate, such as
-  a non-admin teacher's Word drop doing nothing, is not an issue to raise.
-- When an LLM provider pool is used up, continuing on paid overage
-  (`ALLOW_PAID_OVERAGE`) is a user gate: stop, say that the daily pool is used
-  up, and wait for the user's decision.
-- Flunk-Out Frenzy is outside the user's focus: never ask the user about its
-  look, never walk it, and never hold a story for a finding that touches only
-  it. That work closes on review and unit proof.
-- Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
-  use the package-owned `pdm run new-*` scaffolders, and close doc changes with
-  `pdm run docs-validate`.
-- Unit of Work owns commit/rollback; repositories never commit; map
-  `DomainError` to HTTP only at the web boundary.
-- Use the shared `staging-walk` skill for staging and browser proof on Hemma;
-  `skriptoteket-testing` states which changes are walked.
+## Commands
 
-## Session Start
+Run from the repository root; the full list is in `pyproject.toml`.
 
-1. Check `handoff.md` for current-state pointers.
-2. Use `docs/index.md` for durable docs discovery and backlog context.
+- Docs and handoff: `pdm run docs-validate`, `handoff-validate`, `skills-validate`.
+- Backend: `pdm run lint`, `typecheck`, `test`, `check`; dev: `dev`, `dev-stack`.
+- Frontend: `pdm run fe-dev`, `fe-type-check`, `fe-lint`, `fe-test`, `fe-build`.
 
-## Repo-Specific Routes
+## Product Facts
 
-Keep routes here only when they add Skriptoteket references, local skills,
-product workflow, or command-wrapper context.
+- Skriptoteket is unreleased: until release, backward compatibility is no
+  requirement unless the user states it for a named app. Keep no readers,
+  defaults, aliases, fallbacks or dual paths for older data, schemas, payloads,
+  settings or client state; change the format, delete the old path. Older formats
+  are development intermediates, so plans and questions never raise lost saved
+  data. Once teachers use it, data they depend on is migrated or kept readable.
+- Paid AI is admin and superuser only until AI spend limits ship
+  (TASK-SKRIPT-REP-0044): plan, walk and judge as if teachers have AI; behaviour
+  only that gate causes is no issue.
+- Paid overage (`ALLOW_PAID_OVERAGE`) after an LLM provider pool is used up is a
+  user gate: stop, say the daily pool is used up, wait for the user's decision.
+- HuleEdu owns shared browser-session login and identity; Skriptoteket keeps roles local.
 
-| Context                                                                                                    | Repo-Specific Route                                                                                                   |
-| ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Repository topology, layer boundaries, where a concern lives                                               | `.codex/skills/repo-code-map/SKILL.md`                                                                                |
-| Docs-as-code, backlog contracts, scaffolding, governed docs                                                | `agent-docs-governance` plus its Skriptoteket reference                                                               |
-| Planning, decomposition, tranche sequencing                                                                | `agent-planning` plus its Skriptoteket reference                                                                      |
-| Next-session or developer handoff messages                                                                 | `agent-session-handoff` plus its Skriptoteket reference                                                               |
-| Backend architecture, FastAPI, UoW, migrations, runner contracts                                           | `.codex/skills/skriptoteket-backend-dev/SKILL.md`                                                                     |
-| Testing strategy, test implementation, test repair, or test-quality audits                                 | `.codex/skills/skriptoteket-testing/SKILL.md`; `test-qc-runner` for governed QC runs                                  |
-| Local dev, DB setup, dev stack, command wrappers, local logs                                               | `local-devops` plus its Skriptoteket reference                                                                        |
-| Hemma deploys, remote operations, shared host runtime, GPU/offload lanes                                   | `hemma-devops` plus its Skriptoteket reference                                                                        |
-| Presentation, visual design, user-facing copy | `huleedu-ui-design` |
-| SPA, curated-app UI, auth continuation, dense workspaces, frontend tests                                   | `integrated-frontend-stack` plus its Skriptoteket reference                                                           |
-| Flunk-Out Frenzy pinball playfield geometry, donor table semantics, board underlays, physics-wall carriers | `.codex/skills/pinball-board-authoring/SKILL.md`                                                                      |
-| Logs, metrics, traces, dashboards, public-edge logging policy                                              | `observability-stack` plus its Skriptoteket reference                                                                 |
+## Local Routes
 
-Shared skills are authored in the canonical skill repository reached through
-the harness alias. Repo facts belong in shared-skill references or leaves, not
-copied repo-local skills.
-
-## Agent Surface
-
-- `.codex/agents/`: Codex subagents, explicit delegation only.
-- `.codex/skills/`: truly Skriptoteket-specific skills only.
-- `handoff.md`: current-state handoff; keep it under 200 lines.
-- `.codex/long-term-memory/index.md`: durable session-history doorway.
-- `.codex/long-term-memory/entries/`: retained session-history entries.
-
-When compacting `handoff.md`, move durable session history to
-`.codex/long-term-memory/entries/` first.
-
-## Durable Docs
-
-- Current contract and scaffolds: package-owned `repository-governance`
-- Start-here index: `docs/index.md`
-- Historical-only legacy contract: `docs/_meta/historical-docs-contract.yaml`
-- Runbooks: `docs/runbooks/`
-- Backlog hierarchy: `EPIC -> STORY -> TASK`
-
-When a story, epic, PR, or review status/scope changes, update the relevant
-backlog doc and `handoff.md`. When a story is marked `done`, also update
-its epic with the current implementation summary. Proposed EPICs and ADRs need
-review before implementation.
-
-## Authority Transition Guard
-
-Terminal docs authority changes must cite `agent-planning:user-closure-gate` or
-`agent-overseer:approved-review-closeout`. Review verdict
-approval is reviewer-owned. Details live in `agent-docs-governance`.
-
-## Command Policy
-
-Default close-out:
-
-- Docs-only change: `pdm run docs-validate`
-- Skill-surface change: `pdm run skills-validate` and `pdm run docs-validate`
-- Handoff update: `pdm run handoff-validate` and `pdm run docs-validate`
-- Backend change: `pdm run lint`, `pdm run typecheck`, and focused tests
-- Frontend change: use `integrated-frontend-stack` for the focused
-  Vitest/typecheck/build checks
-
-A code push from Hemma runs the full suite in the pre-push hook
-(`scripts/hemma_pre_push_check.sh`), so run it in the background and call it
-verified only after `~/logs/pre-push-<sha9>.log` shows the steps passed. A
-push that changes only Markdown or `docs/` since the last passing commit
-reuses that commit's result and writes no new log.
-
-Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
-`docker compose up -d db` should not be stopped unless the user asks.
+- State: `handoff.md`; history: `.codex/long-term-memory/index.md`; docs:
+  `docs/index.md`; local skills: `.codex/skills/INDEX.md`.
+- Topology and layer boundaries: `repo-code-map`; backend, UoW, migrations and
+  runner contracts: `skriptoteket-backend-dev`; tests: `skriptoteket-testing`;
+  pinball playfield geometry and board underlays: `pinball-board-authoring`.
+- Staging and browser proof on Hemma: `staging-walk`; `skriptoteket-testing`
+  states which changes are walked. UI: `huleedu-ui-design`, `integrated-frontend-stack`.
