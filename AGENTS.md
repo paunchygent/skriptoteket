@@ -16,20 +16,25 @@ Run from the repository root; the full list is in `pyproject.toml`.
 
 ## Product Facts
 
-- Skriptoteket is an unreleased, iterative testbed: backward compatibility is
-  never a requirement. Keep no readers, defaults, aliases, fallbacks or dual
-  paths for older data, schemas, payloads, settings or stored client state;
-  change the format and delete the old path. Compatibility applies only where
-  the user states it explicitly for a named app.
-- HuleEdu owns shared browser-session login and identity context; Skriptoteket
-  keeps roles local.
+- Skriptoteket is unreleased: until release, backward compatibility is no
+  requirement unless the user states it for a named app. Keep no readers,
+  defaults, aliases, fallbacks or dual paths for older data, schemas, payloads,
+  settings or client state; change the format, delete the old path. Older formats
+  are development intermediates, so plans and questions never raise lost saved
+  data. Once teachers use it, data they depend on is migrated or kept readable.
+- Paid AI is admin and superuser only until AI spend limits ship
+  (TASK-SKRIPT-REP-0044): plan, walk and judge as if teachers have AI; behaviour
+  only that gate causes is no issue.
+- Paid overage (`ALLOW_PAID_OVERAGE`) after an LLM provider pool is used up is a
+  user gate: stop, say the daily pool is used up, wait for the user's decision.
+- HuleEdu owns shared browser-session login and identity; Skriptoteket keeps roles local.
 
 ## Local Routes
 
-- Active state: `handoff.md`; session history: `.codex/long-term-memory/index.md`.
-- Docs: `docs/index.md`; local skills: `.codex/skills/INDEX.md`.
+- State: `handoff.md`; history: `.codex/long-term-memory/index.md`; docs:
+  `docs/index.md`; local skills: `.codex/skills/INDEX.md`.
 - Topology and layer boundaries: `repo-code-map`; backend, UoW, migrations and
-  runner contracts: `skriptoteket-backend-dev`; tests: `skriptoteket-testing`.
-- Pinball playfield geometry and board underlays: `pinball-board-authoring`.
-- Staging and browser proof on Hemma: `staging-walk`; UI work:
-  `huleedu-ui-design`, `integrated-frontend-stack`.
+  runner contracts: `skriptoteket-backend-dev`; tests: `skriptoteket-testing`;
+  pinball playfield geometry and board underlays: `pinball-board-authoring`.
+- Staging and browser proof on Hemma: `staging-walk`; `skriptoteket-testing`
+  states which changes are walked. UI: `huleedu-ui-design`, `integrated-frontend-stack`.

@@ -92,8 +92,9 @@ and the
 
 ### Deployment reality and constraints
 
-- `skriptoteket.hule.education` is the real live app host with real users;
-  this is a running public service, not a prototype.
+- `skriptoteket.hule.education` is the deployed public app host. The app is
+  unreleased and no teacher depends on its data yet; compatibility and saved
+  data follow the Repo Invariants in `AGENTS.md`.
 - Production runs on the shared Hemma host: PostgreSQL 16 in the shared
   `shared-postgres` container on the `hule-network` Docker bridge, behind the
   nginx-proxy + acme-companion edge, co-tenant with HuleEdu and Sir
@@ -110,6 +111,9 @@ and the
 - Every paid AI call goes through the HuleEdu LLM provider door, which meters
   the daily pools, shares and USD ceiling; Skriptoteket calls no model endpoint
   itself and keeps no remote-provider consent.
+- No signed-out route calls paid AI by default. A future public AI route
+  needs an off-by-default switch, per-caller and pooled global limits, and a
+  path to sign-in.
 - Single-operator reality (product-owner-supplied fact, recorded here as
   context for external advisers): one person owns product direction, code, and
   operations. Prefer solutions that one person can build, run, and repair;

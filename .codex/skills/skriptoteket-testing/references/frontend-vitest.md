@@ -27,3 +27,14 @@ Use this reference for ordinary Skriptoteket Vue/Vite unit and component tests.
 - Suite: `pdm run fe-test`
 - Type/lint gates: `pdm run fe-type-check`, `pdm run fe-lint`
 - Build gate for shipped UI surfaces: `pdm run fe-build`
+
+## Pinia Testing
+
+`createTestingPinia` registers every function a setup store returns as an
+action, so the default `stubActions: true` replaces
+`useAuthStore().hasAtLeastRole` with a spy that returns `undefined` and
+role-gated UI reads false even for an admin user. When a spec needs a real
+role check, seed `initialState: { auth: { user: adminUser } }` and pass
+`stubActions: (name) => name !== "hasAtLeastRole"`;
+`ExamWorkspaceSlice.specSupport.ts` exports `adminUser`. A spec on a plain
+`createPinia()` only needs the user set on the store.

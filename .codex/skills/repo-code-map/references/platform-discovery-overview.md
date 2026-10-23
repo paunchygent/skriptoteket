@@ -177,3 +177,9 @@ Default close-out by change:
 - Backend: `pdm run lint`, `pdm run typecheck`, and focused tests.
 - Frontend: the focused Vitest, typecheck and build checks that
   `integrated-frontend-stack` names.
+
+A code push from Hemma runs the full suite in the pre-push hook
+(`scripts/hemma_pre_push_check.sh`). Run it in the background and call the push
+verified only after `~/logs/pre-push-<sha9>.log` shows the steps passed. A push
+that changes only Markdown or `docs/` since the last passing commit reuses that
+commit's result and writes no new log.

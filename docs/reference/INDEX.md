@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | reference=112
+- total | reference=113
 
 ## Lookup
 
@@ -26,6 +26,7 @@
 - reference | REF-SKRIPT-GENERAL-epic-04-pre-implementation-architecture-review | reference_kind=general | summary=EPIC-04 Pre-Implementation Architecture Review | [EPIC-04 Pre-Implementation Architecture Review](ref-skript-general-epic-04-pre-implementation-architecture-review-epic-04-pre-implementation-architecture-review.md)
 - reference | REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix | reference_kind=general | summary=EPIC-05 Frontend expert review (repomix) | [EPIC-05 Frontend expert review (repomix)](ref-skript-general-epic-05-frontend-expert-review-repomix-epic-05-frontend-expert-review-repomix.md)
 - reference | REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1 | reference_kind=general | summary=Exam Converter UI content model v1 | [Exam Converter UI content model v1](ref-skript-general-exam-converter-ui-content-model-v1-exam-converter-ui-content-model-v1.md)
+- reference | REF-SKRIPT-GENERAL-exam-workspace-conversion-points-and-export-contract | reference_kind=general | summary=Durable user rules for the exam workspace: conversion quality, printed points, import cleanup, question labels, metadata, exports and notices | [Exam workspace conversion, points and export contract](ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md)
 - reference | REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1 | reference_kind=general | summary=File naming, save, and export protocol v1 | [File naming, save, and export protocol v1](ref-skript-general-file-naming-save-and-export-protocol-v1-file-naming-save-and-export-protocol-v1.md)
 - reference | REF-SKRIPT-GENERAL-follow-up-hemma-host-freeze-stack-alignment-jan-2026 | reference_kind=general | summary=Follow-up: hemma host freeze stack alignment (Jan 2026) | [Follow-up: hemma host freeze stack alignment (Jan 2026)](ref-skript-general-follow-up-hemma-host-freeze-stack-alignment-jan-2026-follow-up-hemma-host-freeze-stack-alignment-jan-2026.md)
 - reference | REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment | reference_kind=general | summary=Frontend design-system codemap (trace-based for cross-repo alignment) | [Frontend design-system codemap (trace-based for cross-repo alignment)](ref-skript-general-frontend-design-system-codemap-trace-based-for-cross-repo-alignment-frontend-design-system-codemap-trace-based-for-cross-repo-alignment.md)
@@ -141,6 +142,7 @@
 - REF-SKRIPT-GENERAL-epic-04-pre-implementation-architecture-review | [EPIC-04 Pre-Implementation Architecture Review](ref-skript-general-epic-04-pre-implementation-architecture-review-epic-04-pre-implementation-architecture-review.md) | backlog=none
 - REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix | [EPIC-05 Frontend expert review (repomix)](ref-skript-general-epic-05-frontend-expert-review-repomix-epic-05-frontend-expert-review-repomix.md) | backlog=none
 - REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1 | [Exam Converter UI content model v1](ref-skript-general-exam-converter-ui-content-model-v1-exam-converter-ui-content-model-v1.md) | backlog=none
+- REF-SKRIPT-GENERAL-exam-workspace-conversion-points-and-export-contract | [Exam workspace conversion, points and export contract](ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md) | backlog=none
 - REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1 | [File naming, save, and export protocol v1](ref-skript-general-file-naming-save-and-export-protocol-v1-file-naming-save-and-export-protocol-v1.md) | backlog=none
 - REF-SKRIPT-GENERAL-follow-up-hemma-host-freeze-stack-alignment-jan-2026 | [Follow-up: hemma host freeze stack alignment (Jan 2026)](ref-skript-general-follow-up-hemma-host-freeze-stack-alignment-jan-2026-follow-up-hemma-host-freeze-stack-alignment-jan-2026.md) | backlog=none
 - REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment | [Frontend design-system codemap (trace-based for cross-repo alignment)](ref-skript-general-frontend-design-system-codemap-trace-based-for-cross-repo-alignment-frontend-design-system-codemap-trace-based-for-cross-repo-alignment.md) | backlog=none
@@ -256,6 +258,7 @@
 - REF-SKRIPT-GENERAL-epic-04-pre-implementation-architecture-review | [EPIC-04 Pre-Implementation Architecture Review](ref-skript-general-epic-04-pre-implementation-architecture-review-epic-04-pre-implementation-architecture-review.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix | [EPIC-05 Frontend expert review (repomix)](ref-skript-general-epic-05-frontend-expert-review-repomix-epic-05-frontend-expert-review-repomix.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1 | [Exam Converter UI content model v1](ref-skript-general-exam-converter-ui-content-model-v1-exam-converter-ui-content-model-v1.md) | references=none | runbooks=none
+- REF-SKRIPT-GENERAL-exam-workspace-conversion-points-and-export-contract | [Exam workspace conversion, points and export contract](ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1 | [File naming, save, and export protocol v1](ref-skript-general-file-naming-save-and-export-protocol-v1-file-naming-save-and-export-protocol-v1.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-follow-up-hemma-host-freeze-stack-alignment-jan-2026 | [Follow-up: hemma host freeze stack alignment (Jan 2026)](ref-skript-general-follow-up-hemma-host-freeze-stack-alignment-jan-2026-follow-up-hemma-host-freeze-stack-alignment-jan-2026.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment | [Frontend design-system codemap (trace-based for cross-repo alignment)](ref-skript-general-frontend-design-system-codemap-trace-based-for-cross-repo-alignment-frontend-design-system-codemap-trace-based-for-cross-repo-alignment.md) | references=none | runbooks=none
