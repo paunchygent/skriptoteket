@@ -34,8 +34,22 @@ in repo docs-as-code, runbooks, and shared stack skills.
   `tests/fixtures/` modules.
 - A test that requires broad monkeypatching usually signals the production
   boundary needs a protocol, DI seam, or smaller module.
-- Use the shared staging-walk skill for staging and browser proof on Hemma.
+- Delete a test that asserts elapsed wall-clock time or a speed ratio; never
+  harden it or propose a robust timing proof. A timeout that only bounds a
+  wait for an observable result is fine.
 - Migration tests must prove idempotency with the Docker/Testcontainers lane.
+
+## Walk Scope
+
+Walk only changes to the exam converter: the conversion hub exam tab, the
+exam workspace, exam save and exports in Mina filer, the Exam.net import,
+and the shared UI parts that app uses. Walk such a change once after it
+merges, through the shared staging-walk skill on Hemma, and never re-walk
+the whole app.
+
+Every other UI change closes on an approved review plus unit tests, without
+a walk. That covers restyle and style-token work, other curated apps,
+admin and editor surfaces, and user-generated script tools.
 
 ## Reference Router
 
@@ -43,7 +57,7 @@ in repo docs-as-code, runbooks, and shared stack skills.
 | ------------------------------------------------------------------ | ----------------------------------- |
 | Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`      |
 | Frontend Vitest/component tests                                    | `references/frontend-vitest.md`     |
-| Browser walk, screenshots, authenticated UI proof                  | Use the shared staging-walk skill for staging and browser proof on Hemma. |
+| Browser walk, screenshots, authenticated UI proof                  | `## Walk Scope` above; the shared staging-walk skill runs the walk on Hemma |
 | Alembic migrations and schema drift                                | `references/migrations.md`          |
 | Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md` |
 
@@ -54,7 +68,7 @@ in repo docs-as-code, runbooks, and shared stack skills.
   and `pdm run fe-lint`; add `pdm run fe-build` for shipped UI surfaces.
 - Migration change: docker-marked migration test plus the documented dev DB
   upgrade lane.
-- Use the shared staging-walk skill for staging and browser proof on Hemma.
+- Exam-converter UI change: one staging walk after merge (see `## Walk Scope`).
 - Docs or skill surface change: `pdm run skills-validate` when skills changed,
   `pdm run docs-validate` when docs or docs routing changed, and
   `git diff --check`.

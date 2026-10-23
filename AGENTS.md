@@ -11,13 +11,27 @@ with bespoke UX and app-specific APIs. Target Python is 3.13-3.14.
   never a requirement. Keep no readers, defaults, aliases, fallbacks or dual
   paths for older data, schemas, payloads, settings or stored client state;
   change the format and delete the old path. Compatibility applies only where
-  the user states it explicitly for a named app.
+  the user states it explicitly for a named app. This lasts until release:
+  older stored formats are development intermediates, not user data, so plans
+  and questions never raise lost saved data. Once teachers use the app, the
+  user requires that data they depend on is migrated or kept readable.
+- Paid AI is admin and superuser only until the AI spend limits ship
+  (TASK-SKRIPT-REP-0044). Plan, walk and judge features as if AI is on for
+  teachers; behaviour that exists only because of that temporary gate, such as
+  a non-admin teacher's Word drop doing nothing, is not an issue to raise.
+- When an LLM provider pool is used up, continuing on paid overage
+  (`ALLOW_PAID_OVERAGE`) is a user gate: stop, say that the daily pool is used
+  up, and wait for the user's decision.
+- Flunk-Out Frenzy is outside the user's focus: never ask the user about its
+  look, never walk it, and never hold a story for a finding that touches only
+  it. That work closes on review and unit proof.
 - Use docs-as-code for planning and structural changes. Start at `docs/index.md`,
   use the package-owned `pdm run new-*` scaffolders, and close doc changes with
   `pdm run docs-validate`.
 - Unit of Work owns commit/rollback; repositories never commit; map
   `DomainError` to HTTP only at the web boundary.
-- Use the shared `staging-walk` skill for staging and browser proof on Hemma.
+- Use the shared `staging-walk` skill for staging and browser proof on Hemma;
+  `skriptoteket-testing` states which changes are walked.
 
 ## Session Start
 
@@ -88,6 +102,12 @@ Default close-out:
 - Backend change: `pdm run lint`, `pdm run typecheck`, and focused tests
 - Frontend change: use `integrated-frontend-stack` for the focused
   Vitest/typecheck/build checks
+
+A code push from Hemma runs the full suite in the pre-push hook
+(`scripts/hemma_pre_push_check.sh`), so run it in the background and call it
+verified only after `~/logs/pre-push-<sha9>.log` shows the steps passed. A
+push that changes only Markdown or `docs/` since the last passing commit
+reuses that commit's result and writes no new log.
 
 Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
 `docker compose up -d db` should not be stopped unless the user asks.

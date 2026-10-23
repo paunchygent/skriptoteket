@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "65a9e3e986e30a827cd7f9918e88efe9b89fe9a390992e179d450a2ed4552efa",
+  "source_set_digest": "fa829fc2e9a946a51176d0657829ac20849d9c1eb41a831139a2dcceaed8c397",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -10895,6 +10895,20 @@
       ],
       "retired_ids": [
         "REF-exam-converter-ui-content-model-v1"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-GENERAL-exam-workspace-conversion-points-and-export-contract",
+      "type": "reference",
+      "title": "Exam workspace conversion, points and export contract",
+      "path": "docs/reference/ref-skript-general-exam-workspace-conversion-points-and-export-contract-exam-workspace-conversion-points-and-export-contract.md",
+      "status": "active",
+      "reference_kind": "general",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

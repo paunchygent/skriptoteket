@@ -53,6 +53,14 @@ No separate source material was recorded for this section.
 - File size: keep modules < ~400–500 LOC; split by responsibility.
 - Async-first: use `async def` end-to-end for I/O, especially DB access.
 - No legacy support / compatibility shims: do the full refactor and delete old paths instead.
+- Internal service calls: Skriptoteket calls HuleEdu services, such as the
+  LLM provider door, with one direct synchronous HTTP call over
+  `hule-network`, never Kafka, async callbacks or sync machinery between
+  services. The trust boundary is the network edge. Inside it a call carries
+  only the internal service key and the minimum shared contract, with
+  timeouts and clear errors, and no extra consumer verification, schema
+  pinning or handshakes. Design for 10,000 users and at least 1,000
+  concurrent small calls, degrading gracefully under backpressure.
 
 ### Source: Command handler pattern (recommended)
 
