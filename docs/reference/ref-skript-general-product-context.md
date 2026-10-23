@@ -92,8 +92,9 @@ and the
 
 ### Deployment reality and constraints
 
-- `skriptoteket.hule.education` is the real live app host with real users;
-  this is a running public service, not a prototype.
+- `skriptoteket.hule.education` is the deployed public app host. The app is
+  unreleased and no teacher depends on its data yet; compatibility and saved
+  data follow the Repo Invariants in `AGENTS.md`.
 - Production runs on the shared Hemma host: PostgreSQL 16 in the shared
   `shared-postgres` container on the `hule-network` Docker bridge, behind the
   nginx-proxy + acme-companion edge, co-tenant with HuleEdu and Sir

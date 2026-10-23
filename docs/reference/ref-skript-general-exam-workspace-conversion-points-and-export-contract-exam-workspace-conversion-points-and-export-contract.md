@@ -57,7 +57,8 @@ owns layout and control placement. Work state lives in the backlog.
   never blocks Spara or an export, and nothing shows when the totals match.
   The workspace shows one plain sentence-case Swedish line per differing
   level, with no all-caps text, no jargon such as "Tryckt" and no number
-  repeated next to itself.
+  repeated next to itself. The line never truncates at narrow widths; it is
+  the exception to the prototype's truncate-with-tooltip rule.
 
 ### After Conversion
 

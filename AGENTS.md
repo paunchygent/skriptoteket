@@ -103,10 +103,11 @@ Default close-out:
 - Frontend change: use `integrated-frontend-stack` for the focused
   Vitest/typecheck/build checks
 
-A push from Hemma runs the full suite in the pre-push hook
-(`scripts/hemma_pre_push_check.sh`), so run code pushes in the background.
-Call a push verified only after `~/logs/pre-push-<sha9>.log` shows the steps
-passed.
+A code push from Hemma runs the full suite in the pre-push hook
+(`scripts/hemma_pre_push_check.sh`), so run it in the background and call it
+verified only after `~/logs/pre-push-<sha9>.log` shows the steps passed. A
+push that changes only Markdown or `docs/` since the last passing commit
+reuses that commit's result and writes no new log.
 
 Long-running dev services such as `pdm run dev`, `pdm run fe-dev`, and
 `docker compose up -d db` should not be stopped unless the user asks.
