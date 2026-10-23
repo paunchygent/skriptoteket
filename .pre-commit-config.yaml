@@ -87,11 +87,18 @@ repos:
           test_reagent_prep_chef_hazards_store\.py))
         pass_filenames: false
 
-      - id: agent-doc-budgets
-        name: Agent docs line budgets (root handoff -> long-term memory)
-        entry: pdm run python -m scripts.check_agent_doc_budgets
+      - id: handoff-validate
+        name: Handoff validation (root handoff -> long-term memory)
+        entry: pdm run handoff-validate
         language: system
         files: ^handoff\.md$
+        pass_filenames: false
+
+      - id: ltm-validate
+        name: Long-term-memory entry filenames
+        entry: pdm run ltm-validate
+        language: system
+        files: ^\.codex/long-term-memory/entries/
         pass_filenames: false
 
       - id: eslint
