@@ -58,6 +58,7 @@ run_verify_steps() {
     esac
   done < <(compgen -e)
   git checkout -q --detach "$target_sha" &&
+    pdm run setup &&
     pdm sync -q --clean &&
     pdm run fe-install --frozen-lockfile --silent &&
     pdm run fe-build >/dev/null &&
