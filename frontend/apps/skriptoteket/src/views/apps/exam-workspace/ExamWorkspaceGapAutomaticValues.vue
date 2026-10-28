@@ -13,7 +13,7 @@
  *     svar "Svar" field, both of which keep the v-if on non-empty values.
  */
 
-import { IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui";
 
 const props = defineProps<{
   values: string[];
@@ -58,7 +58,10 @@ function handleRemove(value: string): void {
           :data-test="`exam-workspace-gap-automatic-remove-${value}`"
           @click="handleRemove(value)"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="remove-item"
+            :size="14"
+          />
         </button>
       </li>
     </ul>

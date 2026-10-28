@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-02-01
 title: Migrate icons to the shared glyph components
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
 status: in_progress
 closeout_review:
@@ -13,11 +13,11 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Every Skriptoteket icon renders through UiGlyph or UiSymbol by meaning, custom Icon components remain only where the mapping records no shared meaning, and lucide-vue-next is removed
-- Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
+  - Every Skriptoteket icon renders through UiGlyph or UiSymbol by meaning, custom Icon components remain only where the mapping records no shared meaning, and lucide-vue-next is removed
+  - Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
 dependencies:
-- TASK-SKRIPT-40-01-03
-- TASK-SKILL-REP-0187
+  - TASK-SKRIPT-40-01-03
+  - TASK-SKILL-REP-0187
 story: ST-SKRIPT-40-02
 backlog_document_profile: contract-derived
 ---
@@ -70,13 +70,13 @@ metric, baseline and budget before becoming a gate.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Migrate applicable icons by meaning to UiGlyph or UiSymbol. Source: retained D14. |
-| D2 | Explicitly classified no-shared-meaning custom icons may remain local. Source: retained D14. |
-| D3 | Remove lucide-vue-next; the released catalog peer was installed in Story 1. Source: retained D13/D20; R1. |
-| D4 | Runtime-table retention is a measured risk, not a per-meaning or zero-growth guarantee. Source: retained D23; R5. |
-| D5 | Repeat-sync proof starts from a clean committed validated result. Source: retained D24; R6. |
+| ID  | Decided contract term                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------- |
+| D1  | Migrate applicable icons by meaning to UiGlyph or UiSymbol. Source: retained D14.                                 |
+| D2  | Explicitly classified no-shared-meaning custom icons may remain local. Source: retained D14.                      |
+| D3  | Remove lucide-vue-next; the released catalog peer was installed in Story 1. Source: retained D13/D20; R1.         |
+| D4  | Runtime-table retention is a measured risk, not a per-meaning or zero-growth guarantee. Source: retained D23; R5. |
+| D5  | Repeat-sync proof starts from a clean committed validated result. Source: retained D24; R6.                       |
 
 ## Progress
 
@@ -102,3 +102,13 @@ metric, baseline and budget before becoming a gate.
 - Tranche 3 (tutorial play disc, `06d396fc`) is on main through merge `b8d5a3ae` (2026-10-18); no review is recorded for it.
 - The wrapper migration is unblocked: TASK-SKRIPT-40-04-03 is `done` and TASK-SKRIPT-39-07-03 is on main. 16 source files and `frontend/apps/skriptoteket/package.json` still use `lucide-vue-next`.
 - Owed: tranche 3 review, the 13 exam-held wrappers, removal of `lucide-vue-next`, then closeout.
+
+### Final tranche 2026-10-28 (branch `codex/task-skript-40-02-01`, from main 97563a81)
+
+- Commit `2826ef4e`: ExamCourseCombobox's clear button renders the shared `close` meaning and the automatic-value chip's remove button renders `remove-item`; accessible names and decorative status are unchanged. Of the 13 lucide-vue-next wrappers only IconX had consumers; all 13 are deleted. `src/components/icons` keeps the 12 explicitly local icons, none of which imports lucide-vue-next.
+- `lucide-vue-next` is removed from `frontend/apps/skriptoteket/package.json`; `pnpm install` removed only its importer, package and snapshot entries from `frontend/pnpm-lock.yaml`. `@lucide/vue` (catalog 1.47.0) stays. `rg lucide-vue-next frontend` (excluding node_modules) finds nothing.
+- Checks, all exit 0: `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run design-system-validate`, focused Vitest for ExamCourseCombobox, ExamWorkspaceGapAutomaticValues, ExamWorkspaceGapPopover.automaticValues and the tutorial help specs (8 files, 61 tests).
+- Production build, `pdm run fe-build` at 97563a81 and at `2826ef4e` with the same toolchain and configuration: all 151 chunks have the same raw size; gzip sizes differ by at most 0.01 kB.
+- Review: ruthless-reviewer `26c7f1d1` approved `06d396fc` (tranche 3) and `2826ef4e` with no findings.
+- Evidence: retained root `01a18445-144c-75be-95e2-6eff85c73786` (`evidence/build/`, `evidence/checks/`, `discovery/ruthless-reviewer/`).
+- Still owed before `done`: the Hemma staging walk of the exam course picker, the gap popover automatic values and the tutorial clip dialog; the repeat-sync no-diff proof, which runs after TASK-SKRIPT-40-04-26 syncs huleedu-integrated 0.1.37 (this branch stays at 0.1.36).
