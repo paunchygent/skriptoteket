@@ -128,16 +128,20 @@ function keyFollowsArrivals(item: NativeExamItem): boolean {
  * Write an arriving AI suggestion onto its question (T5, P12, P13). The
  * suggestion is always kept on the question; it also becomes the key, as
  * `machine_proposed` with review required, only where the key follows
- * arrivals and the suggestion fits the question. Any other key stays.
+ * arrivals and the suggestion fits the question. Any other key stays. A
+ * suggestion arriving on a question whose undo opened a retry spends it, so
+ * the item keeps a `used` retry whether or not the suggestion becomes the key
+ * (TASK-SKRIPT-40-04-26 D4).
  */
 export function withArrivingSuggestion(
   item: NativeExamItem,
   suggestion: NativeAnswerKeySuggestion,
 ): NativeExamItem {
+  const answerKeyRetry = item.answer_key_retry === "offered" ? "used" : item.answer_key_retry;
   if (keyFollowsArrivals(item) && suggestionFitsItem(item, suggestion)) {
-    return withSuggestionAsKey(item, suggestion);
+    return { ...withSuggestionAsKey(item, suggestion), answer_key_retry: answerKeyRetry };
   }
-  return { ...item, ai_suggestion: suggestion };
+  return { ...item, ai_suggestion: suggestion, answer_key_retry: answerKeyRetry };
 }
 
 /**

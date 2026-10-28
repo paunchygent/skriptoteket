@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
-import { withMatchPairs, withoutInterpretedKey } from "./examWorkspaceItemEdits";
+import { withMatchPairs, withoutAiKey } from "./examWorkspaceItemEdits";
 import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
@@ -51,7 +51,7 @@ describe("grid points follow every key transition", () => {
       points_estimated: true,
     });
 
-    const undone = withoutInterpretedKey(interpreted);
+    const undone = withoutAiKey(interpreted);
 
     expect(undone.answer_key.match_pairs).toEqual([]);
     expect(undone.points).toBeNull();

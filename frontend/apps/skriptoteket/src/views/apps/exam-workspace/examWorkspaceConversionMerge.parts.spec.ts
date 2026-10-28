@@ -27,6 +27,7 @@ import { examWorkspaceUnits, withUnits } from "./examWorkspaceStructure";
 function item(itemId: string, text: string, sequence = 0): NativeExamItem {
   return {
     ai_suggestion: null,
+    answer_key_retry: "none",
     writing_lines: null,
     leftover_points_text: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },

@@ -10,6 +10,7 @@ export function buildFreeTextItem(sequence: number, overrides: Partial<NativeExa
     printed_label: null,
     print_order: [],
     retry_source: null,
+    answer_key_retry: "none",
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [
       { heading_level: null, segments: [{ kind: "text", marks: [], text: `Fråga ${sequence}: beskriv med egna ord.` }] },

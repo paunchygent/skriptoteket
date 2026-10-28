@@ -33,6 +33,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     ASSET_ID_PATTERN,
     SHA256_PATTERN,
+    NativeAnswerKeyRetry,
     NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -197,3 +198,41 @@ class NativeExamDocument(BaseModel):
             message="Exam item not found.",
             details={"item_id": item_id},
         )
+
+
+_ANSWER_KEY_RETRY_ORDER: tuple[NativeAnswerKeyRetry, ...] = (
+    NativeAnswerKeyRetry.NONE,
+    NativeAnswerKeyRetry.OFFERED,
+    NativeAnswerKeyRetry.USED,
+)
+
+
+def with_kept_answer_key_retry(
+    incoming: NativeExamDocument, saved: NativeExamDocument
+) -> NativeExamDocument:
+    """Keep the stricter answer-key retry of each saved question (TASK-SKRIPT-40-04-26 D4).
+
+    Every head write applies this, so undo, redo and a save can never move a spent
+    retry backwards; questions the saved document does not carry keep their own value.
+    """
+    saved_by_id = {item.item_id: item for item in saved.items}
+    changed = False
+    items: list[NativeExamItem] = []
+    for item in incoming.items:
+        saved_item = saved_by_id.get(item.item_id)
+        if saved_item is None or saved_item.answer_key_retry is item.answer_key_retry:
+            items.append(item)
+            continue
+        kept = max(
+            item.answer_key_retry,
+            saved_item.answer_key_retry,
+            key=_ANSWER_KEY_RETRY_ORDER.index,
+        )
+        if kept is item.answer_key_retry:
+            items.append(item)
+            continue
+        changed = True
+        items.append(item.model_copy(update={"answer_key_retry": kept}))
+    if not changed:
+        return incoming
+    return incoming.model_copy(update={"items": tuple(items)})

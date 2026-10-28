@@ -11,7 +11,10 @@ Domain purpose:
     `.xw-tool`, the 28 px in-content tool with a glyph or a glyph and a word
     (T4), grouped by `.xw-tools` and divided by `.xw-toolsep`. Both grow to
     44 px on a coarse pointer.
-    Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px.
+    Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px. The question-text
+    toolbar's AI group shows the suggested type name only on desktop with no
+    side panel; the tablet band and an open side panel show its glyph, and
+    phones and every coarse pointer move it into Fler åtgärder (TASK-SKRIPT-40-04-26 D7).
 
     This file is the one width owner for the desktop column and side-panel
     widths (TASK-SKRIPT-41-02-04): .xw-root declares the default, minimum and
@@ -344,6 +347,36 @@ Relationships:
 @media (pointer: coarse) {
   .xw-mblock__row { min-height: 44px; }
   .xw-mblock__fix { min-height: 40px; line-height: 38px; }
+}
+
+/* The toolbar AI group (TASK-SKRIPT-40-04-26 D7): the question-text toolbar's last group. Its composition is keyed
+   only to the viewport bands, `data-side` and the pointer kind, never to the editor's width, so a column drag never
+   changes the toolbar. This block sits after the `.xw-mi` rows it also hides and shows. */
+/* The question-text bar always keeps the horizontal scrollbar's height, so the text box never moves when a drag makes
+   the bar overflow (user decision 2026-10-28; `scrollbar-gutter` reserves only the block-axis scrollbar, so it cannot
+   do this). `scrollbar-width: thin` stays on `.xw-toolbar`. */
+.xw-toolbar--question { overflow-x: scroll; }
+/* While the bar overflows, the group stays at its right edge and the formatting scrolls under it; sticky moves
+   continuously with that edge, so the drag never makes it jump. The background repeats the bar's own paint
+   (`.xw-rich__bar`: `--huleedu-navy-02` over the content surface), because that tint is translucent. */
+.qai {
+  position: sticky; right: 0; z-index: 1; padding-left: var(--huleedu-space-1);
+  background: linear-gradient(var(--huleedu-navy-02), var(--huleedu-navy-02)), var(--huleedu-surface-content);
+}
+/* Desktop with no side panel is the only band whose default bars have room for the type name. The glyph-only face
+   then takes the exact box of a plain `.xw-tool`: `.xw-tool` already fixes the size, so only the word padding goes. */
+@media (max-width: 1279px) {
+  .qai__name { display: none; }
+  .qai__type { padding: 0; }
+}
+.ws[data-side] .qai__name { display: none; }
+.ws[data-side] .qai__type { padding: 0; }
+/* Phones and every coarse pointer take the group out of the bar: its three rows, then a separator, lead the menu. */
+.qai-mi, .qai-mi-sep { display: none; }
+@media (max-width: 767px), (pointer: coarse) {
+  .qai { display: none; }
+  .qai-mi { display: flex; }
+  .qai-mi-sep { display: block; height: 1px; margin: var(--huleedu-space-1-5) 0; background: var(--huleedu-surface-divider); }
 }
 @media (max-width: 767px) {
   .xw-menu { left: 12px !important; right: 12px !important; width: auto !important; }

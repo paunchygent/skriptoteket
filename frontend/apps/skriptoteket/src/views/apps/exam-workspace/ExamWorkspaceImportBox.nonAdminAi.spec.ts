@@ -26,6 +26,7 @@ type Role = "user" | "contributor";
 function reviewItem(): NativeExamItem {
   return {
     ai_suggestion: null,
+    answer_key_retry: "none",
     writing_lines: null,
     leftover_points_text: null,
     criteria: [],

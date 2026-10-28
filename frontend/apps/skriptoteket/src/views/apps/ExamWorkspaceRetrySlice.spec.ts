@@ -71,6 +71,7 @@ function retrySource(labelKind: NativeExamItemKind): NonNullable<NativeExamItem[
 function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
+    answer_key_retry: "none",
     import_record: {
       original_wording: { answer_key_text: null, question_text: "Förklara begreppet." },
       steps: [],

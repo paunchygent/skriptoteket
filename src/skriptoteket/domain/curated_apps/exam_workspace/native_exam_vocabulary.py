@@ -63,3 +63,14 @@ class NativeAnswerKeyOrigin(StrEnum):
     TEACHER_AUTHORED = "teacher_authored"
     MACHINE_PROPOSED = "machine_proposed"
     REVIEWED_ADVISORY = "reviewed_advisory"
+
+
+class NativeAnswerKeyRetry(StrEnum):
+    """The one per-question answer-key retry after an undo (TASK-SKRIPT-40-04-26 D4)."""
+
+    # No AI key has been undone.
+    NONE = "none"
+    # The teacher undid an AI key and may ask once more.
+    OFFERED = "offered"
+    # That one retry is spent.
+    USED = "used"

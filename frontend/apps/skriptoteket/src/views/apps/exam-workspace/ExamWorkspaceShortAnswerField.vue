@@ -18,7 +18,8 @@
  *   - Emits the BodyEditor update names the question editor forwards:
  *     `updateBody`, `updateGapValues`, `removeAutomaticValue`.
  *   - `ExamWorkspaceRichTextEditor` owns the Frågetext text,
- *     `ExamWorkspaceMarkToolbar` its glyph buttons,
+ *     `ExamWorkspaceMarkToolbar` its glyph buttons and, through this field's
+ *     `toolbar-end` slot, its last AI group,
  *     `ExamWorkspaceGapAnswerList` the Godkända svar rows, and
  *     `ExamWorkspaceGapAutomaticValues` the automatic answers.
  *   - `examWorkspaceShortAnswer` splits the body and re-attaches the answer
@@ -130,10 +131,15 @@ function handleAutomaticValueRemoval(value: string): void {
           :show-picture="picturesEnabled"
           :picture-selected="pictureSelected"
           :picture-busy="pictureBusy"
+          question-text
           @toggle-mark="toggleMark"
           @toggle-heading="toggleHeading"
           @add-picture="handleAddPicture"
-        />
+        >
+          <template #end>
+            <slot name="toolbar-end" />
+          </template>
+        </ExamWorkspaceMarkToolbar>
         <div class="xw-rich__body grid gap-2">
           <ExamWorkspaceRichTextEditor
             :key="item.item_id"

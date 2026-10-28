@@ -46,6 +46,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
     ],
     points: 3,
     points_estimated: false,
+    answer_key_retry: "none",
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",
