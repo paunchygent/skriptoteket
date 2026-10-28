@@ -29,6 +29,9 @@ from skriptoteket.application.curated_apps.classroom_planner.shares import (
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
+    SHARE_BASE_CSS,
+)
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerSharePdfRendererProtocol,
 )
@@ -45,6 +48,39 @@ _PREVIEW_HEADERS = {
     "Cache-Control": "public, max-age=86400, immutable",
     "X-Robots-Tag": "noindex, nofollow",
 }
+# Layered on the share page base stylesheet so the unavailable page keeps the
+# public share surface's ink, canvas, and type while centring one calm message.
+_UNAVAILABLE_PAGE_CSS = """
+.share-unavailable {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 32px 20px;
+}
+.share-unavailable__card {
+  background: var(--navy-05);
+  border: 1px solid var(--navy-15);
+  max-width: 34rem;
+  padding: 32px 28px;
+  text-align: center;
+  width: 100%;
+}
+.share-unavailable__text {
+  color: var(--navy-70);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  margin: 0;
+}
+@media (max-width: 767px) {
+  .share-unavailable {
+    padding: 18px 12px;
+  }
+  .share-unavailable__card {
+    padding: 24px 18px;
+  }
+}
+""".strip()
 
 
 @router.get(
@@ -271,6 +307,8 @@ def _absolute_url(base_url: str, path: str) -> str:
 
 
 def _unavailable_response(*, status_code: int) -> HTMLResponse:
+    """Render the public unavailable page on the active share page visual base."""
+
     return HTMLResponse(
         content="\n".join(
             [
@@ -281,11 +319,19 @@ def _unavailable_response(*, status_code: int) -> HTMLResponse:
                 '<meta name="viewport" content="width=device-width, initial-scale=1">',
                 '<meta name="robots" content="noindex,nofollow">',
                 "<title>Delningen är inte tillgänglig</title>",
+                f"<style>{SHARE_BASE_CSS.strip()}\n{_UNAVAILABLE_PAGE_CSS}</style>",
                 "</head>",
                 "<body>",
-                "<main>",
-                "<h1>Delningen är inte tillgänglig</h1>",
-                "<p>Länken kan ha återkallats, gått ut eller tagits bort.</p>",
+                '<main class="share-unavailable">',
+                '<div class="share-unavailable__card">',
+                '<p class="share-kicker">Klassrumskartan</p>',
+                '<h1 class="share-title">Delningen är inte tillgänglig</h1>',
+                (
+                    '<p class="share-unavailable__text">'
+                    "Länken kan ha återkallats, gått ut eller tagits bort."
+                    "</p>"
+                ),
+                "</div>",
                 "</main>",
                 "</body>",
                 "</html>",
