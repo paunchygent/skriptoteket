@@ -21,7 +21,11 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PdfPlumberExamChunker,
     PdfPlumberLabelerMarkdown,
 )
-from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol, LabelerSource
+from skriptoteket.protocols.exam_workspace import (
+    ChunkedSource,
+    DocxExamChunkerProtocol,
+    LabelerSource,
+)
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
 PDF_CORPUS = FIXTURES / "pdf_corpus/bf26_english_1_unit_test_kap_1_2_med_facit.pdf"
@@ -42,9 +46,9 @@ class RecordingChunker:
         self.received: list[bytes] = []
         self._chunk = chunk
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+    def chunk(self, *, content: bytes) -> ChunkedSource:
         self.received.append(content)
-        return (self._chunk,)
+        return ChunkedSource(chunks=(self._chunk,), notes=())
 
 
 class RecordingLabelerSource:
@@ -60,7 +64,7 @@ class RecordingLabelerSource:
 
 
 def test_import_source_chunker_sends_each_format_to_its_reader():
-    word_chunks = PythonDocxExamChunker().chunk(content=DOCX_CORPUS.read_bytes())
+    word_chunks = PythonDocxExamChunker().chunk(content=DOCX_CORPUS.read_bytes()).chunks
     assert len(word_chunks) >= 2
     docx_fake = RecordingChunker(word_chunks[0])
     pdf_fake = RecordingChunker(word_chunks[1])
@@ -68,8 +72,8 @@ def test_import_source_chunker_sends_each_format_to_its_reader():
 
     pdf_bytes = b"%PDF-1.7 fake"
     docx_bytes = b"PK\x03\x04 fake docx zip"
-    assert dispatcher.chunk(content=pdf_bytes) == (word_chunks[1],)
-    assert dispatcher.chunk(content=docx_bytes) == (word_chunks[0],)
+    assert dispatcher.chunk(content=pdf_bytes).chunks == (word_chunks[1],)
+    assert dispatcher.chunk(content=docx_bytes).chunks == (word_chunks[0],)
     assert pdf_fake.received == [pdf_bytes]
     assert docx_fake.received == [docx_bytes]
 
@@ -91,13 +95,13 @@ def test_import_labeler_source_sends_each_format_to_its_projector():
 
 def test_real_readers_chunk_the_word_exam_and_its_pdf():
     dispatcher = ImportSourceChunker(docx=PythonDocxExamChunker(), pdf=PdfPlumberExamChunker())
-    assert len(dispatcher.chunk(content=DOCX_CORPUS.read_bytes())) > 0
-    assert len(dispatcher.chunk(content=PDF_CORPUS.read_bytes())) > 0
+    assert len(dispatcher.chunk(content=DOCX_CORPUS.read_bytes()).chunks) > 0
+    assert len(dispatcher.chunk(content=PDF_CORPUS.read_bytes()).chunks) > 0
 
 
 def test_pdf_labeler_source_carries_the_chunker_anchors_in_order():
     content = PDF_CORPUS.read_bytes()
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
     source = ImportLabelerSource(
         docx=PythonDocxLabelerMarkdown(), pdf=PdfPlumberLabelerMarkdown()
     ).source(content=content)
@@ -111,9 +115,11 @@ def test_the_job_chunker_the_container_provides_reads_a_pdf():
 
     chunker = container.get(DocxExamChunkerProtocol)
 
-    assert chunker.chunk(content=PDF_CORPUS.read_bytes()) == PdfPlumberExamChunker().chunk(
-        content=PDF_CORPUS.read_bytes()
+    assert (
+        chunker.chunk(content=PDF_CORPUS.read_bytes()).chunks
+        == PdfPlumberExamChunker().chunk(content=PDF_CORPUS.read_bytes()).chunks
     )
-    assert chunker.chunk(content=DOCX_CORPUS.read_bytes()) == PythonDocxExamChunker().chunk(
-        content=DOCX_CORPUS.read_bytes()
+    assert (
+        chunker.chunk(content=DOCX_CORPUS.read_bytes()).chunks
+        == PythonDocxExamChunker().chunk(content=DOCX_CORPUS.read_bytes()).chunks
     )

@@ -10,11 +10,11 @@ import pytest
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionPhase
+from skriptoteket.protocols.exam_workspace import ChunkedSource
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RecordingProgress,
     build_replay,
@@ -112,7 +112,7 @@ class _TracingChunker:
         self._trace = trace
         self._chunker = PythonDocxExamChunker()
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+    def chunk(self, *, content: bytes) -> ChunkedSource:
         self._trace.append("chunk")
         return self._chunker.chunk(content=content)
 

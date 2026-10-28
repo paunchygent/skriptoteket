@@ -54,10 +54,23 @@ class GenerateExamWorkspaceMisspellingsHandlerProtocol(Protocol):
     ) -> ExamWorkspaceMisspellingsResponse: ...
 
 
+@dataclass(frozen=True)
+class ChunkedSource:
+    """One import's chunks in source order and the import notes the teacher sees.
+
+    ``notes`` names what the reader could not import, such as pages whose text layer it
+    skipped, and is empty when the whole file imported; the job publishes them with the
+    finished document, before the conversion's own notes.
+    """
+
+    chunks: tuple[DocxChunk, ...]
+    notes: tuple[str, ...]
+
+
 class DocxExamChunkerProtocol(Protocol):
     """Segment ordered source text without interpreting exam items."""
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]: ...
+    def chunk(self, *, content: bytes) -> ChunkedSource: ...
 
 
 @dataclass(frozen=True)

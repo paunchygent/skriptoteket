@@ -32,7 +32,7 @@ pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 
 async def test_batch_limit_fails_only_that_batch_and_stops_later_calls(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     anchors = [chunk.anchor for chunk in chunks]
     script = DoorScript(grouping=grouping_for(anchors), refuse_batch_calls=(2,))
     outcome, _ = await convert_with(script, monkeypatch, course_key="SVESVE02")
@@ -61,7 +61,7 @@ async def test_batch_limit_fails_only_that_batch_and_stops_later_calls(monkeypat
 
 
 async def test_content_limit_keeps_the_conversion_and_records_the_limit(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), refuse_content=True)
     outcome, _ = await convert_with(script, monkeypatch, course_key="SVESVE02")
 
@@ -72,7 +72,7 @@ async def test_content_limit_keeps_the_conversion_and_records_the_limit(monkeypa
 
 
 async def test_grouping_limit_fails_all_pending_with_ai_limit(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), refuse_grouping=True)
     outcome, _ = await convert_with(script, monkeypatch)
 
@@ -87,7 +87,7 @@ async def test_grouping_limit_fails_all_pending_with_ai_limit(monkeypatch) -> No
 
 
 async def test_overage_under_one_usd_finishes_without_limit(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     script = DoorScript(
         grouping=grouping_for([c.anchor for c in chunks]), batch_charge_usd_micros=100_000
     )
@@ -101,7 +101,7 @@ async def test_overage_under_one_usd_finishes_without_limit(monkeypatch) -> None
 
 
 async def test_overage_past_one_usd_stops_the_crossing_call(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     anchors = [chunk.anchor for chunk in chunks]
     script = DoorScript(grouping=grouping_for(anchors), batch_charge_usd_micros=600_000)
     outcome, job = await convert_with(script, monkeypatch, course_key="SVESVE02")
@@ -130,7 +130,7 @@ async def test_overage_past_one_usd_stops_the_crossing_call(monkeypatch) -> None
 
 
 async def test_overage_crossed_by_the_final_batch_call_stops_the_job(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     anchors = [chunk.anchor for chunk in chunks]
     script = DoorScript(grouping=grouping_for(anchors), batch_charge_usd_micros=300_000)
     outcome, job = await convert_with(script, monkeypatch, course_key="SVESVE02")
@@ -153,7 +153,7 @@ async def test_overage_crossed_by_the_final_batch_call_stops_the_job(monkeypatch
 async def test_started_conversion_finishes_as_overage_then_next_is_refused_at_grouping(
     monkeypatch,
 ) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     grouping = grouping_for([c.anchor for c in chunks])
     script = DoorScript(grouping=grouping, refuse_non_overage_after_first=True)
 
@@ -174,7 +174,7 @@ async def test_started_conversion_finishes_as_overage_then_next_is_refused_at_gr
 
 
 async def test_busy_grouping_propagates_and_is_never_retried(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), busy_grouping=True)
 
     with pytest.raises(AiDoorBusy):
@@ -186,7 +186,7 @@ async def test_busy_grouping_propagates_and_is_never_retried(monkeypatch) -> Non
 async def test_busy_batch_stops_the_conversion_instead_of_becoming_a_review_item(
     monkeypatch,
 ) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     script = DoorScript(grouping=grouping_for([c.anchor for c in chunks]), busy_batch_calls=(2,))
 
     with pytest.raises(AiDoorBusy) as caught:
@@ -196,7 +196,7 @@ async def test_busy_batch_stops_the_conversion_instead_of_becoming_a_review_item
 
 
 async def test_busy_content_tags_drop_silently_and_keep_the_conversion(monkeypatch) -> None:
-    chunks = PythonDocxExamChunker().chunk(content=exam_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=exam_bytes()).chunks
     grouping = grouping_for([c.anchor for c in chunks])
     baseline, _ = await convert_with(
         DoorScript(grouping=grouping), monkeypatch, course_key="SVESVE02"

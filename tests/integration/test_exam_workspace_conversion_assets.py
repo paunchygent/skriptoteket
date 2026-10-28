@@ -131,6 +131,7 @@ async def test_a_picture_survives_provisional_saves_and_later_batches(
             worker_id=WORKER,
             job_id=queued.job_id,
             update=_picture_batch(lineage_id, q2=None, q3=None),
+            notes=(),
         )
         first = await world.open(actor, lineage_id)
         assert first.items[0].body_asset_ids() == (_PICTURE_ID,)
@@ -150,6 +151,7 @@ async def test_a_picture_survives_provisional_saves_and_later_batches(
             worker_id=WORKER,
             job_id=queued.job_id,
             update=_picture_batch(lineage_id, q2="Fråga två", q3=None),
+            notes=(),
         )
         reopened = await world.open(actor, lineage_id)
         assert reopened.revision == 2

@@ -101,7 +101,7 @@ def test_every_block_is_its_xml_text_plus_structure_and_converter_input_is_uncha
     ]
     for chunk in projected:
         _check_block(chunk.marked_text, blocks[chunk.anchor])
-    assert PythonDocxExamChunker().chunk(content=content) == before
+    assert PythonDocxExamChunker().chunk(content=content).chunks == before
 
 
 @pytest.mark.parametrize("path", DOCUMENTS, ids=lambda p: p.stem)

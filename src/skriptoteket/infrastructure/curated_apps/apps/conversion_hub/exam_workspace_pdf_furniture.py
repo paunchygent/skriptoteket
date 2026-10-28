@@ -125,13 +125,16 @@ def _body_size_and_pitch(
 
 
 def _body_edges(
-    pages: Sequence[Sequence[PdfItem]], heights: Sequence[float], skip: set[int]
+    pages: Sequence[Sequence[PdfItem]],
+    heights: Sequence[float],
+    numbers: Sequence[int],
+    skip: set[int],
 ) -> tuple[float, float] | None:
     """The body text's top and bottom edge relative to the page height, read from the
-    pages in ``skip``'s complement, or None when every page carries the judged line."""
+    pages whose number is not in ``skip``, or None when every page carries the judged line."""
     tops: list[float] = []
     bottoms: list[float] = []
-    for page, (items, height) in enumerate(zip(pages, heights, strict=True), start=1):
+    for page, items, height in zip(numbers, pages, heights, strict=True):
         if page in skip or not items:
             continue
         tops.append(min(item_top(item) for item in items) / height)
@@ -145,6 +148,7 @@ def _set_apart(
     seen: Sequence[tuple[int, float, tuple[int, ...], PdfLine]],
     pages: Sequence[Sequence[PdfItem]],
     heights: Sequence[float],
+    numbers: Sequence[int],
 ) -> bool:
     """Every occurrence is in a smaller font than the body text, or lies in the margin
     beyond the body text's edge, as the pages without the line show it."""
@@ -153,17 +157,18 @@ def _set_apart(
         return False
     if all(line.size < body - _SMALLER_POINTS for _, _, _, line in seen):
         return True
-    edges = _body_edges(pages, heights, {page for page, _, _, _ in seen})
+    edges = _body_edges(pages, heights, numbers, {page for page, _, _, _ in seen})
     if edges is None:
         return False
     top_edge, bottom_edge = edges
+    heights_by_page = dict(zip(numbers, heights, strict=True))
     changing = [
         position
         for position in range(len(seen[0][2]))
-        if len({numbers[position] for _, _, numbers, _ in seen}) > 1
+        if len({digits[position] for _, _, digits, _ in seen}) > 1
     ]
     for page, _, _, line in seen:
-        height = heights[page - 1]
+        height = heights_by_page[page]
         if line.size < body - _SMALLER_POINTS:
             continue
         if not all(_counter_form(line, position) for position in changing):
@@ -208,9 +213,16 @@ def _furniture_candidates(items: Sequence[PdfItem], height: float) -> list[PdfLi
 
 
 def without_page_furniture(
-    pages: Sequence[Sequence[PdfItem]], heights: Sequence[float]
+    pages: Sequence[Sequence[PdfItem]],
+    heights: Sequence[float],
+    numbers: Sequence[int],
+    page_count: int,
 ) -> list[list[PdfItem]]:
     """Drop repeated headers and footers and page numbers at the top and bottom of pages.
+
+    ``numbers`` holds the 1-based page number each page really sits on and ``page_count``
+    the PDF's page count, so a page number is judged against its page even when earlier
+    pages were skipped; only the pages given count towards a repetition.
 
     A repeated line is page furniture only when every number position either holds the
     same value on every page or matches the page the line sits on, and the line is set
@@ -221,7 +233,7 @@ def without_page_furniture(
     for index, lines in enumerate(candidates):
         for line in lines:
             occurrences.setdefault(_line_shape(line), []).append(
-                (index + 1, line.top, _line_numbers(line), line)
+                (numbers[index], line.top, _line_numbers(line), line)
             )
     needed = max(2, (len(pages) + 1) // 2)
     repeated = {
@@ -231,14 +243,14 @@ def without_page_furniture(
         and max(top for _, top, _, _ in seen) - min(top for _, top, _, _ in seen)
         <= _FURNITURE_PLACE_POINTS
         and _numbers_match_pages(seen)
-        and _set_apart(seen, pages, heights)
+        and _set_apart(seen, pages, heights, numbers)
     }
     body, _ = _body_size_and_pitch(pages, frozenset())
     dropped = {
         id(line)
-        for page, lines in enumerate(candidates, start=1)
+        for index, lines in enumerate(candidates)
         for line in lines
-        if _line_shape(line) in repeated or _is_page_number(line, page, len(pages), body)
+        if _line_shape(line) in repeated or _is_page_number(line, numbers[index], page_count, body)
     }
     dropped |= _repeated_regions(pages, heights, needed)
     return [[item for item in items if id(item) not in dropped] for items in pages]

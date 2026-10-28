@@ -100,6 +100,7 @@ def _failed_document(
         source_sha256="0" * 64,
         source_docx=b"",
         chunks=chunks,
+        source_notes=(),
         course_key=None,
         caller=fixture_caller(),
     )

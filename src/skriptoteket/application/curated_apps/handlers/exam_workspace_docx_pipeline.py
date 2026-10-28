@@ -418,7 +418,10 @@ class DocxConversionPipeline:
                 outcome = failed(run, batch, "batch_merge_failed", error)
                 update = self._merged(run, batch, outcome)
             await self._progress.batch_ready(
-                worker_id=run.job.worker_id, job_id=run.job.job_id, update=update
+                worker_id=run.job.worker_id,
+                job_id=run.job.job_id,
+                update=update,
+                notes=run.job.source_notes,
             )
         if outcome.conflicts:
             self._dispatch(run, list(outcome.conflicts), f"{batch.batch_id}c", tasks)

@@ -261,7 +261,8 @@ async def _convert(
             filename="prov.docx",
             source_sha256="0" * 64,
             source_docx=content,
-            chunks=PythonDocxExamChunker().chunk(content=content),
+            chunks=PythonDocxExamChunker().chunk(content=content).chunks,
+            source_notes=(),
             course_key=None,
             caller=fixture_caller(),
         )
@@ -326,6 +327,7 @@ def _run(chunks: tuple[DocxChunk, ...], families: tuple[QuestionFamily, ...]) ->
             source_sha256="0" * 64,
             source_docx=b"",
             chunks=chunks,
+            source_notes=(),
             course_key=None,
             caller=fixture_caller(),
         ),

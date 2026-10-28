@@ -61,7 +61,7 @@ def _with_rotation(data: bytes, angle: int) -> bytes:
 
 def test_cropped_page_picture_is_solid_blue() -> None:
     content = _with_cropbox(pdf_bytes(_CROP_BODY), (50, 50), (550, 800))
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
     assert [chunk.text for chunk in chunks if chunk.kind != "drawing"] == [
@@ -98,7 +98,7 @@ def test_cropbox_cutting_through_a_picture_gives_half_a_solid_picture() -> None:
     content = _with_cropbox(
         data, (middle, float(mediabox[1])), (float(mediabox[2]), float(mediabox[3]))
     )
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
     assert len(drawings) == 1
@@ -110,7 +110,7 @@ def test_cropbox_cutting_through_a_picture_gives_half_a_solid_picture() -> None:
 
 def test_rotated_page_picture_becomes_a_named_missing_picture() -> None:
     content = _with_rotation(pdf_bytes(_CROP_BODY), 90)
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     joined = "".join(chunk.text for chunk in chunks if chunk.kind != "drawing")
     assert "Beskriv" in joined.replace(" ", "")
@@ -138,7 +138,7 @@ def test_a_picture_that_cannot_be_rendered_stays_as_a_named_missing_picture(
         "<p>Fråga 2. Gå vidare.</p>"
     )
 
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
     source = PdfPlumberLabelerMarkdown().source(content=content)
 
     drawing = chunks[1]

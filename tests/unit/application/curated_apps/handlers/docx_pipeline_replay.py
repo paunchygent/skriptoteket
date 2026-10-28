@@ -235,6 +235,8 @@ class RecordingProgress:
     requests of the same run once ``build_replay`` shares this list with them."""
     outlines: list[ConversionOutline] = field(default_factory=list)
     updates: list[ConversionUpdate] = field(default_factory=list)
+    notes: list[tuple[str, ...]] = field(default_factory=list)
+    """The import notes each ``batch_ready`` call carried, in call order."""
     finals: list[ConversionUpdate] = field(default_factory=list)
     receipts: list[tuple[str, ...]] = field(default_factory=list)
 
@@ -260,12 +262,22 @@ class RecordingProgress:
         if self.inner is not None:
             await self.inner.outline(worker_id=worker_id, job_id=job_id, outline=outline)
 
-    async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
+    async def batch_ready(
+        self,
+        *,
+        worker_id: str,
+        job_id: UUID,
+        update: ConversionUpdate,
+        notes: tuple[str, ...],
+    ) -> None:
         self.calls.append("batch_ready")
         self.trace.append("batch_ready")
         self.updates.append(update)
+        self.notes.append(notes)
         if self.inner is not None:
-            await self.inner.batch_ready(worker_id=worker_id, job_id=job_id, update=update)
+            await self.inner.batch_ready(
+                worker_id=worker_id, job_id=job_id, update=update, notes=notes
+            )
 
     async def publish_final(
         self,
@@ -318,6 +330,7 @@ class Replay:
             source_sha256=hashlib.sha256(content).hexdigest(),
             source_docx=content,
             chunks=corpus_chunks(self.exam, self.corpus),
+            source_notes=(),
             course_key=None,
             caller=caller or fixture_caller(),
         )

@@ -145,7 +145,10 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
 
         # First batch: revision 1 holds q1 and placeholders for q2 and q3.
         await world.progress.batch_ready(
-            worker_id=WORKER, job_id=queued.job_id, update=batch(lineage_id, q2=None, q3=None)
+            worker_id=WORKER,
+            job_id=queued.job_id,
+            update=batch(lineage_id, q2=None, q3=None),
+            notes=(),
         )
         first = await world.open(actor, lineage_id)
         assert first.revision == 1
@@ -156,6 +159,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             worker_id="stale-worker",
             job_id=queued.job_id,
             update=batch(lineage_id, q2="Fel", q3="Fel"),
+            notes=(),
         )
         assert (await world.open(actor, lineage_id)).revision == 1
 
@@ -203,6 +207,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             worker_id=WORKER,
             job_id=queued.job_id,
             update=batch(lineage_id, q2="Fråga två", q3=None),
+            notes=(),
         )
         # q2's batch replaces its placeholder; the teacher's q1 stays.
         third = await world.open(actor, lineage_id)
@@ -214,6 +219,7 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             worker_id=WORKER,
             job_id=queued.job_id,
             update=batch(lineage_id, q2="Fråga två", q3="Fråga tre"),
+            notes=(),
         )
         fourth = await world.open(actor, lineage_id)
         assert _texts(fourth) == ["Lärarens fråga ett", "Fråga två", "Fråga tre"]
@@ -291,7 +297,10 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
                 source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
             )
         await world.progress.batch_ready(
-            worker_id=WORKER, job_id=queued.job_id, update=sectioned(q2=None, q3=None)
+            worker_id=WORKER,
+            job_id=queued.job_id,
+            update=sectioned(q2=None, q3=None),
+            notes=(),
         )
 
     async with session_factory() as teacher_session:
@@ -347,6 +356,7 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
             worker_id=WORKER,
             job_id=queued.job_id,
             update=sectioned(q2="Fråga två", q3="Fråga tre"),
+            notes=(),
         )
         final = await world.open(actor, lineage_id)
         assert _texts(final) == [

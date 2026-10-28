@@ -46,7 +46,7 @@ def triangle_figure(labels: tuple[str, str, str]) -> str:
 
 
 def pdf_chunks(body: str, *, css: str = "") -> tuple[DocxChunk, ...]:
-    return PdfPlumberExamChunker().chunk(content=pdf_bytes(body, css=css))
+    return PdfPlumberExamChunker().chunk(content=pdf_bytes(body, css=css)).chunks
 
 
 def assert_drawing_chunk(chunk: DocxChunk, *, anchor: str) -> bytes:

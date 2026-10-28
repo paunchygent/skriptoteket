@@ -185,7 +185,7 @@ class _Round:
         source = Document(io.BytesIO(self.source_bytes))
         (chunk,) = [
             c
-            for c in PythonDocxExamChunker().chunk(content=self.source_bytes)
+            for c in PythonDocxExamChunker().chunk(content=self.source_bytes).chunks
             if c.anchor == "body:0002"
         ]
         (image,) = chunk.images

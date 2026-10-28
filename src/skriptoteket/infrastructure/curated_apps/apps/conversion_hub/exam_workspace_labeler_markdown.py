@@ -176,7 +176,7 @@ class PythonDocxLabelerMarkdown(LabelerSourceProtocol):
 
     def source(self, *, content: bytes) -> LabelerSource:
         source = PythonDocxExamChunker().chunk(content=content)
-        by_anchor = {chunk.anchor: chunk for chunk in source}
+        by_anchor = {chunk.anchor: chunk for chunk in source.chunks}
         document = Document(io.BytesIO(content))
         renderer = DocxBlockImageRenderer(document)
         projected: list[DocxChunk] = []

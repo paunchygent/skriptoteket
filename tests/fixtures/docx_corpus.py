@@ -24,7 +24,7 @@ def _docx_bytes(path: Path) -> bytes:
 
 @cache
 def _docx_chunks(path: Path) -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=_docx_bytes(path))
+    return PythonDocxExamChunker().chunk(content=_docx_bytes(path)).chunks
 
 
 def corpus_docx(exam: str, corpus: Path | None = None) -> bytes:

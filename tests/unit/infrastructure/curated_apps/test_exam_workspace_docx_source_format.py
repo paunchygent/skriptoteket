@@ -31,7 +31,7 @@ def _bytes(document: DocxDocument) -> bytes:
 
 
 def _chunks(document: DocxDocument) -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=_bytes(document))
+    return PythonDocxExamChunker().chunk(content=_bytes(document)).chunks
 
 
 def _defaults_rpr_default(document: DocxDocument):

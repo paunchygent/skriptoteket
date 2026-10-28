@@ -60,3 +60,9 @@ One import: a PDF reaches `read_pdf_blocks`, each page is judged readable or not
 | D3  | Mostly unreadable pages follow D1 and D2; readability is a deterministic per-page measure of unmapped glyphs, defined and proved on fixtures by the lead (story P7).                                                                              |
 | D4  | Scanned-PDF support stays deferred; no new AI call site; the Word import is unchanged (story P2, P5).                                                                                                                                             |
 | D5  | New copy gets one ui-copy review; proof is focused backend and frontend tests and one Mac staging walk; one independent review at most, repairs admitted on focused proof. Orchestrator decision 2026-10-28 under the user's priority order (#5). |
+
+## Progress
+
+### Orchestrator decision 2026-10-28: picture-only pages
+
+- A picture-only page between text pages keeps importing its picture and is not named in the skipped-pages note, as it imports today. Only a page with neither text nor pictures, or with a mostly garbled text layer, is skipped and named. A PDF whose pages are all picture-only or empty still stops with the D1 message. "Pictures alone are no readable content" applies to the whole-PDF case.

@@ -49,7 +49,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 def _chunked(document: DocxDocument) -> tuple[DocxChunk, ...]:
     stream = io.BytesIO()
     document.save(stream)
-    return PythonDocxExamChunker().chunk(content=stream.getvalue())
+    return PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
 
 def _text(text: str) -> ProducedSegment:

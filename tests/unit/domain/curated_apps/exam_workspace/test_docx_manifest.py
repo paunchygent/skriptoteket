@@ -30,7 +30,7 @@ def _b(number: int) -> str:
 
 @pytest.fixture(scope="module")
 def chunks() -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=_DOCX.read_bytes())
+    return PythonDocxExamChunker().chunk(content=_DOCX.read_bytes()).chunks
 
 
 def _question(

@@ -197,8 +197,15 @@ class SavedRevisions(ExamWorkspaceConversionProgress):
         await super().outline(worker_id=worker_id, job_id=job_id, outline=outline)
         await self.observe("outline", job_id)
 
-    async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
-        await super().batch_ready(worker_id=worker_id, job_id=job_id, update=update)
+    async def batch_ready(
+        self,
+        *,
+        worker_id: str,
+        job_id: UUID,
+        update: ConversionUpdate,
+        notes: tuple[str, ...],
+    ) -> None:
+        await super().batch_ready(worker_id=worker_id, job_id=job_id, update=update, notes=notes)
         await self.observe("batch_ready", job_id)
 
 

@@ -137,7 +137,14 @@ class ExamWorkspaceConversionProgress:
                 job_id=job_id, progress=progress.model_dump(mode="json")
             )
 
-    async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
+    async def batch_ready(
+        self,
+        *,
+        worker_id: str,
+        job_id: UUID,
+        update: ConversionUpdate,
+        notes: tuple[str, ...],
+    ) -> None:
         located = await self._jobs.get_by_id(job_id=job_id)
         if located is None or located.workspace_lineage_id is None:
             return
@@ -159,7 +166,7 @@ class ExamWorkspaceConversionProgress:
                         actor=actor,
                         file_id=file_id,
                         update=update,
-                        notes=None,
+                        notes=notes,
                     )
                 return
             except DomainError as error:
@@ -292,7 +299,11 @@ class ExamWorkspaceConversionProgress:
         update: ConversionUpdate,
         notes: tuple[str, ...] | None,
     ) -> None:
-        """Merge ``update`` into the head and save it; ``notes`` is set only by the final save."""
+        """Merge ``update`` into the head and save it.
+
+        ``notes`` holds the import notes the saved revision carries; the first save of an
+        import stores them as given, and a later batch keeps the head's notes unchanged.
+        """
         progress = (
             ConversionProgress.model_validate(job.conversion_progress)
             if job.conversion_progress is not None
@@ -326,13 +337,16 @@ class ExamWorkspaceConversionProgress:
         head_file, head = loaded
         target = target_from_update(update)
         merged = merge_conversion(head=head.document, progress=progress, target=target)
+        # Only a notes change rebuilds the snapshots and the saved revision's notes;
+        # a batch whose notes match the head writes exactly what it wrote before.
+        new_notes = notes if notes is not None and notes != head.notes else None
         await self._merge_history(
             actor=actor,
             lineage_id=head.document.document_id,
             progress=progress,
             target=target,
             payloads=update.assets_by_id,
-            notes=notes,
+            notes=new_notes,
         )
         await self._write(
             job=job,
@@ -344,8 +358,8 @@ class ExamWorkspaceConversionProgress:
             assets_by_id=_referenced_payloads(
                 merged.document, {**head.assets_by_id, **update.assets_by_id}
             ),
-            notes=head.notes if notes is None else notes,
-            notes_changed=notes is not None and notes != head.notes,
+            notes=head.notes if new_notes is None else new_notes,
+            notes_changed=new_notes is not None,
         )
 
     async def _merge_history(

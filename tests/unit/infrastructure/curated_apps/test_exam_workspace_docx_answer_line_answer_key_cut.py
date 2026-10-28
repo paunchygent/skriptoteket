@@ -51,7 +51,7 @@ _QUESTION_TEXT = "Fyll i: ____ år."
 def _chunked(document: DocxDocument) -> tuple[DocxChunk, ...]:
     stream = io.BytesIO()
     document.save(stream)
-    return PythonDocxExamChunker().chunk(content=stream.getvalue())
+    return PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
 
 def _source_document(with_answer_line: bool) -> DocxDocument:

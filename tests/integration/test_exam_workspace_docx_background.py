@@ -278,7 +278,8 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
         filename=f"{exam}.docx",
         source_sha256=hashlib.sha256(content).hexdigest(),
         source_docx=content,
-        chunks=PythonDocxExamChunker().chunk(content=content),
+        chunks=PythonDocxExamChunker().chunk(content=content).chunks,
+        source_notes=(),
         course_key=None,
         caller=fixture_caller(),
     )

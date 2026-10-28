@@ -30,7 +30,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
-from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
+from skriptoteket.protocols.exam_workspace import ChunkedSource, DocxExamChunkerProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_conversion_support import (
     WORKER,
@@ -154,7 +154,9 @@ async def test_conversion_delivery_after_trash_preserves_the_single_exam_and_his
         ).handle(actor=actor, command=DeleteVaultFileCommand(file_id=opened.summary.vault_file_id))
         update = batch(lineage, q2="Second ready", q3="Third ready")
         if delivery == "batch":
-            await world.progress.batch_ready(worker_id=WORKER, job_id=job.id, update=update)
+            await world.progress.batch_ready(
+                worker_id=WORKER, job_id=job.id, update=update, notes=()
+            )
         else:
             await world.progress.publish_final(
                 worker_id=WORKER,
@@ -216,7 +218,7 @@ async def test_real_docx_failure_wrapper_rolls_back_abandonment_if_job_update_fa
         pipeline = AsyncMock(spec=DocxConversionPipeline)
         pipeline.convert.side_effect = RuntimeError("injected provider failure")
         chunker = Mock(spec=DocxExamChunkerProtocol)
-        chunker.chunk.return_value = ()
+        chunker.chunk.return_value = ChunkedSource(chunks=(), notes=())
         handler = ProcessExamWorkspaceDocxJobHandler(
             jobs=world.jobs,
             chunker=chunker,

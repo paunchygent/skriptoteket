@@ -103,7 +103,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                 await self._progress.phase(
                     worker_id=job.locked_by, job_id=job.id, phase=ConversionPhase.READING
                 )
-            chunks = self._chunker.chunk(content=job.source_docx)
+            source = self._chunker.chunk(content=job.source_docx)
             outcome = await self._pipeline.convert(
                 job=DocxConversionJob(
                     job_id=job.id,
@@ -112,7 +112,8 @@ class ProcessExamWorkspaceDocxJobHandler:
                     filename=job.input_filename,
                     source_sha256=hashlib.sha256(job.source_docx).hexdigest(),
                     source_docx=job.source_docx,
-                    chunks=chunks,
+                    chunks=source.chunks,
+                    source_notes=source.notes,
                     course_key=job.workspace_course_key,
                     caller=door_caller_for(user=actor),
                     origin_kind=import_origin_kind(job.source_docx),
@@ -147,7 +148,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     actor=actor,
                     file_id=file_id,
                     update=outcome.update,
-                    notes=result.notes,
+                    notes=(*source.notes, *result.notes),
                 )
                 finished = finish_enrichment_job(
                     job=current,

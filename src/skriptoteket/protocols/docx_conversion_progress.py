@@ -100,8 +100,19 @@ class DocxConversionProgressProtocol(Protocol):
         """
         ...
 
-    async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
-        """Called after each admitted batch, in admission order."""
+    async def batch_ready(
+        self,
+        *,
+        worker_id: str,
+        job_id: UUID,
+        update: ConversionUpdate,
+        notes: tuple[str, ...],
+    ) -> None:
+        """Called after each admitted batch, in admission order.
+
+        ``notes`` holds the reader's import notes; the first saved revision carries them, so
+        an import that keeps its published batches after a failure still names them.
+        """
         ...
 
     async def publish_final(

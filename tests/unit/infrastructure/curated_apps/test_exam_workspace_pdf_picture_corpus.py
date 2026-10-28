@@ -41,8 +41,8 @@ _WHITE = 200
 
 def _chunks() -> tuple[tuple[DocxChunk, ...], tuple[DocxChunk, ...]]:
     return (
-        PythonDocxExamChunker().chunk(content=_DOCX.read_bytes()),
-        PdfPlumberExamChunker().chunk(content=_PDF.read_bytes()),
+        PythonDocxExamChunker().chunk(content=_DOCX.read_bytes()).chunks,
+        PdfPlumberExamChunker().chunk(content=_PDF.read_bytes()).chunks,
     )
 
 

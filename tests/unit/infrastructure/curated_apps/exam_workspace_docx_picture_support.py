@@ -111,7 +111,7 @@ def save_document(document) -> bytes:
 
 
 def chunk_document(document):
-    return PythonDocxExamChunker().chunk(content=save_document(document))
+    return PythonDocxExamChunker().chunk(content=save_document(document)).chunks
 
 
 def render_pixels(document, paragraph) -> list[tuple[int, int, int]]:

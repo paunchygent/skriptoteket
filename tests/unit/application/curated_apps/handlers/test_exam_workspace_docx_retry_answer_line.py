@@ -70,7 +70,7 @@ def env() -> Env:
 def _chunked(document: DocxDocument) -> tuple[DocxChunk, ...]:
     stream = io.BytesIO()
     document.save(stream)
-    return PythonDocxExamChunker().chunk(content=stream.getvalue())
+    return PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
 
 def _question_document() -> DocxDocument:
