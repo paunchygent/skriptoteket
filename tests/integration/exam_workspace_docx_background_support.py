@@ -89,6 +89,7 @@ class _ResponsesRequest(BaseModel):
 
     text: _ResponseText
     input: list[_InputMessage]
+    stream: bool = False
 
 
 class _AnchoredChunk(BaseModel):
@@ -155,7 +156,17 @@ class RecordedTransport:
         self.served.append(name)
         body = (self._dir / f"{name}.json").read_text()
         output = [{"type": "message", "content": [{"type": "output_text", "text": body}]}]
-        return httpx.Response(200, json={"status": "completed", "output": output})
+        response = {"status": "completed", "output": output}
+        if payload.stream:
+            delta = json.dumps({"type": "response.output_text.delta", "delta": body})
+            terminal = json.dumps({"type": "response.completed", "response": response})
+            return httpx.Response(
+                200,
+                headers={"content-type": "text/event-stream"},
+                text=f"event: response.output_text.delta\ndata: {delta}\n\n"
+                f"event: response.completed\ndata: {terminal}\n\n",
+            )
+        return httpx.Response(200, json=response)
 
     @property
     def served_decisions(self) -> list[str]:
