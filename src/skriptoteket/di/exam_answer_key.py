@@ -18,6 +18,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
+    ExamWorkspaceDocumentStore,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
@@ -41,6 +44,7 @@ from skriptoteket.protocols.exam_answer_key import (
     ExamWorkspaceSuggestionJobQueryProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
+    ExamWorkspaceContainerCodecProtocol,
     FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
     GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol,
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
@@ -110,6 +114,8 @@ class ExamAnswerKeyProvider(Provider):
         suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         settings: Settings,
         vault_files: VaultFileRepositoryProtocol,
+        store: ExamWorkspaceDocumentStore,
+        codec: ExamWorkspaceContainerCodecProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -119,6 +125,8 @@ class ExamAnswerKeyProvider(Provider):
             suggestion_jobs=suggestion_jobs,
             enrichment_enabled=settings.LLM_ANSWER_KEY_ENABLED,
             vault_files=vault_files,
+            store=store,
+            codec=codec,
             uow=uow,
             clock=clock,
             id_generator=id_generator,

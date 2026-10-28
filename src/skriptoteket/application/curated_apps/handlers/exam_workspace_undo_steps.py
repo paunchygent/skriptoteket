@@ -58,6 +58,11 @@ class StoreExamWorkspaceUndoStepHandler:
         lineage_id: UUID,
         request: StoreExamWorkspaceUndoStepRequest,
     ) -> ExamWorkspaceUndoStepResponse:
+        """Store one undo step and write it to the exam file with saved retries kept.
+
+        The response carries the written document, so the editor installs a spent
+        answer-key retry even when the step it sent offered one (TASK-SKRIPT-40-04-26 D4).
+        """
         async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
             job = await self._jobs.lock_conversion_view_by_lineage(
                 owner_user_id=actor.id, workspace_lineage_id=lineage_id
@@ -108,7 +113,7 @@ class StoreExamWorkspaceUndoStepHandler:
                 else request.after_step_id
             )
             step_id = self._ids.new_uuid()
-            await self._store.write_step_file(
+            _vault_file, document = await self._store.write_step_file(
                 actor=actor,
                 lineage_id=lineage_id,
                 content=content,
@@ -135,7 +140,11 @@ class StoreExamWorkspaceUndoStepHandler:
         lineage_id: UUID,
         request: MoveExamWorkspaceHistoryPositionRequest,
     ) -> ExamWorkspaceUndoStepResponse:
-        """Move the editor to a retained snapshot and write it to the exam file, no new step."""
+        """Move the editor to a retained snapshot and write it to the exam file, no new step.
+
+        The written and returned document keeps the saved answer-key retries, so an undo
+        past the retry's arrival never spends that retry twice (TASK-SKRIPT-40-04-26 D4).
+        """
         async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
             job = await self._jobs.lock_conversion_view_by_lineage(
                 owner_user_id=actor.id, workspace_lineage_id=lineage_id
@@ -180,7 +189,7 @@ class StoreExamWorkspaceUndoStepHandler:
                 store=self._store,
             )
             refuse_placeholder_changes(job=job, base=saved.document, saved=document)
-            await self._store.write_step_file(
+            _vault_file, document = await self._store.write_step_file(
                 actor=actor,
                 lineage_id=lineage_id,
                 content=content,

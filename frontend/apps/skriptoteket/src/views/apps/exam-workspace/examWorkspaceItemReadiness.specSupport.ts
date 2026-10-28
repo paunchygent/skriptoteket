@@ -23,6 +23,7 @@ export function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): Native
     match_right: [],
     points: 1,
     points_estimated: false,
+    answer_key_retry: "none",
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

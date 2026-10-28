@@ -6,10 +6,10 @@ import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildGap, choiceItem, gapItem } from "./examWorkspaceKeyedItems.specSupport";
 import {
-  canUndoInterpretation,
+  canUndoAiKey,
   reviewed,
   withCorrectChoices,
-  withoutInterpretedKey,
+  withoutAiKey,
   withMatchPairs,
 } from "./examWorkspaceItemEdits";
 import {
@@ -36,14 +36,14 @@ describe("conversion answer-key transitions", () => {
   it("keeps interpreted keys export-ready but blocks invented keys until reviewed", () => {
     const interpreted = choiceItem("single_choice", "ai_interpreted", ["choice_001"], null);
     expect(examWorkspaceItemReadiness(interpreted)).toEqual([]);
-    expect(examWorkspaceItemReadiness(withoutInterpretedKey(interpreted))).toContain("missing_answer_key");
+    expect(examWorkspaceItemReadiness(withoutAiKey(interpreted))).toContain("missing_answer_key");
     const invented = choiceItem("single_choice", "machine_proposed", ["choice_001"], null);
     expect(examWorkspaceItemReadiness(invented)).toContain("machine_proposed_key_unreviewed");
     expect(examWorkspaceItemReadiness(reviewed(invented))).toEqual([]);
   });
   it("undo clears all gap answers, keeps body/points/source facit, and leaves a valid absent key", () => {
     const source = interpretedGap();
-    const result = withoutInterpretedKey(source);
+    const result = withoutAiKey(source);
     expect(result.answer_key).toEqual({ origin: "absent", correct_choice_ids: [], match_pairs: [] });
     expect(result.gaps.every((gap) => gap.accepted_values.length === 0 && gap.automatic_values.length === 0)).toBe(true);
     expect(result.facit_text).toBe(source.facit_text);
@@ -53,14 +53,14 @@ describe("conversion answer-key transitions", () => {
     expect(source.gaps[0]?.accepted_values).toEqual(["Stockholm", "Sthlm"]);
   });
 
-  it("undo clears choices and matching pairs, but never undoes invented keys", () => {
+  it("undo clears choices and matching pairs for an interpreted and an invented key", () => {
     const choice = choiceItem("single_choice", "ai_interpreted", ["choice_001"], null);
-    expect(withoutInterpretedKey(choice).answer_key.correct_choice_ids).toEqual([]);
+    expect(withoutAiKey(choice).answer_key.correct_choice_ids).toEqual([]);
     const match = buildMatchingItem();
     match.answer_key.origin = "ai_interpreted";
-    expect(withoutInterpretedKey(match).answer_key.match_pairs).toEqual([]);
+    expect(withoutAiKey(match).answer_key.match_pairs).toEqual([]);
     const invented = choiceItem("single_choice", "machine_proposed", ["choice_001"], null);
-    expect(withoutInterpretedKey(invented)).toBe(invented);
+    expect(withoutAiKey(invented).answer_key.correct_choice_ids).toEqual([]);
   });
 
   it.each(["ai_interpreted", "machine_proposed"] as const)("reviewing %s replaces the AI origin", (origin) => {
@@ -94,7 +94,7 @@ describe("conversion answer-key transitions", () => {
       expect(result.answer_key).toEqual(source.answer_key);
       expect(examWorkspaceItemReadiness(result)).toEqual(examWorkspaceItemReadiness(source));
       if (origin === "ai_interpreted") {
-        expect(withoutInterpretedKey(result).answer_key.origin).toBe("absent");
+        expect(withoutAiKey(result).answer_key.origin).toBe("absent");
       }
       expect(source.gaps[0]?.automatic_values).toEqual(["Stockhom"]);
       expect(withoutAutomaticValue(source, "gap_001", "missing")).toBe(source);
@@ -119,7 +119,7 @@ describe("conversion answer-key transitions", () => {
       expect(result.answer_key).toEqual(source.answer_key);
       expect(examWorkspaceItemReadiness(result)).toEqual(examWorkspaceItemReadiness(source));
       if (origin === "ai_interpreted") {
-        expect(withoutInterpretedKey(result).answer_key.origin).toBe("absent");
+        expect(withoutAiKey(result).answer_key.origin).toBe("absent");
       }
       expect(source.gaps).toHaveLength(2);
       expect(hasInvalidAnswerKey(result)).toBe(false);
@@ -140,7 +140,7 @@ describe("conversion answer-key transitions", () => {
   it("refuses unknown gaps and gaps with no first accepted value", () => {
     const source = interpretedGap();
     expect(withGapAsText(source, "missing")).toBe(source);
-    const empty = withoutInterpretedKey(source);
+    const empty = withoutAiKey(source);
     expect(withGapAsText(empty, "gap_001")).toBe(empty);
   });
 });
@@ -165,13 +165,13 @@ describe("undoing an interpreted dropdown key", () => {
 
   it("is not offered and changes nothing", () => {
     const item = interpretedDropdown();
-    expect(canUndoInterpretation(item)).toBe(false);
-    expect(withoutInterpretedKey(item)).toBe(item);
+    expect(canUndoAiKey(item)).toBe(false);
+    expect(withoutAiKey(item)).toBe(item);
   });
 
   it("is offered for an interpreted gap_fill and not for a teacher-authored one", () => {
-    expect(canUndoInterpretation(interpretedGap())).toBe(true);
-    expect(canUndoInterpretation(gapItem("teacher_authored", [["gap_001", ["x"]]], null))).toBe(false);
+    expect(canUndoAiKey(interpretedGap())).toBe(true);
+    expect(canUndoAiKey(gapItem("teacher_authored", [["gap_001", ["x"]]], null))).toBe(false);
   });
 });
 

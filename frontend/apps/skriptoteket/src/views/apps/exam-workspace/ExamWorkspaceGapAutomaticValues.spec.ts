@@ -13,6 +13,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
+import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceGapAutomaticValues from "./ExamWorkspaceGapAutomaticValues.vue";
 
 function mountValues(values: string[], disabled = false) {
@@ -35,6 +36,9 @@ describe("ExamWorkspaceGapAutomaticValues", () => {
     expect(chips[0]?.find("button").attributes("aria-label")).toBe(
       "Ta bort automatisk stavning: hundraa",
     );
+    const removeGlyph = chips[0]?.find("button").getComponent(UiGlyph);
+    expect(removeGlyph.props("meaning")).toBe("remove-item");
+    expect(removeGlyph.get("svg").attributes("aria-hidden")).toBe("true");
     expect(wrapper.html()).not.toContain("lucide-sparkles");
     wrapper.unmount();
   });

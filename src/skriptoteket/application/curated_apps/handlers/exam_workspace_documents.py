@@ -39,6 +39,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_editor_conten
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+    with_kept_answer_key_retry,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
@@ -157,7 +158,11 @@ class GetExamWorkspaceConversionStatusHandler:
 
 
 class GetExamWorkspaceDocumentHandler:
-    """Reopen the current editor document without changing retained undo steps."""
+    """Reopen the current editor document without changing retained undo steps.
+
+    The reopened document keeps the saved head's answer-key retries, so a reload
+    never offers a spent retry again (TASK-SKRIPT-40-04-26 D4).
+    """
 
     def __init__(
         self,
@@ -202,7 +207,11 @@ class GetExamWorkspaceDocumentHandler:
             )
         current = history.current_step()
         latest = self._codec.parse(content=current.content)
-        document = latest.document.model_copy(update={"revision": head.document_version})
+        # Reopening installs the current undo step's document, so it keeps the saved
+        # head's answer-key retries and cannot offer a spent retry again
+        # (TASK-SKRIPT-40-04-26 D4).
+        opened = with_kept_answer_key_retry(latest.document, container.document)
+        document = opened.model_copy(update={"revision": head.document_version})
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=container.document,

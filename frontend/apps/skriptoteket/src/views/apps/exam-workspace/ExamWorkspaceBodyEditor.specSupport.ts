@@ -50,6 +50,7 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
     match_right: [],
     points: 1,
     points_estimated: false,
+    answer_key_retry: "none",
     review: {
       confidence: 0.95,
       parse_origin: "deterministic",

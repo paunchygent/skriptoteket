@@ -97,6 +97,8 @@ async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres
             suggestion_jobs=world.jobs,
             enrichment_enabled=True,
             vault_files=world.vault_files,
+            store=world.store,
+            codec=world.codec,
             uow=world.uow,
             clock=clock,
             id_generator=Ids(),

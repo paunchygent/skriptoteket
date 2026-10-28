@@ -35,6 +35,7 @@ import {
   Copy,
   Download,
   EllipsisVertical,
+  Eraser,
   Eye,
   EyeOff,
   FileArchive,
@@ -173,7 +174,8 @@ export type UiGlyphActionMeaning =
   | "send"
   | "file-import"
   | "file-new"
-  | "add-picture";
+  | "add-picture"
+  | "discard-ai-key";
 
 export type UiGlyphUtilityMeaning =
   | "info"
@@ -326,6 +328,7 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   "file-import": lucide(FileInput),
   "file-new": lucide(FilePlus),
   "add-picture": lucide(ImagePlus),
+  "discard-ai-key": lucide(Eraser),
 };
 
 const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {

@@ -72,6 +72,7 @@ export function keylessItem(sequence: number, kind: "single_choice" | "multiple_
     match_right: [],
     points: 2,
     points_estimated: false,
+    answer_key_retry: "none",
     print_order: [],
     printed_label: null,
     retry_source: null,
@@ -108,6 +109,7 @@ export function retryItem(): NativeExamItem {
     match_right: [],
     points: 2,
     points_estimated: false,
+    answer_key_retry: "none",
     print_order: [],
     printed_label: null,
     retry_source: {

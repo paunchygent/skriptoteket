@@ -1,4 +1,8 @@
-"""One mutable vault file per exam, with revision-checked writes."""
+"""One mutable vault file per exam, with revision-checked writes.
+
+Every head write keeps the saved per-question answer-key retries, so no caller can
+move a spent retry backwards (TASK-SKRIPT-40-04-26 D4).
+"""
 
 from __future__ import annotations
 
@@ -22,7 +26,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import 
     load_exam_course_catalog,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+    with_kept_answer_key_retry,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_versions import (
     CURRENT_NATIVE_EXAM_DOCUMENT_VERSION,
 )
@@ -187,7 +194,7 @@ class ExamWorkspaceDocumentStore:
                     if export_format is None
                     else name
                 )
-                vault_file = await self._overwrite_head_file(
+                vault_file, _kept_document = await self._overwrite_head_file(
                     actor=actor,
                     lineage_id=lineage_id,
                     head=head,
@@ -281,22 +288,28 @@ class ExamWorkspaceDocumentStore:
         content: bytes,
         document: NativeExamDocument | None,
         version: int,
-    ) -> VaultFile:
+    ) -> tuple[VaultFile, NativeExamDocument | None]:
         """Overwrite one existing exam file row, its index entry, blob and usage.
 
         The caller holds ``transaction`` and the lineage lock, so the head cannot move
-        under the write. Usage, quota and rollback accounting match ``save``.
+        under the write. Usage, quota and rollback accounting match ``save``. The saved
+        head's answer-key retries are kept for every incoming question it carries
+        (TASK-SKRIPT-40-04-26 D4), and the returned document is the kept one.
         """
         now = self._clock.now()
+        file_id = head.id
+        previous_content: bytes | None = None
+        if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):
+            previous_content = await self.load(actor=actor, vault_file=head)
+        if document is not None:
+            document, content = self._keep_answer_key_retry(
+                saved_content=previous_content, document=document, content=content
+            )
         usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
         counted_bytes = head.bytes if head.deleted_at is None else 0
         total = usage.bytes_total + len(content) - counted_bytes
         if total > self._settings.VAULT_MAX_TOTAL_BYTES:
             raise _vault_full_error()
-        file_id = head.id
-        previous_content: bytes | None = None
-        if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):
-            previous_content = await self.load(actor=actor, vault_file=head)
         if head.deleted_at is not None:
             head = await self._vault_files.update(
                 file=head.model_copy(update={"deleted_at": None, "trashed_with_exam": False})
@@ -330,7 +343,28 @@ class ExamWorkspaceDocumentStore:
         await self._vault_usage.upsert(
             usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
         )
-        return vault_file
+        return vault_file, document
+
+    def _keep_answer_key_retry(
+        self,
+        *,
+        saved_content: bytes | None,
+        document: NativeExamDocument,
+        content: bytes,
+    ) -> tuple[NativeExamDocument, bytes]:
+        """Keep the saved answer-key retries on a head write (TASK-SKRIPT-40-04-26 D4).
+
+        The previous head bytes are the ones the rollback already loaded, so this adds
+        no read; only a stricter saved retry rebuilds the container bytes.
+        """
+        if saved_content is None:
+            return document, content
+        saved = self._codec.parse(content=saved_content).document
+        kept = with_kept_answer_key_retry(document, saved)
+        if kept is document:
+            return document, content
+        container = self._codec.parse(content=content)
+        return kept, self._codec.build(content=container.model_copy(update={"document": kept}))
 
     async def write_step_file(
         self,
@@ -340,11 +374,13 @@ class ExamWorkspaceDocumentStore:
         content: bytes,
         document: NativeExamDocument,
         version: int,
-    ) -> VaultFile:
+    ) -> tuple[VaultFile, NativeExamDocument]:
         """Overwrite the exam file for one stored undo step or one position move.
 
         The caller holds ``transaction`` and the lineage lock and passes the head version
         plus one; the cursor stays the only guard while the server assigns the revision.
+        The returned document is the written one, whose saved answer-key retries are kept
+        (TASK-SKRIPT-40-04-26 D4).
         """
         if document.document_id != lineage_id or document.revision != version:
             raise validation_error("Dokumentets identitet eller version matchar inte filen.")
@@ -356,7 +392,7 @@ class ExamWorkspaceDocumentStore:
             user_id=actor.id, document_lineage_id=lineage_id
         )
         assert head is not None
-        return await self._overwrite_head_file(
+        vault_file, kept = await self._overwrite_head_file(
             actor=actor,
             lineage_id=lineage_id,
             head=head,
@@ -367,6 +403,8 @@ class ExamWorkspaceDocumentStore:
             document=document,
             version=version,
         )
+        assert kept is not None
+        return vault_file, kept
 
     def validate_size(self, content: bytes) -> None:
         if not content or len(content) > self._settings.VAULT_MAX_FILE_BYTES:

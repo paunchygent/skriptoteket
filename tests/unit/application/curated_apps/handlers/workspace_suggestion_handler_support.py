@@ -29,10 +29,17 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceAnswerKeySuggestionsResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
+    ExamWorkspaceDocumentStore,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (
     FindExamWorkspaceAnswerKeySuggestionsHandler,
     GetExamWorkspaceAnswerKeySuggestionsStatusHandler,
     RequestExamWorkspaceAnswerKeySuggestionsHandler,
+)
+from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.container import (
+    ExamWorkspaceContainerContent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -52,11 +59,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
     NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,
 )
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
+from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
 from tests.fixtures.application_fixtures import FakeUow
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     FixedClock,
@@ -65,6 +76,13 @@ from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_sup
 )
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
+)
+from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
+    InMemoryExamIndexRepository,
+)
+from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
+    InMemoryVaultStorage,
+    InMemoryVaultUsageRepository,
 )
 from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
     InMemoryVaultFileRepository,
@@ -137,6 +155,7 @@ def suggestion_item(
     sequence: int,
     origin: NativeAnswerKeyOrigin = NativeAnswerKeyOrigin.ABSENT,
     stem: str = "Vilket är huvudordet?",
+    retry: NativeAnswerKeyRetry = NativeAnswerKeyRetry.NONE,
 ) -> NativeExamItem:
     return NativeExamItem(
         item_id=item_id,
@@ -156,6 +175,7 @@ def suggestion_item(
             if origin is not NativeAnswerKeyOrigin.ABSENT
             else (),
         ),
+        answer_key_retry=retry,
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.TEACHER_CREATED,
@@ -180,8 +200,12 @@ class SuggestionHandlerHarness:
         self.actor = make_actor()
         self.jobs = InMemoryEnrichmentJobRepository()
         self.vault_files = InMemoryVaultFileRepository()
+        self.vault_storage = InMemoryVaultStorage()
+        self.codec = ExamWorkspaceContainerCodec()
         self.lineage_id = uuid4()
         head_id = uuid4()
+        self.head_id = head_id
+        now = NOW
         self.vault_files.files[head_id] = VaultFile(
             id=head_id,
             user_id=self.actor.id,
@@ -190,16 +214,34 @@ class SuggestionHandlerHarness:
             source_kind=VaultFileSourceKind.APP_EXPORT,
             document_lineage_id=self.lineage_id,
             document_version=3,
-            created_at=NOW,
+            created_at=now,
         )
+        self.store = ExamWorkspaceDocumentStore(
+            vault_files=self.vault_files,
+            vault_usage=InMemoryVaultUsageRepository(
+                usage=VaultUsage(user_id=self.actor.id, bytes_total=0, updated_at=now)
+            ),
+            vault_storage=self.vault_storage,
+            uow=FakeUow(),
+            clock=FixedClock(now),
+            settings=Settings.model_construct(
+                VAULT_MAX_FILE_BYTES=5_000_000,
+                VAULT_MAX_TOTAL_BYTES=50_000_000,
+            ),
+            index=InMemoryExamIndexRepository(self.vault_files),
+            codec=self.codec,
+        )
+        self.seed_saved_head(suggestion_item(item_id="item_001", sequence=1))
         self.suggestion_jobs = InMemorySuggestionJobQueries(self.jobs)
         self.request_handler = RequestExamWorkspaceAnswerKeySuggestionsHandler(
             enrichment_jobs=self.jobs,
             suggestion_jobs=self.suggestion_jobs,
             enrichment_enabled=enabled,
             vault_files=self.vault_files,
+            store=self.store,
+            codec=self.codec,
             uow=FakeUow(),
-            clock=FixedClock(NOW),
+            clock=FixedClock(now),
             id_generator=UUIDGenerator(),
         )
         self.status_handler = GetExamWorkspaceAnswerKeySuggestionsStatusHandler(
@@ -208,6 +250,15 @@ class SuggestionHandlerHarness:
         self.find_handler = FindExamWorkspaceAnswerKeySuggestionsHandler(
             suggestion_jobs=self.suggestion_jobs,
             vault_files=self.vault_files,
+        )
+
+    def seed_saved_head(self, *items: NativeExamItem, revision: int = 3) -> None:
+        """Write the saved head document these items build, at the head's version."""
+        document = suggestion_document(self.lineage_id, *items).model_copy(
+            update={"revision": revision}
+        )
+        self.vault_storage.stored[(self.actor.id, self.head_id)] = self.codec.build(
+            content=ExamWorkspaceContainerContent(document=document, notes=(), assets_by_id={})
         )
 
     async def request(
