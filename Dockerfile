@@ -96,7 +96,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir pdm==2.26.2
+# PDM's own toolchain is pinned by its `locked` extra, not by the pdm version
+# alone: pdm 2.26.2 accepts any unearth>=0.17.5 and calls httpx.Client.__init__
+# unbound, while unearth 0.19 moved PyPIClient onto httpx2, which makes that
+# call raise TypeError (TASK-SKRIPT-REP-0052).
+RUN pip install --no-cache-dir "pdm[locked]==2.26.2"
 
 COPY pyproject.toml pdm.lock ./
 RUN --mount=type=cache,target=/root/.cache/pdm,sharing=locked \
@@ -152,7 +156,8 @@ RUN ln -sf /usr/bin/fdfind /usr/local/bin/fd \
     && curl -fsSL "https://github.com/mikefarah/yq/releases/download/v${DEV_YQ_VERSION}/yq_linux_${YQ_ARCH}" -o /usr/local/bin/yq \
     && chmod +x /usr/local/bin/yq
 
-RUN pip install --no-cache-dir pdm==2.26.2
+# Same pinned PDM toolchain as the builder stage (TASK-SKRIPT-REP-0052).
+RUN pip install --no-cache-dir "pdm[locked]==2.26.2"
 
 COPY --from=builder /app/__pypackages__ /app/__pypackages__
 COPY pyproject.toml pdm.lock ./
