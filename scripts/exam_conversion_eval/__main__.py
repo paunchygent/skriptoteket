@@ -154,7 +154,14 @@ class _CountedProgress:
     async def outline(self, *, worker_id: str, job_id: UUID, outline: ConversionOutline) -> None:
         return None
 
-    async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
+    async def batch_ready(
+        self,
+        *,
+        worker_id: str,
+        job_id: UUID,
+        update: ConversionUpdate,
+        notes: tuple[str, ...],
+    ) -> None:
         self.batches_ready += 1
 
     async def publish_final(
@@ -222,7 +229,7 @@ async def _evaluate(
         settings=settings,
         progress=progress,
     )
-    chunks = PythonDocxExamChunker().chunk(content=content)
+    source = PythonDocxExamChunker().chunk(content=content)
     try:
         outcome = await pipeline.convert(
             job=DocxConversionJob(
@@ -232,7 +239,8 @@ async def _evaluate(
                 filename=docx.name,
                 source_sha256=source_sha256,
                 source_docx=content,
-                chunks=chunks,
+                chunks=source.chunks,
+                source_notes=source.notes,
                 course_key=None,
                 caller=caller,
                 origin_kind=import_origin_kind(content),
@@ -273,7 +281,9 @@ async def _evaluate(
         batches_ready=progress.batches_ready,
         events=tuple(event.as_json() for event in result.events),
         crash=(),
-        comparison=compare_native_exam(gold, result.document, [chunk.text for chunk in chunks]),
+        comparison=compare_native_exam(
+            gold, result.document, [chunk.text for chunk in source.chunks]
+        ),
     )
 
 
@@ -308,8 +318,8 @@ async def _live_grouping(
             exchange=DocxBuildRoundExchange(recorder),
             profile=build_luna_docx_grouping_profile(settings),
         )
-        chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
-        grouping = await grouper.group(job_id=uuid4(), chunks=chunks, caller=caller)
+        source = PythonDocxExamChunker().chunk(content=docx.read_bytes())
+        grouping = await grouper.group(job_id=uuid4(), chunks=source.chunks, caller=caller)
     _write_recordings(recorder, evidence_dir / "recordings" / docx.stem)
     manifest = grouping.manifest
     header = ", ".join(f"{h.kind}:{h.anchor}" for h in manifest.header) or "none"

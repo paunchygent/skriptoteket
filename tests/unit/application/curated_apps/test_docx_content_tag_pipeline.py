@@ -139,6 +139,7 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
         source_sha256=hashlib.sha256(source).hexdigest(),
         source_docx=source,
         chunks=corpus_chunks(_EXAM),
+        source_notes=(),
         course_key=None if outcome == "unknown_course" else "SVESVE02",
         caller=fixture_caller(),
     )

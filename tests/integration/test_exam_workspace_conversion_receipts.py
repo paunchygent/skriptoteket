@@ -80,7 +80,10 @@ async def _first_save(world: ConversionWorld, actor: User, job_id: UUID, lineage
     assert received.state == "running"
     assert received.document_revision is None and received.units == () and received.summary is None
     await world.progress.batch_ready(
-        worker_id=WORKER, job_id=job_id, update=batch(lineage_id, q2=None, q3=None)
+        worker_id=WORKER,
+        job_id=job_id,
+        update=batch(lineage_id, q2=None, q3=None),
+        notes=(),
     )
     first = await world.status.handle(actor=actor, job_id=job_id)
     assert (first.questions_received, first.questions_done, first.document_revision) == (1, 1, 1)
@@ -112,7 +115,10 @@ async def test_receipt_survives_interleaved_first_batch_later_batch_and_final_pu
         assert after.questions_received == 2
         assert await world.open(actor, lineage_id) == document
         await world.progress.batch_ready(
-            worker_id=WORKER, job_id=job_id, update=batch(lineage_id, q2="Fråga två", q3=None)
+            worker_id=WORKER,
+            job_id=job_id,
+            update=batch(lineage_id, q2="Fråga två", q3=None),
+            notes=(),
         )
         saved = await world.status.handle(actor=actor, job_id=job_id)
         assert (saved.questions_received, saved.questions_done, saved.document_revision) == (

@@ -336,6 +336,7 @@ async def convert(
             source_sha256="0" * 64,
             source_docx=content,
             chunks=(chunker or PythonDocxExamChunker()).chunk(content=content).chunks,
+            source_notes=(),
             course_key=None,
             caller=fixture_caller(),
         )

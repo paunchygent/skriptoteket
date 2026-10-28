@@ -445,7 +445,12 @@ async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseli
 async def test_a_lost_job_lease_still_stops_the_conversion():
     class LostLease(RecordingProgress):
         async def batch_ready(
-            self, *, worker_id: str, job_id: UUID, update: ConversionUpdate
+            self,
+            *,
+            worker_id: str,
+            job_id: UUID,
+            update: ConversionUpdate,
+            notes: tuple[str, ...],
         ) -> None:
             raise DomainError(code=ErrorCode.CONFLICT, message="lease is no longer owned")
 

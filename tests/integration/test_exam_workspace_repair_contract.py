@@ -154,7 +154,9 @@ async def test_conversion_delivery_after_trash_preserves_the_single_exam_and_his
         ).handle(actor=actor, command=DeleteVaultFileCommand(file_id=opened.summary.vault_file_id))
         update = batch(lineage, q2="Second ready", q3="Third ready")
         if delivery == "batch":
-            await world.progress.batch_ready(worker_id=WORKER, job_id=job.id, update=update)
+            await world.progress.batch_ready(
+                worker_id=WORKER, job_id=job.id, update=update, notes=()
+            )
         else:
             await world.progress.publish_final(
                 worker_id=WORKER,

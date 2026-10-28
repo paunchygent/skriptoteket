@@ -113,6 +113,7 @@ class ProcessExamWorkspaceDocxJobHandler:
                     source_sha256=hashlib.sha256(job.source_docx).hexdigest(),
                     source_docx=job.source_docx,
                     chunks=source.chunks,
+                    source_notes=source.notes,
                     course_key=job.workspace_course_key,
                     caller=door_caller_for(user=actor),
                     origin_kind=import_origin_kind(job.source_docx),

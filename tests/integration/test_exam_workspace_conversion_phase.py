@@ -109,7 +109,10 @@ async def test_each_phase_is_stored_with_the_clock_time_and_reaches_the_status(
             ),
         )
         await world.progress.batch_ready(
-            worker_id=WORKER, job_id=job_id, update=batch(lineage_id, q2=None, q3=None)
+            worker_id=WORKER,
+            job_id=job_id,
+            update=batch(lineage_id, q2=None, q3=None),
+            notes=(),
         )
         opened = await world.opened(actor, lineage_id)
         assert opened.conversion is not None

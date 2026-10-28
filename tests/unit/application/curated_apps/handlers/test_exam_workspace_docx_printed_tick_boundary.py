@@ -173,6 +173,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
             source_sha256=state.source_sha256,
             source_docx=b"",
             chunks=chunks,
+            source_notes=(),
             course_key=None,
             caller=fixture_caller(),
         )

@@ -90,6 +90,9 @@ async def running_exam(
         ),
     )
     await world.progress.batch_ready(
-        worker_id=WORKER, job_id=job.id, update=batch(queued.lineage_id, q2=None, q3=None)
+        worker_id=WORKER,
+        job_id=job.id,
+        update=batch(queued.lineage_id, q2=None, q3=None),
+        notes=(),
     )
     return job, queued.lineage_id

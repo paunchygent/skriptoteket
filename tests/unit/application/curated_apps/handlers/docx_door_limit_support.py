@@ -352,6 +352,7 @@ def convert(script: DoorScript, *, course_key: str | None = None):
         source_sha256="0" * 64,
         source_docx=content,
         chunks=chunks,
+        source_notes=(),
         course_key=course_key,
         caller=fixture_caller(),
     )

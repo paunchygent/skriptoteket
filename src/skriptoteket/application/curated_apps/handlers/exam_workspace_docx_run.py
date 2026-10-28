@@ -67,6 +67,9 @@ class DocxConversionJob:
     source_sha256: str
     source_docx: bytes
     chunks: tuple[DocxChunk, ...]
+    source_notes: tuple[str, ...]
+    """The reader's import notes, saved with the first published revision so the
+    skipped pages stay named even when the conversion fails before its final save."""
     course_key: str | None
     caller: AiDoorCaller
     origin_kind: DocumentImportOriginKind

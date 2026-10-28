@@ -98,7 +98,10 @@ async def test_autosave_retains_teacher_edit_and_receives_later_converted_questi
             ),
         )
         await world.progress.batch_ready(
-            worker_id=WORKER, job_id=queued.job_id, update=batch(lineage, q2=None, q3=None)
+            worker_id=WORKER,
+            job_id=queued.job_id,
+            update=batch(lineage, q2=None, q3=None),
+            notes=(),
         )
         opened = await world.open(actor, lineage)
         changed_item = opened.items[0].model_copy(update={"body": body("Lärarens fråga ett")})
@@ -127,6 +130,7 @@ async def test_autosave_retains_teacher_edit_and_receives_later_converted_questi
             worker_id=WORKER,
             job_id=queued.job_id,
             update=batch(lineage, q2="Fråga två klar", q3="Fråga tre klar"),
+            notes=(),
         )
     async with session_factory() as session:
         reopened_world = ConversionWorld(session, storage, clock)
