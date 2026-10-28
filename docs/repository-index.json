@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d169618a32a82d9e9f87b44f70375d7fee45afd6a8b040edab884a8a2cb1db09",
+  "source_set_digest": "a73abcc4f04981c055c36927c762880ef2d36df398b80f4be4de4470645cd71e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6500,7 +6500,7 @@
       "type": "task",
       "title": "A PDF without readable text stops with a message, and skipped pages are named",
       "path": "docs/backlog/tasks/task-skript-39-10-03-a-pdf-without-readable-text-stops-with-a-message-and-skipped-pages-are-named.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
