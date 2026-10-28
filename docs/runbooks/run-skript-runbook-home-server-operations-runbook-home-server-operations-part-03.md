@@ -4,8 +4,8 @@ id: RUN-SKRIPT-runbook-home-server-operations-PART-03
 title: 'Runbook: Home Server Operations — part 03'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: RUN-SKRIPT-runbook-home-server-operations
 part: 3
@@ -57,9 +57,9 @@ Run this when a deploy touches host validation, proxy trust, observability, or n
 ```bash
 ssh hemma /bin/bash -s <<'EOF'
 set -euo pipefail
-sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
+sudo docker exec skriptoteket-web curl -sS -H 'Host: skriptoteket.hule.education' http://127.0.0.1:8000/healthz
 printf '\n---\n'
-sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS -H 'Host: skriptoteket.hule.education' http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
 EOF
 
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs
