@@ -62,11 +62,6 @@
   (edit sibling `grouping.py`, sandbox run, save), record proof, close docs. UX
   note: a saved class list is not selected in step 2 until the class name is filled.
 
-- TASK-SKRIPT-REP-0035 passive web liveness deployed in production and staging
-  (c282c74b, image 0ae40a8a34a2, /healthz 200). Owner skill-repository parent 01a1036b; next: terminal closeout.
-  34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
-  Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
-
 - Exam epics 39/40/41, backlog reconciled 2026-10-20 against main 114ca971; each open
   task's `## Progress` names its main merge and what is owed. Plan 2026-10-17 (user
   decisions G1-G30, retained `01a1495e-8398-75be-b2da-f0b08ba11afa`
@@ -154,6 +149,9 @@
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user). 41-01-03 exam AI through the door done (`fe2bc9b9` + D1 `2d16c24d`; HuleEdu staging door key `547e1deb`; B4 notes unit-proof only). REP-0049 done (`b8293abd`; Mac walk `.artifacts/staging-walk-overnight-fe2bc9b9/walk-record.md`). 39-10-04 Lägg till bild done (`4f555442` + W1 `e68e84a1`; Mac walks passed, check 4 re-walk at `fe2bc9b9`).
 
 - 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
+
+- 2026-10-28 `done`: TASK-SKRIPT-REP-0035 passive web liveness (user closure, review waived in D8;
+  rollout proof in the task doc; raw receipts no longer on Hemma).
 
 - 2026-10-21 `done` on main: [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md) parallel and quiet pytest (merge `6a557b5d`; review 321854a9 F1-F6 medium repaired `b1f019e6`, admitted on focused proof).
 

@@ -4,18 +4,22 @@ id: TASK-SKRIPT-REP-0035
 title: Replace recurring health callers with native clients
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-05'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user waived review loops for this task (decided term D8) and on 2026-10-28 asked for the REP-0035 closeout in their priority list (item 15), relayed by the Hemma orchestrator. Rollout proof is recorded in this document: main c282c74b published 2026-10-06 with image sha256:0ae40a8a34a2, both web-only rollouts healthy (startup 12.02 s production, 6.45 s staging; /healthz 200), next natural passive checks 25.005 ms production and 24.596 ms staging, 34 focused tests passed. No review was run.'
 task_kind: repository
 acceptance_criteria:
-- Recurring native web callers use passive /healthz/live process liveness; /healthz retains SQL and conditional SMTP readiness for explicit checks.
-- Worker dependency predicates and all health timing remain unchanged in production and staging.
-- Focused failure proof and actual image tools, runtime configuration and client cost are recorded.
+  - Recurring native web callers use passive /healthz/live process liveness; /healthz retains SQL and conditional SMTP readiness for explicit checks.
+  - Worker dependency predicates and all health timing remain unchanged in production and staging.
+  - Focused failure proof and actual image tools, runtime configuration and client cost are recorded.
 backlog_document_profile: contract-derived
 ---
 
@@ -114,7 +118,7 @@ An isolated actual-image server returned liveness 200/native caller exit 0
 while readiness returned 503 with SQL unhealthy and SMTP degraded/default
 caller exit 1. Uvicorn lifespan was off to isolate HTTP proof from unchanged
 startup readiness; normal startup proof belongs to the published rollout.
-Receipts are .artifacts/native-health/passive-liveness-* in the task worktree.
+Receipts are .artifacts/native-health/passive-liveness-\* in the task worktree.
 Parent published c282c74bf38da3c081743ddbfa623b887bd36be5 and both
 web-only rollouts completed on 2026-10-06 (local date). Full pdm serve startup
 became healthy in 12.02 seconds production and 6.45 seconds staging; both
@@ -123,7 +127,7 @@ matched. The next natural passive check took 25.005 ms production and
 24.596 ms staging; production's first startup probe failed inside existing
 grace before becoming healthy. Worker container IDs and the foreign staging
 .python-version remained unchanged. Terminal/rollout receipts are
-.artifacts/native-health/passive-liveness-*-rollout* and passive-*-rollout-proof.json.
+.artifacts/native-health/passive-liveness-*-rollout* and passive-\*-rollout-proof.json.
 Parent owns terminal closeout.
 
 ## Stop Conditions
@@ -134,16 +138,26 @@ monitoring service, service algorithm, fan/GPU or scheduling change.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Preserve pooled SQL and conditional configured SMTP at /healthz for explicit readiness checks; recurring web checks use passive /healthz/live. |
-| D2 | Native web caller preserves failure, redirects, proxy and timeout semantics. |
-| D3 | One native worker script keeps authenticated SQL, Docker response and actual artifact write. |
-| D4 | Preserve DSN prefix conversion, authentication, bounds and deployed sockets. |
-| D5 | Add PostgreSQL client to the actual image and measure its tradeoff. |
-| D6 | Operator/fast entrypoints delegate and duplicate dependency checks are removed. |
-| D7 | Source, build, proof and rollout run on Hemma in the admitted lane. |
-| D8 | User waived additional implementation agents and review loops. |
-| D9 | Parent integrates/publishes main and coordinates final natural observation. |
+| ID  | Decided contract term                                                                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Preserve pooled SQL and conditional configured SMTP at /healthz for explicit readiness checks; recurring web checks use passive /healthz/live. |
+| D2  | Native web caller preserves failure, redirects, proxy and timeout semantics.                                                                   |
+| D3  | One native worker script keeps authenticated SQL, Docker response and actual artifact write.                                                   |
+| D4  | Preserve DSN prefix conversion, authentication, bounds and deployed sockets.                                                                   |
+| D5  | Add PostgreSQL client to the actual image and measure its tradeoff.                                                                            |
+| D6  | Operator/fast entrypoints delegate and duplicate dependency checks are removed.                                                                |
+| D7  | Source, build, proof and rollout run on Hemma in the admitted lane.                                                                            |
+| D8  | User waived additional implementation agents and review loops.                                                                                 |
+| D9  | Parent integrates/publishes main and coordinates final natural observation.                                                                    |
 
 | D10 | User approved on 2026-10-06: add passive /healthz/live and point recurring base/production/staging web callers to it, matching HuleEdu; no readiness scheduler/cache/background thread, new flags/framework or worker/timing/fan/GPU/boot changes. |
+
+## Progress
+
+### Closeout 2026-10-28 (Hemma housekeeping lead)
+
+- Closed under the user closure gate: D8 waives review, and the user asked for this
+  closeout on 2026-10-28. The rollout proof above is the evidence.
+- The raw receipts (`.artifacts/native-health/passive-*`) no longer exist on Hemma: the
+  task worktree that held them was removed before 2026-10-28, and the primary checkout
+  has no `.artifacts/native-health`. The figures in this document are the only record.

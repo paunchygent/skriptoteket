@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ab3d72d58197c009278f100df644c096e993f5fce5b07296c362060633d2d1d6",
+  "source_set_digest": "28eff3b54dc0588df2b7510203e577b09561c6f040b6bf97f4fdb9e087f198bc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8606,7 +8606,7 @@
       "type": "task",
       "title": "Replace recurring health callers with native clients",
       "path": "docs/backlog/tasks/task-skript-rep-0035-replace-recurring-health-callers-with-native-clients.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8616,7 +8616,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user waived review loops for this task (decided term D8) and on 2026-10-28 asked for the REP-0035 closeout in their priority list (item 15), relayed by the Hemma orchestrator. Rollout proof is recorded in this document: main c282c74b published 2026-10-06 with image sha256:0ae40a8a34a2, both web-only rollouts healthy (startup 12.02 s production, 6.45 s staging; /healthz 200), next natural passive checks 25.005 ms production and 24.596 ms staging, 34 focused tests passed. No review was run."
       }
     },
     {
