@@ -28,6 +28,9 @@ from skriptoteket.application.curated_apps.classroom_planner import (
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.classroom_planner.models import PlanDraftKind
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.infrastructure.curated_apps.apps.classroom_planner.share_renderer import (
+    SHARE_BASE_CSS,
+)
 from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerSharePdfRendererProtocol,
 )
@@ -171,6 +174,61 @@ async def test_public_share_read_returns_not_found_for_unknown_token() -> None:
 
     assert response.status_code == 404
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_unavailable_page_uses_share_stylesheet_and_keeps_headers() -> None:
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = _artifact(revoked_at=datetime.now(timezone.utc))
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share)(
+        public_token="public-token",
+        handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
+    )
+
+    body = response.body.decode("utf-8")
+    assert response.status_code == 410
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert '<meta name="robots" content="noindex,nofollow">' in body
+    assert f"<style>{SHARE_BASE_CSS.strip()}" in body
+    assert '--font-sans: "IBM Plex Sans"' in body
+    assert "font-family: var(--font-sans);" in body
+    assert 'class="share-unavailable"' in body
+    assert "Delningen är inte tillgänglig" in body
+    assert "Länken kan ha återkallats, gått ut eller tagits bort." in body
+    assert "Klass 7A" not in body
+    assert "href=" not in body
+    assert "src=" not in body
+    assert "url(" not in body
+    assert "@import" not in body
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_public_share_missing_page_uses_share_stylesheet_and_keeps_not_found() -> None:
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.side_effect = DomainError(
+        code=ErrorCode.NOT_FOUND,
+        message="Missing share.",
+    )
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share)(
+        public_token="missing-token",
+        handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
+    )
+
+    body = response.body.decode("utf-8")
+    assert response.status_code == 404
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert f"<style>{SHARE_BASE_CSS.strip()}" in body
+    assert 'class="share-unavailable"' in body
 
 
 @pytest.mark.unit

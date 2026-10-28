@@ -110,7 +110,7 @@ class _FakeShareRenderer:
         payload = prepared_export.model_dump(mode="json")
         assert isinstance(payload, dict)
         return RenderedClassroomPlannerShare(
-            title=f"{prepared_export.roster_name} - Sittschema",
+            title=f"{prepared_export.roster_name} – Sittschema",
             preview_description=f"Sittschema för {prepared_export.roster_name}.",
             renderer_version="klassrumskartan-seating-share-renderer-v2",
             presentation_schema_version="seating-share-v1",
@@ -793,7 +793,7 @@ async def test_backfill_refreshes_old_active_seating_artifact_before_preview() -
         roster_id=uuid4(),
         template_id=uuid4(),
         source_revision=4,
-        title="Klass 8B - Sittschema",
+        title="Klass 8B – Sittschema",
         slug="klass-8b-sittschema",
         public_path="/share/classroom/old-public-token/klass-8b-sittschema",
         preview_description="Old preview",

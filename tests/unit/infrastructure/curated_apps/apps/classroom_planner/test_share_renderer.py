@@ -236,6 +236,53 @@ def test_seating_renderer_escapes_hostile_values_and_records_provenance() -> Non
 
 
 @pytest.mark.unit
+def test_share_page_titles_use_en_dash_between_class_and_kind() -> None:
+    renderer = StaticClassroomPlannerShareRenderer()
+
+    grouping = renderer.render_grouping(
+        prepared_export=PreparedGroupingExportContract(
+            grouping_draft_id=uuid4(),
+            roster_id=uuid4(),
+            export_kind=GroupingExportKind.PDF,
+            paper_size=GroupingExportPaperSize.A4_PORTRAIT,
+            presentation=GroupingExportPresentation(
+                draft_id=uuid4(),
+                class_name="Klass 7A",
+                title="Gruppindelning",
+                filename_stem="klass-7a",
+                groups=(),
+            ),
+        ),
+    )
+    seating = renderer.render_seating(
+        prepared_export=PreparedSeatingExportContract(
+            seating_draft_id=uuid4(),
+            roster_id=uuid4(),
+            roster_name="Klass 8B",
+            template_id=uuid4(),
+            template_name="Sal 214",
+            export_kind=SeatingExportKind.PDF,
+            layout_id=SeatingExportLayoutId.PRETTY_BRUTALIST_POSTER,
+            poster_scene=SeatingPosterScene(
+                room=PosterSceneRoom(grid_cols=4, grid_rows=3),
+                seats=[],
+                fixtures=[],
+            ),
+        ),
+    )
+
+    assert grouping.title == "Klass 7A – Gruppindelning"
+    assert seating.title == "Klass 8B – Sittschema"
+    for rendered, title in (
+        (grouping, "Klass 7A – Gruppindelning"),
+        (seating, "Klass 8B – Sittschema"),
+    ):
+        assert " - " not in rendered.title
+        assert f"<title>{title}</title>" in rendered.rendered_html
+        assert f'<h1 class="share-title">{title}</h1>' in rendered.rendered_html
+
+
+@pytest.mark.unit
 def test_seating_label_fit_uses_weighted_width_budget_boundaries() -> None:
     supported_first = build_seat_label_presentation("KristofferJonatan Lo")
     supported_single = build_seat_label_presentation("Alexanderthegreat")

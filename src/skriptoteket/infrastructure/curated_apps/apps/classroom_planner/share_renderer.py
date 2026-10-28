@@ -48,7 +48,9 @@ SEATING_SHARE_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v2"
 _GROUPING_SCHEMA_VERSION = "grouping-share-v1"
 _SEATING_SCHEMA_VERSION = "seating-share-v1"
 
-_SHARE_BASE_CSS = """
+# Public share-page visual base. The public unavailable page wears it too, so a
+# revoked or expired link reads as the same surface as an active share.
+SHARE_BASE_CSS = """
 :root {
   color-scheme: light;
   --canvas: #fafaf6;
@@ -191,14 +193,14 @@ body {
 """.strip()
 
 _GROUPING_SHARE_RENDERED_CSS = (
-    _SHARE_BASE_CSS
+    SHARE_BASE_CSS
     + "\n"
     + share_download_action_renderer.DOWNLOAD_ACTION_CSS
     + "\n"
     + GROUPING_SHARE_CSS
 )
 _SEATING_SHARE_RENDERED_CSS = (
-    _SHARE_BASE_CSS
+    SHARE_BASE_CSS
     + "\n"
     + share_download_action_renderer.DOWNLOAD_ACTION_CSS
     + "\n"
@@ -244,7 +246,7 @@ class StaticClassroomPlannerShareRenderer(ClassroomPlannerShareRendererProtocol)
         *,
         prepared_export: PreparedSeatingExportContract,
     ) -> RenderedClassroomPlannerShare:
-        title = f"{prepared_export.roster_name} - Sittschema"
+        title = f"{prepared_export.roster_name} – Sittschema"
         description = (
             f"Sittschema för {prepared_export.roster_name} i {prepared_export.template_name}."
         )
