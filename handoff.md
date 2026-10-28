@@ -16,10 +16,11 @@
   - 39-06-09 `ready`: probe junior builds an ordering-in-a-part QTI package in
     `.artifacts/probe-39-06-09/`; then the Mac imports it into Exam.net with the user's
     account, and the build task is planned from the result.
-  - Backlog audit lead (session `backlog-audit`) classifies every open item against main;
-    closures and product questions go through the orchestrator to the user.
-  - Exam stories with all tasks closed wait for story closeout: 39-01, 39-04, 39-06
-    (after 39-06-09), 39-10 (after 39-10-03), 40-02, 40-04.
+  - TASK-SKRIPT-REP-0055 (backlog matches main after the 2026-10-28 audit): edits are on
+    branch `codex/task-skript-rep-0055`, waiting for the parent's merge; its report lists
+    the items left open.
+  - Exam stories waiting for story closeout: 39-06 (after 39-06-09), 39-10 (no proof-set
+    walk is on record).
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips: tasks 01 and 02 `done`; guide Steg 1 corrected on main
@@ -39,6 +40,11 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-10-28 `done` (REP-0055 lead, branch `codex/task-skript-rep-0055`): 24 tasks closed
+  on merge evidence, 10 tasks and ST-21-04 canceled, 25-06-14 partly canceled, 10 items
+  deferred, stories 06-17, 06-18, 39-01, 39-04, 40-02, 40-04 closed, EPIC-SKRIPT-20 active;
+  26-06-01 (D4) and 09-07-01 (D5) record their decisions and stay open.
 
 - 2026-10-28 `done` (Hemma orchestrator): 40-04-26 type switch and AI toolbar (`23309e478`),
   40-02-01 icons (`1b2ce75cc`), 39-04-24 rising count, 39-06-08 ordering, 40-04-09 and
@@ -119,6 +125,10 @@
 - Last Refreshed: 2026-10-28
 - Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, on Hemma the steps run directly with no ssh, an unverifiable push is blocked, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
+- Flunk-Out Frenzy donor work never flattens a richer donor object into local bounds or a
+  "good enough" approximation; the rule text is in
+  `data/pinball_resources_and_repos/vpw-rom-example-table-donor-map.md` and the
+  `pinball-board-authoring` skill.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;
   TASK-SKRIPT-REP-0040 retained capture `0004-pdm-run-typecheck`.

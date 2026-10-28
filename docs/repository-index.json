@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "783b960ce0d986f70d7e3b88a8ba48eb5731271258073ce6b3cd45a473d2dbc4",
+  "source_set_digest": "2a9e131efa05523a02092edc1190928ab99ac768c535dd29325be60627dbae10",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -224,7 +224,7 @@
       "type": "epic",
       "title": "Curated app: Reagent Prep Chef",
       "path": "docs/backlog/epics/epic-skript-20-curated-app-reagent-prep-chef.md",
-      "status": "proposed",
+      "status": "active",
       "owners": [
         {
           "kind": "service",
@@ -234,10 +234,6 @@
       "retired_ids": [
         "EPIC-20"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -776,7 +772,7 @@
       "type": "story",
       "title": "Migration idempotency harness supports merge revisions",
       "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
-      "status": "proposed",
+      "status": "done",
       "epic": "EPIC-SKRIPT-06",
       "owners": [
         {
@@ -789,7 +785,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {
@@ -797,7 +797,7 @@
       "type": "story",
       "title": "The SPA Vitest wrapper runs exactly the spec files its targets name",
       "path": "docs/backlog/stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md",
-      "status": "proposed",
+      "status": "done",
       "epic": "EPIC-SKRIPT-06",
       "owners": [
         {
@@ -810,7 +810,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {
@@ -2214,7 +2218,7 @@
       "type": "story",
       "title": "Walking skeleton for Skriptoteket-owned exam conversion",
       "path": "docs/backlog/stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2229,7 +2233,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {
@@ -2289,7 +2297,7 @@
       "type": "story",
       "title": "Native editable exam workspace with DOCX-first walking skeleton",
       "path": "docs/backlog/stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2305,7 +2313,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {
@@ -2477,7 +2489,7 @@
       "type": "story",
       "title": "Converge icons onto the shared glyph vocabulary",
       "path": "docs/backlog/stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2490,7 +2502,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {
@@ -2523,7 +2539,7 @@
       "type": "story",
       "title": "Redesign the app shell and the exam workspace from a fresh Opus prototype",
       "path": "docs/backlog/stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -2536,7 +2552,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence."
       }
     },
     {

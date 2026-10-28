@@ -4,24 +4,24 @@ id: EPIC-SKRIPT-20
 title: 'Curated app: Reagent Prep Chef'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: proposed
-readiness_review:
-  record: inline
-  status: not_started
+status: active
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers can generate a deterministic solution prep sheet (hydrates/purity/dilution)
-  with curated safety output, via a first-class curated app shipped from the repo.
+outcome: Teachers can generate a deterministic solution prep sheet (hydrates/purity/dilution) with curated safety output, via a first-class curated app shipped from the repo.
 retired_ids:
-- EPIC-20
+  - EPIC-20
+backlog_document_profile: contract-derived
 ---
 
-## Scope
+## Capability Contract
 
+The source record did not define a separate section for this package heading.
+
+## Scope
 
 - Ship the **Reagent Prep Chef** as a curated app (ADR-0023) rendered via Tool UI contract v2 (ADR-0022).
 - Bespoke-required SPA view (no generic curated app renderer fallback for this app).
@@ -32,7 +32,6 @@ retired_ids:
 - Printable export (PDF artifact) and audit-friendly structured outputs (typed outputs + JSON payload).
 
 ### Source: Out of scope
-
 
 - Chemical heuristics or reaction prediction (exothermicity, incompatibilities, etc.).
 - Multi-reagent “recipes” or synthesis instructions.
@@ -53,10 +52,19 @@ No separate contract inputs is stated in the source.
 
 ## Stories
 
-
 - [ST-20-01: Curated app — Reagent Prep Chef (v1)](../stories/story-20-01-curated-app-reagent-prep-chef.md)
 - [ST-SKRIPT-20-02: Curated app — Reagent Prep Chef — Riskbedömning + dokumentation (v1)](../stories/st-skript-20-02-curated-app-reagent-prep-chef-riskbed-mning-dokumentation-v1.md)
 - [ST-20-03: Curated app — Reagent Prep Chef — SDS corpus gap fill (ADR-0067)](../stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md)
+
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The epic is active because its stories ST-SKRIPT-20-01 and ST-SKRIPT-20-02 have shipped tasks (user decision 2026-10-28, TASK-SKRIPT-REP-0055 D7). |
 
 ## Epic Verification Plan
 
@@ -64,14 +72,12 @@ No separate epic verification plan is stated in the source.
 
 ## Exceptions And Follow-Ups
 
-
 - ADR-0022 (Tool UI contract v2)
 - ADR-0023 (Curated apps registry + execution)
 - ADR-SKRIPT-0024 (Tool sessions + ui_payload persistence)
 - `docs/reference/ref-curated-app-reagent-prep-chef.md`
 
 ## Risks
-
 
 - **False confidence:** mitigate by curated-only safety and explicit SDS fallback.
 - **Input ambiguity:** mitigate by strict formula normalization (separator-only) and clear UI copy.

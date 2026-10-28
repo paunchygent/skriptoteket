@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=41 | story=338 | task=0 | review=137
-- open | epic=20 | story=64 | task=0
+- open | epic=21 | story=58 | task=0
 
 ## Lookup
 
@@ -531,7 +531,7 @@
 ### active
 
 - EPIC-SKRIPT-02 | [Identity and access control (RBAC)](epics/epic-skript-02-identity-and-access-control-rbac.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1, proposed=2 | tasks=none
+- EPIC-SKRIPT-06 | [Quality and test coverage](epics/epic-skript-06-quality-and-test-coverage.md) | stories=ready=1, done=2 | tasks=none
 - EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=10 | tasks=none
 - EPIC-SKRIPT-09 | [Security hardening for production deployment](epics/epic-skript-09-security-hardening-for-production-deployment.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-11 | [Full Vue/Vite SPA migration](epics/epic-skript-11-full-vue-vite-spa-migration.md) | stories=active=1, ready=1 | tasks=none
@@ -539,6 +539,7 @@
 - EPIC-SKRIPT-15 | [User Profile & Settings](epics/epic-skript-15-user-profile-settings.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-16 | [Catalog discovery and personalization](epics/epic-skript-16-catalog-discovery-and-personalization.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-19 | [Runner I/O + file references foundations](epics/epic-skript-19-runner-i-o-file-references-foundations.md) | stories=ready=1 | tasks=none
+- EPIC-SKRIPT-20 | [Curated app: Reagent Prep Chef](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-21 | [Curated app: Conversion Hub (Sir Convert-a-Lot v2)](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | stories=active=2, ready=1, canceled=2 | tasks=none
 - EPIC-SKRIPT-25 | [Curated app family: competitive games foundations and Flunk-Out Frenzy](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | stories=active=2, ready=2 | tasks=none
 - EPIC-SKRIPT-26 | [Klassrumskartan — explicit exports and class-list import](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | stories=active=1, ready=4 | tasks=none
@@ -547,8 +548,8 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=3, ready=1, done=6 | tasks=none
-- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=active=2, done=2 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=1, done=8 | tasks=none
+- EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=done=4 | tasks=none
 - EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=1, done=2 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
@@ -560,11 +561,7 @@
 - ST-SKRIPT-25-06 | [Flunk-Out Frenzy VPW donor topology and table-spec rebuild](stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-27-04 | [Klassrumskartan — Smart grouping v1](stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md) | epic=[EPIC-SKRIPT-27](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | tasks=none | depends_on=0 | dependents=1
-- ST-SKRIPT-39-01 | [Walking skeleton for Skriptoteket-owned exam conversion](stories/st-skript-39-01-walking-skeleton-for-skriptoteket-owned-exam-conversion.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-39-04 | [Native editable exam workspace with DOCX-first walking skeleton](stories/st-skript-39-04-native-editable-exam-workspace-with-docx-first-walking-skeleton.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-40-04 | [Redesign the app shell and the exam workspace from a fresh Opus prototype](stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 
@@ -613,11 +610,6 @@
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-39-10 | [Teachers import exams from PDF files that contain text into the exam workspace](stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-41-03 | [Every signed-in teacher uses the exam and script-editor AI within the daily budget](stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
-
-### proposed
-
-- ST-SKRIPT-06-17 | [Migration idempotency harness supports merge revisions](stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-06-18 | [The SPA Vitest wrapper runs exactly the spec files its targets name](stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked
 
