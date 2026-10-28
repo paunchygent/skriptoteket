@@ -16,7 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
-    ordering_inside_parent_error,
+    ordering_points_in_part,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
     OutlineEntry,
@@ -27,7 +27,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeExamItemKind,
     NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
@@ -63,9 +62,7 @@ def _located_part(outline: Sequence[OutlineEntry], parent_id: str) -> tuple[int,
 
 
 def _new_child(document: NativeExamDocument, child: NativeExamItem) -> NativeExamItem:
-    if child.kind is NativeExamItemKind.ORDERING:
-        raise ordering_inside_parent_error(child.item_id)
-    data = child.model_dump()
+    data = ordering_points_in_part(child).model_dump()
     data["item_id"] = _next_id("item", {item.item_id for item in document.items}, 9999)
     data["review"]["parse_origin"] = NativeParseOrigin.TEACHER_CREATED
     return NativeExamItem.model_validate(data)
@@ -241,9 +238,7 @@ def group_items(
                 "Frågan ligger redan i en del. Flytta den med Flytta till…",
                 details={"reason": "item_in_part", "item_id": item_id},
             )
-        if item.kind is NativeExamItemKind.ORDERING:
-            raise ordering_inside_parent_error(item_id)
-        marked.append((index, item))
+        marked.append((index, ordering_points_in_part(item)))
     marked.sort(key=lambda entry: entry[0])
     parent = NativeExamParent(
         parent_id=_next_id("parent", {part.parent_id for part in document.parents}, 999),
@@ -301,8 +296,6 @@ def move_item(
             },
         )
     item = document.item_by_id(item_id)
-    if item.kind is NativeExamItemKind.ORDERING:
-        raise ordering_inside_parent_error(item_id)
     outline = list(document_outline(document))
     for index, entry in enumerate(outline):
         if isinstance(entry, OutlineQuestion) and entry.item.item_id == item_id:
@@ -315,7 +308,9 @@ def move_item(
             )
             break
     target_index, target = _located_part(outline, target_parent_id)
-    outline[target_index] = OutlinePart(part=target.part, children=(*target.children, item))
+    outline[target_index] = OutlinePart(
+        part=target.part, children=(*target.children, ordering_points_in_part(item))
+    )
     return _rebuild(document, outline)
 
 

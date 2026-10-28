@@ -17,6 +17,13 @@
  *   shows "Provtexten: {n} p" next to the field, naming every printed value
  *   when its own lines printed two different ones (TASK-SKRIPT-40-04-23).
  *
+ *   An ordering question inside a part always takes the 1 point Exam.net
+ *   gives it (TASK-SKRIPT-39-06-11 D1), so its points input is read-only
+ *   with a tooltip saying why, and a note beside the field states the rule in
+ *   place of the estimated-points cue. The client never computes the point;
+ *   the command's document carries it. A standalone ordering question keeps
+ *   its editable points.
+ *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` at the bottom of every
  *     question, for every item kind.
@@ -29,17 +36,27 @@ import { computed, inject, ref, useId } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
+import {
+  hasNegativePoints,
+  NEGATIVE_POINTS_GUIDANCE,
+  PART_ORDERING_POINTS_LOCKED_TITLE,
+  PART_ORDERING_POINTS_NOTE,
+} from "./examWorkspaceItemSaveRules";
 import { EXAM_WORKSPACE_IMPORT_POINTS_KEY, examWorkspaceSourcePointsHintText } from "./examWorkspaceImportPoints";
 
 /** A tick value is a number of at least 0 with at most 2 decimals (Q10). */
 const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
 
-const props = defineProps<{
-  item: NativeExamItem;
-  disabled: boolean;
-  converting: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    item: NativeExamItem;
+    disabled: boolean;
+    converting: boolean;
+    /** The question is an ordering question inside a part: its 1 point is locked (TASK-SKRIPT-39-06-11 D1). */
+    lockedInPart?: boolean;
+  }>(),
+  { lockedInPart: false },
+);
 
 const emit = defineEmits<{
   updatePoints: [points: number | null];
@@ -48,6 +65,7 @@ const emit = defineEmits<{
 
 const pointsId = useId();
 const pointsMessageId = useId();
+const partOrderingNoteId = useId();
 const tickId = useId();
 const tickInvalid = ref(false);
 
@@ -57,7 +75,13 @@ const pointsMissing = computed(() => props.item.points === null);
 const pointsNegative = computed(() => hasNegativePoints(props.item));
 /** Points the import spread from the section total; shown as a nonblocking cue until the teacher sets them. */
 const pointsEstimated = computed(
-  () => props.item.points_estimated && !pointsMissing.value && !pointsNegative.value && !isGrid.value && !hasCriteria.value,
+  () =>
+    props.item.points_estimated &&
+    !pointsMissing.value &&
+    !pointsNegative.value &&
+    !isGrid.value &&
+    !hasCriteria.value &&
+    !props.lockedInPart,
 );
 const importPoints = inject(EXAM_WORKSPACE_IMPORT_POINTS_KEY, null);
 /** The source's printed points while this question is marked by the import line; shown as a nonblocking cue. */
@@ -125,7 +149,7 @@ function handleTickPointsInput(event: Event): void {
       class="xw-label pts__label"
       :for="pointsId"
     >Poäng</label>
-    <!-- A grid's points are its tick value times its ticks (Q10), and a free-text item's points are its criteria sum, so they are read-only. -->
+    <!-- A grid's points are its tick value times its ticks (Q10), a free-text item's points are its criteria sum, and an ordering question inside a part is Exam.net's 1 point (TASK-SKRIPT-39-06-11 D1), so those are read-only. -->
     <input
       :id="pointsId"
       class="xw-input pts__input"
@@ -135,13 +159,30 @@ function handleTickPointsInput(event: Event): void {
       inputmode="decimal"
       :value="item.points ?? ''"
       :disabled="disabled"
-      :readonly="isGrid || hasCriteria"
-      :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
+      :readonly="isGrid || hasCriteria || lockedInPart"
+      :title="
+        isGrid
+          ? 'Poäng per kryss × antal kryss'
+          : hasCriteria
+            ? 'Summan av kriteriernas poäng'
+            : lockedInPart
+              ? PART_ORDERING_POINTS_LOCKED_TITLE
+              : undefined
+      "
       :aria-invalid="pointsMissing || pointsNegative || undefined"
-      :aria-describedby="pointsMissing || pointsNegative || pointsEstimated ? pointsMessageId : undefined"
+      :aria-describedby="pointsMissing || pointsNegative || pointsEstimated ? pointsMessageId : lockedInPart && !converting ? partOrderingNoteId : undefined"
       data-test="exam-workspace-item-points-input"
       @input="handlePointsInput"
     >
+    <span
+      v-if="lockedInPart && !converting"
+      :id="partOrderingNoteId"
+      class="xw-hint pts__msg"
+      data-test="exam-workspace-points-part-ordering"
+    ><UiGlyph
+      meaning="info"
+      :size="16"
+    />{{ PART_ORDERING_POINTS_NOTE }}</span>
     <span
       v-if="sourcePointsHint !== null"
       class="xw-warn pts__msg"

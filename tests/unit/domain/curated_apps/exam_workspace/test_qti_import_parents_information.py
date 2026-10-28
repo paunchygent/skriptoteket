@@ -4,6 +4,7 @@ Split from test_qti_import_mapping.py by tested responsibility. Covers parent
 places, kept children, and information items that become childless parts.
 """
 
+from dataclasses import replace
 from uuid import uuid4
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
@@ -27,18 +28,19 @@ from tests.unit.domain.curated_apps.exam_workspace.qti_import_mapping_support im
 )
 
 
-def test_an_ordering_child_in_a_parent_becomes_a_note_and_the_parent_keeps_its_other_child() -> (
-    None
-):
-    ordering_child = _qti_item(
-        ExamNetQtiInteractionType.ORDERING,
-        sequence=1,
-        opening="Sortera stegen",
-        choices=(
-            ExamNetQtiChoice(identifier="s1", text="Tes"),
-            ExamNetQtiChoice(identifier="s2", text="Argument"),
+def test_an_ordering_child_in_a_part_imports_at_one_point_without_a_note() -> None:
+    ordering_child = replace(
+        _qti_item(
+            ExamNetQtiInteractionType.ORDERING,
+            sequence=1,
+            opening="Sortera stegen",
+            choices=(
+                ExamNetQtiChoice(identifier="s2", text="Argument"),
+                ExamNetQtiChoice(identifier="s1", text="Tes"),
+            ),
+            correct_choice_identifiers=("s1", "s2"),
         ),
-        correct_choice_identifiers=("s1", "s2"),
+        max_score=3,
     )
     text_child = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
     parent = _qti_item(
@@ -55,12 +57,17 @@ def test_an_ordering_child_in_a_parent_becomes_a_note_and_the_parent_keeps_its_o
         source_sha256=_SOURCE_SHA,
     )
 
-    assert [item.kind for item in container.document.items] == [NativeExamItemKind.FREE_TEXT]
-    assert container.document.parents[0].place == 0
-    assert container.document.parents[0].item_ids == ("item_001",)
-    assert container.notes == (
-        "Fråga 1 – Sortera stegen: frågetypen stöds inte och importerades inte.",
-    )
+    document = container.document
+    assert [item.kind for item in document.items] == [
+        NativeExamItemKind.ORDERING,
+        NativeExamItemKind.FREE_TEXT,
+    ]
+    ordering = document.items[0]
+    assert ordering.points == 1
+    assert ordering.points_estimated is False
+    assert document.parents[0].place == 0
+    assert document.parents[0].item_ids == ("item_001", "item_002")
+    assert container.notes == ()
 
 
 def test_two_parents_after_standalone_items_carry_their_own_places() -> None:

@@ -9,7 +9,10 @@
  *   deluppgift shows its instruction collapsed above the text, with a way to
  *   edit it. After a type change an inline notice names what the change
  *   removed; the header's Ångra brings it back. Points may be 0; empty points
- *   are marked "Saknas". While the question still converts, the text from the
+ *   are marked "Saknas". An ordering question inside a part has its points
+ *   locked at Exam.net's 1 point, with a note saying so
+ *   (TASK-SKRIPT-39-06-11 D1); a standalone ordering question keeps its
+ *   editable points. While the question still converts, the text from the
  *   file shows and nothing can change.
  *
  *   Every per-question AI action sits in the question-text toolbar's last
@@ -418,6 +421,7 @@ const keyLine = computed<{ ai: boolean; aiLead: boolean; lead: string; facit: st
       :item="item"
       :disabled="locked"
       :converting="converting"
+      :locked-in-part="child !== null && item.kind === 'ordering'"
       @update-points="(points) => emit('updatePoints', item.item_id, points)"
       @update-tick-points="(tickPoints) => emit('updateTickPoints', item.item_id, tickPoints)"
     />

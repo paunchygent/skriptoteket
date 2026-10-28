@@ -124,7 +124,7 @@ def test_only_ordering_items_carry_a_print_order() -> None:
         type(make_single_choice_item()).model_validate(payload)
 
 
-def test_an_ordering_item_inside_a_parent_is_refused() -> None:
+def test_an_ordering_item_inside_a_parent_is_accepted_at_one_point() -> None:
     document = make_document(
         make_free_text_item(item_id="item_001", sequence=1),
         make_ordering_item(item_id="item_002", sequence=2),
@@ -140,7 +140,14 @@ def test_an_ordering_item_inside_a_parent_is_refused() -> None:
             "item_ids": ["item_001", "item_002"],
         }
     ]
-    with pytest.raises(ValidationError, match="cannot sit inside a parent"):
+
+    saved = NativeExamDocument.model_validate(payload)
+
+    assert saved.parent_of("item_002") is not None
+    assert saved.item_by_id("item_002").points == 1
+
+    payload["items"][1]["points"] = 3
+    with pytest.raises(ValidationError, match="worth exactly 1 point"):
         NativeExamDocument.model_validate(payload)
 
 

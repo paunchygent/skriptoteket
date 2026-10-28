@@ -47,13 +47,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamHeader,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeExamItemKind,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
+    ordering_points_in_part,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.qti_import_body import paragraphs
 from skriptoteket.domain.curated_apps.exam_workspace.qti_import_leaf_items import (
-    KINDS,
     leaf_item,
     native_media_type,
 )
@@ -207,16 +206,14 @@ def _append_parent(
     place = len(native_items)
     child_ids: list[str] = []
     for child in source.children:
-        if KINDS[child.interaction_type] is NativeExamItemKind.ORDERING:
-            # Ordering questions are standalone only; a parent cannot hold one.
-            notes.append(_interaction_note(child.sequence, _opening_text(child)))
-            continue
         leaf = leaf_item(child, sequence=len(native_items) + 1, assets=assets)
         if leaf is None:
             notes.append(_interaction_note(child.sequence, _opening_text(child)))
             continue
-        native_items.append(leaf)
-        child_ids.append(leaf.item_id)
+        # An ordering child of a part is worth 1 point, whatever the package states (D1).
+        kept = ordering_points_in_part(leaf)
+        native_items.append(kept)
+        child_ids.append(kept.item_id)
     if not child_ids:
         return
     stem_images = len(source.image_resources) - sum(

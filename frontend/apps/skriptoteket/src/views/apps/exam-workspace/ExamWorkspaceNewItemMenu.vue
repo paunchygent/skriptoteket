@@ -5,14 +5,13 @@
  * Domain purpose:
  *   The kinds a teacher adds from "Ny uppgift" (a standalone question, an
  *   instruction with deluppgifter, or an empty part) and from "+ Deluppgift".
- *   Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so the
- *   deluppgift menu omits Ordna; only the top-level menu offers Ny del (G9).
+ *   Both menus offer every question kind, Ordna included: an ordering question
+ *   may sit inside a part, where it is always worth 1 point
+ *   (TASK-SKRIPT-39-06-11 D1). Only the top-level menu offers Ny del (G9).
  *
  * Relationships:
  *   - Opened by `ExamWorkspaceQuestionList` and `ExamWorkspaceInstructionEditor`.
  */
-
-import { computed } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
@@ -24,16 +23,14 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const props = defineProps<{
+defineProps<{
   open: boolean;
   anchor: HTMLElement | null;
   child: boolean;
 }>();
 
-/** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift never offers them. */
-const entries = computed(() =>
-  EXAM_WORKSPACE_NEW_ITEM_KINDS.filter((entry) => !(props.child && entry.kind === "ordering")),
-);
+/** Every question kind, Ordna included, is offered in a part's menu too (TASK-SKRIPT-39-06-11 D1). */
+const entries = EXAM_WORKSPACE_NEW_ITEM_KINDS;
 
 function choose(kind: TeacherItemKind | "instruction" | "part"): void {
   emit("close");
