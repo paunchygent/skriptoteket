@@ -4,32 +4,29 @@ id: TASK-SKRIPT-11-25-01
 title: 'ST-11-25: Playwright tree normalization under scripts/playwright'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-11-25
 task_kind: story
 acceptance_criteria:
-- Given the repo's `scripts/` root is accumulating Playwright-specific files, when
-  this slice ships, then all existing Playwright entrypoints and shared Playwright
-  helpers live under `scripts/playwright/` instead of the root scripts directory.
-- Given the change should be mechanical rather than behavioral, when this slice ships,
-  then the existing Playwright command surface still works through updated `pdm` wrappers
-  and imports.
-- 'Given browser automation has repo rules, when this slice ships, then the normalized
-  tree still follows rule 075: one script per operational validation, shared helpers
-  in underscored modules, and artifacts under `.artifacts/<script-name>/`.'
-- Given later performance work depends on stable placement, when this slice ships,
-  then the repo has one clear home for future Playwright route-audit scripts without
-  mixing them back into the root `scripts/` folder.
+  - Given the repo's `scripts/` root is accumulating Playwright-specific files, when this slice ships, then all existing Playwright entrypoints and shared Playwright helpers live under `scripts/playwright/` instead of the root scripts directory.
+  - Given the change should be mechanical rather than behavioral, when this slice ships, then the existing Playwright command surface still works through updated `pdm` wrappers and imports.
+  - 'Given browser automation has repo rules, when this slice ships, then the normalized tree still follows rule 075: one script per operational validation, shared helpers in underscored modules, and artifacts under `.artifacts/<script-name>/`.'
+  - Given later performance work depends on stable placement, when this slice ships, then the repo has one clear home for future Playwright route-audit scripts without mixing them back into the root `scripts/` folder.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -39,8 +36,8 @@ The repo currently has many Playwright entrypoints and helpers directly in `scri
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-11-25-01 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -51,6 +48,10 @@ The task preserves the source implementation slice under its current story paren
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -72,6 +73,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 ## Stop Conditions
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
 
 ## Lessons Learned
 
@@ -161,3 +168,9 @@ No specialist approval is asserted; parent review remains required.
 ## Implementation Review
 
 No closeout evidence is asserted in this candidate.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+Cancelled as superseded. Commit a5e697f2f replaced Playwright proof guidance with agent-driven browser walks and recorded the existing Playwright scripts as history, not a proof lane, and dba8dbd3d retired rule 075 that the task cites. Moving 81 history scripts into `scripts/playwright/` adds no proof lane, so the directory was never built.

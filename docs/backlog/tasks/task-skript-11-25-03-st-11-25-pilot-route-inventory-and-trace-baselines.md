@@ -4,37 +4,30 @@ id: TASK-SKRIPT-11-25-03
 title: 'ST-11-25: pilot route inventory and trace baselines'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-11-25
 task_kind: story
 acceptance_criteria:
-- Given the pilot routes need trustworthy evidence, when this slice ships, then the
-  repo contains a Playwright route-inventory entrypoint and a small helper module
-  under `scripts/playwright/` that capture request ledgers, duplicate detection, and
-  per-route summaries for the pilot route set.
-- Given the editor route must be deterministic, when this slice ships, then the admin
-  editor pilot route is measured through one explicit script-bank fixture (`demo-settings-test`)
-  instead of whichever tool happens to exist.
-- Given the parent story requires per-route trace notes, when this slice ships, then
-  every audited pilot route produces both a request ledger and one short trace-note
-  artifact covering LCP candidates, long-task / INP-sensitive work, and visible CLS
-  contributors.
-- Given Playwright artifacts must follow repo rules, when this slice ships, then the
-  raw script outputs live under `.artifacts/playwright-route-perf-inventory/` and
-  any shared perf index only references that directory rather than replacing it.
-- Given this is still a pilot slice, when it ships, then it covers only the bounded
-  pilot routes (`/`, signed-in `/browse`, seeded `/admin/tools/:toolId`) and does
-  not claim the whole story route matrix is complete.
+  - Given the pilot routes need trustworthy evidence, when this slice ships, then the repo contains a Playwright route-inventory entrypoint and a small helper module under `scripts/playwright/` that capture request ledgers, duplicate detection, and per-route summaries for the pilot route set.
+  - Given the editor route must be deterministic, when this slice ships, then the admin editor pilot route is measured through one explicit script-bank fixture (`demo-settings-test`) instead of whichever tool happens to exist.
+  - Given the parent story requires per-route trace notes, when this slice ships, then every audited pilot route produces both a request ledger and one short trace-note artifact covering LCP candidates, long-task / INP-sensitive work, and visible CLS contributors.
+  - Given Playwright artifacts must follow repo rules, when this slice ships, then the raw script outputs live under `.artifacts/playwright-route-perf-inventory/` and any shared perf index only references that directory rather than replacing it.
+  - Given this is still a pilot slice, when it ships, then it covers only the bounded pilot routes (`/`, signed-in `/browse`, seeded `/admin/tools/:toolId`) and does not claim the whole story route matrix is complete.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -59,6 +52,10 @@ Add the pilot route-inventory and trace-baseline lane only.
   [REV-ST-11-25](../reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Browser automation rule:
   [075-browser-automation](../../../.codex/rules/075-browser-automation.md)
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -113,6 +110,12 @@ Add the pilot route-inventory and trace-baseline lane only.
 - Remove the route-inventory entrypoint, helper module, wrapper command, and artifact references
   together if the pilot evidence lane proves too noisy or structurally wrong.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
 
 No separate material is recorded in the source snapshot.
@@ -138,10 +141,10 @@ Add the pilot route-inventory and trace-baseline lane only.
 
 ### Pilot route seed set
 
-| Route | User state | Notes |
-|------|------|------|
-| `/` | signed out | public baseline |
-| `/browse` | signed in | authenticated catalog baseline |
+| Route                  | User state        | Notes                                    |
+| ---------------------- | ----------------- | ---------------------------------------- |
+| `/`                    | signed out        | public baseline                          |
+| `/browse`              | signed in         | authenticated catalog baseline           |
 | `/admin/tools/:toolId` | contributor/admin | seeded `demo-settings-test` fixture only |
 
 ### Deterministic editor fixture
@@ -262,3 +265,9 @@ No separate material is recorded in the source snapshot.
 ## Implementation Review
 
 No separate material is recorded in the source snapshot.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+Cancelled as superseded. The plan is a Playwright route-inventory script under `scripts/playwright/`, and commit a5e697f2f states agents never use Playwright and Playwright scripts are history, not a proof lane. Nothing was built: `scripts/playwright/`, `route_perf_inventory.py` and `ui-perf-inventory` do not exist on main. ST-SKRIPT-11-25's route-baseline criteria stay unmet and the story stays open; a new task using an agent-driven walk or the LHCI lane of TASK-SKRIPT-11-25-02 would cover them.

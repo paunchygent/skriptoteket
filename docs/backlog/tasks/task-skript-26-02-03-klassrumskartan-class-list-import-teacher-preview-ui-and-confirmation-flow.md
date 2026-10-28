@@ -4,33 +4,29 @@ id: TASK-SKRIPT-26-02-03
 title: 'Klassrumskartan: class-list import teacher preview UI and confirmation flow'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_required
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: user closure 2026-07-31
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-26-02
 task_kind: story
 acceptance_criteria:
-- Given a teacher is on the overview screen, when they want to create a new class,
-  then an 'Importera från fil' option is available alongside manual creation.
-- Given the teacher selects a file, when the backend returns the `ClassListImportPreview`,
-  then a modal or full-screen workflow displays the suggested class name and the parsed
-  student list for review.
-- Given the preview contains ambiguous rows, when the UI renders, then those rows
-  are highlighted and the teacher is forced to either approve them as names, edit
-  them, or explicitly discard them before saving.
-- Given the teacher confirms the preview, when they click save, then the frontend
-  submits the finalized, cleaned list to a new `POST /api/v1/apps/classroom.group-seating-studio/rosters/import-confirm`
-  endpoint, and a standard Class Roster is created.
+  - Given a teacher is on the overview screen, when they want to create a new class, then an 'Importera från fil' option is available alongside manual creation.
+  - Given the teacher selects a file, when the backend returns the `ClassListImportPreview`, then a modal or full-screen workflow displays the suggested class name and the parsed student list for review.
+  - Given the preview contains ambiguous rows, when the UI renders, then those rows are highlighted and the teacher is forced to either approve them as names, edit them, or explicitly discard them before saving.
+  - Given the teacher confirms the preview, when they click save, then the frontend submits the finalized, cleaned list to a new `POST /api/v1/apps/classroom.group-seating-studio/rosters/import-confirm` endpoint, and a standard Class Roster is created.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -95,6 +91,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -115,6 +115,12 @@ Verification expectations remain in the retained source material below.
 
 The source boundaries and recovery limits remain preserved below.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
 
 The source material below remains authoritative for this section.
@@ -130,3 +136,9 @@ The source material below remains authoritative for this section.
 ## Implementation Review
 
 The source material below remains authoritative for this section.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+Cancelled as superseded. `POST /rosters/import-confirm` was never built because import sits inside the Ny/Redigera klasslista modal and saves through the existing `POST /rosters` (`useRosterForm.ts:93`, `apps_classroom_planner.py:440`), as shipped by commits 3ebd0d02b and 99257f308 under PR-0137. The overview-level import button was dropped on purpose (PR-0137, PR-0236, `PlannerDesktopRosterOverviewSection.spec.ts:38`). The preview with editable name, student list and ambiguous rows ("Lägg till i elevlistan" / "Ignorera") is in `CreateRosterModal.vue`; blocking save until ambiguous rows are resolved is not built. Open product question, not decided here: whether `Spara` must be blocked while ambiguous rows remain.

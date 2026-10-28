@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d4b9d4f61d1188fde2cfa0658cd92b30f02059db93e4dc3cf90ae65c11b1dc71",
+  "source_set_digest": "3aab96d91f35b7f38a34593cc495652b479ec71411a1f2e11eb73d1b56ded1f8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -1641,7 +1641,7 @@
       "type": "story",
       "title": "Exam Converter durable teacher correction sessions",
       "path": "docs/backlog/stories/st-skript-21-04-exam-converter-durable-teacher-correction-sessions.md",
-      "status": "ready",
+      "status": "canceled",
       "epic": "EPIC-SKRIPT-21",
       "owners": [
         {
@@ -1652,13 +1652,12 @@
       "retired_ids": [
         "ST-21-04"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this story as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -2785,7 +2784,7 @@
       "type": "task",
       "title": "Tokenizer-backed prompt budgeting (GPT-5 + devstral)",
       "path": "docs/backlog/tasks/task-skript-08-27-03-tokenizer-backed-prompt-budgeting-gpt-5-devstral.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-27",
       "owners": [
@@ -2794,13 +2793,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -2946,7 +2944,7 @@
       "type": "task",
       "title": "ST-11-25: Playwright tree normalization under scripts/playwright",
       "path": "docs/backlog/tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts-playwright.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-11-25",
       "owners": [
@@ -2955,13 +2953,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -2992,7 +2989,7 @@
       "type": "task",
       "title": "ST-11-25: pilot route inventory and trace baselines",
       "path": "docs/backlog/tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-11-25",
       "owners": [
@@ -3001,13 +2998,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -3360,7 +3356,7 @@
       "type": "task",
       "title": "Conversion Hub: SPA bespoke UI (batch + preview + pdf_layout controls)",
       "path": "docs/backlog/tasks/task-skript-21-01-01-conversion-hub-spa-bespoke-ui-batch-preview-pdf-layout-controls.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-21-01",
       "owners": [
@@ -3369,13 +3365,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -3406,7 +3401,7 @@
       "type": "task",
       "title": "ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconciliation",
       "path": "docs/backlog/tasks/task-skript-21-03-01-st-21-03-exam-converter-reviewed-ai-facit-contract-and-affordance-reconciliation.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-21-03",
       "owners": [
@@ -3415,13 +3410,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -3774,7 +3768,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: launcher root-cause proof and input lifecycle fix plan",
       "path": "docs/backlog/tasks/task-skript-25-06-08-flunk-out-frenzy-launcher-root-cause-proof-and-input-lifecycle-fix-plan.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3783,13 +3777,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -4034,7 +4027,7 @@
       "type": "task",
       "title": "Klassrumskartan: class-list import teacher preview UI and confirmation flow",
       "path": "docs/backlog/tasks/task-skript-26-02-03-klassrumskartan-class-list-import-teacher-preview-ui-and-confirmation-flow.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-26-02",
       "owners": [
@@ -4043,15 +4036,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -8034,7 +8024,7 @@
       "type": "task",
       "title": "Action payload: SKRIPTOTEKET_ACTION decision + docs/prompt alignment",
       "path": "docs/backlog/tasks/task-skript-rep-0010-action-payload-skriptoteket-action-decision-docs-prompt-alignment.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
@@ -8042,13 +8032,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -8078,7 +8067,7 @@
       "type": "task",
       "title": "AI: LLM telemetry + llm-stats endpoint",
       "path": "docs/backlog/tasks/task-skript-rep-0012-ai-llm-telemetry-llm-stats-endpoint.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
@@ -8086,13 +8075,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as stale, with its scope dropped; the Closeout section records what replaced or removed the work."
       }
     },
     {
@@ -8394,7 +8382,7 @@
       "type": "task",
       "title": "Dev tooling command-surface alignment mediation",
       "path": "docs/backlog/tasks/task-skript-rep-0025-dev-tooling-command-surface-alignment-mediation.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "repository",
       "owners": [
         {
@@ -8402,13 +8390,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work."
       }
     },
     {
