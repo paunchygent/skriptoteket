@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0b7c167ce320afbee3db386fa8337cd09a55ac355ce2326ac268d33b6e9504b1",
+  "source_set_digest": "71a7b56f97cc891e80d2d303057c4e4515e5f3eee888f036868fefd97aa31f59",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9055,6 +9055,24 @@
         "decided_at": "2026-10-28",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Light route without review or walk (D2). Cause: withStepAdded gave a new step one text segment holding a single space, so typed text was saved after it. af8924268 starts the step with an empty body, as a new question's steps already do; ExamWorkspaceOrderingField spec gained a fail-first case; ordering specs 30 passed, rerun by the orchestrator on Hemma 2026-10-28."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0055",
+      "type": "task",
+      "title": "The backlog matches main after the 2026-10-28 audit",
+      "path": "docs/backlog/tasks/task-skript-rep-0055-the-backlog-matches-main-after-the-2026-10-28-audit.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
