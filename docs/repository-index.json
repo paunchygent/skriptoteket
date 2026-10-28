@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9fd860289a043f3ed8982a3d3de1dfe824f5fc008b1c495b3dce8f5656c81504",
+  "source_set_digest": "c38dd2d7ed17169c9c9724111d7a54f83e04eb8e7c98dc2fdda9b2c70a7c5765",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8672,7 +8672,7 @@
       "type": "task",
       "title": "Retire repository rules and route staging walks to staging-walk",
       "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8682,7 +8682,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "D1 and the D2 routing are on main: eee397e31 (2026-10-13, live-reference repairs, both unit tests, agents, skills, runbooks, source comments, every staging and browser-proof passage one staging-walk line) and TASK-SKRIPT-40-03-09 (.codex/rules deleted, facts folded into skills). The D2 lane removal is e559cae0e on codex/task-skript-rep-0038: README shared-auth lane and fe-dev-shared-auth key command, the fe-dev-shared-auth pdm script and its contract test, the local shared-auth passage of the user and local role management runbook, and the reviewer agent's Mac skill path. pdm run docs-validate passes; rg for fe-dev-shared-auth and /Users/olofs_mba outside historical docs finds only Sir Convert parity proof scripts and one generated stakeholder HTML, none of them a REP-0038 lane. Light route, no review, by the Hemma orchestrator's decision of 2026-10-28."
       }
     },
     {
@@ -8708,7 +8712,7 @@
       "type": "task",
       "title": "Retire Sir Convert public-host defaults and align private conversion lanes",
       "path": "docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8718,7 +8722,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Codex ruthless-reviewer thread 01a13fb4-cc83-7330-abad-921eb7516cf0, rereview of d97caf5b in the Mac retained session 01a13f9f-d6dd-7067-b581-efc395226538, evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md (copy in Hemma retained session 01a18444-018a-704a-b25f-1868c68bddc4, evidence/rep-0040/): approved, F1 and F2 cleared, no findings remaining. Merged to main as ced7971b. The 2026-10-28 Hemma environment check found no retired-host value in production or staging. Prepared by the Hemma housekeeping lead; the Hemma orchestrator authorizes closure by merging it."
       }
     },
     {

@@ -4,18 +4,20 @@ id: TASK-SKRIPT-REP-0038
 title: Retire repository rules and route staging walks to staging-walk
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-11'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'D1 and the D2 routing are on main: eee397e31 (2026-10-13, live-reference repairs, both unit tests, agents, skills, runbooks, source comments, every staging and browser-proof passage one staging-walk line) and TASK-SKRIPT-40-03-09 (.codex/rules deleted, facts folded into skills). The D2 lane removal is e559cae0e on codex/task-skript-rep-0038: README shared-auth lane and fe-dev-shared-auth key command, the fe-dev-shared-auth pdm script and its contract test, the local shared-auth passage of the user and local role management runbook, and the reviewer agent''s Mac skill path. pdm run docs-validate passes; rg for fe-dev-shared-auth and /Users/olofs_mba outside historical docs finds only Sir Convert parity proof scripts and one generated stakeholder HTML, none of them a REP-0038 lane. Light route, no review, by the Hemma orchestrator''s decision of 2026-10-28.'
 task_kind: repository
 acceptance_criteria:
-- The retired repository-rule directory is gone and no live surface references it, and every
-  Skriptoteket staging or browser-proof passage is one routing line to the staging-walk
-  skill with no Mac-local proof lane
+  - The retired repository-rule directory is gone and no live surface references it, and every Skriptoteket staging or browser-proof passage is one routing line to the staging-walk skill with no Mac-local proof lane
 backlog_document_profile: contract-derived
 ---
 
@@ -71,7 +73,26 @@ changes.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Delete the retired repository-rule directory and repair every live reference; historical documents keep their mentions. |
+| ID  | Decided contract term                                                                                                                                      |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Delete the retired repository-rule directory and repair every live reference; historical documents keep their mentions.                                    |
 | D2  | Every Skriptoteket staging and browser-proof passage is one routing line to `staging-walk`; Mac-local proof lanes are removed; staging runs only on Hemma. |
+
+## Progress
+
+### Closeout 2026-10-28 (Hemma housekeeping lead)
+
+- D1 and the D2 routing landed on main in this task's own `eee397e31` (2026-10-13) and in
+  TASK-SKRIPT-40-03-09, which deleted `.codex/rules`. The status had stayed `ready`.
+- `e559cae0e` removes the remaining Mac-local shared-auth and host-Vite lane: the README
+  passage and key-command entry, the `fe-dev-shared-auth` pdm script and the contract test
+  that only guarded it, the local shared-auth passage of the user and local role
+  management runbook, and the reviewer agent's `/Users/olofs_mba` skill path (now the
+  skill name). The remaining contract tests pass (6).
+- `rg -n "fe-dev-shared-auth|/Users/olofs_mba"` outside docs/backlog, docs/reference and
+  long-term memory finds: ./scripts/audio_transcription_parity_live.py ./scripts/audio_transcription_retryable_reattempt_public_proof.py ./scripts/transcript_parity_proof_launcher.py ./stakeholders/server_runbook_pdf.html. These are Sir Convert parity proof scripts and a generated
+  stakeholder HTML, outside this task (`docs/repository-index.json` also matches, through
+  this closeout's own text).
+- Left in place: `pdm run dev-stack web-start` ("Start Docker db/web for host Vite proof")
+  and its contract test; the orchestrator's removal list did not name them.
+- Light route by the Hemma orchestrator's decision of 2026-10-28: no review.
