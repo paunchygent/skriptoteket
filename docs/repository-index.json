@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2ea4f3187f225c5b2ce30fdc5f3faa59ad6a1a9dd37559b24f36cf6bf58bd3e4",
+  "source_set_digest": "f865b6abd9125f85f75c812f5bf9500b16e5c7eb212b6e0de358c8ec99939570",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9018,7 +9018,7 @@
       "type": "task",
       "title": "The exam workspace background-job Docker tests pass on main again",
       "path": "docs/backlog/tasks/task-skript-rep-0053-the-exam-workspace-background-job-docker-tests-pass-on-main-again.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9028,7 +9028,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Light route without review (D2). Cause: 855b6adb1 made the DOCX provider calls stream while the recorded test transport still answered with JSON, so the progressive job fell back and the BF26 replay missed its conflict resend. fcb4235db serves SSE for streamed requests in the test support only; no product change. Docker file 11 passed, rerun by the orchestrator on Hemma 2026-10-28."
       }
     },
     {

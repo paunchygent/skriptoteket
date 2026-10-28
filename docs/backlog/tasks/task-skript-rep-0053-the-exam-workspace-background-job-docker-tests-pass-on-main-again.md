@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route without review (D2). Cause: 855b6adb1 made the DOCX provider calls stream while the recorded test transport still answered with JSON, so the progressive job fell back and the BF26 replay missed its conflict resend. fcb4235db serves SSE for streamed requests in the test support only; no product change. Docker file 11 passed, rerun by the orchestrator on Hemma 2026-10-28.'
 task_kind: repository
 acceptance_criteria:
   - pytest -m docker tests/integration/test_exam_workspace_docx_background.py passes on main
