@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8d6d0988ee05b989c1202068f898662c062afefbce1d7dfa3e6b841abf5a32e5",
+  "source_set_digest": "8b4d50493426a5e3484292951464255576e2cf2c9b2c90c3cb4493135b6cb3f7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7671,7 +7671,7 @@
       "type": "task",
       "title": "A guest exam draft is claimed once by draft id and refused to any other teacher",
       "path": "docs/backlog/tasks/task-skript-41-02-07-a-guest-exam-draft-is-claimed-once-by-draft-id-and-refused-to-any-other-teacher.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7682,7 +7682,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "D4 light proof without review: 82c381429 merged; other-teacher and concurrency tests fail before the change; focused unit 12 passed, Docker claim and migration f2b9c4d8a701 tests 5 passed, ExamWorkspaceTeacherHost spec 11 passed, rerun by the orchestrator on Hemma 2026-10-28."
       }
     },
     {

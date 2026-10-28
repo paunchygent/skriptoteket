@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'D4 light proof without review: 82c381429 merged; other-teacher and concurrency tests fail before the change; focused unit 12 passed, Docker claim and migration f2b9c4d8a701 tests 5 passed, ExamWorkspaceTeacherHost spec 11 passed, rerun by the orchestrator on Hemma 2026-10-28.'
 task_kind: story
 acceptance_criteria:
   - The server records the guest-draft handover claim per draft_id alone; a second handover of the same draft_id by another teacher gets a 4xx whose body never reveals the first teacher's exam
@@ -25,7 +29,7 @@ A guest who edits an exam and then signs in hands the browser draft over to Mina
 
 - **First claim.** The first teacher's handover claims the draft and creates the exam, as today.
 - **Same teacher again.** A repeated handover by the teacher who already claimed it returns that teacher's existing exam, as today. It creates no second copy.
-- **Another teacher.** A handover of the same `draft_id` by any other teacher gets a 409. Its message tells the teacher the draft has already been saved by another account and reveals nothing about the first teacher's exam: no title, id or content. The browser then drops the local draft, using the existing rejected-draft path from 41-02-05.
+- **Another teacher.** A handover of the same `draft_id` by any other teacher gets a 409. Its message tells the teacher the draft has already been saved by another account and reveals nothing about the first teacher's exam: no title, id or content. The browser then shows the existing rejected-draft notice from 41-02-05, which keeps the local draft for download or removal and records the refusal so the draft is not posted again.
 - **Non-goals.** D10 (pictures in the download) is not part of this task. Guest editing does not change.
 
 ## Contract Inputs
