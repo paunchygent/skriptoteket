@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=41 | story=338 | task=0 | review=137
-- open | epic=21 | story=54 | task=0
+- open | epic=21 | story=53 | task=0
 
 ## Lookup
 
@@ -548,7 +548,7 @@
 - EPIC-SKRIPT-33 | [Flunk-Out Frenzy physical carrier foundations and cut-over governance](epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-35 | [Launch SEO and search indexing readiness](epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-37 | [Backlog product-direction inventory and app surface realignment](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | stories=ready=2 | tasks=none
-- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=active=1, ready=1, done=8 | tasks=none
+- EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | stories=ready=1, done=9 | tasks=none
 - EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md) | stories=done=4 | tasks=none
 - EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=1, done=2 | tasks=none
 - ST-SKRIPT-09-07 | [Public-edge app/runtime hardening](stories/st-skript-09-07-public-edge-app-runtime-hardening.md) | epic=[EPIC-SKRIPT-09](epics/epic-skript-09-security-hardening-for-production-deployment.md) | tasks=none | depends_on=0 | dependents=1
@@ -559,7 +559,6 @@
 - ST-SKRIPT-25-06 | [Flunk-Out Frenzy VPW donor topology and table-spec rebuild](stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-27-04 | [Klassrumskartan — Smart grouping v1](stories/st-skript-27-04-klassrumskartan-smart-grouping-v1.md) | epic=[EPIC-SKRIPT-27](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | tasks=none | depends_on=0 | dependents=1
-- ST-SKRIPT-39-06 | [Teacher authoring of every Exam.net question type with parent and child questions](stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 
 ### ready
 

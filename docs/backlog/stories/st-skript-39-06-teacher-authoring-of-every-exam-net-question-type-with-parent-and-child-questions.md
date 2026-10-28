@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-10"
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'All 11 tasks done (39-06-01 to 39-06-11). Story-closure walk by the Mac thread at staging d0064b1ce 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-st-39-06-d0064b1ce/walk-record.md): one exam (document 88011040, revision 63) holding all 8 built types once standalone and once as children of one part (ordering 3 p standalone, 1 p locked in the part; part 15 p; total 33 p); the QTI 3.0 export imported by the Mac in the user''s Edge as Exam.net exam 5395761 with the same 9 tasks in order, the same a-h children and the same points, Totalt 33p, and no differences. Per-subtask editors were not opened; the ordering-in-part rule was checked in the 39-06-11 walk (exam 5395749).'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - Through the workspace API an exam holds any of six Exam.net-proven question types, with ordering added only if the user decides so after the Exam.net probe, as a standalone question or as a parent whose child questions share one instruction, and the exported QTI 3.0 package imports into Exam.net with that structure

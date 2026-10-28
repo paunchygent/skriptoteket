@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "47f5789bef3035d7999f8e586a4a9aeba70dd40a290e2156ec20dd0458226153",
+  "source_set_digest": "e7f77b68b5d053a5380b2db7fef3e4e69547f5d6861a45aadb3ce7b9ec2c44d6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2333,7 +2333,7 @@
       "type": "story",
       "title": "Teacher authoring of every Exam.net question type with parent and child questions",
       "path": "docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md",
-      "status": "active",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2346,7 +2346,11 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "All 11 tasks done (39-06-01 to 39-06-11). Story-closure walk by the Mac thread at staging d0064b1ce 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-st-39-06-d0064b1ce/walk-record.md): one exam (document 88011040, revision 63) holding all 8 built types once standalone and once as children of one part (ordering 3 p standalone, 1 p locked in the part; part 15 p; total 33 p); the QTI 3.0 export imported by the Mac in the user's Edge as Exam.net exam 5395761 with the same 9 tasks in order, the same a-h children and the same points, Totalt 33p, and no differences. Per-subtask editors were not opened; the ordering-in-part rule was checked in the 39-06-11 walk (exam 5395749)."
       }
     },
     {
