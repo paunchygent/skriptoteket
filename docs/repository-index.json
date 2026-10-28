@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3aab96d91f35b7f38a34593cc495652b479ec71411a1f2e11eb73d1b56ded1f8",
+  "source_set_digest": "783b960ce0d986f70d7e3b88a8ba48eb5731271258073ce6b3cd45a473d2dbc4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -929,10 +929,6 @@
       "retired_ids": [
         "ST-08-08"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -954,12 +950,6 @@
       "retired_ids": [
         "ST-08-09"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -2770,10 +2760,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -2815,10 +2801,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -2907,10 +2889,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -3043,10 +3021,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -3066,10 +3040,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -3342,10 +3312,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -3662,10 +3628,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -3944,10 +3906,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4127,10 +4085,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"

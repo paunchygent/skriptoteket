@@ -4,25 +4,25 @@ id: ST-SKRIPT-08-08
 title: Script editor help (overview + versioning)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given the script editor page, when opening help, then it explains saving, drafts/versions,
-  and the review/publish flow in plain Swedish
-- Given role restrictions, when opening help, then it clarifies which actions are
-  available for the current role
+  - Given the script editor page, when opening help, then it explains saving, drafts/versions, and the review/publish flow in plain Swedish
+  - Given role restrictions, when opening help, then it clarifies which actions are available for the current role
 retired_ids:
-- ST-08-08
+  - ST-08-08
+backlog_document_profile: contract-derived
 ---
+
+## Slice Contract
+
+Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3). No work is scheduled and the status is unchanged; the contract below stays as written.
 
 ## Context
 
@@ -41,6 +41,20 @@ The source does not record separate ADR coverage.
 ## Contract Inputs
 
 The source does not record separate contract inputs.
+
+## Tasks
+
+The source record did not define a separate section for this package heading.
+
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3): no work is scheduled and the status is unchanged. |
 
 ## Live Verification Plan
 
