@@ -19,17 +19,8 @@
     reaches the phone, Healthchecks check "Hemma" up with receipt verified (`4d8ebe9d`).
   - Next lead: 39-10-03 needs the user's "start 39-10-03" here.
 
-- Hemma orchestrator (2026-10-21, retained `01a15f48-0f71-77ba-b7df-f48c8e838efb`):
-  all 82 Hemma task and verify worktrees hold no work missing from main
-  (survey in that root's `evidence/admission/`); removal waits on user approval.
-
-- [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
-  `in_progress`; owner Claude parent. `fix/retire-convert-references` at
-  `d97caf5b` merged to main after the original reviewer approved the F1/F2
-  repair (`evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md` in
-  retained `01a13f9f-d6dd-7067-b581-efc395226538`). Next: closeout after the
-  Hemma hold, with the staging env check. No SSH, deployment or live proof yet.
-  Namecheap CNAME deletion stays with the user.
+- Hemma worktree removal (user-approved 2026-10-28): 5 merged skill-repository worktrees
+  removed; the rest kept with reasons (retained `01a18444`, `evidence/worktrees/`).
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp. Owner: Claude parent (Hemma);
@@ -117,6 +108,9 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-28 `done`: TASK-SKRIPT-REP-0040 Sir Convert public-host retirement (rereview
+  `d97caf5b` approved, main `ced7971b`; env check in retained `01a18444`). User step: Namecheap CNAME deletion.
 
 - 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
   `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); in production at `976d89b5b`.

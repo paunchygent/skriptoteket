@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4f2eb83a53e822d09eacfb6e38d65525f741e754246a206766a9df2ac68c9635",
+  "source_set_digest": "e38470ce9042675bd84e91e2e104826c050032998002153b2976b9bc5947e4e2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8704,7 +8704,7 @@
       "type": "task",
       "title": "Retire Sir Convert public-host defaults and align private conversion lanes",
       "path": "docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8714,7 +8714,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-15",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Codex ruthless-reviewer thread 01a13fb4-cc83-7330-abad-921eb7516cf0, rereview of d97caf5b in the Mac retained session 01a13f9f-d6dd-7067-b581-efc395226538, evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md (copy in Hemma retained session 01a18444-018a-704a-b25f-1868c68bddc4, evidence/rep-0040/): approved, F1 and F2 cleared, no findings remaining. Merged to main as ced7971b. The 2026-10-28 Hemma environment check found no retired-host value in production or staging. Prepared by the Hemma housekeeping lead; the Hemma orchestrator authorizes closure by merging it."
       }
     },
     {
