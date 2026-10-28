@@ -180,7 +180,7 @@ def test_group_refuses_empty_duplicate_and_unknown_items_with_named_reasons() ->
     assert unknown.value.details == {"item_id": "item_999"}
 
 
-def test_group_refuses_an_existing_child_and_an_ordering_question() -> None:
+def test_group_refuses_an_existing_child_and_groups_an_ordering_question_at_one_point() -> None:
     with pytest.raises(DomainError) as child:
         group_items(_exam(), item_ids=("item_002",))
     assert child.value.code is ErrorCode.VALIDATION_ERROR
@@ -189,14 +189,18 @@ def test_group_refuses_an_existing_child_and_an_ordering_question() -> None:
 
     ordering = make_document(
         make_free_text_item(sequence=1, item_id="item_001"),
-        make_ordering_item(sequence=2, item_id="item_002"),
+        make_ordering_item(sequence=2, item_id="item_002", points=3),
     )
-    with pytest.raises(DomainError) as ordering_error:
-        group_items(ordering, item_ids=("item_002",))
-    assert ordering_error.value.details == {
-        "reason": "ordering_inside_parent",
-        "item_id": "item_002",
-    }
+
+    grouped, parent_id = group_items(ordering, item_ids=("item_002",))
+
+    parent = next(part for part in grouped.parents if part.parent_id == parent_id)
+    assert parent.item_ids == ("item_002",)
+    grouped_ordering = grouped.item_by_id("item_002")
+    assert grouped_ordering.kind is NativeExamItemKind.ORDERING
+    assert grouped_ordering.points == 1
+    assert grouped_ordering.points_estimated is False
+    _check_structure(grouped)
 
 
 def test_move_standalone_into_a_part_lands_last_and_keeps_the_parts_place() -> None:
@@ -267,7 +271,7 @@ def test_move_out_of_a_one_question_part_leaves_a_childless_part_before_the_ques
     _check_structure(result)
 
 
-def test_move_refuses_unknown_ids_the_same_part_and_ordering_into_a_part() -> None:
+def test_move_refuses_unknown_ids_and_the_same_part() -> None:
     base = _exam()
 
     with pytest.raises(DomainError) as unknown_part:
@@ -292,19 +296,33 @@ def test_move_refuses_unknown_ids_the_same_part_and_ordering_into_a_part() -> No
     assert unknown_item.value.code is ErrorCode.NOT_FOUND
     assert unknown_item.value.details == {"item_id": "item_999"}
 
-    ordering = _with_parts(
+
+def test_move_an_ordering_question_into_a_part_sets_one_point_and_out_keeps_it() -> None:
+    base = _with_parts(
         make_document(
             make_free_text_item(sequence=1, item_id="item_001"),
-            make_ordering_item(sequence=2, item_id="item_002"),
+            make_ordering_item(sequence=2, item_id="item_002", points=3),
         ),
         _childless("parent_001", "Block", 1),
     )
-    with pytest.raises(DomainError) as ordering_error:
-        move_item(ordering, item_id="item_002", target_parent_id="parent_001")
-    assert ordering_error.value.details == {
-        "reason": "ordering_inside_parent",
-        "item_id": "item_002",
-    }
+    assert base.item_by_id("item_002").points == 3
+
+    moved_in = move_item(base, item_id="item_002", target_parent_id="parent_001")
+
+    part = moved_in.parents[0]
+    assert part.item_ids == ("item_002",)
+    in_part = moved_in.item_by_id("item_002")
+    assert in_part.kind is NativeExamItemKind.ORDERING
+    assert in_part.points == 1
+    assert in_part.points_estimated is False
+    assert moved_in.parent_of("item_002") == part
+    _check_structure(moved_in)
+
+    moved_out = move_item(moved_in, item_id="item_002", target_parent_id=None)
+
+    assert moved_out.parents[0].item_ids == ()
+    assert moved_out.item_by_id("item_002").points == 1
+    _check_structure(moved_out)
 
 
 @pytest.mark.parametrize("position", [0, 3, 6])

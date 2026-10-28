@@ -16,7 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import NativeMatchPair
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
     draw_print_order,
-    ordering_inside_parent_error,
+    ordering_points_in_part,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
@@ -176,8 +176,7 @@ def change_item_type(
     rng: random.Random,
 ) -> NativeExamChangeTypeResult:
     """Retype one question; ``rng`` draws the print order of a new ordering question."""
-    if target_kind == NativeExamItemKind.ORDERING and document.parent_of(item_id) is not None:
-        raise ordering_inside_parent_error(item_id)
+    in_part = document.parent_of(item_id) is not None
     item = document.item_by_id(item_id)
     fallback = item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     if item.kind == target_kind:
@@ -378,6 +377,9 @@ def change_item_type(
                 body.append(dict(paragraph, segments=segments))
         data["body"] = body or _empty_body()
     changed = NativeExamItem.model_validate(data)
+    if in_part and target_kind is NativeExamItemKind.ORDERING:
+        # A part child retyped to ordering is worth 1 point in the same result (D1).
+        changed = ordering_points_in_part(changed)
     return NativeExamChangeTypeResult(
         _rebuild_with_changed_item(document, item_id=item_id, changed=changed),
         tuple(dropped),

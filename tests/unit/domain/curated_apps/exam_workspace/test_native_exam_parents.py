@@ -25,6 +25,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    make_document,
     make_free_text_item,
     make_ordering_item,
 )
@@ -272,10 +273,10 @@ def test_a_childless_part_after_a_part_with_children_is_rejected():
         recorded_document((with_children, childless))
 
 
-def test_an_ordering_item_inside_a_part_is_rejected():
+def _part_with_ordering_child(points: int | float | None) -> NativeExamDocument:
     document_items = (
         make_free_text_item(sequence=1, item_id="item_001"),
-        make_ordering_item(sequence=2, item_id="item_002"),
+        make_ordering_item(sequence=2, item_id="item_002", points=points),
     )
     parent = NativeExamParent(
         parent_id="parent_001",
@@ -283,16 +284,35 @@ def test_an_ordering_item_inside_a_part_is_rejected():
         instruction=_instruction_lines("Do these."),
         item_ids=("item_002",),
     )
+    return NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Ordering in a part",
+        items=document_items,
+        parents=(parent,),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
 
-    with pytest.raises(ValidationError, match="ordering items cannot sit inside a parent"):
-        NativeExamDocument(
-            document_id=uuid4(),
-            revision=1,
-            title="Ordering in a part",
-            items=document_items,
-            parents=(parent,),
-            origin=NativeExamDocumentOrigin(kind="created"),
-        )
+
+def test_an_ordering_child_inside_a_part_is_worth_exactly_one_point():
+    document = _part_with_ordering_child(1)
+
+    assert document.item_by_id("item_002").points == 1
+    assert parent_points(document, document.parents[0]) == 1
+
+
+@pytest.mark.parametrize("points", [3, None], ids=["three_points", "no_points"])
+def test_an_ordering_child_inside_a_part_at_any_other_value_is_rejected(points):
+    with pytest.raises(
+        ValidationError, match="an ordering item inside a parent is worth exactly 1 point"
+    ):
+        _part_with_ordering_child(points)
+
+
+def test_a_standalone_ordering_question_keeps_its_own_points():
+    document = make_document(make_ordering_item(sequence=1, item_id="item_001", points=3))
+
+    assert document.item_by_id("item_001").points == 3
 
 
 def test_document_saved_without_parents_still_parses_and_keeps_its_schema_version():

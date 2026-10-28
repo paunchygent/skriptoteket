@@ -27,7 +27,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
 )
-from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_document,
     make_free_text_item,
@@ -156,17 +155,23 @@ def test_matching_to_ordering_gives_blank_steps_and_reports_the_grid() -> None:
     )
 
 
-def test_child_cannot_become_ordering() -> None:
+def test_a_part_child_retyped_to_ordering_is_worth_one_point() -> None:
     document = make_document(
         make_free_text_item(), make_free_text_item(sequence=2, item_id="item_002")
     )
     document = NativeExamDocument.model_validate(
         {**document.model_dump(), "parents": (parent_over("parent_001", "Ctx", 1, 2),)}
     )
-    with pytest.raises(DomainError) as error:
-        change_item_type(document, item_id="item_001", target_kind=ORDERING, rng=random.Random(1))
-    assert error.value.code is ErrorCode.VALIDATION_ERROR
-    assert error.value.details == {"reason": "ordering_inside_parent", "item_id": "item_001"}
+
+    result = change_item_type(
+        document, item_id="item_001", target_kind=ORDERING, rng=random.Random(1)
+    )
+
+    changed = result.document.items[0]
+    assert changed.kind is ORDERING
+    assert changed.points == 1
+    assert changed.points_estimated is False
+    assert result.document.parent_of("item_001") is not None
 
 
 def _reasons(item) -> list[str]:
@@ -208,19 +213,33 @@ def _parented_exam() -> NativeExamDocument:
     )
 
 
-def test_add_child_refuses_an_ordering_child() -> None:
-    with pytest.raises(DomainError) as error:
-        add_child(_parented_exam(), parent_id="parent_001", child=make_ordering_item(), position=0)
-    assert error.value.details["reason"] == "ordering_inside_parent"
+def test_add_child_sets_an_ordering_child_to_one_point() -> None:
+    result = add_child(
+        _parented_exam(),
+        parent_id="parent_001",
+        child=make_ordering_item(points=3),
+        position=0,
+    )
+
+    part = result.parents[0]
+    added = result.item_by_id(part.item_ids[0])
+    assert added.kind is ORDERING
+    assert added.points == 1
+    assert added.points_estimated is False
 
 
-def test_create_parent_refuses_an_ordering_child() -> None:
+def test_create_parent_sets_an_ordering_child_to_one_point() -> None:
     document = make_document(make_free_text_item())
-    with pytest.raises(DomainError) as error:
-        create_parent(
-            document, instruction=(), child=make_ordering_item(item_id="item_009"), position=0
-        )
-    assert error.value.code is ErrorCode.VALIDATION_ERROR
+
+    result = create_parent(
+        document, instruction=(), child=make_ordering_item(item_id="item_009", points=3), position=0
+    )
+
+    part = result.parents[0]
+    created = result.item_by_id(part.item_ids[0])
+    assert created.kind is ORDERING
+    assert created.points == 1
+    assert created.points_estimated is False
 
 
 def test_import_schema_never_offers_ordering() -> None:

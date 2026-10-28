@@ -26,6 +26,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
+    ORDERING_IN_PART_POINTS,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
     validate_parent_structure,
@@ -174,12 +177,14 @@ class NativeExamDocument(BaseModel):
             raise ValueError(f"unreferenced assets: {sorted(orphans)}")
         validate_parent_structure(self.parents, self.items)
         child_ids = {item_id for parent in self.parents for item_id in parent.item_ids}
-        if any(
-            item.kind is NativeExamItemKind.ORDERING and item.item_id in child_ids
-            for item in self.items
-        ):
-            # Ordering questions are standalone only (ST-SKRIPT-39-06 P3).
-            raise ValueError("ordering items cannot sit inside a parent")
+        for item in self.items:
+            if item.item_id not in child_ids:
+                continue
+            if item.kind is not NativeExamItemKind.ORDERING:
+                continue
+            # An ordering child of a part is always worth 1 point (TASK-SKRIPT-39-06-11 D1).
+            if item.points != ORDERING_IN_PART_POINTS:
+                raise ValueError("an ordering item inside a parent is worth exactly 1 point")
         return self
 
     def parent_of(self, item_id: str) -> NativeExamParent | None:
