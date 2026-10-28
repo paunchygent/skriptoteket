@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7a7ab8b3240d231da53864b10bafac6a17780bf07e326b8d92e888009addd3e6",
+  "source_set_digest": "4f2eb83a53e822d09eacfb6e38d65525f741e754246a206766a9df2ac68c9635",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8664,7 +8664,7 @@
       "type": "task",
       "title": "Retire repository rules and route staging walks to staging-walk",
       "path": "docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8674,7 +8674,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "D1 and the D2 routing are on main: eee397e31 (2026-10-13, live-reference repairs, both unit tests, agents, skills, runbooks, source comments, every staging and browser-proof passage one staging-walk line) and TASK-SKRIPT-40-03-09 (.codex/rules deleted, facts folded into skills). The D2 lane removal is e559cae0e on codex/task-skript-rep-0038: README shared-auth lane and fe-dev-shared-auth key command, the fe-dev-shared-auth pdm script and its contract test, the local shared-auth passage of the user and local role management runbook, and the reviewer agent's Mac skill path. pdm run docs-validate passes; rg for fe-dev-shared-auth and /Users/olofs_mba outside historical docs finds only Sir Convert parity proof scripts and one generated stakeholder HTML, none of them a REP-0038 lane. Light route, no review, by the Hemma orchestrator's decision of 2026-10-28."
       }
     },
     {

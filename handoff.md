@@ -23,14 +23,6 @@
   all 82 Hemma task and verify worktrees hold no work missing from main
   (survey in that root's `evidence/admission/`); removal waits on user approval.
 
-- [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
-  `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
-  D1-D2 live routing edits pass focused gates (2026-10-11; retained session
-  `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
-  The 22 rule files are deleted on main by TASK-SKRIPT-40-03-09 (facts folded into
-  skills). Next: the REP-0038 owner reconciles its remaining D1-D2 scope against that.
-  The branch is absent on Hemma (2026-10-21), so the owner pointer is stale.
-
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
   `in_progress`; owner Claude parent. `fix/retire-convert-references` at
   `d97caf5b` merged to main after the original reviewer approved the F1/F2
@@ -162,6 +154,9 @@
 - 2026-10-20 `done` on main: TASK-SKRIPT-41-02-06 unreadable exam files (`0ab8ccb8`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`).
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-40-04-13 and -14 gap lane (merge `f84eb85d`, rereview 12 approved, Mac step 5 re-walk PASS; user closure).
+
+- 2026-10-28 `done`: TASK-SKRIPT-REP-0038 repository rules retired (`eee397e31`, 40-03-09) and
+  the Mac-local shared-auth lane removed (`e559cae0e`); orchestrator closure, no review.
 
 - 2026-10-20 `done` on main: TASK-SKRIPT-06-17-02 migration tests pinned to their own revision, plus the pre-push migration stage (`3d3f867a`, user closure; the stage ran on its first push, 118 passed). TASK-SKRIPT-06-17-01 canceled as superseded by it.
 
