@@ -7075,6 +7075,12 @@ export interface components {
          */
         NativeAnswerKeyOrigin: "absent" | "not_applicable" | "source_provided" | "ai_interpreted" | "teacher_authored" | "machine_proposed" | "reviewed_advisory";
         /**
+         * NativeAnswerKeyRetry
+         * @description The one per-question answer-key retry after an undo (TASK-SKRIPT-40-04-26 D4).
+         * @enum {string}
+         */
+        NativeAnswerKeyRetry: "none" | "offered" | "used";
+        /**
          * NativeAnswerKeySuggestion
          * @description One AI answer-key suggestion kept on its question (TASK-SKRIPT-39-04-07).
          *
@@ -7381,6 +7387,8 @@ export interface components {
         "NativeExamItem-Input": {
             ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
+            /** @default none */
+            answer_key_retry: components["schemas"]["NativeAnswerKeyRetry"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
             /**
@@ -7458,6 +7466,8 @@ export interface components {
         "NativeExamItem-Output": {
             ai_suggestion: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
+            /** @default none */
+            answer_key_retry: components["schemas"]["NativeAnswerKeyRetry"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
             /**
@@ -7984,6 +7994,8 @@ export interface components {
         NewParentChild: {
             ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
             answer_key: components["schemas"]["NativeAnswerKey"];
+            /** @default none */
+            answer_key_retry: components["schemas"]["NativeAnswerKeyRetry"];
             /** Body */
             body: components["schemas"]["NativeParagraph"][];
             /**

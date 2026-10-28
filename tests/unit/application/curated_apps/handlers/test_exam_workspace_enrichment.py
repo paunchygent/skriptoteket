@@ -31,8 +31,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
 )
-from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.application.curated_apps.handlers.enrichment_routing_test_support import (
     make_actor,
 )
@@ -136,6 +137,36 @@ class TestRequest:
                 request=RequestExamWorkspaceAnswerKeySuggestionsRequest(document=document),
             )
         assert harness.jobs.jobs == {}
+
+    async def test_used_retry_refuses_a_second_per_question_request(self) -> None:
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
+            harness.lineage_id,
+            suggestion_item(item_id="item_001", sequence=1, retry=NativeAnswerKeyRetry.USED),
+        )
+
+        with pytest.raises(DomainError) as raised:
+            await harness.request(document, item_id="item_001")
+
+        assert raised.value.code is ErrorCode.CONFLICT
+        assert raised.value.message == "Frågan har redan fått sitt nya facitförslag."
+        assert raised.value.details == {"item_id": "item_001"}
+        assert harness.jobs.jobs == {}
+
+    async def test_offered_retry_still_enqueues_its_one_request(self) -> None:
+        harness = SuggestionHandlerHarness()
+        document = suggestion_document(
+            harness.lineage_id,
+            suggestion_item(item_id="item_001", sequence=1, retry=NativeAnswerKeyRetry.OFFERED),
+        )
+
+        response = await harness.request(document, item_id="item_001")
+
+        assert response.state is ExamWorkspaceEnrichmentState.QUEUED
+        assert response.job_id is not None
+        job = harness.jobs.jobs[response.job_id]
+        payload = WorkspaceAnswerKeyRequestPayload.model_validate(job.workspace_request_json)
+        assert [view.item_id for view in payload.views] == ["item_001"]
 
 
 class TestStatus:

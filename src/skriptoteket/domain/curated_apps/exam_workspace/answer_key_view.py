@@ -48,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
     NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
@@ -227,13 +228,15 @@ def answer_key_item_view(
 
 
 def answer_key_item_views(document: NativeExamDocument) -> tuple[AnswerKeyItemView, ...]:
-    """Select keyed items whose answer key is absent, in document order."""
+    """Select keyed items whose answer key is absent and whose retry is untouched, in
+    document order, so suggest-all never fills a question whose AI key the teacher undid."""
 
     return tuple(
         answer_key_item_view(item, document.parent_of(item.item_id))
         for item in document.items
         if item.kind in _VIEW_KIND_BY_ITEM_KIND
         and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
+        and item.answer_key_retry is NativeAnswerKeyRetry.NONE
     )
 
 

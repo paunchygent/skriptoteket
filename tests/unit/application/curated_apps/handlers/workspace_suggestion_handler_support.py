@@ -52,6 +52,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
     NativeExamItemKind,
     NativeItemReviewState,
     NativeParseOrigin,
@@ -137,6 +138,7 @@ def suggestion_item(
     sequence: int,
     origin: NativeAnswerKeyOrigin = NativeAnswerKeyOrigin.ABSENT,
     stem: str = "Vilket är huvudordet?",
+    retry: NativeAnswerKeyRetry = NativeAnswerKeyRetry.NONE,
 ) -> NativeExamItem:
     return NativeExamItem(
         item_id=item_id,
@@ -156,6 +158,7 @@ def suggestion_item(
             if origin is not NativeAnswerKeyOrigin.ABSENT
             else (),
         ),
+        answer_key_retry=retry,
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
             parse_origin=NativeParseOrigin.TEACHER_CREATED,

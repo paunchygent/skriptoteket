@@ -360,13 +360,15 @@ def context_chunks(
 
 def _kept_from_original(original: NativeExamItem) -> dict[str, object]:
     """What a retried question keeps of the original: identity, place, source, provenance,
-    and the printed points conflict its source holds (TASK-SKRIPT-40-04-23 P8)."""
+    the saved answer-key retry and the printed points conflict its source holds
+    (TASK-SKRIPT-40-04-23 P8, TASK-SKRIPT-40-04-26 D4)."""
     kept: dict[str, object] = {
         "item_id": original.item_id,
         "sequence": original.sequence,
         "source_anchor": original.source_anchor,
         "import_record": original.import_record,
         "ai_suggestion": None,
+        "answer_key_retry": original.answer_key_retry,
     }
     if original.conflicting_source_points:
         kept["conflicting_source_points"] = original.conflicting_source_points

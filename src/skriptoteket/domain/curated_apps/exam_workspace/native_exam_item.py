@@ -47,6 +47,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     ITEM_ID_PATTERN,
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
     NativeExamItemKind,
 )
 
@@ -96,6 +97,11 @@ class NativeExamItem(BaseModel):
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
     ai_suggestion: NativeAnswerKeySuggestion | None = None
+    # The one per-question answer-key retry after an undo (TASK-SKRIPT-40-04-26 D4): the
+    # editor writes offered on undo and used when the retry's suggestion arrives; the
+    # server refuses a single-question request on used. Every new question starts at
+    # none, like the neighbouring fields, with no reader for older documents.
+    answer_key_retry: NativeAnswerKeyRetry = NativeAnswerKeyRetry.NONE
     # Rubric criteria: only free_text carries any (Q12); their points are the item's.
     criteria: tuple[NativeExamCriterion, ...] = ()
     review: NativeItemReview

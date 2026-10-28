@@ -11,6 +11,8 @@ Purpose:
     exam opened again finds the newest job for its current saved version,
     and a request repeating a queued or running job's exact content gets
     that job back instead of a second model call (TASK-SKRIPT-39-04-09).
+    A single-question request on a question whose one answer-key retry is
+    spent is refused before any job lookup (TASK-SKRIPT-40-04-26 D4).
 
 Relationships:
     Reuses the ``exam_answer_key_enrichment_jobs`` queue through
@@ -45,6 +47,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
+    NativeAnswerKeyRetry,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
@@ -147,6 +150,14 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         )
         if head is None:
             raise _document_not_found(lineage_id)
+        if request.item_id is not None and (
+            document.item_by_id(request.item_id).answer_key_retry is NativeAnswerKeyRetry.USED
+        ):
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message="Frågan har redan fått sitt nya facitförslag.",
+                details={"item_id": request.item_id},
+            )
         views = self._selected_views(request)
         if not self._enrichment_enabled or not views:
             return ExamWorkspaceAnswerKeySuggestionsResponse(
