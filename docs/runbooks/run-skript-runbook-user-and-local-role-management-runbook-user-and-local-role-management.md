@@ -4,15 +4,13 @@ id: RUN-SKRIPT-runbook-user-and-local-role-management
 title: 'Runbook: User and Local Role Management'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-user-management
-summary: 'Use this runbook when you need to: - Bootstrap a new deployment with the
-  first Superuser. - Inspect or repair Skriptoteket-local users, identity projections,
-  and roles. - Grant or revoke app-local roles. **Context:**…'
+  - RUN-user-management
+summary: 'Use this runbook when you need to: - Bootstrap a new deployment with the first Superuser. - Inspect or repair Skriptoteket-local users, identity projections, and roles. - Grant or revoke app-local roles. **Context:**…'
 system: skriptoteket-identity
 ---
 
@@ -42,12 +40,12 @@ change browser credentials directly in this repo.
 
 ### Source: Role Hierarchy
 
-| Role | Permissions |
-|------|-------------|
-| `user` | Browse katalog, run tools |
-| `contributor` | Above + submit suggestions |
-| `admin` | Above + manage tools, review suggestions, publish |
-| `superuser` | Full system access |
+| Role          | Permissions                                       |
+| ------------- | ------------------------------------------------- |
+| `user`        | Browse katalog, run tools                         |
+| `contributor` | Above + submit suggestions                        |
+| `admin`       | Above + manage tools, review suggestions, publish |
+| `superuser`   | Full system access                                |
 
 ### Source: Procedures
 
@@ -60,6 +58,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 ```
 
 **Interactive mode** (prompts for password):
+
 ```bash
 ssh hemma
 cd ~/apps/skriptoteket
@@ -82,6 +81,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 credential ceremony.
 
 **Interactive mode:**
+
 ```bash
 ssh hemma
 cd ~/apps/skriptoteket
@@ -136,27 +136,6 @@ pdm run consume-huleedu-subject-export \
   --output-json .artifacts/skriptoteket-auth-bootstrap/local-consume-apply.json \
   --apply
 ```
-
-Local shared-auth bootstrap preflight:
-
-```bash
-pdm run auth-edge-bootstrap-preflight \
-  --export-json /Users/olofs_mba/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json \
-  --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json
-```
-
-Do not substitute another HuleEdu subject-export artifact here. Older local
-exports from prior Identity DB generations are unsupported Skriptoteket
-shared-auth proof inputs.
-
-For the supported local shared-auth lane, HuleEdu owns the browser credential
-seed and Skriptoteket owns projection/RBAC. The durable local bootstrap
-superuser is `superuser@local.dev` with `BOOTSTRAP_SUPERUSER_PASSWORD`, and the
-HuleEdu local export should include deterministic `@local.dev` proof accounts
-for `user`, `contributor`, `admin`, and `superuser`. If the preflight reports
-`bootstrap_identity_conflict`, the local Skriptoteket DB still contains a
-legacy password-owner user for the bootstrap email; reset the local dev DB or
-run an explicit governed migration before applying the HuleEdu export.
 
 Production handoff from HuleEdu should copy only the sanitized export JSON into the
 Skriptoteket artifact volume, then run a dry-run first:
@@ -233,6 +212,7 @@ The source does not state separate expected results.
 ### "User already exists"
 
 The email is already taken. Check existing users:
+
 ```bash
 ssh hemma "sudo docker exec shared-postgres psql -U postgres -d skriptoteket -c \"SELECT email FROM users;\""
 ```
@@ -250,6 +230,7 @@ authority.
 ### "No module named 'skriptoteket'"
 
 Missing PYTHONPATH. Always use:
+
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli ..."
 ```
