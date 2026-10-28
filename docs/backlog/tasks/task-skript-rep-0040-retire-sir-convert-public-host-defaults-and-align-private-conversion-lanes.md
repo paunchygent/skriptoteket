@@ -135,4 +135,6 @@ rereview and closeout remain with the parent.
   the retirement records and the stale-env rejection guard with its tests.
 - Configuration proof only: Sir production stays offline by user decision, so no
   conversion reachability was checked.
-- User step, not done here: delete the Namecheap CNAME for `convert.hule.education`.
+- The user deleted the Namecheap CNAME for `convert.hule.education` (reported
+  2026-10-28). The name returns NXDOMAIN from 1.1.1.1, 8.8.8.8 and the authoritative
+  `dns2.registrar-servers.com`.
