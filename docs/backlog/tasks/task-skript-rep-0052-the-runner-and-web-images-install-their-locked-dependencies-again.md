@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route without review (D2). Root cause: pdm 2.26.2 accepts unearth>=0.17.5 unbounded and unearth 0.19 moved PyPIClient onto httpx2, so the locked install raised TypeError. 6ab2619cb installs pdm[locked]==2.26.2 in the web builder, web production and runner stages; the scratch build of web and runner passed on Hemma 2026-10-28.'
 task_kind: repository
 acceptance_criteria:
   - docker compose -f compose.hemma-dev.yaml --profile build-only build web runner completes on Hemma from current main
