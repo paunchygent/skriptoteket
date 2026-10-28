@@ -252,7 +252,7 @@ onUnmounted(() => {
     <UiDenseActionButton
       v-if="triggerVariant === 'toolbar'"
       ref="desktopTriggerRef"
-      label="Dela"
+      label="Dela länk"
       :data-test="triggerTestId"
       :expanded="isOpen"
       has-popup="dialog"
@@ -290,7 +290,7 @@ onUnmounted(() => {
           :size="15"
           :stroke-width="2.25"
         />
-        Dela
+        Dela länk
       </span>
       <span
         v-if="triggerMeta !== ''"
@@ -315,7 +315,7 @@ onUnmounted(() => {
         :size="16"
         :stroke-width="2.25"
       />
-      <span>Dela</span>
+      <span>Dela länk</span>
     </button>
 
     <div
