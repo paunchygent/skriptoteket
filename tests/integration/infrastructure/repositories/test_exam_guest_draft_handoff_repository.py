@@ -2,8 +2,8 @@
 
 Purpose:
     Prove the claim ledger semantics against real Postgres: one claim wins per
-    ``(owner_user_id, draft_id)`` and reports False on every later call, two
-    different owners claim the same draft independently, and the winning
+    ``draft_id`` and reports False on every later call, including for
+    different owners, and the winning
     lineage is readable back.
 
 Relationships:
@@ -69,7 +69,7 @@ async def test_claims_once_per_owner_and_draft(
     assert stored == 1
 
 
-async def test_two_owners_claim_the_same_draft_id_independently(
+async def test_two_owners_cannot_claim_the_same_draft_id(
     db_session: AsyncSession, session_factory: async_sessionmaker[AsyncSession]
 ) -> None:
     first_owner = await create_owner(session_factory)
@@ -89,14 +89,12 @@ async def test_two_owners_claim_the_same_draft_id_independently(
         await repository.claim(
             owner_user_id=second_owner.id, draft_id=draft_id, lineage_id=second_lineage, now=_NOW
         )
-        is True
+        is False
     )
     assert await repository.get_lineage(owner_user_id=first_owner.id, draft_id=draft_id) == (
         first_lineage
     )
-    assert await repository.get_lineage(owner_user_id=second_owner.id, draft_id=draft_id) == (
-        second_lineage
-    )
+    assert await repository.get_lineage(owner_user_id=second_owner.id, draft_id=draft_id) is None
 
 
 async def test_unknown_draft_returns_no_lineage(

@@ -79,19 +79,19 @@ class InMemoryGuestDraftHandoffRepository:
     """Ledger double with the real claim semantics minus database blocking."""
 
     def __init__(self) -> None:
-        self.rows: dict[tuple[UUID, UUID], UUID] = {}
+        self.rows: dict[UUID, tuple[UUID, UUID]] = {}
 
     async def claim(
         self, *, owner_user_id: UUID, draft_id: UUID, lineage_id: UUID, now: datetime
     ) -> bool:
-        key = (owner_user_id, draft_id)
-        if key in self.rows:
+        if draft_id in self.rows:
             return False
-        self.rows[key] = lineage_id
+        self.rows[draft_id] = (owner_user_id, lineage_id)
         return True
 
     async def get_lineage(self, *, owner_user_id: UUID, draft_id: UUID) -> UUID | None:
-        return self.rows.get((owner_user_id, draft_id))
+        row = self.rows.get(draft_id)
+        return row[1] if row is not None and row[0] == owner_user_id else None
 
 
 class _RefusingVerifier:
@@ -317,9 +317,45 @@ async def test_repeated_post_returns_the_first_exam_without_creating_anything() 
         assert again["document"]["title"] == "Omprov: grammatik"
         assert again["document"] == created["document"]
         assert len(env.vault_files.files) == 1
-        assert handoffs.rows[(actor.id, draft_id)] == lineage_id
+        assert handoffs.rows[draft_id] == (actor.id, lineage_id)
     finally:
         await _close_app(app)
+
+
+async def test_other_teacher_receives_generic_conflict_body() -> None:
+    env = _Env()
+    first = _actor()
+    second = first.model_copy(update={"id": uuid4()})
+    handoffs = InMemoryGuestDraftHandoffRepository()
+    document, asset_id, payload = _picture_document()
+    draft_id = uuid4()
+    first_app = _app(env, first, handoffs)
+    second_app = _app(env, second, handoffs)
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=first_app), base_url="http://test"
+        ) as client:
+            created = await _post_draft(
+                client, document, draft_id=draft_id, assets={asset_id: payload}
+            )
+        assert created.status_code == 200
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=second_app), base_url="http://test"
+        ) as client:
+            refused = await _post_draft(
+                client, document, draft_id=draft_id, assets={asset_id: payload}
+            )
+        assert refused.status_code == 409
+        assert refused.json()["error"] == {
+            "code": "CONFLICT",
+            "message": "Utkastet har redan sparats av ett annat konto.",
+            "details": {},
+        }
+        assert created.json()["summary"]["lineage_id"] not in refused.text
+        assert document.title not in refused.text
+    finally:
+        await _close_app(first_app)
+        await _close_app(second_app)
 
 
 async def test_different_draft_id_creates_a_second_exam() -> None:

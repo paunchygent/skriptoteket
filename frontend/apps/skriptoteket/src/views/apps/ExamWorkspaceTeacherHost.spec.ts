@@ -264,6 +264,21 @@ describe("ExamWorkspaceTeacherHost", () => {
     wrapper.unmount();
   });
 
+  it("shows the rejected draft notice when another account already claimed it", async () => {
+    seatStoredDraft();
+    apiMocks.importGuestDraft.mockRejectedValue(
+      new ApiError({ code: "CONFLICT", message: "Utkastet har redan sparats av ett annat konto.", status: 409 }),
+    );
+    const wrapper = mount(ExamWorkspaceTeacherHost);
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="exam-workspace-file-notice-text"]').text()).toBe(
+      EXAM_WORKSPACE_FILE_NOTICE_GUEST_PERMANENT_COPY,
+    );
+    expect(routeMocks.replace).not.toHaveBeenCalled();
+    wrapper.unmount();
+  });
+
   it("b) a full Mina filer shows the vault notice and retry posts again", async () => {
     seatStoredDraft();
     apiMocks.importGuestDraft
