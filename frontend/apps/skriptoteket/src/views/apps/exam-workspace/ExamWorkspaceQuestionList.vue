@@ -29,8 +29,9 @@
  *   with Tillbaka or a choice. The head is one row: the title, then the
  *   collapse glyph, Ny uppgift and the Markera toggle (`ExamWorkspaceQuestionListHead`).
  *   Pressing Markera turns
- *   the list into Markera mode: a standalone question carries a checkbox (an
- *   ordering question's is disabled, G6) and a bar under the head groups the
+ *   the list into Markera mode: a standalone question carries a checkbox, an
+ *   ordering question included (TASK-SKRIPT-39-06-11 D1), and a bar under the
+ *   head groups the
  *   ticked questions into a new part (G2, G11); a part and a question inside
  *   a part carry no checkbox. Pressing Markera again leaves the mode.
  *

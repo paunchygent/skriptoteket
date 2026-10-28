@@ -9,8 +9,9 @@
  *   switches from an empty to a ticked checkbox. The bar under the head with
  *   "Skapa del av markerade (N)" exists only while marking. Every row keeps
  *   its mark cell. Only standalone questions carry a checkbox (a part and a
- *   question inside a part do not, G11); an ordering question's checkbox is
- *   disabled with its reason (G6). The group action is disabled at N = 0 and
+ *   question inside a part do not, G11); a standalone ordering question takes
+ *   one like any other, because it may join a part (TASK-SKRIPT-39-06-11
+ *   D1). The group action is disabled at N = 0 and
  *   emits the ticks in document order (G10); pressing the toggle again clears
  *   the ticks and leaves the mode; while the workspace is busy every control
  *   is disabled.
@@ -173,13 +174,13 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
     expect(markBoxes(wrapper)).toEqual(["item_001", "item_003", "item_004", "item_005"]);
   });
 
-  it("disables an ordering question's checkbox with the reason", async () => {
+  it("enables a standalone ordering question's checkbox", async () => {
     const wrapper = mountList();
     await wrapper.get(TOGGLE).trigger("click");
 
     const ordering = wrapper.get('[data-test="exam-workspace-mark-item_003"]');
-    expect(ordering.attributes("disabled")).toBeDefined();
-    expect(ordering.attributes("title")).toBe("Ordna-frågor kan inte ligga i en del");
+    expect(ordering.attributes("disabled")).toBeUndefined();
+    expect(ordering.attributes("title")).toBeUndefined();
 
     const freeText = wrapper.get('[data-test="exam-workspace-mark-item_001"]');
     expect(freeText.attributes("disabled")).toBeUndefined();

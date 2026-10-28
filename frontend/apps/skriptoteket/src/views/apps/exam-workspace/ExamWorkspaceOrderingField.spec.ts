@@ -6,7 +6,7 @@
  *   shows the saved print order; add, move, remove and Blanda om emit; the
  *   last step cannot be removed, Blanda om needs two steps, and an empty step
  *   is marked invalid. New-question and change-type menus offer Ordna to a
- *   standalone question only.
+ *   standalone question and to a deluppgift alike (TASK-SKRIPT-39-06-11 D1).
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -188,7 +188,7 @@ describe("ordering in the editor and menus", () => {
     expect(EXAM_WORKSPACE_TYPE_LABELS.ordering).toBe("Ordna");
   });
 
-  it("offers Ordna in the new-question menu but not in the deluppgift menu", () => {
+  it("offers Ordna in the new-question and the deluppgift menu", () => {
     const open = (child: boolean) =>
       mount(ExamWorkspaceNewItemMenu, {
         props: { open: true, anchor: null, child },
@@ -199,7 +199,7 @@ describe("ordering in the editor and menus", () => {
       });
 
     expect(open(false).find('[data-test="exam-workspace-new-ordering"]').text()).toBe("Ordna");
-    expect(open(true).find('[data-test="exam-workspace-new-ordering"]').exists()).toBe(false);
+    expect(open(true).find('[data-test="exam-workspace-new-ordering"]').text()).toBe("Ordna");
   });
 });
 
@@ -235,11 +235,11 @@ describe("Byt frågetyp", () => {
     wrapper.unmount();
   });
 
-  it("never offers Ordna for a deluppgift", async () => {
+  it("offers Ordna for a deluppgift too", async () => {
     const wrapper = await openTypeMenu({ index: 0, count: 2 });
 
     expect(document.querySelector('[data-test="exam-workspace-type-matching"]')).not.toBeNull();
-    expect(document.querySelector('[data-test="exam-workspace-type-ordering"]')).toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-type-ordering"]')?.textContent).toContain("Ordna");
     wrapper.unmount();
   });
 });

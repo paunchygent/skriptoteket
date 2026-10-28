@@ -31,6 +31,11 @@ import {
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 export const NEGATIVE_POINTS_GUIDANCE = "Ange 0 poäng eller mer.";
+
+/** An ordering question inside a part is worth Exam.net's 1 point (TASK-SKRIPT-39-06-11 D1): the note beside its locked field. */
+export const PART_ORDERING_POINTS_NOTE = "Exam.net ger alltid Ordna-frågor i en del 1 poäng";
+/** The tooltip on that locked points field. */
+export const PART_ORDERING_POINTS_LOCKED_TITLE = "Låst: Exam.net ger Ordna i en del 1 poäng";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
 export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";

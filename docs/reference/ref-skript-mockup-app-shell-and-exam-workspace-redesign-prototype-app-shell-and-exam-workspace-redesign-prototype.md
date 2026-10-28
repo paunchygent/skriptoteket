@@ -53,47 +53,47 @@ Add a hash from the table below to open a specific state.
 
 ### Review States
 
-| Hash                                       | State                                                                             | Screenshots                                        |
-| ------------------------------------------ | --------------------------------------------------------------------------------- | -------------------------------------------------- |
-| *(none)* or `q=3`                          | Question 3: an AI-interpreted key that has not been reviewed                      | `01-workspace-*`                                   |
-| `drawer=open`                              | Öppna drawer: import box and the exam list grouped by course                      | `02-open-drawer-*`, `02b-open-drawer-full-desktop` |
-| `drawer=open&sort=senaste`                 | The exam list sorted by date                                                      | `37-open-drawer-sorted-by-date-*`                  |
-| `q=3&imp`                                  | The Import box open on question 3, with its steps and Konvertera igen             | `03-import-box-*`                                  |
-| `q=4`                                      | The instruction, its deluppgifter and the printed-total mismatch                  | `04-instruction-*`                                 |
-| `q=4a`                                     | A deluppgift under the instruction bar, with Bedömningskriterier                  | `05-child-question-*`                              |
-| `q=5&pop=gap`                              | Lucktext gap popover: accepted answers, automatisk answers, Visa som text         | `06-lucktext-gap-*`                                |
-| `q=7` (`&rgap=N`)                          | Lucktext med rullista: one option list per gap, one correct option each           | `07-rullista-*`                                    |
-| `q=8`                                      | Kategorisera grid with points per tick                                            | `08-kategorisera-*`                                |
-| `q=9`                                      | An unbuilt question (Ej konverterad) blocking export                              | `09-unbuilt-*`                                     |
-| `q=10`                                     | A picture in the question and the estimated-points hint                           | `35-picture-estimated-points-*`                    |
-| `q=4c&menu=more`                           | A deluppgift's ⋮ menu: Flytta upp, Flytta ned, Ta bort deluppgiften               | `36-deluppgift-more-*`                             |
-| `q=11`                                     | A stored suggested type: 'Gör om till Lucktext'                                   | `10-suggested-type-*`                              |
-| `q=12&keepconverting`                      | A question that is still converting (finishes after 9 s without `keepconverting`) | `11-converting-*`                                  |
+| Hash                                       | State                                                                                                      | Screenshots                                        |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| *(none)* or `q=3`                          | Question 3: an AI-interpreted key that has not been reviewed                                               | `01-workspace-*`                                   |
+| `drawer=open`                              | Öppna drawer: import box and the exam list grouped by course                                               | `02-open-drawer-*`, `02b-open-drawer-full-desktop` |
+| `drawer=open&sort=senaste`                 | The exam list sorted by date                                                                               | `37-open-drawer-sorted-by-date-*`                  |
+| `q=3&imp`                                  | The Import box open on question 3, with its steps and Konvertera igen                                      | `03-import-box-*`                                  |
+| `q=4`                                      | The instruction, its deluppgifter and the printed-total mismatch                                           | `04-instruction-*`                                 |
+| `q=4a`                                     | A deluppgift under the instruction bar, with Bedömningskriterier                                           | `05-child-question-*`                              |
+| `q=5&pop=gap`                              | Lucktext gap popover: accepted answers, automatisk answers, Visa som text                                  | `06-lucktext-gap-*`                                |
+| `q=7` (`&rgap=N`)                          | Lucktext med rullista: one option list per gap, one correct option each                                    | `07-rullista-*`                                    |
+| `q=8`                                      | Kategorisera grid with points per tick                                                                     | `08-kategorisera-*`                                |
+| `q=9`                                      | An unbuilt question (Ej konverterad) blocking export                                                       | `09-unbuilt-*`                                     |
+| `q=10`                                     | A picture in the question and the estimated-points hint                                                    | `35-picture-estimated-points-*`                    |
+| `q=4c&menu=more`                           | A deluppgift's ⋮ menu: Flytta upp, Flytta ned, Ta bort deluppgiften                                        | `36-deluppgift-more-*`                             |
+| `q=11`                                     | A stored suggested type: 'Gör om till Lucktext'                                                            | `10-suggested-type-*`                              |
+| `q=12&keepconverting`                      | A question that is still converting (finishes after 9 s without `keepconverting`)                          | `11-converting-*`                                  |
 | `change=fritext`                           | Change type: the inline notice in the question that names the dropped content; the header Ångra reverts it | `12-change-type-notice-*`                          |
-| `menu=type`                                | Byt frågetyp menu, with the reserved Ordning entry                                | `13-type-menu-*`                                   |
-| `menu=new`                                 | Ny uppgift menu, with the reserved Ordning entry                                  | `14-new-menu-*`                                    |
-| `q=4&menu=child`                           | + Deluppgift menu, without Ordning                                                | `38-deluppgift-new-menu-*`                         |
-| `q=4a&menu=type`                           | Byt frågetyp on a deluppgift, without Ordning                                     | `39-child-type-menu-*`                             |
-| `dirty&menu=save`                          | Osparat status and the Spara split menu                                           | `15-save-menu-dirty-*`                             |
-| `dlg=saveas` (`&err`)                      | Spara som dialog / with the name already taken                                    | `16-save-as-*`, `17-save-as-name-taken-*`          |
-| `menu=export`                              | Export menu with the export blockers                                              | `18-export-menu-blockers-*`                        |
-| `ready&menu=export`                        | Export menu with no blockers                                                      | `19-export-menu-ready-*`                           |
-| `ready&drawer=export&checklist&dest=files` | Export drawer: Spara i Mina filer and the Exam.net checklist                      | `20-export-drawer-files-*`                         |
-| `drawer=meta`                              | Provets uppgifter: title, file name, course, central content                      | `21-meta-drawer-*`                                 |
-| `drawer=meta&nocourse&menu=course`         | Course search with Mina kurser first                                              | `22-meta-course-search-*`                          |
-| `drawer=meta&othercourse`                  | A picked course that is not in Mina kurser: Lägg till i mina kurser               | `22-meta-other-course-*`                           |
-| `empty`                                    | No exam open                                                                      | `23-empty-*`                                       |
-| `importing`                                | An import in progress                                                             | `24-importing-*`                                   |
-| `view=vault`                               | Mina filer with each exam's exports under it                                      | `25-mina-filer-*`                                  |
-| `rail`                                     | Desktop sidebar collapsed to the glyph rail                                       | `26-collapsed-rail-*`                              |
-| `help`                                     | Help panel with the keyboard shortcuts                                            | `27-help-*`                                        |
-| `list`                                     | Phone question list                                                               | `28-phone-list-phone`                              |
-| `nav`                                      | Phone navigation drawer                                                           | `29-phone-nav-phone`                               |
-| `toast=resume`                             | A suggestion that was running before reload, resumed: the header AI button is busy again, no toast | `30-resumed-suggestion-*`                          |
-| `ready&toast=qti`                          | QTI saved to Mina filer: the Exportera drawer lists what the last export made, no toast | `31-qti-saved-toast-*`                             |
-| `ready&toast=reviewed`                     | All questions reviewed: every list row shows the success glyph, no toast | `32-all-reviewed-toast-*`                          |
-| `dirty&drawer=open`                        | The file picker disabled while edits are unsaved                                  | `33-open-while-unsaved-*`                          |
-| `empty&menu=course`                        | The course picker at import                                                       | `34-import-course-picker-*`                        |
+| `menu=type`                                | Byt frågetyp menu, with the reserved Ordning entry                                                         | `13-type-menu-*`                                   |
+| `menu=new`                                 | Ny uppgift menu, with the reserved Ordning entry                                                           | `14-new-menu-*`                                    |
+| `q=4&menu=child`                           | + Deluppgift menu, without Ordning                                                                         | `38-deluppgift-new-menu-*`                         |
+| `q=4a&menu=type`                           | Byt frågetyp on a deluppgift, without Ordning                                                              | `39-child-type-menu-*`                             |
+| `dirty&menu=save`                          | Osparat status and the Spara split menu                                                                    | `15-save-menu-dirty-*`                             |
+| `dlg=saveas` (`&err`)                      | Spara som dialog / with the name already taken                                                             | `16-save-as-*`, `17-save-as-name-taken-*`          |
+| `menu=export`                              | Export menu with the export blockers                                                                       | `18-export-menu-blockers-*`                        |
+| `ready&menu=export`                        | Export menu with no blockers                                                                               | `19-export-menu-ready-*`                           |
+| `ready&drawer=export&checklist&dest=files` | Export drawer: Spara i Mina filer and the Exam.net checklist                                               | `20-export-drawer-files-*`                         |
+| `drawer=meta`                              | Provets uppgifter: title, file name, course, central content                                               | `21-meta-drawer-*`                                 |
+| `drawer=meta&nocourse&menu=course`         | Course search with Mina kurser first                                                                       | `22-meta-course-search-*`                          |
+| `drawer=meta&othercourse`                  | A picked course that is not in Mina kurser: Lägg till i mina kurser                                        | `22-meta-other-course-*`                           |
+| `empty`                                    | No exam open                                                                                               | `23-empty-*`                                       |
+| `importing`                                | An import in progress                                                                                      | `24-importing-*`                                   |
+| `view=vault`                               | Mina filer with each exam's exports under it                                                               | `25-mina-filer-*`                                  |
+| `rail`                                     | Desktop sidebar collapsed to the glyph rail                                                                | `26-collapsed-rail-*`                              |
+| `help`                                     | Help panel with the keyboard shortcuts                                                                     | `27-help-*`                                        |
+| `list`                                     | Phone question list                                                                                        | `28-phone-list-phone`                              |
+| `nav`                                      | Phone navigation drawer                                                                                    | `29-phone-nav-phone`                               |
+| `toast=resume`                             | A suggestion that was running before reload, resumed: the header AI button is busy again, no toast         | `30-resumed-suggestion-*`                          |
+| `ready&toast=qti`                          | QTI saved to Mina filer: the Exportera drawer lists what the last export made, no toast                    | `31-qti-saved-toast-*`                             |
+| `ready&toast=reviewed`                     | All questions reviewed: every list row shows the success glyph, no toast                                   | `32-all-reviewed-toast-*`                          |
+| `dirty&drawer=open`                        | The file picker disabled while edits are unsaved                                                           | `33-open-while-unsaved-*`                          |
+| `empty&menu=course`                        | The course picker at import                                                                                | `34-import-course-picker-*`                        |
 
 Other keys: `ready` marks every question reviewed with points; `pref` opens
 the type-specific preferences; `sort=senaste` sorts the exam list by date;
@@ -158,24 +158,24 @@ the build:
 
 ### States And Their Presentation
 
-| State                         | Presentation                                                                                                                                                  |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Saved                         | Status slot: check glyph and 'Sparat 17 okt 14:05' in muted text                                                                                              |
-| Unsaved                       | The same slot: status-modified glyph and 'Osparat' in warning colour; the tooltip says edits are saved as a draft and Spara overwrites the exam in Mina filer |
-| Saving                        | The same slot: busy glyph and 'Sparar …', then 'Sparat' with the time; no toast |
-| Undo or redo unavailable      | The button is disabled with the tooltip 'Inget att ångra' or 'Inget att göra om'                                                                              |
-| Needs review                  | List row: warning glyph; a blocker reason in failure colour after the type, such as 'facit ej granskat' or 'poäng saknas'                                     |
-| Reviewed                      | List row: success glyph; the review check in the editor is filled                                                                                             |
-| AI-suggested key              | Sparkles on the list row and beside the chosen option; 'Facit tolkat av AI ur …' with 'Ångra AI-tolkningen'                                                   |
-| Suggestion out of date        | A dot on the Alternativ Sparkles button                                                                                                                       |
-| Suggesting for all questions  | The header AI button shows busy and is disabled; after a reload the run resumes and the button is busy again, with no toast |
-| Unbuilt question              | Type button in failure colour 'Ej konverterad' and one failure line under the header                                                                          |
-| Converting                    | Muted list row with busy glyph; a warning-surface notice; read-only fields                                                                                    |
-| Export blocked                | The export menu starts with 'Kan inte exporteras ännu' and links to each blocking question; the format rows are disabled                                      |
+| State                         | Presentation                                                                                                                                                                                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Saved                         | Status slot: check glyph and 'Sparat 17 okt 14:05' in muted text                                                                                                                                                                                                   |
+| Unsaved                       | The same slot: status-modified glyph and 'Osparat' in warning colour; the tooltip says edits are saved as a draft and Spara overwrites the exam in Mina filer                                                                                                      |
+| Saving                        | The same slot: busy glyph and 'Sparar …', then 'Sparat' with the time; no toast                                                                                                                                                                                    |
+| Undo or redo unavailable      | The button is disabled with the tooltip 'Inget att ångra' or 'Inget att göra om'                                                                                                                                                                                   |
+| Needs review                  | List row: warning glyph; a blocker reason in failure colour after the type, such as 'facit ej granskat' or 'poäng saknas'                                                                                                                                          |
+| Reviewed                      | List row: success glyph; the review check in the editor is filled                                                                                                                                                                                                  |
+| AI-suggested key              | Sparkles on the list row and beside the chosen option; 'Facit tolkat av AI ur …' with 'Ångra AI-tolkningen'                                                                                                                                                        |
+| Suggestion out of date        | A dot on the Alternativ Sparkles button                                                                                                                                                                                                                            |
+| Suggesting for all questions  | The header AI button shows busy and is disabled; after a reload the run resumes and the button is busy again, with no toast                                                                                                                                        |
+| Unbuilt question              | Type button in failure colour 'Ej konverterad' and one failure line under the header                                                                                                                                                                               |
+| Converting                    | Muted list row with busy glyph; a warning-surface notice; read-only fields                                                                                                                                                                                         |
+| Export blocked                | The export menu starts with 'Kan inte exporteras ännu' and links to each blocking question; the format rows are disabled                                                                                                                                           |
 | Total mismatch                | One plain line per printed total that differs from its questions' sum, above the list footer: the exam first, then each differing part in order. Each line has the glyph-only actions 'Godta frågornas summa' and 'Visa frågorna'. It never blocks Spara or export |
-| Picker disabled while unsaved | Course, drop zone and Välj provfil are disabled, with 'Spara det öppna provet innan du importerar eller öppnar ett annat.'                                    |
-| No exam open                  | Header 'Inget prov öppet'; every action except Öppna is disabled; the editor shows the empty state; the Öppna drawer opens                                    |
-| Importing                     | The drop zone becomes a progress card: 'Konverterar provet: 4 av 12 frågor klara.'                                                                            |
+| Picker disabled while unsaved | Course, drop zone and Välj provfil are disabled, with 'Spara det öppna provet innan du importerar eller öppnar ett annat.'                                                                                                                                         |
+| No exam open                  | Header 'Inget prov öppet'; every action except Öppna is disabled; the editor shows the empty state; the Öppna drawer opens                                                                                                                                         |
+| Importing                     | The drop zone becomes a progress card: 'Konverterar provet: 4 av 12 frågor klara.'                                                                                                                                                                                 |
 
 ### Design Rules For The Builders
 
@@ -230,8 +230,9 @@ the build:
 12. **Fine-pointer reveal.** Option remove buttons show on hover or focus on
     fine pointers and are always visible on touch.
 13. **Reserved entry.** 'Ordning' sits last among the types in Byt frågetyp
-    and Ny uppgift. + Deluppgift, and Byt frågetyp on a deluppgift, omit it,
-    because an ordering question is standalone only (ST-SKRIPT-39-06 P3).
+    and Ny uppgift. + Deluppgift, and Byt frågetyp on a deluppgift, offer it
+    too: inside a part an ordering question is worth 1 point
+    (TASK-SKRIPT-39-06-11 D1).
     The entry is `aria-disabled`, cannot be chosen, is out of the tab order
     and skipped by the menu arrows. Its hint 'Kommer senare' is small muted
     text at the row's end on every device, linked through
@@ -253,7 +254,7 @@ fakes (the save toast and the 9 s conversion).
 | Top bar, sidebar, page frame                                            | Shell                                                                                                                                                                              | `01`, `26`, `29`                    |
 | Estimated-points hint                                                   | Poäng row of question 10                                                                                                                                                           | `35`                                |
 | Unbuilt-question blocker                                                | Question header and list row                                                                                                                                                       | `09`                                |
-| Exam and part total mismatch                                            | Lines above the list footer, instruction row and instruction editor | `01`, `04`                          |
+| Exam and part total mismatch                                            | Lines above the list footer, instruction row and instruction editor                                                                                                                | `01`, `04`                          |
 | Course hint                                                             | Provets uppgifter under Kurs ('Ämne: Svenska')                                                                                                                                     | `21`                                |
 | Per-question Konvertera igen                                            | Import box, with the type select                                                                                                                                                   | `03`                                |
 | Pictures in questions                                                   | Frågetext of question 10                                                                                                                                                           | `35`                                |
@@ -263,17 +264,17 @@ fakes (the save toast and the 9 s conversion).
 | Kategorisera grid with points per tick                                  | Answer section of question 8                                                                                                                                                       | `08`                                |
 | Fritext criteria                                                        | Bedömningskriterier                                                                                                                                                                | `05`                                |
 | Kort svar under Ny fråga                                                | Ny uppgift menu                                                                                                                                                                    | `14`                                |
-| Export checklist after QTI                                              | Export drawer, which lists what the last export made | `20`, `31`                          |
+| Export checklist after QTI                                              | Export drawer, which lists what the last export made                                                                                                                               | `20`, `31`                          |
 | Metadata drawer opened from the exam title                              | Title button → Provets uppgifter                                                                                                                                                   | `21`                                |
 | Course picker at import                                                 | Öppna drawer, Kurs (valfritt)                                                                                                                                                      | `34`                                |
 | File picker disabled while unsaved                                      | Öppna drawer                                                                                                                                                                       | `33`                                |
-| Pending suggestion resumed after reload                                 | Header AI button, busy again after the reload | `30`                                |
+| Pending suggestion resumed after reload                                 | Header AI button, busy again after the reload                                                                                                                                      | `30`                                |
 | Öppna drawer exam list: by course, newest first, sort toggle, Utan kurs | Öppna drawer, Prov                                                                                                                                                                 | `02`, `02b` (shows Utan kurs), `37` |
 | Spara and Spara som                                                     | Header split button; dialog                                                                                                                                                        | `15`, `16`, `17`                    |
 | Undo and redo, 10 steps, shortcuts                                      | Right end of the header; help panel                                                                                                                                                | `12`, `15`, `27`                    |
 | Ctrl/Cmd+S                                                              | Spara tooltip, Spara menu, help panel                                                                                                                                              | `15`, `27`                          |
 | Import box with steps, DOCX and DigiExam                                | Question header Import → inline box                                                                                                                                                | `03`                                |
-| Change type with the dropped-content notice                             | Type button → Byt frågetyp; inline notice in the question, reverted by the header Ångra | `13`, `12`                          |
+| Change type with the dropped-content notice                             | Type button → Byt frågetyp; inline notice in the question, reverted by the header Ångra                                                                                            | `13`, `12`                          |
 | Gör om till [type]                                                      | Question header of question 11                                                                                                                                                     | `10`                                |
 | Ny uppgift and + Deluppgift                                             | List header; Deluppgifter heading                                                                                                                                                  | `14`, `04`                          |
 | Add, delete and reorder deluppgifter                                    | Instruction editor rows; ⋮ on a deluppgift                                                                                                                                         | `04`, `36`                          |

@@ -10,8 +10,9 @@
  *   question as the exam file had it; the review check; and ⋮ with Flytta
  *   upp, Flytta ned, Flytta till… and Ta bort for a deluppgift, or Flytta
  *   till… and Ta bort for a question. Flytta till lists the parts and "Ingen
- *   del (fristående)", marking the question's current place and refusing a
- *   part for an ordering question (G3, G6). Deleting a part's last question
+ *   del (fristående)", marking the question's current place (G3); an ordering
+ *   question may join any part, where Exam.net gives it 1 point
+ *   (TASK-SKRIPT-39-06-11 D1). Deleting a part's last question
  *   keeps the part, so the entry needs no warning.
  *   On a phone or touch device the same ⋮ menu opens with the question's
  *   three AI controls as words above the built rows, then a separator
@@ -94,11 +95,6 @@ const props = withDefaults(
   },
 );
 
-/** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
-const orderedKinds = computed<QuestionTypeOption[]>(() =>
-  KINDS.filter((option) => !(props.child !== null && option.kind === "ordering")),
-);
-
 /** One Byt frågetyp entry: a native kind, or the Kort svar shape. */
 type TypeMenuEntry = { checked: boolean; kind: NativeExamItemKind | "short_answer"; label: string };
 
@@ -110,7 +106,7 @@ type TypeMenuEntry = { checked: boolean; kind: NativeExamItemKind | "short_answe
  */
 const menuEntries = computed<TypeMenuEntry[]>(() => {
   const shortAnswerEntry: TypeMenuEntry = { checked: props.shortAnswer, kind: "short_answer", label: "Kort svar" };
-  const entries = orderedKinds.value.flatMap((option, index) => {
+  const entries = KINDS.flatMap((option, index) => {
     const entry: TypeMenuEntry = {
       checked:
         !props.unbuilt &&
@@ -149,18 +145,9 @@ const offeredKind = computed(() =>
   props.suggestedKind !== null && (props.suggestedKind !== props.kind || props.unbuilt) ? props.suggestedKind : null,
 );
 
-/** An ordering question is never a part member (G6). */
-const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
-
 /** The entry's refusal in a few words, or null when the question may move there. */
 function targetHint(targetParentId: string | null): string | null {
-  if (targetParentId === props.currentParentId) {
-    return "Här nu";
-  }
-  if (props.kind === "ordering" && targetParentId !== null) {
-    return ORDERING_REASON;
-  }
-  return null;
+  return targetParentId === props.currentParentId ? "Här nu" : null;
 }
 
 /** The Flytta till entries: "Ingen del (fristående)" first, then every part in list order (G3). */

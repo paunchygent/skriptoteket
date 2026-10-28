@@ -4,9 +4,10 @@
  * Expected behavior:
  *   ⋮ holds "Flytta till…" above Ta bort, and it opens a second menu listing
  *   "Ingen del (fristående)" first, then every part in list order (G3). The
- *   question's current place is disabled with "Här nu"; for an ordering
- *   question every part entry is disabled with its reason (G6). Choosing a
- *   part emits its id, choosing "Ingen del (fristående)" emits null.
+ *   question's current place is disabled with "Här nu"; an ordering question
+ *   may join any part, so every part entry stays enabled for it
+ *   (TASK-SKRIPT-39-06-11 D1). Choosing a part emits its id, choosing "Ingen
+ *   del (fristående)" emits null.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -15,8 +16,6 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamItemKind } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
-
-const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
 
 const TARGETS = [
   { id: "parent_001", label: "2 · Delinstruktion" },
@@ -97,7 +96,7 @@ describe("ExamWorkspaceQuestionHead Flytta till", () => {
     expect(entries[1]!.getAttribute("aria-disabled")).toBeNull();
   });
 
-  it("disables every part for an ordering question with its reason", async () => {
+  it("offers every part to an ordering question with no refusal", async () => {
     const wrapper = mountHead("ordering", null);
 
     const entries = await openMoveMenu(wrapper);
@@ -105,8 +104,8 @@ describe("ExamWorkspaceQuestionHead Flytta till", () => {
     expect(entries[0]!.getAttribute("aria-disabled")).toBe("true");
     expect(entries[0]!.textContent).toContain("Här nu");
     for (const entry of entries.slice(1)) {
-      expect(entry.getAttribute("aria-disabled")).toBe("true");
-      expect(entry.textContent).toContain(ORDERING_REASON);
+      expect(entry.getAttribute("aria-disabled")).toBeNull();
+      expect(entry.textContent).not.toContain("Ordna-frågor");
     }
   });
 

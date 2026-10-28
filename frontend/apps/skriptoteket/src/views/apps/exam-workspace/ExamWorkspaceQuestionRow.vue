@@ -13,7 +13,9 @@
  *   deluppgifter are indented under it. A part with no questions is an
  *   unnumbered instruction block: its text or "Tom instruktion", the meta
  *   "Instruktion utan frågor" and no points. In Markera mode a standalone
- *   question carries a checkbox; a part and a question inside a part do not.
+ *   question carries a checkbox, an ordering question included, since it may
+ *   join a part (TASK-SKRIPT-39-06-11 D1); a part and a question inside a
+ *   part do not.
  *
  * Relationships:
  *   - A `row` of the list's grid: every child is a `gridcell`.
@@ -48,10 +50,6 @@ const emit = defineEmits<{
 const childlessPart = computed(() => props.entry.kind === "parent" && props.entry.childIds.length === 0);
 /** Only a standalone question takes a mark; a question inside a part moves with Flytta till (G11). */
 const markable = computed(() => props.entry.kind === "item" && props.entry.parentId === null);
-/** An ordering question can never join a part (G6), so its checkbox is disabled with the reason. */
-const ordering = computed(
-  () => props.entry.kind === "item" && props.entry.parentId === null && props.entry.itemKind === "ordering",
-);
 
 const rowText = computed(() => props.entry.text || (childlessPart.value ? "Tom instruktion" : "Ny fråga"));
 
@@ -73,9 +71,6 @@ const meta = computed(() => {
 const aiTitle = computed(() =>
   props.entry.kind === "item" && props.entry.aiKey === "interpreted" ? "Tolkad av AI" : "Förslag från AI",
 );
-
-/** An ordering question is never a part member (G6); the checkbox says why it cannot be grouped. */
-const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
 </script>
 
 <template>
@@ -104,8 +99,7 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
         type="checkbox"
         class="h-5 w-5 accent-navy"
         :checked="marked"
-        :disabled="disabled || ordering"
-        :title="ordering ? ORDERING_REASON : undefined"
+        :disabled="disabled"
         :aria-label="`Markera fråga ${entry.label}`"
         :data-test="`exam-workspace-mark-${entry.id}`"
         @click.stop
