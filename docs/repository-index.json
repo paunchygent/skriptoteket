@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f865b6abd9125f85f75c812f5bf9500b16e5c7eb212b6e0de358c8ec99939570",
+  "source_set_digest": "0b7c167ce320afbee3db386fa8337cd09a55ac355ce2326ac268d33b6e9504b1",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9040,7 +9040,7 @@
       "type": "task",
       "title": "A new ordering step keeps only the text the teacher typed",
       "path": "docs/backlog/tasks/task-skript-rep-0054-a-new-ordering-step-keeps-only-the-text-the-teacher-typed.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9050,7 +9050,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Light route without review or walk (D2). Cause: withStepAdded gave a new step one text segment holding a single space, so typed text was saved after it. af8924268 starts the step with an empty body, as a new question's steps already do; ExamWorkspaceOrderingField spec gained a fail-first case; ordering specs 30 passed, rerun by the orchestrator on Hemma 2026-10-28."
       }
     },
     {

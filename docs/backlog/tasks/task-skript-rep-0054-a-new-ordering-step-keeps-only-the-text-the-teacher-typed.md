@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route without review or walk (D2). Cause: withStepAdded gave a new step one text segment holding a single space, so typed text was saved after it. af8924268 starts the step with an empty body, as a new question''s steps already do; ExamWorkspaceOrderingField spec gained a fail-first case; ordering specs 30 passed, rerun by the orchestrator on Hemma 2026-10-28.'
 task_kind: repository
 acceptance_criteria:
   - A step added with Lägg till steg and typed into at once is saved without a leading space
