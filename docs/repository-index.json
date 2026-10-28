@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "57bb2184bb46fc1c4d273b6d3ab41216d529174a4710baba45d77f39326e0808",
+  "source_set_digest": "b8dc0dcbb2daf2a351038460bcb4bc1356d49033ad3a70347b580596859507bc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8930,6 +8930,24 @@
       "type": "task",
       "title": "The pre-push check runs directly on Hemma and refuses a push it cannot verify",
       "path": "docs/backlog/tasks/task-skript-rep-0051-the-pre-push-check-runs-directly-on-hemma-and-refuses-a-push-it-cannot-verify.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0052",
+      "type": "task",
+      "title": "The runner and web images install their locked dependencies again",
+      "path": "docs/backlog/tasks/task-skript-rep-0052-the-runner-and-web-images-install-their-locked-dependencies-again.md",
       "status": "ready",
       "task_kind": "repository",
       "owners": [
