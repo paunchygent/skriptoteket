@@ -49,8 +49,7 @@
   clips wait on HuleFilm ST-VIDEO-12-01 gates (talmanus approval in progress,
   ElevenLabs draft spend, render approval, prod media deploy). Talmanus review
   package retained at `evidence/talmanus-review-package-2026-10-15/` (sent 2026-10-15).
-  Guide Steg 1 point 3 (paste parses any format) is wrong: only file import
-  parses Skola24; correction and `generate-planner-help` regen still pending.
+  Guide Steg 1 point 3 fixed on `codex/st-skript-08-36`; its clip script still shows a Skola24 paste.
 
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).

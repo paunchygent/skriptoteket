@@ -13,7 +13,7 @@ export const plannerHelpSections: Record<string, string> = {
 <p>Den här guiden tar dig genom de fyra grundstegen: <strong>klass</strong> -- <strong>klassrum</strong> -- <strong>sittschema / grupper</strong> -- <strong>regler</strong>.</p>
 <h3>Steg 1 -- Skapa din första klass</h3>
 <p>Det första du behöver är en klasslista.</p>
-<ol><li>Gå till <strong>Översikt</strong> (startsidan i appen).</li><li>Klicka <strong>skapa ny klasslista</strong>.</li><li>Klistra in eller dra in din klasslista. Det enklaste är att kopiera listan rakt av från <strong>Skola24</strong>. Alla format fungerar -- du kan kopiera från en tabell, en PDF, eller en textfil -- men Skola24 är det säkraste alternativet och det du förmodligen redan har öppet när du rapporterar närvaro.</li><li>Förhandsgranska att namnen stämmer.</li><li>Spara.</li></ol>
+<ol><li>Gå till <strong>Översikt</strong> (startsidan i appen).</li><li>Klicka <strong>skapa ny klasslista</strong>.</li><li>Lägg in din klasslista. Det enklaste är att exportera klasslistan från <strong>Skola24</strong> och välja <strong>Importera från fil</strong> (eller dra in filen). Appen läser Skola24-filer i Excel (<code>.xls</code>), PDF och text (<code>.txt</code>), och även <code>.csv</code> och <code>.tsv</code>. Du kan också skriva eller klistra in namnen direkt, ett namn per rad.</li><li>Förhandsgranska att namnen stämmer.</li><li>Spara.</li></ol>
 <h3>Steg 2 -- Skapa ditt första klassrum</h3>
 <p>Nu behöver du ett klassrum att placera eleverna i.</p>
 <ol><li>Gå till <strong>Översikt</strong>.</li><li>Klicka <strong>skapa nytt klassrum</strong> och ge det ett namn (t.ex. "B214").</li></ol>
