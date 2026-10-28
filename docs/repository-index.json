@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "be0b6ca459f10532c6d106601ed30a8431b8ed3249e4fbf4def9721e53866c10",
+  "source_set_digest": "91b64d5be8092b251ee0590d0fc5c5253fa17f84c30365ea043325ac82f545a0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6039,7 +6039,7 @@
       "type": "task",
       "title": "Exam.net probe of an ordering question inside a part",
       "path": "docs/backlog/tasks/task-skript-39-06-09-exam-net-probe-of-an-ordering-question-inside-a-part.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -6050,7 +6050,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Probe package built from the 39-06-08 QTI writer with no writer change (branch codex/task-skript-39-06-09, 6fee3cfdd; Hemma .artifacts/probe-39-06-09/PROBE.md, SHA-256 c367f3c7). Imported by the Mac thread in the user's Edge 2026-10-28 as Exam.net exam 5395644 (Mac ~/Repos/Skriptoteket/.artifacts/probe-39-06-09/walk-record.md, screenshots in evidence/). Import passes; one task with the shared instruction once, a) ordering and b) Lucktext, no blank question. The ordering child imports as Matcha ihop with position numbers and the correct pairs, and the student draws pairing lines (no reorder control; numbers reshuffle per load). Grading is all-or-nothing (2 of 4 pairs right gives 0) and the children score independently. Points: the ordering child's 3 points import as the rule Alla rätt 1p, so the exam totals 2p, not 4."
       }
     },
     {
