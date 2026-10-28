@@ -66,3 +66,12 @@ Units, each for one junior:
 | D2  | Moving an ordering question into a part sets it to 1 point as one undo step; moving it out keeps 1 point, which the teacher can edit (orchestrator decision 2026-10-28).                                                                                             |
 | D3  | QTI writes the ordering child inside the part's composite item through the existing writer path that the probe proved; PDF and DOCX print 1 point (orchestrator decision 2026-10-28).                                                                                |
 | D4  | Proof is focused unit and Vitest tests, one ui-copy review of the note, and one Mac staging walk with the Mac's own Exam.net import; one independent review at most, no rereviews (orchestrator decision 2026-10-28).                                                |
+
+## Progress
+
+### Orchestrator decisions 2026-10-28 (asked by the lead, outside D1-D4)
+
+- Change type inside a part: allowed. Changing a part child's type to ordering sets its points to 1 in the same command, as one undo step (`native_exam_change_type.py` refusal removed).
+- QTI import: an ordering child of an Exam.net composite part imports as an ordering child at 1 point, whatever points the package states, with no interaction note (`qti_import.py` `_append_parent`).
+- Grouping (`group_items`, TASK-SKRIPT-39-06-10 G10) counts as a move into a part under D2: ordering is allowed and set to 1 point, and the list-row checkbox for an ordering question is enabled.
+- Each of the three has a focused test.
