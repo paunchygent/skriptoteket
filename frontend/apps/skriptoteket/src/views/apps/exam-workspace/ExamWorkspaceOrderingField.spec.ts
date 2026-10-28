@@ -21,6 +21,7 @@ import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSuppo
 import { editorBehind, press, settleEditors, surfaceOf } from "./ExamWorkspaceRichTextEntry.specSupport";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { withStepAdded } from "./examWorkspaceOrdering";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
 import { plainBody } from "./examWorkspaceRichText";
 
@@ -127,6 +128,16 @@ describe("ExamWorkspaceOrderingField", () => {
     press(surfaceOf(wrapper, stepText), "Backspace");
 
     expect(wrapper.emitted("updateBody")).toEqual([["choice_002", [], false]]);
+  });
+
+  it("saves a step added with Lägg till steg and typed into at once as exactly the typed text", async () => {
+    const wrapper = await mountField(withStepAdded(three()));
+    const editor = editorBehind(wrapper, "exam-workspace-ordering-step-text-choice_004");
+
+    editor.chain().focus("end").insertContent("Analysera resultatet").run();
+
+    const emitted = wrapper.emitted("updateBody")!;
+    expect(emitted.at(-1)!.slice(0, 2)).toEqual(["choice_004", plainBody("Analysera resultatet")]);
   });
 
   it("does not edit a step while disabled", async () => {

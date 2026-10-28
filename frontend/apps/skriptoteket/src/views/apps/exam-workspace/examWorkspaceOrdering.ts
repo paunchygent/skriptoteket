@@ -16,7 +16,7 @@
  *   - Each transition is one document edit, so autosave history undoes it.
  */
 
-import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamItem } from "../../../api/examWorkspace";
 
 /** A random number in [0, 1), as `Math.random` returns. */
 export type ExamWorkspaceRandom = () => number;
@@ -86,15 +86,10 @@ function nextChoiceId(choiceIds: string[]): string {
   return `choice_${String(highest + 1).padStart(3, "0")}`;
 }
 
-/** An empty step, as the server writes an empty paragraph: a text segment needs one character. */
-function blankStepBody(): NativeExamBodyParagraph[] {
-  return [{ heading_level: null, segments: [{ kind: "text", text: " ", marks: [], kept_gap_id: null }] }];
-}
-
-/** Append one empty step at the end of the key order. */
+/** Append one empty step at the end of the key order: an empty body, as a new question's steps start. */
 export function withStepAdded(item: NativeExamItem, random: ExamWorkspaceRandom = Math.random): NativeExamItem {
   const choiceId = nextChoiceId(item.choices.map((choice) => choice.choice_id));
-  return withSteps(item, [...item.choices, { body: blankStepBody(), choice_id: choiceId }], random);
+  return withSteps(item, [...item.choices, { body: [], choice_id: choiceId }], random);
 }
 
 /** Remove one step; the last step stays, because an ordering question keeps one. */
