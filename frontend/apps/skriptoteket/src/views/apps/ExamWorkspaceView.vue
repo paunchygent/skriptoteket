@@ -27,6 +27,10 @@
  *     come from their own composables; the editor column and the open
  *     drawer are `ExamWorkspaceEditorPane` and `ExamWorkspaceDrawers`.
  *   - The enrichment notice row is `ExamWorkspaceEnrichmentNotice`.
+ *   - Provides the workspace's Ångra/Gör om and its single-question AI
+ *     harness (`examWorkspaceQuestionAiKeys`) once, so the question-text
+ *     toolbar's AI group asks for and reads the same suggestions the
+ *     header's suggest-all uses (TASK-SKRIPT-40-04-26 D3).
  *   - Composes them and holds only presentation state: the drawer, the
  *     phone list and the Import box.
  */
@@ -50,6 +54,7 @@ import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue"
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
+import { provideExamWorkspaceQuestionAi } from "./exam-workspace/examWorkspaceQuestionAiKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
@@ -222,12 +227,19 @@ const newExam = useExamWorkspaceNewExam({
 const { fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState, saveText, saveTitle } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
+/** The same value the header's suggest-all disables on, read by the toolbar's AI group too. */
+const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 // Ctrl/Cmd+Z inside an exam text editor is the same Ångra / Gör om the buttons run.
 provideExamWorkspaceHistoryKeys({
   undo: () => void history.undo(),
   redo: () => void history.redo(),
   canUndo: history.canUndo,
   canRedo: history.canRedo,
+});
+// One question's Föreslå facit in the toolbar runs the existing `item_id` request.
+provideExamWorkspaceQuestionAi({
+  busy: enrichmentBusy,
+  suggest: (itemId) => void enrichment.requestSuggestionForItem(itemId),
 });
 
 /**
@@ -247,8 +259,6 @@ const { importPointsIds, printedMismatches } = useExamWorkspaceListNotes({
   document: workspaceDocument,
   itemEntries,
 });
-const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
-
 /**
  * The question-list commands (TASK-SKRIPT-41-02-04), owned by
  * `useExamWorkspaceListActions`: saving the list ordering, marking questions

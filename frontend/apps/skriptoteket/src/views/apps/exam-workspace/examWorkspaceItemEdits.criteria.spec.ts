@@ -17,6 +17,7 @@ import { plainBody } from "./examWorkspaceRichText";
 function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
+    answer_key_retry: "none",
     facit_text: null,
     import_record: null,
     criteria: [],

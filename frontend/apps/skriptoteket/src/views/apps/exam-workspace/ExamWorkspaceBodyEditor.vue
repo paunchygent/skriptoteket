@@ -48,7 +48,9 @@
  *     (`updateItemBody`, `updateItemGapValues`).
  *   - `ExamWorkspaceRichTextEditor` owns the text, marks and atoms,
  *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
- *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
+ *     `ExamWorkspaceGapPopover` edits one gap's accepted answers. The host's
+ *     `toolbar-end` slot is forwarded into the toolbar's own `end` slot, so
+ *     the question's AI group is the bar's last child.
  *   - `examWorkspaceItemEdits` names the next free gap id (`nextGapId`); the
  *     owner applies the emitted `createGap` through `createItemGap`.
  *   - `examWorkspaceRichTextTarget` is the shared active target the toolbar
@@ -361,12 +363,17 @@ watch(newGapId, (gapId) => {
         :show-picture="picturesEnabled"
         :picture-selected="pictureSelected"
         :picture-busy="pictureBusy"
+        question-text
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
         @toggle-gap-tool="toggleGapTool"
         @insert-empty-gap="handleInsertEmptyGap"
         @add-picture="handleAddPicture"
-      />
+      >
+        <template #end>
+          <slot name="toolbar-end" />
+        </template>
+      </ExamWorkspaceMarkToolbar>
       <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
           :key="item.item_id"

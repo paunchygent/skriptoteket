@@ -31,10 +31,11 @@ function interpretedItem() {
 describe("document conversion-key actions", () => {
   it("undo makes the copy dirty and export-blocked, then saves the empty key and retained facit", async () => {
     const { fence, state } = await openMatchingDocumentWithFence(api.getExamWorkspaceDocument, interpretedItem());
-    state.undoItemInterpretation("item_001");
+    state.undoItemAiKey("item_001");
     expect(state.isDirty.value).toBe(true);
     expect(examWorkspaceItemReadiness(currentItem(state))).toContain("missing_answer_key");
     expect(currentItem(state).facit_text).toBe("Stockholm och Oslo");
+    expect(currentItem(state).answer_key_retry).toBe("offered");
     const copy = currentDocument(state);
     api.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
     expect(await saveCopyAs(state, fence, "Kopia")).toBe("saved");
@@ -42,6 +43,7 @@ describe("document conversion-key actions", () => {
     expect(payload.items[0].answer_key.origin).toBe("absent");
     expect(payload.items[0].gaps.every((gap: { automatic_values: string[] }) => gap.automatic_values.length === 0)).toBe(true);
     expect(payload.items[0].facit_text).toBe("Stockholm och Oslo");
+    expect(payload.items[0].answer_key_retry).toBe("offered");
     expect(state.isDirty.value).toBe(false);
   });
 
@@ -75,7 +77,7 @@ describe("document conversion-key actions", () => {
   it("refuses all new actions while busy and ignores unknown items", async () => {
     const source = interpretedItem();
     const { fence, state } = await openMatchingDocumentWithFence(api.getExamWorkspaceDocument, source);
-    state.undoItemInterpretation("missing");
+    state.undoItemAiKey("missing");
     state.removeItemAutomaticValue("missing", "gap_001", "Stockhom");
     state.showItemGapAsText("missing", "gap_002");
     expect(state.isDirty.value).toBe(false);
@@ -83,7 +85,7 @@ describe("document conversion-key actions", () => {
     api.getExamWorkspaceDocument.mockImplementation(() => new Promise(() => {}));
     void state.openDocument("another-lineage", fence.begin());
     expect(state.isBusy.value).toBe(true);
-    state.undoItemInterpretation("item_001");
+    state.undoItemAiKey("item_001");
     state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
     state.showItemGapAsText("item_001", "gap_002");
     expect(currentDocument(state)).toBe(opened);

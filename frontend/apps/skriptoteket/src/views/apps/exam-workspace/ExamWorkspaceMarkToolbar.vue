@@ -15,12 +15,20 @@
  *   when pressed again. Every tooltip and `aria-keyshortcuts` names its
  *   shortcut for the viewer's platform. Buttons keep the caret in the
  *   paragraph: mousedown is prevented so the selection never moves to the
- *   button.
+ *   button. Its `end` slot is the toolbar's last child, after the picture
+ *   group, for the host's own trailing group (the question's AI group); the
+ *   slot is empty for every host that has none, so the built group order is
+ *   unchanged.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceBodyEditor` above the question paragraphs.
+ *   - Rendered by `ExamWorkspaceBodyEditor` above the question paragraphs,
+ *     by `ExamWorkspaceShortAnswerField` for a Kort svar question, and by the
+ *     two instruction editors for an exam instruction.
  *   - Injects the workspace's Ångra and Gör om from `examWorkspaceHistoryKeys`;
  *     without a provider the first group and its separator are omitted.
+ *   - Takes `questionText` from a host that edits question text, which adds
+ *     `.xw-toolbar--question` so the bar always reserves the horizontal
+ *     scrollbar's height; instruction editors leave it off.
  *   - Reads the glyph labels from `examWorkspaceBodyMarks` and the shortcut
  *     text from `examWorkspaceShortcutLabels`.
  */
@@ -57,8 +65,10 @@ withDefaults(
     pictureSelected?: boolean;
     /** True while a chosen file is being read; the glyph spins and the button locks. */
     pictureBusy?: boolean;
+    /** The host edits question text, so the bar always reserves its horizontal scrollbar's height. */
+    questionText?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false, showPicture: false, pictureSelected: false, pictureBusy: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false, showPicture: false, pictureSelected: false, pictureBusy: false, questionText: false },
 );
 
 const emit = defineEmits<{
@@ -113,6 +123,7 @@ function handlePictureFile(): void {
     role="toolbar"
     aria-label="Formatering"
     class="xw-toolbar"
+    :class="{ 'xw-toolbar--question': questionText }"
     @mousedown.prevent
   >
     <template v-if="history">
@@ -268,5 +279,6 @@ function handlePictureFile(): void {
         >
       </div>
     </template>
+    <slot name="end" />
   </div>
 </template>

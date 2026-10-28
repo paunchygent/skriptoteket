@@ -29,7 +29,7 @@ import {
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
-  withoutInterpretedKey,
+  withoutAiKey,
   withMatchEntryBody,
   withMatchPairs,
   withPoints,
@@ -139,8 +139,8 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withShuffledSteps(item), true);
   }
 
-  function undoItemInterpretation(itemId: string): void {
-    patchItem(itemId, withoutInterpretedKey, true);
+  function undoItemAiKey(itemId: string): void {
+    patchItem(itemId, withoutAiKey, true);
   }
 
   function showItemGapAsText(itemId: string, gapId: string): void {
@@ -206,7 +206,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     revertItemGap,
     unmarkItemReviewed,
     showItemGapAsText,
-    undoItemInterpretation,
+    undoItemAiKey,
     updateItemBody,
     updateItemChoiceBody,
     updateItemCorrectChoices,

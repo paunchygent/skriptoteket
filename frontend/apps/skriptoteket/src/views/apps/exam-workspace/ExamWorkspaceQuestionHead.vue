@@ -3,15 +3,22 @@
  * Exam workspace question header.
  *
  * Domain purpose:
- *   "Fråga 3" and its type, which opens Byt frågetyp; "Gör om till [typ]"
- *   when the labeler suggests another type (`suggested_kind`), also marked
- *   Förslag in Byt frågetyp; Import, which shows the
+ *   "Fråga 3" and its compact type button, which opens Byt frågetyp; the
+ *   type the labeler suggests (`suggested_kind`) is marked Förslag there,
+ *   and "Gör om till [typ]" lives in the question-text toolbar's AI group;
+ *   Import, which shows the
  *   question as the exam file had it; the review check; and ⋮ with Flytta
  *   upp, Flytta ned, Flytta till… and Ta bort for a deluppgift, or Flytta
  *   till… and Ta bort for a question. Flytta till lists the parts and "Ingen
  *   del (fristående)", marking the question's current place and refusing a
  *   part for an ordering question (G3, G6). Deleting a part's last question
  *   keeps the part, so the entry needs no warning.
+ *   On a phone or touch device the same ⋮ menu opens with the question's
+ *   three AI controls as words above the built rows, then a separator
+ *   (TASK-SKRIPT-40-04-26 D7, D8): a menu row has no tooltip and touch has no
+ *   hover. The rows always render and the stylesheet decides where they show.
+ *   Their states are the editor's one computed state, so the toolbar group
+ *   and these rows cannot disagree.
  *   A question that could not be converted shows its type in red. While the
  *   question still converts its type cannot change. Import and the review
  *   check come in through the `tools` slot (`ExamWorkspaceQuestionTools`);
@@ -29,7 +36,10 @@ import { computed, ref } from "vue";
 
 import type { NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import type { UiGlyphMeaning } from "../../../components/ui";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
+import { AI_KEY_UNDO_GLYPH } from "./examWorkspaceQuestionAi";
+import type { QuestionAiControls } from "./examWorkspaceQuestionAi";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
 import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 
@@ -71,8 +81,16 @@ const props = withDefaults(
     shortAnswer?: boolean;
     /** True when a Lucktext with at most one gap may become a Kort svar. */
     shortAnswerOffered?: boolean;
+    /** The question's AI controls, the same state the toolbar group reads; null when not shown. */
+    aiControls?: QuestionAiControls;
   }>(),
-  { currentParentId: null, moveTargets: () => [], shortAnswer: false, shortAnswerOffered: false },
+  {
+    aiControls: () => ({ convert: null, suggest: null, undo: null }),
+    currentParentId: null,
+    moveTargets: () => [],
+    shortAnswer: false,
+    shortAnswerOffered: false,
+  },
 );
 
 /** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
@@ -114,6 +132,9 @@ const emit = defineEmits<{
   move: [delta: -1 | 1];
   remove: [];
   moveTo: [targetParentId: string | null];
+  aiSuggest: [];
+  aiUndo: [];
+  aiConvert: [kind: NativeExamItemKind];
 }>();
 
 const typeTrigger = ref<HTMLButtonElement | null>(null);
@@ -148,6 +169,87 @@ const moveOptions = computed<MoveOption[]>(() => [
   { hint: targetHint(null), id: null, label: "Ingen del (fristående)" },
   ...props.moveTargets.map<MoveOption>((target) => ({ hint: targetHint(target.id), id: target.id, label: target.label })),
 ]);
+
+/** Which of the three AI controls an AI menu row stands for. */
+type AiMenuAction = "suggest" | "undo" | "convert";
+
+/** One AI row of ⋮ Fler åtgärder: the control's word, glyph and intent. */
+type AiMenuRow = {
+  action: AiMenuAction;
+  enabled: boolean;
+  label: string;
+  /** A short reason the row is disabled, or null. */
+  hint: string | null;
+  /** The editable suggestion's own sentence, read as `aria-description`. */
+  description: string | null;
+  glyph: UiGlyphMeaning;
+  /** The glyph spins while a suggestion runs. */
+  busy: boolean;
+  /** The type a convert row asks for; null on the other rows. */
+  kind: NativeExamItemKind | null;
+  testId: string;
+};
+
+/** The AI rows the editor's controls call for, in toolbar order, each null control left out. */
+const aiRows = computed<AiMenuRow[]>(() => {
+  const rows: AiMenuRow[] = [];
+  const { suggest, undo, convert } = props.aiControls;
+  if (suggest !== null) {
+    rows.push({
+      action: "suggest",
+      busy: suggest.busy,
+      description: suggest.description,
+      enabled: suggest.enabled,
+      glyph: suggest.busy ? "busy" : "ai-assist",
+      hint: suggest.hint,
+      kind: null,
+      label: suggest.label,
+      testId: "exam-workspace-more-ai-suggest",
+    });
+  }
+  if (undo !== null) {
+    rows.push({
+      action: "undo",
+      busy: false,
+      description: null,
+      enabled: undo.enabled,
+      glyph: AI_KEY_UNDO_GLYPH,
+      hint: undo.hint,
+      kind: null,
+      label: undo.label,
+      testId: "exam-workspace-more-ai-undo",
+    });
+  }
+  if (convert !== null) {
+    rows.push({
+      action: "convert",
+      busy: false,
+      description: null,
+      enabled: convert.enabled,
+      glyph: "convert-type",
+      hint: null,
+      kind: convert.kind,
+      label: convert.label,
+      testId: "exam-workspace-more-ai-convert",
+    });
+  }
+  return rows;
+});
+
+/** Close the menu and emit the row's intent; a disabled row does nothing. */
+function chooseAi(row: AiMenuRow): void {
+  if (!row.enabled) {
+    return;
+  }
+  moreOpen.value = false;
+  if (row.action === "suggest") {
+    emit("aiSuggest");
+  } else if (row.action === "undo") {
+    emit("aiUndo");
+  } else if (row.kind !== null) {
+    emit("aiConvert", row.kind);
+  }
+}
 
 function openMove(): void {
   moreOpen.value = false;
@@ -208,8 +310,8 @@ function chooseMore(action: "up" | "down" | "remove"): void {
     <button
       ref="typeTrigger"
       type="button"
-      class="qhead__type"
-      :class="{ 'qhead__type--error': unbuilt }"
+      class="xw-btn xw-btn--compact qhead__kind"
+      :class="{ 'qhead__kind--error': unbuilt }"
       :disabled="converting || disabled"
       aria-haspopup="menu"
       :aria-expanded="typeOpen"
@@ -221,26 +323,12 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         v-if="unbuilt"
         meaning="blocker"
         :size="16"
-      />{{ typeLabel }}<UiGlyph
+      /><span class="qhead__kindtext">{{ typeLabel }}</span><UiGlyph
         meaning="open-list"
         :size="16"
       />
     </button>
     <div class="qhead__tools">
-      <button
-        v-if="offeredKind"
-        type="button"
-        class="xw-btn xw-btn--compact"
-        :disabled="converting || disabled"
-        title="Byt till den typ som provfilen tyder på"
-        data-test="exam-workspace-suggested-type"
-        @click="emit('changeType', offeredKind)"
-      >
-        <UiGlyph
-          meaning="convert-type"
-          :size="16"
-        />Gör om till {{ EXAM_WORKSPACE_TYPE_LABELS[offeredKind] }}
-      </button>
       <span class="xw-tools">
         <span class="qhead__desk-tools">
           <slot name="tools" />
@@ -311,6 +399,33 @@ function chooseMore(action: "up" | "down" | "remove"): void {
       test-id="exam-workspace-more-menu"
       @close="moreOpen = false"
     >
+      <template v-if="aiRows.length > 0">
+        <button
+          v-for="row in aiRows"
+          :key="row.action"
+          type="button"
+          class="xw-mi qai-mi"
+          role="menuitem"
+          :aria-disabled="!row.enabled || undefined"
+          :aria-description="row.description ?? undefined"
+          :data-test="row.testId"
+          @click="chooseAi(row)"
+        >
+          <UiGlyph
+            :meaning="row.glyph"
+            :size="20"
+            class="xw-ai"
+            :class="{ 'xw-spin': row.busy }"
+          /><span class="xw-grow">{{ row.label }}</span><span
+            v-if="row.hint"
+            class="xw-mi__hint"
+          >{{ row.hint }}</span>
+        </button>
+        <div
+          role="separator"
+          class="qai-mi-sep"
+        />
+      </template>
       <template v-if="child">
         <button
           type="button"
@@ -407,17 +522,10 @@ function chooseMore(action: "up" | "down" | "remove"): void {
 <style scoped>
 .qhead { display: flex; align-items: center; gap: var(--huleedu-space-2); min-width: 0; padding-bottom: var(--huleedu-space-4); }
 .qhead__number { margin: 0; font-size: var(--huleedu-text-lg); font-weight: var(--huleedu-font-semibold); white-space: nowrap; }
-.qhead__type {
-  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--huleedu-space-1);
-  height: 28px; min-width: 0; padding: 0 var(--huleedu-space-2); overflow: hidden; white-space: nowrap; cursor: pointer;
-  border: 1px solid transparent; border-radius: var(--huleedu-workbench-control-radius);
-  font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70);
-}
-.qhead__type:disabled { cursor: not-allowed; color: var(--huleedu-navy-40); }
-.qhead__type[aria-expanded="true"] { border-color: var(--huleedu-action); background: var(--huleedu-action-10); color: var(--huleedu-action); }
-.qhead__type--error { border-color: var(--huleedu-error); color: var(--huleedu-error); font-weight: var(--huleedu-font-medium); }
-.qhead__type:focus-visible { outline: 2px solid var(--huleedu-action-40); }
-@media (hover: hover) { .qhead__type:not(:disabled):hover { border-color: var(--huleedu-panel-border); } }
+/* The trigger is a built compact button; these rules only let it shrink and truncate its name. */
+.qhead__kind { flex: 0 1 auto; min-width: 0; overflow: hidden; }
+.qhead__kindtext { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qhead__kind--error { border-color: var(--huleedu-error); color: var(--huleedu-error); }
 .qhead__tools { margin-left: auto; display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none; }
 .qhead__desk-tools { display: contents; }
 .qhead__unbuilt { margin: -8px 0 12px; }

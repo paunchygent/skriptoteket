@@ -12,6 +12,15 @@
  *   are marked "Saknas". While the question still converts, the text from the
  *   file shows and nothing can change.
  *
+ *   Every per-question AI action sits in the question-text toolbar's last
+ *   group (TASK-SKRIPT-40-04-26 D2-D6): Föreslå facit, Ångra AI-tolkningen and
+ *   Gör om till [typ]. The key line is information only: a key the AI
+ *   suggested reads "Facit föreslaget av AI" whatever the file printed, an
+ *   interpreted key names the file's wording, and the undo belongs to the
+ *   toolbar group. On a phone or touch device the same three controls are the
+ *   first rows of the question head's ⋮ menu (D7, D8); this editor computes
+ *   them once and hands the same state to both surfaces.
+ *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for a selected question.
  *   - Composes `ExamWorkspaceQuestionHead`, `ExamWorkspaceImportBox` and the
@@ -22,6 +31,11 @@
  *     with only Fråga and Svar) instead of the Frågetext body editor.
  *   - Provides the shared rich-text target registry, so the one formatting
  *     toolbar edits the surface the teacher last selected.
+ *   - Fills the `toolbar-end` slot of whichever text field renders with
+ *     `ExamWorkspaceQuestionAiGroup`, and passes the same controls to
+ *     `ExamWorkspaceQuestionHead` for its ⋮ rows; the group's suggest emits
+ *     the composable's request, and both surfaces' undo emits `undoAiKey` and
+ *     their convert emits `changeType`.
  *   - Holds no document state; every edit is emitted with the item id.
  */
 
@@ -45,11 +59,12 @@ import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspacePointsField from "./ExamWorkspacePointsField.vue";
+import ExamWorkspaceQuestionAiGroup from "./ExamWorkspaceQuestionAiGroup.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceShortAnswerField from "./ExamWorkspaceShortAnswerField.vue";
 import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue";
-import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
+import { isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
 import { canBecomeShortAnswer, isShortAnswer } from "./examWorkspaceShortAnswer";
@@ -57,6 +72,7 @@ import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { FreeTextWritingLines } from "./examWorkspaceWritingLines";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
+import { useExamWorkspaceQuestionAiControls } from "./useExamWorkspaceQuestionAiControls";
 
 /** A type the labeler read with less confidence than this is marked for checking. */
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
@@ -99,7 +115,7 @@ const emit = defineEmits<{
   retry: [kind: NativeExamItemKind];
   gotoParent: [parentId: string];
   dismissNotice: [];
-  undoInterpretation: [itemId: string];
+  undoAiKey: [itemId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   showGapAsText: [itemId: string, gapId: string];
@@ -141,6 +157,11 @@ watch(
 );
 
 const locked = computed(() => props.disabled || props.converting);
+/** The question's AI controls, computed once for the toolbar group and the ⋮ rows. */
+const { controls: aiControls, suggest: suggestAiKey } = useExamWorkspaceQuestionAiControls(
+  () => props.item,
+  () => locked.value,
+);
 // The same rule as the list and the server's export blocker (`is_unbuilt_question`).
 const unbuilt = computed(() => examWorkspaceItemReadiness(props.item).includes("unbuilt_question"));
 const reviewed = computed(() => isTeacherReviewed(props.item));
@@ -150,11 +171,16 @@ const typeUncertain = computed(
 const isGrid = computed(() => props.item.kind === "matching");
 const showFields = computed(() => !props.converting && !unbuilt.value);
 
-/** Where the answer key came from, with the key text the file printed. */
-const keyLine = computed(() => {
+/**
+ * Where the answer key came from (TASK-SKRIPT-40-04-26 D5). A key the AI
+ * suggested names only that it was suggested; an interpreted key and a source
+ * key quote the wording the file printed, so they need it.
+ */
+const keyLine = computed<{ ai: boolean; lead: string; facit: string | null } | null>(() => {
+  const origin = props.item.answer_key.origin;
+  if (origin === "machine_proposed") return { ai: true, lead: "Facit föreslaget av AI", facit: null };
   const facit = props.item.facit_text;
   if (!facit) return null;
-  const origin = props.item.answer_key.origin;
   if (origin === "ai_interpreted") return { ai: true, lead: "Facit tolkat av AI ur", facit };
   if (origin === "absent") return { ai: false, lead: "Facit i provfilen:", facit };
   return { ai: false, lead: "Facit ur provfilen:", facit };
@@ -180,11 +206,15 @@ const keyLine = computed(() => {
       :current-parent-id="currentParentId"
       :short-answer="!unbuilt && isShortAnswer(item)"
       :short-answer-offered="!unbuilt && canBecomeShortAnswer(item)"
+      :ai-controls="aiControls"
       @change-type="emit('changeType', $event)"
       @change-shape="emit('changeShape', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"
       @move-to="emit('moveTo', $event)"
+      @ai-suggest="suggestAiKey"
+      @ai-undo="emit('undoAiKey', item.item_id)"
+      @ai-convert="emit('changeType', $event)"
     >
       <template #tools>
         <ExamWorkspaceQuestionTools
@@ -280,7 +310,16 @@ const keyLine = computed(() => {
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
-    />
+    >
+      <template #toolbar-end>
+        <ExamWorkspaceQuestionAiGroup
+          :controls="aiControls"
+          @suggest="suggestAiKey"
+          @undo="emit('undoAiKey', item.item_id)"
+          @convert="emit('changeType', $event)"
+        />
+      </template>
+    </ExamWorkspaceShortAnswerField>
 
     <ExamWorkspaceBodyEditor
       v-else
@@ -295,7 +334,16 @@ const keyLine = computed(() => {
       @revert-gap="(itemId, gapId) => emit('revertGap', itemId, gapId)"
       @restore-kept-gap="(itemId, keptGapId, blockIndex) => emit('restoreKeptGap', itemId, keptGapId, blockIndex)"
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
-    />
+    >
+      <template #toolbar-end>
+        <ExamWorkspaceQuestionAiGroup
+          :controls="aiControls"
+          @suggest="suggestAiKey"
+          @undo="emit('undoAiKey', item.item_id)"
+          @convert="emit('changeType', $event)"
+        />
+      </template>
+    </ExamWorkspaceBodyEditor>
 
     <template v-if="showFields">
       <section
@@ -357,21 +405,7 @@ const keyLine = computed(() => {
         :size="16"
         :class="{ 'xw-ai': keyLine.ai }"
       />
-      <span class="xw-grow">{{ keyLine.lead }} <q>{{ keyLine.facit }}</q></span>
-      <button
-        v-if="keyLine.ai && canUndoInterpretation(item)"
-        type="button"
-        class="xw-btn xw-btn--compact"
-        title="Ångra AI-tolkningen och lämna frågan utan facit"
-        :disabled="locked"
-        data-test="exam-workspace-undo-interpretation"
-        @click="emit('undoInterpretation', item.item_id)"
-      >
-        <UiGlyph
-          meaning="undo"
-          :size="16"
-        />Ångra AI-tolkningen
-      </button>
+      <span class="xw-grow">{{ keyLine.lead }}<template v-if="keyLine.facit !== null"> <q>{{ keyLine.facit }}</q></template></span>
     </div>
 
     <ExamWorkspacePointsField

@@ -169,24 +169,33 @@ export function withTickPoints(item: NativeExamItem, tickPoints: string): Native
 }
 
 /**
- * The AI interpretation can be undone for every kind except a dropdown, which
- * has no valid keyless state.
+ * The AI key can be undone for every kind except a dropdown, which has no
+ * valid keyless state (TASK-SKRIPT-40-04-26 D5): an `ai_interpreted` key and a
+ * `machine_proposed` one the teacher has not reviewed both count as AI keys.
  */
-export function canUndoInterpretation(item: NativeExamItem): boolean {
-  return item.answer_key.origin === "ai_interpreted" && item.kind !== "inline_choice";
+export function canUndoAiKey(item: NativeExamItem): boolean {
+  const origin = item.answer_key.origin;
+  return (
+    (origin === "ai_interpreted" || origin === "machine_proposed") &&
+    item.kind !== "inline_choice"
+  );
 }
 
 /**
- * Remove the conversion interpretation without losing the teacher's source
- * facit. A spelling the teacher suppressed stays suppressed.
+ * Remove the AI key without losing the teacher's source facit. A spelling the
+ * teacher suppressed stays suppressed, and the kept suggestion stays on the
+ * question. Undo opens the question's one retry: a `none` retry becomes
+ * `offered`, while an already offered or used retry stays as it is, so a spent
+ * retry stays spent (D4, D5).
  */
-export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
-  if (!canUndoInterpretation(item)) {
+export function withoutAiKey(item: NativeExamItem): NativeExamItem {
+  if (!canUndoAiKey(item)) {
     return item;
   }
   return withGridPoints({
     ...item,
     answer_key: { ...item.answer_key, origin: "absent", correct_choice_ids: [], match_pairs: [] },
+    answer_key_retry: item.answer_key_retry === "none" ? "offered" : item.answer_key_retry,
     gaps: item.gaps.map((gap) => ({ ...gap, accepted_values: [], automatic_values: [] })),
   });
 }
@@ -263,6 +272,7 @@ export function newTeacherItem(
     criteria: [],
     printed_label: null,
     retry_source: null,
+    answer_key_retry: "none",
     answer_key: {
       correct_choice_ids: [],
       match_pairs: [],

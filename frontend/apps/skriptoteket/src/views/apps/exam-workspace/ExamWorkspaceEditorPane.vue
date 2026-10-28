@@ -10,6 +10,8 @@
  *   - Edits through the `editing` composable result, whose `structure`
  *     commands it also calls; the selection and presentation state arrive
  *     as props from `ExamWorkspaceView`, which owns them.
+ *   - The question editor's toolbar AI group emits `undoAiKey`, which lands
+ *     on `editing.undoItemAiKey` (TASK-SKRIPT-40-04-26 D5).
  */
 
 import { computed, watch } from "vue";
@@ -213,7 +215,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @retry="(kind) => editing.retryItem(selectedItem!.item_id, kind)"
         @goto-parent="$emit('select', $event)"
         @dismiss-notice="handleQuestionDismissNotice"
-        @undo-interpretation="editing.undoItemInterpretation"
+        @undo-ai-key="editing.undoItemAiKey"
         @remove-automatic-value="editing.removeItemAutomaticValue"
         @create-gap="editing.createItemGap"
         @show-gap-as-text="editing.showItemGapAsText"
