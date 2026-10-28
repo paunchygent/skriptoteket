@@ -5,7 +5,7 @@
  * Domain purpose:
  *   "Fråga 3" and its compact type button, which opens Byt frågetyp; the
  *   type the labeler suggests (`suggested_kind`) is marked Förslag there,
- *   and "Gör om till [typ]" lives in the question-text toolbar's AI group;
+ *   and "Byt till [typ]" lives in the question-text toolbar's AI group;
  *   Import, which shows the
  *   question as the exam file had it; the review check; and ⋮ with Flytta
  *   upp, Flytta ned, Flytta till… and Ta bort for a deluppgift, or Flytta
@@ -18,7 +18,9 @@
  *   (TASK-SKRIPT-40-04-26 D7, D8): a menu row has no tooltip and touch has no
  *   hover. The rows always render and the stylesheet decides where they show.
  *   Their states are the editor's one computed state, so the toolbar group
- *   and these rows cannot disagree.
+ *   and these rows cannot disagree. The rows themselves are
+ *   `ExamWorkspaceQuestionAiMenuRows`, which closes nothing and emits its
+ *   intent here; each emit closes the menu and re-emits the question intent.
  *   A question that could not be converted shows its type in red. While the
  *   question still converts its type cannot change. Import and the review
  *   check come in through the `tools` slot (`ExamWorkspaceQuestionTools`);
@@ -36,9 +38,8 @@ import { computed, ref } from "vue";
 
 import type { NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import type { UiGlyphMeaning } from "../../../components/ui";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
-import { AI_KEY_UNDO_GLYPH } from "./examWorkspaceQuestionAi";
+import ExamWorkspaceQuestionAiMenuRows from "./ExamWorkspaceQuestionAiMenuRows.vue";
 import type { QuestionAiControls } from "./examWorkspaceQuestionAi";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
 import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
@@ -170,84 +171,18 @@ const moveOptions = computed<MoveOption[]>(() => [
   ...props.moveTargets.map<MoveOption>((target) => ({ hint: targetHint(target.id), id: target.id, label: target.label })),
 ]);
 
-/** Which of the three AI controls an AI menu row stands for. */
-type AiMenuAction = "suggest" | "undo" | "convert";
-
-/** One AI row of ⋮ Fler åtgärder: the control's word, glyph and intent. */
-type AiMenuRow = {
-  action: AiMenuAction;
-  enabled: boolean;
-  label: string;
-  /** A short reason the row is disabled, or null. */
-  hint: string | null;
-  /** The editable suggestion's own sentence, read as `aria-description`. */
-  description: string | null;
-  glyph: UiGlyphMeaning;
-  /** The glyph spins while a suggestion runs. */
-  busy: boolean;
-  /** The type a convert row asks for; null on the other rows. */
-  kind: NativeExamItemKind | null;
-  testId: string;
-};
-
-/** The AI rows the editor's controls call for, in toolbar order, each null control left out. */
-const aiRows = computed<AiMenuRow[]>(() => {
-  const rows: AiMenuRow[] = [];
-  const { suggest, undo, convert } = props.aiControls;
-  if (suggest !== null) {
-    rows.push({
-      action: "suggest",
-      busy: suggest.busy,
-      description: suggest.description,
-      enabled: suggest.enabled,
-      glyph: suggest.busy ? "busy" : "ai-assist",
-      hint: suggest.hint,
-      kind: null,
-      label: suggest.label,
-      testId: "exam-workspace-more-ai-suggest",
-    });
-  }
-  if (undo !== null) {
-    rows.push({
-      action: "undo",
-      busy: false,
-      description: null,
-      enabled: undo.enabled,
-      glyph: AI_KEY_UNDO_GLYPH,
-      hint: undo.hint,
-      kind: null,
-      label: undo.label,
-      testId: "exam-workspace-more-ai-undo",
-    });
-  }
-  if (convert !== null) {
-    rows.push({
-      action: "convert",
-      busy: false,
-      description: null,
-      enabled: convert.enabled,
-      glyph: "convert-type",
-      hint: null,
-      kind: convert.kind,
-      label: convert.label,
-      testId: "exam-workspace-more-ai-convert",
-    });
-  }
-  return rows;
-});
-
-/** Close the menu and emit the row's intent; a disabled row does nothing. */
-function chooseAi(row: AiMenuRow): void {
-  if (!row.enabled) {
-    return;
-  }
+/**
+ * Close ⋮ Fler åtgärder and re-emit an AI row's intent; a disabled row never
+ * reaches here, because `ExamWorkspaceQuestionAiMenuRows` emits nothing.
+ */
+function chooseAiIntent(action: "suggest" | "undo" | "convert", kind?: NativeExamItemKind): void {
   moreOpen.value = false;
-  if (row.action === "suggest") {
+  if (action === "suggest") {
     emit("aiSuggest");
-  } else if (row.action === "undo") {
+  } else if (action === "undo") {
     emit("aiUndo");
-  } else if (row.kind !== null) {
-    emit("aiConvert", row.kind);
+  } else if (kind !== undefined) {
+    emit("aiConvert", kind);
   }
 }
 
@@ -399,33 +334,12 @@ function chooseMore(action: "up" | "down" | "remove"): void {
       test-id="exam-workspace-more-menu"
       @close="moreOpen = false"
     >
-      <template v-if="aiRows.length > 0">
-        <button
-          v-for="row in aiRows"
-          :key="row.action"
-          type="button"
-          class="xw-mi qai-mi"
-          role="menuitem"
-          :aria-disabled="!row.enabled || undefined"
-          :aria-description="row.description ?? undefined"
-          :data-test="row.testId"
-          @click="chooseAi(row)"
-        >
-          <UiGlyph
-            :meaning="row.glyph"
-            :size="20"
-            class="xw-ai"
-            :class="{ 'xw-spin': row.busy }"
-          /><span class="xw-grow">{{ row.label }}</span><span
-            v-if="row.hint"
-            class="xw-mi__hint"
-          >{{ row.hint }}</span>
-        </button>
-        <div
-          role="separator"
-          class="qai-mi-sep"
-        />
-      </template>
+      <ExamWorkspaceQuestionAiMenuRows
+        :controls="aiControls"
+        @suggest="chooseAiIntent('suggest')"
+        @undo="chooseAiIntent('undo')"
+        @convert="(kind) => chooseAiIntent('convert', kind)"
+      />
       <template v-if="child">
         <button
           type="button"

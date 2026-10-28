@@ -4,12 +4,12 @@
  * Expected behavior (TASK-SKRIPT-40-04-26 D2-D6):
  *   The group is the toolbar's last child after its own separator, so a
  *   pinned group keeps its left edge. It shows Föreslå facit (glyph only, the
- *   word in title and aria-label), Ångra AI-tolkningen (glyph only) and Gör om
+ *   word in title and aria-label), Ta bort AI-facit (glyph only) and Gör om
  *   till [typ] (glyph and, at the wide band, the type name). It renders the
  *   controls it is handed and asks for nothing itself: a click emits
  *   `suggest`, `undo` or `convert` with the suggested kind, and the editor
  *   routes them. While a suggestion runs the suggest glyph spins with the busy
- *   meaning and Gör om till is disabled. Without an AI provider the controls
+ *   meaning and Byt till is disabled. Without an AI provider the controls
  *   carry no suggestion, and a guest's controls are all null, so the group is
  *   absent.
  */
@@ -90,8 +90,8 @@ describe("ExamWorkspaceQuestionAiGroup composition", () => {
     const convert = wrapper.get(CONVERT);
     expect(convert.classes()).toContain("xw-tool--word");
     expect(convert.text()).toBe("Lucktext");
-    expect(convert.attributes("aria-label")).toBe("Gör om till Lucktext");
-    expect(convert.attributes("title")).toBe("Gör om till Lucktext");
+    expect(convert.attributes("aria-label")).toBe("Byt till Lucktext");
+    expect(convert.attributes("title")).toBe("Byt till Lucktext");
     expect(convert.find(".qai__name").text()).toBe("Lucktext");
     wrapper.unmount();
   });

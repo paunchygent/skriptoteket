@@ -4,15 +4,15 @@
  *
  * Domain purpose:
  *   The question-text toolbar's last group (TASK-SKRIPT-40-04-26 D2-D6):
- *   Föreslå facit for this one question, Ångra AI-tolkningen, and Gör om till
+ *   Föreslå facit for this one question, Ta bort AI-facit, and Byt till
  *   [typ] while the labeler suggests another type. Its own separator is its
  *   first child, so a group pinned to the bar's right edge keeps that edge.
  *   The states come from `useExamWorkspaceQuestionAiControls`, the one
  *   computed state the ⋮ Fler åtgärder menu rows also read: the suggestion is
- *   offered only on a keyless question and reads Föreslå igen for its one
+ *   offered only on a keyless question and reads Föreslå nytt facit for its one
  *   retry (D4), the daily limit disables it with the door's own note as `title`
  *   and `aria-description`, and the undo is enabled while an AI key can be
- *   undone. Gör om till disables while a suggestion runs, and a guest gets no
+ *   undone. Byt till disables while a suggestion runs, and a guest gets no
  *   group at all. The band composition (which parts show a word) is the
  *   workspace stylesheet's, not this component's.
  *

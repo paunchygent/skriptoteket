@@ -4,11 +4,11 @@
  * Expected behavior (TASK-SKRIPT-40-04-26 D2-D6):
  *   Föreslå facit asks for this one question's key through the existing
  *   `item_id` request and is enabled only while the question has no key; after
- *   an undo it reads Föreslå igen once, a spent retry says the retry is used,
+ *   an undo it reads Föreslå nytt facit once, a spent retry says the retry is used,
  *   the daily limit disables it with the door's own note, and a running
  *   suggestion says so. Undo is offered for the keyed kinds and for any AI
  *   key, and is enabled while an AI key can be undone (never for a dropdown,
- *   which has no valid keyless state). Gör om till [typ] is offered while the
+ *   which has no valid keyless state). Byt till [typ] is offered while the
  *   labeler suggests another type, or while the question is unbuilt. Guests
  *   see none of the three.
  */
@@ -25,12 +25,12 @@ type Origin = NativeExamItem["answer_key"]["origin"];
 type Retry = NativeExamItem["answer_key_retry"];
 
 const HAS_FACIT_WITH_RETRY =
-  "Föreslå facit · Frågan har redan facit. Ångra AI-tolkningen om du vill ha ett nytt förslag.";
+  "Föreslå facit · Frågan har redan facit. Ta bort AI-facit om du vill ha ett nytt förslag.";
 const HAS_FACIT = "Föreslå facit · Frågan har redan facit.";
-const RETRY_OFFERED = "Föreslå igen · Föreslå ett nytt facit för frågan. Du kan göra det en gång.";
+const RETRY_OFFERED = "Föreslå nytt facit · Du kan bara be om ett nytt förslag en gång per fråga.";
 const RETRY_USED = "Föreslå facit · Du har redan bett om ett nytt förslag för frågan.";
-const NO_UNDO = "Ångra AI-tolkningen · Det finns ingen AI-tolkning att ångra";
-const DROPDOWN_UNDO = "Ångra AI-tolkningen · En lucka med rullista måste ha ett rätt svar.";
+const NO_UNDO = "Ta bort AI-facit · Frågan har inget facit från AI.";
+const DROPDOWN_UNDO = "Ta bort AI-facit · En lucka med rullista måste ha ett rätt svar.";
 
 function item(
   kind: NativeExamItemKind,
@@ -114,7 +114,7 @@ describe("questionAiControls suggest (Föreslå facit)", () => {
     expect(suggest).toMatchObject({ enabled: false, hint: "Har facit", title: HAS_FACIT });
   });
 
-  it("offers Föreslå igen once after an undo", () => {
+  it("offers Föreslå nytt facit once after an undo", () => {
     const suggest = questionAiControls(
       item("single_choice", "absent", { retry: "offered" }),
       context(),
@@ -124,7 +124,7 @@ describe("questionAiControls suggest (Föreslå facit)", () => {
       busy: false,
       enabled: true,
       hint: null,
-      label: "Föreslå igen",
+      label: "Föreslå nytt facit",
       title: RETRY_OFFERED,
     });
   });
@@ -137,7 +137,7 @@ describe("questionAiControls suggest (Föreslå facit)", () => {
 
     expect(suggest).toMatchObject({
       enabled: false,
-      hint: "Redan föreslaget igen",
+      hint: "Inga fler förslag",
       label: "Föreslå facit",
       title: RETRY_USED,
     });
@@ -185,13 +185,13 @@ describe("questionAiControls suggest (Föreslå facit)", () => {
   });
 });
 
-describe("questionAiControls undo (Ångra AI-tolkningen)", () => {
+describe("questionAiControls undo (Ta bort AI-facit)", () => {
   it.each(["single_choice", "multiple_response", "gap_fill", "matching"] as const)(
     "offers it for the keyed kind %s, without one enabled on an absent key",
     (kind) => {
       const undo = questionAiControls(item(kind), context()).undo;
 
-      expect(undo).toMatchObject({ enabled: false, hint: null, label: "Ångra AI-tolkningen", title: NO_UNDO });
+      expect(undo).toMatchObject({ enabled: false, hint: null, label: "Ta bort AI-facit", title: NO_UNDO });
     },
   );
 
@@ -202,8 +202,8 @@ describe("questionAiControls undo (Ångra AI-tolkningen)", () => {
 
       expect(undo).toMatchObject({
         enabled: true,
-        label: "Ångra AI-tolkningen",
-        title: "Ångra AI-tolkningen och lämna frågan utan facit",
+        label: "Ta bort AI-facit",
+        title: "Ta bort AI-facit och lämna frågan utan facit",
       });
     },
   );
@@ -235,7 +235,7 @@ describe("questionAiControls undo (Ångra AI-tolkningen)", () => {
   });
 });
 
-describe("questionAiControls convert (Gör om till [typ])", () => {
+describe("questionAiControls convert (Byt till [typ])", () => {
   it("offers the suggested type with its label and title", () => {
     const convert = questionAiControls(
       item("single_choice", "absent", { suggested: "multiple_response" }),
@@ -245,8 +245,8 @@ describe("questionAiControls convert (Gör om till [typ])", () => {
     expect(convert).toEqual({
       enabled: true,
       kind: "multiple_response",
-      label: "Gör om till Flerval: flera val",
-      title: "Gör om till Flerval: flera val",
+      label: "Byt till Flerval: flera val",
+      title: "Byt till Flerval: flera val",
       typeName: "Flerval: flera val",
     });
   });

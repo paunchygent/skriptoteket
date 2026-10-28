@@ -1,29 +1,21 @@
 /**
- * Exam workspace toolbar AI group: band rules, sticky pin and reserved scrollbar.
+ * Exam workspace question-text toolbar class.
  *
  * Expected behavior (TASK-SKRIPT-40-04-26 D7):
- *   The workspace stylesheet keys the AI group's composition only to the
- *   viewport bands, `data-side` and the pointer kind, never to the column
- *   width, so a column drag never changes the toolbar. Desktop without a side
- *   panel shows the suggested type name; the tablet band and any open side
- *   panel show the type glyph only; phones and every coarse pointer hide the
- *   group and show its menu rows instead. While the bar overflows, the group
- *   stays pinned at its right edge, and the question-text toolbar always
- *   reserves the horizontal scrollbar's height.
+ *   Only the question-text toolbar reserves the horizontal scrollbar's height
+ *   and carries `xw-toolbar--question`, which is what the stylesheet's band
+ *   rules key the toolbar AI group's reserved scrollbar to. The stylesheet
+ *   rules themselves are read in the node half,
+ *   `examWorkspace.aiBands.node.spec.ts`, because a unit test cannot evaluate
+ *   media queries.
  *
  * Relationships:
- *   - Reads `examWorkspace.css` from disk as text, because a unit test cannot
- *     evaluate media queries; the rendered class is proved through the two
- *     hosts that carry it (`ExamWorkspaceBodyEditor` yes, an instruction
- *     editor no).
- *   - The classes themselves belong to `ExamWorkspaceQuestionAiGroup.vue`,
- *     which this spec names but does not render.
+ *   - Proves the rendered class through the two hosts that carry it: the
+ *     question body editor marks its toolbar, an instruction editor does not.
+ *   - The classes themselves belong to `ExamWorkspaceQuestionAiGroup.vue`;
+ *     this half never renders or reads that component, only the toolbar
+ *     classes its stylesheet keys on.
  */
-
-// The SPA project's `types` name only Vite and Vitest, so `node:fs` has no
-// declaration there; Vitest still runs this spec in Node and can read the file.
-// @ts-expect-error -- Node types are outside the SPA project.
-import { readFileSync } from "node:fs";
 
 import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
@@ -34,151 +26,12 @@ import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue
 import { buildRecordedParent } from "./examWorkspaceParentDocument.specSupport";
 import { settleEditors } from "./ExamWorkspaceRichTextEntry.specSupport";
 
-/**
- * The stylesheet as text. Vitest stubs CSS imports (empty, `?raw` included), so
- * the file is read from disk; a unit test cannot evaluate media queries.
- */
-const STYLESHEET_URL = import.meta.url;
-const STYLESHEET_PATH =
-  decodeURIComponent(STYLESHEET_URL.slice("file://".length, STYLESHEET_URL.lastIndexOf("/") + 1)) +
-  "examWorkspace.css";
-const stylesheet = readFileSync(STYLESHEET_PATH, "utf8");
-
-interface StyleBlock {
-  prelude: string;
-  body: string;
-}
-
-/** The blocks at one nesting level of a stylesheet fragment, comments removed. */
-function childBlocks(text: string): StyleBlock[] {
-  const source = text.replace(/\/\*[\s\S]*?\*\//g, "");
-  const blocks: StyleBlock[] = [];
-  let cursor = 0;
-  while (cursor < source.length) {
-    const open = source.indexOf("{", cursor);
-    if (open < 0) {
-      break;
-    }
-    let depth = 1;
-    let close = open + 1;
-    while (close < source.length && depth > 0) {
-      if (source[close] === "{") {
-        depth += 1;
-      } else if (source[close] === "}") {
-        depth -= 1;
-      }
-      close += 1;
-    }
-    blocks.push({ prelude: source.slice(cursor, open).trim(), body: source.slice(open + 1, close - 1) });
-    cursor = close;
-  }
-  return blocks;
-}
-
-/** Every rule block, with media and other at-rules flattened away. */
-function leafRules(text: string): StyleBlock[] {
-  return childBlocks(text).flatMap((block) =>
-    block.prelude.startsWith("@") ? leafRules(block.body) : [block],
-  );
-}
-
-/** The declarations of every rule in `scope` whose selector list names `selector` exactly. */
-function declarations(scope: string, selector: string): string[] {
-  return childBlocks(scope)
-    .filter((block) => block.prelude.split(",").map((part) => part.trim()).includes(selector))
-    .map((block) => block.body.replace(/\s+/g, " ").trim());
-}
-
-/** The declarations of one selector in one scope, joined for substring assertions. */
-function declarationText(scope: string, selector: string): string {
-  return declarations(scope, selector).join(" ");
-}
-
-/** The single top-level media block whose prelude names every keyword. */
-function mediaBlock(...keywords: string[]): StyleBlock {
-  const matches = childBlocks(stylesheet).filter(
-    (block) => block.prelude.startsWith("@media") && keywords.every((keyword) => block.prelude.includes(keyword)),
-  );
-  expect(matches).toHaveLength(1);
-  return matches[0]!;
-}
-
-/** Every `@media` block that hides `selector`, as its prelude. */
-function mediaPreludesHiding(selector: string): string[] {
-  return childBlocks(stylesheet)
-    .filter((block) => block.prelude.startsWith("@media"))
-    .filter((block) => declarationText(block.body, selector).includes("display: none"))
-    .map((block) => block.prelude);
-}
-
 let mounted: VueWrapper | null = null;
 
 afterEach(() => {
   mounted?.unmount();
   mounted = null;
   document.body.innerHTML = "";
-});
-
-describe("the toolbar AI group's band rules", () => {
-  it("keys the reserved scrollbar to the question-text toolbar only", () => {
-    const questionBar = declarationText(stylesheet, ".xw-toolbar--question");
-
-    expect(questionBar).toContain("overflow-x: scroll");
-    expect(declarationText(stylesheet, ".xw-toolbar")).toContain("overflow-x: auto");
-  });
-
-  it("pins the group at the overflowing bar's right edge over an opaque bar background", () => {
-    const group = declarationText(stylesheet, ".qai");
-
-    expect(group).toContain("position: sticky");
-    expect(group).toContain("right: 0");
-    expect(group).toContain("padding-left: var(--huleedu-space-1)");
-    expect(group).toContain("background:");
-    // The bar paints `--huleedu-navy-02` over the content surface, and that tint is
-    // translucent; the pin must reproduce the composite or the tools show through.
-    expect(group).toContain("--huleedu-navy-02");
-    expect(group).toContain("--huleedu-surface-content");
-  });
-
-  it("shows the type name only on desktop with no side panel", () => {
-    expect(mediaPreludesHiding(".qai__name")).toEqual(["@media (max-width: 1279px)"]);
-    expect(declarationText(stylesheet, ".ws[data-side] .qai__name")).toContain("display: none");
-    expect(declarationText(stylesheet, ".qai__name")).not.toContain("display: none");
-  });
-
-  it("gives the glyph-only type button the box of a plain tool", () => {
-    const tablet = mediaBlock("(max-width: 1279px)");
-
-    expect(declarationText(tablet.body, ".qai__name")).toContain("display: none");
-    expect(declarationText(tablet.body, ".qai__type")).toContain("padding: 0");
-    expect(declarationText(stylesheet, ".ws[data-side] .qai__type")).toContain("padding: 0");
-  });
-
-  it("replaces the group with its menu rows on phones and coarse pointers", () => {
-    const phone = mediaBlock("(max-width: 767px)", "(pointer: coarse)");
-
-    expect(declarationText(stylesheet, ".qai-mi")).toContain("display: none");
-    expect(declarationText(stylesheet, ".qai-mi-sep")).toContain("display: none");
-    expect(mediaPreludesHiding(".qai")).toEqual(["@media (max-width: 767px), (pointer: coarse)"]);
-    expect(declarationText(phone.body, ".qai")).toContain("display: none");
-    expect(declarationText(phone.body, ".qai-mi")).toContain("display: flex");
-    expect(declarationText(phone.body, ".qai-mi-sep")).toContain("display: block");
-    expect(declarationText(phone.body, ".qai-mi-sep")).toContain("background: var(--huleedu-surface-divider)");
-  });
-
-  it("never keys the group to a container query or a column-size variable", () => {
-    const qaiContainerRules = childBlocks(stylesheet).filter(
-      (block) => block.prelude.startsWith("@container") && block.body.includes("qai"),
-    );
-    expect(qaiContainerRules).toEqual([]);
-
-    const qaiRules = leafRules(stylesheet).filter((block) => block.prelude.includes("qai"));
-    expect(qaiRules.length).toBeGreaterThan(0);
-    for (const rule of qaiRules) {
-      expect(rule.body).not.toContain("--xw-list-size");
-      expect(rule.body).not.toContain("--xw-side-size");
-    }
-  });
 });
 
 describe("the question-text toolbar's question class", () => {

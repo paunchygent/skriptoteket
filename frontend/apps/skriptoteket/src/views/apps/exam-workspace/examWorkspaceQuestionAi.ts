@@ -5,7 +5,7 @@
  *   Decide which of the three per-question AI controls the question-text
  *   toolbar's AI group shows and in what state (TASK-SKRIPT-40-04-26 D2-D6):
  *   Föreslå facit for this question through the existing `item_id` request,
- *   undo the AI key, and Gör om till [typ] when the labeler suggested another
+ *   undo the AI key, and Byt till [typ] when the labeler suggested another
  *   type. The rule lives here once, apart from the component, so the same
  *   question state reads the same way in the toolbar and in the phone menu
  *   row that reuses these controls.
@@ -13,11 +13,11 @@
  *   Föreslå facit is offered only where an answer key of that family exists
  *   (`answer_key_view.py`'s `_VIEW_KIND_BY_ITEM_KIND`: choice, multi,
  *   gap-fill and matching), is enabled only while the question has no key,
- *   reads Föreslå igen for the one retry an undo opens (D4), and says the
+ *   reads Föreslå nytt facit for the one retry an undo opens (D4), and says the
  *   retry is used once it is spent. Undo is offered for those same kinds and
  *   for any AI key, and is enabled while an AI key exists that can be undone:
  *   `ai_interpreted` or `machine_proposed`, never a dropdown, which has no
- *   valid keyless state (D5). Gör om till [typ] keeps the head's old rule:
+ *   valid keyless state (D5). Byt till [typ] keeps the head's old rule:
  *   offered while the labeler suggests another type, or while the question
  *   was never converted.
  *
@@ -83,7 +83,7 @@ export type QuestionAiSuggestControl = {
   description: string | null;
 };
 
-/** Ångra AI-tolkningen: glyph-only, its meaning in `title`. */
+/** Ta bort AI-facit: glyph-only, its meaning in `title`. */
 export type QuestionAiUndoControl = {
   enabled: boolean;
   label: string;
@@ -91,11 +91,11 @@ export type QuestionAiUndoControl = {
   hint: null;
 };
 
-/** Gör om till [typ]: glyph and the type name. */
+/** Byt till [typ]: glyph and the type name. */
 export type QuestionAiConvertControl = {
   kind: NativeExamItemKind;
   typeName: string;
-  /** The accessible name and menu word: "Gör om till [typ]". */
+  /** The accessible name and menu word: "Byt till [typ]". */
   label: string;
   title: string;
   enabled: boolean;
@@ -137,7 +137,7 @@ function suggestControl(
       label,
       title:
         canUndoAiKey(item) && item.answer_key_retry !== "used"
-          ? "Föreslå facit · Frågan har redan facit. Ångra AI-tolkningen om du vill ha ett nytt förslag."
+          ? "Föreslå facit · Frågan har redan facit. Ta bort AI-facit om du vill ha ett nytt förslag."
           : "Föreslå facit · Frågan har redan facit.",
     };
   }
@@ -147,8 +147,8 @@ function suggestControl(
       description: null,
       enabled: !context.locked,
       hint: null,
-      label: "Föreslå igen",
-      title: "Föreslå igen · Föreslå ett nytt facit för frågan. Du kan göra det en gång.",
+      label: "Föreslå nytt facit",
+      title: "Föreslå nytt facit · Du kan bara be om ett nytt förslag en gång per fråga.",
     };
   }
   if (item.answer_key_retry === "used") {
@@ -156,7 +156,7 @@ function suggestControl(
       busy: false,
       description: null,
       enabled: false,
-      hint: "Redan föreslaget igen",
+      hint: "Inga fler förslag",
       label,
       title: "Föreslå facit · Du har redan bett om ett nytt förslag för frågan.",
     };
@@ -171,13 +171,13 @@ function undoControl(item: NativeExamItem, context: QuestionAiContext): Question
     return null;
   }
   const enabled = canUndoAiKey(item) && !context.locked;
-  let title = "Ångra AI-tolkningen · Det finns ingen AI-tolkning att ångra";
+  let title = "Ta bort AI-facit · Frågan har inget facit från AI.";
   if (enabled) {
-    title = "Ångra AI-tolkningen och lämna frågan utan facit";
+    title = "Ta bort AI-facit och lämna frågan utan facit";
   } else if (item.kind === "inline_choice" && aiKey) {
-    title = "Ångra AI-tolkningen · En lucka med rullista måste ha ett rätt svar.";
+    title = "Ta bort AI-facit · En lucka med rullista måste ha ett rätt svar.";
   }
-  return { enabled, hint: null, label: "Ångra AI-tolkningen", title };
+  return { enabled, hint: null, label: "Ta bort AI-facit", title };
 }
 
 function convertControl(
@@ -193,7 +193,7 @@ function convertControl(
     return null;
   }
   const typeName = EXAM_WORKSPACE_TYPE_LABELS[suggested];
-  const label = `Gör om till ${typeName}`;
+  const label = `Byt till ${typeName}`;
   return { enabled: !context.busy && !context.locked, kind: suggested, label, title: label, typeName };
 }
 

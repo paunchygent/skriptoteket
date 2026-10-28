@@ -4,13 +4,13 @@
  * Expected behavior (TASK-SKRIPT-40-04-26 D7, D8):
  *   The three per-question AI controls open the ⋮ Fler åtgärder menu as rows
  *   with words, because a menu row has no tooltip and touch has no hover. The
- *   rows come first, in the order Föreslå facit, Ångra AI-tolkningen, Gör om
+ *   rows come first, in the order Föreslå facit, Ta bort AI-facit, Gör om
  *   till [typ], and one separator follows them before the built rows. They
  *   render whenever the question has that control, whatever the band; the
  *   stylesheet decides where they show. A disabled row keeps its reason as
  *   `aria-disabled` and the built hint, and a click does nothing; an enabled
  *   row closes the menu and emits its intent, with the suggested kind for
- *   Gör om till. No control means no row and no separator.
+ *   Byt till. No control means no row and no separator.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -123,8 +123,8 @@ describe("ExamWorkspaceQuestionHead AI rows", () => {
       expect(row.querySelector("svg.xw-ai")).not.toBeNull();
     }
     expect(children[0]!.textContent).toContain("Föreslå facit");
-    expect(children[1]!.textContent).toContain("Ångra AI-tolkningen");
-    expect(children[2]!.textContent).toContain("Gör om till Lucktext");
+    expect(children[1]!.textContent).toContain("Ta bort AI-facit");
+    expect(children[2]!.textContent).toContain("Byt till Lucktext");
   });
 
   it("renders no AI row and no separator when the question shows no AI control", async () => {
@@ -185,7 +185,7 @@ describe("ExamWorkspaceQuestionHead AI rows", () => {
 
     await openMore(wrapper);
     const convert = inDocument(CONVERT);
-    expect(convert!.textContent).toContain("Gör om till Lucktext");
+    expect(convert!.textContent).toContain("Byt till Lucktext");
     expect(convert!.getAttribute("aria-disabled")).toBeNull();
 
     convert!.click();

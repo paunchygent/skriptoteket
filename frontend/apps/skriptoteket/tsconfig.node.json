@@ -10,5 +10,10 @@
     "types": ["vite/client"],
     "lib": ["ES2022"]
   },
-  "include": ["vitest.config.ts", "src/test/vitestRunPathNormalization.spec.ts", "src/test/vitestInclude.spec.ts"]
+  "include": [
+    "vitest.config.ts",
+    "src/test/vitestRunPathNormalization.spec.ts",
+    "src/test/vitestInclude.spec.ts",
+    "src/views/apps/exam-workspace/examWorkspace.aiBands.node.spec.ts"
+  ]
 }

@@ -6,7 +6,7 @@
  *   rest it shows the built compact frame, fill and text, and its states keep
  *   their meaning: unbuilt adds `qhead__kind--error` and the blocker glyph,
  *   converting and disabled both disable it, and a click opens Byt frågetyp.
- *   "Gör om till [typ]" is not in the head; the type the labeler suggests is
+ *   "Byt till [typ]" is not in the head; the type the labeler suggests is
  *   still marked Förslag inside Byt frågetyp.
  */
 
@@ -107,11 +107,11 @@ describe("ExamWorkspaceQuestionHead type button", () => {
     expect(trigger.attributes("aria-expanded")).toBe("false");
   });
 
-  it("offers no Gör om till button in the head and still marks the suggested type in the menu", async () => {
+  it("offers no Byt till button in the head and still marks the suggested type in the menu", async () => {
     const wrapper = mountHead({ kind: "free_text", suggestedKind: "gap_fill", typeLabel: "Fritext" });
 
     expect(inDocument("exam-workspace-suggested-type")).toBeNull();
-    expect(wrapper.text()).not.toContain("Gör om till");
+    expect(wrapper.text()).not.toContain("Byt till");
 
     await typeTrigger(wrapper).trigger("click");
     await flushPromises();

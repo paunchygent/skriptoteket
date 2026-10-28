@@ -3,7 +3,7 @@
  *
  * Expected behavior (TASK-SKRIPT-40-04-26 D2):
  *   A stored `suggested_kind` that differs from the question's type shows
- *   "Gör om till [typ]" as the question-text toolbar AI group's last control,
+ *   "Byt till [typ]" as the question-text toolbar AI group's last control,
  *   which changes the type in one click, and marks the same entry Förslag in
  *   Byt frågetyp. The type name is the control's face; the whole sentence is
  *   its title and accessible name, so the head no longer holds the button. A
@@ -91,8 +91,8 @@ describe("ExamWorkspaceQuestionEditor suggested type", () => {
     const toolbar = wrapper.get('[role="toolbar"]');
     const offer = toolbar.get(SUGGESTED);
     expect(offer.text()).toBe("Lucktext");
-    expect(offer.attributes("aria-label")).toBe("Gör om till Lucktext");
-    expect(offer.attributes("title")).toBe("Gör om till Lucktext");
+    expect(offer.attributes("aria-label")).toBe("Byt till Lucktext");
+    expect(offer.attributes("title")).toBe("Byt till Lucktext");
     await offer.trigger("click");
     expect(wrapper.emitted("changeType")).toEqual([["gap_fill"]]);
 

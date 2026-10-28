@@ -3,7 +3,7 @@
  *
  * Expected behavior (TASK-SKRIPT-40-04-26 D2, D5):
  *   The question-text toolbar ends with the AI group: Föreslå facit for this
- *   question, undo the AI key and Gör om till [typ]. The key line is
+ *   question, undo the AI key and Byt till [typ]. The key line is
  *   information only: an interpreted key names the file's wording, a key the
  *   AI suggested reads "Facit föreslaget av AI" even when the file printed no
  *   key text, and the key line holds no undo button. Undo lives in the toolbar
@@ -30,8 +30,8 @@ const OLD_KEY_LINE_UNDO = '[data-test="exam-workspace-undo-interpretation"]';
 const reviewButton = '[data-test="exam-workspace-review"]';
 const keyLine = '[data-test="exam-workspace-original-facit"]';
 const FACIT = "Det första alternativet är rätt.";
-const RETRY_TITLE = "Föreslå igen · Föreslå ett nytt facit för frågan. Du kan göra det en gång.";
-const DROPDOWN_UNDO = "Ångra AI-tolkningen · En lucka med rullista måste ha ett rätt svar.";
+const RETRY_TITLE = "Föreslå nytt facit · Du kan bara be om ett nytt förslag en gång per fråga.";
+const DROPDOWN_UNDO = "Ta bort AI-facit · En lucka med rullista måste ha ett rätt svar.";
 
 function editorProps(item: NativeExamItem, disabled: boolean) {
   return {
@@ -91,7 +91,7 @@ describe("question editor AI key line", () => {
     expect(editor.get(keyLine).text()).not.toContain("tolkat av AI");
     expect(editor.get(keyLine).text()).toContain(FACIT);
     expect(editor.find<HTMLInputElement>('input[type="radio"]:checked').exists()).toBe(false);
-    // The one retry an undo opens: the toolbar now offers Föreslå igen once.
+    // The one retry an undo opens: the toolbar now offers Föreslå nytt facit once.
     expect(editor.get(AI_SUGGEST).attributes("title")).toBe(RETRY_TITLE);
   });
 
@@ -100,6 +100,7 @@ describe("question editor AI key line", () => {
 
     expect(editor.get(keyLine).text()).toBe("Facit föreslaget av AI");
     expect(editor.get(keyLine).find("q").exists()).toBe(false);
+    expect(editor.get(`${keyLine} .xw-grow`).classes()).toContain("xw-ai");
   });
 
   it("keeps a suggested key's line even when the file printed key text", () => {
@@ -160,7 +161,7 @@ describe("question editor toolbar AI group", () => {
     const toolbar = editor.get('[role="toolbar"]');
     const undo = toolbar.get(AI_UNDO);
     expect(undo.attributes("disabled")).toBeUndefined();
-    expect(undo.attributes("title")).toBe("Ångra AI-tolkningen och lämna frågan utan facit");
+    expect(undo.attributes("title")).toBe("Ta bort AI-facit och lämna frågan utan facit");
     await undo.trigger("click");
 
     expect(editor.emitted("undoAiKey")).toEqual([[item.item_id]]);

@@ -13,8 +13,8 @@
  *   file shows and nothing can change.
  *
  *   Every per-question AI action sits in the question-text toolbar's last
- *   group (TASK-SKRIPT-40-04-26 D2-D6): Föreslå facit, Ångra AI-tolkningen and
- *   Gör om till [typ]. The key line is information only: a key the AI
+ *   group (TASK-SKRIPT-40-04-26 D2-D6): Föreslå facit, Ta bort AI-facit and
+ *   Byt till [typ]. The key line is information only: a key the AI
  *   suggested reads "Facit föreslaget av AI" whatever the file printed, an
  *   interpreted key names the file's wording, and the undo belongs to the
  *   toolbar group. On a phone or touch device the same three controls are the
@@ -173,17 +173,20 @@ const showFields = computed(() => !props.converting && !unbuilt.value);
 
 /**
  * Where the answer key came from (TASK-SKRIPT-40-04-26 D5). A key the AI
- * suggested names only that it was suggested; an interpreted key and a source
- * key quote the wording the file printed, so they need it.
+ * suggested names only that it was suggested, and carries the AI colour on
+ * its lead text as well as its glyph; an interpreted key and a source key
+ * quote the wording the file printed, so they need it.
  */
-const keyLine = computed<{ ai: boolean; lead: string; facit: string | null } | null>(() => {
+const keyLine = computed<{ ai: boolean; aiLead: boolean; lead: string; facit: string | null } | null>(() => {
   const origin = props.item.answer_key.origin;
-  if (origin === "machine_proposed") return { ai: true, lead: "Facit föreslaget av AI", facit: null };
+  if (origin === "machine_proposed") {
+    return { ai: true, aiLead: true, lead: "Facit föreslaget av AI", facit: null };
+  }
   const facit = props.item.facit_text;
   if (!facit) return null;
-  if (origin === "ai_interpreted") return { ai: true, lead: "Facit tolkat av AI ur", facit };
-  if (origin === "absent") return { ai: false, lead: "Facit i provfilen:", facit };
-  return { ai: false, lead: "Facit ur provfilen:", facit };
+  if (origin === "ai_interpreted") return { ai: true, aiLead: false, lead: "Facit tolkat av AI ur", facit };
+  if (origin === "absent") return { ai: false, aiLead: false, lead: "Facit i provfilen:", facit };
+  return { ai: false, aiLead: false, lead: "Facit ur provfilen:", facit };
 });
 </script>
 
@@ -405,7 +408,10 @@ const keyLine = computed<{ ai: boolean; lead: string; facit: string | null } | n
         :size="16"
         :class="{ 'xw-ai': keyLine.ai }"
       />
-      <span class="xw-grow">{{ keyLine.lead }}<template v-if="keyLine.facit !== null"> <q>{{ keyLine.facit }}</q></template></span>
+      <span
+        class="xw-grow"
+        :class="{ 'xw-ai': keyLine.aiLead }"
+      >{{ keyLine.lead }}<template v-if="keyLine.facit !== null"> <q>{{ keyLine.facit }}</q></template></span>
     </div>
 
     <ExamWorkspacePointsField
