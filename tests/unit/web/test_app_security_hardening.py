@@ -40,7 +40,7 @@ def test_settings_keep_docs_enabled_by_default_outside_production() -> None:
 def test_settings_parse_allowed_hosts_csv() -> None:
     settings = Settings.model_construct(ALLOWED_HOSTS="localhost, api.example.org ,localhost")
     assert settings.allowed_hosts == frozenset(
-        {"localhost", "api.example.org", "skriptoteket_web", "skriptoteket-web"}
+        {"localhost", "127.0.0.1", "::1", "api.example.org", "skriptoteket_web", "skriptoteket-web"}
     )
 
 

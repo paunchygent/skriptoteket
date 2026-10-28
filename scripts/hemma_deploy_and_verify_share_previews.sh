@@ -125,7 +125,15 @@ import json
 import urllib.request
 
 
-with urllib.request.urlopen("http://localhost:8000/healthz", timeout=10) as response:
+with urllib.request.urlopen(
+    urllib.request.Request(
+        # Production refuses loopback ALLOWED_HOSTS entries, so the readiness
+        # gate names the public host while connecting over loopback.
+        "http://127.0.0.1:8000/healthz",
+        headers={"Host": "skriptoteket.hule.education"},
+    ),
+    timeout=10,
+) as response:
     payload = response.read().decode("utf-8")
 print(json.dumps({"status": response.status, "body": payload}, ensure_ascii=False))
 PY

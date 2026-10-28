@@ -27,7 +27,7 @@ services:
       SECRET_KEY: ${SECRET_KEY}
       ENVIRONMENT: production
       COOKIE_SECURE: "true"
-      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,::1,skriptoteket.hule.education}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-skriptoteket.hule.education}
       PUBLIC_APP_BASE_URL: ${PUBLIC_APP_BASE_URL:-https://skriptoteket.hule.education}
       # Uvicorn owns the single trusted-proxy chain: it resolves the client from
       # X-Forwarded-For against FORWARDED_ALLOW_IPS and the app uses that peer
@@ -118,7 +118,10 @@ services:
         - CMD
         - /bin/sh
         - /app/src/skriptoteket/cli/commands/healthcheck_web.sh
-        - http://localhost:8000/healthz/live
+        - http://127.0.0.1:8000/healthz/live
+        # Production refuses loopback ALLOWED_HOSTS entries, so the probe names
+        # the public host while connecting over loopback inside the container.
+        - skriptoteket.hule.education
       interval: 30s
       timeout: 10s
       retries: 3
