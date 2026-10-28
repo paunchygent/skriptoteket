@@ -14,9 +14,10 @@
   - 39-06-11 `ready`: teachers put ordering questions inside a part at 1 point
     (user decision 2026-10-28, from the 39-06-09 Exam.net probe); ST-SKRIPT-39-06 stays open
     until it is done.
-  - TASK-SKRIPT-REP-0055 (backlog matches main after the 2026-10-28 audit): edits are on
-    branch `codex/task-skript-rep-0055`, waiting for the parent's merge; its report lists
-    the items left open.
+  - TASK-SKRIPT-REP-0056 (backlog leftovers after the 2026-10-28 reconciliation): edits are
+    on branch `codex/task-skript-rep-0056`, waiting for the parent's merge; its report lists
+    every item changed and every item left open (ST-SKRIPT-02-06, EPIC-SKRIPT-40,
+    REP-0017 criteria 3 to 6).
   - Story closeout waiting: 39-10 (every task is done; no proof-set walk is on record).
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
@@ -41,7 +42,7 @@
 - 2026-10-28 `done`: 39-10-03 (a failed import's message wraps in full, main `ec810361f`) and
   39-06-09 (ordering inside a part probed in Exam.net, main `c0112dfdc`).
 
-- 2026-10-28 `done` (REP-0055 lead, branch `codex/task-skript-rep-0055`): 24 tasks closed
+- 2026-10-28 `done` (TASK-SKRIPT-REP-0055, merged to main `817a0cf67`): 24 tasks closed
   on merge evidence, 10 tasks and ST-21-04 canceled, 25-06-14 partly canceled, 10 items
   deferred, stories 06-17, 06-18, 39-01, 39-04, 40-02, 40-04 closed, EPIC-SKRIPT-20 active;
   26-06-01 (D4) and 09-07-01 (D5) record their decisions and stay open.

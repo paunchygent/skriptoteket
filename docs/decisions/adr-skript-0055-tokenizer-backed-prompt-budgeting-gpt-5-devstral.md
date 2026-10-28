@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0055
 title: Tokenizer-backed prompt budgeting (GPT-5 + devstral)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: proposed
+status: deprecated
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0055
+  - ADR-0055
 ---
 
 ## Context
@@ -27,6 +27,10 @@ The migrated ADR preserves the source decision and its accepted boundary. Source
 ## Non-Decisions
 
 No new decision, implementation authority, or terminal-state promotion is introduced by this migration.
+
+## Rejection
+
+Rejected on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0056 D3). The docs contract allows the ADR statuses `proposed`, `accepted`, `superseded` and `deprecated` and has no `rejected`, so the status field reads `deprecated`. TASK-SKRIPT-08-27-03, the task that would have implemented it, is canceled, and main no longer has the code it targeted: commit 06f3b679a removed the devstral and Tekken counters, the heuristic counter and the tokenizer-asset settings. Editor prompt budgeting uses only `TiktokenTokenCounter` and `SettingsBasedTokenCounterResolver` in `src/skriptoteket/infrastructure/llm/token_counter_resolver.py`.
 
 ## Consequences
 

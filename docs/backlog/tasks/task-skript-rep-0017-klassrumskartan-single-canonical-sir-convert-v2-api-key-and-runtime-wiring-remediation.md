@@ -1,43 +1,36 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0017
-title: 'Klassrumskartan: single canonical Sir Convert v2 API key and runtime wiring
-  remediation'
+title: 'Klassrumskartan: single canonical Sir Convert v2 API key and runtime wiring remediation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Given Skriptoteket integrates only with Sir Convert-a-Lot v2, when local, production,
-  or operator docs describe the API key contract, then they use `SIR_CONVERT_A_LOT_V2_API_KEY`
-  as the single canonical env key and do not document or rely on any obsolete alias.
-- Given the local Docker hot-reload stack wires the export lane, when `compose.dev.yaml`
-  injects Sir Convert settings, then it forwards only `SIR_CONVERT_A_LOT_V2_API_KEY`
-  and defaults the upstream to `https://convert.hule.education` instead of a hidden
-  laptop-local sidecar.
-- Given local host-side export verification runs through `smoke-seating-export-readiness`,
-  when the developer environment is configured with the canonical v2 base URL, API
-  key, and callback base URL, then the smoke reaches export job creation without a
-  missing-config or missing-key failure.
-- Given the sibling `sir-convert-a-lot` repo exposes CLI/devops/runtime helpers, when
-  they resolve the shared API key env var, then they use the same canonical `SIR_CONVERT_A_LOT_V2_API_KEY`
-  name instead of a legacy alias.
-- Given Hemma carries the production Skriptoteket and Sir Convert env files, when
-  the canonical key rollout is applied, then the affected services are recreated so
-  the new key contract is actually loaded into the running containers.
-- Given developers explicitly need a laptop-local Sir Convert path, when that local
-  profile is documented or implemented, then it is a CPU-only Docker dev container
-  on the MacBook and never a ROCm-dependent or host-uvicorn default lane.
+  - Given Skriptoteket integrates only with Sir Convert-a-Lot v2, when local, production, or operator docs describe the API key contract, then they use `SIR_CONVERT_A_LOT_V2_API_KEY` as the single canonical env key and do not document or rely on any obsolete alias.
+  - Given the local Docker hot-reload stack wires the export lane, when `compose.dev.yaml` injects Sir Convert settings, then it forwards only `SIR_CONVERT_A_LOT_V2_API_KEY` and defaults the upstream to `http://host.docker.internal:28085` instead of a hidden laptop-local sidecar.
+  - Given local host-side export verification runs through `smoke-seating-export-readiness`, when the developer environment is configured with the canonical v2 base URL, API key, and callback base URL, then the smoke reaches export job creation without a missing-config or missing-key failure.
+  - Given the sibling `sir-convert-a-lot` repo exposes CLI/devops/runtime helpers, when they resolve the shared API key env var, then they use the same canonical `SIR_CONVERT_A_LOT_V2_API_KEY` name instead of a legacy alias.
+  - Given Hemma carries the production Skriptoteket and Sir Convert env files, when the canonical key rollout is applied, then the affected services are recreated so the new key contract is actually loaded into the running containers.
+  - Given developers explicitly need a laptop-local Sir Convert path, when that local profile is documented or implemented, then it is a CPU-only Docker dev container on the MacBook and never a ROCm-dependent or host-uvicorn default lane.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Decision 2026-10-28 (TASK-SKRIPT-REP-0056 D4, orchestrator): criterion 2 names the Sir Convert-a-Lot address that `compose.dev.yaml`, `.env.example` and the runbook use, `http://host.docker.internal:28085`. The task stays `ready`. Checked on main on 2026-10-28:
+
+- Criteria 1 and 2 hold. Apart from this note, no file in the repository contains the legacy key name `SIR_CONVERT_A_LOT_API_KEY`. `compose.dev.yaml:25-27` and `:45-47` (web and worker) forward only `SIR_CONVERT_A_LOT_V2_API_KEY` and default the upstream to `http://host.docker.internal:28085`; `.env.example:50` and the runbook `run-skript-runbook-home-server-operations-runbook-home-server-operations-part-02.md:277-279` use the same address.
+- Criterion 3 does not match the code. `smoke-seating-export-readiness` (`src/skriptoteket/cli/commands/smoke_seating_export_readiness.py`) reads none of the Sir Convert URL, key or callback settings, and the seating export renders locally without Sir Convert (`:376-424`; `seating_xlsx_renderer.py:4-6`), so the smoke cannot fail for a missing Sir Convert setting. The criterion needs a rewrite or a drop, which is a product decision outside D4.
+- Criterion 4 is not met. The sibling repo's runbook `sir-convert-a-lot/docs/runbooks/run-sircon-hemma-service-operations-runbook-for-sir-convert-a-lot-hemma-service-operations-runbook-for-sir-convert-a-lot.md:192` still lists `SIR_CONVERT_A_LOT_API_KEY` as a step in the key precedence. The sibling code uses the canonical name (`scripts/sir_convert_a_lot/devops/hemma_deploy_verification_contracts.py:18`).
+- Criterion 5 is not provable from the repository. No record of the key rollout or of recreating the services exists. The running `skriptoteket-web` container on Hemma has `SIR_CONVERT_A_LOT_V2_API_KEY` and not the legacy name (checked by variable name only), and no production Sir Convert container exists on this host.
+- Criterion 6 is not met. `.env.example:48-49` and the runbook rule out a host `uvicorn` default, but no CPU-only Docker dev container for the MacBook is defined, and `serve:sir-convert-a-lot`, which `.env.example:48` names, is not a `pyproject.toml` script.
 
 ## Context
 
@@ -51,14 +44,18 @@ The source task remains bounded to its repository-owned surface; product behavio
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-REP-0017 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Contract Inputs
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -80,6 +77,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 ## Stop Conditions
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                                                                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Criterion 2 names `http://host.docker.internal:28085`, the address `compose.dev.yaml`, `.env.example` and the runbook use; the task closes when its criteria hold (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D4). Criteria 3 to 6 do not hold on main, so the task stays `ready`. |
 
 ## Lessons Learned
 

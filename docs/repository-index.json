@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3351fe850ca2db9b4025f15c1681a512d65ed78b8425a9b15e355edfbfdb21c0",
+  "source_set_digest": "d5a9db77b3b23bbbe3c809cc60f76a148d5f9627970b922ece69a479a7f867f7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -138,10 +138,6 @@
       "retired_ids": [
         "EPIC-14"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -254,10 +250,6 @@
       "retired_ids": [
         "EPIC-21"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -733,10 +725,6 @@
       "retired_ids": [
         "ST-02-06"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -1153,10 +1141,6 @@
       "retired_ids": [
         "ST-11-25"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -1267,7 +1251,7 @@
       "type": "story",
       "title": "Script bank curation + group generator tool",
       "path": "docs/backlog/stories/st-skript-14-33-script-bank-curation-group-generator-tool.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-14",
       "owners": [
         {
@@ -1278,13 +1262,13 @@
       "retired_ids": [
         "ST-14-33"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "ST-SKRIPT-14-33#closeout"
       }
     },
     {
@@ -1475,7 +1459,7 @@
       "type": "story",
       "title": "Curated app: Reagent Prep Chef (v1)",
       "path": "docs/backlog/stories/st-skript-20-01-curated-app-reagent-prep-chef-v1.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-20",
       "owners": [
         {
@@ -1486,13 +1470,13 @@
       "retired_ids": [
         "ST-20-01"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "ST-SKRIPT-20-01#closeout"
       }
     },
     {
@@ -1550,7 +1534,7 @@
       "type": "story",
       "title": "Curated app: Conversion Hub (v1)",
       "path": "docs/backlog/stories/st-skript-21-01-curated-app-conversion-hub-v1.md",
-      "status": "active",
+      "status": "canceled",
       "epic": "EPIC-SKRIPT-21",
       "owners": [
         {
@@ -1569,13 +1553,13 @@
       "retired_ids": [
         "ST-21-01"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "ST-SKRIPT-21-01#closeout"
       }
     },
     {
@@ -1610,7 +1594,7 @@
       "type": "story",
       "title": "Exam converter public and authenticated artifact lanes",
       "path": "docs/backlog/stories/st-skript-21-03-exam-converter-public-and-authenticated-artifact-lanes.md",
-      "status": "active",
+      "status": "canceled",
       "epic": "EPIC-SKRIPT-21",
       "owners": [
         {
@@ -1621,13 +1605,13 @@
       "retired_ids": [
         "ST-21-03"
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "ST-SKRIPT-21-03#closeout"
       }
     },
     {
@@ -3277,7 +3261,7 @@
       "type": "task",
       "title": "Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)",
       "path": "docs/backlog/tasks/task-skript-20-02-01-curated-app-reagent-prep-chef-riskbed-mning-dokumentation-v1.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-20-02",
       "owners": [
@@ -3286,13 +3270,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-20-02-01#closeout"
       }
     },
     {
@@ -3727,7 +3711,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: ruthless independent review gate for launcher input and overlay seam",
       "path": "docs/backlog/tasks/task-skript-25-06-07-flunk-out-frenzy-ruthless-independent-review-gate-for-launcher-input-and-overlay-seam.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3736,13 +3720,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0056 D1) to cancel this task: it exists only to review or prove the canceled TASK-SKRIPT-25-06-08; the Closeout section records what was dropped."
       }
     },
     {
@@ -3772,7 +3755,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: plunger-strike root-cause proof and telemetry contract",
       "path": "docs/backlog/tasks/task-skript-25-06-09-flunk-out-frenzy-plunger-strike-root-cause-proof-and-telemetry-contract.md",
-      "status": "ready",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3781,13 +3764,12 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-28 (TASK-SKRIPT-REP-0056 D1) to cancel this task: it exists only to review or prove the canceled TASK-SKRIPT-25-06-08; the Closeout section records what was dropped."
       }
     },
     {
@@ -4554,7 +4536,7 @@
       "type": "task",
       "title": "ST-37-05 shared save/export naming backend contract",
       "path": "docs/backlog/tasks/task-skript-37-05-02-st-37-05-shared-save-export-naming-backend-contract.md",
-      "status": "blocked",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-37-05",
       "owners": [
@@ -4563,10 +4545,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4577,7 +4555,7 @@
       "type": "task",
       "title": "ST-37-05 shared filename editing UI primitives",
       "path": "docs/backlog/tasks/task-skript-37-05-03-st-37-05-shared-filename-editing-ui-primitives.md",
-      "status": "blocked",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-37-05",
       "owners": [
@@ -4586,10 +4564,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4609,10 +4583,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4632,10 +4602,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -4655,10 +4621,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -8185,10 +8147,6 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
@@ -9913,7 +9871,7 @@
       "type": "adr",
       "title": "Tokenizer-backed prompt budgeting (GPT-5 + devstral)",
       "path": "docs/decisions/adr-skript-0055-tokenizer-backed-prompt-budgeting-gpt-5-devstral.md",
-      "status": "proposed",
+      "status": "deprecated",
       "owners": [
         {
           "kind": "service",
@@ -13821,7 +13779,7 @@
       {
         "id": "ADR-SKRIPT-0055",
         "title": "Tokenizer-backed prompt budgeting (GPT-5 + devstral)",
-        "status": "proposed",
+        "status": "deprecated",
         "path": "docs/decisions/adr-skript-0055-tokenizer-backed-prompt-budgeting-gpt-5-devstral.md",
         "governing": [],
         "governed_contracts": [],

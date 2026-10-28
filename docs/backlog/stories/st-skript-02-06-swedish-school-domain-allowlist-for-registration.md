@@ -4,39 +4,38 @@ id: ST-SKRIPT-02-06
 title: Swedish school domain allowlist for registration
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 epic: EPIC-SKRIPT-02
 acceptance_criteria:
-- Given this first slice ships, when the initial allowlist seed is inspected, then
-  it contains a nationwide baseline of active Swedish municipality root domains plus
-  known enskild-huvudman and school-specific root domains used for staff email registration.
-- Given the baseline is imported into the database, when an admin inspects an allowlist
-  entry, then municipality, enskild huvudman, and school-specific rows can be distinguished
-  clearly enough to maintain the list over time.
-- Given the import tooling runs on the maintained source files, when municipality
-  and enskild-huvudman data is loaded, then the resulting allowed-domain rows are
-  normalized to registered/root domains suitable for later registration validation.
-- Given the baseline import slice ships, when the blocked-domain seed is inspected,
-  then common personal-email providers are present as explicit blocked domains for
-  the later enforcement slice.
-- Given this story is not yet the enforcement cutover, when the slice is reviewed,
-  then registration-time allow/deny behavior is explicitly deferred to a follow-on
-  implementation slice that consumes the imported baseline.
-- Given the seed files and import path are maintained in the repo, when a missing
-  or changed school domain is discovered, then operators have a documented and versioned
-  way to refresh the allowlist instead of hand-editing production data.
+  - Given this first slice ships, when the initial allowlist seed is inspected, then it contains a nationwide baseline of active Swedish municipality root domains plus known enskild-huvudman and school-specific root domains used for staff email registration.
+  - Given the baseline is imported into the database, when an admin inspects an allowlist entry, then municipality, enskild huvudman, and school-specific rows can be distinguished clearly enough to maintain the list over time.
+  - Given the import tooling runs on the maintained source files, when municipality and enskild-huvudman data is loaded, then the resulting allowed-domain rows are normalized to registered/root domains suitable for later registration validation.
+  - Given the baseline import slice ships, when the blocked-domain seed is inspected, then common personal-email providers are present as explicit blocked domains for the later enforcement slice.
+  - Given this story is not yet the enforcement cutover, when the slice is reviewed, then registration-time allow/deny behavior is explicitly deferred to a follow-on implementation slice that consumes the imported baseline.
+  - Given the seed files and import path are maintained in the repo, when a missing or changed school domain is discovered, then operators have a documented and versioned way to refresh the allowlist instead of hand-editing production data.
 retired_ids:
-- ST-02-06
+  - ST-02-06
+backlog_document_profile: contract-derived
 ---
+
+## Slice Contract
+
+Stays `ready` on 2026-10-28 (TASK-SKRIPT-REP-0056 D5): its child TASK-SKRIPT-02-06-01 is done, but the acceptance does not hold in full on main. Code and data reading found criteria 3 and 4 met; 1, 2 and 6 partly met; 5 not met as written.
+
+1. Baseline: `data/identity/allowed_domains_municipalities.csv` (290 rows, all active, `org_type=kommun`) and `allowed_domains_enskilda_huvudman.csv` (706 rows, 616 active). School-specific roots cannot be told apart: `src/skriptoteket/domain/identity/models.py:38-42` defines only `kommun`, `enskild_huvudman`, `government_agency` and `other`.
+2. Distinguishing rows: `org_type` is indexed (`infrastructure/db/models/allowed_domain.py:26`), but a school-specific row has no kind value, and no admin surface lists the rows; the CLI prints counts only (`cli/commands/import_domain_allowlist.py:130-153`).
+3. Normalization to registered root domains: met (`application/identity/domain_validator.py:45-54`, called by the importer at `domain_allowlist_import.py:173` and `:252`).
+4. Blocked personal-email domains: met (`data/identity/blocked_domains.csv`, 10 active rows).
+5. Enforcement deferred to a follow-on slice: not met as written. Registration-time enforcement is live (`application/identity/handlers/register_user.py:108`, `validate_registration_input.py:73`) and shipped in the same commit as the import (`493b3ba18`).
+6. Refresh path: the versioned CSVs and the `validate-domain-allowlist` and `import-domain-allowlist` commands exist (`cli/main.py:69-70`, dry run by default), but no runbook in `docs/runbooks` documents the refresh, and the single-domain add, disable and correct command the story names does not exist.
+
+Closing the story needs a decision on criteria 1, 2, 5 and 6: rewrite them to what shipped, or build the missing marker, runbook and command.
 
 ## Context
 
@@ -57,6 +56,20 @@ No separate ADR coverage was recorded in the source snapshot.
 ## Contract Inputs
 
 No separate contract inputs were recorded in the source snapshot.
+
+## Tasks
+
+- TASK-SKRIPT-02-06-01 (done)
+
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | The story stays `ready` because its acceptance does not hold in full on main; the Slice Contract paragraph names the unmet criteria (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D5). |
 
 ## Live Verification Plan
 

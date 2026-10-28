@@ -42,6 +42,6 @@ describe("skriptoteketCompletions (helper imports)", () => {
     const doc = SKRIPTOTEKET_HELPER_DOCS.find(
       (entry) => entry.moduleId === "skriptoteket_toolkit" && entry.exportId === "read_inputs",
     );
-    expect(doc?.swedishDoc).toContain("SKRIPTOTEKET_INPUTS");
+    expect(doc?.swedishDoc).toContain("request.json");
   });
 });
