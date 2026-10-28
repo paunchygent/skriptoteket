@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Ruthless review raised F1 (medium): the skipped-pages note reached the exam only at final publication; repaired in 057c344e6 and admitted on focused proof without rereview. Merged 32d503c98; script callers repaired 8edbedd9b (0944a6e23). Mac staging walk at 0944a6e23 by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-39-10-03-0944a6e23/walk-record.md): checks 1-3 pass; the walk found the stop message cut with an ellipsis. Walk repair 7bba2bb8b (merged fac5f7e1c): a failed import''s message wraps in full; fail-first spec 1 failed before, 25 tests passed after, fe-type-check and fe-lint exit 0 (retained evidence stop-message-wrap/). Closed on that unit proof without a re-walk, by orchestrator decision.'
 task_kind: story
 acceptance_criteria:
   - A PDF without text, or whose text layer is mostly unreadable, imports nothing and shows a stop message telling the teacher to save the exam as Word or as a PDF from the original
