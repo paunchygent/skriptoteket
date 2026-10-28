@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-07-31'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Criterion 3 landed in 6f824a74f and docs 8f1b07d02 (merged 1f3f84f9f): production settings refuse localhost, 127.0.0.1 and ::1 in ALLOWED_HOSTS, naming the entry; the production default is skriptoteket.hule.education; the production web healthcheck and the deploy readiness gate send Host: skriptoteket.hule.education. Fail-first 7 tests failed before, 45 passed after; lint and typecheck clean (retained evidence prod-allowed-hosts-2/). The earlier criteria were found holding on main by the 2026-10-28 audit (REP-0055). Live check on Hemma staging at d0064b1ce, 2026-10-28: web and worker healthy; Host localhost and 127.0.0.1 get 200 and evil.example gets 400 in staging; in the same image with ENVIRONMENT=production, ALLOWED_HOSTS=localhost,skriptoteket.hule.education fails with the named-entry error and skriptoteket.hule.education alone loads. Production deploy needs the production .env ALLOWED_HOSTS changed first (handoff user gate).'
 story: ST-SKRIPT-09-07
 task_kind: story
 acceptance_criteria:
@@ -23,7 +27,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D5): production startup refuses `ALLOWED_HOSTS` entries `localhost`, `127.0.0.1` and `::1`. Acceptance criterion 3 stays unmet until that code lands, so this task stays open.
+Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D5): production startup refuses `ALLOWED_HOSTS` entries `localhost`, `127.0.0.1` and `::1`. The code landed in 6f824a74f (merged 1f3f84f9f).
 
 ## Context
 

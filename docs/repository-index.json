@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a1fb3d4dc30f8f8e307fc37b5bd5e04984329576b445e4d7d215726ffd4620dd",
+  "source_set_digest": "2fd0e3416b4b032550ea02ec7da050de8d77dec7455c7fc3a685971d7ee4fdb2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2884,7 +2884,7 @@
       "type": "task",
       "title": "ST-09-07 public-edge app/runtime hardening",
       "path": "docs/backlog/tasks/task-skript-09-07-01-st-09-07-public-edge-app-runtime-hardening.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-09-07",
       "owners": [
@@ -2895,7 +2895,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Criterion 3 landed in 6f824a74f and docs 8f1b07d02 (merged 1f3f84f9f): production settings refuse localhost, 127.0.0.1 and ::1 in ALLOWED_HOSTS, naming the entry; the production default is skriptoteket.hule.education; the production web healthcheck and the deploy readiness gate send Host: skriptoteket.hule.education. Fail-first 7 tests failed before, 45 passed after; lint and typecheck clean (retained evidence prod-allowed-hosts-2/). The earlier criteria were found holding on main by the 2026-10-28 audit (REP-0055). Live check on Hemma staging at d0064b1ce, 2026-10-28: web and worker healthy; Host localhost and 127.0.0.1 get 200 and evil.example gets 400 in staging; in the same image with ENVIRONMENT=production, ALLOWED_HOSTS=localhost,skriptoteket.hule.education fails with the named-entry error and skriptoteket.hule.education alone loads. Production deploy needs the production .env ALLOWED_HOSTS changed first (handoff user gate)."
       }
     },
     {
