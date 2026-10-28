@@ -197,7 +197,7 @@ async def _label_exam(
     client: OpenAIClient, docx: Path, run_dir: Path, scratch: Path, wanted: set[str]
 ) -> None:
     exam_dir = run_dir / docx.stem
-    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes()).chunks
     label = f"{run_dir.name}/{docx.stem}"
     if "grouping_b2" in wanted:
         await _label_exam_b2(client, chunks, exam_dir, label)
@@ -248,7 +248,7 @@ async def _retry_failed_exam(
         if isinstance(saved_a, dict) and "questions" in saved_a
         else None
     )
-    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes()).chunks
     label = f"{run_dir.name}/{docx.stem}"
     jobs = _method_jobs(
         client, label, docx, scratch, chunks, grouping_a, Grouping.from_json(saved_b)
