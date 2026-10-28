@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c38dd2d7ed17169c9c9724111d7a54f83e04eb8e7c98dc2fdda9b2c70a7c5765",
+  "source_set_digest": "40d738cb089b89fb370a727b249b0becad2378276d6c57e919455514644b8a16",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5474,7 +5474,7 @@
       "type": "task",
       "title": "The exam import count rises while the questions convert",
       "path": "docs/backlog/tasks/task-skript-39-04-24-the-exam-import-count-rises-while-the-questions-convert.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5485,7 +5485,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Built and in production (50a7b84e3). Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): Word and PDF imports, the status row rose through AI-svar mottagna för N av 16 frågor with polls about every 3 s; one poll in the Word run took about 25 s, not repeated in the PDF run."
       }
     },
     {
@@ -6638,7 +6642,7 @@
       "type": "task",
       "title": "Migrate icons to the shared glyph components",
       "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-02",
       "owners": [
@@ -6649,7 +6653,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Ruthless review 26c7f1d1 approved tranche 3 and 2826ef4e with no findings; repeat-sync no-diff proof 8f259ba53; merged 1b2ce75cc and 05b3fc12a. Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): the course picker clear glyph, the automatic-value chip remove glyph in Kort svar and the Lucktext popover, and the tutorial clip play disc all show and work."
       }
     },
     {
@@ -7451,7 +7459,7 @@
       "type": "task",
       "title": "The question-type switch shows as a compact button in the question head",
       "path": "docs/backlog/tasks/task-skript-40-04-26-the-question-type-switch-shows-as-a-compact-button-in-the-question-head.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7462,7 +7470,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Ruthless review changes_requested F1-F3 and a nit, all repaired and admitted on focused proof without rereview (fail-first: 4 backend tests); copy review applied as the user decided; merged 23309e478. Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): compact head button at 28 px, AI group states, the retry stays spent across undo, redo and reload, sticky AI group at 1366 px with the preview, 1000 px, and the Fler åtgärder rows at 700 px all pass. Byt till was not walked because no staging question has a suggested_kind; it is covered by the Vitest AI group specs."
       }
     },
     {

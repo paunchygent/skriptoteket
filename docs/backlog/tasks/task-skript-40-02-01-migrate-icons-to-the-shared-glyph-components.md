@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-27'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Ruthless review 26c7f1d1 approved tranche 3 and 2826ef4e with no findings; repeat-sync no-diff proof 8f259ba53; merged 1b2ce75cc and 05b3fc12a. Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): the course picker clear glyph, the automatic-value chip remove glyph in Kort svar and the Lucktext popover, and the tutorial clip play disc all show and work.'
 task_kind: story
 acceptance_criteria:
   - Every Skriptoteket icon renders through UiGlyph or UiSymbol by meaning, custom Icon components remain only where the mapping records no shared meaning, and lucide-vue-next is removed

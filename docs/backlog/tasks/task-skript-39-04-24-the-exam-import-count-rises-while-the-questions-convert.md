@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-22'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Built and in production (50a7b84e3). Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): Word and PDF imports, the status row rose through AI-svar mottagna för N av 16 frågor with polls about every 3 s; one poll in the Word run took about 25 s, not repeated in the PDF run.'
 task_kind: story
 acceptance_criteria:
   - During a Word or PDF import, a count explicitly labeled as AI output received rises before the whole batch is published

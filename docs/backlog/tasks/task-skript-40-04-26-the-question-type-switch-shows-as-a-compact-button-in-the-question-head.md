@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Ruthless review changes_requested F1-F3 and a nit, all repaired and admitted on focused proof without rereview (fail-first: 4 backend tests); copy review applied as the user decided; merged 23309e478. Mac staging walk at 05b3fc12a by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): compact head button at 28 px, AI group states, the retry stays spent across undo, redo and reload, sticky AI group at 1366 px with the preview, 1000 px, and the Fler åtgärder rows at 700 px all pass. Byt till was not walked because no staging question has a suggested_kind; it is covered by the Vitest AI group specs.'
 task_kind: story
 acceptance_criteria:
   - 'At rest the question-type switch in the question head shows the built xw-btn xw-btn--compact frame, fill and text; hover, open, unbuilt (red) and converting (disabled) keep their meaning, and the row height stays 28 px'
