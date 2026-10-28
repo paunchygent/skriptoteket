@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Reviews f98599ec, bcbf04a7 and aeb140ef findings repaired fail-first; aeb140ef F1 (the 409 reload the user kept) admitted on focused proof without rereview under the user''s no-rereview rule; Part A and Part B staging walks passed. R14 ends with position numbers kept in the PDF för Exam.net headings and the QTI titles (user decision 2026-10-28, AskUserQuestion: Keep position numbers); a QTI package titled 2a and 2b imported without error and Exam.net numbers questions itself. Mac staging walk at 05b3fc12a with the user''s Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - With the gap tool on, one click on a word makes it a gap with no popover; Ctrl+Alt+G (Cmd+Option+G on macOS) turns the tool on and off; every formatting and tool button's tooltip names its shortcut

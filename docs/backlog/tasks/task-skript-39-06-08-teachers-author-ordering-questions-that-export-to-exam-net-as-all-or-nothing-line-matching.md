@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Mac staging walk at 05b3fc12a with the user''s Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): ordering question authored, Blanda om and Ångra work, the QTI holds a qti-order-interaction with MAXSCORE 1, and Exam.net imports it as Matcha ihop with the correct pairs and the single rule Alla rätt 1p. A leading space added to a new step''s text moves to its own repair task.'
 task_kind: story
 acceptance_criteria:
   - A teacher creates or converts a standalone ordering question in the workspace editor, and its QTI export imports into Exam.net as all-or-nothing line matching worth 1 point by default

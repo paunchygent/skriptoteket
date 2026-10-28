@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7a161663e7cd3f69d38058b12ff71259dbed75e6f019726b5f1d5547f9fb2262",
+  "source_set_digest": "d3cb92fc5fce42065c49f85e75b3c227da2c20eedd8e94c319e913f9da043188",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4736,7 +4736,7 @@
       "type": "task",
       "title": "Preserve decimal scores and recover missing DigiExam titles and images",
       "path": "docs/backlog/tasks/task-skript-39-01-02-preserve-decimal-scores-and-replace-missing-digiexam-images-with-visible-placeholders.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-01",
       "owners": [
@@ -4747,7 +4747,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Review d35f0ee2: F3 repaired and admitted on focused proof (merge 8aa7d8608 on main); F1 and F2 accepted unfixed by the user on 2026-10-21."
       }
     },
     {
@@ -6012,7 +6016,7 @@
       "type": "task",
       "title": "Teachers author ordering questions that export to Exam.net as all-or-nothing line matching",
       "path": "docs/backlog/tasks/task-skript-39-06-08-teachers-author-ordering-questions-that-export-to-exam-net-as-all-or-nothing-line-matching.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -6023,7 +6027,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Mac staging walk at 05b3fc12a with the user's Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): ordering question authored, Blanda om and Ångra work, the QTI holds a qti-order-interaction with MAXSCORE 1, and Exam.net imports it as Matcha ihop with the correct pairs and the single rule Alla rätt 1p. A leading space added to a new step's text moves to its own repair task."
       }
     },
     {
@@ -7077,7 +7085,7 @@
       "type": "task",
       "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
       "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -7088,7 +7096,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Reviews f98599ec, bcbf04a7 and aeb140ef findings repaired fail-first; aeb140ef F1 (the 409 reload the user kept) admitted on focused proof without rereview under the user's no-rereview rule; Part A and Part B staging walks passed. R14 ends with position numbers kept in the PDF för Exam.net headings and the QTI titles (user decision 2026-10-28, AskUserQuestion: Keep position numbers); a QTI package titled 2a and 2b imported without error and Exam.net numbers questions itself. Mac staging walk at 05b3fc12a with the user's Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md)."
       }
     },
     {
@@ -8900,7 +8912,7 @@
       "type": "task",
       "title": "QTI item serializer indents block structure only and never mixed inline content",
       "path": "docs/backlog/tasks/task-skript-rep-0048-qti-item-serializer-indents-block-structure-only-and-never-mixed-inline-content.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8910,7 +8922,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Mac staging walk at 05b3fc12a with the user's Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): nested marks and marked runs keep their spacing in the export and in Exam.net. R14 ends with position numbers kept in the PDF för Exam.net headings and the QTI titles (user decision 2026-10-28, AskUserQuestion: Keep position numbers); a QTI package titled 2a and 2b imported without error and Exam.net numbers questions itself."
       }
     },
     {

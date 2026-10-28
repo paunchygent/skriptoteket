@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Mac staging walk at 05b3fc12a with the user''s Exam.net account, 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md): nested marks and marked runs keep their spacing in the export and in Exam.net. R14 ends with position numbers kept in the PDF för Exam.net headings and the QTI titles (user decision 2026-10-28, AskUserQuestion: Keep position numbers); a QTI package titled 2a and 2b imported without error and Exam.net numbers questions itself.'
 task_kind: repository
 acceptance_criteria:
   - Nested marks and a single space between marked runs serialize with exact inner text and no added whitespace

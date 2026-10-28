@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-04'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Review d35f0ee2: F3 repaired and admitted on focused proof (merge 8aa7d8608 on main); F1 and F2 accepted unfixed by the user on 2026-10-21.'
 task_kind: story
 acceptance_criteria:
   - Valid decimal point values pass unchanged through the neutral exam model into QTI without warnings, while a missing question title uses the existing deterministic fallback and unresolved DigiExam image references produce a valid visible per-item placeholder; both recoverable source defects emit simple Swedish review information instead of failing the conversion
