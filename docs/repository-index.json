@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d3cb92fc5fce42065c49f85e75b3c227da2c20eedd8e94c319e913f9da043188",
+  "source_set_digest": "2ea4f3187f225c5b2ce30fdc5f3faa59ad6a1a9dd37559b24f36cf6bf58bd3e4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9018,6 +9018,24 @@
       "type": "task",
       "title": "The exam workspace background-job Docker tests pass on main again",
       "path": "docs/backlog/tasks/task-skript-rep-0053-the-exam-workspace-background-job-docker-tests-pass-on-main-again.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0054",
+      "type": "task",
+      "title": "A new ordering step keeps only the text the teacher typed",
+      "path": "docs/backlog/tasks/task-skript-rep-0054-a-new-ordering-step-keeps-only-the-text-the-teacher-typed.md",
       "status": "ready",
       "task_kind": "repository",
       "owners": [
