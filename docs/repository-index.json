@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fa829fc2e9a946a51176d0657829ac20849d9c1eb41a831139a2dcceaed8c397",
+  "source_set_digest": "d169618a32a82d9e9f87b44f70375d7fee45afd6a8b040edab884a8a2cb1db09",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7440,6 +7440,25 @@
         "decided_at": "2026-10-22",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "Admitted on focused proof under the user's light-route rule of 2026-10-21. Fail-first unit test for repeated subpart anchors passed after fix b904c59f, merged as 57ecd182; the Hemma pre-push suite passed on main 57ecd182."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-26",
+      "type": "task",
+      "title": "The question-type switch shows as a compact button in the question head",
+      "path": "docs/backlog/tasks/task-skript-40-04-26-the-question-type-switch-shows-as-a-compact-button-in-the-question-head.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
