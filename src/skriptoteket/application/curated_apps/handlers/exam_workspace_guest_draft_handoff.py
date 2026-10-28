@@ -4,7 +4,7 @@ Purpose:
     After sign-in the browser posts its draft (document JSON + picture bytes +
     the draft's draft_id). One exam is created in the teacher's Mina filer
     through the Spara som creation path; a repeated or concurrent post with the
-    same ``(owner_user_id, draft_id)`` creates nothing new and returns the exam
+    same ``draft_id`` creates nothing new and returns the exam
     the first post created.
 
 Relationships:
@@ -43,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_title_numbering import
     numbered_exam_title,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
@@ -102,7 +103,11 @@ class ImportGuestExamDraftHandler:
                 existing = await self._handoffs.get_lineage(
                     owner_user_id=actor.id, draft_id=draft_id
                 )
-                assert existing is not None  # a lost claim means the winner committed
+                if existing is None:
+                    raise DomainError(
+                        code=ErrorCode.CONFLICT,
+                        message="Utkastet har redan sparats av ett annat konto.",
+                    )
                 return await self._reader.handle(actor=actor, lineage_id=existing)
             numbered = await self._with_unique_title(actor=actor, document=document)
             return await self._create(

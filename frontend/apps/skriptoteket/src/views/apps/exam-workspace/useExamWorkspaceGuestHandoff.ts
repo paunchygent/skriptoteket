@@ -40,7 +40,7 @@
  *     mirroring the guest export multipart shape (`draft_id`, `document`,
  *     `notes`, one `asset:<id>` part per declared picture).
  *   - The idempotency key is the snapshot cursor, not the draft: the
- *     server claims once per (user, key), so a later handoff of newer edits
+ *     server claims once per key, so a later handoff of newer edits
  *     posts a new cursor and imports its own exam instead of returning the
  *     old snapshot.
  *   - After a successful post only the posted snapshot is cleared: a newer

@@ -13,7 +13,7 @@ from skriptoteket.domain.identity.models import User
 
 
 class ExamGuestDraftHandoffRepositoryProtocol(Protocol):
-    """Claim a guest draft once per owner, backed by the database primary key."""
+    """Claim a guest draft once per draft, backed by the database primary key."""
 
     async def claim(
         self,
@@ -30,7 +30,7 @@ class ExamGuestDraftHandoffRepositoryProtocol(Protocol):
 
 
 class ImportGuestExamDraftHandlerProtocol(Protocol):
-    """Save a guest's browser draft into Mina filer exactly once per (owner, draft)."""
+    """Save a guest's browser draft into Mina filer exactly once per draft."""
 
     async def handle(
         self,

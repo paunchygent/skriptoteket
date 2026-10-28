@@ -1,7 +1,7 @@
 """SQLAlchemy handoff ledger repository for exam workspace guest drafts.
 
 Purpose:
-    Claim a guest draft exactly once per ``(owner_user_id, draft_id)`` so the
+    Claim a guest draft exactly once per ``draft_id`` so the
     sign-in handoff creates the exam in Mina filer exactly once
     (TASK-SKRIPT-41-02-02 P5).
 
@@ -54,7 +54,6 @@ class PostgreSQLExamGuestDraftHandoffRepository(ExamGuestDraftHandoffRepositoryP
             )
             .on_conflict_do_nothing(
                 index_elements=[
-                    ExamGuestDraftHandoffModel.owner_user_id,
                     ExamGuestDraftHandoffModel.draft_id,
                 ]
             )
