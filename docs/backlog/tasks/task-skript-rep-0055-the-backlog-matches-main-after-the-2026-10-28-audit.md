@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light lead (claude light-implementation-specialist 5e6a041a) applied D1-D8 on branch codex/task-skript-rep-0055, merged 817a0cf67: 24 tasks closed as done, 10 tasks and ST-21-04 canceled, 10 deferred by note and ledger row, 6 stories closed, EPIC-20 active. docs-validate and handoff-validate exit 0 after the merge. Items left open with reasons and open points are in the lead''s result (retained root 01a18449-92ba-7ada-917f-4d73cca770ab, evidence/results/5e6a041a-2c8c-4449-8318-f84a21c0ac0f.json) and per-batch evidence evidence/rep-0055/B1-B9.md; the follow-ups go to a cleanup task.'
 task_kind: repository
 acceptance_criteria:
   - Every item the audit classed done-on-main, stale, story-closable or deferred carries the status its decided term gives, with evidence
