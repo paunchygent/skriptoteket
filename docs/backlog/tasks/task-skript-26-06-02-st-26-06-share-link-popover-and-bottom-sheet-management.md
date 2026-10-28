@@ -4,37 +4,33 @@ id: TASK-SKRIPT-26-06-02
 title: ST-26-06 share-link popover and bottom-sheet management
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-26-06-02#closeout'
 story: ST-SKRIPT-26-06
 task_kind: story
 acceptance_criteria:
-- Given the authenticated teacher is in `Grupper` or `Sittplatser`, when they open
-  share-link management on desktop, then `Dela` opens an anchored popover matching
-  the approved mockup rather than rendering detached stacked panels above the workspace.
-- Given the authenticated teacher is on a phone-sized viewport, when they open share-link
-  management, then the same information model opens as a bottom sheet with mobile-sized
-  touch targets.
-- Given active owned links exist for the current draft, when the popover or bottom
-  sheet opens, then active links are listed compactly with copy and revoke actions.
-- Given a link is revoked, when the revoke succeeds, then the link leaves the active
-  list immediately and user feedback is delivered through a toast/snackbar affordance
-  rather than a persistent dead row.
-- Given share-link management changes visible workspace layout, when the slice is
-  reviewed, then visual inspection compares desktop and mobile screenshots against
-  `docs/mockups/st-26-06-share-link-ux-and-page-renderer/share-popover-and-bottom-sheet-mockup.png`.
+  - Given the authenticated teacher is in `Grupper` or `Sittplatser`, when they open share-link management on desktop, then `Dela` opens an anchored popover matching the approved mockup rather than rendering detached stacked panels above the workspace.
+  - Given the authenticated teacher is on a phone-sized viewport, when they open share-link management, then the same information model opens as a bottom sheet with mobile-sized touch targets.
+  - Given active owned links exist for the current draft, when the popover or bottom sheet opens, then active links are listed compactly with copy and revoke actions.
+  - Given a link is revoked, when the revoke succeeds, then the link leaves the active list immediately and user feedback is delivered through a toast/snackbar affordance rather than a persistent dead row.
+  - Given share-link management changes visible workspace layout, when the slice is reviewed, then visual inspection compares desktop and mobile screenshots against `docs/mockups/st-26-06-share-link-ux-and-page-renderer/share-popover-and-bottom-sheet-mockup.png`.
+backlog_document_profile: contract-derived
 ---
 
-## Context
+## Implementation Contract
 
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
+
+## Context
 
 The authenticated share-link foundation exposes durable owned shares, but the
 current UI renders them as detached panels stacked into the workspace. That
@@ -49,7 +45,6 @@ workspace feel stale and contradicts the desired active-list mental model.
 
 ## Story Contract Slice
 
-
 Replace the detached share panels with a compact `Dela` management surface:
 desktop uses an anchored popover and mobile uses a bottom sheet. Keep only
 active links visible and use toast/snackbar feedback for copy and revoke
@@ -59,8 +54,11 @@ outcomes.
 
 No separate contract inputs is stated in the source.
 
-## Plan
+## Core Vertical And Performance
 
+The source record did not define a separate section for this package heading.
+
+## Plan
 
 1. Remove the default `PlannerShareLinksPanel` after-toolbar placement from the
    grouping and seating workspace surfaces.
@@ -78,7 +76,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - Focused frontend tests for open/close, active-link filtering, and copy/revoke
   intents.
 - Browser screenshots at desktop and phone widths for visual inspection against
@@ -94,16 +91,20 @@ No separate validation is stated in the source.
 
 ## Stop Conditions
 
-
 Restore the existing after-toolbar share panel and keep the share creation API
 unchanged.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Lessons Learned
 
 No separate lessons learned is stated in the source.
 
 ## Notes
-
 
 - `PlannerShareLinksPanel` is now the shared `Dela` management trigger plus
   surface: desktop renders an anchored popover, and mobile renders the same
@@ -120,7 +121,6 @@ No separate lessons learned is stated in the source.
 
 ### Source: Non-goals
 
-
 - No backend share-artifact schema change unless undo-safe revoke requires a
   narrowly scoped support field.
 - No public guest share flow changes.
@@ -134,3 +134,9 @@ No review evidence is recorded in this migration candidate; the frontmatter gate
 ## Implementation Review
 
 No review evidence is recorded in this migration candidate; the frontmatter gate remains authoritative.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+Share-link management shipped as the shared `Dela` panel in `PlannerShareExportPanel.vue` (anchored popover from `md`, bottom sheet below it) used by the grouping and seating toolbars, with active-only link rows, copy and revoke emits, and toasts on copy and revoke (`classroomPlannerShareFlow.ts`). The commits on main are 3629b5d28, 22ab12242, 8353eee68 and d82371197. Criterion 5, the screenshot comparison against the 26-06 mockup, was not checkable offline and has no recorded comparison; ST-29-11 PR-0286 recorded screenshots against its own mockup. On main the shared `Dela` role belongs to `PlannerShareExportPanel.vue`; the task's note that `PlannerShareLinksPanel` is that surface is stale. `PlannerShareLinksPanel.vue` has no production import but is still imported by `PlannerShareLinksPanel.spec.ts` and `useTutorialFirstUse.spec.ts:5`; deleting it needs the tutorial spec rewritten first, and this closeout does not delete it.

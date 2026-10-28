@@ -4,17 +4,20 @@ id: ST-SKRIPT-06-18
 title: The SPA Vitest wrapper runs exactly the spec files its targets name
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence.'
 epic: EPIC-SKRIPT-06
 acceptance_criteria:
-- Every vitest-run path target contributes all its spec files; a target that matches
-  no spec file exits non-zero; a run without targets discovers all of src/**/*.spec.ts.
+  - Every vitest-run path target contributes all its spec files; a target that matches no spec file exits non-zero; a run without targets discovers all of src/**/*.spec.ts.
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -43,6 +46,11 @@ Real-collection matrix (`vitest list --filesOnly` counts and small runs) before 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------- |
 | S1  | The three contract bullets above are the wrapper's acceptance; the task's decided terms D1-D7 implement them. |
+| D1  | Closed as done on 2026-10-28 because every child task is terminal (user decision, TASK-SKRIPT-REP-0055 D7).   |
+
+## Closeout
+
+ST-SKRIPT-06-18 is closed. TASK-SKRIPT-06-18-01 repaired `frontend/apps/skriptoteket/scripts/vitest-run.mjs` (fix 4e9d65e09, merged 44197733a, user closure c74c2d832): every path target contributes all its spec files, a target that matches none exits 1 before Vitest starts, and a run without targets falls back to `src/**/*.spec.ts` in `vitest.config.ts`. The real-collection matrix was not rerun in this check.

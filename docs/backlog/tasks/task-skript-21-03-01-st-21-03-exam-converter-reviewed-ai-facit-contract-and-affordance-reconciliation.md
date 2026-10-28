@@ -4,54 +4,38 @@ id: TASK-SKRIPT-21-03-01
 title: ST-21-03 Exam Converter reviewed AI-facit contract and affordance reconciliation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-21-03
 task_kind: story
 acceptance_criteria:
-- Given a teacher explicitly accepts AI-suggested keys, when any later create-files,
-  approve-current-state, download, save, or re-export path runs, then those accepted
-  suggestions are never discarded, overwritten by source-only fallback state, or silently
-  omitted from the reviewed apply evidence.
-- Given a teacher accepts one or all valid AI-facit suggestions, when Skriptoteket
-  submits the reviewed apply job, then retained proof shows the submitted overlay
-  contains exactly the accepted `reviewed_completion_answer_key` entries with source
-  binding and candidate lineage.
-- Given the reviewed apply job returns, when Skriptoteket reloads artifacts, then
-  the UI derives question state, missing-facit counts, file readiness, and download/save
-  affordances from the reviewed apply job bundle, including `effective_ir_json` where
-  present.
-- Given accepted AI-facit suggestions are expected to unlock reviewed keyed export,
-  when downloaded PDF or QTI artifacts are inspected, then retained proof shows all
-  accepted keys are present for choice, matching, and gapped/open-cloze shapes; PDF
-  may render gapped items as free text only when the accepted gapped key values are
-  still included.
-- Given teacher-facing artifacts are produced, when the PDF, QTI package, or import-facing
-  content is inspected, then no internal fallback diagnosis such as `Manuell bedömning.
-  Ursprunglig lucktext utan betrodda accepterade värden.` appears in the exported
-  artifact.
-- Given Files is visible before, during, and after review, when a target is unavailable,
-  then the UI shows a teacher-actionable explanation and never leaks raw producer
-  reason codes such as `unsupported_target_shape` as primary copy.
-- Given the screen has both accepted-current-state review and AI-facit review paths,
-  when the teacher sees action buttons, then the labels, grouping, and enabled states
-  make clear which action only records local review decisions and which action submits
-  a reviewed apply job that can create new files.
-- Given this task records local cleanup evidence, when it is evaluated for completion,
-  then final acceptance requires a durable live Playwright proof against the authenticated
-  Skriptoteket/HuleEdu public edge and Hemma Sir Convert runtime.
+  - Given a teacher explicitly accepts AI-suggested keys, when any later create-files, approve-current-state, download, save, or re-export path runs, then those accepted suggestions are never discarded, overwritten by source-only fallback state, or silently omitted from the reviewed apply evidence.
+  - Given a teacher accepts one or all valid AI-facit suggestions, when Skriptoteket submits the reviewed apply job, then retained proof shows the submitted overlay contains exactly the accepted `reviewed_completion_answer_key` entries with source binding and candidate lineage.
+  - Given the reviewed apply job returns, when Skriptoteket reloads artifacts, then the UI derives question state, missing-facit counts, file readiness, and download/save affordances from the reviewed apply job bundle, including `effective_ir_json` where present.
+  - Given accepted AI-facit suggestions are expected to unlock reviewed keyed export, when downloaded PDF or QTI artifacts are inspected, then retained proof shows all accepted keys are present for choice, matching, and gapped/open-cloze shapes; PDF may render gapped items as free text only when the accepted gapped key values are still included.
+  - Given teacher-facing artifacts are produced, when the PDF, QTI package, or import-facing content is inspected, then no internal fallback diagnosis such as `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.` appears in the exported artifact.
+  - Given Files is visible before, during, and after review, when a target is unavailable, then the UI shows a teacher-actionable explanation and never leaks raw producer reason codes such as `unsupported_target_shape` as primary copy.
+  - Given the screen has both accepted-current-state review and AI-facit review paths, when the teacher sees action buttons, then the labels, grouping, and enabled states make clear which action only records local review decisions and which action submits a reviewed apply job that can create new files.
+  - Given this task records local cleanup evidence, when it is evaluated for completion, then final acceptance requires a durable live Playwright proof against the authenticated Skriptoteket/HuleEdu public edge and Hemma Sir Convert runtime.
+backlog_document_profile: contract-derived
 ---
 
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
+
 ## Context
+
 ### Problem
+
 The current authenticated Exam Converter flow has two intertwined problems:
 
 1. The teacher-facing affordances are confusing. Local AI-facit selection,
@@ -87,13 +71,17 @@ This is not a layout problem and it is not an outside designer task.
 Codex-owned engineering task for reviewed-key plumbing, exported artifact
 integrity, and action semantics needed to prove accepted AI suggestions survive
 the conversion flow.
+
 ### Source record
+
 > Durable-flow supersession note (2026-05-19): `PR-0338` retires the
 > reviewed-AI acceptance interaction model for the current durable correction
 > session UI. This PR remains retained ST-21-03 reviewed-apply integrity
 > evidence, not active implementation guidance for `ST-21-04` AI-prefill
 > editor saves or replay artifact authority.
+
 ### Current Evidence
+
 Downloaded artifacts supplied by the user:
 
 - `/Users/olofs_mba/Downloads/examnet-import (1).pdf`
@@ -103,16 +91,14 @@ Local inspection on 2026-05-17 found:
 
 - `pdfinfo` reports `examnet-import (1).pdf` as a six-page WeasyPrint PDF.
 - `pdftotext` shows the key-bearing questions are exported as `Typ: Fritext`
-  with `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade
-  värden.` or equivalent manual/free-text wording. This text is not acceptable
+  with `Manuell bedömning. Ursprunglig lucktext utan betrodda accepterade värden.` or equivalent manual/free-text wording. This text is not acceptable
   artifact copy; it exposes internal fallback state and coincides with the
   accepted AI keys being absent from the exported artifact.
 - `unzip -l` shows `qti-package (1).zip` contains `imsmanifest.xml`,
   `items/item_001.xml` through `items/item_008.xml`, and one image resource.
 - Sampled QTI items do not contain `correctResponse` declarations. Lucktext
   items such as `item_001` and `item_005` use
-  `<responseDeclaration identifier="RESPONSE" cardinality="single"
-  baseType="string" />` plus `extendedTextInteraction`; `item_002` has a
+  `<responseDeclaration identifier="RESPONSE" cardinality="single" baseType="string" />` plus `extendedTextInteraction`; `item_002` has a
   choice interaction but no declared correct alternatives.
 
 The pre-cleanup code path also pointed to a projection mismatch:
@@ -135,7 +121,9 @@ This means the UI can plausibly submit reviewed keys while still rendering the
 post-apply bundle as if the original source IR were the only answer-key truth.
 If the produced artifacts also lack keys, the producer handoff has drifted as
 well; this slice must distinguish those cases with retained proof.
+
 ### Root-Cause Map
+
 The starting root-cause analysis lives in:
 
 - `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`
@@ -150,7 +138,9 @@ submits a new source-evidence/current-state overlay containing only
 `review_decision` entries, not the prior `reviewed_completion_answer_key`
 entries. Downloads then point at the later manual-unkeyed job, making the
 teacher-approved AI suggestions disappear from the final artifacts.
+
 ### 2026-05-17 Correction Boundary
+
 This section records the corrections and cleanup boundaries from the
 2026-05-17 user review. It is not a decision record. Product decisions belong
 in ADRs; broader execution work belongs in independent PR-sized backlog items.
@@ -177,10 +167,13 @@ in ADRs; broader execution work belongs in independent PR-sized backlog items.
    the target adapter or renderer as the source.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Story Contract Slice
+
 ### Goal
+
 Make the reviewed AI-facit workflow coherent and provable:
 
 - accepted suggestions become reviewed overlay entries;
@@ -195,7 +188,9 @@ Make the reviewed AI-facit workflow coherent and provable:
   fallback diagnostics;
   and
 - action labels and grouping tell the teacher what each step actually does.
+
 ### Non-goals
+
 - No phone layout implementation or breakpoint strategy. That remains
   `PR-0330`.
 - No new local answer-key inference in Skriptoteket.
@@ -214,10 +209,17 @@ Make the reviewed AI-facit workflow coherent and provable:
   student answers, or scores in teacher-facing UI or generated artifacts.
 
 ## Contract Inputs
+
+The source record did not define a separate section for this package heading.
+
+## Core Vertical And Performance
+
 The source record did not define a separate section for this package heading.
 
 ## Plan
+
 ### Implementation Plan And Status
+
 1. Done locally: reproduce the destructive source-only overwrite path in
    focused frontend tests. The regression fixture keeps source `ir_json` and
    `migration_manifest` source-missing after reviewed apply, while reviewed
@@ -263,7 +265,9 @@ The source record did not define a separate section for this package heading.
    `effective_ir_json` retained reviewed choice and gap-fill lineage, PDF/QTI
    files unlocked and downloaded, exported artifacts contained no forbidden
    diagnostic text, and QTI retained correct responses.
+
 ### Test Plan
+
 Focused frontend and artifact-contract coverage:
 
 ```bash
@@ -301,7 +305,9 @@ Manual/live proof must include:
 The 2026-05-18 Hemma/public proof for the ecology `.dxe` fixture satisfied
 these manual/live proof requirements. The final manifest is
 `.artifacts/playwright-pr-0331-reviewed-ai-facit-live/20260518T192044Z/manifest.redacted.json`.
+
 ### Rollback Plan
+
 Revert only the UI/projection/action-model changes from this slice. Keep the
 existing advisory submit, reviewed overlay builder, Gateway client, and Sir
 Convert artifact loading intact. If upstream Sir Convert is proven to be the
@@ -310,7 +316,9 @@ producer task rather than downgrading the UI to pretend reviewed keys were
 exported.
 
 ## Implementation Steps
+
 ### Implementation Progress
+
 Initial cleanup started on 2026-05-17:
 
 - focused frontend regression coverage now keeps source `ir_json` and
@@ -348,22 +356,41 @@ Second cleanup slice on 2026-05-17:
   corrected reviewed-apply path before assigning renderer drift upstream.
 
 ## Proof
+
 The source record did not define a separate section for this package heading.
 
 ## Validation
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Implementation Review
+
 The source record did not define a separate section for this package heading.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+TASK-SKRIPT-21-03-01 is canceled as superseded. Commit 4225e62fa removed Skriptoteket's Sir exam client, completion and correction contracts, and TASK-SKRIPT-39-03-03 (done, independent review approved 2026-09-30) removed the exam-specific Sir lane; commit 6b1974e27 (TASK-SKRIPT-39-07-03) deleted the old converter screen and correction overlay. No `reviewed_completion_answer_key`, `effective_ir_json`, accepted-current-state export or "Ursprunglig lucktext" fallback exists in `src`, the frontend or `scripts`, so the criteria have no code to apply to; the required live Sir Convert Playwright proof was not produced and is not possible. ST-SKRIPT-21-03 now has no open child task.

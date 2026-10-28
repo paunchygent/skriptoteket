@@ -1,44 +1,48 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0021
-title: 'ST-29-06 remediation: planner no-classroom root-cause hardening and error-boundary
-  refactor'
+title: 'ST-29-06 remediation: planner no-classroom root-cause hardening and error-boundary refactor'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-REP-0021#closeout'
 task_kind: repository
 acceptance_criteria:
-- Given a teacher enters `Regler` with a class selected and no classroom selected,
-  when the planner resolves or resumes the seating host draft, then the route shell
-  opens the intended no-classroom rules state instead of failing back to `Översikt`.
-- Given the planner receives valid but thin payloads for catalog, class summary, workspace,
-  or smart rules, when optional collection fields are omitted or empty, then the frontend
-  normalizes them at the route/API boundary and no planner surface crashes.
-- Given an unexpected frontend runtime exception still occurs anywhere in the Klassrumskartan
-  planner flow, when the message reaches a user-facing system banner or status surface,
-  then the teacher sees approved fallback copy rather than raw JavaScript or framework
-  internals.
-- Given the root-cause path is fixed, when focused browser proof is rerun at `1366x768`
-  and `1440x900`, then the approved no-classroom `Regler` empty-map state renders
-  and the organized off-map roster remains actionable.
-- Given the remediation is reviewed, when implementation is proposed for release,
-  then the diff includes a documented contract boundary for planner response normalization
-  and a narrow explanation of why the earlier slice still leaked the runtime failure.
+  - Given a teacher enters `Regler` with a class selected and no classroom selected, when the planner resolves or resumes the seating host draft, then the route shell opens the intended no-classroom rules state instead of failing back to `Översikt`.
+  - Given the planner receives valid but thin payloads for catalog, class summary, workspace, or smart rules, when optional collection fields are omitted or empty, then the frontend normalizes them at the route/API boundary and no planner surface crashes.
+  - Given an unexpected frontend runtime exception still occurs anywhere in the Klassrumskartan planner flow, when the message reaches a user-facing system banner or status surface, then the teacher sees approved fallback copy rather than raw JavaScript or framework internals.
+  - Given the root-cause path is fixed, when focused browser proof is rerun at `1366x768` and `1440x900`, then the approved no-classroom `Regler` empty-map state renders and the organized off-map roster remains actionable.
+  - Given the remediation is reviewed, when implementation is proposed for release, then the diff includes a documented contract boundary for planner response normalization and a narrow explanation of why the earlier slice still leaked the runtime failure.
 dependencies:
-- EPIC-SKRIPT-29
+  - EPIC-SKRIPT-29
+backlog_document_profile: contract-derived
 ---
 
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
+
+## Contract Inputs
+
+The source record did not define a separate section for this package heading.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Context
+
 ### Problem
+
 `PR-0185` shipped the intended no-classroom `Regler` copy and off-map roster presentation, but a
 later production/local verification pass showed that the live flow can still fail before the
 rules workspace mounts. In the failing path the backend returns a valid no-classroom draft/workspace
@@ -53,19 +57,25 @@ That means the current planner architecture still has a boundary weakness:
   rewraps the failure
 
 The current defensive guard patch is valuable, but it is not yet a proven root-cause fix.
+
 ### Goal
+
 Deliver a root-cause remediation slice for the Klassrumskartan planner boundary so that:
 
 - no-classroom rules entry is reliable in the live route flow
 - planner API payload normalization is explicit and centralized
 - teacher-facing error surfaces are protected by a proper planner-specific error boundary
 - the final explanation is architecture-first rather than “added more guards”
+
 ### Non-goals
+
 - No redesign of the rules workspace layout or copy beyond what `PR-0185` already approved.
 - No smart-rule product-scope changes.
 - No backend behavior changes unless the investigation proves the frontend contract is genuinely wrong.
 - No broad cross-app error-boundary rollout outside Klassrumskartan in this slice.
+
 ### Verified Evidence (2026-04-01)
+
 - transport/path diagnosis:
   - local API calls for a no-classroom seating draft returned `200` with backend-valid payloads for
     `workspace-summary`, `drafts/resolve`, `draft workspace`, and `smart-rules`
@@ -77,7 +87,9 @@ Deliver a root-cause remediation slice for the Klassrumskartan planner boundary 
 - live proof:
   - `pdm run fe-build`
   - `pdm run python -m scripts.playwright_pr_0185_rules_no_classroom_fallback_check --base-url http://127.0.0.1:5173` -> `playwright-pr-0185: ok`
+
 ### Proposed module focus
+
 - `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerRouteShell.ts`
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerLifecycle.ts`
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts`
@@ -89,13 +101,17 @@ Deliver a root-cause remediation slice for the Klassrumskartan planner boundary 
 - the existing no-classroom Playwright proof under `scripts/`
 
 ## Impact And Escalation
+
 The source record did not define a separate section for this package heading.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Plan
+
 ### Implementation plan
+
 1. Reproduce the failing live no-classroom `Regler` entry path with a capture that includes the
    exact throw site and the corresponding workspace/summary payloads.
 2. Identify the root-cause planner seam:
@@ -114,7 +130,9 @@ The source record did not define a separate section for this package heading.
    - live browser proof at the canonical review viewports
 6. Document the verified root cause and why `PR-0185` needed this follow-up despite passing its
    earlier slice-level proof.
+
 ### Test plan
+
 - `pdm run fe-test -- --run src/views/apps/classroomPlanner*.spec.ts src/views/apps/ClassroomPlannerView.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run docs-validate`
@@ -124,7 +142,9 @@ The source record did not define a separate section for this package heading.
   - confirm the approved empty-map state renders
   - confirm no raw runtime/internal text appears anywhere in the UI
   - recheck `1366x768` and `1440x900`
+
 ### Rollback plan
+
 - Revert only the remediation boundary changes if they introduce planner regressions, while keeping
   the already approved teacher-facing no-classroom copy and organized off-map roster UI from
   `PR-0185`.
@@ -132,7 +152,9 @@ The source record did not define a separate section for this package heading.
   narrower retry if the first remediation attempt overreaches.
 
 ## Implementation Steps
+
 ### Implementation Summary (as of 2026-04-01)
+
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPayloadNormalization.ts` now
   centralizes planner response normalization for thin optional collections, with focused coverage in
   `classroomPlannerPayloadNormalization.spec.ts`
@@ -150,7 +172,9 @@ The source record did not define a separate section for this package heading.
   eyebrow in `Planeringsvy`
 
 ## Proof
+
 ### Verification notes (2026-04-01)
+
 - `pdm run fe-test -- --run src/views/apps/classroomPlannerPayloadNormalization.spec.ts src/views/apps/classroomPlannerRouteShellErrors.spec.ts src/views/apps/classroomPlannerStateSupport.spec.ts src/views/apps/classroomPlannerRouteShellOverviewCrud.spec.ts src/views/apps/ClassroomPlannerView.spec.ts src/views/apps/components/PlannerRulesMapCanvas.spec.ts src/views/apps/components/PlannerRulesWorkspacePane.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
@@ -163,16 +187,27 @@ The source record did not define a separate section for this package heading.
   - the final sole-reviewer rerun returned no actionable findings
 
 ## Validation
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
+
 ### Verified Root Cause (2026-04-01)
+
 The final local reproduction split the issue into two separate seams:
 
 1. Runtime alignment:
+
    - the canonical local proof command against `http://127.0.0.1:5173` authenticated through the
      backend and then loaded the backend-served static SPA bundle from `:8000`, not the live Vite
      module graph
@@ -183,6 +218,7 @@ The final local reproduction split the issue into two separate seams:
      normalization and error-suppression changes, and the raw runtime banner no longer reproduced
 
 2. Rules-map contract:
+
    - once the runtime was aligned, the planner no longer failed back to `Översikt`; it entered the
      intended `Regler` workspace and the backend payloads remained valid for the no-classroom draft
      path (`workspace-summary`, `drafts/resolve`, `draft workspace`, and `smart-rules`)
@@ -195,7 +231,9 @@ The final local reproduction split the issue into two separate seams:
 
 The verified remediation therefore kept the route/lifecycle normalization hardening in place, but
 landed the final user-visible fix narrowly in the rules-map seam.
+
 ### Verified findings (2026-04-01)
+
 - The canonical local `http://127.0.0.1:5173` proof does not stay on the Vite runtime after login.
   It authenticates into the backend-served Klassrumskartan route on `:8000`, so `pdm run fe-build`
   is required before trusting local browser-proof results after frontend changes.
@@ -215,10 +253,19 @@ landed the final user-visible fix narrowly in the rules-map seam.
   now normalizes that acknowledgement path through the same workspace helper used during hydration.
 
 ## Notes
+
 The source record did not define a separate section for this package heading.
 
 ## Readiness
+
 The source record did not define a separate section for this package heading.
 
 ## Closeout
+
 The source record did not define a separate section for this package heading.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+Planner response normalization now sits in one boundary module (classroomPlannerPayloadNormalization.ts) used by the lifecycle and state-support code, runtime/framework error text is replaced by fallback copy in classroomPlannerRouteShellErrors.ts, and PlannerRulesMapCanvas.vue renders the no-classroom empty state in the planning view. Shipped in 83940cdea (2026-04-01). The browser proof script playwright_pr_0185_rules_no_classroom_fallback_check.py was removed from the repository in 3629b5d28 (2026-04-30); the 2026-04-01 run result is recorded in this task, and the two-viewport browser check (criterion 4) is not checkable offline. The task body still says the no-classroom Playwright proof command exists under scripts/; it was removed.

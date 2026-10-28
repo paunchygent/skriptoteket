@@ -4,29 +4,32 @@ id: TASK-SKRIPT-08-27-01
 title: 'AI frontend: SRP refactor audit follow-ups (editor AI hotspots)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-08-27-01#closeout'
 story: ST-SKRIPT-08-27
 task_kind: story
 acceptance_criteria:
-- 'Editor AI UI + composables follow SRP boundaries: API calls/helpers/state are separated
-  and easier to test.'
-- No Vue SFC touched in this PR exceeds 500 LoC (per `.codex/rules/045-huleedu-design-system.md`).
-- AI edit-ops composable is split into smaller modules/composables (request/preview/apply/undo
-  helpers + API client), without behavior changes.
-- AI chat composable is split into smaller modules (SSE streaming client + reducer/state
-  + API helpers), without behavior changes.
-- AI-related test files stay <400–500 LoC (per `.codex/rules/070-testing-standards.md`).
-- '`pdm run fe-test` passes (and `pdm run fe-lint`/`pdm run fe-type-check` if configured).'
+  - 'Editor AI UI + composables follow SRP boundaries: API calls/helpers/state are separated and easier to test.'
+  - No Vue SFC touched in this PR exceeds 500 LoC (per `.codex/rules/045-huleedu-design-system.md`).
+  - AI edit-ops composable is split into smaller modules/composables (request/preview/apply/undo helpers + API client), without behavior changes.
+  - AI chat composable is split into smaller modules (SSE streaming client + reducer/state + API helpers), without behavior changes.
+  - AI-related test files stay <400–500 LoC (per `.codex/rules/070-testing-standards.md`).
+  - '`pdm run fe-test` passes (and `pdm run fe-lint`/`pdm run fe-type-check` if configured).'
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -49,6 +52,10 @@ The source does not provide a separate decision and assumption ledger section; n
 
 The source does not provide a separate contract inputs section; no additional contract inputs is recorded.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Implementation plan
@@ -56,7 +63,7 @@ The source does not provide a separate contract inputs section; no additional co
 1. Introduce a small “editor AI API” module boundary for typed requests:
    - `editorChatApi.ts` (history/clear + `postChatStream(...)` helper).
    - `editorEditOpsApi.ts` (request/preview/apply endpoints).
-   This keeps network details out of composables and enables `vi.mock` at the boundary.
+     This keeps network details out of composables and enables `vi.mock` at the boundary.
 2. Refactor `useEditorChat.ts`:
    - Extract SSE parsing/stream loop into a `EditorChatStreamClient` helper that emits typed events.
    - Extract message/notice/disabled/error state updates into a reducer-like helper for determinism in tests.
@@ -67,13 +74,11 @@ The source does not provide a separate contract inputs section; no additional co
 4. Reduce Vue SFC size for editor AI surfaces:
    - Move large prop/event types for `EditorWorkspacePanel.vue` into `EditorWorkspacePanel.types.ts` (or similar).
    - If needed, split `ScriptEditorView.vue` into subcomponents that each have a focused prop surface (e.g., workspace panel wiring vs workflow modal).
-5. Split `useEditorEditOps.spec.ts` into smaller specs aligned with the extracted modules and keep each file <400–500 LoC.
+5. Split `useEditorEditOps.spec.ts` into smaller specs aligned with the extracted modules and keep each file \<400–500 LoC.
 
 ## Implementation Steps
 
 ### Source: Planned files and responsibility boundaries (with performance intent)
-
-
 
 ## Proof
 
@@ -100,6 +105,12 @@ The source does not provide a separate validation section; no additional validat
 ### Source: Rollback plan
 
 - Revert the PR; this is a refactor-only change with no data migrations.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Lessons Learned
 
@@ -131,26 +142,42 @@ This section must be updated after each subtask (1-6) below. When all checkboxes
 ### Source: New modules (pure + reusable)
 
 - `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatApi.ts`
+
   - Owns chat history/clear/stream requests (no state).
   - Performance: keeps network logic out of reactive UI state.
+
 - `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatStreamClient.ts`
+
   - Owns SSE read loop + parsing (uses `sseParser`).
   - Performance: isolates streaming from UI reactivity.
+
 - `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatReducer.ts`
+
   - Pure reducer for messages/notice/error transitions.
   - Performance: deterministic updates, smaller reactive graph.
+
 - `frontend/apps/skriptoteket/src/composables/editor/chat/editorChatTypes.ts`
+
   - Shared chat types/constants to avoid cross-import sprawl.
 
 - `frontend/apps/skriptoteket/src/composables/editor/editOps/editorEditOpsApi.ts`
+
   - Owns request/preview/apply endpoints + correlation headers.
+
 - `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsSelection.ts`
+
   - Pure selection/cursor helpers.
+
 - `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsDiff.ts`
+
   - Diff item derivation + target file ordering.
+
 - `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsSnapshots.ts`
+
   - Apply/undo/redo snapshot handling.
+
 - `frontend/apps/skriptoteket/src/composables/editor/editOps/editOpsState.ts`
+
   - Panel state shape + derived flags (UI reads, not computes).
 
 ### Source: Existing composables (refactor into thin facades)
@@ -213,3 +240,9 @@ The source does not provide a separate plan document review section; no addition
 ## Implementation Review
 
 The source does not provide a separate implementation review section; no additional implementation review is recorded.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The editor AI hotspots were split into chat/ and editOps/ modules in f748da414, with thin useEditorChat.ts and useEditorEditOps.ts facades, ScriptEditorAiPanel.vue and EditorWorkspacePanel.types.ts. All touched SFCs are under 500 lines, ScriptEditorView.vue is a 7-line wrapper, and the largest AI spec is useEditorChat.spec.ts at 434 lines. Targeted vitest on the editor composables and components passes (18 files, 90 tests on main 421ebd931). The manual editor AI smoke was not checked offline.

@@ -4,26 +4,25 @@ id: TASK-SKRIPT-20-03-01
 title: Reagent Prep Chef — SDS PDF originals for missing hazards (manual pipeline)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-20-03
 task_kind: story
 acceptance_criteria:
-- For each target key listed in this task, at least one valid SDS PDF is downloaded
-  from an allowed supplier portal (prefer Swedish when available).
-- Each PDF is stored under `data/reagent_prep_chef/sds/files/` (gitignored) using
-  the `<key>__<provider>__<revision>.pdf` naming convention.
-- Each newly-added PDF passes a quick SDS sanity check (multi-section SDS; render-to-PNG
-  spot check).
+  - For each target key listed in this task, at least one valid SDS PDF is downloaded from an allowed supplier portal (prefer Swedish when available).
+  - Each PDF is stored under `data/reagent_prep_chef/sds/files/` (gitignored) using the `<key>__<provider>__<revision>.pdf` naming convention.
+  - Each newly-added PDF passes a quick SDS sanity check (multi-section SDS; render-to-PNG spot check).
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3). No work is scheduled and the status is unchanged; the contract below stays as written.
 
 ## Context
 
@@ -70,6 +69,10 @@ From `data/reagent_prep_chef/sds/gaps.md`:
 - `NaOH`
 - `S`
 - `SrCl2`
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -118,6 +121,12 @@ The source does not provide a separate validation section; no additional validat
 
 - Remove the PDFs from `data/reagent_prep_chef/sds/files/`.
 - Re-run `pdm run python scripts/build_reagent_prep_chef_sds_index.py` if the index was updated to reference them.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3): no work is scheduled and the status is unchanged. |
 
 ## Lessons Learned
 

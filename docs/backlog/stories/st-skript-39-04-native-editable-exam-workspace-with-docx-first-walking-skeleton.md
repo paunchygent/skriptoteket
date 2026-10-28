@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-05'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence.'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - A teacher imports a DOCX source, reviews and edits questions, creates items from scratch, saves and reopens a native exam document kept as one file per exam in Mina filer that Spara overwrites and Spara som copies, and exports QTI, PDF, and DOCX on demand or saves them to Mina filer as one file per format per exam
@@ -92,7 +96,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
     on the question, becomes the key only under T5/P12/P13, survives save
     and reopen, and the workspace no longer uses the proposed-overlay table.
 08. `TASK-SKRIPT-39-04-08`: backend lane: the save model. One file per exam
-    that `Spara` overwrites, `Spara som` copies, at most 10 undo steps stored
+    that `Spara` overwrites, `Spara som` copies, at most 100 undo steps stored
     on the server, and one saved export per format per exam in Mina filer;
     the controls and shortcuts are ST-SKRIPT-40-04's. Done.
 09. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
@@ -106,7 +110,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
     through one owner per points line: part totals take one path, a points
     line belongs to its question in every stage, and code reads the exam
     total (root-cause repair of DOCX import variation, user 2026-10-17).
-    In progress: on main, staging import and closeout owed.
+    Done.
     DOCX conversion repairs that followed, each its own task:
 
 - `TASK-SKRIPT-39-04-12`: grammar exams place each lead-in, exam-wide text,
@@ -115,8 +119,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
   governing chunks, body paragraphs, gap paragraphs, inline answer keys
   and left-out marks follow source alignment, never wording. Done.
 - `TASK-SKRIPT-39-04-20`: a paragraph holding only a score field is the
-  points source and leaves no slash (in progress: on main `f7eeada5`,
-  staging check and closeout owed).
+  points source and leaves no slash. Done.
 - `TASK-SKRIPT-39-04-21`: printed points wording at the end of a
   question becomes its points. Done.
 - `TASK-SKRIPT-39-04-22`: shapes drawn in a Word file (groups, single
@@ -126,7 +129,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
   live signal while it works, so no wait looks frozen. Done.
 - `TASK-SKRIPT-39-04-24`: report AI output received for distinct questions
   within the existing 16-family batch; saved/editable status stays separate.
-  In progress; follows the user-adopted lean Astra plan and existing C7/C8 charging policy.
+  Done; followed the user-adopted lean Astra plan and existing C7/C8 charging policy.
 
 12. Later slices (unscarffolded until this story is reviewed): digital-PDF
     intake reusing the same native document and review path; deferred
@@ -155,3 +158,8 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 | S3  | Each native exam document is one file in Mina filer; `Spara` overwrites it and `Spara som` creates a separately edited copy. QTI, PDF, and DOCX are on-demand exports that can also be saved to Mina filer as one file per format per exam (amended by user 2026-10-17, G15, G18).                                                           |
 | S4  | AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is export-eligible without teacher approval, with visible provenance and undo. AI-invented answer keys, low-confidence items and unresolved items require teacher review before export eligibility (amended by user decision 2026-10-10). |
 | S5  | OCR/scanned-PDF handling is deferred out of this story; digital PDF follows as the next slice.                                                                                                                                                                                                                                               |
+| D1  | Closed as done on 2026-10-28 because every child task is terminal (user decision, TASK-SKRIPT-REP-0055 D7).                                                                                                                                                                                                                                  |
+
+## Closeout
+
+ST-SKRIPT-39-04 is closed. All 24 child tasks are terminal (22 done, 39-04-03 and 39-04-05 canceled as superseded by ST-SKRIPT-39-05 and ST-SKRIPT-40-04). The workspace routes in `src/skriptoteket/web/api/v1/apps_conversion_hub_exam_workspace.py` and `..._exports.py` import a DOCX, create a blank exam, reopen it, save steps, copy with Spara som, and export QTI, PDF and DOCX on demand or into Mina filer as one file per format. The browser behaviour rests on the child closeouts, not on a walk in this check.

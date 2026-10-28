@@ -4,28 +4,27 @@ id: TASK-SKRIPT-08-27-02
 title: 'Editor chat: virtual file context retention (Option A)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-08-27
 task_kind: story
 acceptance_criteria:
-- Editor chat requests may include optional `active_file` + `virtual_files`, and the
-  backend uses them without breaking existing clients.
-- Hidden per-file context messages are persisted and filtered from chat history responses.
-- Resend rules are enforced via post-user-message retention + refresh, with priority
-  order and deterministic behavior (latest-per-file only).
-- Prompt assembly explicitly handles context message ordering/roles so virtual files
-  are retained even when the budget window starts with context messages.
-- Observability logs remain metadata-only and never include file contents.
+  - Editor chat requests may include optional `active_file` + `virtual_files`, and the backend uses them without breaking existing clients.
+  - Hidden per-file context messages are persisted and filtered from chat history responses.
+  - Resend rules are enforced via post-user-message retention + refresh, with priority order and deterministic behavior (latest-per-file only).
+  - Prompt assembly explicitly handles context message ordering/roles so virtual files are retained even when the budget window starts with context messages.
+  - Observability logs remain metadata-only and never include file contents.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3). No work is scheduled and the status is unchanged; the contract below stays as written.
 
 ## Context
 
@@ -52,6 +51,10 @@ The source snapshot is the governing record for the decisions and assumptions st
 - Story: `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md`
 - ADR: `docs/adr/adr-0054-editor-chat-virtual-file-context.md`
 - Epic: `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -114,6 +117,12 @@ The source snapshot is the governing record for the decisions and assumptions st
 ## Stop Conditions
 
 Revert the PR; optional request fields are backwards compatible and hidden messages are additive.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3): no work is scheduled and the status is unchanged. |
 
 ## Lessons Learned
 

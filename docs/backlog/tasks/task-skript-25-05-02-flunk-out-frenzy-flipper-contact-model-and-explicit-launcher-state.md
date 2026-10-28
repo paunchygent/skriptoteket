@@ -4,37 +4,40 @@ id: TASK-SKRIPT-25-05-02
 title: 'Flunk-Out Frenzy: flipper contact model and explicit launcher state'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-25-05-02#closeout'
 story: ST-SKRIPT-25-05
 task_kind: story
 acceptance_criteria:
-- Flipper-ball interaction is no longer modeled only through the current assist-impulse
-  shortcut; the physics layer has an explicit flipper contact model with bounded configuration.
-- The launcher or plunger flow is represented as explicit feed, charge, release, and
-  relaunch state rather than inferred from a minimal pressed-or-not input flag.
-- The resulting physics state remains behind the `PhysicsWorld` boundary and continues
-  to emit semantic lifecycle events instead of Rapier details.
+  - Flipper-ball interaction is no longer modeled only through the current assist-impulse shortcut; the physics layer has an explicit flipper contact model with bounded configuration.
+  - The launcher or plunger flow is represented as explicit feed, charge, release, and relaunch state rather than inferred from a minimal pressed-or-not input flag.
+  - The resulting physics state remains behind the `PhysicsWorld` boundary and continues to emit semantic lifecycle events instead of Rapier details.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
 Source: `docs/backlog/prs/pr-0192-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md`. Flunk-Out Frenzy: flipper contact model and explicit launcher state.
 
-The current flipper and launcher behavior is good enough for a first playable slice, but it is still an approximation. The donor repo's most valuable physics idea for us is not its whole solver, but its more explicit handling of flipper contact and launcher timing. Strengthen the physical feel of the table before adding capture and ramp devices: - more faithful flipper contact behavior - explicit launcher or plunger state - clearer ball-lifecycle events around feed and release - No capture devices in this PR. - No ramps or force zones in this PR. - No attempt to port the donor engine's broadphase or collision system. - Create `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/g
+The current flipper and launcher behavior is good enough for a first playable slice, but it is still an approximation. The donor repo's most valuable physics idea for us is not its whole solver, but its more explicit handling of flipper contact and launcher timing. Strengthen the physical feel of the table before adding capture and ramp devices: - more faithful flipper contact behavior - explicit launcher or plunger state - clearer ball-lifecycle events around feed and release - No capture devices in this PR. - No ramps or force zones in this PR. - No attempt to port the donor engine's broadphase or collision system. - Create \`frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/g
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-25-05-02 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -45,6 +48,10 @@ The task preserves the source implementation slice under its current story paren
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -66,6 +73,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 ## Stop Conditions
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Lessons Learned
 
@@ -148,3 +161,9 @@ No specialist approval is asserted; parent review remains required.
 ## Implementation Review
 
 No closeout evidence is asserted in this candidate.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The flipper contact model (`G/physics/flipperContactModel.ts`, called from `flipperActuation.ts:42`) and the explicit launcher state machine (`G/physics/plungerLaneState.ts`, phases idle/feeding/fed/charging/released/relaunch) shipped in e69eb0145 and were extended in 319735cb6. The physics layer still emits only semantic `launcher-*` events. The two manual live checks (flipper cradle/strike, 3-ball launcher stability) were not recorded and were not checkable offline. `launchAssistX` remains as a launcher configuration field (`G/table/tableDefinitionTypes.ts:320`); it is not a flipper assist impulse and does not affect criterion 1.

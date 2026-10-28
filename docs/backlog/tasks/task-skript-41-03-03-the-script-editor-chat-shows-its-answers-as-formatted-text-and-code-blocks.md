@@ -20,6 +20,8 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
+Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3). No work is scheduled and the status is unchanged; the contract below stays as written.
+
 ## Contract Inputs
 
 ## Core Vertical And Performance
@@ -30,5 +32,6 @@ backlog_document_profile: contract-derived
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3): no work is scheduled and the status is unchanged. |

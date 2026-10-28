@@ -4,42 +4,28 @@ id: TASK-SKRIPT-25-06-03
 title: 'Flunk-Out Frenzy: Rapier 3D launcher-chain migration'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given the current Flunk-Out Frenzy runtime expresses donor launcher flow through
-  a flat impulse-and-solid model, when this task is complete, then the launcher/right-side
-  receiving chain runs on a dedicated Rapier 3D simulation path that can represent
-  donor height, plunger stroke, and wall-face truth directly.
-- Given the current live board makes donor `Wall34` a false full cap across the shooter
-  path, when this task is complete, then `Wall34`, `Wall95`, `Wall011`, `Wall010`,
-  the `Wall263` right shoulder, `Wall264`, and `Wall018`/`Wall019` are represented
-  in 3D with the donor-authored launcher handoff preserved instead of flattened into
-  plain flat blockers.
-- Given donor launcher semantics currently span `PlungerRose`, `swplunger`, and `sw16`,
-  when this task is complete, then those donor objects have explicit authored provenance
-  and distinct 3D runtime roles for rest, pullback, stroke, release, and exit semantics.
-- Given `PR-0201` already removed the lower shooter-lane pinch, when this task is
-  complete, then the remaining launcher failure is resolved by truthful 3D representation
-  rather than by further force tuning, synthetic join carriers, or another flat approximation.
-- Given the current renderer is top-down and browser-owned, when this task is complete,
-  then the 3D launcher simulation still feeds the existing top-down render pipeline
-  through an explicit compiled seam instead of coupling presentation directly to Rapier
-  internals.
-- Focused compile, physics, and browser regressions prove a charged launch clears
-  the exposed `Wall34` blocker and enters the donor right-side receiving chain, and
-  the slice records no broader gameplay-ready claim beyond that proof.
+  - Given the current Flunk-Out Frenzy runtime expresses donor launcher flow through a flat impulse-and-solid model, when this task is complete, then the launcher/right-side receiving chain runs on a dedicated Rapier 3D simulation path that can represent donor height, plunger stroke, and wall-face truth directly.
+  - Given the current live board makes donor `Wall34` a false full cap across the shooter path, when this task is complete, then `Wall34`, `Wall95`, `Wall011`, `Wall010`, the `Wall263` right shoulder, `Wall264`, and `Wall018`/`Wall019` are represented in 3D with the donor-authored launcher handoff preserved instead of flattened into plain flat blockers.
+  - Given donor launcher semantics currently span `PlungerRose`, `swplunger`, and `sw16`, when this task is complete, then those donor objects have explicit authored provenance and distinct 3D runtime roles for rest, pullback, stroke, release, and exit semantics.
+  - Given `PR-0201` already removed the lower shooter-lane pinch, when this task is complete, then the remaining launcher failure is resolved by truthful 3D representation rather than by further force tuning, synthetic join carriers, or another flat approximation.
+  - Given the current renderer is top-down and browser-owned, when this task is complete, then the 3D launcher simulation still feeds the existing top-down render pipeline through an explicit compiled seam instead of coupling presentation directly to Rapier internals.
+  - Focused compile, physics, and browser regressions prove a charged launch clears the exposed `Wall34` blocker and enters the donor right-side receiving chain, and the slice records no broader gameplay-ready claim beyond that proof.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Residual moved here on 2026-10-28 from TASK-SKRIPT-25-06-04 (TASK-SKRIPT-REP-0055 D6): after the Wall263 split the user's browser inspection showed the ball still bouncing off the exposed `Wall34` top edge and not entering gameplay. That observation dates from April 2026 notes and was not re-walked on 2026-10-28.
 
 ## Context
 
@@ -84,6 +70,10 @@ the donor launcher handoff can be expressed honestly:
 ## Contract Inputs
 
 No separate contract inputs were recorded in the source snapshot.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -198,6 +188,12 @@ Validation follows the focused test and verification material recorded above.
   checkpoint only if the Rapier 3D seam cannot be stabilized quickly.
 - Keep the donor provenance mapping and focused regression coverage so the 3D
   launcher migration can be resumed without re-discovery.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                              |
+| --- | ------------------------------------------------------------------------------------------------------------------ |
+| D1  | The `Wall34` top-edge residual of TASK-SKRIPT-25-06-04 belongs to this task (TASK-SKRIPT-REP-0055 D6, 2026-10-28). |
 
 ## Lessons Learned
 

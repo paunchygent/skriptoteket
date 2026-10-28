@@ -4,29 +4,29 @@ id: TASK-SKRIPT-21-01-01
 title: 'Conversion Hub: SPA bespoke UI (batch + preview + pdf_layout controls)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-21-01
 task_kind: story
 acceptance_criteria:
-- Given a user opens `/apps/:appId`, when the app is Conversion Hub, then the bespoke
-  view renders and supports selecting a conversion route supported by Sir Convert-a-Lot
-  v2.
-- Given the user uploads N files and runs batch conversion, when results return, then
-  the UI shows per-file status and provides artifact download links.
-- Given a PDF output is selected, when the user changes paper size and orientation,
-  then those map to v2 `conversion.pdf_layout` and are reflected in results.
-- Given a failure occurs, when the job reaches terminal failure, then the UI renders
-  a stable error summary (including correlation id) and provides an easy rerun action.
+  - Given a user opens `/apps/:appId`, when the app is Conversion Hub, then the bespoke view renders and supports selecting a conversion route supported by Sir Convert-a-Lot v2.
+  - Given the user uploads N files and runs batch conversion, when results return, then the UI shows per-file status and provides artifact download links.
+  - Given a PDF output is selected, when the user changes paper size and orientation, then those map to v2 `conversion.pdf_layout` and are reflected in results.
+  - Given a failure occurs, when the job reaches terminal failure, then the UI renders a stable error summary (including correlation id) and provides an easy rerun action.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -50,6 +50,10 @@ The source snapshot is the governing record for the decisions and assumptions st
 ## Contract Inputs
 
 No separate material is recorded in the source snapshot.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -149,6 +153,12 @@ No separate material is recorded in the source snapshot.
 
 - Remove the bespoke view mapping and leave the app hidden from catalog placements until stable.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
 
 No separate material is recorded in the source snapshot.
@@ -247,3 +257,9 @@ No separate material is recorded in the source snapshot.
 ## Implementation Review
 
 No separate material is recorded in the source snapshot.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+TASK-SKRIPT-21-01-01 is canceled as superseded. The planned `ConversionHubView.vue` was never built; `documents.conversion_hub` is hosted by the Exam Workspace (`ExamWorkspaceTeacherHost.vue`, `ExamWorkspaceGuestHost.vue`, `curatedAppHostRegistry.ts:47-54`, introduced in dda998518 and extended by the exam-workspace work of epic 41), and single-file and multi-file PDF output lives in `/apps/document-converter`. Dropped, not built: a conversion-route selector, PDF orientation and margin controls, and a per-file batch status table with per-file rerun. ST-SKRIPT-21-01 now has no open child task.

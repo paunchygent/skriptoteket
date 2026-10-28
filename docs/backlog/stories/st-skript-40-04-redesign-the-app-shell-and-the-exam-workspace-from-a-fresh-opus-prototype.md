@@ -7,13 +7,17 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence.'
 epic: EPIC-SKRIPT-40
 acceptance_criteria:
-  - Teachers use a redesigned app shell and one exam workspace editor built from a user-approved Opus prototype that covers every current workspace feature plus the planned 39-06, 39-07 and 39-08 controls, the Spara/Spara som save model, 10-step undo/redo and keyboard shortcuts
+  - Teachers use a redesigned app shell and one exam workspace editor built from a user-approved Opus prototype that covers every current workspace feature plus the planned 39-06, 39-07 and 39-08 controls, the Spara/Spara som save model, 100-step undo/redo and keyboard shortcuts
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -62,7 +66,7 @@ Controls the prototype must show:
 - Spara as a durable overwrite of the open exam and Spara som, which asks for
   a name prefilled '<name> (kopia)', copies questions, course and tags, starts
   its own empty undo history and opens the copy.
-- Undo and redo of at most 10 steps with Ctrl+Z and Ctrl+Shift+Z (Cmd on Mac);
+- Undo and redo of at most 100 steps with Ctrl+Z and Ctrl+Shift+Z (Cmd on Mac);
   each autosave is one step; the history continues past a Spara.
 - Ctrl+S (Cmd+S on Mac) runs Spara instead of the browser's save-page.
 - The Import box: the question's original wording plus a few readable steps
@@ -118,30 +122,30 @@ their own tasks own.
 
 ## Tasks
 
-1. TASK-SKRIPT-40-04-01: Opus prototype of the app shell and the exam
-   workspace covering every current and planned workspace control. Needs
-   nothing to start; the user's approval is the gate for the other two tasks.
-2. TASK-SKRIPT-40-04-02: build the redesigned app shell from the approved
-   prototype. Needs the approved prototype, TASK-SKRIPT-40-01-02 and
-   TASK-SKRIPT-40-01-03.
-3. TASK-SKRIPT-40-04-03: build the redesigned exam workspace editor from the
-   approved prototype. Needs the approved prototype, TASK-SKRIPT-40-01-02 and
-   TASK-SKRIPT-40-01-03, and wires each planned control to its backend as
-   that backend lands. TASK-SKRIPT-39-07-03 retires the old exam converter
-   after this task offers the DigiExam import.
-4. TASK-SKRIPT-40-04-04: teachers edit a dropdown gap's options and mark the
-   correct one in the gap popover.
-5. TASK-SKRIPT-40-04-05: exported files are named after the exam title
-   (in progress: on main, review, walk and closeout owed).
-6. TASK-SKRIPT-40-04-06: exam texts edit as one document per field, exam
-   instructions are editable and printed totals can be accepted.
-7. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
-   exams and imports drop paper answer lines.
-8. TASK-SKRIPT-40-04-16: each export format downloads or saves to Mina filer
-   from one split button at the right of its menu row (done).
-9. TASK-SKRIPT-40-04-17: the workspace header and toolbars share one compact
-   control system with an autosave status, file commands and a gap switch
-   (done 2026-10-19: main aac5bdfd and 32460f67, staging walks passed).
+01. TASK-SKRIPT-40-04-01: Opus prototype of the app shell and the exam
+    workspace covering every current and planned workspace control. Needs
+    nothing to start; the user's approval is the gate for the other two tasks.
+02. TASK-SKRIPT-40-04-02: build the redesigned app shell from the approved
+    prototype. Needs the approved prototype, TASK-SKRIPT-40-01-02 and
+    TASK-SKRIPT-40-01-03.
+03. TASK-SKRIPT-40-04-03: build the redesigned exam workspace editor from the
+    approved prototype. Needs the approved prototype, TASK-SKRIPT-40-01-02 and
+    TASK-SKRIPT-40-01-03, and wires each planned control to its backend as
+    that backend lands. TASK-SKRIPT-39-07-03 retires the old exam converter
+    after this task offers the DigiExam import.
+04. TASK-SKRIPT-40-04-04: teachers edit a dropdown gap's options and mark the
+    correct one in the gap popover.
+05. TASK-SKRIPT-40-04-05: exported files are named after the exam title
+    (in progress: on main, review, walk and closeout owed).
+06. TASK-SKRIPT-40-04-06: exam texts edit as one document per field, exam
+    instructions are editable and printed totals can be accepted.
+07. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
+    exams and imports drop paper answer lines.
+08. TASK-SKRIPT-40-04-16: each export format downloads or saves to Mina filer
+    from one split button at the right of its menu row (done).
+09. TASK-SKRIPT-40-04-17: the workspace header and toolbars share one compact
+    control system with an autosave status, file commands and a gap switch
+    (done 2026-10-19: main aac5bdfd and 32460f67, staging walks passed).
 10. TASK-SKRIPT-40-04-18: the header opens Provets uppgifter from an Uppgifter
     command, and free-text questions set their writing area and criteria in
     one boxless answer block (done 2026-10-20: main 98cbab6c, staging walk passed).
@@ -185,25 +189,30 @@ screens against the approved prototype.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                                              |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | A new story replaces TASK-SKRIPT-39-04-05; its first task is an Opus prototype that the user approves before Opus implements it; the approved looks (sizes, colour, type) carry over (user 2026-10-17, G1).                                                                        |
-| R2  | Sol lanes ship backend, data, API and export only; this story builds every new workspace control; the current workspace screens are frozen except for bug fixes (user 2026-10-17, G2).                                                                                             |
-| R3  | The greenfield redesign covers the app shell (top bar, sidebar, page frame) and the exam workspace only; every other screen keeps its layout and gets the ST-SKRIPT-40-03 refresh (user 2026-10-17, G3 narrowed by G9).                                                            |
-| R4  | The Öppna drawer is the exam list, with course grouping, newest first, a sort toggle and 'Utan kurs'; TASK-SKRIPT-39-08-04 ships the exam index backend only (user 2026-10-17, G4).                                                                                                |
-| R5  | The shell and the exam workspace are prototyped together first, approved by the user, then built (user 2026-10-17, G5).                                                                                                                                                            |
-| R6  | The freeze is rolling: only the area being prototyped or built is frozen, for bug fixes only (user 2026-10-17, G6).                                                                                                                                                                |
-| R7  | ST-SKRIPT-39-06 and ST-SKRIPT-39-07 UI requirements go to this story's prototype; their backend tasks go to Sol lanes (user 2026-10-17, G8).                                                                                                                                       |
-| R8  | One Opus lead makes the prototype and owns the design rules; after approval two Opus builders build the shell and the workspace in parallel; the lead checks their screens against the prototype; Sol agents do only non-visual work (user 2026-10-17, G10 and standing decision). |
-| R9  | Undo and redo hold at most 10 steps with Ctrl+Z and Ctrl+Shift+Z (Cmd on Mac); each autosave is one step, stored on the server so the history survives reload and reopening; older steps are pruned (user 2026-10-17, G13).                                                        |
-| R10 | Ctrl+S (Cmd+S on Mac) runs Spara and replaces the browser's save-page (user 2026-10-17, G14).                                                                                                                                                                                      |
-| R11 | Spara is a durable overwrite of the open exam; Spara som creates a separate copy edited on its own; one file per exam and no Spara version history (user 2026-10-17, G15).                                                                                                         |
-| R12 | The undo history continues past a Spara (user 2026-10-17, G16).                                                                                                                                                                                                                    |
-| R13 | Spara som asks for a name prefilled '<name> (kopia)', copies questions, course and tags, starts its own empty undo history and opens the copy (user 2026-10-17, G17).                                                                                                              |
-| R14 | Exports saved to Mina filer are one file per format per exam, replaced on the next save and shown next to the exam (user 2026-10-17, G18).                                                                                                                                         |
-| R15 | The Import box shows the original wording plus a few readable steps (chosen type, answer-key source, retries) for DOCX and DigiExam imports alike (user 2026-10-17, G19).                                                                                                          |
-| R16 | Change type carries over question text and points, drops unfit content with a visible notice naming it, and one undo restores it (user 2026-10-17, G20).                                                                                                                           |
-| R17 | Dropdown Lucktext has its own option list per gap with one correct option marked as the key (user 2026-10-17, G23).                                                                                                                                                                |
-| R18 | The ordering control is built only if the user decides so from the TASK-SKRIPT-39-06-02 screenshots; until then the workspace offers six question types; if built it is all-or-nothing with a default of 1 point, editable (user 2026-10-17, G24).                                 |
-| R19 | 'Ny uppgift' creates a standalone question or an instruction and '+ Deluppgift' adds a question inside it; 'Gör om till [type]' converts a question to its stored suggested type (ST-SKRIPT-39-06 P13, P15).                                                                       |
-| R20 | G9 narrows G5: areas outside the app shell and the exam workspace keep their layout and need no prototype (lead 2026-10-17, L6).                                                                                                                                                   |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | A new story replaces TASK-SKRIPT-39-04-05; its first task is an Opus prototype that the user approves before Opus implements it; the approved looks (sizes, colour, type) carry over (user 2026-10-17, G1).                                                                                       |
+| R2  | Sol lanes ship backend, data, API and export only; this story builds every new workspace control; the current workspace screens are frozen except for bug fixes (user 2026-10-17, G2).                                                                                                            |
+| R3  | The greenfield redesign covers the app shell (top bar, sidebar, page frame) and the exam workspace only; every other screen keeps its layout and gets the ST-SKRIPT-40-03 refresh (user 2026-10-17, G3 narrowed by G9).                                                                           |
+| R4  | The Öppna drawer is the exam list, with course grouping, newest first, a sort toggle and 'Utan kurs'; TASK-SKRIPT-39-08-04 ships the exam index backend only (user 2026-10-17, G4).                                                                                                               |
+| R5  | The shell and the exam workspace are prototyped together first, approved by the user, then built (user 2026-10-17, G5).                                                                                                                                                                           |
+| R6  | The freeze is rolling: only the area being prototyped or built is frozen, for bug fixes only (user 2026-10-17, G6).                                                                                                                                                                               |
+| R7  | ST-SKRIPT-39-06 and ST-SKRIPT-39-07 UI requirements go to this story's prototype; their backend tasks go to Sol lanes (user 2026-10-17, G8).                                                                                                                                                      |
+| R8  | One Opus lead makes the prototype and owns the design rules; after approval two Opus builders build the shell and the workspace in parallel; the lead checks their screens against the prototype; Sol agents do only non-visual work (user 2026-10-17, G10 and standing decision).                |
+| R9  | Undo and redo hold at most 100 steps with Ctrl+Z and Ctrl+Shift+Z (Cmd on Mac); each autosave is one step, stored on the server so the history survives reload and reopening; older steps are pruned (user 2026-10-17, G13; raised from 10 to 100 steps by the user in TASK-SKRIPT-40-04-14, Q6). |
+| R10 | Ctrl+S (Cmd+S on Mac) runs Spara and replaces the browser's save-page (user 2026-10-17, G14).                                                                                                                                                                                                     |
+| R11 | Spara is a durable overwrite of the open exam; Spara som creates a separate copy edited on its own; one file per exam and no Spara version history (user 2026-10-17, G15).                                                                                                                        |
+| R12 | The undo history continues past a Spara (user 2026-10-17, G16).                                                                                                                                                                                                                                   |
+| R13 | Spara som asks for a name prefilled '<name> (kopia)', copies questions, course and tags, starts its own empty undo history and opens the copy (user 2026-10-17, G17).                                                                                                                             |
+| R14 | Exports saved to Mina filer are one file per format per exam, replaced on the next save and shown next to the exam (user 2026-10-17, G18).                                                                                                                                                        |
+| R15 | The Import box shows the original wording plus a few readable steps (chosen type, answer-key source, retries) for DOCX and DigiExam imports alike (user 2026-10-17, G19).                                                                                                                         |
+| R16 | Change type carries over question text and points, drops unfit content with a visible notice naming it, and one undo restores it (user 2026-10-17, G20).                                                                                                                                          |
+| R17 | Dropdown Lucktext has its own option list per gap with one correct option marked as the key (user 2026-10-17, G23).                                                                                                                                                                               |
+| R18 | The ordering control is built only if the user decides so from the TASK-SKRIPT-39-06-02 screenshots; until then the workspace offers six question types; if built it is all-or-nothing with a default of 1 point, editable (user 2026-10-17, G24).                                                |
+| R19 | 'Ny uppgift' creates a standalone question or an instruction and '+ Deluppgift' adds a question inside it; 'Gör om till [type]' converts a question to its stored suggested type (ST-SKRIPT-39-06 P13, P15).                                                                                      |
+| R20 | G9 narrows G5: areas outside the app shell and the exam workspace keep their layout and need no prototype (lead 2026-10-17, L6).                                                                                                                                                                  |
+| D1  | Closed as done on 2026-10-28 because every child task is terminal (user decision, TASK-SKRIPT-REP-0055 D7).                                                                                                                                                                                       |
+
+## Closeout
+
+ST-SKRIPT-40-04 is closed. The app shell and exam workspace were rebuilt from the prototype the user approved on 2026-10-17 (40-04-01, merge 4ab165fc4; builds 40-04-02 and 40-04-03), and 22 follow-up tasks added the gap tool, split export button, three-tier controls, header and toolbars, Spara/Spara som, Ctrl+S and Ctrl+Z; 40-04-11 was canceled. Undo and redo keep 100 steps (`MAX_RETAINED_UNDO_STEPS = 100` in `src/skriptoteket/application/curated_apps/exam_workspace_history.py:32`, user decision Q6 in 40-04-14), so the story criterion now reads "100-step". Browser behaviour rests on the child task walks, not on a walk in this check.

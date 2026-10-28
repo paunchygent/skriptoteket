@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-21'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-REP-0051#closeout'
 task_kind: repository
 acceptance_criteria:
   - On the Hemma checkout itself, the pre-push check for main runs the verification steps directly, with no ssh to hemma
@@ -20,6 +24,8 @@ backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 User decision 2026-10-21, relayed by the Mac orchestrator: the pre-push check is a defect to repair now. `scripts/hemma_pre_push_check.sh` verifies a push to `main` by `ssh hemma`. Run from the Hemma checkout itself, that SSH fails, the script prints "hemma-check: WARNING Hemma unreachable; <sha> is pushed UNVERIFIED." and exits 0, so the push goes through with no checks run.
 
@@ -46,13 +52,14 @@ A push of `main` from the Hemma checkout runs the same steps as the remote route
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| D1  | On Hemma the check runs the verification steps directly, with no `ssh hemma`. How it knows it is on Hemma is explicit (for example the host name), never inferred from a failed SSH. |
-| D2  | When verification cannot run at all, the check refuses the push (exit 1) with a message that names the reason. No push passes as UNVERIFIED.                                         |
-| D3  | The docs-only reuse of the last verified commit, the migration stage rule and the lock stay as they are.                                                                             |
-| D4  | The handoff Facts line about the pre-push check is updated to the new behaviour.                                                                                                     |
-| D5  | Medium, admitted by the Hemma orchestrator on focused proof (user decision 2026-10-21).                                                                                              |
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | On Hemma the check runs the verification steps directly, with no `ssh hemma`. How it knows it is on Hemma is explicit (for example the host name), never inferred from a failed SSH.  |
+| D2  | When verification cannot run at all, the check refuses the push (exit 1) with a message that names the reason. No push passes as UNVERIFIED.                                          |
+| D3  | The docs-only reuse of the last verified commit, the migration stage rule and the lock stay as they are.                                                                              |
+| D4  | The handoff Facts line about the pre-push check is updated to the new behaviour.                                                                                                      |
+| D5  | Medium, admitted by the Hemma orchestrator on focused proof (user decision 2026-10-21).                                                                                               |
+| D6  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Progress
 
@@ -63,3 +70,9 @@ A push of `main` from the Hemma checkout runs the same steps as the remote route
 - Proof: focused pytest 14 passed, `pdm run lint` exit 0 (ShellCheck clean), `pdm run docs-validate` exit 0. Logs in the session `evidence/` root.
 - Handoff Facts pre-push line updated to the new behaviour.
 - Repair 2026-10-21 (env leak): first real push through the repaired hook failed `test_adapter_first_push_runs_migrations` because the hook inherited the outer push's `PRE_COMMIT_*`/`GIT_*` variables. `run_verify_steps` in `scripts/hemma_pre_push_check.sh` now unsets every `PRE_COMMIT_*`/`GIT_*` name computed from the environment (same clean env as the ssh route); both script test files build their subprocess env through shared `tests/unit/scripts/pre_push_hook_env.py:hook_env`, and `test_on_hemma_steps_see_no_pre_commit_or_git_env` proves the direct route's steps see none. Proof: both files 15 passed with and without `PRE_COMMIT_*` exported, `pdm run lint` and `pdm run docs-validate` exit 0; logs in the session `evidence/` root.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+Commits db43cfff5 and 1c393ade7 (merged in 8dda9b6e7 and cc6e91389, 2026-10-21) made `scripts/hemma_pre_push_check.sh` run its verification steps directly with no ssh when `hostname` is `paunchygent-server`, and exit 1 with "cannot verify ... push blocked" when it is neither on Hemma nor able to reach Hemma by ssh. `tests/unit/scripts/test_hemma_pre_push_check.py` has a test per case plus a test that the verification steps see no `PRE_COMMIT_*` or `GIT_*` variables. The handoff Facts line (`handoff.md:120`) states the new behaviour; the tests were read here, not run.

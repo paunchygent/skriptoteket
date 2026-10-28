@@ -4,22 +4,23 @@ id: ST-SKRIPT-39-01
 title: Walking skeleton for Skriptoteket-owned exam conversion
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-29'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence.'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-- One real DigiExam .dxe fixture converts end to end inside the Skriptoteket backend
-  into an Exam.net QTI package and Exam.net-profile PDF behind the existing curated-app
-  API as a switchable lane, with recorded parity proof against the Sir Convert fixture
-  outputs and a live functional check
+  - One real DigiExam .dxe fixture converts end to end inside the Skriptoteket backend into an Exam.net QTI package and Exam.net-profile PDF behind the existing curated-app API (first delivered as a switchable lane that ST-SKRIPT-39-03 retired at 4225e62fa, so the in-process path is now the only exam path), with recorded parity proof against the Sir Convert fixture outputs and a live functional check
 links:
   decisions:
-  - ADR-SKRIPT-0090
+    - ADR-SKRIPT-0090
 backlog_document_profile: contract-derived
 ---
 
@@ -29,7 +30,8 @@ Stand the exam-conversion core up inside the Skriptoteket backend and prove
 the full chain in-process: parse a real DigiExam `.dxe`, build the source IR
 and effective exam, and export the Exam.net-contract QTI package and the
 Exam.net-profile PDF, reachable through the existing Conversion Hub
-curated-app API as a switchable lane.
+curated-app API as a switchable lane (ST-SKRIPT-39-03 retired the switch at 4225e62fa; the in-process
+path is now the only exam path).
 
 - The ported core is the pure-Python exam domain from sir-convert-a-lot at
   its closed-task state (revision `41be61a6`): `.dxe` parser, IR and
@@ -103,9 +105,14 @@ curated-app API as a switchable lane.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| S1  | The walking skeleton is the story's first task and proves the full in-process chain before any breadth work. |
-| S2  | The Sir Convert-backed path remains the default until recorded parity proof; the in-process lane ships behind a switch. |
+| ID  | Decided contract term                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1  | The walking skeleton is the story's first task and proves the full in-process chain before any breadth work.                                            |
+| S2  | The Sir Convert-backed path remains the default until recorded parity proof; the in-process lane ships behind a switch.                                 |
 | S3  | The ported core derives from sir-convert-a-lot `41be61a6` and must preserve the live-proven Exam.net contract behavior, including preflight validators. |
-| S4  | Answer-key enrichment, ingestion of new source formats, QTI import, retirements, and public-lane cutover are outside this slice. |
+| S4  | Answer-key enrichment, ingestion of new source formats, QTI import, retirements, and public-lane cutover are outside this slice.                        |
+| D1  | Closed as done on 2026-10-28 because every child task is terminal (user decision, TASK-SKRIPT-REP-0055 D7).                                             |
+
+## Closeout
+
+ST-SKRIPT-39-01 is closed. TASK-SKRIPT-39-01-01 (1b7392e60, merge 704d7fe71) ported the .dxe parser, IR and the Exam.net QTI and PDF writers into the Skriptoteket backend with byte-equal parity against Sir Convert 41be61a6 and a live check; 39-01-02 (8aa7d8608) and 39-01-04 (3a1b72390) added decimal scores, image placeholders and source-derived filenames; 39-01-03 was canceled by the user. The operator lane switch from this slice was retired by ST-SKRIPT-39-03 (4225e62fa), so the in-process path is now the only exam path. Parity proof and the live check were recorded in 2026-08 and were not rechecked here.

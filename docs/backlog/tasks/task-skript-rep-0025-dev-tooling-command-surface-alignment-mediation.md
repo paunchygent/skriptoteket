@@ -4,34 +4,28 @@ id: TASK-SKRIPT-REP-0025
 title: Dev tooling command-surface alignment mediation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 task_kind: repository
 acceptance_criteria:
-- Given `docs-sync` is a standard docs-as-code closeout command in HuleEdu, Sir Convert-a-Lot,
-  and skill-repository, when Skriptoteket agents inspect the repo command surface,
-  then the absence of `docs-sync` is either corrected with a real generated-docs sync
-  workflow or recorded as an explicit reviewed exception.
-- Given sibling repos separate mutating sync from read-only validation, when Skriptoteket
-  adds or rejects `docs-sync`, then the decision preserves that write/read-only distinction
-  and forbids a no-op alias that masks manual docs upkeep.
-- Given cross-repo tooling should align only where repo semantics match, when this
-  mediation closes, then it records the first implementation slice for Skriptoteket
-  and the separate follow-up candidates for HuleEdu, Sir Convert-a-Lot, and skill-repository
-  without forcing product-specific proof or runtime commands into one shape.
-- Given future implementation must be governed, when any command-surface change is
-  attempted, then the implementer starts from a red proof of the current drift and
-  runs focused tests plus `pdm run docs-validate`, `pdm run handoff-validate` if handoff
-  changes, and `git diff --check` before review.
+  - Given `docs-sync` is a standard docs-as-code closeout command in HuleEdu, Sir Convert-a-Lot, and skill-repository, when Skriptoteket agents inspect the repo command surface, then the absence of `docs-sync` is either corrected with a real generated-docs sync workflow or recorded as an explicit reviewed exception.
+  - Given sibling repos separate mutating sync from read-only validation, when Skriptoteket adds or rejects `docs-sync`, then the decision preserves that write/read-only distinction and forbids a no-op alias that masks manual docs upkeep.
+  - Given cross-repo tooling should align only where repo semantics match, when this mediation closes, then it records the first implementation slice for Skriptoteket and the separate follow-up candidates for HuleEdu, Sir Convert-a-Lot, and skill-repository without forcing product-specific proof or runtime commands into one shape.
+  - Given future implementation must be governed, when any command-surface change is attempted, then the implementer starts from a red proof of the current drift and runs focused tests plus `pdm run docs-validate`, `pdm run handoff-validate` if handoff changes, and `git diff --check` before review.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -45,14 +39,18 @@ The source task remains bounded to its repository-owned surface; product behavio
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-REP-0025 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Contract Inputs
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -75,6 +73,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
 
 The source material is retained verbatim below for migration fidelity.
@@ -87,8 +91,7 @@ The source material is retained verbatim below for migration fidelity.
 
 ### Problem
 
-Skriptoteket currently exposes `pdm run docs-validate`, `pdm run
-handoff-validate`, and `pdm run skills-validate`, but it does not expose
+Skriptoteket currently exposes `pdm run docs-validate`, `pdm run handoff-validate`, and `pdm run skills-validate`, but it does not expose
 `pdm run docs-sync`. HuleEdu, Sir Convert-a-Lot, and skill-repository all use a
 `docs-sync` surface as part of their docs-as-code workflow.
 
@@ -215,3 +218,9 @@ No specialist approval is asserted; parent review remains required.
 ## Closeout
 
 No closeout evidence is asserted in this candidate.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+TASK-SKRIPT-REP-0025 is canceled as superseded. Commit 831a44dc9 (2026-10-10) retired `docs-sync` from `pyproject.toml` after repository-governance 0.11.91 folded it into `docs-validate`, and skill-repository exposes the same single `docs-validate` command, so no Skriptoteket-side command-surface drift remains and no alias exists. This note is the recorded exception; the sibling-repo follow-ups (HuleEdu quality aliases, BFF OpenAPI export command) are dropped from this repository's backlog. The task said Skriptoteket never had `docs-sync`; d435a9669 added it and 831a44dc9 removed it. The sibling-repository follow-ups named in the task source were never recorded as backlog items and are dropped.

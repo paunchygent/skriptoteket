@@ -4,39 +4,32 @@ id: TASK-SKRIPT-27-09-01
 title: 'ST-SKRIPT-27-09: fixed-seat rule persistence and solver seeding'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-27-09-01#closeout'
 story: ST-SKRIPT-27-09
 task_kind: story
 acceptance_criteria:
-- Given fixed-seat rules are persisted for a roster and room template, when the smart-rule
-  API loads the current rule set, then it returns the fixed-seat rules without mixing
-  them into near-teacher or relationship-rule semantics.
-- Given a fixed-seat rule references a missing student, missing seat, wrong classroom
-  template, duplicate student, or duplicate seat, when rules are saved or Smart seating
-  runs, then validation fails with a teacher-safe error boundary and no partial draft
-  assignment is persisted.
-- Given fixed-seat rules exist and Smart seating runs, when the solver starts, then
-  it seeds those student-to-seat placements as hard assignments before exact or greedy
-  search chooses the remaining placements.
-- Given a remaining candidate is scored, when fixed placements exist, then keep-near,
-  keep-apart, teacher-distance, history, and rerun-diversity scoring all evaluate
-  against the merged fixed + candidate mapping.
-- Given fixed placements consume seats or students, when the roster has more students
-  than remaining seats, then unplaced-student reporting still reflects only students
-  that could not be assigned after honoring the fixed placements.
-- Given a fixed-seat rule cannot be honored, when Smart seating is requested, then
-  the handler returns a blocked or validation outcome and does not save a new draft
-  revision.
+  - Given fixed-seat rules are persisted for a roster and room template, when the smart-rule API loads the current rule set, then it returns the fixed-seat rules without mixing them into near-teacher or relationship-rule semantics.
+  - Given a fixed-seat rule references a missing student, missing seat, wrong classroom template, duplicate student, or duplicate seat, when rules are saved or Smart seating runs, then validation fails with a teacher-safe error boundary and no partial draft assignment is persisted.
+  - Given fixed-seat rules exist and Smart seating runs, when the solver starts, then it seeds those student-to-seat placements as hard assignments before exact or greedy search chooses the remaining placements.
+  - Given a remaining candidate is scored, when fixed placements exist, then keep-near, keep-apart, teacher-distance, history, and rerun-diversity scoring all evaluate against the merged fixed + candidate mapping.
+  - Given fixed placements consume seats or students, when the roster has more students than remaining seats, then unplaced-student reporting still reflects only students that could not be assigned after honoring the fixed placements.
+  - Given a fixed-seat rule cannot be honored, when Smart seating is requested, then the handler returns a blocked or validation outcome and does not save a new draft revision.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -64,22 +57,29 @@ mapping:
 
 The source does not provide a separate contract inputs section; no additional contract inputs is recorded.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Implementation plan
 
 1. Extend the domain smart-rule model with a dedicated fixed-seat rule shape.
+
    - Keep it separate from `StudentSeatingPreference` and `RelationshipRule`.
    - Preserve the roster-owned smart-rule revision model.
    - Scope each fixed placement to one classroom template.
 
 2. Add persistence and API contract support.
+
    - Add migration coverage for fixed-seat rows or an equivalent normalized storage shape.
    - Update repository serialization/deserialization.
    - Update request/response DTOs with additive fields only.
    - Keep optimistic concurrency behavior unchanged.
 
 3. Add validation.
+
    - Student must exist in the roster.
    - Template must match the active seating draft.
    - Seat must exist in the template.
@@ -88,12 +88,14 @@ The source does not provide a separate contract inputs section; no additional co
    - Fixed-seat rules must not be accepted for grouping-only runs.
 
 4. Seed the smart seating solver.
+
    - Build a fixed mapping before `_solve_exact` or `_solve_greedy`.
    - Remove fixed students and fixed seats from remaining search inputs.
    - Score merged mappings so relation rules see fixed peers.
    - Ensure unplaced-student accounting still includes fixed assignments correctly.
 
 5. Add focused tests.
+
    - Domain solver tests for seeded fixed placements with keep-near and keep-apart peers.
    - Validation tests for duplicate students/seats and missing room seats.
    - Application handler tests proving no draft revision is saved on hard fixed-placement failure.
@@ -137,6 +139,12 @@ Before deployment, revert the additive model/API/migration and solver-seeding ch
 the migration has already reached a shared environment, add a forward migration that removes fixed
 seat rows only after confirming no production rules depend on them.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 The source does not provide a separate lessons learned section; no additional lessons learned is recorded.
@@ -147,8 +155,7 @@ The source does not provide a separate notes section; no additional notes is rec
 
 ### Source: Problem
 
-The current smart seating solver treats all visible rules as best-effort scoring inputs. `Fast
-plats` is different: it binds one student to one physical seat and must be honored as a hard
+The current smart seating solver treats all visible rules as best-effort scoring inputs. `Fast plats` is different: it binds one student to one physical seat and must be honored as a hard
 invariant. A naive implementation that simply removes the student and seat from candidate pools
 would make other rules blind to the fixed placement.
 
@@ -159,3 +166,9 @@ The source does not provide a separate plan document review section; no addition
 ## Implementation Review
 
 The source does not provide a separate implementation review section; no additional implementation review is recorded.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+Fixed-seat (`Fast plats`) rules are stored per roster and classroom template (migration 0d9c5e8a2f31, in the chain below head f2b9c4d8a701), validated on save and before each Smart seating run, and seeded as hard assignments in the solver with all scoring done against the merged fixed + candidate mapping. Shipped in 8f52999fc (ancestor of main) in fixed_seating.py, smart_seating.py, smart_rule_validation.py, the smart-rules API and repository. The migration/schema integration gate and the unit tests were not run in this read-only check.

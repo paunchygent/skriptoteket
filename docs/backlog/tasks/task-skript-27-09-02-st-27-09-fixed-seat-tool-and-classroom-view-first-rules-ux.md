@@ -4,42 +4,34 @@ id: TASK-SKRIPT-27-09-02
 title: 'ST-27-09: fixed-seat tool and classroom-view-first rules UX'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-27-09-02#closeout'
 story: ST-SKRIPT-27-09
 task_kind: story
 acceptance_criteria:
-- Given a classroom exists, when the teacher opens `Regler`, then `Klassrumsvyn` is
-  selected by default and the abstract `Planeringskarta` remains available as a deliberate
-  alternate view.
-- Given no classroom exists, when the teacher opens `Regler`, then the workspace falls
-  back to `Planeringskarta` and explains that classroom-bound tools become available
-  after choosing a classroom.
-- Given `Planeringskarta` is active, when the teacher clicks `Fast plats`, then an
-  anchored contextual prompt says `Fast plats kräver en fysisk plats. Vill du byta
-  till klassrumsvyn?` with `Ja`, `Nej`, and close controls.
-- Given the prompt is open, when the teacher clicks `Ja`, then the view switches to
-  `Klassrumsvyn`, the prompt closes, and the `Fast plats` tool becomes active.
-- Given the prompt is open, when the teacher clicks `Nej` or close, then the teacher
-  remains on `Planeringskarta` and `Fast plats` does not activate.
-- Given `Fast plats` is active in `Klassrumsvyn`, when the teacher selects a student
-  and a physical seat, then the pending rule preview makes the student-seat binding
-  explicit before save.
-- Given fixed-seat rules are saved, when the rules workspace and seating workspace
-  render, then fixed seats are visibly marked without hiding normal student labels
-  or drag/drop affordances.
-- Given Smart seating fails because a fixed-seat rule cannot be honored, when the
-  frontend displays the outcome, then it uses short Swedish user-facing recovery copy
-  and does not expose solver internals.
+  - Given a classroom exists, when the teacher opens `Regler`, then `Klassrumsvyn` is selected by default and the abstract `Planeringskarta` remains available as a deliberate alternate view.
+  - Given no classroom exists, when the teacher opens `Regler`, then the workspace falls back to `Planeringskarta` and explains that classroom-bound tools become available after choosing a classroom.
+  - Given `Planeringskarta` is active, when the teacher clicks `Fast plats`, then an anchored contextual prompt says `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?` with `Ja`, `Nej`, and close controls.
+  - Given the prompt is open, when the teacher clicks `Ja`, then the view switches to `Klassrumsvyn`, the prompt closes, and the `Fast plats` tool becomes active.
+  - Given the prompt is open, when the teacher clicks `Nej` or close, then the teacher remains on `Planeringskarta` and `Fast plats` does not activate.
+  - Given `Fast plats` is active in `Klassrumsvyn`, when the teacher selects a student and a physical seat, then the pending rule preview makes the student-seat binding explicit before save.
+  - Given fixed-seat rules are saved, when the rules workspace and seating workspace render, then fixed seats are visibly marked without hiding normal student labels or drag/drop affordances.
+  - Given Smart seating fails because a fixed-seat rule cannot be honored, when the frontend displays the outcome, then it uses short Swedish user-facing recovery copy and does not expose solver internals.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -77,59 +69,73 @@ Update the frontend rules authoring experience:
 
 No separate material is recorded in the source snapshot.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 1. Update the rules workspace view model.
+
    - Select `Klassrumsvyn` by default when a classroom/template exists.
    - Fall back to `Planeringskarta` when no classroom exists.
    - Preserve explicit user switches between views during one rules session.
 
 2. Add `Fast plats` to the tool rail.
+
    - Use the canonical fixed-seat label.
    - Keep the tool visible from both map views.
    - From `Planeringskarta`, show an anchored prompt instead of a dead disabled state.
 
 3. Implement the prompt interaction.
+
    - Copy: `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
    - Actions: `Ja`, `Nej`, close.
    - `Ja`: switch to `Klassrumsvyn` and activate `Fast plats`.
    - `Nej` / close: stay on `Planeringskarta` and leave the tool inactive.
 
 4. Implement classroom-view authoring.
+
    - Let the teacher bind one selected student to one physical seat.
    - Preview pending student-seat binding before save.
    - Support editing/removing existing fixed-seat rules.
    - Render fixed-seat markers without breaking existing seat labels, hover, selection, or drag/drop.
 
 5. Add failure and loading states.
+
    - Use short Swedish copy for blocked smart runs.
    - Avoid solver jargon, score language, revision language, or internal field names.
 
 ## Implementation Steps
 
 1. Update the rules workspace view model.
+
    - Select `Klassrumsvyn` by default when a classroom/template exists.
    - Fall back to `Planeringskarta` when no classroom exists.
    - Preserve explicit user switches between views during one rules session.
 
 2. Add `Fast plats` to the tool rail.
+
    - Use the canonical fixed-seat label.
    - Keep the tool visible from both map views.
    - From `Planeringskarta`, show an anchored prompt instead of a dead disabled state.
 
 3. Implement the prompt interaction.
+
    - Copy: `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
    - Actions: `Ja`, `Nej`, close.
    - `Ja`: switch to `Klassrumsvyn` and activate `Fast plats`.
    - `Nej` / close: stay on `Planeringskarta` and leave the tool inactive.
 
 4. Implement classroom-view authoring.
+
    - Let the teacher bind one selected student to one physical seat.
    - Preview pending student-seat binding before save.
    - Support editing/removing existing fixed-seat rules.
    - Render fixed-seat markers without breaking existing seat labels, hover, selection, or drag/drop.
 
 5. Add failure and loading states.
+
    - Use short Swedish copy for blocked smart runs.
    - Avoid solver jargon, score language, revision language, or internal field names.
 
@@ -175,6 +181,12 @@ Revert the frontend tool/view changes while preserving the backend contract from
 backend has shipped but frontend authoring is rolled back, hide fixed-seat authoring while still
 rendering any existing fixed-seat rules read-only until the frontend is corrected.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 No separate material is recorded in the source snapshot.
@@ -211,28 +223,33 @@ Update the frontend rules authoring experience:
 ### Implementation plan
 
 1. Update the rules workspace view model.
+
    - Select `Klassrumsvyn` by default when a classroom/template exists.
    - Fall back to `Planeringskarta` when no classroom exists.
    - Preserve explicit user switches between views during one rules session.
 
 2. Add `Fast plats` to the tool rail.
+
    - Use the canonical fixed-seat label.
    - Keep the tool visible from both map views.
    - From `Planeringskarta`, show an anchored prompt instead of a dead disabled state.
 
 3. Implement the prompt interaction.
+
    - Copy: `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?`
    - Actions: `Ja`, `Nej`, close.
    - `Ja`: switch to `Klassrumsvyn` and activate `Fast plats`.
    - `Nej` / close: stay on `Planeringskarta` and leave the tool inactive.
 
 4. Implement classroom-view authoring.
+
    - Let the teacher bind one selected student to one physical seat.
    - Preview pending student-seat binding before save.
    - Support editing/removing existing fixed-seat rules.
    - Render fixed-seat markers without breaking existing seat labels, hover, selection, or drag/drop.
 
 5. Add failure and loading states.
+
    - Use short Swedish copy for blocked smart runs.
    - Avoid solver jargon, score language, revision language, or internal field names.
 
@@ -267,3 +284,9 @@ No separate material is recorded in the source snapshot.
 ## Implementation Review
 
 No separate material is recorded in the source snapshot.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The Klassrumskartan rules workspace opens in Klassrumsvyn whenever a classroom exists and falls back to Planeringskarta with explanatory copy when none exists. Fast plats is a tool-rail tool; from Planeringskarta it opens the Swedish switch prompt with Ja, Nej and close, and Ja switches to Klassrumsvyn and activates the tool. Pending student-seat binding, saved fixed-seat markers and a Swedish blocked-run message are in place. Shipped in 8f52999fc, 52df3cd72 and 327efd091 (frontend/apps/skriptoteket/src/views/apps/components/PlannerFixedSeatSwitchPrompt.vue, PlannerRulesWorkspacePane.vue, PlannerRulesToolRail.vue, useSmartSeatingRun.ts); the live Proof walk on 127.0.0.1:5173 is not checkable offline and no record of it was found. Closed under D1 on merge evidence; the task's own Proof lists a live walk on http://127.0.0.1:5173 that no record shows. Phone-side fixed-seat browser proof exists in PR-0310.

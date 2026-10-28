@@ -4,32 +4,29 @@ id: TASK-SKRIPT-14-32-01
 title: 'Editor cohesion pass: selectors + Testkör/Metadata/Diff panel language'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-14-32
 task_kind: story
 acceptance_criteria:
-- Selectors (preset/entrypoint/diff target) use one compact size system and consistent
-  tooltip/help pattern.
-- Testkör mode uses the same in-editor utility hierarchy (no large CTA-style buttons)
-  and the layout reads as one cohesive editor surface.
-- Metadata/Diff modes use the same compact header density as Källkod mode; no drawer-style
-  headers within the editor.
-- Switching modes does not change the overall perceived spacing scale (no sudden 'page'
-  vs 'panel' density shifts).
-- Playwright editor smoke remains stable and is updated only when selectors/labels
-  change.
+  - Selectors (preset/entrypoint/diff target) use one compact size system and consistent tooltip/help pattern.
+  - Testkör mode uses the same in-editor utility hierarchy (no large CTA-style buttons) and the layout reads as one cohesive editor surface.
+  - Metadata/Diff modes use the same compact header density as Källkod mode; no drawer-style headers within the editor.
+  - Switching modes does not change the overall perceived spacing scale (no sudden 'page' vs 'panel' density shifts).
+  - Playwright editor smoke remains stable and is updated only when selectors/labels change.
 dependencies:
-- ST-SKRIPT-14-32
+  - ST-SKRIPT-14-32
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3). No work is scheduled and the status is unchanged; the contract below stays as written.
 
 ## Context
 
@@ -47,21 +44,23 @@ The editor shell is cohesive, but **Diff/Metadata/Testkör** still have divergen
 
 Resolved (2026-01-09):
 
-1) **Selector sizing**: **A** — compact `h-[28px]` + `text-[11px]` (matches editor utilities)
-2) **Help tooltip pattern**: **Yes** — help button `aria-label` must not include field label text; inputs/selects use
+1. **Selector sizing**: **A** — compact `h-[28px]` + `text-[11px]` (matches editor utilities)
+2. **Help tooltip pattern**: **Yes** — help button `aria-label` must not include field label text; inputs/selects use
    `aria-describedby` for the tooltip content.
-3) **Testkör action hierarchy**: **Ghost/compact** editor-utilities (no CTA-ish buttons)
-4) **Language**: `Preset` → `Förval`
+3. **Testkör action hierarchy**: **Ghost/compact** editor-utilities (no CTA-ish buttons)
+4. **Language**: `Preset` → `Förval`
 
 Additional scope clarifications (2026-01-09):
 
-5) **Diff virtual file selector**
+5. **Diff virtual file selector**
+
    - Replace the file "tabs" with a compact selector (dropdown).
    - Diff focuses on: `tool.py`, `settings_schema.json`, `input_schema.json`, `usage_instructions.md`.
    - `entrypoint.txt` is intentionally excluded from diff view (entrypoint is edited elsewhere; keeping it in the diff
      adds noise without practical value for authors).
 
-6) **Diff download controls**
+6. **Diff download controls**
+
    - Move downloads so it is obvious **Före** downloads *before* and **Efter** downloads *after* (place actions directly
      under/next to their respective side labels).
    - File names should reflect the selected virtual file (`before-tool.py`, `after-tool.py`, `tool.py.patch`, etc.).
@@ -80,29 +79,38 @@ Define and apply a single "editor panel language" across all modes:
 
 The source does not record separate contract inputs.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Refactor path (proposed)
 
-1) **Define primitives**
+1. **Define primitives**
+
    - Introduce a single set of utility classes (or a tiny shared component) for:
      - editor utility buttons
      - editor selects/inputs
      - field label + optional help tooltip
 
-2) **Normalize selectors**
+2. **Normalize selectors**
+
    - Apply the primitives to:
      - schema preset selector
      - entrypoint selector + custom value
      - diff target selector
 
-3) **Normalize panel headers**
+3. **Normalize panel headers**
+
    - For panel variants used *inside the editor grid*, replace drawer-style headers with compact section headers.
 
-4) **Testkör mode cohesion**
+4. **Testkör mode cohesion**
+
    - Update Sandbox input/actions and sub-panels to use the same sizing + hierarchy.
 
-5) **Verification**
+5. **Verification**
+
    - Update Playwright editor smoke if labels/controls change.
    - Manual check: mode switching + scrolling + chat + long prompt behavior.
 
@@ -130,6 +138,12 @@ The source does not provide separate implementation steps.
 
 - Rewriting editor business logic, API contracts, or state management.
 - Adding new features to Testkör/Metadata/Diff beyond cohesion fixes.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Deferred by the user on 2026-10-28 (TASK-SKRIPT-REP-0055 D3): no work is scheduled and the status is unchanged. |
 
 ## Lessons Learned
 

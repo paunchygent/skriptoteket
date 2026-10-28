@@ -4,29 +4,30 @@ id: TASK-SKRIPT-02-06-01
 title: Swedish school domain allowlist for registration
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-02-06-01#closeout'
 story: ST-SKRIPT-02-06
 task_kind: story
 acceptance_criteria:
-- The slice ships with a versioned initial nationwide allowlist seed covering Swedish
-  municipality root domains plus known enskild-huvudman and school-specific root domains.
-- The import tooling loads municipality, enskild-huvudman, school-specific, and blocked-provider
-  domains into the database as normalized root-domain records suitable for later registration
-  validation.
-- The allowlist records enough ownership/provenance metadata to distinguish municipality,
-  enskild huvudman, and school-specific entries and maintain them over time.
-- The slice leaves registration-time enforcement untouched and clearly defers allow/deny
-  behavior to the follow-on validation slice.
+  - The slice ships with a versioned initial nationwide allowlist seed covering Swedish municipality root domains plus known enskild-huvudman and school-specific root domains.
+  - The import tooling loads municipality, enskild-huvudman, school-specific, and blocked-provider domains into the database as normalized root-domain records suitable for later registration validation.
+  - The allowlist records enough ownership/provenance metadata to distinguish municipality, enskild huvudman, and school-specific entries and maintain them over time.
+  - The slice leaves registration-time enforcement untouched and clearly defers allow/deny behavior to the follow-on validation slice.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -53,6 +54,10 @@ Ship the allowlist foundation first:
 ## Contract Inputs
 
 No separate contract inputs were recorded in the source snapshot.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -167,6 +172,12 @@ Validation follows the focused test and verification material recorded above.
 - The migration will include a `downgrade` path to drop the new tables.
 - If the seed data proves materially wrong, disable or replace the shipped source file and re-import corrected entries rather than hand-editing production data.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 No separate lessons learned were recorded in the source snapshot.
@@ -182,3 +193,9 @@ No separate plan document review was recorded in the source snapshot.
 ## Implementation Review
 
 No separate implementation review was recorded in the source snapshot.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The Swedish school-domain allowlist foundation shipped in 493b3ba18: versioned seed CSVs under data/identity (290 municipality, 706 enskild-huvudman, 10 blocked-provider rows), a DomainAllowlistImporter with dry-run and upsert, the validate-domain-allowlist and import-domain-allowlist CLI commands, the 5a7c1d9e3b2f migration, repositories and tests. Registration-time enforcement, which acceptance criterion 4 deferred, was added in the same commit (register_user.py:108, validate_registration_input.py:73, domain_validator.py:56-80), so criterion 4 is superseded. No criterion needed a browser walk; tests were not re-run in this audit. The plan's seed-update how-to (task plan section 6) was not found under docs/ or .codex/; it is not an acceptance criterion and stays undone.

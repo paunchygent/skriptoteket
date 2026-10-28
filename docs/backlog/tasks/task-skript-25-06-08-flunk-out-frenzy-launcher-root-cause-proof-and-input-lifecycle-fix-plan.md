@@ -4,54 +4,50 @@ id: TASK-SKRIPT-25-06-08
 title: 'Flunk-Out Frenzy: launcher root-cause proof and input lifecycle fix plan'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D2) to cancel this task as superseded; the Closeout section records what replaced or removed the work.'
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given the user-reported live issue remains authoritative, when this task is complete,
-  then root-cause assumptions are documented with explicit evidence and do not rely
-  on unproven implementation guesses.
-- Given production-code changes are blocked until root cause is proven, when this
-  task is complete, then the proof lane consists of tests/docs only and no additional
-  production behavior changes.
-- Given launcher seam contracts were already tightened, when this task is complete,
-  then proof explicitly separates physics-seam behavior from browser input/interaction
-  behavior.
-- Given current findings show a pointer lifecycle defect, when this task is complete,
-  then a failing test captures the defect and is linked as the required implementation
-  target for the next slice.
-- Given architect invariants are non-negotiable, when this task is complete, then
-  proof explicitly preserves seam continuity `xy<=1/z<=1`, no helper rails/freehand
-  seam geometry, terminal-route-only `handoffVelocity` semantics, and `gate-passed`
-  semantics from real `sw16` exit.
-- Given the issue is user-observed in live browser behavior, when this task is complete,
-  then a retained live launcher matrix artifact proves keyboard + pointer behavior
-  with overlay/focus transitions and captures current failing behavior.
-- Given review governance is required, when this task is complete, then an independent
-  reviewer approves this proof-targeted fix plan before implementation starts.
+  - Given the user-reported live issue remains authoritative, when this task is complete, then root-cause assumptions are documented with explicit evidence and do not rely on unproven implementation guesses.
+  - Given production-code changes are blocked until root cause is proven, when this task is complete, then the proof lane consists of tests/docs only and no additional production behavior changes.
+  - Given launcher seam contracts were already tightened, when this task is complete, then proof explicitly separates physics-seam behavior from browser input/interaction behavior.
+  - Given current findings show a pointer lifecycle defect, when this task is complete, then a failing test captures the defect and is linked as the required implementation target for the next slice.
+  - Given architect invariants are non-negotiable, when this task is complete, then proof explicitly preserves seam continuity `xy<=1/z<=1`, no helper rails/freehand seam geometry, terminal-route-only `handoffVelocity` semantics, and `gate-passed` semantics from real `sw16` exit.
+  - Given the issue is user-observed in live browser behavior, when this task is complete, then a retained live launcher matrix artifact proves keyboard + pointer behavior with overlay/focus transitions and captures current failing behavior.
+  - Given review governance is required, when this task is complete, then an independent reviewer approves this proof-targeted fix plan before implementation starts.
 dependencies:
-- TASK-SKRIPT-25-06-07
+  - TASK-SKRIPT-25-06-07
+backlog_document_profile: contract-derived
 ---
 
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2. The original contract below is kept as history; see Closeout.
+
 ## Context
+
 ### Problem
+
 Live user verification still reports no observable launcher effect. A prior
 input/overlay patch was implemented, but it did not change the observed browser
 behavior. We need proof-first root-cause isolation before more production
 changes.
 
 ## Decision And Assumption Ledger
+
 ### Root-cause assumptions and evidence
+
 - Assumption A (physics seam path is active under direct commands):
+
   - Evidence: `PhysicsWorld` charged-release tests show plunger displacement and
     ball advancement under direct launch commands, including explicit launcher
     lifecycle events.
@@ -59,35 +55,48 @@ changes.
     - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 
 - Assumption B (previous fix did not prove pointer lifecycle correctness):
+
   - Evidence: focused input-path test currently fails because pointer capture is
     not released after pointer-up in the current controller behavior.
   - Current failing proof surface:
     - `src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
 
 - Why the previous fix did not close the root issue:
+
   - It improved command wiring but did not establish and verify a complete
     pointer interaction lifecycle contract.
   - It was not accepted against authoritative live behavior and lacked a strict
     failing proof target tied to the observed launcher issue.
 
 ## Story Contract Slice
+
 ### Goal
+
 Lock a proof-first plan that demonstrates:
 
 1. what currently works
 2. what currently fails
 3. why the previous fix did not solve the reported issue
 4. what implementation target is approved next
+
 ### Non-goals
+
 - No new launcher behavior changes in production code in this task.
 - No seam-tolerance relaxation, no helper rails, no freehand seam geometry.
 - No reclassification of unresolved live behavior as "accepted."
 
 ## Contract Inputs
+
+The source record did not define a separate section for this package heading.
+
+## Core Vertical And Performance
+
 The source record did not define a separate section for this package heading.
 
 ## Plan
+
 ### Implementation plan
+
 - Keep this task proof-only:
   - maintain the failing input lifecycle test as the red baseline
   - keep direct-physics launcher test coverage explicit as the control baseline
@@ -100,7 +109,9 @@ The source record did not define a separate section for this package heading.
   - rerun live launcher matrix with keyboard + pointer proof artifacts
 - Require independent review sign-off on this plan before writing production
   launcher behavior changes.
+
 ### Test plan
+
 - Proof command set for this task:
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run docs-validate`
@@ -203,15 +214,20 @@ The source record did not define a separate section for this package heading.
 - Expected result profile for this task:
   - compiler + seam/runtime invariant controls stay green
   - pointer lifecycle red test fails and remains the implementation target
+
 ### Rollback plan
+
 - If this proof lane is rejected, keep launcher implementation blocked and
   remove any claim that root cause is known.
 
 ## Implementation Steps
+
 The source record did not define a separate section for this package heading.
 
 ## Proof
+
 ### Required comparison baseline (previous fix vs current proof lane)
+
 - Prior patch/review surface:
   - `PR-0204` and the associated launcher input/overlay patch in
     `KeyboardInputController.ts` + `GameHost.vue`.
@@ -225,19 +241,37 @@ The source record did not define a separate section for this package heading.
     defect baseline plus required retained live matrix artifacts.
 
 ## Validation
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0055 D2); the Closeout section names what replaced or removed the work. |
+
 ## Lessons Learned
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Implementation Review
+
 The source record did not define a separate section for this package heading.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0055 D2.
+
+Cancelled as superseded. Its pointer-lifecycle red baseline no longer fails (`KeyboardInputController.ts` releases pointer capture on pointer-up and cancel, test at `KeyboardInputController.spec.ts:221`; commit a69d58eb3), and the launcher transport and proof question moves to the carrier cut-over of epic 33 (tasks 33-01-01, 33-01-02, 33-01-03, all still `ready`). The 10-case live keyboard/pointer matrix and the reviewer sign-off in this task were never recorded and are dropped. The live pointer and overlay/blur cases are dropped, not covered: TASK-SKRIPT-25-06-14's manual matrix covers keyboard hold profiles only. TASK-SKRIPT-25-06-09 still lists this task under `dependencies`, and TASK-SKRIPT-25-06-07 still requires the same `launch-matrix-*` artifacts unless it takes its other allowed option, a dedicated launcher proof command.

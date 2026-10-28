@@ -4,28 +4,26 @@ id: TASK-SKRIPT-09-07-01
 title: ST-09-07 public-edge app/runtime hardening
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-09-07
 task_kind: story
 acceptance_criteria:
-- Production config defaults keep docs/OpenAPI disabled, health payloads minimal,
-  and identity metrics off unless explicitly re-enabled.
-- Trusted client IP extraction only considers forwarded headers from explicitly trusted
-  proxies.
-- Production host validation rejects test/dev-only hosts, while Docker-based local
-  development still works through the frontend dev server.
-- Focused automated tests and a live local functional check cover the hardened production
-  behavior and the repaired local login path.
+  - Production config defaults keep docs/OpenAPI disabled, health payloads minimal, and identity metrics off unless explicitly re-enabled.
+  - Trusted client IP extraction only considers forwarded headers from explicitly trusted proxies.
+  - Production host validation rejects test/dev-only hosts, while Docker-based local development still works through the frontend dev server.
+  - Focused automated tests and a live local functional check cover the hardened production behavior and the repaired local login path.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D5): production startup refuses `ALLOWED_HOSTS` entries `localhost`, `127.0.0.1` and `::1`. Acceptance criterion 3 stays unmet until that code lands, so this task stays open.
 
 ## Context
 
@@ -95,6 +93,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -114,6 +116,12 @@ Verification expectations remain in the retained source material below.
 ## Stop Conditions
 
 The source boundaries and recovery limits remain preserved below.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Production startup refuses `ALLOWED_HOSTS` entries `localhost`, `127.0.0.1` and `::1` (user decision 2026-10-28, TASK-SKRIPT-REP-0055 D5); this task stays open until the code lands. |
 
 ## Lessons Learned
 

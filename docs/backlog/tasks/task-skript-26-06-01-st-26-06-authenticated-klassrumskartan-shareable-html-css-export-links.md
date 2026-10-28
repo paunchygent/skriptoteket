@@ -4,41 +4,30 @@ id: TASK-SKRIPT-26-06-01
 title: ST-26-06 authenticated Klassrumskartan shareable HTML/CSS export links
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-26-06
 task_kind: story
 acceptance_criteria:
-- Given an authenticated teacher opens the grouping or seating export menu, when they
-  inspect the export actions, then `Dela länk` appears beside PDF/Excel.
-- Given an authenticated teacher clicks `Dela länk`, when pending draft or smart-rule
-  state exists, then the same export preparation/save guard used by PDF/Excel completes
-  and the post-flush `expected_revision` is sent before share creation.
-- Given an authenticated share request carries a stale `expected_revision`, when the
-  handler validates the draft immediately before rendering, then it returns `409 CONFLICT`
-  and creates no share artifact row.
-- Given the backend creates a share artifact, when the response returns, then the
-  teacher receives a copyable public-app `/share/classroom/{token}/{slug?}` URL built
-  from `PUBLIC_APP_BASE_URL`, not the protected API gateway request host.
-- Given anyone opens the share URL, when the artifact is active, then the response
-  renders immutable responsive HTML/CSS with no app chrome, editor controls, owner-scoped
-  ids, or live API calls.
-- Given the teacher owns share artifacts, when they view existing shares for a draft,
-  then they can copy and revoke them.
-- Given a share is revoked, when the public URL is opened, then it returns a calm
-  unavailable/expired page rather than the plan.
-- Given the source draft, roster, room template, or owner account is deleted/deactivated,
-  when owned shares are listed or read, then the lifecycle rule for archive, revoke,
-  or purge is deterministic and tested.
+  - Given an authenticated teacher opens the grouping or seating export menu, when they inspect the export actions, then `Dela länk` appears beside PDF/Excel.
+  - Given an authenticated teacher clicks `Dela länk`, when pending draft or smart-rule state exists, then the same export preparation/save guard used by PDF/Excel completes and the post-flush `expected_revision` is sent before share creation.
+  - Given an authenticated share request carries a stale `expected_revision`, when the handler validates the draft immediately before rendering, then it returns `409 CONFLICT` and creates no share artifact row.
+  - Given the backend creates a share artifact, when the response returns, then the teacher receives a copyable public-app `/share/classroom/{token}/{slug?}` URL built from `PUBLIC_APP_BASE_URL`, not the protected API gateway request host.
+  - Given anyone opens the share URL, when the artifact is active, then the response renders immutable responsive HTML/CSS with no app chrome, editor controls, owner-scoped ids, or live API calls.
+  - Given the teacher owns share artifacts, when they view existing shares for a draft, then they can copy and revoke them.
+  - Given a share is revoked, when the public URL is opened, then it returns a calm unavailable/expired page rather than the plan.
+  - Given the source draft, roster, room template, or owner account is deleted/deactivated, when owned shares are listed or read, then the lifecycle rule for archive, revoke, or purge is deterministic and tested.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D4): the share trigger in the Klassrumskartan export menu reads `Dela länk`. On main the trigger reads `Dela` (`PlannerShareExportPanel.vue:318`). This task stays open until the code change lands in its own task.
 
 ## Context
 
@@ -66,32 +55,36 @@ under `PR-0273` and the accepted `ADR-0084` exception.
 
 No separate material is recorded in the source snapshot.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
-1. Add a share artifact model/table with token hash, owner user id, draft kind,
-   title, slug, sanitized presentation payload or immutable provenance,
-   renderer version, presentation schema version, presentation hash, rendered
-   HTML/CSS content, content hash, created/revoked timestamps, and optional
-   expiry.
-2. Add application handlers for authenticated grouping/seating share creation.
-3. Reuse the existing export preparation paths to build canonical
-   grouping/seating presentation data.
-4. Add or extract a static HTML/CSS renderer for grouping and seating share
-   pages.
-5. Add kind-specific authenticated endpoints with typed payloads:
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
-   - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
-6. Require each create payload to include `expected_revision`; validate it in
-   the application handler immediately before rendering, and create share
-   metadata only after the validated render succeeds.
-7. Add public read route:
-   - `GET /share/classroom/{token}/{slug?}`
-8. Add export-menu UI action, copy-link state, and simple management/revoke UI
-   for authenticated shares.
-9. Add metadata and responsive/print CSS requirements to the share template.
+01. Add a share artifact model/table with token hash, owner user id, draft kind,
+    title, slug, sanitized presentation payload or immutable provenance,
+    renderer version, presentation schema version, presentation hash, rendered
+    HTML/CSS content, content hash, created/revoked timestamps, and optional
+    expiry.
+02. Add application handlers for authenticated grouping/seating share creation.
+03. Reuse the existing export preparation paths to build canonical
+    grouping/seating presentation data.
+04. Add or extract a static HTML/CSS renderer for grouping and seating share
+    pages.
+05. Add kind-specific authenticated endpoints with typed payloads:
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
+    - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
+06. Require each create payload to include `expected_revision`; validate it in
+    the application handler immediately before rendering, and create share
+    metadata only after the validated render succeeds.
+07. Add public read route:
+    - `GET /share/classroom/{token}/{slug?}`
+08. Add export-menu UI action, copy-link state, and simple management/revoke UI
+    for authenticated shares.
+09. Add metadata and responsive/print CSS requirements to the share template.
 10. Add owned-share lifecycle rules:
     - deleting a draft revokes affected shares and detaches the deleted draft id
       before the draft row is removed
@@ -107,30 +100,30 @@ No separate material is recorded in the source snapshot.
 
 ## Implementation Steps
 
-1. Add a share artifact model/table with token hash, owner user id, draft kind,
-   title, slug, sanitized presentation payload or immutable provenance,
-   renderer version, presentation schema version, presentation hash, rendered
-   HTML/CSS content, content hash, created/revoked timestamps, and optional
-   expiry.
-2. Add application handlers for authenticated grouping/seating share creation.
-3. Reuse the existing export preparation paths to build canonical
-   grouping/seating presentation data.
-4. Add or extract a static HTML/CSS renderer for grouping and seating share
-   pages.
-5. Add kind-specific authenticated endpoints with typed payloads:
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
-   - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
-6. Require each create payload to include `expected_revision`; validate it in
-   the application handler immediately before rendering, and create share
-   metadata only after the validated render succeeds.
-7. Add public read route:
-   - `GET /share/classroom/{token}/{slug?}`
-8. Add export-menu UI action, copy-link state, and simple management/revoke UI
-   for authenticated shares.
-9. Add metadata and responsive/print CSS requirements to the share template.
+01. Add a share artifact model/table with token hash, owner user id, draft kind,
+    title, slug, sanitized presentation payload or immutable provenance,
+    renderer version, presentation schema version, presentation hash, rendered
+    HTML/CSS content, content hash, created/revoked timestamps, and optional
+    expiry.
+02. Add application handlers for authenticated grouping/seating share creation.
+03. Reuse the existing export preparation paths to build canonical
+    grouping/seating presentation data.
+04. Add or extract a static HTML/CSS renderer for grouping and seating share
+    pages.
+05. Add kind-specific authenticated endpoints with typed payloads:
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
+    - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
+06. Require each create payload to include `expected_revision`; validate it in
+    the application handler immediately before rendering, and create share
+    metadata only after the validated render succeeds.
+07. Add public read route:
+    - `GET /share/classroom/{token}/{slug?}`
+08. Add export-menu UI action, copy-link state, and simple management/revoke UI
+    for authenticated shares.
+09. Add metadata and responsive/print CSS requirements to the share template.
 10. Add owned-share lifecycle rules:
     - deleting a draft revokes affected shares and detaches the deleted draft id
       before the draft row is removed
@@ -201,6 +194,12 @@ existing PDF/Excel exports untouched. Existing share read route can remain
 available for already-created artifacts unless a security issue requires
 revocation.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The Klassrumskartan share trigger reads `Dela länk` (user decision 2026-10-28, TASK-SKRIPT-REP-0055 D4); this task stays open until the code change lands in its own task. |
+
 ## Lessons Learned
 
 No separate material is recorded in the source snapshot.
@@ -231,30 +230,30 @@ under `PR-0273` and the accepted `ADR-0084` exception.
 
 ### Implementation Plan
 
-1. Add a share artifact model/table with token hash, owner user id, draft kind,
-   title, slug, sanitized presentation payload or immutable provenance,
-   renderer version, presentation schema version, presentation hash, rendered
-   HTML/CSS content, content hash, created/revoked timestamps, and optional
-   expiry.
-2. Add application handlers for authenticated grouping/seating share creation.
-3. Reuse the existing export preparation paths to build canonical
-   grouping/seating presentation data.
-4. Add or extract a static HTML/CSS renderer for grouping and seating share
-   pages.
-5. Add kind-specific authenticated endpoints with typed payloads:
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
-   - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
-   - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
-   - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
-6. Require each create payload to include `expected_revision`; validate it in
-   the application handler immediately before rendering, and create share
-   metadata only after the validated render succeeds.
-7. Add public read route:
-   - `GET /share/classroom/{token}/{slug?}`
-8. Add export-menu UI action, copy-link state, and simple management/revoke UI
-   for authenticated shares.
-9. Add metadata and responsive/print CSS requirements to the share template.
+01. Add a share artifact model/table with token hash, owner user id, draft kind,
+    title, slug, sanitized presentation payload or immutable provenance,
+    renderer version, presentation schema version, presentation hash, rendered
+    HTML/CSS content, content hash, created/revoked timestamps, and optional
+    expiry.
+02. Add application handlers for authenticated grouping/seating share creation.
+03. Reuse the existing export preparation paths to build canonical
+    grouping/seating presentation data.
+04. Add or extract a static HTML/CSS renderer for grouping and seating share
+    pages.
+05. Add kind-specific authenticated endpoints with typed payloads:
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/share`
+    - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/share`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/shares`
+    - `GET /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/shares`
+    - `POST /api/v1/apps/classroom.group-seating-studio/shares/{share_id}/revoke`
+06. Require each create payload to include `expected_revision`; validate it in
+    the application handler immediately before rendering, and create share
+    metadata only after the validated render succeeds.
+07. Add public read route:
+    - `GET /share/classroom/{token}/{slug?}`
+08. Add export-menu UI action, copy-link state, and simple management/revoke UI
+    for authenticated shares.
+09. Add metadata and responsive/print CSS requirements to the share template.
 10. Add owned-share lifecycle rules:
     - deleting a draft revokes affected shares and detaches the deleted draft id
       before the draft row is removed

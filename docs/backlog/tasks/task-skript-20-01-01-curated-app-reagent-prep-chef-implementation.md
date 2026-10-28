@@ -4,37 +4,35 @@ id: TASK-SKRIPT-20-01-01
 title: 'Curated app: Reagent Prep Chef (implementation)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_required
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: user closure 2026-07-31
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-20-01-01#closeout'
 story: ST-SKRIPT-20-01
 task_kind: story
 acceptance_criteria:
-- Curated app appears in Katalog with correct role gate and placement.
-- 'App is bespoke-required: /apps/:appId renders a dedicated Reagent Prep Chef SPA
-  view (generic AppDetailView is not used for this app).'
-- SPA uses app-specific endpoints only (no /api/v1/start_action or tool session orchestration
-  in the primary UX).
-- App supports solid + liquid_stock flows with deterministic outputs and teacher-friendly
-  Swedish validation errors.
-- Safety output is curated-only with explicit SDS fallback on misses (never heuristics).
-- Export produces a downloadable PDF via an app-specific endpoint.
-- Users can save/export PDFs to Mina filer (Vault) and download them from the vault
-  UI.
-- Users can save/load standardinställningar per-user, plus export/import defaults
-  via Mina filer.
-- Riskbedömning tab generates a deterministic draft, supports confirmation/override,
-  and exports/saves a PDF.
+  - Curated app appears in Katalog with correct role gate and placement.
+  - 'App is bespoke-required: /apps/:appId renders a dedicated Reagent Prep Chef SPA view (generic AppDetailView is not used for this app).'
+  - SPA uses app-specific endpoints only (no /api/v1/start_action or tool session orchestration in the primary UX).
+  - App supports solid + liquid_stock flows with deterministic outputs and teacher-friendly Swedish validation errors.
+  - Safety output is curated-only with explicit SDS fallback on misses (never heuristics).
+  - Export produces a downloadable PDF via an app-specific endpoint.
+  - Users can save/export PDFs to Mina filer (Vault) and download them from the vault UI.
+  - Users can save/load standardinställningar per-user, plus export/import defaults via Mina filer.
+  - Riskbedömning tab generates a deterministic draft, supports confirmation/override, and exports/saves a PDF.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -239,6 +237,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -259,6 +261,12 @@ Verification expectations remain in the retained source material below.
 
 The source boundaries and recovery limits remain preserved below.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 The source material below remains authoritative for this section.
@@ -274,3 +282,9 @@ The source material below remains authoritative for this section.
 ## Implementation Review
 
 The source material below remains authoritative for this section.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+Reagent Prep Chef shipped as the bespoke curated app chemistry.reagent_prep_chef ("Reagensberedning") in c6b111d50 and d511454b8, with later changes through 1c677abf8, 4e1bd6435 and 0cf0e2e16: registry entry (min_role USER, larare/ovrigt), bespoke SPA view, app-specific endpoints for chemicals, prep, PDF export and save, defaults (tool_sessions with state_rev, Vault export and import), risk assessment and SDS, and fail-closed SDS fallback for unknown reagents. Code criteria were read on main and hold; Katalog appearance, the Vault download path, PDF content and the defaults round trip were not checkable offline and no walk record exists. The 2026-01-28 code review's open risks (oversized view, scoped CSS) are addressed by the split into views/apps/reagent-prep-chef/\*.vue and composables; its request for a handler-level unknown-chemical test was not checked.

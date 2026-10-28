@@ -4,17 +4,21 @@ id: ST-SKRIPT-40-02
 title: Converge icons onto the shared glyph vocabulary
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
-status: active
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0055 D7) to close this story once all its tasks are closed: every child task is terminal. The Closeout section records the evidence.'
 epic: EPIC-SKRIPT-40
 acceptance_criteria:
-- Every Skriptoteket icon renders through the shared UiGlyph or UiSymbol by meaning, custom Icon components remain only where no shared meaning fits, and lucide-vue-next is removed
-- Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
+  - Every Skriptoteket icon renders through the shared UiGlyph or UiSymbol by meaning, custom Icon components remain only where no shared meaning fits, and lucide-vue-next is removed
+  - Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -42,10 +46,10 @@ promise per-meaning tree-shaking or an unaccepted zero-growth bundle limit.
 
 ## Tasks
 
-| Order | Task | Outcome |
-| --- | --- | --- |
-| 0 | TASK-SKILL-REP-0187 | Current use-to-meaning mapping, missing meanings released, HuleEdu synced and checked. |
-| 1 | TASK-SKRIPT-40-02-01 | Existing glyph adoption refreshed, all mapped uses migrated, old Lucide dependency removed. |
+| Order | Task                 | Outcome                                                                                     |
+| ----- | -------------------- | ------------------------------------------------------------------------------------------- |
+| 0     | TASK-SKILL-REP-0187  | Current use-to-meaning mapping, missing meanings released, HuleEdu synced and checked.      |
+| 1     | TASK-SKRIPT-40-02-01 | Existing glyph adoption refreshed, all mapped uses migrated, old Lucide dependency removed. |
 
 ## Verification
 
@@ -57,10 +61,15 @@ promise per-meaning tree-shaking or an unaccepted zero-growth bundle limit.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Icons migrate by meaning and missing meanings are promoted. Source: retained D14. |
-| D2 | Explicitly classified custom icons remain where no shared meaning fits. Source: retained D14. |
-| D3 | Vocabulary promotions ship after mapping in their own release; runtime/peer adoption already occurred in Story 1. Source: retained D15/D20; R1. |
-| D4 | Frontend, shared-validator and touched-screen staging proof remain required. Source: retained D16. |
-| D5 | No per-meaning bundling guarantee or zero-growth acceptance limit is inferred from individual imports. Source: retained D23; R5. |
+| ID  | Decided contract term                                                                                                                           |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Icons migrate by meaning and missing meanings are promoted. Source: retained D14.                                                               |
+| D2  | Explicitly classified custom icons remain where no shared meaning fits. Source: retained D14.                                                   |
+| D3  | Vocabulary promotions ship after mapping in their own release; runtime/peer adoption already occurred in Story 1. Source: retained D15/D20; R1. |
+| D4  | Frontend, shared-validator and touched-screen staging proof remain required. Source: retained D16.                                              |
+| D5  | No per-meaning bundling guarantee or zero-growth acceptance limit is inferred from individual imports. Source: retained D23; R5.                |
+| D6  | Closed as done on 2026-10-28 because every child task is terminal (user decision, TASK-SKRIPT-REP-0055 D7).                                     |
+
+## Closeout
+
+ST-SKRIPT-40-02 is closed. TASK-SKRIPT-40-02-01 migrated the remaining icons to UiGlyph and UiSymbol (tranches merged at 761b1b59, a67afa90, b8d5a3ae, and the last in 1b2ce75cc), deleted the lucide-vue-next wrappers and removed the dependency from `frontend/apps/skriptoteket/package.json` and `frontend/pnpm-lock.yaml`; no match for `lucide-vue-next` remains under `frontend/` or `src/`. A Mac staging walk at 05b3fc12a on 2026-10-28 passed for the course picker clear glyph, the automatic-value chip remove glyph and the tutorial play disc (record: `~/Repos/Skriptoteket/.artifacts/staging-walk-05b3fc12a/walk-record.md` on the Mac). Type check, unit tests, build and design-system validation rest on the task's recorded runs, not on a rerun here.
