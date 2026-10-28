@@ -4,40 +4,31 @@ id: TASK-SKRIPT-25-06-02
 title: 'Flunk-Out Frenzy: donor semantic representation and trigger-shape fidelity'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_required
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: user closure 2026-07-31
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-25-06-02#closeout'
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given VPW donor triggers, gates, and wire rollovers carry richer shape or phase
-  semantics than the current schema, when this task is complete, then the authored
-  and compiled table model represents those semantics directly instead of flattening
-  them into local bounding boxes or undocumented remaps.
-- Given the donor map must stay inspectable, when this task is complete, then donor-backed
-  trigger and gate definitions in `prototypeAlphaVpwDonorDevices.ts` and `prototypeAlphaTableSpec.ts`
-  cite the intended donor source objects explicitly.
-- Given launcher lanes and other donor lane corridors are shaped semantic regions,
-  when this task is complete, then every remaining `laneBounds` or AABB-style lane
-  containment seam is replaced with donor-shaped lane-region semantics instead of
-  approximate local bounds.
-- Focused compile and physics regressions prove the donor right-return footprint keeps
-  donor rotation, the launch-lane donor trigger maps to the intended shooter/plunger
-  donor objects, and a served ball does not self-fire launch semantics while resting
-  in the lane.
-- The donor reference docs, pinball authoring skill, and `.codex/handoff.md` explicitly
-  forbid semantic flattening or 'good enough' vibe-porting when a richer donor representation
-  exists.
+  - Given VPW donor triggers, gates, and wire rollovers carry richer shape or phase semantics than the current schema, when this task is complete, then the authored and compiled table model represents those semantics directly instead of flattening them into local bounding boxes or undocumented remaps.
+  - Given the donor map must stay inspectable, when this task is complete, then donor-backed trigger and gate definitions in `prototypeAlphaVpwDonorDevices.ts` and `prototypeAlphaTableSpec.ts` cite the intended donor source objects explicitly.
+  - Given launcher lanes and other donor lane corridors are shaped semantic regions, when this task is complete, then every remaining `laneBounds` or AABB-style lane containment seam is replaced with donor-shaped lane-region semantics instead of approximate local bounds.
+  - Focused compile and physics regressions prove the donor right-return footprint keeps donor rotation, the launch-lane donor trigger maps to the intended shooter/plunger donor objects, and a served ball does not self-fire launch semantics while resting in the lane.
+  - The donor reference docs, pinball authoring skill, and root `handoff.md` explicitly forbid semantic flattening or 'good enough' vibe-porting when a richer donor representation exists.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 after criterion 5 was pointed at the root `handoff.md` (D6). The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -123,6 +114,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -143,6 +138,12 @@ Verification expectations remain in the retained source material below.
 
 The source boundaries and recovery limits remain preserved below.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Criterion 5 names the root `handoff.md` instead of the retired `.codex/handoff.md`, and the rule sits in its Facts section (TASK-SKRIPT-REP-0055 D6); closed as done on 2026-10-28. |
+
 ## Lessons Learned
 
 The source material below remains authoritative for this section.
@@ -158,3 +159,9 @@ The source material below remains authoritative for this section.
 ## Implementation Review
 
 The source material below remains authoritative for this section.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 and D6.
+
+The donor semantic representation shipped in 319735cb6, 59a517af3, bcf160601 and e69eb0145: richer trigger and gate shapes and phases (`capsule`, `donor-corridor`, `donor-wire-rollover`, `triggerPhase` in `FOF/table/tableDefinitionTypes.ts`, read by `compileSensors.ts`), donor-shaped lane regions in place of `laneBounds`, and compile and physics regressions for the right-return footprint, the shooter and plunger mapping and the served-ball case. Donor provenance (`donorSourceIds`) sits in `prototypeAlphaVpwDonorDevices.ts`; `prototypeAlphaTableSpec.ts`, which criterion 2 names, now only assembles devices from `spec/`. Criterion 5 is met by the donor map (`data/pinball_resources_and_repos/vpw-rom-example-table-donor-map.md:13-22`), the `pinball-board-authoring` skill and the new root `handoff.md` Facts line; the test suites were read, not run.

@@ -1,74 +1,44 @@
 ---
 type: task
 id: TASK-SKRIPT-27-04-01
-title: 'Klassrumskartan: smart grouping v1 grouping history, live seating influence,
-  and backend run contract'
+title: 'Klassrumskartan: smart grouping v1 grouping history, live seating influence, and backend run contract'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-27-04-01#closeout'
 story: ST-SKRIPT-27-04
 task_kind: story
 acceptance_criteria:
-- Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`,
-  then grouping keeps the current local random reshuffle behavior and preserves the
-  current group count plus teacher-defined group names.
-- Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then
-  the planner calls one backend-owned smart grouping run endpoint and persists the
-  returned grouping result instead of performing a frontend-only random shuffle.
-- Given the grouping toolbar renders, when the teacher works in `Grupper`, then the
-  command row stays single-height and organized into a left action cluster plus a
-  right class/export cluster.
-- Given the grouping toolbar renders, when the teacher scans the right side, then
-  the compact class selector sits between the group-count stepper and export instead
-  of in a separate context band.
-- Given grouping rules are already visible through `Regler` and the student markers,
-  when the grouping toolbar renders, then it does not show a redundant active-rule
-  count pill.
-- Given roster-global `Keep apart` and `Keep near` rules exist, when smart grouping
-  runs, then the backend interprets those same visible rules at grouping level without
-  introducing a second grouping-only rule model.
-- Given the teacher tunes smart grouping behavior, when they open `Smart-inställningar`,
-  then `Historik`, `Klassrum`, and `Sittschemat` are available there rather than as
-  first-row toolbar controls.
-- Given grouping `Historik` is enabled inside `Smart-inställningar`, when the smart
-  run evaluates prior grouping outcomes, then it uses grouping-specific similarity
-  history only and does not treat classroom awareness or seating continuity as grouping
-  history.
-- Given grouping history contains exact or near-repeat groupings, when smart grouping
-  runs with `Use history` enabled, then it penalizes repeated student co-memberships
-  and not only exact repeated group ids.
-- Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar`,
-  when an active seating draft exists for the same class, then that live seating arrangement
-  becomes the first compactness source and uses seat-topology distance to penalize
-  same-group spread quadratically beyond a local elastic radius while still respecting
-  explicit relation rules.
-- Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar`
-  but no active seating draft exists, when eligible seating checkpoints exist, then
-  smart grouping may use those checkpoints as a fallback compactness source without
-  treating them as grouping history.
-- Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating
-  context exists, when smart grouping runs, then it falls back honestly to rules plus
-  any enabled history lane instead of pretending the classroom-aware lane was used.
-- Given `Use history` is enabled but no eligible grouping checkpoints exist, when
-  the teacher runs smart grouping, then the run applies without history, reports `used_history=false`,
-  and does not treat draft state, seating compactness, or public guest local state
-  as grouping history.
-- Given the teacher needs to adjust rules, when they navigate to `Regler`, then rules
-  remain a workspace-level setting surface and do not appear as a duplicate toolbar
-  shortcut in `Grupper`.
-- Given the teacher switches between `Grupper` and `Sittplatser`, when they scan the
-  first row, then both workspaces follow the same single-row action grammar with a
-  right-side selector/export cluster and Smart tuning moved into `Smart-inställningar`.
+  - Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping keeps the current local random reshuffle behavior and preserves the current group count plus teacher-defined group names.
+  - Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner calls one backend-owned smart grouping run endpoint and persists the returned grouping result instead of performing a frontend-only random shuffle.
+  - Given the grouping toolbar renders, when the teacher works in `Grupper`, then the command row stays single-height and organized into a left action cluster plus a right class/export cluster.
+  - Given the grouping toolbar renders, when the teacher scans the right side, then the compact class selector sits between the group-count stepper and export instead of in a separate context band.
+  - Given grouping rules are already visible through `Regler` and the student markers, when the grouping toolbar renders, then it does not show a redundant active-rule count pill.
+  - Given roster-global `Keep apart` and `Keep near` rules exist, when smart grouping runs, then the backend interprets those same visible rules at grouping level without introducing a second grouping-only rule model.
+  - Given the teacher tunes smart grouping behavior, when they open `Smart-inställningar`, then `Historik`, `Klassrum`, and `Sittschemat` are available there rather than as first-row toolbar controls.
+  - Given grouping `Historik` is enabled inside `Smart-inställningar`, when the smart run evaluates prior grouping outcomes, then it uses grouping-specific similarity history only and does not treat classroom awareness or seating continuity as grouping history.
+  - Given grouping history contains exact or near-repeat groupings, when smart grouping runs with `Use history` enabled, then it penalizes repeated student co-memberships and not only exact repeated group ids.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar`, when an active seating draft exists for the same class, then that live seating arrangement becomes the first compactness source and uses seat-topology distance to penalize same-group spread quadratically beyond a local elastic radius while still respecting explicit relation rules.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled inside `Smart-inställningar` but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may use those checkpoints as a fallback compactness source without treating them as grouping history.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating context exists, when smart grouping runs, then it falls back honestly to rules plus any enabled history lane instead of pretending the classroom-aware lane was used.
+  - Given `Use history` is enabled but no eligible grouping checkpoints exist, when the teacher runs smart grouping, then the run applies without history, reports `used_history=false`, and does not treat draft state, seating compactness, or public guest local state as grouping history.
+  - Given the teacher needs to adjust rules, when they navigate to `Regler`, then rules remain a workspace-level setting surface and do not appear as a duplicate toolbar shortcut in `Grupper`.
+  - Given the teacher switches between `Grupper` and `Sittplatser`, when they scan the first row, then both workspaces follow the same single-row action grammar with a right-side selector/export cluster and Smart tuning moved into `Smart-inställningar`.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -126,16 +96,22 @@ before code lands:
 
 No separate contract inputs were recorded in the source snapshot.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Implementation Plan
 
 1. Lock the grouping contract in docs and tests first.
+
    - Land the doc refinements above before writing the smart grouping code.
    - Add domain/application/web tests that encode the precedence order rather than only the
      endpoint shape.
 
 2. Add the dedicated grouping-history lane.
+
    - Introduce one normalized grouping-history contract that compares partitions without depending
      on group ids or group labels.
    - Record exact repeat identity plus near-repeat similarity through repeated student
@@ -144,6 +120,7 @@ No separate contract inputs were recorded in the source snapshot.
      checkpoint-backed.
 
 3. Add the classroom-aware compactness input seam.
+
    - Read the active seating draft for the same class when classroom-aware grouping is enabled
      through `Klassrum` + `Sittning` in Smart-inställningar.
    - Fall back to the latest eligible seating checkpoint when no active seating draft exists.
@@ -154,6 +131,7 @@ No separate contract inputs were recorded in the source snapshot.
      review instead of freezing them in prose.
 
 4. Add the backend-owned smart grouping run.
+
    - Introduce one pure smart-grouping domain module that scores:
      - shared relation rules
      - classroom-aware compactness
@@ -169,6 +147,7 @@ No separate contract inputs were recorded in the source snapshot.
      semantics.
 
 5. Add the bespoke web/API contract.
+
    - Add `POST /api/v1/apps/classroom.group-seating-studio/drafts/grouping/{draft_id}/smart-run`
    - Request body:
      - `expected_revision: int`
@@ -192,6 +171,7 @@ No separate contract inputs were recorded in the source snapshot.
    - Use HTTP errors only for true request failures such as `404`, `409`, and `422`.
 
 6. Wire the grouping workspace onto the smart run.
+
    - Branch grouping `Slumpa`:
      - `Smart` off -> current local random behavior
      - `Smart` on -> backend smart grouping run
@@ -212,16 +192,19 @@ No separate contract inputs were recorded in the source snapshot.
 The smart grouping solver and handler must use this precedence model:
 
 1. Explicit visible relation rules are strongest.
+
    - `Keep near` in grouping means "prefer the same group."
    - `Keep apart` in grouping means "spread across different groups whenever possible, otherwise
      maximize spread and minimize collisions."
 
 2. Group structure invariants come next.
+
    - Preserve the current group count.
    - Preserve current teacher-defined group names and order.
    - Do not let smart grouping silently create/remove groups or rename them.
 
 3. Classroom-aware compactness is the first optional spatial source.
+
    - This source is enabled when `Klassrum` is selected and `Sittschemat` is on in Smart-inställningar.
    - If an active seating draft exists for the same class, use that draft first.
    - If no active seating draft exists, use the latest eligible seating checkpoint as fallback.
@@ -233,6 +216,7 @@ The smart grouping solver and handler must use this precedence model:
      outcomes versus the desired classroom behavior.
 
 4. Grouping history is separate and comes after classroom-aware compactness.
+
    - This source is enabled only by grouping `Use history`.
    - Grouping history penalizes exact and near-repeat groupings.
    - Grouping history must compare normalized student partitions and repeated student
@@ -240,6 +224,7 @@ The smart grouping solver and handler must use this precedence model:
    - History must not be widened into classroom awareness by accident.
 
 5. Rerun diversity is last.
+
    - Prefer a materially different strong candidate from the current grouping assignment when the
      valid search space allows it.
    - Diversity must not override stronger explicit rules, classroom-aware compactness, or grouping
@@ -291,18 +276,21 @@ relying on verbal context:
 ### Source: Exact Files To Change
 
 - Docs:
+
   - `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`
   - `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`
   - `docs/backlog/reviews/review-epic-27-klassrumskartan-smart-assignment-v1.md`
   - `docs/backlog/prs/pr-0167-st-27-04-smart-grouping-v1-grouping-history-and-live-seating-influence.md`
 
 - Backend domain and protocols:
+
   - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_grouping.py`
   - `src/skriptoteket/domain/curated_apps/classroom_planner/smart_grouping_scoring.py`
   - `src/skriptoteket/domain/curated_apps/classroom_planner/grouping_checkpoints.py`
   - `src/skriptoteket/protocols/classroom_planner.py`
 
 - Backend application and DI:
+
   - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_grouping.py`
   - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_job_completion.py`
   - `src/skriptoteket/application/curated_apps/classroom_planner/handlers/grouping_export_jobs.py`
@@ -310,14 +298,17 @@ relying on verbal context:
   - `src/skriptoteket/di/curated_apps.py`
 
 - Backend web/API:
+
   - `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py`
 
 - Backend persistence:
+
   - `src/skriptoteket/infrastructure/db/models/classroom_planner_grouping_export_checkpoint.py`
   - `src/skriptoteket/infrastructure/repositories/classroom_planner_grouping_export_checkpoints.py`
   - `migrations/versions/<new_revision>_classroom_planner_grouping_export_checkpoints.py`
 
 - Frontend:
+
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
   - `frontend/apps/skriptoteket/src/views/apps/useSmartGroupingRun.ts`
@@ -330,6 +321,7 @@ relying on verbal context:
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue`
 
 - Tests:
+
   - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py`
   - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_g20_sa24d.py`
   - `tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_bf25_g104.py`
@@ -346,18 +338,22 @@ relying on verbal context:
 ### Source: Test Plan
 
 - Docs:
+
   - `pdm run docs-validate`
 
 - Backend:
+
   - `pdm run pytest tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver.py tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_g20_sa24d.py tests/unit/domain/curated_apps/classroom_planner/test_smart_grouping_solver_bf25_g104.py tests/unit/application/apps/classroom_planner/test_smart_grouping.py tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py -q`
   - `pdm run pytest -m docker 'tests/integration/test_migration_revision_coverage_idempotent.py::test_uncovered_migration_revision_is_idempotent[<new_revision>]' -q`
   - `pdm run typecheck`
 
 - Frontend:
+
   - `pdm run fe-test -- --run src/views/apps/useSmartGroupingRun.spec.ts src/views/apps/useClassroomState.spec.ts src/views/apps/components/PlannerWorkspaceShell.spec.ts`
   - `pdm run fe-type-check`
 
 - Live proof:
+
   - `ARTIFACTS_ROOT=/tmp/skriptoteket/artifacts pdm run dev-local`
   - add one new Playwright proof for grouping smart-run semantics on `http://127.0.0.1:5173`
 
@@ -385,6 +381,12 @@ Validation follows the focused test and verification material recorded above.
 - If classroom-aware compactness proves too ambiguous or too weakly tuned at first, keep the
   dedicated grouping-history lane and temporarily disable only the classroom-aware grouping lane
   while preserving the backend grouping smart-run contract.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Lessons Learned
 
@@ -478,3 +480,7 @@ No separate plan document review was recorded in the source snapshot.
 ## Implementation Review
 
 No separate implementation review was recorded in the source snapshot.
+
+## Closeout
+
+Smart grouping v1 shipped on main: the backend `smart-run` route and `RunSmartGroupingHandler`, the pure solver in `domain/curated_apps/classroom_planner/smart_grouping*.py` (precedence explicit rules, classroom compactness, grouping history, size balance, diversity), the grouping-history checkpoint persistence, and the frontend `useSmartGroupingRun` plus the single-row `PlannerWorkspaceActionBar` toolbars and the "Avancerade inställningar" drawer. Commits on main include 493b3ba18, 9331a585a and 4508651ad; live proofs are recorded in the 2026-03-31 handoff (PR-0167 Playwright check) and in PR-0316 (first-run `used_history=false` for grouping). The single-row toolbar layout at real widths was not checkable offline. Visible labels differ from the criterion text: `Avancerade inställningar` for `Smart-inställningar` and `Tillämpa sittschema` for `Sittschemat`. The first-row Smart toggle of the approved snapshot is not in the toolbar on main; `Smart placering` sits in the drawer (`PlannerGroupingSettingsDrawer.vue:143`), which satisfies criterion 7.

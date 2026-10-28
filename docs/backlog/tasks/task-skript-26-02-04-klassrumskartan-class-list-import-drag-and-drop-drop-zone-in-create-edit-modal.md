@@ -1,35 +1,32 @@
 ---
 type: task
 id: TASK-SKRIPT-26-02-04
-title: 'Klassrumskartan: class-list import drag-and-drop drop zone in create/edit
-  modal'
+title: 'Klassrumskartan: class-list import drag-and-drop drop zone in create/edit modal'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: in_progress
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-26-02-04#closeout'
 story: ST-SKRIPT-26-02
 task_kind: story
 acceptance_criteria:
-- Given a teacher opens `Ny klasslista` or `Redigera klasslista`, when they read the
-  class-list import guidance, then a visible drag-and-drop drop zone appears directly
-  beneath the supported file-type explanation while the existing picker button remains
-  available.
-- Given a teacher drops one supported roster file (`.xlsx`, `.xls`, `.csv`, `.tsv`,
-  `.txt`, `.pdf`) onto the drop zone, when the drop completes, then the existing import-preview
-  request runs and the preview-prefill flow behaves exactly like picker-based import.
-- Given drag-and-drop is unavailable, skipped, or invalid input is dropped, when the
-  teacher still needs to import, then the click-to-choose fallback continues to work
-  and the modal keeps the current preview/manual-edit behavior without introducing
-  backend or contract changes.
+  - Given a teacher opens `Ny klasslista` or `Redigera klasslista`, when they read the class-list import guidance, then a visible drag-and-drop drop zone appears directly beneath the supported file-type explanation while the existing picker button remains available.
+  - Given a teacher drops one supported roster file (`.xlsx`, `.xls`, `.csv`, `.tsv`, `.txt`, `.pdf`) onto the drop zone, when the drop completes, then the existing import-preview request runs and the preview-prefill flow behaves exactly like picker-based import.
+  - Given drag-and-drop is unavailable, skipped, or invalid input is dropped, when the teacher still needs to import, then the click-to-choose fallback continues to work and the modal keeps the current preview/manual-edit behavior without introducing backend or contract changes.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -65,6 +62,10 @@ workflow.
 
 No separate contract inputs were recorded in the source snapshot.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Implementation plan
@@ -78,8 +79,7 @@ No separate contract inputs were recorded in the source snapshot.
 4. Use native browser drag events (`dragenter`/`dragover`/`dragleave`/`drop`) with a clear active
    visual state, and keep drag/drop additive rather than required so keyboard/mobile users still
    succeed through the existing picker button.
-5. Keep the current `useClassListImportFlow.ts` transport seam and `POST
-   /api/v1/apps/classroom.group-seating-studio/rosters/import-preview` request untouched.
+5. Keep the current `useClassListImportFlow.ts` transport seam and `POST /api/v1/apps/classroom.group-seating-studio/rosters/import-preview` request untouched.
 6. Handle invalid input conservatively for this slice:
    - one file at a time
    - ignore folder-style assumptions
@@ -125,6 +125,12 @@ Validation follows the focused test and verification material recorded above.
 - Remove the drop-zone markup and drag-event handling from the shared roster modal.
 - Keep the existing hidden input plus `Importera från fil` button path intact.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 No separate lessons learned were recorded in the source snapshot.
@@ -144,3 +150,9 @@ No separate plan document review was recorded in the source snapshot.
 Focused Vitest coverage and a live Playwright proof are already recorded in `.codex/handoff.md`,
 but this doc still stops short of an explicit shipped/done callout. Its `in_progress` status is
 left unchanged for now so that a human can decide whether the slice is fully closed.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The class-list import drop zone shipped in commit d1e76791d in `CreateRosterModal.vue` and `useRosterImport.ts`; the drop handler and the file picker share `handleImportFile`, and the spec `CreateRosterModal.spec.ts` covers drop import, drag-active state and picker import. The live Playwright proof was recorded in the `.agents/handoff.md` verification line added in d1e76791d (2026-03-30, `playwright-pr-0175: ok`, create-mode drop plus edit-mode drop zone visibility) and survives only in git history. The proof script was deleted in 3629b5d28 and no later live re-walk is recorded. Closed under D1 on the git-history-only proof. That proof did not drop a file in edit mode and predates the 2026-10-17 modal refresh; no later live re-walk is recorded.

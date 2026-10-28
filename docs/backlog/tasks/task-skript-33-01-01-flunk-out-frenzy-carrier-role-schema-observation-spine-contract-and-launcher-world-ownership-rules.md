@@ -1,44 +1,34 @@
 ---
 type: task
 id: TASK-SKRIPT-33-01-01
-title: 'Flunk-Out Frenzy: carrier-role schema, observation-spine contract, and launcher-world
-  ownership rules'
+title: 'Flunk-Out Frenzy: carrier-role schema, observation-spine contract, and launcher-world ownership rules'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-33-01-01#closeout'
 story: ST-SKRIPT-33-01
 task_kind: story
 acceptance_criteria:
-- Given the current launcher 3D schema only knows `walls`, `guideRails`, `sensors`,
-  and optional `travelRoutes`, when this task is complete, then authored/compiled
-  contracts distinguish physical carrier roles from proof roles without overloading
-  those legacy constructs.
-- Given `travelRoutes` currently mix motion and proof semantics, when this task is
-  complete, then the contract explicitly demotes them into observation-spine or equivalent
-  proof-only semantics that cannot generate colliders or own motion.
-- Given the architect guidance prefers one tagged carrier model, when this task is
-  complete, then the launcher contract uses one tagged `carriers[]` union with explicit
-  `kind`, explicit compile role (`physical`, `observation`, or `terminal_seam`), explicit
-  donor provenance, and explicit `ownerWorld` with no default.
-- Given launcher-world ownership is the decisive architectural seam, when this task
-  is complete, then the contract defines which carrier anchors and surfaces belong
-  to the launcher Rapier world through the one terminal board handoff and explicitly
-  forbids duplicate donor-span ownership across worlds.
-- Given strict seam continuity remains valuable, when this task is complete, then
-  continuity validation survives for carrier anchors and observation spines without
-  acting as a transport rail contract, including unique tags, connected acyclic graph
-  validation, exactly one terminal `handoff_seam`, no mid-chain handoff seams, and
-  preserved chained-anchor continuity.
+  - Given the current launcher 3D schema only knows `walls`, `guideRails`, `sensors`, and optional `travelRoutes`, when this task is complete, then authored/compiled contracts distinguish physical carrier roles from proof roles without overloading those legacy constructs.
+  - Given `travelRoutes` currently mix motion and proof semantics, when this task is complete, then the contract explicitly demotes them into observation-spine or equivalent proof-only semantics that cannot generate colliders or own motion.
+  - Given the architect guidance prefers one tagged carrier model, when this task is complete, then the launcher contract uses one tagged `carriers[]` union with explicit `kind`, explicit compile role (`physical`, `observation`, or `terminal_seam`), explicit donor provenance, and explicit `ownerWorld` with no default.
+  - Given launcher-world ownership is the decisive architectural seam, when this task is complete, then the contract defines which carrier anchors and surfaces belong to the launcher Rapier world through the one terminal board handoff and explicitly forbids duplicate donor-span ownership across worlds.
+  - Given strict seam continuity remains valuable, when this task is complete, then continuity validation survives for carrier anchors and observation spines without acting as a transport rail contract, including unique tags, connected acyclic graph validation, exactly one terminal `handoff_seam`, no mid-chain handoff seams, and preserved chained-anchor continuity.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
@@ -58,6 +48,10 @@ cut-over work can be honest.
 ## Contract Inputs
 
 The source does not provide a separate contract inputs section; no additional contract inputs is recorded.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -114,6 +108,12 @@ The source does not provide a separate validation section; no additional validat
 - Remove only the new schema/validation contracts and preserve the architect
   reference plus blocked sequencing notes.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 The source does not provide a separate lessons learned section; no additional lessons learned is recorded.
@@ -136,3 +136,9 @@ The source does not provide a separate plan document review section; no addition
 ## Implementation Review
 
 The source does not provide a separate implementation review section; no additional implementation review is recorded.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The tagged `carriers[]` union (kinds support/guard/receiver/observation_spine/handoff_seam, compile roles physical/observation/terminal_seam, required `ownerWorld` and `donorSourceIds`) shipped in cfd44a6a5 in `G/table/tableDefinitionTypes.ts`, with the validator `G/table/compiler/assertValidLauncherCarrierGraph.ts` (unique tags, donor provenance, no cross-world donor-span ownership, connected acyclic spine graph, exactly one terminal handoff seam, seam continuity) and tests in `compilePinballTable.validation.spec-impl.ts`. Observation spines generate no colliders. Runtime transport still moves the ball along observation spines (`LauncherTravelRoute.ts:133-134,173-174`), which the task defers ("No runtime transport deletion yet"). The test-plan commands were not run offline. Criterion 2 is read as a statement about the authored and compiled contract; the task's non-goal defers runtime transport deletion, which TASK-SKRIPT-25-06-14 and the remaining tasks of ST-SKRIPT-33-01 cover.

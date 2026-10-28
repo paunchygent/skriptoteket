@@ -4,37 +4,35 @@ id: TASK-SKRIPT-REP-0015
 title: 'Flunk-Out Frenzy: runtime lazy-load and game bundle splitting'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_required
-  approval_protocol: agent-planning:user-closure-gate
-  approval_evidence: user closure 2026-07-31
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-REP-0015#closeout'
 task_kind: repository
 acceptance_criteria:
-- The Flunk-Out Frenzy route shell loads before the heavy game runtime stack, and
-  the initial route chunk no longer eagerly bundles the full Pixi/Rapier/Howler game
-  runtime.
-- Runtime boot still respects the `GameHost` / `GameRuntime` ownership boundary and
-  the bootstrap-driven audio flag.
-- The optimized route preserves the current immersive shell, controls, and live playable
-  proof.
-- Build output shows Flunk-Out runtime code split into clearer lazy chunks or vendor
-  groups, with the optimization rationale documented in code/config.
+  - The Flunk-Out Frenzy route shell loads before the heavy game runtime stack, and the initial route chunk no longer eagerly bundles the full Pixi/Rapier/Howler game runtime.
+  - Runtime boot still respects the `GameHost` / `GameRuntime` ownership boundary and the bootstrap-driven audio flag.
+  - The optimized route preserves the current immersive shell, controls, and live playable proof.
+  - Build output shows Flunk-Out runtime code split into clearer lazy chunks or vendor groups, with the optimization rationale documented in code/config.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
 
 ## Context
 
 ## Impact And Escalation
 
 The source task is repository-scoped; impact and escalation remain bounded by the retained source contract.
-
 
 ### Problem
 
@@ -75,14 +73,14 @@ Reshape the Flunk-Out route so it becomes shell-first and runtime-second:
 ### 1. Separate shell loading from runtime loading
 
 - [ ] Make the Flunk-Out route shell render without eagerly importing the full
-      runtime stack.
+  runtime stack.
 - [ ] Keep `FlunkOutFrenzyView.vue` focused on:
-      - bootstrap
-      - shell composition
-      - controls
-      - settings
+  \- bootstrap
+  \- shell composition
+  \- controls
+  \- settings
 - [ ] Move heavy runtime loading behind a lazy boundary owned by the game host
-      or a feature-local runtime loader.
+  or a feature-local runtime loader.
 
 Suggested solution:
 
@@ -93,9 +91,9 @@ Suggested solution:
 ### 2. Lazy-load heavy game dependencies
 
 - [ ] Ensure Pixi, Rapier, and Howler are only brought in when the runtime is
-      actually being created.
+  actually being created.
 - [ ] Avoid import graphs that pull these dependencies into the initial shell
-      bundle by accident.
+  bundle by accident.
 - [ ] Preserve the existing bootstrap-driven audio gating behavior.
 
 Suggested solution:
@@ -106,13 +104,13 @@ Suggested solution:
 ### 3. Improve bundling clarity in Vite
 
 - [ ] Review whether a small `manualChunks` strategy in
-      `frontend/apps/skriptoteket/vite.config.ts` improves chunk separation for:
-      - game runtime
-      - renderer/vendor
-      - physics/vendor
-      - audio/vendor
+  `frontend/apps/skriptoteket/vite.config.ts` improves chunk separation for:
+  \- game runtime
+  \- renderer/vendor
+  \- physics/vendor
+  \- audio/vendor
 - [ ] Add chunking config only if it follows the actual loading boundaries and
-      does not become configuration-only cargo culting.
+  does not become configuration-only cargo culting.
 
 Suggested solution:
 
@@ -123,10 +121,10 @@ Suggested solution:
 ### 4. Reduce non-code route weight where safe
 
 - [ ] Review the temporary Flunk-Out reference images and decide whether the
-      current files should be:
-      - optimized
-      - resized
-      - replaced later during the art pass
+  current files should be:
+  \- optimized
+  \- resized
+  \- replaced later during the art pass
 - [ ] If optimized now, keep the visual anchor intact.
 
 Suggested solution:
@@ -137,12 +135,12 @@ Suggested solution:
 ### 5. Re-verify route behavior after optimization
 
 - [ ] Prove the route still supports:
-      - bootstrap
-      - runtime boot
-      - Start/Pause/Restart/Mute
-      - route leave cleanup
+  \- bootstrap
+  \- runtime boot
+  \- Start/Pause/Restart/Mute
+  \- route leave cleanup
 - [ ] Record both build verification and live browser proof in
-      `.codex/handoff.md`.
+  `.codex/handoff.md`.
 
 Suggested solution:
 
@@ -185,6 +183,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -204,6 +206,12 @@ Verification expectations remain in the retained source material below.
 ## Stop Conditions
 
 The source boundaries and recovery limits remain preserved below.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
 
 ## Lessons Learned
 
@@ -228,3 +236,9 @@ The source material below remains authoritative for this section.
 ## Implementation Review
 
 The source material below remains authoritative for this section.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+The Flunk-Out route shell now creates the game through `loadGameRuntime` (`G/core/loadGameRuntime.ts`, added in 36286d31f and merged by 4aa2cf146), which dynamic-imports `GameRuntime`; `GameRuntime` in turn dynamic-imports the audio director, the engine and the Pixi renderer, and no shell file imports Pixi, Rapier or Howler statically. The `audioEnabled` bootstrap flag still flows from the view to `GameHost` to the runtime. The live Start/Pause/Restart/Mute/leave walk and the built-chunk sizes were not checkable offline; no record of that walk for this task exists. The task asks for build verification and live browser proof in `.codex/handoff.md`, which does not exist; no such proof is recorded.

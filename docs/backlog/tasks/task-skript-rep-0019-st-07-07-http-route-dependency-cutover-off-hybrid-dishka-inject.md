@@ -4,26 +4,36 @@ id: TASK-SKRIPT-REP-0019
 title: 'ST-07-07: HTTP route dependency cutover off hybrid Dishka inject'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-REP-0019#closeout'
 task_kind: repository
 acceptance_criteria:
-- Given HTTP routes currently rely on `@inject` from `dishka_compat.py`, when this
-  slice ships, then HTTP route dependency resolution uses the public FastAPI adapter
-  pattern introduced in `PR-0162`.
-- Given route modules are migrated, when this slice ships, then HTTP handlers no longer
-  depend on synthetic `___dishka_request` / `___dishka_websocket` kwargs.
-- Given OpenAPI and runtime proof are rerun, when this slice is verified, then the
-  migrated HTTP routes keep their documented request/response contracts.
+  - Given HTTP routes currently rely on `@inject` from `dishka_compat.py`, when this slice ships, then HTTP route dependency resolution uses the public FastAPI adapter pattern introduced in `PR-0162`.
+  - Given route modules are migrated, when this slice ships, then HTTP handlers no longer depend on synthetic `___dishka_request` / `___dishka_websocket` kwargs.
+  - Given OpenAPI and runtime proof are rerun, when this slice is verified, then the migrated HTTP routes keep their documented request/response contracts.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 on merge evidence. The original contract below is kept as history; see Closeout for what shipped and what was not checked.
+
+## Contract Inputs
+
+The source record did not define a separate section for this package heading.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Context
 
@@ -174,6 +184,12 @@ The migrated source records no separate statement for this section.
 
 The migrated source records no separate statement for this section.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as done on 2026-10-28 on merge evidence confirmed in code and git history (TASK-SKRIPT-REP-0055 D1); the Closeout section lists the evidence and the checks that were not run. |
+
 ## Lessons Learned
 
 The migrated source records no separate statement for this section.
@@ -189,3 +205,9 @@ The migrated source records no separate statement for this section.
 ## Closeout
 
 The migrated source records no separate statement for this section.
+
+## Closeout
+
+Closed as done on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 (orchestrator closeout on merge evidence).
+
+HTTP route and auth-dependency injection moved off the `dishka_compat.py` `@inject` decorator onto `FromDishka` (FastAPI `Depends` on `request.state.dishka_container`) in 1743db254 on 2026-03-29; `src/skriptoteket/web/dishka_compat.py` is deleted and `@inject`, `___dishka_request` and `___dishka_websocket` no longer occur in `src` or `tests`. 57 web modules use `src/skriptoteket/web/dishka_dependencies.py`, and `tests/unit/web/test_openapi_contracts.py` guards the contracts. A per-route live smoke over public/auth/admin/planner routes is not recorded separately; the Hemma `/healthz` and `/metrics` proof is.

@@ -4,37 +4,31 @@ id: TASK-SKRIPT-25-06-04
 title: 'Flunk-Out Frenzy: shooter-corridor Wall263 de-overlap'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: in_progress
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'TASK-SKRIPT-25-06-04#closeout'
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- 'Given the lower shooter lane is already physically defined by donor `Wall95`, `Wall34`,
-  `Wall010`, `Wall011`, `Apron1`, and `Apron2`, when this task is complete, then the
-  `Wall263` shooter-corridor slice no longer acts as a fat `radius: 8` physical rail
-  inside that same corridor.'
-- Given the current `outer-boundary` rail is compiled from the full donor `Wall263`
-  chain, when this task is complete, then the shooter-lane-adjacent slice is either
-  split out or thinned so the corridor is no longer double-defined while the donor
-  provenance remains explicit.
-- Given the visible board still needs the full donor outline, when this task is complete,
-  then any physical split of `Wall263` keeps the donor-backed render path inspectable
-  and does not replace it with freehand or non-donor geometry.
-- Focused compile and physics regressions prove the lower shooter corridor is owned
-  by the donor wall pieces rather than a fat `outer-boundary` rail segment, and a
-  charged launch clears the previous deterministic jam region.
-- The slice records whether the launcher jam is fully solved by this geometry correction
-  or whether `PR-0200` remains necessary for a broader donor plunger/release-path
-  follow-up.
+  - 'Given the lower shooter lane is already physically defined by donor `Wall95`, `Wall34`, `Wall010`, `Wall011`, `Apron1`, and `Apron2`, when this task is complete, then the `Wall263` shooter-corridor slice no longer acts as a fat `radius: 8` physical rail inside that same corridor.'
+  - Given the current `outer-boundary` rail is compiled from the full donor `Wall263` chain, when this task is complete, then the shooter-lane-adjacent slice is either split out or thinned so the corridor is no longer double-defined while the donor provenance remains explicit.
+  - Given the visible board still needs the full donor outline, when this task is complete, then any physical split of `Wall263` keeps the donor-backed render path inspectable and does not replace it with freehand or non-donor geometry.
+  - Focused compile and physics regressions prove the lower shooter corridor is owned by the donor wall pieces rather than a fat `outer-boundary` rail segment, and a charged launch clears the previous deterministic jam region.
+  - The slice records whether the launcher jam is fully solved by this geometry correction or whether `PR-0200` remains necessary for a broader donor plunger/release-path follow-up.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Closed as done, partial, on 2026-10-28 under TASK-SKRIPT-REP-0055 D6. The geometry split shipped; the Wall34 residual moved to TASK-SKRIPT-25-06-03. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -44,8 +38,8 @@ The launcher jam appears to be caused by a geometry overlap in the lower shooter
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-25-06-04 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -56,6 +50,10 @@ The task preserves the source implementation slice under its current story paren
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -77,6 +75,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 ## Stop Conditions
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                           |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Closed as partial on 2026-10-28: the Wall263 split shipped, the residual Wall34 bounce moved to TASK-SKRIPT-25-06-03 (TASK-SKRIPT-REP-0055 D6). |
 
 ## Lessons Learned
 
@@ -216,3 +220,9 @@ No specialist approval is asserted; parent review remains required.
 ## Implementation Review
 
 No closeout evidence is asserted in this candidate.
+
+## Closeout
+
+Closed as done, partial, on 2026-10-28 under TASK-SKRIPT-REP-0055 D1 and D6.
+
+TASK-SKRIPT-25-06-04 shipped the split of the donor Wall263 boundary into a `radius: 8` main rail (indices 0-44), a thin `radius: 2` right-descent rail (45-54) and a thin `radius: 2` shooter-corridor rail (54-60) with a render-only full outline, in commits 319735cb6 and 59a517af3 (`FOF/table/donor/donorPlayfieldMap.ts`, `FOF/table/spec/specPlayfieldGeometry.ts`, `compilePinballTable.donorGeometry.spec-impl.ts`). The lower-corridor pinch is relieved, but the user's browser inspection showed the ball still bounces off the exposed Wall34 top edge and does not enter gameplay; that residual moves to TASK-SKRIPT-25-06-03. The task text describes a trim to points 58..60 that is not in main (code keeps 54..60). Criterion 4 asks that a charged launch clears the previous jam region; the browser inspection did not show that, so that part of the criterion is not met here and is carried by TASK-SKRIPT-25-06-03.

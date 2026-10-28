@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "71a7b56f97cc891e80d2d303057c4e4515e5f3eee888f036868fefd97aa31f59",
+  "source_set_digest": "d4b9d4f61d1188fde2cfa0658cd92b30f02059db93e4dc3cf90ae65c11b1dc71",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2626,7 +2626,7 @@
       "type": "task",
       "title": "Swedish school domain allowlist for registration",
       "path": "docs/backlog/tasks/task-skript-02-06-01-swedish-school-domain-allowlist-for-registration.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-02-06",
       "owners": [
@@ -2635,13 +2635,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-02-06-01#closeout"
       }
     },
     {
@@ -2739,7 +2739,7 @@
       "type": "task",
       "title": "AI frontend: SRP refactor audit follow-ups (editor AI hotspots)",
       "path": "docs/backlog/tasks/task-skript-08-27-01-ai-frontend-srp-refactor-audit-follow-ups-editor-ai-hotspots.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-27",
       "owners": [
@@ -2748,13 +2748,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-08-27-01#closeout"
       }
     },
     {
@@ -3084,7 +3084,7 @@
       "type": "task",
       "title": "Script bank curation + group generator tool",
       "path": "docs/backlog/tasks/task-skript-14-33-01-script-bank-curation-group-generator-tool.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-14-33",
       "owners": [
@@ -3093,15 +3093,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-14-33-01#closeout"
       }
     },
     {
@@ -3270,7 +3268,7 @@
       "type": "task",
       "title": "Curated app: Reagent Prep Chef (implementation)",
       "path": "docs/backlog/tasks/task-skript-20-01-01-curated-app-reagent-prep-chef-implementation.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-20-01",
       "owners": [
@@ -3279,15 +3277,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-20-01-01#closeout"
       }
     },
     {
@@ -3479,7 +3475,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: bonus, jackpot, and ball-lifecycle rule state",
       "path": "docs/backlog/tasks/task-skript-25-05-01-flunk-out-frenzy-bonus-jackpot-and-ball-lifecycle-rule-state.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-05",
       "owners": [
@@ -3488,13 +3484,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-25-05-01#closeout"
       }
     },
     {
@@ -3502,7 +3498,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: flipper contact model and explicit launcher state",
       "path": "docs/backlog/tasks/task-skript-25-05-02-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-05",
       "owners": [
@@ -3511,13 +3507,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-25-05-02#closeout"
       }
     },
     {
@@ -3640,7 +3636,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: donor semantic representation and trigger-shape fidelity",
       "path": "docs/backlog/tasks/task-skript-25-06-02-flunk-out-frenzy-donor-semantic-representation-and-trigger-shape-fidelity.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3649,15 +3645,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-25-06-02#closeout"
       }
     },
     {
@@ -3688,7 +3682,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: shooter-corridor Wall263 de-overlap",
       "path": "docs/backlog/tasks/task-skript-25-06-04-flunk-out-frenzy-shooter-corridor-wall263-de-overlap.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3697,13 +3691,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-25-06-04#closeout"
       }
     },
     {
@@ -3897,7 +3891,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: launcher shortcut breach inventory and truth-gate audit",
       "path": "docs/backlog/tasks/task-skript-25-06-13-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-25-06",
       "owners": [
@@ -3906,13 +3900,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-25-06-13#closeout"
       }
     },
     {
@@ -4065,7 +4059,7 @@
       "type": "task",
       "title": "Klassrumskartan: class-list import drag-and-drop drop zone in create/edit modal",
       "path": "docs/backlog/tasks/task-skript-26-02-04-klassrumskartan-class-list-import-drag-and-drop-drop-zone-in-create-edit-modal.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-26-02",
       "owners": [
@@ -4074,13 +4068,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-26-02-04#closeout"
       }
     },
     {
@@ -4157,7 +4151,7 @@
       "type": "task",
       "title": "ST-26-06 share-link popover and bottom-sheet management",
       "path": "docs/backlog/tasks/task-skript-26-06-02-st-26-06-share-link-popover-and-bottom-sheet-management.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-26-06",
       "owners": [
@@ -4166,13 +4160,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-26-06-02#closeout"
       }
     },
     {
@@ -4251,7 +4245,7 @@
       "type": "task",
       "title": "Klassrumskartan: smart grouping v1 grouping history, live seating influence, and backend run contract",
       "path": "docs/backlog/tasks/task-skript-27-04-01-klassrumskartan-smart-grouping-v1-grouping-history-live-seating-influence-and-backend-run-contract.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-04",
       "owners": [
@@ -4260,13 +4254,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-27-04-01#closeout"
       }
     },
     {
@@ -4297,7 +4291,7 @@
       "type": "task",
       "title": "ST-SKRIPT-27-09: fixed-seat rule persistence and solver seeding",
       "path": "docs/backlog/tasks/task-skript-27-09-01-st-27-09-fixed-seat-rule-persistence-and-solver-seeding.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-09",
       "owners": [
@@ -4306,13 +4300,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-27-09-01#closeout"
       }
     },
     {
@@ -4320,7 +4314,7 @@
       "type": "task",
       "title": "ST-27-09: fixed-seat tool and classroom-view-first rules UX",
       "path": "docs/backlog/tasks/task-skript-27-09-02-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-09",
       "owners": [
@@ -4329,13 +4323,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-27-09-02#closeout"
       }
     },
     {
@@ -4412,7 +4406,7 @@
       "type": "task",
       "title": "ST-29-11: desktop-first planner toolbar priority and overflow hardening",
       "path": "docs/backlog/tasks/task-skript-29-11-01-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-29-11",
       "owners": [
@@ -4421,15 +4415,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-29-11-01#closeout"
       }
     },
     {
@@ -4483,7 +4475,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: carrier-role schema, observation-spine contract, and launcher-world ownership rules",
       "path": "docs/backlog/tasks/task-skript-33-01-01-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-33-01",
       "owners": [
@@ -4492,13 +4484,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-33-01-01#closeout"
       }
     },
     {
@@ -4575,7 +4567,7 @@
       "type": "task",
       "title": "ST-37-05 file naming/save/export protocol reference",
       "path": "docs/backlog/tasks/task-skript-37-05-01-st-37-05-file-naming-save-export-protocol-reference.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-37-05",
       "owners": [
@@ -4584,13 +4576,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-37-05-01#closeout"
       }
     },
     {
@@ -7998,7 +7990,7 @@
       "type": "task",
       "title": "Hemma incident log findings (2026-01-04 to 2026-01-06)",
       "path": "docs/backlog/tasks/task-skript-rep-0008-hemma-incident-log-findings-2026-01-04-to-2026-01-06.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8006,13 +7998,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0008#closeout"
       }
     },
     {
@@ -8152,7 +8144,7 @@
       "type": "task",
       "title": "Flunk-Out Frenzy: runtime lazy-load and game bundle splitting",
       "path": "docs/backlog/tasks/task-skript-rep-0015-flunk-out-frenzy-runtime-lazy-load-and-game-bundle-splitting.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8160,15 +8152,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_required",
-        "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "user closure 2026-07-31"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0015#closeout"
       }
     },
     {
@@ -8220,7 +8210,7 @@
       "type": "task",
       "title": "ST-07-07: public HTTP Dishka adapter and observability cutover",
       "path": "docs/backlog/tasks/task-skript-rep-0018-st-07-07-public-http-dishka-adapter-and-observability-cutover.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8228,13 +8218,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0018#closeout"
       }
     },
     {
@@ -8242,7 +8232,7 @@
       "type": "task",
       "title": "ST-07-07: HTTP route dependency cutover off hybrid Dishka inject",
       "path": "docs/backlog/tasks/task-skript-rep-0019-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8250,13 +8240,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0019#closeout"
       }
     },
     {
@@ -8264,7 +8254,7 @@
       "type": "task",
       "title": "ST-07-07: websocket cutover, hybrid compat retirement, and production proof",
       "path": "docs/backlog/tasks/task-skript-rep-0020-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8272,13 +8262,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0020#closeout"
       }
     },
     {
@@ -8286,7 +8276,7 @@
       "type": "task",
       "title": "ST-29-06 remediation: planner no-classroom root-cause hardening and error-boundary refactor",
       "path": "docs/backlog/tasks/task-skript-rep-0021-st-29-06-remediation-planner-no-classroom-root-cause-hardening-and-error-boundary-refactor.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8294,13 +8284,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0021#closeout"
       }
     },
     {
@@ -8978,7 +8968,7 @@
       "type": "task",
       "title": "The pre-push check runs directly on Hemma and refuses a push it cannot verify",
       "path": "docs/backlog/tasks/task-skript-rep-0051-the-pre-push-check-runs-directly-on-hemma-and-refuses-a-push-it-cannot-verify.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8988,7 +8978,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0051#closeout"
       }
     },
     {
