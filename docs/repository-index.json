@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "91b64d5be8092b251ee0590d0fc5c5253fa17f84c30365ea043325ac82f545a0",
+  "source_set_digest": "a4b5c07bb927841c66282dffa1cf40af69f7d0e7a8b907852f5d06d1ba0c97bb",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6078,6 +6078,25 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-11",
+      "type": "task",
+      "title": "Teachers put ordering questions inside a part, worth 1 point there",
+      "path": "docs/backlog/tasks/task-skript-39-06-11-teachers-put-ordering-questions-inside-a-part-worth-1-point-there.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
