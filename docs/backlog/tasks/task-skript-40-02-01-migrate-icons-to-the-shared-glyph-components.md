@@ -111,4 +111,6 @@ metric, baseline and budget before becoming a gate.
 - Production build, `pdm run fe-build` at 97563a81 and at `2826ef4e` with the same toolchain and configuration: all 151 chunks have the same raw size; gzip sizes differ by at most 0.01 kB.
 - Review: ruthless-reviewer `26c7f1d1` approved `06d396fc` (tranche 3) and `2826ef4e` with no findings.
 - Evidence: retained root `01a18445-144c-75be-95e2-6eff85c73786` (`evidence/build/`, `evidence/checks/`, `discovery/ruthless-reviewer/`).
-- Still owed before `done`: the Hemma staging walk of the exam course picker, the gap popover automatic values and the tutorial clip dialog; the repeat-sync no-diff proof, which runs after TASK-SKRIPT-40-04-26 syncs huleedu-integrated 0.1.37 (this branch stays at 0.1.36).
+- Merged to main as `1b2ce75c`, after TASK-SKRIPT-40-04-26 synced huleedu-integrated 0.1.37.
+- Repeat-sync proof 2026-10-28 at `1b2ce75c` (main, catalogue 0.1.37): `repository-governance-frontend-catalog design-system sync --consumer-root . --source-root ~/apps/skill-repository` (skill-repository `dabe730d`) exits 0 and leaves the worktree clean; `pdm run design-system-validate` exits 0. The `Shared frontend design-system validate` pre-commit hook is still configured in `.pre-commit-config.yaml`. Logs: retained root `evidence/checks/`.
+- Still owed before `done`: the Hemma staging walk of the exam course picker, the gap popover automatic values and the tutorial clip dialog, which waits for TASK-SKRIPT-REP-0052.
