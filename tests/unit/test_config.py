@@ -12,6 +12,7 @@ Relationships:
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -90,6 +91,7 @@ def test_non_production_allowed_hosts_include_containerized_dev_backend_alias() 
         {
             "localhost",
             "127.0.0.1",
+            "::1",
             "skriptoteket.hule.education",
             "skriptoteket_web",
             "skriptoteket-web",
@@ -148,3 +150,26 @@ def test_answer_key_model_defaults_to_luna_six_low() -> None:
     settings = Settings(_env_file=None)
 
     assert settings.LLM_ANSWER_KEY_MODEL == "gpt-6-luna"
+
+
+@pytest.mark.parametrize("loopback_host", ["localhost", "127.0.0.1", "::1"])
+def test_production_refuses_loopback_allowed_hosts(loopback_host: str) -> None:
+    with pytest.raises(ValidationError, match=re.escape(loopback_host)):
+        Settings(
+            _env_file=None,
+            ENVIRONMENT="production",
+            ALLOWED_HOSTS=f"skriptoteket.hule.education,{loopback_host}",
+        )
+
+
+@pytest.mark.parametrize("environment", ["staging", "development"])
+def test_non_production_keeps_loopback_allowed_hosts(environment: str) -> None:
+    settings = Settings(_env_file=None, ENVIRONMENT=environment)
+
+    assert {"localhost", "127.0.0.1", "::1"} <= settings.allowed_hosts
+
+
+def test_production_defaults_and_public_host_drop_loopback_entries() -> None:
+    settings = Settings(_env_file=None, ENVIRONMENT="production")
+
+    assert settings.allowed_hosts == frozenset({"skriptoteket.hule.education"})
