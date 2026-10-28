@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2a9e131efa05523a02092edc1190928ab99ac768c535dd29325be60627dbae10",
+  "source_set_digest": "e3ffea9f3e981e0403949377960286d27b7a940d88587d0815633e5f781d4302",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5995,7 +5995,7 @@
       "type": "task",
       "title": "Exam.net probe of an ordering question inside a part",
       "path": "docs/backlog/tasks/task-skript-39-06-09-exam-net-probe-of-an-ordering-question-inside-a-part.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -6006,7 +6006,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Probe package built from the 39-06-08 QTI writer with no writer change (branch codex/task-skript-39-06-09, 6fee3cfdd; Hemma .artifacts/probe-39-06-09/PROBE.md, SHA-256 c367f3c7). Imported by the Mac thread in the user's Edge 2026-10-28 as Exam.net exam 5395644 (Mac ~/Repos/Skriptoteket/.artifacts/probe-39-06-09/walk-record.md, screenshots in evidence/). Import passes; one task with the shared instruction once, a) ordering and b) Lucktext, no blank question. The ordering child imports as Matcha ihop with position numbers and the correct pairs, and the student draws pairing lines (no reorder control; numbers reshuffle per load). Grading is all-or-nothing (2 of 4 pairs right gives 0) and the children score independently. Points: the ordering child's 3 points import as the rule Alla rätt 1p, so the exam totals 2p, not 4."
       }
     },
     {
@@ -6030,6 +6034,25 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-11",
+      "type": "task",
+      "title": "Teachers put ordering questions inside a part, worth 1 point there",
+      "path": "docs/backlog/tasks/task-skript-39-06-11-teachers-put-ordering-questions-inside-a-part-worth-1-point-there.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
@@ -6472,7 +6495,7 @@
       "type": "task",
       "title": "A PDF without readable text stops with a message, and skipped pages are named",
       "path": "docs/backlog/tasks/task-skript-39-10-03-a-pdf-without-readable-text-stops-with-a-message-and-skipped-pages-are-named.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-10",
       "owners": [
@@ -6483,7 +6506,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Ruthless review raised F1 (medium): the skipped-pages note reached the exam only at final publication; repaired in 057c344e6 and admitted on focused proof without rereview. Merged 32d503c98; script callers repaired 8edbedd9b (0944a6e23). Mac staging walk at 0944a6e23 by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-39-10-03-0944a6e23/walk-record.md): checks 1-3 pass; the walk found the stop message cut with an ellipsis. Walk repair 7bba2bb8b (merged fac5f7e1c): a failed import's message wraps in full; fail-first spec 1 failed before, 25 tests passed after, fe-type-check and fe-lint exit 0 (retained evidence stop-message-wrap/). Closed on that unit proof without a re-walk, by orchestrator decision."
       }
     },
     {

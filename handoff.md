@@ -11,16 +11,13 @@
   - Staging runs `0944a6e23`. If `hemma-dev start` says "container with given ID already
     exists", an orphaned container process is still running: stop it (postgres with SIGINT),
     remove `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
-  - 39-10-03 `ready`, merged on main (`32d503c98`, caller fix `0944a6e23`): review F1
-    repaired on focused proof. Next: Mac walk (requested 2026-10-28), then closeout.
-  - 39-06-09 `ready`: probe junior builds an ordering-in-a-part QTI package in
-    `.artifacts/probe-39-06-09/`; then the Mac imports it into Exam.net with the user's
-    account, and the build task is planned from the result.
+  - 39-06-11 `ready`: teachers put ordering questions inside a part at 1 point
+    (user decision 2026-10-28, from the 39-06-09 Exam.net probe); ST-SKRIPT-39-06 stays open
+    until it is done.
   - TASK-SKRIPT-REP-0055 (backlog matches main after the 2026-10-28 audit): edits are on
     branch `codex/task-skript-rep-0055`, waiting for the parent's merge; its report lists
     the items left open.
-  - Exam stories waiting for story closeout: 39-06 (after 39-06-09), 39-10 (no proof-set
-    walk is on record).
+  - Story closeout waiting: 39-10 (every task is done; no proof-set walk is on record).
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips: tasks 01 and 02 `done`; guide Steg 1 corrected on main
@@ -40,6 +37,9 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-10-28 `done`: 39-10-03 (a failed import's message wraps in full, main `ec810361f`) and
+  39-06-09 (ordering inside a part probed in Exam.net, main `c0112dfdc`).
 
 - 2026-10-28 `done` (REP-0055 lead, branch `codex/task-skript-rep-0055`): 24 tasks closed
   on merge evidence, 10 tasks and ST-21-04 canceled, 25-06-14 partly canceled, 10 items
