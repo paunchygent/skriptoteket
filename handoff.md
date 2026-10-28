@@ -104,7 +104,7 @@
 ## Recent
 
 - 2026-10-28 `done`: TASK-SKRIPT-REP-0040 Sir Convert public-host retirement (rereview
-  `d97caf5b` approved, main `ced7971b`; env check in retained `01a18444`). User step: Namecheap CNAME deletion.
+  `d97caf5b` approved, main `ced7971b`; env check in retained `01a18444`). The user deleted the CNAME (NXDOMAIN).
 
 - 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
   `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); in production at `976d89b5b`.
