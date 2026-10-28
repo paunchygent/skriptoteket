@@ -149,7 +149,27 @@ class TestRequest:
             await harness.request(document, item_id="item_001")
 
         assert raised.value.code is ErrorCode.CONFLICT
-        assert raised.value.message == "Frågan har redan fått sitt nya facitförslag."
+        assert raised.value.message == "Frågan har redan fått ett nytt facitförslag."
+        assert raised.value.details == {"item_id": "item_001"}
+        assert harness.jobs.jobs == {}
+
+    async def test_a_spent_saved_retry_refuses_a_request_that_sends_offered(self) -> None:
+        harness = SuggestionHandlerHarness()
+        harness.seed_saved_head(
+            suggestion_item(item_id="item_001", sequence=1, retry=NativeAnswerKeyRetry.USED)
+        )
+        # The editor installed a step from before the retry's suggestion arrived, so
+        # its copy says offered and the question has no key.
+        document = suggestion_document(
+            harness.lineage_id,
+            suggestion_item(item_id="item_001", sequence=1, retry=NativeAnswerKeyRetry.OFFERED),
+        )
+
+        with pytest.raises(DomainError) as raised:
+            await harness.request(document, item_id="item_001")
+
+        assert raised.value.code is ErrorCode.CONFLICT
+        assert raised.value.message == "Frågan har redan fått ett nytt facitförslag."
         assert raised.value.details == {"item_id": "item_001"}
         assert harness.jobs.jobs == {}
 

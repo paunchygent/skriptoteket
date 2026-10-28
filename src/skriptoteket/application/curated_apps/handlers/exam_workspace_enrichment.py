@@ -12,7 +12,9 @@ Purpose:
     and a request repeating a queued or running job's exact content gets
     that job back instead of a second model call (TASK-SKRIPT-39-04-09).
     A single-question request on a question whose one answer-key retry is
-    spent is refused before any job lookup (TASK-SKRIPT-40-04-26 D4).
+    spent is refused before any job lookup; the saved head document decides
+    that together with the sent state, so an editor copy that still says
+    offered cannot spend the retry twice (TASK-SKRIPT-40-04-26 D4).
 
 Relationships:
     Reuses the ``exam_answer_key_enrichment_jobs`` queue through
@@ -40,10 +42,16 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceEnrichmentState,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
+    ExamWorkspaceDocumentStore,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemView,
     answer_key_item_view,
     answer_key_item_views,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    with_kept_answer_key_retry,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
@@ -57,6 +65,7 @@ from skriptoteket.protocols.exam_answer_key import (
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ExamWorkspaceSuggestionJobQueryProtocol,
 )
+from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
@@ -119,6 +128,8 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         suggestion_jobs: ExamWorkspaceSuggestionJobQueryProtocol,
         enrichment_enabled: bool,
         vault_files: VaultFileRepositoryProtocol,
+        store: ExamWorkspaceDocumentStore,
+        codec: ExamWorkspaceContainerCodecProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
@@ -127,6 +138,8 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         self._suggestion_jobs = suggestion_jobs
         self._enrichment_enabled = enrichment_enabled
         self._vault_files = vault_files
+        self._store = store
+        self._codec = codec
         self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
@@ -138,6 +151,12 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         lineage_id: UUID,
         request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
     ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
+        """Queue a suggestion job unless the question's one retry is spent.
+
+        The saved head document and the sent document are compared with
+        ``with_kept_answer_key_retry``, so the stricter retry state refuses the
+        request (TASK-SKRIPT-40-04-26 D4).
+        """
         document = request.document
         if document.document_id != lineage_id:
             raise DomainError(
@@ -150,14 +169,17 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         )
         if head is None:
             raise _document_not_found(lineage_id)
-        if request.item_id is not None and (
-            document.item_by_id(request.item_id).answer_key_retry is NativeAnswerKeyRetry.USED
-        ):
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Frågan har redan fått sitt nya facitförslag.",
-                details={"item_id": request.item_id},
-            )
+        if request.item_id is not None:
+            saved_document = self._codec.parse(
+                content=await self._store.load(actor=actor, vault_file=head)
+            ).document
+            kept = with_kept_answer_key_retry(document, saved_document)
+            if kept.item_by_id(request.item_id).answer_key_retry is NativeAnswerKeyRetry.USED:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="Frågan har redan fått ett nytt facitförslag.",
+                    details={"item_id": request.item_id},
+                )
         views = self._selected_views(request)
         if not self._enrichment_enabled or not views:
             return ExamWorkspaceAnswerKeySuggestionsResponse(

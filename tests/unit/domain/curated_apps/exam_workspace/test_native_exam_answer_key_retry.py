@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_change_type import (
     change_item_type,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    with_kept_answer_key_retry,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     replacement_item,
@@ -94,3 +97,67 @@ class TestRetrySurvivesRebuilds:
         replacement = replacement_item(original=original, produced=produced)
 
         assert replacement.answer_key_retry is NativeAnswerKeyRetry.USED
+
+
+class TestKeptRetry:
+    def test_a_spent_saved_retry_wins_over_an_offered_incoming_one(self) -> None:
+        saved = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.USED)
+        )
+        incoming = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.OFFERED)
+        )
+
+        kept = with_kept_answer_key_retry(incoming, saved)
+
+        assert kept.item_by_id("item_001").answer_key_retry is NativeAnswerKeyRetry.USED
+        # The incoming document is the editor's copy and is never mutated.
+        assert incoming.item_by_id("item_001").answer_key_retry is NativeAnswerKeyRetry.OFFERED
+
+    def test_an_offered_saved_retry_keeps_an_incoming_spent_one(self) -> None:
+        saved = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.OFFERED)
+        )
+        incoming = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.USED)
+        )
+
+        kept = with_kept_answer_key_retry(incoming, saved)
+
+        assert kept.item_by_id("item_001").answer_key_retry is NativeAnswerKeyRetry.USED
+
+    def test_an_offered_incoming_retry_saves_over_a_none_saved_one(self) -> None:
+        saved = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.NONE)
+        )
+        incoming = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.OFFERED)
+        )
+
+        kept = with_kept_answer_key_retry(incoming, saved)
+
+        assert kept.item_by_id("item_001").answer_key_retry is NativeAnswerKeyRetry.OFFERED
+
+    def test_a_question_the_saved_document_lacks_keeps_its_own_retry(self) -> None:
+        saved = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.USED)
+        )
+        incoming = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.NONE),
+            _unkeyed_item(sequence=2, item_id="item_002", retry=NativeAnswerKeyRetry.OFFERED),
+        )
+
+        kept = with_kept_answer_key_retry(incoming, saved)
+
+        assert kept.item_by_id("item_001").answer_key_retry is NativeAnswerKeyRetry.USED
+        assert kept.item_by_id("item_002").answer_key_retry is NativeAnswerKeyRetry.OFFERED
+
+    def test_identical_retries_return_the_incoming_document(self) -> None:
+        incoming = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.OFFERED)
+        )
+        saved = make_document(
+            _unkeyed_item(sequence=1, item_id="item_001", retry=NativeAnswerKeyRetry.OFFERED)
+        )
+
+        assert with_kept_answer_key_retry(incoming, saved) is incoming

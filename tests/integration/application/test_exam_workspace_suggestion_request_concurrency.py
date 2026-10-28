@@ -116,6 +116,8 @@ async def _request(
         suggestion_jobs=repository,
         enrichment_enabled=True,
         vault_files=harness.vault_files,
+        store=harness.store,
+        codec=harness.codec,
         uow=SQLAlchemyUnitOfWork(session),
         clock=FixedClock(NOW),
         id_generator=UUIDGenerator(),
