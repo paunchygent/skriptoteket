@@ -34,7 +34,7 @@ METHODS = (
 
 def load_reference(docx: Path) -> tuple[GoldExam, Any, Reference]:
     gold = GoldExam.model_validate_json((CORPUS / "gold" / f"{docx.stem}.json").read_text())
-    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes()).chunks
     return gold, chunks, project(docx.stem, gold, chunks)
 
 

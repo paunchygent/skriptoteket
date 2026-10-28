@@ -38,7 +38,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         if isinstance(payload, dict) and "document" in payload:
             payload = payload["document"]
         document = NativeExamDocument.model_validate(payload)
-        chunks = PythonDocxExamChunker().chunk(content=(_CORPUS / f"{args.exam}.docx").read_bytes())
+        corpus_docx = _CORPUS / f"{args.exam}.docx"
+        chunks = PythonDocxExamChunker().chunk(content=corpus_docx.read_bytes()).chunks
     except (OSError, ValueError, ValidationError) as error:
         parser.error(str(error))
     comparison = compare_native_exam(gold, document, [chunk.text for chunk in chunks])
