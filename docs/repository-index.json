@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ab3d72d58197c009278f100df644c096e993f5fce5b07296c362060633d2d1d6",
+  "source_set_digest": "40bc411fc6cf2ea492527865ea5b0495f6b38a66e1731421d7079c6613072118",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5383,7 +5383,7 @@
       "type": "task",
       "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
       "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5394,7 +5394,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Review 22a3fefe (Pi, at 035fd09a) returned changes_requested with two medium findings; the Hemma orchestrator admitted F1 (repaired by ff06a2ea) and F2 (cleared by merging the 39-04-19 split) on focused proof on 2026-10-19. Merged to main as f7eeada5. The K7 staging walk at fd2d911c, which contains f7eeada5 (TASK-SKRIPT-40-04-12, closed by the user 2026-10-22; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md), found no line with only \"/\" under omprov Fråga 1c in either the student PDF or the PDF med facit. The Hemma orchestrator approved closure on 2026-10-28."
       }
     },
     {

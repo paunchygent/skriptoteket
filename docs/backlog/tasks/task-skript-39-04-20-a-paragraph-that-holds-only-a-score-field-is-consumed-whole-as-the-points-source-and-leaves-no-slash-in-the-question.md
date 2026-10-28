@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Review 22a3fefe (Pi, at 035fd09a) returned changes_requested with two medium findings; the Hemma orchestrator admitted F1 (repaired by ff06a2ea) and F2 (cleared by merging the 39-04-19 split) on focused proof on 2026-10-19. Merged to main as f7eeada5. The K7 staging walk at fd2d911c, which contains f7eeada5 (TASK-SKRIPT-40-04-12, closed by the user 2026-10-22; Mac .artifacts/staging-walk-owed-2026-10-22/walk-record.md), found no line with only "/" under omprov Fråga 1c in either the student PDF or the PDF med facit. The Hemma orchestrator approved closure on 2026-10-28.'
 task_kind: story
 acceptance_criteria:
   - A source line that holds only a score field ("/N p", with optional blank space or leading underscores) is consumed whole as the item's points source and leaves no text in the item; a score field after question text and a slash used elsewhere stay as today; the points value is unchanged
@@ -159,3 +163,10 @@ changes. The user accepted these consequences (Q3 = A, 2026-10-19); D7 records t
 
 - Merged to main as `f7eeada5` (2026-10-19); the user confirmed the Q3 counts. Review `22a3fefe` findings F1-F2 were admitted on focused proof. The "Waiting on" line above is resolved.
 - Owed: a staging check that the omprov items print no "/" line (shared with TASK-SKRIPT-40-04-12 K7), then closeout.
+
+### Closeout 2026-10-28 (Hemma housekeeping lead)
+
+- The owed staging check is the K7 walk of TASK-SKRIPT-40-04-12 at `fd2d911c`, which
+  contains `f7eeada5`: neither omprov PDF prints a line with only "/" under Fråga 1c.
+- Branch `codex/task-skript-39-04-score-field-remote` is fully merged into origin/main
+  and has no worktree. Closed by the Hemma orchestrator's approval on 2026-10-28.
