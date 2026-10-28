@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-07-31'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Label fix a503557df (merged 40d8fc931): the share trigger reads Dela länk (fail-first 3 failed, 3 passed). Mac staging walk at 40d8fc931 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-26-06-01-40d8fc931/walk-record.md): create, anonymous open (no /api/ calls, no-store, noindex), revoke and reopen pass for grouping and seating; the 410 page was unstyled. Repair 65689d400 (merged d0064b1ce): the unavailable page uses the share stylesheet and both titles use an en dash (fail-first unavailable and title tests failed, 33 passed after). Re-walk at d0064b1ce by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-d0064b1ce/walk-record.md): A1 create/open/revoke, A2 styled 410 page with the same text and no names, A3 en dash titles all pass. The earlier criteria were found holding on main by the 2026-10-28 audit (REP-0055).'
 story: ST-SKRIPT-26-06
 task_kind: story
 acceptance_criteria:
@@ -27,7 +31,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D4): the share trigger in the Klassrumskartan export menu reads `Dela länk`. On main the trigger reads `Dela` (`PlannerShareExportPanel.vue:318`). This task stays open until the code change lands in its own task.
+Decision 2026-10-28 (TASK-SKRIPT-REP-0055 D4): the share trigger in the Klassrumskartan export menu reads `Dela länk`. The trigger reads `Dela länk` on main since a503557df.
 
 ## Context
 

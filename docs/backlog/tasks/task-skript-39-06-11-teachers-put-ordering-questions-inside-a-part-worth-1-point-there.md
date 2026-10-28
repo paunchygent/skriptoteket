@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Lead 48796700 (backend 3b255f347, frontend 79451500b, copy 413c8d633; fail-first 13 backend tests failed before; exam suites 2974 passed, exam-workspace Vitest 2570 passed). Independent ruthless review ac6ae824 approved with no findings, binding 413c8d633. Merged 4f87a89a9. Mac staging walk at d0064b1ce 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-d0064b1ce/walk-record.md): Ordna in the part add menu with the locked 1 p, note and tooltip; a 3 p standalone moved in becomes 1 p with one undo and redo; retype to Ordna gives 1 p; the points row fits at 1366 px with preview, 1000 px and 375 px; the Mac''s own Exam.net import (exam 5395749) shows Matcha ihop with Alla rätt 1p and a 4p total equal to the workspace; PDF and DOCX print 1 p and Totalt 4 poäng.'
 task_kind: story
 acceptance_criteria:
   - A teacher adds an ordering question inside a part or moves one into a part, and it is saved there worth 1 point

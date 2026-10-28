@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5b44a6f3e9b83e1866c8a36c028a1dc5c77df2282b0252d523099b087c6dbafc",
+  "source_set_digest": "47f5789bef3035d7999f8e586a4a9aeba70dd40a290e2156ec20dd0458226153",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4082,7 +4082,7 @@
       "type": "task",
       "title": "ST-26-06 authenticated Klassrumskartan shareable HTML/CSS export links",
       "path": "docs/backlog/tasks/task-skript-26-06-01-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-26-06",
       "owners": [
@@ -4093,7 +4093,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Label fix a503557df (merged 40d8fc931): the share trigger reads Dela länk (fail-first 3 failed, 3 passed). Mac staging walk at 40d8fc931 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-26-06-01-40d8fc931/walk-record.md): create, anonymous open (no /api/ calls, no-store, noindex), revoke and reopen pass for grouping and seating; the 410 page was unstyled. Repair 65689d400 (merged d0064b1ce): the unavailable page uses the share stylesheet and both titles use an en dash (fail-first unavailable and title tests failed, 33 passed after). Re-walk at d0064b1ce by the Mac thread 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-d0064b1ce/walk-record.md): A1 create/open/revoke, A2 styled 410 page with the same text and no names, A3 en dash titles all pass. The earlier criteria were found holding on main by the 2026-10-28 audit (REP-0055)."
       }
     },
     {
@@ -6007,7 +6011,7 @@
       "type": "task",
       "title": "Teachers put ordering questions inside a part, worth 1 point there",
       "path": "docs/backlog/tasks/task-skript-39-06-11-teachers-put-ordering-questions-inside-a-part-worth-1-point-there.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -6018,7 +6022,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-28",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Lead 48796700 (backend 3b255f347, frontend 79451500b, copy 413c8d633; fail-first 13 backend tests failed before; exam suites 2974 passed, exam-workspace Vitest 2570 passed). Independent ruthless review ac6ae824 approved with no findings, binding 413c8d633. Merged 4f87a89a9. Mac staging walk at d0064b1ce 2026-10-28 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-d0064b1ce/walk-record.md): Ordna in the part add menu with the locked 1 p, note and tooltip; a 3 p standalone moved in becomes 1 p with one undo and redo; retype to Ordna gives 1 p; the points row fits at 1366 px with preview, 1000 px and 375 px; the Mac's own Exam.net import (exam 5395749) shows Matcha ihop with Alla rätt 1p and a 4p total equal to the workspace; PDF and DOCX print 1 p and Totalt 4 poäng."
       }
     },
     {
