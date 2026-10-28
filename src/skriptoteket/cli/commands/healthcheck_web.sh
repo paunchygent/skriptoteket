@@ -8,9 +8,19 @@ if [ -z "${http_proxy+x}" ] && [ -z "${REQUEST_METHOD+x}" ]; then
 fi
 # urllib does not use curl's catch-all proxy variables.
 unset ALL_PROXY all_proxy
+# The optional second argument sets the Host header. Production refuses
+# loopback hosts (TASK-SKRIPT-REP-0055 D5), so its probe names the public host
+# while still connecting over loopback inside the container.
+url=${1:-http://localhost:8000/healthz}
+host_header=${2-}
+if [ -n "$host_header" ]; then
+    set -- -H "Host: ${host_header}"
+else
+    set --
+fi
 status=$(curl --silent --fail --location --max-redirs 10 --max-time 10 \
     --output /dev/null --write-out '%{http_code}' \
-    "${1:-http://localhost:8000/healthz}") || exit 1
+    "$@" "${url}") || exit 1
 case "$status" in
     2??) exit 0 ;;
     *) exit 1 ;;

@@ -55,11 +55,15 @@ leftmost `X-Forwarded-For` entry as the client. The app reads only the direct
 peer uvicorn resolved and never consults forwarding headers.
 
 ```dotenv
-ALLOWED_HOSTS=localhost,127.0.0.1,::1,skriptoteket.hule.education
+ALLOWED_HOSTS=skriptoteket.hule.education
 TRUSTED_PROXY_CIDRS=<exact-nginx-proxy-cidr>
 HEALTHZ_DETAILED_RESPONSE=false
 METRICS_IDENTITY_GAUGES_ENABLED=false
 ```
+
+Production startup refuses `ALLOWED_HOSTS` entries `localhost`, `127.0.0.1` and
+`::1`; staging and development add them automatically. In-container loopback
+probes therefore name the public host through `Host: skriptoteket.hule.education`.
 
 Do not use a broad fallback for `TRUSTED_PROXY_CIDRS`; rediscover the current proxy IP when
 `nginx-proxy` or `hule-network` changes:
@@ -75,9 +79,9 @@ Use both the public edge and the in-container view after deploy:
 ```bash
 ssh hemma /bin/bash -s <<'EOF'
 set -euo pipefail
-sudo docker exec skriptoteket-web curl -sS http://127.0.0.1:8000/healthz
+sudo docker exec skriptoteket-web curl -sS -H 'Host: skriptoteket.hule.education' http://127.0.0.1:8000/healthz
 printf '\n---\n'
-sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
+sudo docker exec skriptoteket-web /bin/sh -lc "curl -sS -H 'Host: skriptoteket.hule.education' http://127.0.0.1:8000/metrics | rg 'skriptoteket_users_by_role|skriptoteket_active_sessions' || true"
 EOF
 
 curl -sS -D - -o /dev/null https://skriptoteket.hule.education/docs

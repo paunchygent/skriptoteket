@@ -13,7 +13,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
+import uvicorn
 import yaml
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 ROOT = Path(__file__).resolve().parents[3]
 COMMANDS = ROOT / "src/skriptoteket/cli/commands"
@@ -51,6 +54,37 @@ def server():
         thread.join()
 
 
+@contextmanager
+def recording_server():
+    """Local HTTP server that records the `Host` header of every request."""
+    recorded: list[str] = []
+
+    class RecordingHandler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            recorded.append(self.headers.get("Host", ""))
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, *args) -> None:
+            pass
+
+    instance = ThreadingHTTPServer(("127.0.0.1", 0), RecordingHandler)
+    thread = threading.Thread(target=instance.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield instance.server_address[1], recorded
+    finally:
+        instance.shutdown()
+        instance.server_close()
+        thread.join()
+
+
+def healthcheck_script(tmp_path: Path, name: str) -> Path:
+    script = tmp_path / name
+    script.write_text((COMMANDS / "healthcheck_web.sh").read_text())
+    return script
+
+
 @pytest.mark.parametrize(
     ("endpoint", "success"),
     [
@@ -74,6 +108,72 @@ def test_web_http_contract(tmp_path: Path, endpoint: str, success: bool) -> None
         result = subprocess.run(["/bin/sh", str(script)], capture_output=True, timeout=2)
     assert (result.returncode == 0) is success
     assert result.stdout == b""
+
+
+def test_web_healthcheck_sends_the_configured_allowed_host(tmp_path: Path) -> None:
+    """Production refuses loopback hosts, so the probe must name the public host."""
+    with recording_server() as (port, recorded):
+        result = subprocess.run(
+            [
+                "/bin/sh",
+                str(healthcheck_script(tmp_path, "host-web.sh")),
+                f"http://127.0.0.1:{port}/healthz/live",
+                "skriptoteket.hule.education",
+            ],
+            capture_output=True,
+            timeout=20,
+        )
+
+    assert result.returncode == 0
+    assert recorded == ["skriptoteket.hule.education"]
+
+
+def test_production_host_gate_accepts_the_healthcheck_request(tmp_path: Path) -> None:
+    """The production probe passes the real TrustedHostMiddleware; a loopback probe does not.
+
+    Serves a minimal liveness app behind `TrustedHostMiddleware` with the
+    production allowed host, then runs the shipped healthcheck script against
+    it with and without the allowed host.
+    """
+
+    async def liveness(scope: Scope, receive: Receive, send: Send) -> None:
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 200,
+                "headers": [(b"content-type", b"application/json")],
+            }
+        )
+        await send({"type": "http.response.body", "body": b'{"status":"ok"}'})
+
+    gate: ASGIApp = TrustedHostMiddleware(liveness, allowed_hosts=["skriptoteket.hule.education"])
+    config = uvicorn.Config(
+        app=gate, host="127.0.0.1", port=0, log_level="error", lifespan="off", access_log=False
+    )
+    instance = uvicorn.Server(config)
+    thread = threading.Thread(target=instance.run, daemon=True)
+    thread.start()
+    deadline = time.monotonic() + 10
+    while not instance.started:
+        assert time.monotonic() < deadline, "uvicorn did not start"
+        time.sleep(0.01)
+
+    port = instance.servers[0].sockets[0].getsockname()[1]
+    script = healthcheck_script(tmp_path, "prod-web.sh")
+    url = f"http://127.0.0.1:{port}/healthz/live"
+    try:
+        allowed = subprocess.run(
+            ["/bin/sh", str(script), url, "skriptoteket.hule.education"],
+            capture_output=True,
+            timeout=20,
+        )
+        refused = subprocess.run(["/bin/sh", str(script), url], capture_output=True, timeout=20)
+    finally:
+        instance.should_exit = True
+        thread.join(timeout=10)
+
+    assert allowed.returncode == 0
+    assert refused.returncode == 1
 
 
 def executable(path: Path, body: str) -> None:
@@ -247,18 +347,33 @@ def test_web_preserves_http_proxy_case_and_ignores_all_proxy(
 
 
 @pytest.mark.parametrize(
-    ("compose_name", "interval"),
-    [("compose.yaml", "30s"), ("compose.prod.yaml", "30s"), ("compose.hemma-dev.yaml", "15s")],
+    ("compose_name", "interval", "url", "host"),
+    [
+        ("compose.yaml", "30s", "http://localhost:8000/healthz/live", None),
+        ("compose.hemma-dev.yaml", "15s", "http://localhost:8000/healthz/live", None),
+        # Production refuses loopback allowed hosts, so its probe names the public host.
+        (
+            "compose.prod.yaml",
+            "30s",
+            "http://127.0.0.1:8000/healthz/live",
+            "skriptoteket.hule.education",
+        ),
+    ],
 )
-def test_recurring_web_checks_select_passive_liveness(compose_name: str, interval: str) -> None:
+def test_recurring_web_checks_select_passive_liveness(
+    compose_name: str, interval: str, url: str, host: str | None
+) -> None:
     compose = yaml.safe_load((ROOT / compose_name).read_text())
+    test_command = [
+        "CMD",
+        "/bin/sh",
+        "/app/src/skriptoteket/cli/commands/healthcheck_web.sh",
+        url,
+    ]
+    if host is not None:
+        test_command.append(host)
     assert compose["services"]["web"]["healthcheck"] == {
-        "test": [
-            "CMD",
-            "/bin/sh",
-            "/app/src/skriptoteket/cli/commands/healthcheck_web.sh",
-            "http://localhost:8000/healthz/live",
-        ],
+        "test": test_command,
         "interval": interval,
         "timeout": "10s",
         "retries": 3,

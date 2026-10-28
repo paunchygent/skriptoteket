@@ -28,7 +28,12 @@ _HOST_DEV_VAULT_ROOT = Path("/tmp/skriptoteket/vault")
 _CONTAINER_MEDIA_ROOT = Path("/var/lib/skriptoteket/media")
 _HOST_DEV_MEDIA_ROOT = Path("/tmp/skriptoteket/media")
 _DOCKER_HOST_ALIASES = frozenset({"host.docker.internal", "gateway.docker.internal"})
-_NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web", "skriptoteket-web"})
+# Loopback hosts are development and staging only; production refuses them at
+# startup (TASK-SKRIPT-REP-0055 D5).
+_LOOPBACK_ALLOWED_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
+_NON_PRODUCTION_ALLOWED_HOSTS = frozenset({"skriptoteket_web", "skriptoteket-web"}) | (
+    _LOOPBACK_ALLOWED_HOSTS
+)
 
 
 def _is_running_in_container() -> bool:
@@ -79,7 +84,7 @@ class Settings(BaseSettings):
     LOG_FORMAT: Literal["json", "console"] = "json"
 
     ENABLE_DOCS: bool | None = None
-    ALLOWED_HOSTS: str = "localhost,127.0.0.1,::1,skriptoteket.hule.education"
+    ALLOWED_HOSTS: str = "skriptoteket.hule.education"
     PUBLIC_APP_BASE_URL: str = "https://skriptoteket.hule.education"
     CURATED_APPS_PRODUCTION_ALLOWLIST: str = (
         "chemistry.reagent_prep_chef,documents.conversion_hub,classroom.group-seating-studio"
@@ -373,6 +378,23 @@ class Settings(BaseSettings):
         if self.ENABLE_DOCS is None:
             return self.ENVIRONMENT != "production"
         return self.ENABLE_DOCS
+
+    @model_validator(mode="after")
+    def _refuse_loopback_allowed_hosts_in_production(self) -> Settings:
+        if self.ENVIRONMENT != "production":
+            return self
+        refused = [
+            host
+            for host in _split_csv_values(self.ALLOWED_HOSTS)
+            if host in _LOOPBACK_ALLOWED_HOSTS
+        ]
+        if refused:
+            raise ValueError(
+                "Production ALLOWED_HOSTS must not contain loopback entries: "
+                f"{', '.join(refused)}. Public traffic reaches the app through the "
+                "canonical public host, so remove them from ALLOWED_HOSTS."
+            )
+        return self
 
     @model_validator(mode="after")
     def _normalize_host_dev_runtime(self) -> Settings:
