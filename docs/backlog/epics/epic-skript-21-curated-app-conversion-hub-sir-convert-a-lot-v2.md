@@ -4,24 +4,25 @@ id: EPIC-SKRIPT-21
 title: 'Curated app: Conversion Hub (Sir Convert-a-Lot v2)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
-outcome: Skriptoteket provides first-class conversion hub and exam-converter UI lanes
-  that route supported conversions through Sir Convert-a-Lot v2, with no production
-  dependence on the legacy html-to-pdf-preview tool script.
+outcome: Skriptoteket provides first-class conversion hub and exam-converter UI lanes that route supported conversions through Sir Convert-a-Lot v2, with no production dependence on the legacy html-to-pdf-preview tool script.
 retired_ids:
-- EPIC-21
+  - EPIC-21
+backlog_document_profile: contract-derived
 ---
 
+## Capability Contract
+
+The source record did not define a separate section for this package heading.
+
 ## Scope
+
 - Add a **Conversion Hub** curated app (bespoke-required) that exposes a complete UI for the set of
   conversions supported by Sir Convert-a-Lot v2.
 - Add an Exam Converter product lane under Conversion Hub for teacher-facing
@@ -45,7 +46,9 @@ retired_ids:
 - Migrate tests and remove production reliance on `html-to-pdf-preview`.
 - Define the same-host Sir Convert transport shape explicitly: Unix socket preferred, `127.0.0.1`
   HTTP fallback, no internal HTTPS default between co-located services.
+
 ### Out of scope
+
 - No new conversion engines inside Skriptoteket for historical generic
   Conversion Hub work. This is superseded for the teacher-facing Document
   Converter lane by `PR-0380`, which allows researched in-app simple conversion
@@ -59,7 +62,9 @@ retired_ids:
   Converter exception.
 - No public anonymous speech-to-text lane, no direct Sir Convert browser
   traffic, and no Skriptoteket-owned STT/diarization runtime.
+
 ### Dependencies
+
 - ADR-0066 (this epic's conversion strategy decision)
 - Current product lanes and Sir Convert/Skriptoteket ownership boundary:
   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
@@ -84,35 +89,53 @@ retired_ids:
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/stories/story-57-cross-repo-compact-answer-key-review-state-production-proof.md`
 
 ## Epic Contract
+
 The source record did not define a separate section for this package heading.
 
 ## ADR Coverage
+
 The source record did not define a separate section for this package heading.
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Stories
+
 ### Stories (ordered)
-- [ ] 1. [ST-21-01: Curated app: Conversion Hub (v1)](../stories/story-21-01-curated-app-conversion-hub-v1.md)
+
+- [ ] 1. [ST-21-01: Curated app: Conversion Hub (v1)](../stories/story-21-01-curated-app-conversion-hub-v1.md) (canceled 2026-10-28)
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
-- [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md)
-- [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md)
+- [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md) (canceled 2026-10-28)
+- [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md) (canceled 2026-10-28)
 - [x] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
 - [x] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 - [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
-- [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md)
+- [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md) (canceled)
 - [x] 11. [ST-21-11: Cross-repo compact answer-key review state production proof](../stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md)
 
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                                                                                                                     |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | ST-21-01 and ST-21-03 are canceled (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D5), and ST-21-04 and ST-21-10 are canceled stories; the Stories list and the notes mark each as canceled in place and delete no link (TASK-SKRIPT-REP-0056 D6). The epic status is unchanged. |
+
 ## Epic Verification Plan
+
 The source record did not define a separate section for this package heading.
 
 ## Exceptions And Follow-Ups
+
 The source record did not define a separate section for this package heading.
 
 ## Risks
+
 - External dependency risk (Sir Convert-a-Lot availability/latency):
   mitigate with timeouts, clear UI progress, and deterministic error surfaces.
 - Ownership/auth drift if the product keeps treating upstream job ids as the visible boundary:
@@ -132,13 +155,15 @@ The source record did not define a separate section for this package heading.
   model/runtime work on remote Sir Convert compute.
 
 ## Notes
+
 ### Implementation Summary (as of 2026-05-13)
+
 - PR-0063 (docs planning scaffold): done
 - PR-0064 (backend v2 client + curated app API surface): done
 - PR-0148 (local job ledger + owned status/download boundary): done
 - PR-0065 (SPA bespoke UI): pending after the local-ledger boundary lands
 - PR-0066 (migrate tests + retire html-to-pdf-preview): pending
-- ST-21-03 (Exam Converter public/authenticated lanes): in progress; `ADR-0085`
+- ST-21-03 (Exam Converter public/authenticated lanes): canceled 2026-10-28 (was in progress); `ADR-0085`
   accepts the bounded public Exam Converter exception, and PR-0319 now freezes
   the scoped public-capability registry/profile and route contract before
   public runtime conversion ships.
@@ -150,8 +175,7 @@ The source record did not define a separate section for this package heading.
   proxy target, and stricter blocked-artifact parser semantics.
 - PR-0319 (public Exam Converter profile and route-contract freeze): done;
   `documents.conversion_hub` remains app-wide `authenticated_only`, exposes
-  only `public_capabilities: [{ scope: "exam_converter", profile:
-  "public_browser_runtime" }]`, freezes
+  only `public_capabilities: [{ scope: "exam_converter", profile: "public_browser_runtime" }]`, freezes
   `/public/apps/documents.conversion_hub/exam-converter` and
   `/api/v1/public/apps/documents.conversion_hub/exam-converter`, and ships no
   public runtime conversion behavior. Retained review `REV-PR-0319` is
@@ -212,7 +236,7 @@ The source record did not define a separate section for this package heading.
   gap/open-cloze, and item-text corrections, projects transaction-returned
   effective state, keeps matching blocked, and does not claim durable
   correction-session persistence.
-- ST-21-04 (durable teacher correction sessions): ready after accepted
+- ST-21-04 (durable teacher correction sessions): canceled 2026-10-28, earlier ready after accepted
   `ADR-0087` and approved `REV-ST-21-04`. Implementation is split into ordered
   PR-sized slices: `PR-0333` backend aggregate/persistence, `PR-0334`
   API/types, `PR-0335` replay orchestration, `PR-0336` frontend readback, and
@@ -280,7 +304,7 @@ The source record did not define a separate section for this package heading.
   remediated by `PR-0325`, and the remaining forward direction is governed by
   `ST-21-10`, `PR-0356`, and `PR-0357` rather than by reopening the old
   optional-result/early-target proof lane.
-- `ST-21-10` is ready as the next Exam Converter product-direction follow-up:
+- `ST-21-10` (canceled) was ready as the next Exam Converter product-direction follow-up:
   current intake should require only the governed source `.dxe` file, rely on
   LLM answer-key enrichment plus teacher review instead of optional marked
   exams, hide early target selection, and treat PDF/QTI/future DOCX as
@@ -301,10 +325,13 @@ The source record did not define a separate section for this package heading.
   into Skriptoteket.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Epic Closeout Review
+
 The source record did not define a separate section for this package heading.

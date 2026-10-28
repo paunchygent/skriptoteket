@@ -4,26 +4,25 @@ id: TASK-SKRIPT-37-05-03
 title: ST-37-05 shared filename editing UI primitives
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: blocked
-readiness_review:
-  record: inline
-  status: not_started
+status: ready
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-37-05
 task_kind: story
 acceptance_criteria:
-- Given a teacher can name an export, when the filename editor renders, then the editable
-  stem and protected extension are visually distinct and validated before action.
-- Given apps have different output purposes, when they adopt the primitive, then labels
-  and helper copy are app-owned while validation and extension behavior stay shared.
-- Given narrow screens and dense app workspaces, when the primitive is used, then
-  it does not create layout-heavy save dialogs or duplicate per-app controls.
+  - Given a teacher can name an export, when the filename editor renders, then the editable stem and protected extension are visually distinct and validated before action.
+  - Given apps have different output purposes, when they adopt the primitive, then labels and helper copy are app-owned while validation and extension behavior stay shared.
+  - Given narrow screens and dense app workspaces, when the primitive is used, then it does not create layout-heavy save dialogs or duplicate per-app controls.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Ready on 2026-10-28 (TASK-SKRIPT-REP-0056 D9). No blocker exists on main: the task's plan step 2 says only "Keep validation behavior compatible with the backend contract", which is compatibility and not consumption of TASK-SKRIPT-37-05-02's output. No shared filename-editing primitive exists yet; three per-app controls exist (`views/apps/document-converter/DocumentConverterResultActions.vue`, `views/apps/exam-workspace/ExamWorkspaceDetailsDrawer.vue`, `ExamWorkspaceSaveAsDialog.vue`).
 
 ## Context
 
@@ -51,6 +50,10 @@ filename intent to app actions.
 ## Contract Inputs
 
 No separate contract inputs were recorded in the source snapshot.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -91,6 +94,12 @@ Validation follows the focused test and verification material recorded above.
 ### Source: Rollback Plan
 
 Remove the shared primitive and keep app-specific controls unchanged.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Ready on 2026-10-28: no blocker exists on main (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D9); the Implementation Contract paragraph gives the evidence. |
 
 ## Lessons Learned
 

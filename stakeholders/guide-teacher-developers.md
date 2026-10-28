@@ -26,10 +26,10 @@ I Skriptoteket bygger du verktyg genom att beskriva vad de ska göra för en AI.
 
 Editorn är din verkstad. Den består av flera delar:
 
-* **Källkod (Mitten):** Här ligger själva "motorn" (Python-koden).
-* **Inställningar & Input (Höger):** Här bestämmer du vilka knappar och fält användaren ska se.
-* **Förhandsgranskning (Botten/Höger):** Här testkör du ditt verktyg ("Sandbox").
-* **Redigeringsförslag (Vänster/Botten):** Din inbyggda AI-assistent för att göra ändringar.
+- **Källkod (Mitten):** Här ligger själva "motorn" (Python-koden).
+- **Inställningar & Input (Höger):** Här bestämmer du vilka knappar och fält användaren ska se.
+- **Förhandsgranskning (Botten/Höger):** Här testkör du ditt verktyg ("Sandbox").
+- **Redigeringsförslag (Vänster/Botten):** Din inbyggda AI-assistent för att göra ändringar.
 
 ### 3. Ta hjälp av en extern AI (ChatGPT/Claude)
 
@@ -39,17 +39,17 @@ För att få en flygande start använder vi en extern AI-tjänst (som ChatGPT el
 2. Kopiera **System-prompten** (se nedan) och klistra in den först i chatten. Detta lär AI:n hur Skriptoteket fungerar.
 3. Använd **Mall för verktygsbeskrivning** (se nedan) för att beskriva ditt verktyg. Klistra in beskrivningen i chatten.
 4. AI:n kommer nu att generera tre delar:
-    * `source_code` (Python)
-    * `input_schema` (JSON)
-    * `settings_schema` (JSON)
+   - `source_code` (Python)
+   - `input_schema` (JSON)
+   - `settings_schema` (JSON)
 
 ### 4. Klistra in och kör
 
 1. Gå tillbaka till Skriptoteket-editorn.
 2. Kopiera koden från AI:n och klistra in i respektive fält:
-    * Python-koden -> **Källkod**
-    * Input-schemat -> **Input Schema** (under fliken Schema)
-    * Inställnings-schemat -> **Inställningar Schema**
+   - Python-koden -> **Källkod**
+   - Input-schemat -> **Input Schema** (under fliken Schema)
+   - Inställnings-schemat -> **Inställningar Schema**
 3. Klicka på **"Spara"** (diskett-ikonen).
 4. Klicka på **"Kör"** i förhandsgranskningen för att testa verktyget direkt.
 
@@ -101,7 +101,7 @@ def run_tool(input_dir, output_dir):
     }
 ```
 
----
+______________________________________________________________________
 
 ## Resurser för AI-assistenten
 
@@ -109,7 +109,7 @@ Här är de texter du behöver för att instruera en extern AI (som ChatGPT).
 
 ### System-prompt (Kopiera och klistra in detta FÖRST)
 
-```text
+````text
 Du är en expertutvecklare för plattformen "Skriptoteket". Din uppgift är att skriva kompletta, fungerande verktyg i
 Python baserat på användarens beskrivning.
 
@@ -137,27 +137,25 @@ Du ska alltid generera exakt tre kodblock, i denna ordning:
   "next_actions": [...], # Knappar för nästa steg
   "state_update": {"kind": "no_change"} # Hantering av sessionstillstånd
 }
-```
+````
 
 **UI-element** (läggs i `outputs`):
 
-* notice: `{"kind":"notice","level":"info|warning|error","message":"..."}`
-* markdown: `{"kind":"markdown","markdown":"..."}`
-* table: `{"kind":"table","title":"...", "columns":[{"key":"k","label":"K"}], "rows":[{"k":"v"}]}`
-* json: `{"kind":"json","title":"...", "value": {...}}`
-* html_sandboxed: `{"kind":"html_sandboxed","html":"<p>...</p>"}`
-* vega_lite: `{"kind":"vega_lite","spec": {...}}`
+- notice: `{"kind":"notice","level":"info|warning|error","message":"..."}`
+- markdown: `{"kind":"markdown","markdown":"..."}`
+- table: `{"kind":"table","title":"...", "columns":[{"key":"k","label":"K"}], "rows":[{"k":"v"}]}`
+- json: `{"kind":"json","title":"...", "value": {...}}`
+- html_sandboxed: `{"kind":"html_sandboxed","html":"<p>...</p>"}`
+- vega_lite: `{"kind":"vega_lite","spec": {...}}`
 
 ## Exempel på svar (tre block)
 
 ```python
 # 1. source_code
-import json
-import os
+from skriptoteket_toolkit import read_inputs
 
 def run_tool(input_dir: str, output_dir: str) -> dict:
-    inputs_raw = os.environ.get("SKRIPTOTEKET_INPUTS", "")
-    inputs = json.loads(inputs_raw) if inputs_raw.strip() else {}
+    inputs = read_inputs()
     name = inputs.get("namn", "Okänd")
 
     return {
@@ -197,7 +195,7 @@ Använd denna mall för att beskriva din idé så att AI:n förstår exakt vad d
 * (t.ex. Visa kommentaren som Markdown-text.)
 ```
 
----
+______________________________________________________________________
 
 ## Del 3: Receptsamling – Exempel från verkligheten
 
@@ -230,7 +228,7 @@ Här är ett exempel på hur ett riktigt behov i skolan kan översättas till en
 
 **Tips:** Om AI:n inte hittar rätt kolumner direkt, be den i "Redigeringsförslag" att: *"Lägg till sökordet 'kontakt' när du letar efter kolumner."*
 
----
+______________________________________________________________________
 
 ### Exempel: "Gruppgeneratorn"
 
@@ -283,7 +281,7 @@ I settings sparar du klasserna som JSON:
 ]
 ```
 
----
+______________________________________________________________________
 
 ### Exempel: "Lix-räknaren"
 
@@ -293,7 +291,7 @@ Här är ett exempel på hur du kan fylla i mallen för ett verktyg som räknar 
 
 **Input:**
 
-* Ett stort textfält (`text`) med etiketten "Klistra in text här".
+- Ett stort textfält (`text`) med etiketten "Klistra in text här".
 
 **Arbetsuppgift:**
 
@@ -305,5 +303,5 @@ Här är ett exempel på hur du kan fylla i mallen för ett verktyg som räknar 
 
 **Output:**
 
-* Visa LIX-värdet och klassificeringen som ett `notice`-output (`{"kind":"notice", ...}`).
-* Visa detaljerad statistik (antal ord, meningar, etc.) som en `table` (`{"kind":"table", ...}`).
+- Visa LIX-värdet och klassificeringen som ett `notice`-output (`{"kind":"notice", ...}`).
+- Visa detaljerad statistik (antal ord, meningar, etc.) som en `table` (`{"kind":"table", ...}`).

@@ -4,45 +4,33 @@ id: ST-SKRIPT-11-25
 title: SPA route-load performance and network-isolation audit
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 epic: EPIC-SKRIPT-11
 links:
   decisions:
-  - ADR-SKRIPT-0027
-  - ADR-SKRIPT-0028
-  - ADR-SKRIPT-0030
+    - ADR-SKRIPT-0027
+    - ADR-SKRIPT-0028
+    - ADR-SKRIPT-0030
 acceptance_criteria:
-- Given Skriptoteket now runs as one Vue/Vite SPA, when this story is executed, then
-  the team captures a production-style baseline for a representative route matrix
-  instead of relying on Vite/HMR timings or anecdotal spot checks.
-- Given route-load efficiency is the concern, when a route baseline is recorded, then
-  the evidence explicitly separates shared bootstrap traffic from route-owned fetches
-  and identifies duplicate API calls, non-route-owned chatter, large asset downloads,
-  and unnecessary JavaScript eagerly loaded into that route.
-- Given future cleanup work should be reviewable, when this story is completed, then
-  each audited route has a consistent evidence package covering request inventory,
-  transferred bytes, bundle/chunk ownership, and Core Web Vitals-oriented trace notes
-  rather than a single aggregate score.
-- Given the first implementation pass should avoid premature optimization, when follow-up
-  work is planned, then the audit output groups findings into over-fetch, over-load,
-  and over-chat buckets and sequences concrete remediation slices from measured waste
-  rather than intuition.
-- Given performance budgets can drift into guesswork, when this story is reviewed,
-  then the retained package defines how initial route budgets will be derived from
-  the first baseline rather than inventing arbitrary thresholds before the measurement
-  lane exists.
+  - Given Skriptoteket now runs as one Vue/Vite SPA, when this story is executed, then the team captures a production-style baseline for a representative route matrix instead of relying on Vite/HMR timings or anecdotal spot checks.
+  - Given route-load efficiency is the concern, when a route baseline is recorded, then the evidence explicitly separates shared bootstrap traffic from route-owned fetches and identifies duplicate API calls, non-route-owned chatter, large asset downloads, and unnecessary JavaScript eagerly loaded into that route.
+  - Given future cleanup work should be reviewable, when this story is completed, then each audited route has a consistent evidence package covering request inventory, transferred bytes, bundle/chunk ownership, and Core Web Vitals-oriented trace notes rather than a single aggregate score.
+  - Given the first implementation pass should avoid premature optimization, when follow-up work is planned, then the audit output groups findings into over-fetch, over-load, and over-chat buckets and sequences concrete remediation slices from measured waste rather than intuition.
+  - Given performance budgets can drift into guesswork, when this story is reviewed, then the retained package defines how initial route budgets will be derived from the first baseline rather than inventing arbitrary thresholds before the measurement lane exists.
 retired_ids:
-- ST-11-25
+  - ST-11-25
+backlog_document_profile: contract-derived
 ---
+
+## Slice Contract
+
+TASK-SKRIPT-11-25-01 and TASK-SKRIPT-11-25-03 are canceled, and the planned PR slices list marks each as canceled in place (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D6). TASK-SKRIPT-11-25-02 stays `ready`; the story status is unchanged.
 
 ## Context
 
@@ -88,6 +76,22 @@ The source does not provide a separate story contract section.
 - Unified landing shell baseline: [ST-11-21](story-11-21-unified-landing-page.md)
 - Frontend transition reference:
   [REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
+
+## Tasks
+
+- TASK-SKRIPT-11-25-01 (canceled)
+- TASK-SKRIPT-11-25-02 (ready)
+- TASK-SKRIPT-11-25-03 (canceled)
+
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The planned PR slices list marks the canceled tasks 11-25-01 and 11-25-03 as canceled in place and deletes no link (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D6). |
 
 ## Live Verification Plan
 
@@ -153,9 +157,9 @@ enforcement thresholds.
 
 ### Planned PR slices
 
-- [TASK-SKRIPT-11-25-01: ST-SKRIPT-11-25 Playwright tree normalization under scripts/playwright](../tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts-playwright.md)
+- [TASK-SKRIPT-11-25-01: ST-SKRIPT-11-25 Playwright tree normalization under scripts/playwright](../tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts-playwright.md) (canceled)
 - [TASK-SKRIPT-11-25-02: ST-SKRIPT-11-25 LHCI and bundle-visualizer toolchain wiring](../tasks/task-skript-11-25-02-st-11-25-lhci-and-bundle-visualizer-toolchain-wiring.md)
-- [TASK-SKRIPT-11-25-03: ST-SKRIPT-11-25 pilot route inventory and trace baselines](../tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md)
+- [TASK-SKRIPT-11-25-03: ST-SKRIPT-11-25 pilot route inventory and trace baselines](../tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md) (canceled)
 
 ### Source: Verification expectation
 
@@ -176,15 +180,15 @@ This story is about the audit contract, not the cleanup implementation.
 
 The route baseline should cover the minimum representative matrix below.
 
-| Route | User state | Why it belongs in the baseline |
-|------|------|------|
-| `/` | signed out | public landing baseline and cheapest shell |
-| `/` | signed in | auth-adaptive dashboard fan-out baseline |
-| `/browse` | signed in | catalog listing + filter query behavior |
-| `/public/apps/classroom.group-seating-studio` | public | heavy public curated-app bootstrap |
-| `/apps/classroom.group-seating-studio` | signed in | authenticated curated-app host baseline |
-| `/tools/:slug/run` | signed in | tool-runtime shell + form/bootstrap behavior |
-| `/admin/tools/:toolId` | contributor/admin | heavy editor/admin route and chunk boundary check |
+| Route                                         | User state        | Why it belongs in the baseline                    |
+| --------------------------------------------- | ----------------- | ------------------------------------------------- |
+| `/`                                           | signed out        | public landing baseline and cheapest shell        |
+| `/`                                           | signed in         | auth-adaptive dashboard fan-out baseline          |
+| `/browse`                                     | signed in         | catalog listing + filter query behavior           |
+| `/public/apps/classroom.group-seating-studio` | public            | heavy public curated-app bootstrap                |
+| `/apps/classroom.group-seating-studio`        | signed in         | authenticated curated-app host baseline           |
+| `/tools/:slug/run`                            | signed in         | tool-runtime shell + form/bootstrap behavior      |
+| `/admin/tools/:toolId`                        | contributor/admin | heavy editor/admin route and chunk boundary check |
 
 If a reviewer wants one extra route after the baseline is working, the next most
 valuable candidate is `/my-runs`.

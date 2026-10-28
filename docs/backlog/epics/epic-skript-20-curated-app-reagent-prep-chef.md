@@ -52,7 +52,7 @@ No separate contract inputs is stated in the source.
 
 ## Stories
 
-- [ST-20-01: Curated app — Reagent Prep Chef (v1)](../stories/story-20-01-curated-app-reagent-prep-chef.md)
+- [ST-20-01: Curated app — Reagent Prep Chef (v1)](../stories/story-20-01-curated-app-reagent-prep-chef.md) (done 2026-10-28)
 - [ST-SKRIPT-20-02: Curated app — Reagent Prep Chef — Riskbedömning + dokumentation (v1)](../stories/st-skript-20-02-curated-app-reagent-prep-chef-riskbed-mning-dokumentation-v1.md)
 - [ST-20-03: Curated app — Reagent Prep Chef — SDS corpus gap fill (ADR-0067)](../stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md)
 

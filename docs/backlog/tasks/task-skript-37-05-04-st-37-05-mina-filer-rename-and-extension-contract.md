@@ -4,29 +4,28 @@ id: TASK-SKRIPT-37-05-04
 title: ST-37-05 Mina filer rename and extension contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-37-05
 task_kind: story
 acceptance_criteria:
-- Given a teacher has a saved file, when they rename it in `Mina filer`, then only
-  the display filename changes and stored bytes/source references remain unchanged.
-- Given a teacher edits the name, when they omit or duplicate the extension, then
-  the system preserves exactly one safe extension for the stored content type.
-- Given the teacher renames a saved file to a filename already used by the same owner,
-  when the collision is detected, then rename is rejected with a named validation
-  error instead of silently overwriting or auto-disambiguating the record.
-- Given a saved file is not owned by the teacher, deleted, or missing, when rename
-  is attempted, then the backend rejects it as not found/forbidden.
+  - Given a teacher has a saved file, when they rename it in `Mina filer`, then only the display filename changes and stored bytes/source references remain unchanged.
+  - Given a teacher edits the name, when they omit or duplicate the extension, then the system preserves exactly one safe extension for the stored content type.
+  - Given the teacher renames a saved file to a filename already used by the same owner, when the collision is detected, then rename is rejected with a named validation error instead of silently overwriting or auto-disambiguating the record.
+  - Given a saved file is not owned by the teacher, deleted, or missing, when rename is attempted, then the backend rejects it as not found/forbidden.
+dependencies:
+  - TASK-SKRIPT-37-05-02
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Blocked on TASK-SKRIPT-37-05-02 (TASK-SKRIPT-REP-0056 D9). The plan reuses the shared contract: step 2 says "Reuse shared filename validation and extension policy" and step 3 says "Enforce the canonical rename-collision rule in the backend/API contract", and that contract does not exist on main until TASK-SKRIPT-37-05-02 is done. Part of this task is already on main: `rename_vault_file.py` renames only the display name and rejects a collision with `vault_name_in_use` (commit b3361de8e). It does not yet apply the shared validation: it does not normalize Unicode or reject control characters or reserved names, and it strips only the record's own extension. The Mina filer rename control for generic files is not built.
 
 ## Context
 
@@ -36,8 +35,8 @@ Saved file records need user-controlled names after save without letting display
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-37-05-04 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -48,6 +47,10 @@ The task preserves the source implementation slice under its current story paren
 
 - Source task/PR and audit-approved migration authority.
 - Current story or repository relationship in candidate frontmatter.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -69,6 +72,12 @@ Run the task-selected focused gates and repository docs validation after parent 
 ## Stop Conditions
 
 Stop for missing authority, unresolved identity/relationship, terminal ancestry, or scope expansion.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The task stays `blocked` on TASK-SKRIPT-37-05-02, which is named in `dependencies` (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D9); the Implementation Contract paragraph gives the evidence. |
 
 ## Lessons Learned
 

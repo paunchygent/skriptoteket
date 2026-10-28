@@ -4,21 +4,22 @@ id: EPIC-SKRIPT-14
 title: Admin tool authoring (draft-first workflow)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
-outcome: Admins can quickly create draft tools directly from /admin/tools, iterate
-  without contributor-only hoops, and publish only when slug and taxonomy are finalized.
+outcome: Admins can quickly create draft tools directly from /admin/tools, iterate without contributor-only hoops, and publish only when slug and taxonomy are finalized.
 retired_ids:
-- EPIC-14
+  - EPIC-14
+backlog_document_profile: contract-derived
 ---
+
+## Capability Contract
+
+The source record did not define a separate section for this package heading.
 
 ## Scope
 
@@ -58,6 +59,16 @@ The epic outcome is represented by the scope and stories recorded above.
 ## Stories
 
 No separate story list was recorded in the source snapshot.
+
+## Verification
+
+The source record did not define a separate section for this package heading.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | ST-SKRIPT-14-33 is marked done in the Stories list (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D5); the epic status is unchanged. |
 
 ## Epic Verification Plan
 
@@ -148,7 +159,7 @@ No separate story list was recorded in the source snapshot.
 - [ST-SKRIPT-14-29: Editor: Pro mode combined bundle view (tool.py + schemas)](../stories/story-14-29-editor-pro-mode-combined-bundle-view.md)
 - [ST-14-30: Editor: working copy persistence (IndexedDB) + checkpoints + restore](../stories/story-14-30-editor-working-copy-persistence-indexeddb.md)
 - [ST-SKRIPT-14-32: Editor: cohesion pass (panel language + input selectors across modes)](../stories/story-14-32-editor-cohesion-pass-input-selectors.md)
-- [ST-SKRIPT-14-33: Script bank curation + group generator tool](../stories/story-14-33-script-bank-curation-and-group-generator.md)
+- [ST-SKRIPT-14-33: Script bank curation + group generator tool](../stories/story-14-33-script-bank-curation-and-group-generator.md) (done 2026-10-28)
 - [ST-SKRIPT-14-34: Settings suggestions from tool runs](../stories/story-14-34-settings-suggestions-from-tool-runs.md)
 - [ST-SKRIPT-14-35: Tool datasets: per-user CRUD + picker](../stories/story-14-35-tool-datasets-crud-and-picker.md)
 - [ST-14-36: User file vault: reusable uploads + picker](../stories/story-14-36-user-file-vault-and-picker.md)

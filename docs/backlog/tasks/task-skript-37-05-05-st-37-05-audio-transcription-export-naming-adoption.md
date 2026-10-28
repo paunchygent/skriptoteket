@@ -4,29 +4,27 @@ id: TASK-SKRIPT-37-05-05
 title: ST-SKRIPT-37-05 Audio Transcription export naming adoption
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
-readiness_review:
-  record: inline
-  status: not_started
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-37-05
 task_kind: story
 acceptance_criteria:
-- Given a transcript export is generated, when TXT, Markdown, VTT, or SRT is downloaded
-  or saved, then the default filename includes source transcript provenance, the canonical
-  `Transkribering` output-purpose label, and exactly one correct extension.
-- Given the transcript export is producer-replay-owned, when naming is applied, then
-  Skriptoteket records teacher-facing name intent without taking browser or producer
-  artifact authority.
-- Given the teacher edits the filename stem before download or save, when the action
-  completes, then the selected format and extension remain consistent and the UI consumes
-  the final sanitized filename returned by the protected API.
+  - Given a transcript export is generated, when TXT, Markdown, VTT, or SRT is downloaded or saved, then the default filename includes source transcript provenance, the canonical `Transkribering` output-purpose label, and exactly one correct extension.
+  - Given the transcript export is producer-replay-owned, when naming is applied, then Skriptoteket records teacher-facing name intent without taking browser or producer artifact authority.
+  - Given the teacher edits the filename stem before download or save, when the action completes, then the selected format and extension remain consistent and the UI consumes the final sanitized filename returned by the protected API.
+dependencies:
+  - TASK-SKRIPT-37-05-02
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Blocked on TASK-SKRIPT-37-05-02 (TASK-SKRIPT-REP-0056 D9). Plan step 1 says "Map saved transcript source title and selected export format to the shared naming contract and canonical `Transkribering` label", and acceptance criterion 3 has the UI consume the final sanitized filename the protected API returns. That contract does not exist on main until TASK-SKRIPT-37-05-02 is done. Today the transcript download name is `transkript-<8 hex of the transcript id>.<ext>` (`handlers/conversion_hub_transcript_artifact_actions.py:363-368`) and the label `Transkribering` does not occur in `src/`.
 
 ## Context
 
@@ -46,6 +44,10 @@ Adopt the shared naming contract for Audio Transcription downloads and
 ## Contract Inputs
 
 The source does not provide a separate contract inputs section; no additional contract inputs is recorded.
+
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
 
 ## Plan
 
@@ -91,6 +93,12 @@ The source does not provide a separate validation section; no additional validat
 
 Revert transcript naming adoption and keep existing export behavior.
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                                     |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The task stays `blocked` on TASK-SKRIPT-37-05-02, which is named in `dependencies` (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D9); the Implementation Contract paragraph gives the evidence. |
+
 ## Lessons Learned
 
 The source does not provide a separate lessons learned section; no additional lessons learned is recorded.
@@ -100,8 +108,6 @@ The source does not provide a separate lessons learned section; no additional le
 The source does not provide a separate notes section; no additional notes is recorded.
 
 ### Source: PR-0394: ST-37-05 Audio Transcription Export Naming Adoption
-
-
 
 ### Source: Problem
 

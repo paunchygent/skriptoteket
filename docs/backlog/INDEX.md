@@ -5,7 +5,7 @@
 ## Counts
 
 - total | epic=41 | story=338 | task=0 | review=137
-- open | epic=21 | story=58 | task=0
+- open | epic=21 | story=54 | task=0
 
 ## Lookup
 
@@ -535,12 +535,12 @@
 - EPIC-SKRIPT-08 | [Contextual help (Hjälp) and onboarding](epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md) | stories=ready=10 | tasks=none
 - EPIC-SKRIPT-09 | [Security hardening for production deployment](epics/epic-skript-09-security-hardening-for-production-deployment.md) | stories=active=1, ready=2 | tasks=none
 - EPIC-SKRIPT-11 | [Full Vue/Vite SPA migration](epics/epic-skript-11-full-vue-vite-spa-migration.md) | stories=active=1, ready=1 | tasks=none
-- EPIC-SKRIPT-14 | [Admin tool authoring (draft-first workflow)](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | stories=active=1, ready=7 | tasks=none
+- EPIC-SKRIPT-14 | [Admin tool authoring (draft-first workflow)](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | stories=active=1, ready=6, done=1 | tasks=none
 - EPIC-SKRIPT-15 | [User Profile & Settings](epics/epic-skript-15-user-profile-settings.md) | stories=blocked=1 | tasks=none
 - EPIC-SKRIPT-16 | [Catalog discovery and personalization](epics/epic-skript-16-catalog-discovery-and-personalization.md) | stories=ready=1 | tasks=none
 - EPIC-SKRIPT-19 | [Runner I/O + file references foundations](epics/epic-skript-19-runner-i-o-file-references-foundations.md) | stories=ready=1 | tasks=none
-- EPIC-SKRIPT-20 | [Curated app: Reagent Prep Chef](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | stories=active=1, ready=2 | tasks=none
-- EPIC-SKRIPT-21 | [Curated app: Conversion Hub (Sir Convert-a-Lot v2)](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | stories=active=2, ready=1, canceled=2 | tasks=none
+- EPIC-SKRIPT-20 | [Curated app: Reagent Prep Chef](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | stories=active=1, ready=1, done=1 | tasks=none
+- EPIC-SKRIPT-21 | [Curated app: Conversion Hub (Sir Convert-a-Lot v2)](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | stories=ready=1, canceled=4 | tasks=none
 - EPIC-SKRIPT-25 | [Curated app family: competitive games foundations and Flunk-Out Frenzy](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | stories=active=2, ready=2 | tasks=none
 - EPIC-SKRIPT-26 | [Klassrumskartan — explicit exports and class-list import](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | stories=active=1, ready=4 | tasks=none
 - EPIC-SKRIPT-27 | [Klassrumskartan smart assignment v1](epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md) | stories=active=1, ready=2 | tasks=none
@@ -555,8 +555,6 @@
 - ST-SKRIPT-11-26 | [HuleEdu palette token refresh and semantic color split](stories/st-skript-11-26-huleedu-palette-token-refresh-and-semantic-color-split.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-32 | [Editor: cohesion pass (panel language + input selectors across modes)](stories/st-skript-14-32-editor-cohesion-pass-panel-language-input-selectors-across-modes.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-20-02 | [Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)](stories/st-skript-20-02-curated-app-reagent-prep-chef-riskbed-mning-dokumentation-v1.md) | epic=[EPIC-SKRIPT-20](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | tasks=none | depends_on=0 | dependents=1
-- ST-SKRIPT-21-01 | [Curated app: Conversion Hub (v1)](stories/st-skript-21-01-curated-app-conversion-hub-v1.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-21-03 | [Exam converter public and authenticated artifact lanes](stories/st-skript-21-03-exam-converter-public-and-authenticated-artifact-lanes.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-25-05 | [Flunk-Out Frenzy mechanics-port foundation](stories/st-skript-25-05-flunk-out-frenzy-mechanics-port-foundation.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-25-06 | [Flunk-Out Frenzy VPW donor topology and table-spec rebuild](stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md) | epic=[EPIC-SKRIPT-25](epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-26-07 | [Klassrumskartan share-link Teams preview thumbnails](stories/st-skript-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md) | epic=[EPIC-SKRIPT-26](epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md) | tasks=none | depends_on=0 | dependents=0
@@ -583,14 +581,12 @@
 - ST-SKRIPT-11-25 | [SPA route-load performance and network-isolation audit](stories/st-skript-11-25-spa-route-load-performance-and-network-isolation-audit.md) | epic=[EPIC-SKRIPT-11](epics/epic-skript-11-full-vue-vite-spa-migration.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-22 | [Tool run UX: conventions for progress + input file references](stories/st-skript-14-22-tool-run-ux-conventions-for-progress-input-file-references.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-29 | [Editor: Pro mode combined bundle view (tool.py + schemas)](stories/st-skript-14-29-editor-pro-mode-combined-bundle-view-tool-py-schemas.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-14-33 | [Script bank curation + group generator tool](stories/st-skript-14-33-script-bank-curation-group-generator-tool.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-34 | [Settings suggestions from tool runs](stories/st-skript-14-34-settings-suggestions-from-tool-runs.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-35 | [Tool datasets: per-user CRUD + picker](stories/st-skript-14-35-tool-datasets-per-user-crud-picker.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=1 | dependents=0
 - ST-SKRIPT-14-37 | [UI output: vega_lite charts (restricted, enabled for all tools)](stories/st-skript-14-37-ui-output-vega-lite-charts-restricted-enabled-for-all-tools.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-14-39 | [Cloudflare R2-backed Mina filer storage migration](stories/st-skript-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md) | epic=[EPIC-SKRIPT-14](epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-16-08 | [Catalog cleanup: curated-apps-only filter + final EPIC-16 review](stories/st-skript-16-08-catalog-cleanup-curated-apps-only-filter-final-epic-16-review.md) | epic=[EPIC-SKRIPT-16](epics/epic-skript-16-catalog-discovery-and-personalization.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-19-07 | [Story 003c: Skriptoteket thin adapter parity + scientific PDF workload validation](stories/st-skript-19-07-story-003c-skriptoteket-thin-adapter-parity-scientific-pdf-workload-validation.md) | epic=[EPIC-SKRIPT-19](epics/epic-skript-19-runner-i-o-file-references-foundations.md) | tasks=none | depends_on=0 | dependents=0
-- ST-SKRIPT-20-01 | [Curated app: Reagent Prep Chef (v1)](stories/st-skript-20-01-curated-app-reagent-prep-chef-v1.md) | epic=[EPIC-SKRIPT-20](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-20-03 | [Curated app: Reagent Prep Chef — SDS corpus gap fill (markdown-first)](stories/st-skript-20-03-curated-app-reagent-prep-chef-sds-corpus-gap-fill-markdown-first.md) | epic=[EPIC-SKRIPT-20](epics/epic-skript-20-curated-app-reagent-prep-chef.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-21-02 | [Migration: retire html-to-pdf-preview + update tests](stories/st-skript-21-02-migration-retire-html-to-pdf-preview-update-tests.md) | epic=[EPIC-SKRIPT-21](epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-22-01 | [Textbook corpus cleanup pipeline and manual restoration workflow](stories/st-skript-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md) | epic=[EPIC-SKRIPT-22](epics/epic-skript-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md) | tasks=none | depends_on=0 | dependents=0

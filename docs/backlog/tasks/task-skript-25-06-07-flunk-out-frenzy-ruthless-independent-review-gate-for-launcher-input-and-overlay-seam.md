@@ -1,49 +1,36 @@
 ---
 type: task
 id: TASK-SKRIPT-25-06-07
-title: 'Flunk-Out Frenzy: ruthless independent review gate for launcher input and
-  overlay seam'
+title: 'Flunk-Out Frenzy: ruthless independent review gate for launcher input and overlay seam'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0056 D1) to cancel this task: it exists only to review or prove the canceled TASK-SKRIPT-25-06-08; the Closeout section records what was dropped.'
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given this is an independent gate, when this task is complete, then the reviewer
-  is explicitly different from the plan/implementation author, review delegation is
-  disallowed for this gate, and self-approval is invalid.
-- 'Given current authoritative live browser truth reports that the plunger does not
-  move and has no visible launch effect, when this task is complete, then `approved`
-  is forbidden unless fresh live evidence overturns that finding by proving all of:
-  visible plunger pullback/release, visible ball response from that release, and `gate-passed`
-  semantics from real `sw16` exit; otherwise the only valid verdict is `changes_requested`.'
-- 'Given architect invariants are hard requirements, when this task is complete, then
-  the review explicitly checks and preserves: seam continuity `xy<=1/z<=1`, no helper
-  rails/freehand seam geometry, terminal-route-only `handoffVelocity` semantics, and
-  real `sw16`-exit gate semantics.'
-- Given launcher UX/input is the current risk, when this task is complete, then review
-  coverage explicitly proves that no gameplay overlay/HUD/settings layer intercepts
-  launcher pullback/release in active play, and that keyboard plus pointer launch
-  paths are checked under real focus states with overlays closed and reopened.
-- Given ruthless-review quality requirements, when this task is complete, then findings
-  are severity-ordered with file references, exact fixes, and proof requirements;
-  summary-only sign-off is invalid.
-- Given this gate must remain auditable, when this task is complete, then the final
-  verdict is recorded in a retained repo review artifact with reviewer identity and
-  evidence links, not only in ad hoc session notes.
+  - Given this is an independent gate, when this task is complete, then the reviewer is explicitly different from the plan/implementation author, review delegation is disallowed for this gate, and self-approval is invalid.
+  - 'Given current authoritative live browser truth reports that the plunger does not move and has no visible launch effect, when this task is complete, then `approved` is forbidden unless fresh live evidence overturns that finding by proving all of: visible plunger pullback/release, visible ball response from that release, and `gate-passed` semantics from real `sw16` exit; otherwise the only valid verdict is `changes_requested`.'
+  - 'Given architect invariants are hard requirements, when this task is complete, then the review explicitly checks and preserves: seam continuity `xy<=1/z<=1`, no helper rails/freehand seam geometry, terminal-route-only `handoffVelocity` semantics, and real `sw16`-exit gate semantics.'
+  - Given launcher UX/input is the current risk, when this task is complete, then review coverage explicitly proves that no gameplay overlay/HUD/settings layer intercepts launcher pullback/release in active play, and that keyboard plus pointer launch paths are checked under real focus states with overlays closed and reopened.
+  - Given ruthless-review quality requirements, when this task is complete, then findings are severity-ordered with file references, exact fixes, and proof requirements; summary-only sign-off is invalid.
+  - Given this gate must remain auditable, when this task is complete, then the final verdict is recorded in a retained repo review artifact with reviewer identity and evidence links, not only in ad hoc session notes.
+backlog_document_profile: contract-derived
 ---
 
-## Context
+## Implementation Contract
 
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0056 D1. The original contract below is kept as history; see Closeout.
+
+## Context
 
 The launcher seam architecture and compile/runtime contracts were tightened, but
 live user verification reports that the plunger still does not move or visibly
@@ -56,7 +43,6 @@ narrow deterministic tests while failing real UX/input behavior.
 
 ## Story Contract Slice
 
-
 Create an explicit independent ruthless-review gate for the launcher
 input/overlay plan and current seam behavior so implementation cannot proceed on
 assumptions. The reviewer must either approve with evidence or block with
@@ -66,8 +52,11 @@ actionable findings.
 
 No separate contract inputs is stated in the source.
 
-## Plan
+## Core Vertical And Performance
 
+The source record did not define a separate section for this package heading.
+
+## Plan
 
 - Prepare the review package for `PR-0200` launcher closure and current
   UX/input seam behavior, including:
@@ -98,7 +87,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/plungerLaneState.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
 - `pdm run fe-type-check`
 - `pdm run fe-build`
@@ -119,10 +107,15 @@ No separate validation is stated in the source.
 
 ## Stop Conditions
 
-
 - If the review gate is dropped, do not merge launcher-seam closure changes as
   “accepted”; revert task status to pending and keep implementation blocked
   until independent sign-off is restored.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0056 D1): the task exists only to review the canceled TASK-SKRIPT-25-06-08; the Closeout section names what was dropped. |
 
 ## Lessons Learned
 
@@ -133,7 +126,6 @@ No separate lessons learned is stated in the source.
 No separate notes is stated in the source.
 
 ### Source: Required review scope (files/contracts)
-
 
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/launcherChain3d.ts`
 - `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/physics/PhysicsWorld.ts`
@@ -149,7 +141,6 @@ No separate notes is stated in the source.
 
 ### Source: Non-goals
 
-
 - No scope expansion to whole-table architecture changes.
 - No tolerance relaxation (`xy<=1/z<=1` stays strict).
 - No helper rails, no freehand seam geometry, no synthetic gate-start events.
@@ -161,3 +152,9 @@ No review evidence is recorded in this migration candidate; the frontmatter gate
 ## Implementation Review
 
 No review evidence is recorded in this migration candidate; the frontmatter gate remains authoritative.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0056 D1.
+
+Canceled by the user's decision, because this task exists only to review the canceled TASK-SKRIPT-25-06-08 (launcher root-cause proof and input-lifecycle fix plan). The reviewer verdict, the retained review record and the live launch-matrix evidence this gate required were never recorded: `docs/backlog/reviews/review-epic-25-competitive-games-and-flunk-out-frenzy.md` has no section for this task (its PR-0204 record is `changes_requested` and its PR-0212 record is an audit), and the 2026-10-28 backlog audit found no `.artifacts/flunk-out-frenzy-live-launch-matrix/` directory. All of it is dropped. TASK-SKRIPT-25-06-09 depended on this task and is canceled in the same change.

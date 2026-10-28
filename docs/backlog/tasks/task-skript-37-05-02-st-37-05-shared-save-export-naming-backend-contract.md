@@ -4,38 +4,27 @@ id: TASK-SKRIPT-37-05-02
 title: ST-37-05 shared save/export naming backend contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: blocked
-readiness_review:
-  record: inline
-  status: not_started
+status: ready
 closeout_review:
   record: inline
   status: not_started
 story: ST-SKRIPT-37-05
 task_kind: story
 acceptance_criteria:
-- Given an app requests a generated output name, when it supplies source title, canonical
-  output purpose, extension, and authority shape, then a shared backend/domain service
-  returns a safe default filename without duplicated extensions.
-- Given the same owner saves the same generated output again, when the default visible
-  name would collide, then the backend creates a new saved file record with a system-disambiguated
-  final filename unless a reviewed app adapter declares and tests an update-in-place
-  exception.
-- Given a teacher edits a filename stem, when the backend validates it, then unsafe
-  characters, path traversal, empty names, unsupported extension changes, reserved
-  names, and shared max-length violations are rejected consistently after Unicode
-  normalization.
-- Given a saved output has source provenance, when `Mina filer` stores the record,
-  then display name and stable source reference remain separate fields or explicitly
-  separate concepts.
-- Given a protected save or download action completes, when the final filename is
-  emitted, then the backend/API returns or sets the sanitized final filename, extension,
-  and content type as the authoritative result instead of relying on browser-side
-  reconstruction.
+  - Given an app requests a generated output name, when it supplies source title, canonical output purpose, extension, and authority shape, then a shared backend/domain service returns a safe default filename without duplicated extensions.
+  - Given the same owner saves the same generated output again, when the default visible name would collide, then the backend creates a new saved file record with a system-disambiguated final filename unless a reviewed app adapter declares and tests an update-in-place exception.
+  - Given a teacher edits a filename stem, when the backend validates it, then unsafe characters, path traversal, empty names, unsupported extension changes, reserved names, and shared max-length violations are rejected consistently after Unicode normalization.
+  - Given a saved output has source provenance, when `Mina filer` stores the record, then display name and stable source reference remain separate fields or explicitly separate concepts.
+  - Given a protected save or download action completes, when the final filename is emitted, then the backend/API returns or sets the sanitized final filename, extension, and content type as the authoritative result instead of relying on browser-side reconstruction.
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Ready on 2026-10-28 (TASK-SKRIPT-REP-0056 D9). Its predecessor TASK-SKRIPT-37-05-01 is done: the shared file naming, save and export protocol reference is active and review REV-ST-37-05 is approved. No shared save/export filename service exists on main yet. The nearest code is the Document Converter only module `src/skriptoteket/application/curated_apps/document_converter_file_naming.py`, whose docstring says the shared contract is still pending extraction.
 
 ## Context
 
@@ -98,6 +87,10 @@ The source material below remains authoritative for this section.
 
 The source material below remains authoritative for this section.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 The source material below remains authoritative for this section.
@@ -117,6 +110,12 @@ Verification expectations remain in the retained source material below.
 ## Stop Conditions
 
 The source boundaries and recovery limits remain preserved below.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Ready on 2026-10-28: no blocker exists on main (orchestrator decision 2026-10-28, TASK-SKRIPT-REP-0056 D9); the Implementation Contract paragraph gives the evidence. |
 
 ## Lessons Learned
 

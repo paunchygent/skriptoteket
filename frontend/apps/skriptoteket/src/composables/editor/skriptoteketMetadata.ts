@@ -55,14 +55,14 @@ export const SKRIPTOTEKET_HELPER_DOCS: SkriptoteketHelperDoc[] = [
     exportId: "read_inputs",
     signature: "read_inputs() -> dict[str, JsonValue]",
     swedishDoc:
-      "Läser och parsar `SKRIPTOTEKET_INPUTS` (JSON dict). Returnerar `{}` om den saknas eller är trasig JSON.",
+      "Läser formulärvärdena (`inputs.values`) i `/work/request.json` som dict. Returnerar `{}` om de saknas eller filen är trasig.",
   },
   {
     moduleId: "skriptoteket_toolkit",
     exportId: "read_input_manifest",
     signature: 'read_input_manifest() -> dict[str, JsonValue]  # {"files": [...]}',
     swedishDoc:
-      "Läser `SKRIPTOTEKET_INPUT_MANIFEST` (JSON). Returnerar `{\"files\": []}` om den saknas eller är trasig JSON.",
+      "Läser filerna (`files`) i `/work/request.json` som `{\"files\": [...]}`. Returnerar `{\"files\": []}` om de saknas eller filen är trasig.",
   },
   {
     moduleId: "skriptoteket_toolkit",
@@ -76,7 +76,7 @@ export const SKRIPTOTEKET_HELPER_DOCS: SkriptoteketHelperDoc[] = [
     exportId: "read_action",
     signature: "read_action() -> ActionPayload | None",
     swedishDoc:
-      "Läser `SKRIPTOTEKET_ACTION` (för next_actions-körningar). Returnerar `None` om den saknas eller är felaktig.",
+      "Läser `action` i `/work/request.json` (för next_actions-körningar). Returnerar `None` om den saknas eller är felaktig.",
   },
   {
     moduleId: "skriptoteket_toolkit",

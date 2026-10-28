@@ -4,43 +4,36 @@ id: TASK-SKRIPT-25-06-09
 title: 'Flunk-Out Frenzy: plunger-strike root-cause proof and telemetry contract'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: ready
-readiness_review:
-  record: inline
-  status: not_started
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-28'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'The user decided on 2026-10-28 (TASK-SKRIPT-REP-0056 D1) to cancel this task: it exists only to review or prove the canceled TASK-SKRIPT-25-06-08; the Closeout section records what was dropped.'
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given live evidence remains authoritative, when this task is complete, then launcher
-  root-cause claims are backed by deterministic red tests plus retained telemetry
-  artifacts, not by implementation guesses.
-- Given production geometry/runtime behavior is frozen in this lane, when this task
-  is complete, then no donor path/topology edits are made and no launch-behavior tuning
-  is merged under this PR.
-- Given architect seam invariants are hard requirements, when this task is complete,
-  then strict seam continuity `xy<=1/z<=1`, no helper rails/freehand seam geometry,
-  terminal-route-only handoff semantics, and real `sw16` exit semantics remain unchanged.
-- Given user-reported inert launch is unresolved, when this task is complete, then
-  at least one deterministic red test fails on current code and encodes the observed
-  failure signature.
-- Given observability is currently insufficient, when this task is complete, then
-  launcher telemetry contract fields are explicit, typed, and captured in a retained
-  artifact for each launch matrix case.
-- Given governance requires review before implementation, when this task is complete,
-  then independent reviewer approval is recorded before any production geometry/runtime
-  behavior fixes begin.
+  - Given live evidence remains authoritative, when this task is complete, then launcher root-cause claims are backed by deterministic red tests plus retained telemetry artifacts, not by implementation guesses.
+  - Given production geometry/runtime behavior is frozen in this lane, when this task is complete, then no donor path/topology edits are made and no launch-behavior tuning is merged under this PR.
+  - Given architect seam invariants are hard requirements, when this task is complete, then strict seam continuity `xy<=1/z<=1`, no helper rails/freehand seam geometry, terminal-route-only handoff semantics, and real `sw16` exit semantics remain unchanged.
+  - Given user-reported inert launch is unresolved, when this task is complete, then at least one deterministic red test fails on current code and encodes the observed failure signature.
+  - Given observability is currently insufficient, when this task is complete, then launcher telemetry contract fields are explicit, typed, and captured in a retained artifact for each launch matrix case.
+  - Given governance requires review before implementation, when this task is complete, then independent reviewer approval is recorded before any production geometry/runtime behavior fixes begin.
 dependencies:
-- TASK-SKRIPT-25-06-03
-- TASK-SKRIPT-25-06-07
-- TASK-SKRIPT-25-06-08
-- ST-SKRIPT-25-06
+  - TASK-SKRIPT-25-06-03
+  - TASK-SKRIPT-25-06-07
+  - TASK-SKRIPT-25-06-08
+  - ST-SKRIPT-25-06
+backlog_document_profile: contract-derived
 ---
+
+## Implementation Contract
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0056 D1. The original contract below is kept as history; see Closeout.
 
 ## Context
 
@@ -60,11 +53,16 @@ The source does not provide a separate contract slice.
 
 The source does not record separate contract inputs.
 
+## Core Vertical And Performance
+
+The source record did not define a separate section for this package heading.
+
 ## Plan
 
 ### Source: Implementation plan (proof lane only)
 
 1. Add deterministic red test coverage for launch-effect contract:
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
@@ -98,6 +96,7 @@ The source does not record separate contract inputs.
      - relaunch
 
 2. Add launcher telemetry contract (non-behavioral observability):
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts`
@@ -129,6 +128,7 @@ The source does not record separate contract inputs.
      - `strike_and_route_accepted` when `strikeEvidencePresent = true` and route decision is `accepted`
 
 3. Add deterministic artifact contract for live matrix:
+
    - artifact path:
      - `.artifacts/flunk-out-frenzy-launcher-root-cause-proof/launch-root-cause-matrix.json`
    - each case record must include:
@@ -154,6 +154,7 @@ The source does not record separate contract inputs.
      - artifact parser/spec must hard-fail if `gate-passed` appears in case payloads
 
 4. Keep implementation blocked:
+
    - geometry/runtime behavior fixes start only after:
      - red baseline is proven
      - telemetry artifacts are retained
@@ -180,6 +181,7 @@ The source does not record separate contract inputs.
 ### Source: Implementation plan (proof lane only)
 
 1. Add deterministic red test coverage for launch-effect contract:
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
@@ -213,6 +215,7 @@ The source does not record separate contract inputs.
      - relaunch
 
 2. Add launcher telemetry contract (non-behavioral observability):
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts`
@@ -244,6 +247,7 @@ The source does not record separate contract inputs.
      - `strike_and_route_accepted` when `strikeEvidencePresent = true` and route decision is `accepted`
 
 3. Add deterministic artifact contract for live matrix:
+
    - artifact path:
      - `.artifacts/flunk-out-frenzy-launcher-root-cause-proof/launch-root-cause-matrix.json`
    - each case record must include:
@@ -269,6 +273,7 @@ The source does not record separate contract inputs.
      - artifact parser/spec must hard-fail if `gate-passed` appears in case payloads
 
 4. Keep implementation blocked:
+
    - geometry/runtime behavior fixes start only after:
      - red baseline is proven
      - telemetry artifacts are retained
@@ -323,6 +328,12 @@ Do not start production geometry/runtime behavior fixes if any remain true:
 - artifacts cannot explain why a release did not become launch movement
 - proof lane lacks independent reviewer approval
 
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Canceled on 2026-10-28 by the user's decision (TASK-SKRIPT-REP-0056 D1): the task exists only to prove the canceled TASK-SKRIPT-25-06-08; the Closeout section names what was dropped. |
+
 ## Lessons Learned
 
 ### Source: Current observed failure signature (authoritative baseline)
@@ -343,6 +354,7 @@ Do not start production geometry/runtime behavior fixes if any remain true:
 ### Source: Implementation plan (proof lane only)
 
 1. Add deterministic red test coverage for launch-effect contract:
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts`
@@ -376,6 +388,7 @@ Do not start production geometry/runtime behavior fixes if any remain true:
      - relaunch
 
 2. Add launcher telemetry contract (non-behavioral observability):
+
    - target surface:
      - `src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts`
      - `src/components/apps/flunk-out-frenzy/game/core/GameRuntime.ts`
@@ -407,6 +420,7 @@ Do not start production geometry/runtime behavior fixes if any remain true:
      - `strike_and_route_accepted` when `strikeEvidencePresent = true` and route decision is `accepted`
 
 3. Add deterministic artifact contract for live matrix:
+
    - artifact path:
      - `.artifacts/flunk-out-frenzy-launcher-root-cause-proof/launch-root-cause-matrix.json`
    - each case record must include:
@@ -432,6 +446,7 @@ Do not start production geometry/runtime behavior fixes if any remain true:
      - artifact parser/spec must hard-fail if `gate-passed` appears in case payloads
 
 4. Keep implementation blocked:
+
    - geometry/runtime behavior fixes start only after:
      - red baseline is proven
      - telemetry artifacts are retained
@@ -444,3 +459,9 @@ The source does not include a plan document review record.
 ## Implementation Review
 
 The source does not include an implementation review record.
+
+## Closeout
+
+Canceled on 2026-10-28 under TASK-SKRIPT-REP-0056 D1.
+
+Canceled by the user's decision, because this task exists only to prove the canceled TASK-SKRIPT-25-06-08 (launcher root cause) and depended on it and on the canceled TASK-SKRIPT-25-06-07. Part of its telemetry contract is already in code: contact fields in `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/core/runtimeTypes.ts:114-123`, `game/physics/launcher/LauncherTelemetrySnapshot.ts` and `LauncherContactTelemetry.ts`, and a strike classifier (`no_effective_strike`, `post_strike_route_rejection`, `strike_and_route_accepted`) in `game/core/GameRuntime.spec-support.ts:221-226`. The deterministic red test on current code (the suite was green in the 2026-10-28 audit) and the retained telemetry artifact for each launch-matrix case were never produced and are dropped. TASK-SKRIPT-25-06-11 still names this task at line 141 ("No changes to TASK-SKRIPT-25-06-09 and TASK-SKRIPT-25-06-10 matrix thresholds, steps, case set, or artifact-schema contract").
