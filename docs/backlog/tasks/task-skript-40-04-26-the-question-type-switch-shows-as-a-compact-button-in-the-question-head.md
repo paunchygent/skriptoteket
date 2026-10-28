@@ -82,6 +82,22 @@ Units, each for one junior:
 - The Eraser glyph cannot be added to the shared glyph catalogue from this repository.
 - A band rule would change the toolbar during a column drag.
 
+## Progress
+
+### Copy decisions 2026-10-28 (user, relayed by the Hemma orchestrator after the ui-copy review)
+
+These supersede the wording in D2 and D4; the behaviour they name is unchanged.
+
+- The undo control reads "Ta bort AI-facit", tooltip "Ta bort AI-facit och lämna frågan utan facit".
+- After an undo the suggest control reads "Föreslå nytt facit" (not "Föreslå igen"); its tooltip ends "Du kan bara be om ett nytt förslag en gång per fråga."
+- The type suggestion reads "Byt till {typ}" (not "Gör om till {typ}").
+- Copy-standard changes from the same review: the retry-used menu hint is "Inga fler förslag"; the server refusal is "Frågan har redan fått ett nytt facitförslag."
+
+### Review 2026-10-28 (ruthless-reviewer, `97563a81c..26208efe7`)
+
+- Verdict `changes_requested`: F1 the retry refusal trusted the editor-sent state, which history undo can rewind; F2 two components over 500 lines; F3 a `@ts-expect-error` on `node:fs` in a spec; a nit that the suggested-key line text was not AI teal (D5).
+- Orchestrator decision on F1: the retry state is one-way on the server; every head write keeps the stricter of the saved and incoming state, and the handler refuses from the saved state. Repairs are admitted on focused proof with no rereview (D9).
+
 ## Decided Contract Terms
 
 | ID  | Decided contract term                                                                                                                                                                                                                                                                                                |
