@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-28'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-28'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light lead (claude light-implementation-specialist 7de6c770, resumed as 28d5c035 after a host SSH drop) applied D1-D9 in 347ed7e33 (merged 835836194): 25-06-07 and 25-06-09 canceled; 20-02-01 done without the seriousness criterion; ADR-SKRIPT-0055 deprecated with a Rejection section (the ADR status set has no rejected); REP-0017 criterion 2 corrected; ST-14-33 and ST-20-01 done, ST-21-01 and ST-21-03 canceled; canceled children marked in place; ST-39-06 P3/P22 and 39-06-05 updated; REP-0010 guidance and skriptoteketMetadata.ts name /work/request.json; 37-05-02/03 ready and 37-05-04..06 name their blocker. docs-validate and handoff-validate exit 0; the skriptoteketCompletions spec passes 3/3. Items left as they are, with reasons, are in the lead''s result (retained root 01a18449-92ba-7ada-917f-4d73cca770ab, evidence/results/28d5c035-8bc2-409b-b17f-a987ea55480d.json): REP-0017 criteria 3-6, ST-02-06 criteria 1/2/5/6 and EPIC-40 stay open.'
 task_kind: repository
 acceptance_criteria:
   - Every leftover the REP-0055 report named carries the status or text its decided term gives, and docs-validate passes
