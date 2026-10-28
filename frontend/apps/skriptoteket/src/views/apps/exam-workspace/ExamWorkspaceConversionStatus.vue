@@ -5,10 +5,12 @@
  * Domain purpose:
  *   Show the one import or conversion in flight in the Öppna drawer: its
  *   message (the upload wait, the phase, or the failure), the time spent in
- *   the phase, the question count bar and the retry. The message and the
- *   clock own stable slots, so a longer phase text or a changing count never
- *   moves the clock or changes the row's height; text that does not fit is
- *   cut with an ellipsis and its full text stays in the tooltip.
+ *   the phase, the question count bar and the retry. While work runs, the
+ *   message and the clock own stable slots, so a longer phase text or a
+ *   changing count never moves the clock or changes the row's height; text
+ *   that does not fit is cut with an ellipsis and its full text stays in the
+ *   tooltip. A failed import's message wraps and is shown in full, because it
+ *   tells the teacher what to do next.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceOpenDrawer`, which owns the import intents;
@@ -52,7 +54,8 @@ const isWorking = computed(() => props.isConverting || props.isImporting);
       />
       <span
         class="prog__message"
-        :title="message"
+        :class="{ 'prog__message--full': !isWorking }"
+        :title="isWorking ? message : undefined"
         data-test="exam-workspace-conversion-message"
       >{{ message }}</span>
       <span
@@ -101,8 +104,10 @@ const isWorking = computed(() => props.isConverting || props.isImporting);
 }
 .prog__line { display: flex; align-items: center; gap: var(--huleedu-space-2); }
 .prog__glyph { flex: none; }
-/* The message takes the row's remaining width and never wraps, so the row keeps one line's height. */
+/* While work runs, the message takes the row's remaining width and never wraps, so the row keeps one line's height. */
 .prog__message { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A failed import is a settled state: its message wraps in full, since the guidance is what the teacher acts on. */
+.prog__message--full { overflow: visible; white-space: normal; overflow-wrap: anywhere; }
 /* The clock slot is always in the row and sized for its widest value, so the message never reflows when it appears. */
 .prog__elapsed { flex: none; width: 5ch; text-align: right; font-variant-numeric: tabular-nums; }
 .prog__bar { height: 6px; overflow: hidden; border-radius: 3px; border: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-navy-02); }
