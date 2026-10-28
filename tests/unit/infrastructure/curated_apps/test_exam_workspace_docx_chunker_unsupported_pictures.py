@@ -72,7 +72,7 @@ def _save(document: DocxDocument) -> bytes:
 
 
 def _chunk(document: DocxDocument):
-    return PythonDocxExamChunker().chunk(content=_save(document))
+    return PythonDocxExamChunker().chunk(content=_save(document)).chunks
 
 
 def _replace_picture_part(document: DocxDocument, media_type: str, extension: str) -> None:

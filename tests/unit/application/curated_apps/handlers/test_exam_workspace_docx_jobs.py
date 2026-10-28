@@ -224,7 +224,7 @@ async def test_disabled_provider_opens_review_source_and_deletes_docx():
     assert env.replay.progress.calls == ["publish_final"]
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    chunks = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes())
+    chunks = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes()).chunks
     chunk_text = {c.anchor: c.text.strip() for c in chunks if not is_answer_line_chunk(c)}
     items = opened.document.items
     assert [item.source_anchor for item in items] == list(chunk_text)

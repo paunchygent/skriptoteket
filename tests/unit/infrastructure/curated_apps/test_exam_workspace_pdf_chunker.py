@@ -8,6 +8,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import is_answer_line_chunk
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
+    NO_READABLE_TEXT,
     PdfPlumberExamChunker,
     PdfPlumberLabelerMarkdown,
 )
@@ -21,7 +22,7 @@ _LONG = (
 
 
 def _chunks(body: str, *, css: str = "") -> tuple[DocxChunk, ...]:
-    return PdfPlumberExamChunker().chunk(content=pdf_bytes(body, css=css))
+    return PdfPlumberExamChunker().chunk(content=pdf_bytes(body, css=css)).chunks
 
 
 def _texts(chunks: tuple[DocxChunk, ...]) -> list[str]:
@@ -421,7 +422,7 @@ def test_drawn_svg_line_is_dropped_without_a_chunk() -> None:
 def test_bullet_glyph_is_dropped_from_the_text_and_kept_as_a_markdown_list() -> None:
     content = pdf_bytes("<ul><li>first point</li><li>second point</li></ul>")
 
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
     source = PdfPlumberLabelerMarkdown().source(content=content)
 
     assert _texts(chunks) == ["first point", "second point"]
@@ -435,7 +436,7 @@ def test_labeler_source_carries_the_chunker_anchors_with_markdown() -> None:
         css="table { border-collapse: collapse; } td { border: 1px solid black; padding: 4pt; }",
     )
 
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
     source = PdfPlumberLabelerMarkdown().source(content=content)
 
     assert [chunk.anchor for chunk in source.chunks] == [chunk.anchor for chunk in chunks]
@@ -453,13 +454,13 @@ def test_labeler_source_carries_the_chunker_anchors_with_markdown() -> None:
     ("content", "message"),
     [
         (b"%PDF-1.7 this is not a pdf body", "Filen kunde inte läsas som en PDF-fil (.pdf)."),
-        (pdf_bytes("<p></p>"), "PDF-filen saknar läsbart innehåll."),
+        (pdf_bytes("<p></p>"), NO_READABLE_TEXT),
     ],
     ids=["unreadable", "no-text"],
 )
 def test_unreadable_and_textless_pdfs_are_validation_errors(content: bytes, message: str) -> None:
     with pytest.raises(DomainError) as raised:
-        PdfPlumberExamChunker().chunk(content=content)
+        PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert raised.value.code is ErrorCode.VALIDATION_ERROR
     assert raised.value.message == message

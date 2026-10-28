@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import statistics
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_fill_bands import (  # noqa: E501
@@ -52,6 +53,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     read_words,
     table_item,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_readability import (  # noqa: E501
+    page_text_state,
+)
 
 if TYPE_CHECKING:
     from pdfplumber.page import Page
@@ -69,27 +73,61 @@ _COLUMN_MIN_SHARE = 0.25
 _COLUMN_MIN_LINES = 3
 
 
-def read_pages(pages: Sequence[Page], pypdf_pages: Sequence[PageObject]) -> list[PdfItem]:
-    """Every page's lines and tables in reading order, page furniture dropped.
+@dataclass(frozen=True)
+class PdfPages:
+    """One PDF's kept items in reading order and the 1-based pages it skipped."""
 
+    items: tuple[PdfItem, ...]
+    skipped_pages: tuple[int, ...]
+
+
+def read_pages(pages: Sequence[Page], pypdf_pages: Sequence[PageObject]) -> PdfPages:
+    """Every kept page's items in reading order, page furniture dropped.
+
+    A page whose text layer is mostly unmapped glyphs is skipped, and so is a page with
+    no glyph at all that shows no picture, since pictures alone are no readable content;
+    both are named by their 1-based page number. A picture-only page keeps its place. Text
+    margins and the body size come from the readable pages only, and every page is laid
+    out under its original index, because pictures are cut from the rendered page there;
+    page furniture is judged against each kept page's real number and the PDF's page count,
+    so a footer still names its own page after an earlier page was skipped.
     Full-width lines and the columns' outer sides share the document's text margins, so a
     page of short lines still measures its wraps against the real line width.
     """
     words = [read_words(page) for page in pages]
-    every = [word for page_words in words for word in page_words]
+    states = [page_text_state(page_words) for page_words in words]
+    readable = [index for index, state in enumerate(states) if state == "readable"]
+    every = [word for index in readable for word in words[index]]
     margins = (
         min((word.x0 for word in every), default=0.0),
         max((word.x1 for word in every), default=0.0),
     )
     body_size = body_points(every)
-    laid_out = [
-        _page_items(page, index, words[index], margins, body_size, pypdf_pages[index])
-        for index, page in enumerate(pages)
-    ]
+    laid_out: list[tuple[int, float, list[PdfItem]]] = []
+    skipped: list[int] = []
+    for index, page in enumerate(pages):
+        if states[index] == "garbled":
+            skipped.append(index + 1)
+            continue
+        height, items = _page_items(
+            page, index, words[index], margins, body_size, pypdf_pages[index]
+        )
+        if states[index] == "empty" and not any(
+            isinstance(item, PdfPictureRegion) for item in items
+        ):
+            skipped.append(index + 1)
+            continue
+        laid_out.append((index + 1, height, items))
     kept = without_page_furniture(
-        [items for _, items in laid_out], [height for height, _ in laid_out]
+        [items for _, _, items in laid_out],
+        [height for _, height, _ in laid_out],
+        [number for number, _, _ in laid_out],
+        len(pages),
     )
-    return [item for items in kept for item in items]
+    return PdfPages(
+        items=tuple(item for items in kept for item in items),
+        skipped_pages=tuple(skipped),
+    )
 
 
 def _wide_gaps(line: Sequence[PdfWord], low: float, high: float) -> list[tuple[float, float]]:

@@ -328,7 +328,7 @@ def convert(script: DoorScript, *, course_key: str | None = None):
     )
 
     content = exam_bytes()
-    chunks = PythonDocxExamChunker().chunk(content=content)
+    chunks = PythonDocxExamChunker().chunk(content=content).chunks
     progress = _Progress()
     pipeline = build_docx_conversion_pipeline(
         door=script.door,

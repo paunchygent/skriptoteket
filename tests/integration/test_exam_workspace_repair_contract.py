@@ -30,7 +30,7 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
-from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
+from skriptoteket.protocols.exam_workspace import ChunkedSource, DocxExamChunkerProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_conversion_support import (
     WORKER,
@@ -216,7 +216,7 @@ async def test_real_docx_failure_wrapper_rolls_back_abandonment_if_job_update_fa
         pipeline = AsyncMock(spec=DocxConversionPipeline)
         pipeline.convert.side_effect = RuntimeError("injected provider failure")
         chunker = Mock(spec=DocxExamChunkerProtocol)
-        chunker.chunk.return_value = ()
+        chunker.chunk.return_value = ChunkedSource(chunks=(), notes=())
         handler = ProcessExamWorkspaceDocxJobHandler(
             jobs=world.jobs,
             chunker=chunker,

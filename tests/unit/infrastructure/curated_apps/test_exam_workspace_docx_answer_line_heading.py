@@ -51,7 +51,7 @@ def _chunked(prompt: str, second: str) -> tuple[DocxChunk, ...]:
     second_run.underline = True
     stream = io.BytesIO()
     source.save(stream)
-    return PythonDocxExamChunker().chunk(content=stream.getvalue())
+    return PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
 
 def _paragraph(text: str) -> ProducedParagraph:
@@ -129,7 +129,7 @@ def _explicitly_styled(second: str, *, underline: bool) -> tuple[DocxChunk, ...]
     second_run.underline = underline
     stream = io.BytesIO()
     source.save(stream)
-    return PythonDocxExamChunker().chunk(content=stream.getvalue())
+    return PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
 
 def _produced_owned(anchors: tuple[str, ...], *texts: str) -> ProducedItem:

@@ -100,7 +100,7 @@ def _assert_centre_blue(payload: bytes) -> None:
 
 def test_two_independent_fills_make_one_solid_blue_figure() -> None:
     content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re f* 100 201 200 79 re f*")
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
@@ -110,14 +110,14 @@ def test_two_independent_fills_make_one_solid_blue_figure() -> None:
 
 def test_one_compound_evenodd_fill_band_is_no_figure() -> None:
     content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re 100 201 200 79 re f*")
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert [chunk.kind for chunk in chunks] == ["paragraph", "paragraph"]
 
 
 def test_single_fill_makes_one_figure() -> None:
     content = _with_blue_ops(_two_paragraph_base(), b"100 200 200 80 re f*")
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert [chunk.kind for chunk in chunks] == ["paragraph", "drawing", "paragraph"]
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]

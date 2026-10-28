@@ -13,9 +13,9 @@ Relationships:
 
 from __future__ import annotations
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.import_file_format import is_pdf
 from skriptoteket.protocols.exam_workspace import (
+    ChunkedSource,
     DocxExamChunkerProtocol,
     LabelerSource,
     LabelerSourceProtocol,
@@ -29,7 +29,7 @@ class ImportSourceChunker(DocxExamChunkerProtocol):
         self._docx = docx
         self._pdf = pdf
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+    def chunk(self, *, content: bytes) -> ChunkedSource:
         reader = self._pdf if is_pdf(content) else self._docx
         return reader.chunk(content=content)
 

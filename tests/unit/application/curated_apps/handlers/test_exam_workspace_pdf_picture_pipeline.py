@@ -42,7 +42,8 @@ def _between_pdf() -> bytes:
 async def test_a_pdf_picture_between_two_questions_reaches_the_labeler_and_the_document():
     content = _between_pdf()
     chunker = PdfPlumberExamChunker()
-    (picture,) = [image for chunk in chunker.chunk(content=content) for image in chunk.images]
+    source = chunker.chunk(content=content)
+    (picture,) = [image for chunk in source.chunks for image in chunk.images]
     asset_id = picture.asset_id
     items = (
         converted(f"1. {PICTURE_STEM}", 2, 3, asset_ids=(asset_id,)),

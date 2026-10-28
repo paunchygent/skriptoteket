@@ -126,7 +126,7 @@ def _paragraph_with(*run_contents: str, text: str = "") -> bytes:
 
 def _drawn_chunk(content: bytes) -> DocxChunk:
     (chunk,) = [
-        c for c in PythonDocxExamChunker().chunk(content=content) if c.anchor == "body:0002"
+        c for c in PythonDocxExamChunker().chunk(content=content).chunks if c.anchor == "body:0002"
     ]
     return chunk
 

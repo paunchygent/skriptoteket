@@ -293,7 +293,7 @@ def test_a_vml_picture_without_transforms_stays_byte_exact(style: str, attribute
 def test_a_vml_transform_is_a_named_missing(style: str, attributes: str, note: str) -> None:
     content = _vml_xml(halves(), style=style, attributes=attributes)
 
-    (chunk,) = PythonDocxExamChunker().chunk(content=content)
+    (chunk,) = PythonDocxExamChunker().chunk(content=content).chunks
 
     assert chunk.images == ()
     (missing,) = chunk.missing_images

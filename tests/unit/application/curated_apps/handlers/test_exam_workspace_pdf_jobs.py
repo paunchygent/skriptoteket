@@ -13,6 +13,9 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    GetExamWorkspaceConversionStatusHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,
 )
@@ -28,6 +31,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     ImportSourceChunker,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
+    NO_READABLE_TEXT,
     PdfPlumberExamChunker,
 )
 from tests.fixtures.docx_corpus import corpus_docx
@@ -42,6 +46,10 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
     _settings,
+)
+from tests.unit.infrastructure.curated_apps.exam_workspace_pdf_test_support import (
+    merged,
+    pdf_bytes,
 )
 
 PDF_CORPUS = Path(
@@ -141,7 +149,7 @@ async def test_pdf_import_runs_the_word_job_and_opens_version_one():
     assert env.replay.progress.calls == ["publish_final"]
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
-    chunks = PdfPlumberExamChunker().chunk(content=PDF_CORPUS.read_bytes())
+    chunks = PdfPlumberExamChunker().chunk(content=PDF_CORPUS.read_bytes()).chunks
     chunk_text = {c.anchor: c.text.strip() for c in chunks if not is_answer_line_chunk(c)}
     items = opened.document.items
     assert [item.source_anchor for item in items] == list(chunk_text)
@@ -172,6 +180,38 @@ async def test_a_pdf_import_records_a_pdf_origin():
     assert opened.document.origin.kind == "pdf_import"
     assert opened.document.origin.source_filename == "sidfot-lasforstaelse.pdf"
     assert opened.document.origin.extractor_version == "docx_ai_build_v2"
+
+
+@pytest.mark.asyncio
+async def test_a_pdf_with_a_skipped_page_publishes_the_note_with_the_exam():
+    env = pdf_environment()
+    content = merged(
+        pdf_bytes("<p>1. Vad heter huvudpersonen?</p>"),
+        pdf_bytes("<p></p>"),
+        pdf_bytes("<p>2. Vilken färg har båten?</p>"),
+    )
+    running = await _claim(env, filename="prov-med-tom-sida.pdf", content=content)
+
+    opened = await _open_finished(env, running)
+
+    note = "Sida 2 importerades inte eftersom texten inte gick att läsa in."
+    assert opened.notes[0] == note
+    assert note in opened.notes
+
+
+@pytest.mark.asyncio
+async def test_a_pdf_without_readable_text_finishes_failed_with_the_new_message():
+    env = pdf_environment()
+    running = await _claim(env, filename="utan-text.pdf", content=pdf_bytes("<p></p>"))
+
+    finished = await env.processor.handle(job=running)
+
+    assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
+    assert finished.source_docx is None
+    status = await GetExamWorkspaceConversionStatusHandler(jobs=env.jobs, index=env.index).handle(
+        actor=env.actor, job_id=running.id
+    )
+    assert status.error_message == NO_READABLE_TEXT
 
 
 @pytest.mark.asyncio

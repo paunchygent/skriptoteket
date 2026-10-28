@@ -83,7 +83,7 @@ _NEW_PICTURE = base64.b64decode(
 
 
 def _word_chunks() -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=_DOCX.read_bytes())
+    return PythonDocxExamChunker().chunk(content=_DOCX.read_bytes()).chunks
 
 
 def _words(text: str) -> str:

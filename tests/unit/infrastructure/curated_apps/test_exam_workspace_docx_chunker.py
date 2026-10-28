@@ -31,9 +31,16 @@ def _text_projection(chunks: tuple[DocxChunk, ...]) -> tuple[DocxChunk, ...]:
     return tuple(replace(chunk, runs=(), paragraphs=()) for chunk in chunks)
 
 
+def test_the_word_chunker_reports_no_import_notes() -> None:
+    source = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes())
+
+    assert source.notes == ()
+    assert source.chunks
+
+
 def test_quiz_preserves_all_paragraphs_and_soft_break_options() -> None:
     content = _QUIZ.read_bytes()
-    chunks = PythonDocxExamChunker().chunk(content=content)
+    chunks = PythonDocxExamChunker().chunk(content=content).chunks
 
     assert len(chunks) == 109
     assert tuple(chunk.text for chunk in chunks) == tuple(
@@ -65,7 +72,7 @@ def test_body_order_anchors_and_whitespace_survive_tables_and_empty_paragraphs()
     second_table.cell(0, 0).text = "Second table"
     content = _bytes(document)
 
-    first = PythonDocxExamChunker().chunk(content=content)
+    first = PythonDocxExamChunker().chunk(content=content).chunks
 
     assert _text_projection(first) == (
         DocxChunk("body:0001", "heading", "  A heading  ", "  A heading  "),
@@ -79,7 +86,7 @@ def test_body_order_anchors_and_whitespace_survive_tables_and_empty_paragraphs()
         DocxChunk("body:0005", "paragraph", "After the table", "After the table"),
         DocxChunk("body:0006", "table", "Second table", "Second table"),
     )
-    assert PythonDocxExamChunker().chunk(content=content) == first
+    assert PythonDocxExamChunker().chunk(content=content).chunks == first
 
 
 def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
@@ -91,7 +98,7 @@ def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
     nested.cell(0, 0).text = "Nested\nlines"
     cell.paragraphs[-1].text = "After"
 
-    assert _text_projection(PythonDocxExamChunker().chunk(content=_bytes(document))) == (
+    assert _text_projection(PythonDocxExamChunker().chunk(content=_bytes(document)).chunks) == (
         DocxChunk(
             "body:0001", "table", "Before\nNested\nlines\nAfter", "Before\nNested\nlines\nAfter"
         ),
@@ -100,7 +107,8 @@ def test_merged_and_nested_cells_preserve_text_once_in_order() -> None:
 
 def test_course_exam_marks_teacher_italics_only_in_model_text() -> None:
     content = _QUIZ.with_name("svenska_2_kursavslutande_prov_med_facit.docx").read_bytes()
-    chunks = {chunk.anchor: chunk for chunk in PythonDocxExamChunker().chunk(content=content)}
+    source = PythonDocxExamChunker().chunk(content=content)
+    chunks = {chunk.anchor: chunk for chunk in source.chunks}
 
     assert chunks["body:0086"].text == (
         "a) De väntar inte. är en huvudsats\n"
@@ -126,7 +134,7 @@ def test_italic_runs_in_paragraphs_and_tables_are_marked() -> None:
     cell.paragraphs[0].add_run("Cell ")
     cell.paragraphs[0].add_run("svar").italic = True
 
-    chunks = PythonDocxExamChunker().chunk(content=_bytes(document))
+    chunks = PythonDocxExamChunker().chunk(content=_bytes(document)).chunks
 
     assert [(c.text, c.marked_text) for c in chunks] == [
         ("Svar: två ord slut", "Svar: <i>två ord</i> slut"),
@@ -137,7 +145,7 @@ def test_italic_runs_in_paragraphs_and_tables_are_marked() -> None:
 @pytest.mark.parametrize("content", [b"", b"not a docx", b"PK\x03\x04truncated"])
 def test_invalid_docx_reports_swedish_domain_error(content: bytes) -> None:
     with pytest.raises(DomainError) as exc_info:
-        PythonDocxExamChunker().chunk(content=content)
+        PythonDocxExamChunker().chunk(content=content).chunks
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert exc_info.value.message == "Filen kunde inte läsas som ett Word-dokument (.docx)."
@@ -154,7 +162,7 @@ def test_malformed_document_xml_reports_domain_error() -> None:
                 )
 
     with pytest.raises(DomainError) as exc_info:
-        PythonDocxExamChunker().chunk(content=stream.getvalue())
+        PythonDocxExamChunker().chunk(content=stream.getvalue()).chunks
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert "Word-dokument" in exc_info.value.message
@@ -169,7 +177,7 @@ def test_empty_docx_reports_swedish_domain_error(layout: str) -> None:
         document.add_table(rows=2, cols=2)
 
     with pytest.raises(DomainError) as exc_info:
-        PythonDocxExamChunker().chunk(content=_bytes(document))
+        PythonDocxExamChunker().chunk(content=_bytes(document)).chunks
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert exc_info.value.message == "Word-dokumentet saknar läsbart innehåll."

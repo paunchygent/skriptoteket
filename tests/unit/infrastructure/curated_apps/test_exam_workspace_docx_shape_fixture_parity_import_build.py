@@ -56,7 +56,7 @@ def _places(chunks: tuple[DocxChunk, ...]) -> list[tuple[str, str]]:
 
 def test_word_and_pdf_imports_put_a_picture_at_each_of_the_three_drawings() -> None:
     docx = _word_chunks()
-    pdf = PdfPlumberExamChunker().chunk(content=_PDF.read_bytes())
+    pdf = PdfPlumberExamChunker().chunk(content=_PDF.read_bytes()).chunks
 
     assert len(_places(docx)) == 3
     assert _places(docx) == _places(pdf)

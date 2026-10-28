@@ -9,6 +9,7 @@ from PIL import Image
 
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_pdf_chunker import (  # noqa: E501
+    NO_READABLE_TEXT,
     PdfPlumberExamChunker,
     PdfPlumberLabelerMarkdown,
 )
@@ -60,7 +61,7 @@ def test_labeler_source_carries_each_drawing_png_in_images_with_empty_markdown()
         "<p>Fråga 3. Gå vidare.</p>"
     )
 
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
     source = PdfPlumberLabelerMarkdown().source(content=content)
 
     drawings = [chunk for chunk in chunks if chunk.kind == "drawing"]
@@ -82,10 +83,10 @@ def test_picture_only_pdf_is_a_validation_error() -> None:
     content = pdf_bytes(f"<p>{picture_tag(payload, 'width:120pt;height:80pt')}</p>")
 
     with pytest.raises(DomainError) as raised:
-        PdfPlumberExamChunker().chunk(content=content)
+        PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert raised.value.code is ErrorCode.VALIDATION_ERROR
-    assert raised.value.message == "PDF-filen saknar läsbart innehåll."
+    assert raised.value.message == NO_READABLE_TEXT
 
 
 def test_repeated_logo_is_dropped_while_a_body_picture_is_kept() -> None:
@@ -100,7 +101,7 @@ def test_repeated_logo_is_dropped_while_a_body_picture_is_kept() -> None:
         '<p style="page-break-before: always">Fråga 3. Tredje sidan.</p>'
     )
 
-    chunks = PdfPlumberExamChunker().chunk(content=content)
+    chunks = PdfPlumberExamChunker().chunk(content=content).chunks
 
     assert [chunk.kind for chunk in chunks] == [
         "paragraph",

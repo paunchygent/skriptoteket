@@ -43,6 +43,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     source_paragraph,
     source_run,
 )
+from skriptoteket.protocols.exam_workspace import ChunkedSource
 
 # Drawn content: pictures, text boxes and embedded objects. Its words, if any, are not in
 # the block's plain text, so a block holding only drawn content is still source.
@@ -402,7 +403,7 @@ def _placeable_pictures(
 class PythonDocxExamChunker:
     """Keep body order, source whitespace and stable body-child anchors."""
 
-    def chunk(self, *, content: bytes) -> tuple[DocxChunk, ...]:
+    def chunk(self, *, content: bytes) -> ChunkedSource:
         chunks: list[DocxChunk] = []
         try:
             document = Document(io.BytesIO(content))
@@ -463,4 +464,4 @@ class PythonDocxExamChunker:
                 code=ErrorCode.VALIDATION_ERROR,
                 message="Word-dokumentet saknar läsbart innehåll.",
             )
-        return tuple(chunks)
+        return ChunkedSource(chunks=tuple(chunks), notes=())

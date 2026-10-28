@@ -36,7 +36,7 @@ def _save(document: DocxDocument) -> bytes:
 
 
 def _chunks(document: DocxDocument):
-    return PythonDocxExamChunker().chunk(content=_save(document))
+    return PythonDocxExamChunker().chunk(content=_save(document)).chunks
 
 
 def test_a_picture_inside_a_paragraph_keeps_its_place_in_plain_and_marked_text() -> None:
