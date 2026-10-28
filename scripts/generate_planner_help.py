@@ -44,7 +44,8 @@ _RE_PAUS = re.compile(r"^\[PAUS\]\s*$", re.MULTILINE)
 # Match full TALMANUS blockquote blocks (first line has TALMANUS,
 # continuation lines start with ``> ``).
 _RE_TALMANUS = re.compile(r"^>.*TALMANUS.*$(?:\n^>.*$)*", re.MULTILINE)
-_RE_HR = re.compile(r"^---+\s*$", re.MULTILINE)
+# Thematic breaks in any Markdown form; the Markdown formatter writes ``___``.
+_RE_HR = re.compile(r"^(?:-{3,}|_{3,}|\*{3,})\s*$", re.MULTILINE)
 # Only match YAML frontmatter at the very start of the document.
 _RE_FRONTMATTER = re.compile(r"\A---\n.*?^---\n", re.MULTILINE | re.DOTALL)
 _RE_BLANK_RUNS = re.compile(r"\n{3,}")

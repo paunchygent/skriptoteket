@@ -23,7 +23,7 @@ Den här guiden tar dig genom de fyra grundstegen:
 > sitta och pilla med klassrumsplaceringar för hand. Jag ska visa dig hur
 > du kommer igång -- det tar ungefär fem minuter."
 
----
+______________________________________________________________________
 
 ## Steg 1 -- Skapa din första klass
 
@@ -31,11 +31,11 @@ Det första du behöver är en klasslista.
 
 1. Gå till **Översikt** (startsidan i appen).
 2. Klicka **skapa ny klasslista**.
-3. Klistra in eller dra in din klasslista. Det enklaste är att kopiera
-   listan rakt av från **Skola24**. Alla format fungerar -- du kan
-   kopiera från en tabell, en PDF, eller en textfil -- men Skola24 är
-   det säkraste alternativet och det du förmodligen redan har öppet
-   när du rapporterar närvaro.
+3. Lägg in din klasslista. Det enklaste är att exportera klasslistan
+   från **Skola24** och välja **Importera från fil** (eller dra in
+   filen). Appen läser Skola24-filer i Excel (`.xls`), PDF och text
+   (`.txt`), och även `.csv` och `.tsv`. Du kan också skriva eller
+   klistra in namnen direkt, ett namn per rad.
 4. Förhandsgranska att namnen stämmer.
 5. Spara.
 
@@ -47,7 +47,7 @@ Det första du behöver är en klasslista.
 
 [PAUS]
 
----
+______________________________________________________________________
 
 ## Steg 2 -- Skapa ditt första klassrum
 
@@ -90,7 +90,7 @@ annorlunda möblering så får du bättre resultat om du lägger till dem.
 
 [PAUS]
 
----
+______________________________________________________________________
 
 ## Steg 3 -- Skapa ditt första sittschema
 
@@ -148,7 +148,7 @@ När du är nöjd, klicka **Exportera**:
 
 [PAUS]
 
----
+______________________________________________________________________
 
 ## Steg 4 -- Skapa din första gruppering
 
@@ -187,7 +187,7 @@ Behöver du justera klassen kan du göra det direkt från menyn här också.
 
 [PAUS]
 
----
+______________________________________________________________________
 
 ## Steg 5 -- Regler (smarta placeringar)
 
@@ -197,9 +197,9 @@ När du sedan slumpar med **Smart** påslaget tar programmet hänsyn till dem.
 Gå till **Regler** i toppmenyn. Där finns tre regeltyper:
 
 | Regel            | Vad den gör                               | Exempel                            |
-|------------------|-------------------------------------------|------------------------------------|
+| ---------------- | ----------------------------------------- | ---------------------------------- |
 | **Nära läraren** | Eleven placeras alltid i första raden     | Elev som behöver extra stöd        |
-| **Håll isär**    | Minst en rad eller kolumn mellan eleverna  | Två som stör varandra              |
+| **Håll isär**    | Minst en rad eller kolumn mellan eleverna | Två som stör varandra              |
 | **Håll nära**    | Placeras bredvid eller en rad ifrån       | Kompis som trygghet, eller ett par |
 
 Regler gäller för hela klassen -- inte bara för ett enskilt utkast.
@@ -224,7 +224,7 @@ elev varje gång -- då har du hittat en regel värd att spara.
 
 [PAUS]
 
----
+______________________________________________________________________
 
 ## Sammanfattning
 
