@@ -4,19 +4,20 @@
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
   REP-0037, 41-03-02, 41-03-03.
 
-  - Production: Skriptoteket `50a7b84e3` (has 39-04-24); HuleEdu `f59ea3b61` (CORS
-    `Content-Disposition`, REP-0148 done). Main is ahead of production by 40-04-26,
-    40-02-01, 41-02-07 (migration `f2b9c4d8a701`), 39-10-03, REP-0052/53/54 and closeouts;
-    no production deploy was asked for.
-  - Staging runs `0944a6e23`. If `hemma-dev start` says "container with given ID already
-    exists", an orphaned container process is still running: stop it (postgres with SIGINT),
+  - Production: Skriptoteket `50a7b84e3`; HuleEdu `f59ea3b61`. Main is ahead of production
+    (40-04-26, 40-02-01, 41-02-07 with migration `f2b9c4d8a701`, 39-10-03, REP-0052/53/54,
+    26-06-01, 09-07-01); no production deploy was asked for.
+  - USER GATE before the next Skriptoteket production deploy (09-07-01, `1f3f84f9f`):
+    production startup now refuses loopback `ALLOWED_HOSTS`, and the production `.env`
+    (`~/apps/skriptoteket/.env:74`) still holds `localhost,127.0.0.1,::1`. Set
+    `ALLOWED_HOSTS=skriptoteket.hule.education` there first, or web and worker will not start.
+  - Staging runs `40d8fc931` (Mac 26-06-01 share-link walk on it). If `hemma-dev start` says
+    "container with given ID already exists", stop the orphaned process (postgres with SIGINT),
     remove `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
-  - 39-06-11 `ready`: teachers put ordering questions inside a part at 1 point
-    (user decision 2026-10-28, from the 39-06-09 Exam.net probe); ST-SKRIPT-39-06 stays open
-    until it is done.
-  - TASK-SKRIPT-REP-0055 (backlog matches main after the 2026-10-28 audit): edits are on
-    branch `codex/task-skript-rep-0055`, waiting for the parent's merge; its report lists
-    the items left open.
+  - In flight: 39-06-11 (ordering inside a part at 1 point; lead on its worktree, ST-39-06
+    stays open), REP-0056 (backlog leftovers; lead on its worktree), 26-06-01 (closes on the Mac
+    walk), 09-07-01 (closes on a live staging check at the next rebuild). REP-0024 and
+    27-09-04 need a repair task (REP-0024 review is changes_requested).
   - Story closeout waiting: 39-10 (every task is done; no proof-set walk is on record).
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
