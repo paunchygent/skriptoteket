@@ -75,3 +75,9 @@ Units, each for one junior:
 - QTI import: an ordering child of an Exam.net composite part imports as an ordering child at 1 point, whatever points the package states, with no interaction note (`qti_import.py` `_append_parent`).
 - Grouping (`group_items`, TASK-SKRIPT-39-06-10 G10) counts as a move into a part under D2: ordering is allowed and set to 1 point, and the list-row checkbox for an ordering question is enabled.
 - Each of the three has a focused test.
+
+### Orchestrator copy decisions 2026-10-28 (after the ui-copy review)
+
+- Note beside the locked points field: "En Ordna-fråga i en del får alltid 1 poäng i Exam.net."
+- Tooltip on that field: "Flytta ut frågan ur delen för att ändra poängen".
+- Row fit at narrow widths is checked in the Mac staging walk.
