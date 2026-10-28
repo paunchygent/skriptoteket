@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-15'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Codex ruthless-reviewer thread 01a13fb4-cc83-7330-abad-921eb7516cf0, rereview of d97caf5b in the Mac retained session 01a13f9f-d6dd-7067-b581-efc395226538, evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md (copy in Hemma retained session 01a18444-018a-704a-b25f-1868c68bddc4, evidence/rep-0040/): approved, F1 and F2 cleared, no findings remaining. Merged to main as ced7971b. The 2026-10-28 Hemma environment check found no retired-host value in production or staging. Prepared by the Hemma housekeeping lead; the Hemma orchestrator authorizes closure by merging it.'
 task_kind: repository
 acceptance_criteria:
   - Development and production examples and development Compose use private Sir Convert lanes with no retired-host default or compatibility fallback.
@@ -113,3 +117,22 @@ rereview and closeout remain with the parent.
 | D2  | Remove the retired preflight allowance; keep the deployment stale-env rejection and update its message; cover rejection and redaction.     |
 | D3  | Correct the three current operations documents; preserve historical backlog records and leave DNS deletion to the user.                    |
 | D4  | Run assigned local validation, commit on the existing branch, never push or contact Hemma, and return review/closeout to the parent.       |
+
+## Progress
+
+### Closeout 2026-10-28 (Hemma housekeeping lead)
+
+- Merged to main as `ced7971b` (`fix/retire-convert-references` at `d97caf5b`); the
+  original reviewer's rereview of `d97caf5b` approved it with no findings remaining.
+- Environment check on Hemma, read-only: production web and worker resolve
+  `SIR_CONVERT_A_LOT_V2_BASE_URL` to `http://sir_convert_a_lot_prod:8085`; staging
+  (`skriptoteket-dev`, checkout `97563a81c`) sets no Sir Convert URL and resolves to
+  the settings default `http://127.0.0.1:9010`. No runtime environment or env file on
+  Hemma holds `convert.hule.education`. Evidence: Hemma retained session
+  `01a18444-018a-704a-b25f-1868c68bddc4`, `evidence/rep-0040/staging-env-check-2026-10-28.md`.
+- Later main commits changed `.env.example`, `.env.example.prod` and the two operations
+  documents for other tasks; none adds the retired host. The remaining mentions are
+  the retirement records and the stale-env rejection guard with its tests.
+- Configuration proof only: Sir production stays offline by user decision, so no
+  conversion reachability was checked.
+- User step, not done here: delete the Namecheap CNAME for `convert.hule.education`.

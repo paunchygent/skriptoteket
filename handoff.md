@@ -31,14 +31,6 @@
   skills). Next: the REP-0038 owner reconciles its remaining D1-D2 scope against that.
   The branch is absent on Hemma (2026-10-21), so the owner pointer is stale.
 
-- [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
-  `in_progress`; owner Claude parent. `fix/retire-convert-references` at
-  `d97caf5b` merged to main after the original reviewer approved the F1/F2
-  repair (`evidence/reviews/TASK-SKRIPT-REP-0040/rereview-d97caf5b.md` in
-  retained `01a13f9f-d6dd-7067-b581-efc395226538`). Next: closeout after the
-  Hemma hold, with the staging env check. No SSH, deployment or live proof yet.
-  Namecheap CNAME deletion stays with the user.
-
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips in Hjälp. Owner: Claude parent (Hemma);
   retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`. Task 01 (walking skeleton)
@@ -125,6 +117,9 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-28 `done`: TASK-SKRIPT-REP-0040 Sir Convert public-host retirement (rereview
+  `d97caf5b` approved, main `ced7971b`; env check in retained `01a18444`). User step: Namecheap CNAME deletion.
 
 - 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
   `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); in production at `976d89b5b`.
