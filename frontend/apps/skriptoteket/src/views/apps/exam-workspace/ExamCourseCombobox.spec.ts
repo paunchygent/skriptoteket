@@ -2,6 +2,7 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import type { ExamCourse } from "../../../api/examWorkspace";
+import { UiGlyph } from "../../../components/ui";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 
 // Recorded Skolverket course names/codes, with GY25 subject + level composition.
@@ -86,7 +87,12 @@ describe("ExamCourseCombobox", () => {
     const wrapper = mountPicker({ modelValue: "gy11:SVESVE02", hint: "Svenska kursavslutande" });
     expect((wrapper.get('[role="combobox"]').element as HTMLInputElement).value).toContain("Svenska 2");
     expect(wrapper.text()).not.toContain("Svenska kursavslutande");
-    await wrapper.get('button[aria-label*="ensa"]').trigger("click");
+    const clear = wrapper.get('button[aria-label*="ensa"]');
+    const clearGlyph = clear.getComponent(UiGlyph);
+    expect(clearGlyph.props("meaning")).toBe("close");
+    expect(clearGlyph.get("svg").attributes("aria-hidden")).toBe("true");
+    expect(clear.attributes("aria-label")).toBe("Rensa kurs");
+    await clear.trigger("click");
     expect(wrapper.emitted("update:modelValue")).toEqual([[null]]);
     await wrapper.setProps({ modelValue: null });
     expect(wrapper.text()).toContain("Kursrad i dokumentet: Svenska kursavslutande");

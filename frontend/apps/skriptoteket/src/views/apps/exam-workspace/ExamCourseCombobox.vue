@@ -3,7 +3,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import type { ExamCourse } from "../../../api/examWorkspace";
-import { IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui";
 import { searchCourses } from "./useExamCourseCatalog";
 
 const props = defineProps<{
@@ -139,9 +139,9 @@ watch(activeId, () => {
           @mousedown.prevent
           @click="clear"
         >
-          <IconX
-            class="h-4 w-4"
-            aria-hidden="true"
+          <UiGlyph
+            meaning="close"
+            :size="16"
           />
         </button>
       </div>

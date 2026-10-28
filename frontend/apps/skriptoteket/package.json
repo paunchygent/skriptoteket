@@ -48,7 +48,6 @@
     "fflate": "^0.8.3",
     "howler": "^2.2.4",
     "idb": "^8.0.3",
-    "lucide-vue-next": "^0.563.0",
     "marked": "^17.0.1",
     "pinia": "catalog:",
     "pixi.js": "^8.17.1",
