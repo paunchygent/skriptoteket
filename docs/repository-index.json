@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e7f77b68b5d053a5380b2db7fef3e4e69547f5d6861a45aadb3ce7b9ec2c44d6",
+  "source_set_digest": "08f07357e7b9838fb5f12a5a445352533864ea7c2b3e3e4bb0dcfa8a07d3f0e0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4318,7 +4318,7 @@
       "type": "task",
       "title": "Phone rules active-rule management and delete affordances",
       "path": "docs/backlog/tasks/task-skript-27-09-04-phone-rules-active-rule-management-and-delete-affordances.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-09",
       "owners": [
@@ -4327,13 +4327,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Code merged to main a7e90406d (2026-05-11) and in production e08981037. Mac staging walk at d0064b1ce by the Mac thread 2026-10-29 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-27-09-04/walk-record.md): all 8 checks pass at 390x844 and 1366x900, covering the phone Aktiva regler surface, the consolidated Nära läraren row, edit and delete by rule id with reload, active-template-only Fast plats, no copy into Valda elever on reload, cleared edit panel stays cleared, no empty panel, and unchanged desktop inspector. Observations for follow-up: raw seat id in the Fast plats row, two stacked lock badges in the phone Fast plats editor, A/B letters swap after reload."
       }
     },
     {
