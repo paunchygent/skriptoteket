@@ -165,14 +165,14 @@ function removalBlockedReason(maintainer: MaintainerSummary): string | null {
             >
               L&auml;gg till redigerare
             </label>
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div class="flex flex-nowrap items-center gap-2">
               <input
                 id="maintainer-email"
                 v-model="email"
                 type="email"
                 autocomplete="email"
                 placeholder="e-post@example.com"
-                class="w-full h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none"
+                class="min-w-0 flex-1 h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none"
                 :disabled="isSaving"
               >
               <UiDenseActionButton

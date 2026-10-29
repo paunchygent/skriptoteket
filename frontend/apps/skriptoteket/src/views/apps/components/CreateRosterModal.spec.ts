@@ -320,7 +320,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    await wrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
+    await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
     await flushPromises();
 
     expect(wrapper.text()).toContain(
@@ -341,13 +341,86 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    const deleteButton = wrapper.findAll("button").find((button) => button.text() === "Radera")!;
+    const deleteButton = wrapper.get("[data-test='roster-modal-delete']");
 
-    expect(deleteButton.text()).toBe("Radera");
+    expect(deleteButton.text()).toBe("");
+    expect(deleteButton.attributes("aria-label")).toBe("Radera klasslista");
+    expect(deleteButton.attributes("title")).toBe("Radera klasslista");
     expect(deleteButton.find("svg").exists()).toBe(true);
     expect(wrapper.findAll("button").some((button) => button.text() === "Spara")).toBe(true);
     expect(wrapper.text()).not.toContain("Spara ändringar");
-    expect(wrapper.text()).not.toContain("Radera klasslista");
+    expect(wrapper.text()).not.toContain("Radera");
+  });
+
+  describe("footer geometry", () => {
+    const editRoster = { id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] };
+
+    it.each([
+      { mode: "create", roster: null, buttonCount: 2 },
+      { mode: "edit", roster: editRoster, buttonCount: 3 },
+    ])("keeps every $mode action in one non-wrapping row", ({ roster, buttonCount }) => {
+      const wrapper = mount(CreateRosterModal, { props: { roster } });
+      const footer = wrapper.get("[data-test='roster-modal-footer']");
+      const actions = footer.get("[data-test='roster-modal-footer-actions']");
+
+      for (const container of [footer, actions]) {
+        const classes = container.classes();
+        expect(classes).toContain("flex-nowrap");
+        expect(classes).not.toContain("flex-wrap");
+        expect(classes).not.toContain("flex-col");
+        expect(classes.some((name) => name.startsWith("sm:flex") || name.startsWith("md:flex"))).toBe(false);
+      }
+
+      const cancel = actions.findAll("button").find((button) => button.text() === "Avbryt");
+      const submit = actions.findAll("button").find((button) => button.text() !== "Avbryt");
+      expect(cancel).toBeDefined();
+      expect(submit).toBeDefined();
+      expect(cancel!.classes()).toContain("whitespace-nowrap");
+      expect(submit!.classes()).toContain("whitespace-nowrap");
+      expect(footer.findAll("button")).toHaveLength(buttonCount);
+      wrapper.unmount();
+    });
+
+    it("labels the create action on one row and offers no delete control", () => {
+      const wrapper = mount(CreateRosterModal);
+      const footer = wrapper.get("[data-test='roster-modal-footer']");
+
+      expect(footer.text()).toContain("Skapa klasslista");
+      expect(footer.find("[data-test='roster-modal-delete']").exists()).toBe(false);
+      wrapper.unmount();
+    });
+
+    it("renders delete as a frameless 44px danger glyph beside the other actions", () => {
+      const wrapper = mount(CreateRosterModal, { props: { roster: editRoster } });
+      const footer = wrapper.get("[data-test='roster-modal-footer']");
+      const deleteButton = footer.get("[data-test='roster-modal-delete']");
+
+      expect(deleteButton.element.closest("[data-test='roster-modal-footer-actions']")).toBeNull();
+      expect(deleteButton.classes()).toContain("w-[44px]");
+      expect(deleteButton.classes()).toContain("h-[44px]");
+      expect(deleteButton.text()).toBe("");
+      expect(deleteButton.attributes("aria-label")).toBe("Radera klasslista");
+      wrapper.unmount();
+    });
+
+    it("disables the delete glyph while a delete is running", async () => {
+      let resolveDelete: () => void = () => undefined;
+      const deleteRoster = vi.fn(
+        () => new Promise<void>((resolve) => {
+          resolveDelete = resolve;
+        }),
+      );
+      const wrapper = mount(CreateRosterModal, { props: { roster: editRoster, deleteRoster } });
+      const deleteButton = wrapper.get("[data-test='roster-modal-delete']");
+
+      await deleteButton.trigger("click");
+      await flushPromises();
+      expect(deleteButton.attributes("disabled")).toBeDefined();
+
+      resolveDelete();
+      await flushPromises();
+      wrapper.unmount();
+    });
   });
 
   it("uses injected save and delete handlers when provided", async () => {
@@ -394,7 +467,7 @@ describe("CreateRosterModal", () => {
       },
     });
 
-    await editWrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
+    await editWrapper.get("[data-test='roster-modal-delete']").trigger("click");
     await flushPromises();
 
     expect(deleteRoster).toHaveBeenCalledWith("guest-roster-1");

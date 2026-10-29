@@ -57,4 +57,25 @@ describe("ToolRunControlBar shared actions", () => {
     expect(wrapper.emitted("run")).toBeUndefined();
     wrapper.unmount();
   });
+
+  it.each(["compact", "default"] as const)("keeps the %s action row on one line", (density) => {
+    const wrapper = mount(ToolRunControlBar, {
+      props: {
+        isRunning: false,
+        hasResults: true,
+        hasSettings: true,
+        isSettingsOpen: false,
+        canRun: true,
+        density,
+      },
+    });
+    const classes = wrapper.get("[data-test='tool-run-control-bar']").classes();
+
+    expect(classes).toContain("flex-nowrap");
+    expect(classes).not.toContain("flex-col");
+    expect(classes).not.toContain("flex-wrap");
+    expect(classes.some((name) => name.startsWith("sm:flex"))).toBe(false);
+    expect(wrapper.findAll("button")).toHaveLength(3);
+    wrapper.unmount();
+  });
 });
