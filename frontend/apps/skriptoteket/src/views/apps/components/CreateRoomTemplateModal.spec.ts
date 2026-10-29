@@ -389,7 +389,7 @@ describe("CreateRoomTemplateModal", () => {
       },
     });
 
-    await editWrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
+    await editWrapper.find('[data-test="room-template-delete-button"]').trigger("click");
 
     expect(deleteTemplate).toHaveBeenCalledWith("guest-template-1");
     expect(clientMocks.apiDelete).not.toHaveBeenCalled();
@@ -432,6 +432,36 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
+  it("keeps delete, cancel and save in one non-wrapping footer row", () => {
+    const wrapper = mount(CreateRoomTemplateModal, {
+      props: {
+        template: {
+          id: "template-1",
+          name: "Sal 101",
+          grid_cols: 14,
+          grid_rows: 9,
+          seats: [],
+          fixtures: [],
+        },
+      },
+    });
+
+    const footer = wrapper.get(".room-template-modal-footer");
+    const actions = footer.get(".room-template-modal-footer-actions");
+    for (const container of [footer, actions]) {
+      expect(container.classes()).toContain("flex-nowrap");
+      expect(container.classes()).not.toContain("flex-wrap");
+      expect(container.classes()).not.toContain("flex-col");
+    }
+
+    const deleteButton = footer.get("[data-test='room-template-delete-button']");
+    expect(deleteButton.text()).toBe("");
+    expect(deleteButton.attributes("aria-label")).toBe("Radera klassrum");
+    expect(actions.get("[data-test='room-template-cancel-button']").classes()).toContain("whitespace-nowrap");
+    expect(actions.get("[data-test='room-template-save-button']").classes()).toContain("whitespace-nowrap");
+    wrapper.unmount();
+  });
+
   it("keeps governed Swedish recovery copy when classroom delete fails", async () => {
     clientMocks.apiDelete.mockRejectedValueOnce(
       new ApiError({
@@ -454,7 +484,7 @@ describe("CreateRoomTemplateModal", () => {
       },
     });
 
-    await wrapper.findAll("button").find((button) => button.text() === "Radera")!.trigger("click");
+    await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
     await Promise.resolve();
 
     expect(wrapper.text()).toContain("Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.");

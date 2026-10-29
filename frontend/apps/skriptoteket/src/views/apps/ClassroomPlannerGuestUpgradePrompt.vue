@@ -7,6 +7,8 @@
  * prompt owns its own teacher-facing summary and action surface.
  */
 
+import { UiDenseIconButton } from "../../components/ui";
+import { UiGlyph } from "../../components/ui/shared";
 import type { ClassroomPlannerGuestUpgradeReceipt } from "./classroomPlannerGuestUpgradeApi";
 import type { ClassroomPlannerGuestSnapshotSummary } from "./classroomPlannerGuestSnapshot";
 
@@ -103,10 +105,13 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
         {{ errorMessage }}
       </p>
 
-      <div class="mt-8 flex flex-wrap items-center gap-3">
+      <div
+        class="mt-8 flex flex-nowrap items-center gap-3"
+        data-test="guest-upgrade-actions"
+      >
         <button
           type="button"
-          class="btn-primary"
+          class="btn-primary whitespace-nowrap"
           data-test="guest-upgrade-import-button"
           @click="$emit('import')"
         >
@@ -114,20 +119,26 @@ function buildSummaryLine(summary: ClassroomPlannerGuestSnapshotSummary | null):
         </button>
         <button
           type="button"
-          class="btn-ghost"
+          class="btn-ghost whitespace-nowrap"
           data-test="guest-upgrade-postpone-button"
           @click="$emit('postpone')"
         >
           Inte nu
         </button>
-        <button
-          type="button"
-          class="btn-ghost"
+        <UiDenseIconButton
+          label="Kasta gästarbetet"
+          size="touch"
+          tone="danger"
           data-test="guest-upgrade-discard-button"
           @click="$emit('discard')"
         >
-          Kasta
-        </button>
+          <UiGlyph
+            meaning="delete"
+            :size="14"
+            :stroke-width="2.5"
+            aria-hidden="true"
+          />
+        </UiDenseIconButton>
       </div>
     </section>
   </div>

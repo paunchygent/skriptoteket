@@ -27,7 +27,10 @@ const isCompact = computed(() => props.density === "compact");
 </script>
 
 <template>
-  <div :class="[isCompact ? 'flex flex-col gap-2 sm:flex-row sm:items-center' : 'flex flex-col gap-3 sm:flex-row sm:items-stretch']">
+  <div
+    :class="[isCompact ? 'flex flex-nowrap items-center gap-2' : 'flex flex-nowrap items-stretch gap-3']"
+    data-test="tool-run-control-bar"
+  >
     <UiDenseActionButton
       label="Kör"
       class="min-w-[120px]"

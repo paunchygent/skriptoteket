@@ -17,6 +17,7 @@
   "exclude": [
     "src/test/vitestRunPathNormalization.spec.ts",
     "src/test/vitestInclude.spec.ts",
+    "src/assets/touchFieldFontSize.node.spec.ts",
     "src/views/apps/exam-workspace/examWorkspace.aiBands.node.spec.ts"
   ]
 }

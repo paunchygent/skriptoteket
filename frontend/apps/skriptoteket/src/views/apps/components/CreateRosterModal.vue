@@ -278,38 +278,41 @@ function closeModal(): void {
         </div>
 
         <div
-          class="sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-modal px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+          class="sticky bottom-0 flex flex-nowrap items-center justify-between gap-3 border-t border-navy/20 bg-modal px-6 py-4 md:px-8"
           data-test="roster-modal-footer"
         >
-          <div>
-            <button
+          <div class="shrink-0">
+            <UiDenseIconButton
               v-if="isEditing"
-              type="button"
-              class="btn-ghost"
+              label="Radera klasslista"
+              size="touch"
+              tone="danger"
               :disabled="isDeleting"
+              data-test="roster-modal-delete"
               @click="removeRoster"
             >
               <UiGlyph
-                v-if="!isDeleting"
                 meaning="delete"
                 :size="14"
                 :stroke-width="2.5"
                 aria-hidden="true"
               />
-              {{ isDeleting ? "Raderar..." : "Radera" }}
-            </button>
+            </UiDenseIconButton>
           </div>
-          <div class="flex flex-wrap justify-end gap-3">
+          <div
+            class="flex min-w-0 flex-nowrap items-center justify-end gap-3"
+            data-test="roster-modal-footer-actions"
+          >
             <button
               type="button"
-              class="btn-ghost"
+              class="btn-ghost whitespace-nowrap"
               @click="closeModal"
             >
               Avbryt
             </button>
             <button
               type="button"
-              class="btn-primary"
+              class="btn-primary whitespace-nowrap"
               :disabled="!isValid || isSubmitting"
               @click="submit"
             >

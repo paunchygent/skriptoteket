@@ -43,7 +43,18 @@ describe("ClassroomPlannerGuestUpgradePrompt", () => {
     expect(wrapper.text()).not.toContain("Rensa lokal gästarbetsyta");
     expect(wrapper.get("[data-test='guest-upgrade-import-button']").text()).toBe("Importera");
     expect(wrapper.get("[data-test='guest-upgrade-postpone-button']").text()).toBe("Inte nu");
-    expect(wrapper.get("[data-test='guest-upgrade-discard-button']").text()).toBe("Kasta");
+    const discardButton = wrapper.get("[data-test='guest-upgrade-discard-button']");
+    expect(discardButton.text()).toBe("");
+    expect(discardButton.attributes("aria-label")).toBe("Kasta gästarbetet");
+    expect(discardButton.attributes("title")).toBe("Kasta gästarbetet");
+    expect(discardButton.find("svg").exists()).toBe(true);
+
+    const actions = wrapper.get("[data-test='guest-upgrade-actions']");
+    expect(actions.classes()).toContain("flex-nowrap");
+    expect(actions.classes()).not.toContain("flex-wrap");
+    expect(actions.findAll("button")).toHaveLength(3);
+    expect(actions.get("[data-test='guest-upgrade-import-button']").classes()).toContain("whitespace-nowrap");
+    expect(actions.get("[data-test='guest-upgrade-postpone-button']").classes()).toContain("whitespace-nowrap");
 
     await wrapper.get("[data-test='guest-upgrade-import-button']").trigger("click");
     await wrapper.get("[data-test='guest-upgrade-postpone-button']").trigger("click");

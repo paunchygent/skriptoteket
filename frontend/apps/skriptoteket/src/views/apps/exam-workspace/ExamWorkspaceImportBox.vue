@@ -230,8 +230,12 @@ function chooseKind(event: Event): void {
 .imp__retry-label { font-size: var(--huleedu-text-xs); }
 .imp__retry-note { flex-basis: 100%; margin: 0; }
 .imp__retry select {
-  height: 28px; padding: 0 var(--huleedu-space-2); font: inherit; font-size: var(--huleedu-text-xs);
+  height: 28px; padding: 0 var(--huleedu-space-2);
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-workbench-control-radius);
   background: var(--huleedu-surface-content);
+}
+/* This rule outranks main.css's 16 px touch field rule, so it applies to non-touch pointers only. */
+@media (hover: hover) and (pointer: fine) {
+  .imp__retry select { font-size: var(--huleedu-text-xs); }
 }
 </style>
