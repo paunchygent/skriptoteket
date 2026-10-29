@@ -210,7 +210,9 @@ describe("RoomTemplateBuilderSurface", () => {
     await nextTick();
     await firstCell.trigger("click", { clientX: 8, clientY: 8 });
 
-    expect(wrapper.emitted("zoom-by-factor")?.[0]).toEqual([1.25]);
+    expect(wrapper.emitted("zoom-by-factor")?.[0]).toEqual([1.25, { clientX: 62.5, clientY: 0 }]);
+    expect(wrapper.emitted("gesture-start")).toHaveLength(1);
+    expect(wrapper.emitted("gesture-end")).toHaveLength(1);
     expect(wrapper.emitted("clear-hover")).toHaveLength(1);
     expect(wrapper.emitted("cell-click")).toBeUndefined();
   });

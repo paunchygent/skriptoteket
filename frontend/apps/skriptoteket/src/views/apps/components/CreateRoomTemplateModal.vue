@@ -42,6 +42,7 @@ const isSubmitting = ref(false);
 const isDeleting = ref(false);
 const nameRequiredMessage = "Ge klassrummet ett namn innan du sparar.";
 const editorSidebar = ref<InstanceType<typeof RoomTemplateEditorSidebar> | null>(null);
+const builderViewport = ref<HTMLElement | null>(null);
 
 const {
   name,
@@ -68,9 +69,11 @@ const {
   zoomOut,
   zoomIn,
   zoomBuilderByFactor,
+  beginBuilderGestureCamera,
+  endBuilderGestureCamera,
   resetBuilderZoom,
   clearRoomContents,
-} = useRoomTemplateEditorState(toRef(props, "template"));
+} = useRoomTemplateEditorState(toRef(props, "template"), builderViewport);
 
 const nameValidationError = computed(() => {
   return error.value === nameRequiredMessage ? nameRequiredMessage : null;
@@ -238,11 +241,14 @@ async function removeTemplate(): Promise<void> {
                 @zoom-out="zoomOut"
                 @zoom-in="zoomIn"
                 @zoom-by-factor="zoomBuilderByFactor"
+                @gesture-start="beginBuilderGestureCamera"
+                @gesture-end="endBuilderGestureCamera"
                 @zoom-fit="resetBuilderZoom"
                 @clear-hover="clearHoverState"
                 @cell-hover="updateHoverState"
                 @cell-focus="focusCell"
                 @cell-click="toggleGridCell"
+                @viewport-element="builderViewport = $event"
                 @viewport-size="setBuilderViewportSize"
               />
 

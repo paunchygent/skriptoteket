@@ -3,7 +3,9 @@
  * Room-template builder surface.
  *
  * This component renders the interactive room grid, zoom controls, and ghost
- * overlays while delegating editor state to the extracted composable.
+ * overlays while delegating editor state to the extracted composable. It hands
+ * its scroll viewport element to that composable through `viewport-element`, so
+ * the shared anchored viewport zoom can compensate scroll around a pinch.
  */
 
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
@@ -20,7 +22,10 @@ import {
   type RoomGridDimensions,
 } from "../roomFixtureLayout";
 import { ROOM_VIEWPORT_FRAME_PADDING } from "../roomBuilderViewport";
-import { useRoomTouchViewportGestures } from "../useRoomTouchViewportGestures";
+import {
+  useRoomTouchViewportGestures,
+  type RoomTouchViewportGestureAnchor,
+} from "../useRoomTouchViewportGestures";
 import type {
   RoomTemplateCellClickOptions,
   RoomTemplateGhostPlacement,
@@ -44,12 +49,15 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "zoom-out"): void;
   (e: "zoom-in"): void;
-  (e: "zoom-by-factor", factor: number): void;
+  (e: "zoom-by-factor", factor: number, anchor: RoomTouchViewportGestureAnchor | null): void;
+  (e: "gesture-start", anchor: RoomTouchViewportGestureAnchor | null): void;
+  (e: "gesture-end"): void;
   (e: "zoom-fit"): void;
   (e: "clear-hover"): void;
   (e: "cell-hover", event: MouseEvent, row: number, col: number): void;
   (e: "cell-focus", row: number, col: number): void;
   (e: "cell-click", row: number, col: number, event: MouseEvent, options?: RoomTemplateCellClickOptions): void;
+  (e: "viewport-element", element: HTMLElement | null): void;
   (e: "viewport-size", size: { width: number; height: number }): void;
 }>();
 
@@ -57,11 +65,13 @@ const builderViewport = ref<HTMLElement | null>(null);
 const viewportWidth = ref(0);
 const suppressGhostPreview = ref(false);
 const touchViewportGestures = useRoomTouchViewportGestures({
-  onZoomByFactor: (factor) => emit("zoom-by-factor", factor),
-  onGestureStart: () => {
+  onZoomByFactor: (factor, anchor) => emit("zoom-by-factor", factor, anchor),
+  onGestureStart: (anchor) => {
     suppressGhostPreview.value = true;
     emit("clear-hover");
+    emit("gesture-start", anchor);
   },
+  onGestureEnd: () => emit("gesture-end"),
   target: builderViewport,
 });
 
@@ -138,6 +148,7 @@ let builderViewportObserver: ResizeObserver | null = null;
 
 onMounted(() => {
   syncBuilderViewportSize();
+  emit("viewport-element", builderViewport.value);
   if (typeof ResizeObserver === "undefined") {
     return;
   }
@@ -152,6 +163,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  emit("viewport-element", null);
   builderViewportObserver?.disconnect();
   builderViewportObserver = null;
 });

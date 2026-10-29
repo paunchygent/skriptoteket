@@ -36,7 +36,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "door-1", type: "door" as const, x: 0, y: 0, width: 96, height: 96, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
 
     expect(editor.name.value).toBe("Sal 101");
     expect(editor.roomGrid.value).toEqual({ cols: 14, rows: 9 });
@@ -56,7 +56,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "bench-1", type: "bench" as const, x: 96, y: 96, width: 96, height: 96, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.selectedTool.value = "bench";
     editor.clearRoomContents();
 
@@ -67,7 +67,7 @@ describe("useRoomTemplateEditorState", () => {
   });
 
   it("updates ghost placement and parsed payload state from builder interactions", () => {
-    const editor = useRoomTemplateEditorState(ref(null));
+    const editor = useRoomTemplateEditorState(ref(null), ref(null));
     editor.name.value = "Sal 101";
     editor.setBuilderViewportSize({ width: 800, height: 600 });
 
@@ -95,7 +95,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "window-1", type: "window" as const, x: 1248, y: 192, width: 96, height: 192, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.resizeRoom("cols", 1);
     editor.resizeRoom("rows", 1);
 
@@ -118,7 +118,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "door-1", type: "door" as const, x: 0, y: 0, width: 96, height: 96, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.toggleGridCell(0, 0, createMouseEvent());
 
     expect(editor.parsedSeats.value).toEqual([]);
@@ -135,7 +135,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "bench-1", type: "bench" as const, x: 96, y: 96, width: 96, height: 96, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.selectedTool.value = "bench";
     editor.updateHoverState(createMouseEvent(), 1, 1);
 
@@ -159,7 +159,7 @@ describe("useRoomTemplateEditorState", () => {
       ],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.selectedTool.value = "whiteboard";
     editor.updateHoverState(createMouseEvent(), 0, 1);
 
@@ -181,7 +181,7 @@ describe("useRoomTemplateEditorState", () => {
       fixtures: [{ id: "bench-1", type: "bench" as const, x: 96, y: 96, width: 96, height: 96, label: null }],
     });
 
-    const editor = useRoomTemplateEditorState(template);
+    const editor = useRoomTemplateEditorState(template, ref(null));
     editor.selectedTool.value = "square_table";
     editor.toggleGridCell(1, 1, createMouseEvent());
 
