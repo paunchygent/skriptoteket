@@ -2,9 +2,10 @@
  * Room-template editor state composable.
  *
  * This composable owns interactive builder state for room-template editing:
- * grid dimensions, tool selection, hover/ghost state, zoom framing, parsed
- * payload data, and placement rules. The modal shell stays focused on submit
- * and delete lifecycle only.
+ * grid dimensions, tool selection, hover/ghost state, anchored viewport zoom,
+ * parsed payload data, and placement rules. The modal shell stays focused on
+ * submit and delete lifecycle only, and supplies the builder viewport element
+ * the anchored zoom needs to compensate scroll during a pinch.
  */
 
 import { computed, type Ref, ref, watch } from "vue";
@@ -47,7 +48,7 @@ import {
   seatKey,
   templateFitsGridAfterResize,
 } from "./roomTemplateEditorDomain";
-import { useRoomViewportZoom } from "./useRoomViewportZoom";
+import { useAnchoredRoomViewportZoom } from "./useAnchoredRoomViewportZoom";
 
 export type RoomTemplateGhostPlacement = {
   row: number;
@@ -63,7 +64,10 @@ export type RoomTemplateCellClickOptions = {
   suppressHoverPreview?: boolean;
 };
 
-export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | undefined>) {
+export function useRoomTemplateEditorState(
+  template: Ref<RoomTemplate | null | undefined>,
+  viewport: Ref<HTMLElement | null>,
+) {
   const name = ref("");
   const selectedTool = ref<BuilderTool>("seat");
   const seatCells = ref<string[]>([]);
@@ -89,8 +93,10 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     zoomOut,
     zoomIn,
     zoomByFactor: zoomBuilderByFactor,
+    beginGestureCamera: beginBuilderGestureCamera,
+    endGestureCamera: endBuilderGestureCamera,
     resetZoom: resetBuilderZoom,
-  } = useRoomViewportZoom(roomSurfaceMetrics, { resetSource: template });
+  } = useAnchoredRoomViewportZoom(roomSurfaceMetrics, viewport, { resetSource: template });
 
   const canShrinkCols = computed(() => {
     return gridCols.value > MIN_ROOM_GRID_COLS && templateFitsGridAfterResize(
@@ -436,6 +442,8 @@ export function useRoomTemplateEditorState(template: Ref<RoomTemplate | null | u
     zoomOut,
     zoomIn,
     zoomBuilderByFactor,
+    beginBuilderGestureCamera,
+    endBuilderGestureCamera,
     resetBuilderZoom,
     clearRoomContents,
   };
