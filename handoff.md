@@ -1,28 +1,29 @@
 ## Current
 
-- Hemma orchestrator (Claude desktop SSH session, cwd `~/apps/skriptoteket`), 2026-10-28.
+- Hemma orchestrator (Claude desktop SSH session, cwd `~/apps/skriptoteket`), 2026-10-29.
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
-  REP-0037, 41-03-02, 41-03-03.
+  REP-0037, 41-03-02, 41-03-03. No Skriptoteket child is running; no task worktree is left.
 
   - Production: Skriptoteket `50a7b84e3`; HuleEdu `f59ea3b61`. Main is ahead of production
     (40-04-26, 40-02-01, 41-02-07 with migration `f2b9c4d8a701`, 39-10-03, REP-0052/53/54,
-    26-06-01, 09-07-01); no production deploy was asked for.
+    26-06-01, 09-07-01, 39-06-11); no production deploy was asked for.
   - USER GATE before the next Skriptoteket production deploy (09-07-01, `1f3f84f9f`):
     production startup now refuses loopback `ALLOWED_HOSTS`, and the production `.env`
     (`~/apps/skriptoteket/.env:74`) still holds `localhost,127.0.0.1,::1`. Set
     `ALLOWED_HOSTS=skriptoteket.hule.education` there first, or web and worker will not start.
-  - Staging runs `40d8fc931` (Mac 26-06-01 share-link walk on it). If `hemma-dev start` says
-    "container with given ID already exists", stop the orphaned process (postgres with SIGINT),
-    remove `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
-  - In flight: 39-06-11 (ordering inside a part at 1 point; lead on its worktree, ST-39-06
-    stays open), 26-06-01 (closes on the Mac walk), 09-07-01 (closes on a live staging check
-    at the next rebuild). REP-0024 and 27-09-04 need a repair task (REP-0024 review is
-    changes_requested).
-  - TASK-SKRIPT-REP-0056 (backlog leftovers after the 2026-10-28 reconciliation): edits are
-    on branch `codex/task-skript-rep-0056`, waiting for the parent's merge; its report lists
-    every item changed and every item left open (ST-SKRIPT-02-06, EPIC-SKRIPT-40,
-    REP-0017 criteria 3 to 6).
+  - Staging runs `d0064b1ce`, healthy. If `hemma-dev start` says "container with given ID
+    already exists", stop the orphaned process (postgres with SIGINT), remove
+    `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
+  - Next: a repair task for REP-0024 and 27-09-04 (REP-0024 review is `changes_requested`).
+  - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
+    `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
+    (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
+    current is 0.1.37).
   - Story closeout waiting: 39-10 (every task is done; no proof-set walk is on record).
+  - Left as is by REP-0056: 11-26-01, 14-39-01, REP-0001, 26-08-01, REP-0022; stale guidance at
+    `SandboxInputPanel.vue:104` and `scripts/playwright_ui_editor_smoke.py:315`.
+  - Branch `codex/task-skript-39-06-09` (Exam.net ordering-in-part probe builder) is kept
+    unmerged on purpose; probe package in `.artifacts/probe-39-06-09/`.
 
 - [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
   Klassrumskartan tutorial clips: tasks 01 and 02 `done`; guide Steg 1 corrected on main
@@ -42,6 +43,11 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-10-29 `done`: 39-06-11 ordering inside a part at 1 point and 26-06-01 share page
+  (Mac staging walk at `d0064b1ce`, main `bd6cae1c8`); ST-SKRIPT-39-06 (Mac all-types
+  Exam.net import, exam 5395761, 33p, no differences, `625aaf585`); 09-07-01 production
+  refuses loopback ALLOWED_HOSTS (`f4ae80743`); REP-0056 backlog leftovers (`6ab51ee9c`).
 
 - 2026-10-28 `done`: 39-10-03 (a failed import's message wraps in full, main `ec810361f`) and
   39-06-09 (ordering inside a part probed in Exam.net, main `c0112dfdc`).
