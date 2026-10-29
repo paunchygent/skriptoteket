@@ -261,12 +261,13 @@ async function removeTemplate(): Promise<void> {
           </div>
         </div>
 
-        <div class="room-template-modal-footer sticky bottom-0 flex flex-col gap-3 border-t border-navy/20 bg-modal px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
-          <div class="room-template-modal-footer-danger">
-            <button
+        <div class="room-template-modal-footer sticky bottom-0 flex flex-nowrap items-center justify-between gap-3 border-t border-navy/20 bg-modal px-6 py-4 md:px-8">
+          <div class="room-template-modal-footer-danger shrink-0">
+            <UiDenseIconButton
               v-if="isEditing"
-              type="button"
-              class="btn-ghost"
+              label="Radera klassrum"
+              size="touch"
+              tone="danger"
               data-test="room-template-delete-button"
               :disabled="isDeleting"
               @click="removeTemplate"
@@ -275,14 +276,14 @@ async function removeTemplate(): Promise<void> {
                 meaning="delete"
                 :size="14"
                 :stroke-width="2.5"
+                aria-hidden="true"
               />
-              <span>{{ isDeleting ? "Raderar..." : "Radera" }}</span>
-            </button>
+            </UiDenseIconButton>
           </div>
-          <div class="room-template-modal-footer-actions flex flex-wrap justify-end gap-3">
+          <div class="room-template-modal-footer-actions flex min-w-0 flex-nowrap items-center justify-end gap-3">
             <button
               type="button"
-              class="btn-ghost"
+              class="btn-ghost whitespace-nowrap"
               data-test="room-template-cancel-button"
               @click="emit('close')"
             >
@@ -295,7 +296,7 @@ async function removeTemplate(): Promise<void> {
             </button>
             <button
               type="button"
-              class="btn-primary"
+              class="btn-primary whitespace-nowrap"
               data-test="room-template-save-button"
               :disabled="isSubmitting"
               @click="submit"

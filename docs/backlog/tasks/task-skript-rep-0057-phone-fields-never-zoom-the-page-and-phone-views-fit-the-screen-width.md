@@ -70,6 +70,15 @@ No runtime cost beyond CSS.
   field font size at least 16 px); `scrollWidth` equals `innerWidth` on every audited view.
 - The user taps fields on their iPhone after the production deploy.
 
+## Width Audit Result
+
+The Mac staging measurement at 390x844 with touch emulation (staging d0064b1ce, 30 views, 2026-10-29) found
+`scrollWidth` equal to `innerWidth` (390) on every view, so unit 2 needs no overflow fix. Two places scroll
+sideways inside their own box, which D4 allows: the share page room viewport (928 px surface) and the
+Skapa klassrum grid. The same measurement lists 11 px, 12 px and 14 px fields; the shared touch rule in
+`src/assets/main.css` lifts them, and the CSS search found no unlayered local rule that outranks it on those
+fields.
+
 ## Stop Conditions
 
 - A view needs a layout redesign, not a fix, to fit 390 px: list it and stop for a decision.

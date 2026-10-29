@@ -70,7 +70,8 @@ describe("CreateRoomTemplateModal phone behavior", () => {
     const cancelButton = wrapper.get('[data-test="room-template-cancel-button"]');
     const saveButton = wrapper.get('[data-test="room-template-save-button"]');
 
-    expect(deleteButton.text()).toBe("Radera");
+    expect(deleteButton.text()).toBe("");
+    expect(deleteButton.attributes("aria-label")).toBe("Radera klassrum");
     expect(cancelButton.text()).toBe("Avbryt");
     expect(saveButton.text()).toBe("Spara");
     expect(wrapper.text()).not.toContain("Radera klassrum");
