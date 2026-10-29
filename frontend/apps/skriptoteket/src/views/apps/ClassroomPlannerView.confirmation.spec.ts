@@ -138,7 +138,7 @@ describe("ClassroomPlannerView: confirmation", () => {
 
     expect(wrapper.text()).toContain("Är du säker?");
     expect(wrapper.text()).toContain(
-      "tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.",
+      "tas bort från översikten. Utkast kopplade till klassrummet tas också bort.",
     );
     expect(wrapper.find("[data-test='template-modal']").exists()).toBe(false);
 
@@ -195,7 +195,7 @@ describe("ClassroomPlannerView: confirmation", () => {
 
     expect(wrapper.text()).toContain("Är du säker?");
     expect(wrapper.text()).toContain(
-      "tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.",
+      "tas bort från översikten. Utkast kopplade till klassen tas också bort.",
     );
     expect(wrapper.find("[data-test='roster-modal']").exists()).toBe(false);
 
