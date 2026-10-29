@@ -112,6 +112,24 @@ async function startOverviewSeatingShareLink(): Promise<void> {
     await seatingShareFlow.startShare();
   }
 }
+
+function guestRosterDeleteConfirmation(name: string) {
+  return {
+    eyebrow: "Ta bort klasslista",
+    title: "Är du säker?",
+    message: `Klasslistan ${name} tas bort från den publika arbetsytan i den här webbläsaren.`,
+    confirmLabel: "Ta bort klasslista",
+  };
+}
+
+function guestTemplateDeleteConfirmation(name: string) {
+  return {
+    eyebrow: "Ta bort klassrum",
+    title: "Är du säker?",
+    message: `Klassrummet ${name} tas bort från den publika arbetsytan i den här webbläsaren.`,
+    confirmLabel: "Ta bort klassrum",
+  };
+}
 </script>
 
 <template>
@@ -316,6 +334,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
     <CreateRosterModal
       v-if="guestController.isRosterModalOpen.value"
       :roster="guestController.activeRosterModal.value"
+      :delete-confirmation="guestController.activeRosterModal.value ? guestRosterDeleteConfirmation(guestController.activeRosterModal.value.name) : null"
       :import-preview-api-path="guestController.rosterImportPreviewApiPath"
       :save-roster="guestController.saveRoster"
       :delete-roster="guestController.deleteRoster"
@@ -327,6 +346,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
     <CreateRoomTemplateModal
       v-if="guestController.isTemplateModalOpen.value"
       :template="guestController.activeTemplateModal.value"
+      :delete-confirmation="guestController.activeTemplateModal.value ? guestTemplateDeleteConfirmation(guestController.activeTemplateModal.value.name) : null"
       :save-template="guestController.saveTemplate"
       :delete-template="guestController.deleteTemplate"
       @close="guestController.closeTemplateModal"
@@ -336,10 +356,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
 
     <PlannerConfirmationDialog
       v-if="guestController.overviewDeleteRosterTarget.value"
-      eyebrow="Ta bort klasslista"
-      title="Är du säker?"
-      :message="`Klasslistan ${guestController.overviewDeleteRosterTarget.value.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
-      confirm-label="Ta bort klasslista"
+      v-bind="guestRosterDeleteConfirmation(guestController.overviewDeleteRosterTarget.value.name)"
       :error-message="guestController.overviewDeleteRosterError.value"
       :is-submitting="guestController.isDeletingOverviewRoster.value"
       @cancel="guestController.closeOverviewRosterDelete"
@@ -349,10 +366,7 @@ async function startOverviewSeatingShareLink(): Promise<void> {
 
     <PlannerConfirmationDialog
       v-if="guestController.overviewDeleteTemplateTarget.value"
-      eyebrow="Ta bort klassrum"
-      title="Är du säker?"
-      :message="`Klassrummet ${guestController.overviewDeleteTemplateTarget.value.name} tas bort från den publika arbetsytan i den här webbläsaren.`"
-      confirm-label="Ta bort klassrum"
+      v-bind="guestTemplateDeleteConfirmation(guestController.overviewDeleteTemplateTarget.value.name)"
       :error-message="guestController.overviewDeleteTemplateError.value"
       :is-submitting="guestController.isDeletingOverviewTemplate.value"
       @cancel="guestController.closeOverviewTemplateDelete"

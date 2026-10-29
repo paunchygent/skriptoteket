@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
@@ -59,6 +59,22 @@ vi.mock("../../../api/client", async () => {
 });
 
 describe("CreateRoomTemplateModal", () => {
+  const editTemplate = {
+    id: "template-1",
+    name: "Sal 101",
+    grid_cols: 14,
+    grid_rows: 9,
+    seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
+    fixtures: [],
+  };
+  const templateDeleteConfirmation = {
+    eyebrow: "Ta bort klassrum",
+    title: "Är du säker?",
+    message:
+      "Klassrummet Sal 101 tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.",
+    confirmLabel: "Ta bort klassrum",
+  };
+
   beforeEach(() => {
     vi.stubGlobal("ResizeObserver", ResizeObserverMock);
     setHoverCapableViewport();
@@ -66,6 +82,25 @@ describe("CreateRoomTemplateModal", () => {
     clientMocks.apiPost.mockReset();
     clientMocks.apiPut.mockReset();
   });
+
+  function confirmationDialog(wrapper: ReturnType<typeof mount>) {
+    return wrapper.get('[aria-labelledby="planner-confirmation-title"]');
+  }
+
+  async function clickCancelInConfirmation(wrapper: ReturnType<typeof mount>): Promise<void> {
+    const cancelButton = confirmationDialog(wrapper)
+      .findAll("button")
+      .find((button) => button.text() === "Avbryt");
+    if (!cancelButton) {
+      throw new Error("Expected the confirmation cancel button to be rendered.");
+    }
+    await cancelButton.trigger("click");
+  }
+
+  async function confirmDeletion(wrapper: ReturnType<typeof mount>): Promise<void> {
+    await confirmationDialog(wrapper).get('[data-test="confirm-dialog-confirm"]').trigger("click");
+    await flushPromises();
+  }
 
   it("exposes a modal dialog named by its visible title", () => {
     const wrapper = mount(CreateRoomTemplateModal);
@@ -354,7 +389,6 @@ describe("CreateRoomTemplateModal", () => {
       fixtures: [],
     });
     const deleteTemplate = vi.fn().mockResolvedValue(undefined);
-
     const createWrapper = mount(CreateRoomTemplateModal, {
       props: {
         saveTemplate,
@@ -385,11 +419,18 @@ describe("CreateRoomTemplateModal", () => {
           seats: [],
           fixtures: [],
         },
+        deleteConfirmation: {
+          ...templateDeleteConfirmation,
+          message:
+            "Klassrummet Sal 101 tas bort från den publika arbetsytan i den här webbläsaren.",
+        },
         deleteTemplate,
       },
     });
 
     await editWrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+    await flushPromises();
+    await confirmDeletion(editWrapper);
 
     expect(deleteTemplate).toHaveBeenCalledWith("guest-template-1");
     expect(clientMocks.apiDelete).not.toHaveBeenCalled();
@@ -432,6 +473,112 @@ describe("CreateRoomTemplateModal", () => {
     );
   });
 
+  describe("delete confirmation", () => {
+    it("opens the shared confirmation and sends no request before confirm", async () => {
+      const wrapper = mount(CreateRoomTemplateModal, {
+        props: { template: editTemplate, deleteConfirmation: templateDeleteConfirmation },
+      });
+
+      await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+      await flushPromises();
+
+      const dialog = confirmationDialog(wrapper);
+      expect(dialog.text()).toContain("Ta bort klassrum");
+      expect(dialog.text()).toContain("Är du säker?");
+      expect(dialog.text()).toContain(templateDeleteConfirmation.message);
+      expect(dialog.get('[data-test="confirm-dialog-confirm"]').text()).toBe("Ta bort klassrum");
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      wrapper.unmount();
+    });
+
+    it("deletes the classroom only from the confirm button", async () => {
+      clientMocks.apiDelete.mockResolvedValueOnce(undefined);
+      const wrapper = mount(CreateRoomTemplateModal, {
+        props: { template: editTemplate, deleteConfirmation: templateDeleteConfirmation },
+      });
+
+      await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+      await flushPromises();
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+
+      await confirmDeletion(wrapper);
+
+      expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+        "/api/v1/apps/classroom.group-seating-studio/templates/template-1",
+      );
+      expect(wrapper.emitted("deleted")).toEqual([["template-1"]]);
+      wrapper.unmount();
+    });
+
+    it("cancels without deleting or closing the edit dialog", async () => {
+      const wrapper = mount(CreateRoomTemplateModal, {
+        props: { template: editTemplate, deleteConfirmation: templateDeleteConfirmation },
+      });
+
+      await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+      await flushPromises();
+      await clickCancelInConfirmation(wrapper);
+      await flushPromises();
+
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      expect(wrapper.emitted("close")).toBeUndefined();
+      expect(wrapper.find('[aria-labelledby="planner-confirmation-title"]').exists()).toBe(false);
+      expect(wrapper.find("[data-test='room-template-modal-panel']").exists()).toBe(true);
+      expect(wrapper.get("#room-template-modal-title").text()).toBe("Redigera klassrum");
+      expect(wrapper.get('input[type="text"]').element).toHaveProperty("value", "Sal 101");
+      wrapper.unmount();
+    });
+
+    it("shows a failed delete in the confirmation and keeps it open", async () => {
+      clientMocks.apiDelete.mockRejectedValueOnce(
+        new ApiError({
+          code: "INTERNAL_ERROR",
+          message: "Kunde inte radera klassrummet just nu.",
+          status: 500,
+        }),
+      );
+      const wrapper = mount(CreateRoomTemplateModal, {
+        props: { template: editTemplate, deleteConfirmation: templateDeleteConfirmation },
+      });
+
+      await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+      await flushPromises();
+      await confirmDeletion(wrapper);
+
+      const dialog = confirmationDialog(wrapper);
+      expect(dialog.text()).toContain(
+        "Det gick inte att ta bort klassrummet. Försök igen eller avbryt.",
+      );
+      expect(dialog.text()).not.toContain("Kunde inte radera klassrummet just nu.");
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      wrapper.unmount();
+    });
+
+    it("keeps the guest delete handler behind the same confirmation", async () => {
+      const deleteTemplate = vi.fn().mockResolvedValue(undefined);
+      const wrapper = mount(CreateRoomTemplateModal, {
+        props: {
+          template: editTemplate,
+          deleteConfirmation: templateDeleteConfirmation,
+          deleteTemplate,
+        },
+      });
+
+      await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
+      await flushPromises();
+      expect(deleteTemplate).not.toHaveBeenCalled();
+
+      await confirmDeletion(wrapper);
+
+      expect(deleteTemplate).toHaveBeenCalledWith("template-1");
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toEqual([["template-1"]]);
+      wrapper.unmount();
+    });
+  });
+
   it("keeps delete, cancel and save in one non-wrapping footer row", () => {
     const wrapper = mount(CreateRoomTemplateModal, {
       props: {
@@ -460,35 +607,5 @@ describe("CreateRoomTemplateModal", () => {
     expect(actions.get("[data-test='room-template-cancel-button']").classes()).toContain("whitespace-nowrap");
     expect(actions.get("[data-test='room-template-save-button']").classes()).toContain("whitespace-nowrap");
     wrapper.unmount();
-  });
-
-  it("keeps governed Swedish recovery copy when classroom delete fails", async () => {
-    clientMocks.apiDelete.mockRejectedValueOnce(
-      new ApiError({
-        code: "INTERNAL_ERROR",
-        message: "Kunde inte radera klassrummet just nu.",
-        status: 500,
-      }),
-    );
-
-    const wrapper = mount(CreateRoomTemplateModal, {
-      props: {
-        template: {
-          id: "template-1",
-          name: "Sal 101",
-          grid_cols: 14,
-          grid_rows: 9,
-          seats: [{ id: "seat-1", x: 0, y: 0, zone: null }],
-          fixtures: [],
-        },
-      },
-    });
-
-    await wrapper.find('[data-test="room-template-delete-button"]').trigger("click");
-    await Promise.resolve();
-
-    expect(wrapper.text()).toContain("Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.");
-    expect(wrapper.text()).not.toContain("Kunde inte radera klassrummet just nu.");
-    expect(wrapper.emitted("deleted")).toBeUndefined();
   });
 });

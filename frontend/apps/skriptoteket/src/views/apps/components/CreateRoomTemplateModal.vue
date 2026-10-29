@@ -14,12 +14,19 @@ import { SystemMessage, UiDenseIconButton } from "../../../components/ui";
 import { UiGlyph } from "../../../components/ui/shared";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
+import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import RoomTemplateBuilderSurface from "./RoomTemplateBuilderSurface.vue";
 import RoomTemplateEditorSidebar from "./RoomTemplateEditorSidebar.vue";
 import RoomTemplatePreviewScene from "./RoomTemplatePreviewScene.vue";
 
 const props = defineProps<{
   template?: RoomTemplate | null;
+  deleteConfirmation?: {
+    eyebrow: string;
+    title: string;
+    message: string;
+    confirmLabel: string;
+  } | null;
   saveTemplate?: (payload: {
     existingTemplate: RoomTemplate | null;
     name: string;
@@ -40,6 +47,8 @@ const emit = defineEmits<{
 const isEditing = computed(() => Boolean(props.template));
 const isSubmitting = ref(false);
 const isDeleting = ref(false);
+const isDeleteConfirmationOpen = ref(false);
+const deleteError = ref<string | null>(null);
 const nameRequiredMessage = "Ge klassrummet ett namn innan du sparar.";
 const editorSidebar = ref<InstanceType<typeof RoomTemplateEditorSidebar> | null>(null);
 const builderViewport = ref<HTMLElement | null>(null);
@@ -140,13 +149,13 @@ async function submit(): Promise<void> {
   }
 }
 
-async function removeTemplate(): Promise<void> {
+async function removeTemplate(): Promise<boolean> {
   if (!props.template) {
-    return;
+    return false;
   }
 
   isDeleting.value = true;
-  error.value = null;
+  deleteError.value = null;
 
   try {
     if (props.deleteTemplate) {
@@ -155,10 +164,35 @@ async function removeTemplate(): Promise<void> {
       await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/templates/${props.template.id}`);
     }
     emit("deleted", props.template.id);
+    return true;
   } catch {
-    error.value = "Det gick inte att ta bort klassrummet. Försök igen eller stäng dialogrutan.";
+    deleteError.value = "Det gick inte att ta bort klassrummet. Försök igen eller avbryt.";
+    return false;
   } finally {
     isDeleting.value = false;
+  }
+}
+
+function openDeleteConfirmation(): void {
+  if (!props.template || !props.deleteConfirmation) {
+    return;
+  }
+  deleteError.value = null;
+  isDeleteConfirmationOpen.value = true;
+}
+
+function closeDeleteConfirmation(): void {
+  if (isDeleting.value) {
+    return;
+  }
+  isDeleteConfirmationOpen.value = false;
+  deleteError.value = null;
+}
+
+async function confirmDeleteTemplate(): Promise<void> {
+  const deleted = await removeTemplate();
+  if (deleted) {
+    isDeleteConfirmationOpen.value = false;
   }
 }
 </script>
@@ -270,7 +304,7 @@ async function removeTemplate(): Promise<void> {
               tone="danger"
               data-test="room-template-delete-button"
               :disabled="isDeleting"
-              @click="removeTemplate"
+              @click="openDeleteConfirmation"
             >
               <UiGlyph
                 meaning="delete"
@@ -312,5 +346,15 @@ async function removeTemplate(): Promise<void> {
         </div>
       </div>
     </div>
+
+    <PlannerConfirmationDialog
+      v-if="isDeleteConfirmationOpen && deleteConfirmation"
+      v-bind="deleteConfirmation"
+      :error-message="deleteError"
+      :is-submitting="isDeleting"
+      @cancel="closeDeleteConfirmation"
+      @confirm="void confirmDeleteTemplate()"
+      @dismiss-error="deleteError = null"
+    />
   </div>
 </template>

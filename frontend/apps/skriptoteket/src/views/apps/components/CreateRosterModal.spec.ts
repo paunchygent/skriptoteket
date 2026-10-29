@@ -22,11 +22,43 @@ vi.mock("../../../api/client", async () => {
 });
 
 describe("CreateRosterModal", () => {
+  const editRoster = {
+    id: "roster-1",
+    name: "SA24D",
+    students: [{ id: "s1", display_name: "Ada" }],
+  };
+  const rosterDeleteConfirmation = {
+    eyebrow: "Ta bort klasslista",
+    title: "Är du säker?",
+    message:
+      "Klasslistan SA24D tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.",
+    confirmLabel: "Ta bort klasslista",
+  };
+
   beforeEach(() => {
     clientMocks.apiDelete.mockReset();
     clientMocks.apiPost.mockReset();
     clientMocks.apiPut.mockReset();
   });
+
+  function confirmationDialog(wrapper: ReturnType<typeof mount>) {
+    return wrapper.get('[aria-labelledby="planner-confirmation-title"]');
+  }
+
+  async function clickCancelInConfirmation(wrapper: ReturnType<typeof mount>): Promise<void> {
+    const cancelButton = confirmationDialog(wrapper)
+      .findAll("button")
+      .find((button) => button.text() === "Avbryt");
+    if (!cancelButton) {
+      throw new Error("Expected the confirmation cancel button to be rendered.");
+    }
+    await cancelButton.trigger("click");
+  }
+
+  async function confirmDeletion(wrapper: ReturnType<typeof mount>): Promise<void> {
+    await confirmationDialog(wrapper).get('[data-test="confirm-dialog-confirm"]').trigger("click");
+    await flushPromises();
+  }
 
   function createImportFile(name = "sa24d_klasslista.excel.xls"): File {
     return new File(["ignored"], name, {
@@ -301,33 +333,110 @@ describe("CreateRosterModal", () => {
     randomUuidSpy.mockRestore();
   });
 
-  it("shows guarded delete copy when roster delete fails", async () => {
-    clientMocks.apiDelete.mockRejectedValueOnce(
-      new ApiError({
-        code: "INTERNAL_ERROR",
-        message: "Kunde inte radera klasslistan just nu.",
-        status: 500,
-      }),
-    );
+  describe("delete confirmation", () => {
+    it("opens the shared confirmation and sends no request before confirm", async () => {
+      const wrapper = mount(CreateRosterModal, {
+        props: { roster: editRoster, deleteConfirmation: rosterDeleteConfirmation },
+      });
 
-    const wrapper = mount(CreateRosterModal, {
-      props: {
-        roster: {
-          id: "roster-1",
-          name: "SA24D",
-          students: [{ id: "s1", display_name: "Ada" }],
-        },
-      },
+      await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
+      await flushPromises();
+
+      const dialog = confirmationDialog(wrapper);
+      expect(dialog.text()).toContain("Ta bort klasslista");
+      expect(dialog.text()).toContain("Är du säker?");
+      expect(dialog.text()).toContain(rosterDeleteConfirmation.message);
+      expect(dialog.get('[data-test="confirm-dialog-confirm"]').text()).toBe("Ta bort klasslista");
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      wrapper.unmount();
     });
 
-    await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
-    await flushPromises();
+    it("deletes the class list only from the confirm button", async () => {
+      clientMocks.apiDelete.mockResolvedValueOnce(undefined);
+      const wrapper = mount(CreateRosterModal, {
+        props: { roster: editRoster, deleteConfirmation: rosterDeleteConfirmation },
+      });
 
-    expect(wrapper.text()).toContain(
-      "Det gick inte att ta bort klasslistan. Försök igen eller stäng dialogrutan.",
-    );
-    expect(wrapper.text()).not.toContain("Kunde inte radera klasslistan just nu.");
-    expect(wrapper.emitted("deleted")).toBeUndefined();
+      await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
+      await flushPromises();
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+
+      await confirmDeletion(wrapper);
+
+      expect(clientMocks.apiDelete).toHaveBeenCalledWith(
+        "/api/v1/apps/classroom.group-seating-studio/rosters/roster-1",
+      );
+      expect(wrapper.emitted("deleted")).toEqual([["roster-1"]]);
+      wrapper.unmount();
+    });
+
+    it("cancels without deleting or closing the edit dialog", async () => {
+      const wrapper = mount(CreateRosterModal, {
+        props: { roster: editRoster, deleteConfirmation: rosterDeleteConfirmation },
+      });
+
+      await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
+      await flushPromises();
+      await clickCancelInConfirmation(wrapper);
+      await flushPromises();
+
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      expect(wrapper.emitted("close")).toBeUndefined();
+      expect(wrapper.find('[aria-labelledby="planner-confirmation-title"]').exists()).toBe(false);
+      expect(wrapper.find("[data-test='roster-modal-shell']").exists()).toBe(true);
+      expect(wrapper.get("#roster-modal-title").text()).toBe("Redigera klasslista");
+      expect(wrapper.get("#roster-name").element).toHaveProperty("value", "SA24D");
+      wrapper.unmount();
+    });
+
+    it("shows a failed delete in the confirmation and keeps it open", async () => {
+      clientMocks.apiDelete.mockRejectedValueOnce(
+        new ApiError({
+          code: "INTERNAL_ERROR",
+          message: "Kunde inte radera klasslistan just nu.",
+          status: 500,
+        }),
+      );
+      const wrapper = mount(CreateRosterModal, {
+        props: { roster: editRoster, deleteConfirmation: rosterDeleteConfirmation },
+      });
+
+      await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
+      await flushPromises();
+      await confirmDeletion(wrapper);
+
+      const dialog = confirmationDialog(wrapper);
+      expect(dialog.text()).toContain(
+        "Det gick inte att ta bort klasslistan. Försök igen eller avbryt.",
+      );
+      expect(dialog.text()).not.toContain("Kunde inte radera klasslistan just nu.");
+      expect(wrapper.emitted("deleted")).toBeUndefined();
+      wrapper.unmount();
+    });
+
+    it("keeps the guest delete handler behind the same confirmation", async () => {
+      const deleteRoster = vi.fn().mockResolvedValue(undefined);
+      const wrapper = mount(CreateRosterModal, {
+        props: {
+          roster: editRoster,
+          deleteConfirmation: rosterDeleteConfirmation,
+          deleteRoster,
+        },
+      });
+
+      await wrapper.get("[data-test='roster-modal-delete']").trigger("click");
+      await flushPromises();
+      expect(deleteRoster).not.toHaveBeenCalled();
+
+      await confirmDeletion(wrapper);
+
+      expect(deleteRoster).toHaveBeenCalledWith("roster-1");
+      expect(clientMocks.apiDelete).not.toHaveBeenCalled();
+      expect(wrapper.emitted("deleted")).toEqual([["roster-1"]]);
+      wrapper.unmount();
+    });
   });
 
   it("uses compact edit-mode action labels", () => {
@@ -353,8 +462,6 @@ describe("CreateRosterModal", () => {
   });
 
   describe("footer geometry", () => {
-    const editRoster = { id: "roster-1", name: "SA24D", students: [{ id: "s1", display_name: "Ada" }] };
-
     it.each([
       { mode: "create", roster: null, buttonCount: 2 },
       { mode: "edit", roster: editRoster, buttonCount: 3 },
@@ -403,18 +510,28 @@ describe("CreateRosterModal", () => {
       wrapper.unmount();
     });
 
-    it("disables the delete glyph while a delete is running", async () => {
+    it("disables the delete glyph and confirm button while a delete is running", async () => {
       let resolveDelete: () => void = () => undefined;
       const deleteRoster = vi.fn(
         () => new Promise<void>((resolve) => {
           resolveDelete = resolve;
         }),
       );
-      const wrapper = mount(CreateRosterModal, { props: { roster: editRoster, deleteRoster } });
+      const wrapper = mount(CreateRosterModal, {
+        props: {
+          roster: editRoster,
+          deleteConfirmation: rosterDeleteConfirmation,
+          deleteRoster,
+        },
+      });
       const deleteButton = wrapper.get("[data-test='roster-modal-delete']");
 
       await deleteButton.trigger("click");
       await flushPromises();
+      await confirmationDialog(wrapper).get('[data-test="confirm-dialog-confirm"]').trigger("click");
+      await flushPromises();
+
+      expect(confirmationDialog(wrapper).get('[data-test="confirm-dialog-confirm"]').attributes("disabled")).toBeDefined();
       expect(deleteButton.attributes("disabled")).toBeDefined();
 
       resolveDelete();
@@ -463,12 +580,18 @@ describe("CreateRosterModal", () => {
           name: "SA24D",
           students: [{ id: "student-1", display_name: "Ada" }],
         },
+        deleteConfirmation: {
+          ...rosterDeleteConfirmation,
+          message:
+            "Klasslistan SA24D tas bort från den publika arbetsytan i den här webbläsaren.",
+        },
         deleteRoster,
       },
     });
 
     await editWrapper.get("[data-test='roster-modal-delete']").trigger("click");
     await flushPromises();
+    await confirmDeletion(editWrapper);
 
     expect(deleteRoster).toHaveBeenCalledWith("guest-roster-1");
     expect(clientMocks.apiDelete).not.toHaveBeenCalled();
