@@ -125,7 +125,7 @@ function rosterDeleteConfirmation(name: string) {
   return {
     eyebrow: "Ta bort klasslista",
     title: "Är du säker?",
-    message: `Klasslistan ${name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.`,
+    message: `Klasslistan ${name} tas bort från översikten. Utkast kopplade till klassen tas också bort.`,
     confirmLabel: "Ta bort klasslista",
   };
 }
@@ -134,7 +134,7 @@ function templateDeleteConfirmation(name: string) {
   return {
     eyebrow: "Ta bort klassrum",
     title: "Är du säker?",
-    message: `Klassrummet ${name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.`,
+    message: `Klassrummet ${name} tas bort från översikten. Utkast kopplade till klassrummet tas också bort.`,
     confirmLabel: "Ta bort klassrum",
   };
 }

@@ -71,7 +71,7 @@ describe("CreateRoomTemplateModal", () => {
     eyebrow: "Ta bort klassrum",
     title: "Är du säker?",
     message:
-      "Klassrummet Sal 101 tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.",
+      "Klassrummet Sal 101 tas bort från översikten. Utkast kopplade till klassrummet tas också bort.",
     confirmLabel: "Ta bort klassrum",
   };
 

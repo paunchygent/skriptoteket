@@ -31,7 +31,7 @@ describe("CreateRosterModal", () => {
     eyebrow: "Ta bort klasslista",
     title: "Är du säker?",
     message:
-      "Klasslistan SA24D tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.",
+      "Klasslistan SA24D tas bort från översikten. Utkast kopplade till klassen tas också bort.",
     confirmLabel: "Ta bort klasslista",
   };
 
