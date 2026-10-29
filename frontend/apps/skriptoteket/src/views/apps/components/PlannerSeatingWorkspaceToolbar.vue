@@ -120,6 +120,7 @@ const {
   isUndoRedoInline,
   isResetInline,
   isNewDraftInline,
+  newDraftLabel,
   isContextInline,
   isDistributionInline,
   hasContextOverflowPanel,
@@ -259,7 +260,9 @@ function editCurrentTemplate(): void {
           data-overflow-contribution="new-draft"
         >
           <UiDenseActionButton
-            label="Nytt utkast"
+            :label="newDraftLabel"
+            aria-label="Nytt utkast"
+            class="whitespace-nowrap"
             data-test="new-seating-draft"
             :disabled="seatingLifecycleBusy"
             @click="void startNewSeatingDraft()"

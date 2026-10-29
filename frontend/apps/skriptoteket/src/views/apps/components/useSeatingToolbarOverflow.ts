@@ -1,4 +1,4 @@
-import { computed } from "vue";
+import { computed, onScopeDispose, ref } from "vue";
 
 import type { UiGlyphMeaning } from "../../../components/ui/shared";
 import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
@@ -56,6 +56,18 @@ export function useSeatingToolbarOverflow(options: {
   editCurrentTemplate: () => void;
   openSettings: () => void;
 }) {
+  const phoneMediaQuery = typeof window !== "undefined" && typeof window.matchMedia === "function"
+    ? window.matchMedia(PHONE_TOOLBAR_MEDIA_QUERY)
+    : null;
+  const isPhoneViewport = ref(phoneMediaQuery?.matches ?? false);
+  const onPhoneViewportChange = (): void => {
+    isPhoneViewport.value = phoneMediaQuery?.matches ?? false;
+  };
+  phoneMediaQuery?.addEventListener("change", onPhoneViewportChange);
+  onScopeDispose(() => {
+    phoneMediaQuery?.removeEventListener("change", onPhoneViewportChange);
+  });
+
   const { hiddenContributionIds, stageLabel, thresholds } = usePlannerToolbarOverflow({
     getRootElement: options.getRootElement,
     forcedHiddenContributionIds: resolvePhoneHiddenContributionIds,
@@ -136,6 +148,8 @@ export function useSeatingToolbarOverflow(options: {
   const isUndoRedoInline = computed(() => true);
   const isResetInline = computed(() => !hiddenContributionIds.value.includes("reset"));
   const isNewDraftInline = computed(() => true);
+  /** The phone composition shortens the label; the add glyph carries the meaning. */
+  const newDraftLabel = computed(() => (isPhoneViewport.value ? "Nytt" : "Nytt utkast"));
   const isContextInline = computed(() => !hiddenContributionIds.value.includes("context"));
   const isDistributionInline = computed(() => !hiddenContributionIds.value.includes("distribution"));
   const hasContextOverflowPanel = computed(() => options.availableTemplateCount() > 0 && !isContextInline.value);
@@ -151,6 +165,7 @@ export function useSeatingToolbarOverflow(options: {
     isUndoRedoInline,
     isResetInline,
     isNewDraftInline,
+    newDraftLabel,
     isContextInline,
     isDistributionInline,
     hasContextOverflowPanel,
