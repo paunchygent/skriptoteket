@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-29'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light lead 75e70136 commits fb1811c5e, bcc132bf1, f8b08cfa3 with focused specs (touchFieldFontSize.node.spec.ts and footer specs), merged cbbf5d969, pre-push 706 files passed, deployed to production cbbf5d969 2026-10-29. Mac staging walk at cbbf5d969 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-rep-0057-cbbf5d969/walk-record.md): all 17 under-16 px fields now 16 px on touch, desktop sizes kept, Redigera klasslista and Redigera klassrum footers on one row, scrollWidth equals innerWidth on every checked view. The user confirmed on their iPhone in Safari and Chrome that zoom and layout work as expected. Two wrapping toolbar labels in Sittplatser found by the walk go to a follow-up task. Light route, no review (D5).'
 task_kind: repository
 acceptance_criteria:
   - On touch devices every input, select and textarea in the app shows text of at least 16 px, so tapping a field never zooms the page

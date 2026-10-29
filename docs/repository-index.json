@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a42717b4252740e3c7afda3a3b969be4fe97577725598bfe678c4cb5ea867b58",
+  "source_set_digest": "82e7ee442240b00799ec9b0515ff7c1c7727a7e8fcaad30d6d69e2e0b09167a4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9085,6 +9085,28 @@
       "type": "task",
       "title": "Phone fields never zoom the page and phone views fit the screen width",
       "path": "docs/backlog/tasks/task-skript-rep-0057-phone-fields-never-zoom-the-page-and-phone-views-fit-the-screen-width.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Light lead 75e70136 commits fb1811c5e, bcc132bf1, f8b08cfa3 with focused specs (touchFieldFontSize.node.spec.ts and footer specs), merged cbbf5d969, pre-push 706 files passed, deployed to production cbbf5d969 2026-10-29. Mac staging walk at cbbf5d969 (Mac ~/Repos/Skriptoteket/.artifacts/staging-walk-rep-0057-cbbf5d969/walk-record.md): all 17 under-16 px fields now 16 px on touch, desktop sizes kept, Redigera klasslista and Redigera klassrum footers on one row, scrollWidth equals innerWidth on every checked view. The user confirmed on their iPhone in Safari and Chrome that zoom and layout work as expected. Two wrapping toolbar labels in Sittplatser found by the walk go to a follow-up task. Light route, no review (D5)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0058",
+      "type": "task",
+      "title": "Sittplatser toolbar labels never wrap on a phone",
+      "path": "docs/backlog/tasks/task-skript-rep-0058-sittplatser-toolbar-labels-never-wrap-on-a-phone.md",
       "status": "ready",
       "task_kind": "repository",
       "owners": [
