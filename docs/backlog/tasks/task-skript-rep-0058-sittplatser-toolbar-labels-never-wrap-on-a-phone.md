@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-29'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route, no review. Merged a58dc8ed8, deployed to production at ecf66f5e1 and again at dad31d98e. The user checked on their iPhone in production on 2026-10-29: Nytt and Avancerade inställningar each show on one line.'
 task_kind: repository
 acceptance_criteria:
   - At 390 px the Sittplatser toolbar button Nytt utkast shows its label on one line

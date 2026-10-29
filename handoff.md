@@ -4,17 +4,18 @@
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
   REP-0037, 41-03-02, 41-03-03. No Skriptoteket child is running; no task worktree is left.
 
-  - Production: Skriptoteket `e08981037` (deployed 2026-10-29, seating-export gate passed,
-    migration `f2b9c4d8a701` applied, log `.artifacts/hemma-deploy-20261029-103215.log`);
-    HuleEdu `f59ea3b61`. Production `.env` now holds
-    `ALLOWED_HOSTS=skriptoteket.hule.education` (09-07-01). `ssh hemma` does not resolve on
-    Hemma itself; run the deploy script detached locally.
+  - Production: Skriptoteket `dad31d98e` (deployed 2026-10-29, seating-export gate passed,
+    log `.artifacts/hemma-deploy-20261029-153016.log`); HuleEdu `f59ea3b61`. Production `.env`
+    holds `ALLOWED_HOSTS=skriptoteket.hule.education`. `ssh hemma` does not resolve on Hemma
+    itself; run the deploy script detached locally. Healthz returned 503 twice at 14:09Z
+    (database check timeout at load average about 20), then 200.
   - Staging runs `d0064b1ce`, healthy. If `hemma-dev start` says "container with given ID
     already exists", stop the orphaned process (postgres with SIGINT), remove
     `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
-  - REP-0024 / 27-09-03 / 27-09-04: code on main and in production; review findings 1 and 2
-    are fixed in code (2026-10-29 check). Open: real-iPhone pinch check on both phone maps
-    (blocker 3), a 27-09-04 phone-rules walk, and a spec for the rule-edit diagnostics clear.
+  - Follow-ups seen in the 27-09-04 walk, not yet tracked: raw seat id `plats-1` in the Fast
+    plats row; stacked lock badges overlap the KLASSRUM header; Håll nära/isär A/B letters swap
+    after a reload; the share page draws a one-seat room at full size, so phones pan sideways.
+    Staging walk data left: class `Walk 40-01-02`, room `Walk 27-09-04 B`.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
@@ -56,6 +57,11 @@
   on merge evidence, 10 tasks and ST-21-04 canceled, 25-06-14 partly canceled, 10 items
   deferred, stories 06-17, 06-18, 39-01, 39-04, 40-02, 40-04 closed, EPIC-SKRIPT-20 active;
   26-06-01 (D4) and 09-07-01 (D5) record their decisions and stay open.
+
+- 2026-10-29 `done` (Hemma orchestrator): 27-09-04, 27-09-05 builder pinch (`de4c60e93`), REP-0024,
+  27-09-03, REP-0057 16 px touch fields and one-row footers (`cbbf5d969`), REP-0058 Sittplatser
+  labels on one line (`a58dc8ed8`), REP-0059 delete asks first (`ecf66f5e1`, copy `dad31d98e`);
+  the user checked each on their iPhone in production (Chrome and Safari).
 
 - 2026-10-28 `done` (Hemma orchestrator): 40-04-26 type switch and AI toolbar (`23309e478`),
   40-02-01 icons (`1b2ce75cc`), 39-04-24 rising count, 39-06-08 ordering, 40-04-09 and

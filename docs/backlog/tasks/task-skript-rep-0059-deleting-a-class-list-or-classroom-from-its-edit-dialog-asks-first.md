@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-29'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route, no review. Merged ecf66f5e1; copy fix 289472a43 (user wording: Utkast kopplade till) merged dad31d98e with 42 focused Vitest tests and fe-lint passing, and deployed to production at dad31d98e. The user checked on their iPhone in production on 2026-10-29: delete in Redigera klasslista and Redigera klassrum asks first and Avbryt keeps the item.'
 task_kind: repository
 acceptance_criteria:
   - Radera in Redigera klasslista opens the same confirmation Översikt uses for a class list, naming the class; the class list is deleted only after Ta bort klasslista
