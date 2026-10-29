@@ -119,7 +119,7 @@ function handleMenuKeydown(event: KeyboardEvent): void {
       <div
         v-if="isOpen"
         ref="menuRef"
-        class="absolute right-0 z-50 mt-2 min-w-[12rem]"
+        class="absolute right-0 z-50 mt-2 w-max min-w-[12rem] max-w-[calc(100vw-2*var(--huleedu-space-4))]"
         :class="DENSE_MENU_PANEL_CLASS"
         role="menu"
         :aria-label="label"
@@ -151,7 +151,7 @@ function handleMenuKeydown(event: KeyboardEvent): void {
               :size="16"
               :stroke-width="2.5"
             />
-            <span>{{ item.label }}</span>
+            <span class="whitespace-nowrap">{{ item.label }}</span>
           </button>
           <div
             v-if="$slots.panel"
@@ -184,7 +184,7 @@ function handleMenuKeydown(event: KeyboardEvent): void {
             :size="16"
             :stroke-width="2.5"
           />
-          <span>{{ item.label }}</span>
+          <span class="whitespace-nowrap">{{ item.label }}</span>
         </button>
         <div
           v-if="$slots.footer"
