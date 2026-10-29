@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-29'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Junior commit b376ac22b with fail-first pinch spec (CreateRoomTemplateModal.pinch.spec.ts), merged de4c60e93, pre-push 704 files passed, deployed to production de4c60e93 2026-10-29; the user confirmed on their iPhone in Chrome and Safari that a pinch in Skapa klassrum zooms around the fingers. Light route, no review (D2).'
 task_kind: story
 acceptance_criteria:
   - On a phone, a two-finger pinch on the classroom builder canvas in Skapa klassrum zooms in and out around the point between the fingers, as the Sittplatser seat map does; the builder uses the shared anchored viewport zoom, and a focused spec proves the anchor is kept

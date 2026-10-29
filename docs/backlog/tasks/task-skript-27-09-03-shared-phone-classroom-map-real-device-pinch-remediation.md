@@ -4,50 +4,37 @@ id: TASK-SKRIPT-27-09-03
 title: Shared phone classroom-map real-device pinch remediation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: in_progress
-readiness_review:
-  record: inline
-  status: not_started
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-29'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'User iPhone check 2026-10-29 in production e08981037 and de4c60e93: pinch zoom works around the pinch point on Sittplatser, Regler / Fast plats and Skapa klassrum in Chrome and Safari; the builder pinch was repaired in TASK-SKRIPT-27-09-05 (de4c60e93). Review blockers 1 and 2 of REV-SKRIPT-TASK-REP-0024-CLOSEOUT were confirmed fixed in code on 2026-10-29 (marker matching requires current rule kind and students; row-layout adjacent-column scores -4 and is degraded); blocker 3 is closed by this device check.'
 story: ST-SKRIPT-27-09
 task_kind: story
 acceptance_criteria:
-- Given the phone `Sittplatser` simplified classroom map renders on an iPhone-sized
-  viewport, when the teacher performs a real two-finger pinch on the map, then the
-  map visibly zooms without removing, moving, or swapping a seated student.
-- Given the phone `Regler` `Fast plats` simplified classroom map renders on an iPhone-sized
-  viewport, when the teacher performs a real two-finger pinch on the map, then the
-  map visibly zooms without selecting, clearing, or saving a fixed-seat binding.
-- Given the teacher pinches around a visible map location, when zoom changes, then
-  that gesture target remains centered under the same screen point instead of drifting
-  toward the canvas origin.
-- Given the simplified phone map receives a continuous pinch gesture, when gesture
-  events arrive quickly, then zoom and scroll compensation are coalesced through one
-  gesture-camera update loop rather than chained through stale scroll/scale state.
-- Given the simplified phone map renders at its default zoom, when seats have assigned
-  students and rule markers, then names, initials, and marker symbols remain readable
-  without requiring a preliminary zoom.
-- Given the simplified phone map zooms, when seat containers grow or shrink, then
-  seat ordinals, student names, initials, and marker symbols scale from bounded CSS
-  variables derived from `--planner-phone-seat-cell-size` instead of staying fixed-size.
-- Given a recognized pinch gesture ends on either simplified map, when the browser
-  dispatches a follow-up tap/click, then the map suppresses that follow-up domain
-  action exactly once.
-- Given one-finger interaction is used on either simplified map, when the teacher
-  taps or short/long-presses a seat, then the existing `PR-0310` seat selection, removal,
-  move, and swap semantics remain unchanged.
-- Given browser proof runs for the phone simplified map, when the proof asserts zoom,
-  then it proves native/browser-level input ownership rather than only fabricated
-  DOM `TouchEvent` handler invocation.
+  - Given the phone `Sittplatser` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without removing, moving, or swapping a seated student.
+  - Given the phone `Regler` `Fast plats` simplified classroom map renders on an iPhone-sized viewport, when the teacher performs a real two-finger pinch on the map, then the map visibly zooms without selecting, clearing, or saving a fixed-seat binding.
+  - Given the teacher pinches around a visible map location, when zoom changes, then that gesture target remains centered under the same screen point instead of drifting toward the canvas origin.
+  - Given the simplified phone map receives a continuous pinch gesture, when gesture events arrive quickly, then zoom and scroll compensation are coalesced through one gesture-camera update loop rather than chained through stale scroll/scale state.
+  - Given the simplified phone map renders at its default zoom, when seats have assigned students and rule markers, then names, initials, and marker symbols remain readable without requiring a preliminary zoom.
+  - Given the simplified phone map zooms, when seat containers grow or shrink, then seat ordinals, student names, initials, and marker symbols scale from bounded CSS variables derived from `--planner-phone-seat-cell-size` instead of staying fixed-size.
+  - Given a recognized pinch gesture ends on either simplified map, when the browser dispatches a follow-up tap/click, then the map suppresses that follow-up domain action exactly once.
+  - Given one-finger interaction is used on either simplified map, when the teacher taps or short/long-presses a seat, then the existing `PR-0310` seat selection, removal, move, and swap semantics remain unchanged.
+  - Given browser proof runs for the phone simplified map, when the proof asserts zoom, then it proves native/browser-level input ownership rather than only fabricated DOM `TouchEvent` handler invocation.
+backlog_document_profile: contract-derived
 ---
 
-## Context
+## Implementation Contract
 
+Closed as done on 2026-10-29; the original contract below is kept as history; see Closeout for the evidence.
+
+## Context
 
 `PR-0312` added a shared touch-gesture composable and proved handler behavior
 with Chromium-level retained proof. Real iPhone testing now shows that the
@@ -66,7 +53,6 @@ inspect the classroom on a phone.
 
 ## Story Contract Slice
 
-
 Make the simplified phone classroom map use the same real-device pinch behavior
 that works in the room-template builder modal.
 
@@ -79,8 +65,11 @@ The fix must cover both consumers of `PlannerPhoneClassroomSeatMap.vue`:
 
 No separate contract inputs is stated in the source.
 
-## Plan
+## Core Vertical And Performance
 
+The source record did not define a separate section for this package heading.
+
+## Plan
 
 1. Add a failing focused component test that exercises the simplified map
    native gesture path and verifies the zoom percent changes while the next
@@ -107,7 +96,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - `pdm run fe-test -- --run useRoomTouchViewportGestures PlannerPhoneClassroomSeatMap PlannerPhoneFixedSeatRulePanel PlannerSeatingWorkspacePane`
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
@@ -124,7 +112,6 @@ No separate validation is stated in the source.
 
 ## Stop Conditions
 
-
 Revert the simplified-map gesture binding changes while leaving `PR-0310`
 phone maps, short/long-press seating semantics, fixed-seat authoring, and the
 room-template builder modal untouched.
@@ -139,7 +126,6 @@ No separate notes is stated in the source.
 
 ### Source: Non-goals
 
-
 - No solver, Smart seating, rule persistence, or marker semantics change.
 - No room-template builder redesign; it is the working reference path.
 - No desktop/tablet `RoomCanvas` replacement.
@@ -148,7 +134,6 @@ No separate notes is stated in the source.
 - No removal of existing single-tap, short-press, or long-press semantics.
 
 ### Source: Design Direction
-
 
 Treat the room-template builder as the behavioral reference and the simplified
 phone map as the broken consumer.
@@ -170,7 +155,6 @@ against the actual simplified-map zoom percent or visual scale state.
 
 ### Source: Frontend Entry Points
 
-
 - `frontend/apps/skriptoteket/src/views/apps/components/PlannerPhoneClassroomSeatMap.vue`
 - `frontend/apps/skriptoteket/src/views/apps/useRoomTouchViewportGestures.ts`
 - `frontend/apps/skriptoteket/src/views/apps/useRoomViewportZoom.ts`
@@ -180,7 +164,6 @@ against the actual simplified-map zoom percent or visual scale state.
 - `scripts/playwright_pr_0310_phone_fixed_seat_rules_map.py`
 
 ### Source: Implementation Closeout
-
 
 Implemented on 2026-05-10.
 
@@ -213,7 +196,6 @@ Verification:
 
 ### Source: Post-Review Field Finding
 
-
 Real-device testing reported on 2026-05-10 that touch gesture zoom in/out still
 does not work on the simplified phone classroom maps. The retained Chromium and
 unit proof was therefore not sufficient to close the real-device acceptance
@@ -221,7 +203,6 @@ criterion. The remediation below reopens the lane for re-review and still needs
 actual phone confirmation before final `done` closeout.
 
 ### Source: Review Remediation
-
 
 Applied on 2026-05-10; second-pass code proof accepted the visible zoom binding,
 but final closeout still requires real-device iPhone confirmation.
@@ -245,7 +226,6 @@ Verification:
 - `pdm run fe-test -- --run classroomPlannerSeatRuleMarkers PlannerPhoneClassroomSeatMap useRoomTouchViewportGestures`
 
 ### Source: Field Follow-up: Anchored Zoom And Readability
-
 
 Real-device testing after the visible zoom fix confirmed pinch zoom now works,
 but the simplified map grows from the canvas origin. That makes the map drift
@@ -286,7 +266,6 @@ Additional verification:
   and marker symbols within bounded min/max values.
 
 ### Source: Anchored Zoom Remediation Closeout
-
 
 Implemented on 2026-05-10; ready for retained review plus real-device
 confirmation.
@@ -335,3 +314,15 @@ No review evidence is recorded in this migration candidate; the frontmatter gate
 ## Implementation Review
 
 No review evidence is recorded in this migration candidate; the frontmatter gate remains authoritative.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                |
+| --- | ------------------------------------------------------------------------------------ |
+| D1  | Closed as done on 2026-10-29 on the user's iPhone check in production; see Closeout. |
+
+## Closeout
+
+### Closeout 2026-10-29
+
+Closed by the Hemma orchestrator on the user's approved iPhone check of 2026-10-29 (Chrome and Safari, production). The REP-0024 review blockers 1 and 2 were already fixed in code; blocker 3, real-device pinch, failed only in the classroom builder on iOS Chrome and was repaired by TASK-SKRIPT-27-09-05 (main de4c60e93, deployed the same day).

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2b0496bce33720af6983a1c563fde130b9ea115ac334353b27424ff650759f46",
+  "source_set_digest": "a42717b4252740e3c7afda3a3b969be4fe97577725598bfe678c4cb5ea867b58",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4295,7 +4295,7 @@
       "type": "task",
       "title": "Shared phone classroom-map real-device pinch remediation",
       "path": "docs/backlog/tasks/task-skript-27-09-03-shared-phone-classroom-map-real-device-pinch-remediation.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-09",
       "owners": [
@@ -4304,13 +4304,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "User iPhone check 2026-10-29 in production e08981037 and de4c60e93: pinch zoom works around the pinch point on Sittplatser, Regler / Fast plats and Skapa klassrum in Chrome and Safari; the builder pinch was repaired in TASK-SKRIPT-27-09-05 (de4c60e93). Review blockers 1 and 2 of REV-SKRIPT-TASK-REP-0024-CLOSEOUT were confirmed fixed in code on 2026-10-29 (marker matching requires current rule kind and students; row-layout adjacent-column scores -4 and is degraded); blocker 3 is closed by this device check."
       }
     },
     {
@@ -4341,7 +4341,7 @@
       "type": "task",
       "title": "A pinch in the classroom builder zooms around the fingers",
       "path": "docs/backlog/tasks/task-skript-27-09-05-a-pinch-in-the-classroom-builder-zooms-around-the-fingers.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-27-09",
       "owners": [
@@ -4352,7 +4352,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Junior commit b376ac22b with fail-first pinch spec (CreateRoomTemplateModal.pinch.spec.ts), merged de4c60e93, pre-push 704 files passed, deployed to production de4c60e93 2026-10-29; the user confirmed on their iPhone in Chrome and Safari that a pinch in Skapa klassrum zooms around the fingers. Light route, no review (D2)."
       }
     },
     {
@@ -8354,7 +8358,7 @@
       "type": "task",
       "title": "Solver-owned rule marker semantics",
       "path": "docs/backlog/tasks/task-skript-rep-0024-solver-owned-rule-marker-semantics.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -8362,13 +8366,13 @@
           "id": "skriptoteket"
         }
       ],
-      "readiness_review": {
-        "record": "inline",
-        "status": "not_started"
-      },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-29",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "User iPhone check 2026-10-29 in production e08981037 and de4c60e93: pinch zoom works around the pinch point on Sittplatser, Regler / Fast plats and Skapa klassrum in Chrome and Safari; the builder pinch was repaired in TASK-SKRIPT-27-09-05 (de4c60e93). Review blockers 1 and 2 of REV-SKRIPT-TASK-REP-0024-CLOSEOUT were confirmed fixed in code on 2026-10-29 (marker matching requires current rule kind and students; row-layout adjacent-column scores -4 and is degraded); blocker 3 is closed by this device check."
       }
     },
     {
