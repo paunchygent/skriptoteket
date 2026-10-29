@@ -120,6 +120,24 @@ const {
   closeExitConfirmation,
   confirmExitWithoutWaiting,
 } = useClassroomPlannerRouteShell();
+
+function rosterDeleteConfirmation(name: string) {
+  return {
+    eyebrow: "Ta bort klasslista",
+    title: "Är du säker?",
+    message: `Klasslistan ${name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.`,
+    confirmLabel: "Ta bort klasslista",
+  };
+}
+
+function templateDeleteConfirmation(name: string) {
+  return {
+    eyebrow: "Ta bort klassrum",
+    title: "Är du säker?",
+    message: `Klassrummet ${name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.`,
+    confirmLabel: "Ta bort klassrum",
+  };
+}
 </script>
 
 <template>
@@ -280,6 +298,7 @@ const {
     <CreateRosterModal
       v-if="isRosterModalOpen"
       :roster="activeRosterModal"
+      :delete-confirmation="activeRosterModal ? rosterDeleteConfirmation(activeRosterModal.name) : null"
       @close="closeRosterModal"
       @saved="void upsertRoster($event)"
       @deleted="void removeRosterFromOverview($event)"
@@ -288,6 +307,7 @@ const {
     <CreateRoomTemplateModal
       v-if="isTemplateModalOpen"
       :template="activeTemplateModal"
+      :delete-confirmation="activeTemplateModal ? templateDeleteConfirmation(activeTemplateModal.name) : null"
       @close="closeTemplateModal"
       @saved="upsertTemplate($event)"
       @deleted="removeTemplateFromOverview($event)"
@@ -295,10 +315,7 @@ const {
 
     <PlannerConfirmationDialog
       v-if="overviewDeleteRosterTarget"
-      eyebrow="Ta bort klasslista"
-      title="Är du säker?"
-      :message="`Klasslistan ${overviewDeleteRosterTarget.name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast för den klassen.`"
-      confirm-label="Ta bort klasslista"
+      v-bind="rosterDeleteConfirmation(overviewDeleteRosterTarget.name)"
       :error-message="overviewDeleteRosterError"
       :is-submitting="isDeletingOverviewRoster"
       @cancel="closeOverviewRosterDelete"
@@ -308,10 +325,7 @@ const {
 
     <PlannerConfirmationDialog
       v-if="overviewDeleteTemplateTarget"
-      eyebrow="Ta bort klassrum"
-      title="Är du säker?"
-      :message="`Klassrummet ${overviewDeleteTemplateTarget.name} tas bort från översikten tillsammans med alla beroende grupp- och sittutkast som använder klassrummet.`"
-      confirm-label="Ta bort klassrum"
+      v-bind="templateDeleteConfirmation(overviewDeleteTemplateTarget.name)"
       :error-message="overviewDeleteTemplateError"
       :is-submitting="isDeletingOverviewTemplate"
       @cancel="closeOverviewTemplateDelete"

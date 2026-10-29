@@ -12,11 +12,18 @@ import { nextTick, ref } from "vue";
 import { SystemMessage, UiDenseIconButton } from "../../../components/ui";
 import { UiGlyph } from "../../../components/ui/shared";
 import type { Roster, Student } from "../classroomPlannerTypes";
+import PlannerConfirmationDialog from "./PlannerConfirmationDialog.vue";
 import { useRosterForm } from "./useRosterForm";
 import { useRosterImport } from "./useRosterImport";
 
 const props = defineProps<{
   roster?: Roster | null;
+  deleteConfirmation?: {
+    eyebrow: string;
+    title: string;
+    message: string;
+    confirmLabel: string;
+  } | null;
   importPreviewApiPath?: string;
   saveRoster?: (payload: {
     existingRoster: Roster | null;
@@ -37,7 +44,7 @@ const form = useRosterForm(props, {
   deleted: (rosterId) => emit("deleted", rosterId),
 });
 const {
-  name, rawStudents, isSubmitting, isDeleting, formError,
+  name, rawStudents, isSubmitting, isDeleting, formError, deleteError,
   isEditing, parsedStudents, isValid, submit, removeRoster,
 } = form;
 const {
@@ -47,6 +54,30 @@ const {
   appendAmbiguousRow, dismissAmbiguousRow,
 } = useRosterImport({ apiPath: props.importPreviewApiPath, roster: () => props.roster }, form);
 const importTrigger = ref<HTMLButtonElement | null>(null);
+const isDeleteConfirmationOpen = ref(false);
+
+function openDeleteConfirmation(): void {
+  if (!props.roster || !props.deleteConfirmation) {
+    return;
+  }
+  deleteError.value = null;
+  isDeleteConfirmationOpen.value = true;
+}
+
+function closeDeleteConfirmation(): void {
+  if (isDeleting.value) {
+    return;
+  }
+  isDeleteConfirmationOpen.value = false;
+  deleteError.value = null;
+}
+
+async function confirmDeleteRoster(): Promise<void> {
+  const deleted = await removeRoster();
+  if (deleted) {
+    isDeleteConfirmationOpen.value = false;
+  }
+}
 
 async function updateImportError(value: string | null): Promise<void> {
   importError.value = value;
@@ -289,7 +320,7 @@ function closeModal(): void {
               tone="danger"
               :disabled="isDeleting"
               data-test="roster-modal-delete"
-              @click="removeRoster"
+              @click="openDeleteConfirmation"
             >
               <UiGlyph
                 meaning="delete"
@@ -322,5 +353,15 @@ function closeModal(): void {
         </div>
       </div>
     </div>
+
+    <PlannerConfirmationDialog
+      v-if="isDeleteConfirmationOpen && deleteConfirmation"
+      v-bind="deleteConfirmation"
+      :error-message="deleteError"
+      :is-submitting="isDeleting"
+      @cancel="closeDeleteConfirmation"
+      @confirm="void confirmDeleteRoster()"
+      @dismiss-error="deleteError = null"
+    />
   </div>
 </template>

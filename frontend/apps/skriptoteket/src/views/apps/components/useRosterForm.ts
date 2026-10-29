@@ -41,6 +41,7 @@ export function useRosterForm(
   const isSubmitting = ref(false);
   const isDeleting = ref(false);
   const formError = ref<string | null>(null);
+  const deleteError = ref<string | null>(null);
 
   const isEditing = computed(() => Boolean(options.roster));
 
@@ -100,13 +101,13 @@ export function useRosterForm(
     }
   }
 
-  async function removeRoster(): Promise<void> {
+  async function removeRoster(): Promise<boolean> {
     if (!options.roster) {
-      return;
+      return false;
     }
 
     isDeleting.value = true;
-    formError.value = null;
+    deleteError.value = null;
 
     try {
       if (options.deleteRoster) {
@@ -115,9 +116,10 @@ export function useRosterForm(
         await apiDelete<void>(`/api/v1/apps/classroom.group-seating-studio/rosters/${options.roster.id}`);
       }
       events.deleted(options.roster.id);
+      return true;
     } catch {
-      formError.value =
-        "Det gick inte att ta bort klasslistan. Försök igen eller stäng dialogrutan.";
+      deleteError.value = "Det gick inte att ta bort klasslistan. Försök igen eller avbryt.";
+      return false;
     } finally {
       isDeleting.value = false;
     }
@@ -127,6 +129,7 @@ export function useRosterForm(
     name,
     rawStudents,
     formError,
+    deleteError,
     isSubmitting,
     isDeleting,
     parsedStudents,
