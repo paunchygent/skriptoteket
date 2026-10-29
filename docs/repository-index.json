@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "82e7ee442240b00799ec9b0515ff7c1c7727a7e8fcaad30d6d69e2e0b09167a4",
+  "source_set_digest": "04fd97b8c3a56cbfc9e4a209c72c4a53e5cf2c08fceb144ef20f9b2ddbd5b5a9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9107,6 +9107,24 @@
       "type": "task",
       "title": "Sittplatser toolbar labels never wrap on a phone",
       "path": "docs/backlog/tasks/task-skript-rep-0058-sittplatser-toolbar-labels-never-wrap-on-a-phone.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0059",
+      "type": "task",
+      "title": "Deleting a class list or classroom from its edit dialog asks first",
+      "path": "docs/backlog/tasks/task-skript-rep-0059-deleting-a-class-list-or-classroom-from-its-edit-dialog-asks-first.md",
       "status": "ready",
       "task_kind": "repository",
       "owners": [
