@@ -4,17 +4,17 @@
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
   REP-0037, 41-03-02, 41-03-03. No Skriptoteket child is running; no task worktree is left.
 
-  - Production: Skriptoteket `50a7b84e3`; HuleEdu `f59ea3b61`. Main is ahead of production
-    (40-04-26, 40-02-01, 41-02-07 with migration `f2b9c4d8a701`, 39-10-03, REP-0052/53/54,
-    26-06-01, 09-07-01, 39-06-11); no production deploy was asked for.
-  - USER GATE before the next Skriptoteket production deploy (09-07-01, `1f3f84f9f`):
-    production startup now refuses loopback `ALLOWED_HOSTS`, and the production `.env`
-    (`~/apps/skriptoteket/.env:74`) still holds `localhost,127.0.0.1,::1`. Set
-    `ALLOWED_HOSTS=skriptoteket.hule.education` there first, or web and worker will not start.
+  - Production: Skriptoteket `e08981037` (deployed 2026-10-29, seating-export gate passed,
+    migration `f2b9c4d8a701` applied, log `.artifacts/hemma-deploy-20261029-103215.log`);
+    HuleEdu `f59ea3b61`. Production `.env` now holds
+    `ALLOWED_HOSTS=skriptoteket.hule.education` (09-07-01). `ssh hemma` does not resolve on
+    Hemma itself; run the deploy script detached locally.
   - Staging runs `d0064b1ce`, healthy. If `hemma-dev start` says "container with given ID
     already exists", stop the orphaned process (postgres with SIGINT), remove
     `/run/user/1000/docker/runtime-runc/moby/<id>` dirs whose init PID is dead, start again.
-  - Next: a repair task for REP-0024 and 27-09-04 (REP-0024 review is `changes_requested`).
+  - REP-0024 / 27-09-03 / 27-09-04: code on main and in production; review findings 1 and 2
+    are fixed in code (2026-10-29 check). Open: real-iPhone pinch check on both phone maps
+    (blocker 3), a 27-09-04 phone-rules walk, and a spec for the rule-edit diagnostics clear.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
