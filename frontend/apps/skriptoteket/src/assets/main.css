@@ -11,6 +11,30 @@ body {
   color: var(--color-navy);
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOUCH FIELD TEXT - iOS WebKit zooms the page when a field with text below
+   16px takes focus, so every editing surface on a touch device is 16px.
+
+   This rule is OUTSIDE @layer so it beats Tailwind utilities (`text-sm`,
+   `text-[11px]`) and `@layer components` classes. The `input:not(...)` list
+   gives that selector the specificity of nine attribute selectors, so it also
+   beats local component rules such as `.xw-input { font: inherit }`. A local
+   rule on a `select`, `textarea` or editing surface that sets a smaller
+   font-size outranks this rule; set it for non-touch pointers only.
+   Desktop pointers (fine, hovering) do not match and keep their sizes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (pointer: coarse), (hover: none) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=button]):not([type=submit]):not([type=reset]):not([type=color]):not([type=image]),
+  select,
+  textarea,
+  [contenteditable=""],
+  [contenteditable="true"],
+  .cm-content {
+    font-size: 16px;
+  }
+}
+
 body.app-shell-game-mode {
   background:
     radial-gradient(circle at 18% 10%, rgba(127, 219, 149, 0.12), transparent 20%),
