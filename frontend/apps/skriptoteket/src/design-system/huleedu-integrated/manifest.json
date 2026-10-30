@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.37",
+  "version": "0.1.38",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,7 +16,7 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "b9a9a72de7c9c258cb997345d7302b2581ae908231cb21bddd677b81d9795c68"
+      "sha256": "f1b2be0554c8c31adf4362fd018d70935ee325840d7053022e889a8af1fd5bfd"
     },
     {
       "id": "tailwind-theme",
@@ -46,7 +46,7 @@
       "id": "skriptoteket-logo-horizontal",
       "kind": "asset",
       "path": "src/assets/brands/skriptoteket-logo-horizontal.svg",
-      "sha256": "58bbea8b854f85fe7e990b3b0282b041b52f03c5d965c64bd3470cbe1a960d35"
+      "sha256": "f305a7c99a556a6641270ddf78a27c01a1bbb02ce066aac3a55c6143e922d8ac"
     },
     {
       "id": "dense-tool-primitives",

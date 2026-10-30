@@ -16,6 +16,7 @@
 import { flushPromises } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
+import brandLogoSource from "../brand/BrandLogo.vue?raw";
 import { useHelp } from "../help/useHelp";
 import { useLayoutStore } from "../../stores/layout";
 import { createShellHarness, shellRoutes } from "./authLayoutShellHarness";
@@ -222,9 +223,14 @@ describe("AuthLayout shell action wiring", () => {
     mountLayout({ routeName: "exam-workspace", appId: "" });
 
     const brand = () => wrapper().get(".topbar .topbar-brand");
+    const logo = () => brand().get(".brand-logo");
     expect(brand().attributes("data-to")).toBe("/");
-    expect(brand().get("img").attributes("src")).toBe("/logo-horizontal.svg");
-    expect(brand().get("img").attributes("alt")).toBe("Skriptoteket");
+    // The logo is inlined from the synced SVG, so the link's accessible name
+    // comes from the wrapper role rather than an `<img alt>`.
+    expect(logo().attributes("role")).toBe("img");
+    expect(logo().attributes("aria-label")).toBe("Skriptoteket");
+    expect(logo().find("svg").exists()).toBe(true);
+    expect(logo().find("svg path").exists()).toBe(true);
     expect(brand().get(".topbar-brand-app").text()).toBe("Provredigering");
     expect(wrapper().get(".topbar #app-topbar-page-slot").element.childElementCount).toBe(0);
 
@@ -232,9 +238,21 @@ describe("AuthLayout shell action wiring", () => {
     mountLayout();
 
     expect(brand().attributes("data-to")).toBe("/");
-    expect(brand().get("img").attributes("alt")).toBe("Skriptoteket");
+    expect(logo().attributes("aria-label")).toBe("Skriptoteket");
     expect(brand().find(".topbar-brand-app").exists()).toBe(false);
     expect(wrapper().find(".topbar #app-topbar-page-slot").exists()).toBe(true);
+  });
+
+  it("leaves the pointer cursor to the link that wraps the wordmark", () => {
+    // Vitest stubs component styles, so the component's own style block is the
+    // evidence: only a surrounding anchor may show the pointer.
+    expect(brandLogoSource).not.toMatch(/cursor\s*:/);
+
+    mountLayout();
+
+    const logoStyle = wrapper().get(".topbar .topbar-brand .brand-logo").attributes("style") ?? "";
+    expect(logoStyle).toContain("height: var(--huleedu-space-10)");
+    expect(logoStyle).not.toContain("cursor");
   });
 
   it("gives immersive game routes only the way back, Hjälp and Logga ut", async () => {

@@ -167,12 +167,14 @@ defineExpose({ menuButtonElement });
 }
 
 /* The wordmark carries the product name; `--huleedu-space-10` (40px) keeps its
-   visible ink (35px) above every app page title (24px) inside the 56px bar. */
+   visible ink (35px) above every app page title (24px) inside the 56px bar, and
+   the 44px action-control height keeps the home link a full touch target. */
 .topbar-brand {
   display: inline-flex;
   flex: none;
   align-items: center;
   gap: var(--huleedu-space-1-5);
+  min-height: var(--huleedu-action-control-height);
   margin-left: var(--huleedu-space-2);
   white-space: nowrap;
   text-decoration: none;
@@ -301,10 +303,11 @@ defineExpose({ menuButtonElement });
   color: var(--huleedu-canvas);
 }
 
-/* The wordmark's ink is navy, so the dark bar draws the same artwork as a light
-   silhouette instead of navy on dark. */
-.topbar--immersive .topbar-brand :deep(.brand-logo) {
-  filter: brightness(0) invert(1);
+/* The wordmark's ink is navy, so the dark bar points the logo's two wordmark
+   tokens at the light roles instead of filtering the artwork. */
+.topbar--immersive .topbar-brand {
+  --huleedu-wordmark-primary: var(--huleedu-canvas);
+  --huleedu-wordmark-accent: var(--huleedu-canvas-80);
 }
 
 .topbar--immersive .topbar-back-link {
