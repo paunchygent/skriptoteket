@@ -13,58 +13,73 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-  - The signed-in top bar shows logo-horizontal.svg (the BrandLogo image) on desktop, tablet and phone, with the app label beside it as today
-  - The logo's visible height is larger than the H1 page title of every app view at desktop, tablet and phone, within the existing top-bar height
-  - Clicking the logo goes to the page sign-in lands on when no other target was saved
+  - The signed-in top bar and the login page render the shared logo (huleedu-integrated 0.1.38) as inline SVG coloured by the wordmark tokens, with the app label beside it in the top bar
+  - The logo's visible height is larger than the page-title H1 role (24 px) at desktop, tablet and phone, the top bar stays 56 px, and the logo link is at least 44 px high
+  - Clicking the top-bar logo goes to the home route, where sign-in lands when no other target was saved; only the linked logo shows a pointer cursor
+  - The immersive dark top bar colours the logo through the wordmark tokens, with no CSS filter
+  - The Klassrumskartan PDF exports show the 0.1.38 logo with navy and terracotta
 backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
 
 The app shell rebuild (TASK-SKRIPT-40-04-02, `b71fd8524`, 2026-10-17) replaced the Skriptoteket logo in the
-signed-in top bar with plain serif text, smaller than the app page titles. This task puts the logo back as the
-home control.
+signed-in top bar with plain serif text, smaller than the app page titles. This task puts the shared logo back as
+the home control, rendered inline so the design tokens colour it.
 
-- Actors: every signed-in user in the app shell; the login page keeps its logo as it is.
-- Change: `AuthTopBar.vue` `.topbar-brand` renders `BrandLogo` (`/logo-horizontal.svg`) inside its RouterLink,
-  with `alt="Skriptoteket"` as the link's accessible name; the app label (`.topbar-brand-app`) stays beside it.
-- Size: the logo's visible height is larger than the H1 page title of every app view at desktop (>= 1280),
-  tablet (768-1279) and phone (< 768), and the top bar keeps its current height. Sizes come from shared tokens.
-- Link: the logo goes to the page sign-in lands on when no other target was saved. If that is not `/`, the link
-  targets that route.
-- Non-goals: the login page, the logo SVG itself, other top-bar actions.
+- Source: the shared design package 0.1.38 (TASK-SKILL-REP-0423) fixes the logo (one navy, trimmed right edge,
+  compact paths) and writes its fills as `var(--huleedu-wordmark-primary, #082B4C)` and
+  `var(--huleedu-wordmark-accent, #C94F32)`. This task adopts 0.1.38 through `design-system sync`; the synced
+  `public/logo-horizontal.svg` stays the one logo file.
+- Component: `BrandLogo.vue` renders that synced SVG inline (one source, no hand-copied paths), with an accessible
+  name "Skriptoteket"; it sets no cursor. The top bar (`AuthTopBar.vue` `.topbar-brand`) and the login page use it.
+- Size: logo height `var(--huleedu-space-10)` (40 px, about 35 px of visible ink) beats the page-title role
+  (`.page-title`, `--huleedu-text-2xl`, 24 px) at every band; the top bar stays 56 px; the brand link is at least
+  `--huleedu-action-control-height` (44 px) high.
+- Link: `to="/"`; `resolveAuthLoginSuccessLocation` falls back to `home` (`/`) for every role.
+- Immersive dark bar: the logo takes light colours by overriding the two wordmark tokens on the brand; the
+  `brightness(0) invert(1)` filter goes.
+- Klassrumskartan PDF exports: `classroom_planner/assets/logo-horizontal.svg` (a hand copy outside the sync map,
+  rendered by WeasyPrint) takes the 0.1.38 file. If WeasyPrint does not apply the `var()` fallbacks, that copy
+  keeps the 0.1.38 geometry with plain hex fills.
+- Non-goals: the start-page greeting (44 px), the Flunk-Out Frenzy game titles and the signed-out recovery page
+  stay larger than the logo; the favicon; HuleEdu's adoption of 0.1.38.
 
 ## Contract Inputs
 
-- User decisions of 2026-10-30 (Hemma orchestrator session, AskUserQuestion): restore the logo; clearly larger
-  than app H1s; link to the signed-in start page.
-- `frontend/apps/skriptoteket/src/components/layout/AuthTopBar.vue` (`.topbar-brand` lines 87-95 and its CSS),
-  `src/components/brand/BrandLogo.vue`, `src/router/routes.ts` (`home` at `/`), `src/router/index.ts` sign-in
-  redirect with the preserved `next` param.
-- `huleedu-ui-design` visual system: wordmark and page-title roles, tokens only.
+- User decisions of 2026-10-30 (Hemma orchestrator session, AskUserQuestion): restore the logo; larger than app
+  page titles only; link to the signed-in start page; inline with token colours; fix at the shared source; keep
+  the outlined letterforms; no pointer cursor on the unlinked login logo.
+- Junior findings on WIP `1007b2601` (branch `codex/task-skript-rep-0060`): page title 24 px at every band, top bar
+  56 px, sign-in fallback `home`, the immersive filter, the 40 px link.
+- TASK-SKILL-REP-0423 (skill-repository) for 0.1.38; `design-system-map.json`; the resource package contract's
+  Consumer Adoption section.
 
 ## Core Vertical And Performance
 
-One signed-in screen: the top bar shows the logo, taller than the app's H1, and a click lands on the signed-in
-start page. No performance concern; the SVG is already served. One junior unit: the top bar markup, CSS and
-its spec.
+One signed-in screen: the top bar shows the inline logo in token colours, taller than the app's page title, and a
+click lands on the home route. The SVG is a few KB inline; no request is added. One junior unit after 0.1.38
+exists, building on the WIP commit.
 
 ## Validation
 
-- Vitest in the existing `AuthTopBar` / layout spec: the brand link renders the `BrandLogo` image with alt
-  `Skriptoteket`, keeps the app label, and targets the signed-in start route.
-- One check in production or staging on a phone and on desktop that the logo is taller than the app H1.
+- Vitest in `AuthLayout.actions.spec.ts`: the brand link renders the inline logo with the accessible name
+  Skriptoteket, keeps the app label, targets `/`, and the login logo has no pointer cursor.
+- One Klassrumskartan PDF export rendered locally, checked for the logo's navy and terracotta.
+- The user's check in production on a phone and on desktop.
 
 ## Stop Conditions
 
-- The logo cannot be taller than the app H1s without growing the top bar.
-- The signed-in start page differs per role in a way one link cannot follow.
+- 0.1.38 is not released, or `design-system sync` brings changes beyond the logo and the wordmark tokens.
+- The inline SVG cannot be rendered from the synced file without copying its paths into a component.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                             |
-| --- | ----------------------------------------------------------------------------------------------------------------- |
-| D1  | The signed-in top bar shows `BrandLogo` (`logo-horizontal.svg`) on every band, with the app label beside it.      |
-| D2  | The logo's visible height is larger than every app H1 at desktop, tablet and phone; the top bar keeps its height. |
-| D3  | The logo links to the page sign-in lands on when no other target was saved.                                       |
-| D4  | Light route: one junior, focused Vitest, the user's check in production; no review.                               |
+| ID  | Decided contract term                                                                                                                                                                                      |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The top bar and the login page render the shared 0.1.38 logo inline from the synced file, with the app label beside it in the top bar.                                                                     |
+| D2  | The logo is 40 px high (larger than the 24 px page-title role) at every band; the top bar stays 56 px; the link is at least 44 px high. The start-page greeting, game titles and recovery page are exempt. |
+| D3  | The logo links to `/`, the sign-in fallback for every role.                                                                                                                                                |
+| D4  | The wordmark tokens colour the logo; the immersive bar overrides them instead of a CSS filter; only the linked logo shows a pointer cursor.                                                                |
+| D5  | Skriptoteket adopts 0.1.38 through `design-system sync`; the PDF-export copy takes the same file, or plain-hex fills if WeasyPrint ignores the fallbacks.                                                  |
+| D6  | Light route: one junior on the WIP branch, focused Vitest, one PDF render, the user's check in production; no review.                                                                                      |
