@@ -206,7 +206,7 @@ onMounted(async () => {
         </div>
 
         <section class="max-w-[40rem] space-y-2">
-          <h1 class="font-serif text-3xl font-semibold text-navy md:text-[2.75rem]">
+          <h1 class="page-title">
             Välkommen<template v-if="userName">, {{ userName }}</template>
           </h1>
           <p class="text-sm leading-6 text-navy/70 md:text-base">
