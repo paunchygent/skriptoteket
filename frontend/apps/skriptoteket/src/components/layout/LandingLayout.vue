@@ -4,7 +4,8 @@
  *
  * Relationships:
  * - the same 56 px top bar as the signed-in shell, without a sidebar: the
- *   serif brand at the left, Logga in and Hjälp as ghost buttons at the right
+ *   shared logo link at the left, Logga in and Hjälp as ghost buttons at the
+ *   right
  * - Logga in opens the HuleEdu ceremony directly with the route's continuation
  * - the page frame is centred at 1040 px with the signed-in frame's padding;
  *   route-level hero surfaces own the strongest next step
@@ -14,10 +15,11 @@
  */
 
 import { computed } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
+import BrandHomeLink from "../brand/BrandHomeLink.vue";
 import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
@@ -47,12 +49,7 @@ const loginUrl = computed(() => {
     :class="{ 'landing-shell--workspace': isFullFrameWorkspaceRoute }"
   >
     <header class="landing-topbar">
-      <RouterLink
-        to="/"
-        class="landing-brand"
-      >
-        Skriptoteket
-      </RouterLink>
+      <BrandHomeLink class="landing-brand" />
 
       <div class="landing-header-actions">
         <ShellBarButton
@@ -124,23 +121,6 @@ const loginUrl = computed(() => {
   color: var(--huleedu-navy);
 }
 
-.landing-brand {
-  flex: none;
-  color: var(--huleedu-navy);
-  font-family: var(--huleedu-font-serif);
-  font-size: var(--huleedu-text-xl);
-  font-weight: var(--huleedu-font-bold);
-  line-height: 1;
-  white-space: nowrap;
-  text-decoration: none;
-}
-
-.landing-brand:focus-visible {
-  outline: 2px solid var(--huleedu-action-40);
-  outline-offset: 2px;
-  border-radius: var(--huleedu-radius-md);
-}
-
 .landing-header-actions {
   display: flex;
   flex: none;
@@ -174,7 +154,6 @@ const loginUrl = computed(() => {
 
   .landing-brand {
     margin-left: var(--huleedu-space-2);
-    font-size: var(--huleedu-text-2xl);
   }
 
   .landing-main {

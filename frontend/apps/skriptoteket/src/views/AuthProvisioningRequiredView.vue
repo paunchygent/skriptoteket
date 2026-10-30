@@ -19,7 +19,7 @@
       <p class="text-xs font-semibold tracking-[var(--huleedu-tracking-label)] text-navy/60 uppercase">
         Skriptoteket
       </p>
-      <h1 class="font-serif text-4xl font-semibold tracking-normal text-navy">
+      <h1 class="page-title">
         Åtkomsten behöver aktiveras
       </h1>
       <p class="text-sm leading-6 text-navy/70">

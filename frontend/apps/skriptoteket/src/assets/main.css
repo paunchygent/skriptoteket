@@ -69,7 +69,8 @@ body.app-shell-game-mode::before {
      ════════════════════════════════════════════════════════════════════════ */
   .page-title {
     font-family: var(--huleedu-font-serif);
-    font-size: var(--huleedu-text-2xl);
+    font-size: var(--huleedu-type-page-title-size);
+    font-weight: var(--huleedu-type-page-title-weight);
     color: var(--huleedu-navy);
     margin: 0;
   }

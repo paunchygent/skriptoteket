@@ -219,11 +219,12 @@ describe("AuthLayout shell action wiring", () => {
     expect(sidebar().classes()).toContain("is-rail");
   });
 
-  it("shows the Skriptoteket wordmark beside the exam workspace name, both as the home link", () => {
+  it("shows the shared Skriptoteket home link beside the exam workspace name", () => {
     mountLayout({ routeName: "exam-workspace", appId: "" });
 
     const brand = () => wrapper().get(".topbar .topbar-brand");
     const logo = () => brand().get(".brand-logo");
+    expect(brand().classes()).toContain("brand-home-link");
     expect(brand().attributes("data-to")).toBe("/");
     // The logo is inlined from the synced SVG, so the link's accessible name
     // comes from the wrapper role rather than an `<img alt>`.
