@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "340faf50cc06ba0c8327ec964db8a34010f207bfab4b03be0985c214f24a684b",
+  "source_set_digest": "616830340c9b6deb49db222c49d53a4ab3fb60cba09b6affb9b2b17fc1bae14f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9165,7 +9165,25 @@
         "reviewer": "orchestrator",
         "decided_at": "2026-10-30",
         "approval_protocol": "agent-overseer:approved-review-closeout",
-        "approval_evidence": "Light route, no review (D6). Merged 5b9cf6981 (466c839b7, d9e747c6c) and deployed to production; deploy log .artifacts/hemma-deploy-20261030-012826.log, healthz 200, web and worker healthy. The user checked the top-bar logo in production on phone and desktop on 2026-10-30 and answered 'Looks right'."
+        "approval_evidence": "Light route, no review (D6). Merged 5b9cf6981 (466c839b7, d9e747c6c) and deployed to production; deploy log .artifacts/hemma-deploy-20261030-012826.log, healthz 200, web and worker healthy. The user first answered 'Looks right' on 2026-10-30, then withdrew that approval the same day: the contract named only the signed-in bar, so the signed-out bar kept the text wordmark and the login page showed two marks at different sizes. TASK-SKRIPT-REP-0061 carries the repair."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0061",
+      "type": "task",
+      "title": "Every top bar shows the same Skriptoteket logo and page titles follow the shared title role",
+      "path": "docs/backlog/tasks/task-skript-rep-0061-every-top-bar-shows-the-same-skriptoteket-logo-and-page-titles-follow-the-shared-title-role.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

@@ -1,0 +1,88 @@
+---
+type: task
+id: TASK-SKRIPT-REP-0061
+title: Every top bar shows the same Skriptoteket logo and page titles follow the shared title role
+repository: skriptoteket
+owners:
+  - kind: service
+    id: skriptoteket
+created: '2026-10-30'
+status: ready
+closeout_review:
+  record: inline
+  status: not_started
+task_kind: repository
+acceptance_criteria:
+  - The signed-in and signed-out top bars render one shared logo link at the same 40 px height, linking to /, at least 44 px high
+  - The login page shows no logo in its card; its title and the activation and handoff page titles use the page-title class
+  - The page-title class uses the shared page-title role tokens (20 px, semibold) and the serif face
+  - No page body shows a logo; the activation page keeps its small Skriptoteket label
+  - A Mac staging walk at desktop and 360 px, signed out (home, login) and signed in (an app page, an immersive game), shows the same logo in every bar
+backlog_document_profile: contract-derived
+---
+
+## Implementation Contract
+
+REP-0060 replaced the text wordmark in the signed-in top bar only. The signed-out bar (`LandingLayout.vue`) still
+shows serif text at 20/24 px, and the login page shows that text in the bar plus a 34 px logo in its card. A signed
+out visitor and a signed-in teacher therefore see different brand marks at different sizes. This task gives every
+bar the same logo and brings the page titles onto the shared title role.
+
+- Actors: signed-out visitors (home, login, public apps), signed-in users on every page, the immersive game bar.
+- One shared brand-link component (logo at `var(--huleedu-space-10)`, `RouterLink to="/"`, min-height
+  `var(--huleedu-action-control-height)`) replaces the brand markup in `AuthTopBar.vue` and `LandingLayout.vue`.
+  The app label, the immersive token override and the phone rules in `AuthTopBar` stay as built.
+- The login card loses its logo. The H1s in `AuthLoginView.vue`, `AuthProvisioningRequiredView.vue` and
+  `AuthLifecycleHandoffView.vue` (serif `text-4xl`, 36 px) use `.page-title`. The activation page keeps its small
+  uppercase `Skriptoteket` label.
+- `.page-title` in `assets/main.css` uses `--huleedu-type-page-title-size` and `--huleedu-type-page-title-weight`
+  (20 px, semibold) with the serif face. Every view using the class follows.
+- `BrandLogo` sizes are tokens only; the raw `32px` default and `34px` go.
+- Non-goals: the home hero heading, the logo artwork, game titles, the recovery page, HuleEdu.
+
+## Contract Inputs
+
+- TASK-SKRIPT-REP-0060 (its contract named only the signed-in bar and the login page). The user withdrew the
+  2026-10-30 approval after seeing the signed-out bar and the differing sizes.
+- User decisions 2026-10-30 (AskUserQuestion): login shows only the bar logo; the activation label stays; the
+  three auth H1s move to the title class in this task; `.page-title` moves to the token role in this task.
+- Advisor comparison with HuleEdu CJ admin and rater (`human-cj-desktop-workbench.css`): serif wordmark 22 px with
+  a terracotta sans tag, header title 14 px sans; wordmark-to-title ratio about 1.6. Skriptoteket after this task:
+  logo ink about 35 px over a 20 px title.
+- `huleedu-ui-design` visual system (type roles, tokens only, 44 px targets).
+
+## Core Vertical And Performance
+
+The core vertical is one visitor signing in: the signed-out home bar shows the logo, the login page shows the same
+logo in its bar and a page-title heading, and after sign-in the bar shows the same logo at the same height. No
+performance concern; the logo is already inlined in the bundle.
+
+Units, each for one junior:
+
+1. The shared brand-link component, used by `AuthTopBar` and `LandingLayout`; the login card logo removed; token
+   sizes in `BrandLogo`.
+2. `.page-title` on the role tokens; the three auth H1s on `.page-title`.
+3. Spec updates for both layouts and the login view.
+
+## Validation
+
+- Vitest: both layouts render the shared brand link to `/`; the login view renders no `BrandLogo`; the three auth
+  views render their H1 with `.page-title`.
+- A Mac staging walk before the user looks: desktop and 360 px, signed out (home, login) and signed in (an app
+  page, an immersive game), with screenshots and the logo's measured height in each bar.
+
+## Stop Conditions
+
+- The 40 px logo does not fit beside Logga in and Hjälp at 360 px: stop and bring the composition to the user.
+- A view overrides `.page-title` so that the role change breaks its layout.
+
+## Decided Contract Terms
+
+| ID  | Decided contract term                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------- |
+| D1  | Signed-in and signed-out bars use one shared brand-link component: 40 px logo, link to `/`, at least 44 px high.       |
+| D2  | The login page shows only the bar logo; no page body shows a logo; the activation page keeps its small label.          |
+| D3  | The login, activation and handoff H1s use `.page-title`.                                                               |
+| D4  | `.page-title` uses the shared page-title role tokens (20 px, semibold) with the serif face.                            |
+| D5  | Logo sizes are tokens only.                                                                                            |
+| D6  | Proof is focused Vitest and a Mac staging walk at desktop and 360 px, signed out and signed in, before the user looks. |
