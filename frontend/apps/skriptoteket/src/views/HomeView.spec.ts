@@ -325,6 +325,15 @@ describe("HomeView", () => {
     expect(secondaryLedgers.text()).not.toContain("Att granska");
   });
 
+  it("uses the shared page-title role for the signed-in greeting", async () => {
+    const wrapper = await mountAuthenticatedHomeView();
+
+    const title = wrapper.get("h1");
+    expect(title.text()).toContain("Välkommen");
+    expect(title.classes()).toContain("page-title");
+    expect(title.classes()).not.toContain("text-3xl");
+  });
+
   it("keeps Ljudtranskribering visibly unavailable and Dokumentkonvertering active", async () => {
     const wrapper = await mountAuthenticatedHomeView();
 
