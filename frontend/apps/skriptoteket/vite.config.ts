@@ -2,12 +2,15 @@
  * Skriptoteket SPA Vite development and production asset configuration.
  *
  * Purpose:
- *   Build the teacher-facing SPA and keep local API proxy lanes aligned with
- *   the HuleEdu Gateway edge that owns browser auth and Sir Convert routing.
+ *   Build the teacher-facing SPA and the shared theme-sample page, and keep
+ *   local API proxy lanes aligned with the HuleEdu Gateway edge that owns
+ *   browser auth and Sir Convert routing.
  *
  * Relationships:
  *   - `src/api/*` clients rely on these proxy prefixes during local proof.
  *   - `src/skriptoteket/web/` serves the built SPA assets in production.
+ *   - `src/skriptoteket/web/routes/spa_fallback.py` serves the built
+ *     `src/theme/theme-sample.html` page at `/theme-sample`.
  */
 
 import path from "node:path";
@@ -42,6 +45,12 @@ export default defineConfig(({ command }) => ({
     manifest: "manifest.json",
     outDir: path.resolve(dirname, "../../../src/skriptoteket/web/static/spa"),
     emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        index: path.resolve(dirname, "index.html"),
+        themeSample: path.resolve(dirname, "src/theme/theme-sample.html"),
+      },
+    },
   },
   server: {
     host: devHost,

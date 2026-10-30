@@ -297,3 +297,24 @@
 }
 
 /* Intentionally tokens-only (CSS Custom Properties). */
+
+/* Placeholder dark values; ST-SKILL-17-01 task 2 replaces them. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --huleedu-paper: #0E141B;
+  --huleedu-navy: #FEFEFC;
+}
+
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+  --huleedu-paper: #0B1E33;
+  --huleedu-navy: #FEFEFC;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    color-scheme: dark;
+    --huleedu-paper: #0E141B;
+    --huleedu-navy: #FEFEFC;
+  }
+}
