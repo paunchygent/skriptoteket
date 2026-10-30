@@ -13,7 +13,7 @@ import ShellBarButton from "./ShellBarButton.vue";
 
 withDefaults(
   defineProps<{
-    wordFrom?: "always" | "desktop" | "never";
+    wordFrom?: "always" | "desktop" | "tablet" | "never";
   }>(),
   {
     wordFrom: "desktop",

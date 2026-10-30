@@ -117,6 +117,8 @@ describe("LandingLayout", () => {
     });
     const helpButton = wrapper.get(".landing-header-actions button[aria-controls='help-panel']");
 
+    expect(helpButton.classes()).toContain("shell-bar-button--word-tablet");
+
     expect(helpButton.attributes("aria-expanded")).toBe("false");
     await helpButton.trigger("click");
 

@@ -5,7 +5,7 @@
  * Relationships:
  * - the same 56 px top bar as the signed-in shell, without a sidebar: the
  *   shared logo link at the left, Logga in and Hjälp as ghost buttons at the
- *   right
+ *   right; Hjälp is glyph-only on phones, so the row fits 360 px
  * - Logga in opens the HuleEdu ceremony directly with the route's continuation
  * - the page frame is centred at 1040 px with the signed-in frame's padding;
  *   route-level hero surfaces own the strongest next step
@@ -59,7 +59,7 @@ const loginUrl = computed(() => {
           word-from="always"
           :href="loginUrl"
         />
-        <ShellHelpButton word-from="always" />
+        <ShellHelpButton word-from="tablet" />
       </div>
     </header>
 
