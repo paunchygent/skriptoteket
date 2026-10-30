@@ -19,6 +19,7 @@ import { computed, ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import { UiGlyph } from "../ui";
+import BrandLogo from "../brand/BrandLogo.vue";
 import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
@@ -88,7 +89,8 @@ defineExpose({ menuButtonElement });
       to="/"
       class="topbar-brand"
     >
-      Skriptoteket<small
+      <BrandLogo height="var(--huleedu-space-10)" />
+      <small
         v-if="appLabel"
         class="topbar-brand-app"
       >{{ appLabel }}</small>
@@ -164,14 +166,14 @@ defineExpose({ menuButtonElement });
   color: var(--huleedu-navy);
 }
 
+/* The wordmark carries the product name; `--huleedu-space-10` (40px) keeps its
+   visible ink (35px) above every app page title (24px) inside the 56px bar. */
 .topbar-brand {
+  display: inline-flex;
   flex: none;
+  align-items: center;
+  gap: var(--huleedu-space-1-5);
   margin-left: var(--huleedu-space-2);
-  color: var(--huleedu-navy);
-  font-family: var(--huleedu-font-serif);
-  font-size: var(--huleedu-text-2xl);
-  font-weight: var(--huleedu-font-bold);
-  line-height: 1;
   white-space: nowrap;
   text-decoration: none;
 }
@@ -184,12 +186,10 @@ defineExpose({ menuButtonElement });
 }
 
 .topbar-brand-app {
-  margin-left: var(--huleedu-space-1-5);
   color: var(--huleedu-terracotta);
   font-family: var(--huleedu-font-sans);
   font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-bold);
-  vertical-align: 10px;
 }
 
 .topbar-back-link {
@@ -260,11 +260,6 @@ defineExpose({ menuButtonElement });
 
   .topbar-brand {
     margin: 0;
-    font-size: var(--huleedu-text-xl);
-  }
-
-  .topbar-brand-app {
-    vertical-align: 7px;
   }
 
   .topbar-page-slot {
@@ -306,7 +301,12 @@ defineExpose({ menuButtonElement });
   color: var(--huleedu-canvas);
 }
 
-.topbar--immersive .topbar-brand,
+/* The wordmark's ink is navy, so the dark bar draws the same artwork as a light
+   silhouette instead of navy on dark. */
+.topbar--immersive .topbar-brand :deep(.brand-logo) {
+  filter: brightness(0) invert(1);
+}
+
 .topbar--immersive .topbar-back-link {
   color: var(--huleedu-canvas);
 }

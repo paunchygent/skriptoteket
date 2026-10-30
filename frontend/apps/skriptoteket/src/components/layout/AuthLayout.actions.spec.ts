@@ -31,7 +31,8 @@ const routeMocks = vi.hoisted(() => ({
 
 vi.mock("vue-router", () => ({
   RouterLink: {
-    template: "<a><slot /></a>",
+    props: ["to"],
+    template: "<a :data-to=\"to\"><slot /></a>",
   },
   useRoute: () => routeMocks.route,
 }));
@@ -217,16 +218,22 @@ describe("AuthLayout shell action wiring", () => {
     expect(sidebar().classes()).toContain("is-rail");
   });
 
-  it("names the exam workspace beside the brand and offers it the phone page slot", () => {
+  it("shows the Skriptoteket wordmark beside the exam workspace name, both as the home link", () => {
     mountLayout({ routeName: "exam-workspace", appId: "" });
 
-    expect(wrapper().get(".topbar .topbar-brand").text()).toBe("SkriptoteketProvredigering");
+    const brand = () => wrapper().get(".topbar .topbar-brand");
+    expect(brand().attributes("data-to")).toBe("/");
+    expect(brand().get("img").attributes("src")).toBe("/logo-horizontal.svg");
+    expect(brand().get("img").attributes("alt")).toBe("Skriptoteket");
+    expect(brand().get(".topbar-brand-app").text()).toBe("Provredigering");
     expect(wrapper().get(".topbar #app-topbar-page-slot").element.childElementCount).toBe(0);
 
     wrapper().unmount();
     mountLayout();
 
-    expect(wrapper().get(".topbar .topbar-brand").text()).toBe("Skriptoteket");
+    expect(brand().attributes("data-to")).toBe("/");
+    expect(brand().get("img").attributes("alt")).toBe("Skriptoteket");
+    expect(brand().find(".topbar-brand-app").exists()).toBe(false);
     expect(wrapper().find(".topbar #app-topbar-page-slot").exists()).toBe(true);
   });
 
