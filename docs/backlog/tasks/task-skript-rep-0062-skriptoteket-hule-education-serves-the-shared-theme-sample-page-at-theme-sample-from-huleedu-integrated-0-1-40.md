@@ -7,10 +7,16 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-30'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: Hemma skill-repository orchestrator 299c0dc4 (merge); no separate code review
+  decided_at: '2026-10-30T23:05:00Z'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: >-
+    TASK-SKRIPT-REP-0062#closeout. Merged into main as b148d05d7, deployed to production
+    with the user's approval and walked on 30 October 2026.
 dependencies:
   - TASK-SKILL-17-01-01
 task_kind: repository
@@ -77,6 +83,12 @@ the route, to the built page whose inline head script reads the
 - Any change to an existing view or route other than `/theme-sample`.
 - Any existing page loads `theme-head.js`.
 - Production deploy before the user's approval in the orchestrator thread.
+
+## Closeout
+
+- Outcome: `/theme-sample` serves the shared theme sample page from huleedu-integrated 0.1.40. The governance bootstrap map and the design-system-validate pre-commit files pattern cover the new theme sources (18afb716a).
+- Merge: b148d05d7 on main, deployed to production on 30 October 2026 with the user's approval; `/theme-sample` returned 200.
+- Production walk, 30 October 2026, by the Mac thread in the Claude desktop built-in browser pane: a choice of Bläck, Midnatt or Ljust on either hule.education or skriptoteket.hule.education showed on the other site without a click; Följ enheten followed the device appearance and gave Bläck on a dark device. Story authority: skill-repository `TASK-SKILL-17-01-01`, which holds the full walk record.
 
 ## Decided Contract Terms
 

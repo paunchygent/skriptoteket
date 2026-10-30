@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1265e12a82ccfdee9e26b49f15f5ff18383c4652dce1b0d3127b7f5a72a8ecba",
+  "source_set_digest": "ef2298236a0088c75244e47118ad2d7dcf4b4494ef6ba9282aeca98aa79918d4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9195,7 +9195,7 @@
       "type": "task",
       "title": "skriptoteket.hule.education serves the shared theme-sample page at /theme-sample from huleedu-integrated 0.1.40",
       "path": "docs/backlog/tasks/task-skript-rep-0062-skriptoteket-hule-education-serves-the-shared-theme-sample-page-at-theme-sample-from-huleedu-integrated-0-1-40.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9205,7 +9205,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "Hemma skill-repository orchestrator 299c0dc4 (merge); no separate code review",
+        "decided_at": "2026-10-30T23:05:00Z",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0062#closeout. Merged into main as b148d05d7, deployed to production with the user's approval and walked on 30 October 2026."
       }
     },
     {
