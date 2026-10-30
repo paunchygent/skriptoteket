@@ -158,6 +158,7 @@ describe("HomeView", () => {
     const text = normalizedText(wrapper);
 
     expect(text).toContain("Lektionsplanera direkt i webbläsaren.");
+    expect(wrapper.get("h1").classes()).toContain("text-4xl");
     expect(text).toContain(
       "Klassrumskartan är en av Skriptotekets appar. Den är öppen för alla.",
     );

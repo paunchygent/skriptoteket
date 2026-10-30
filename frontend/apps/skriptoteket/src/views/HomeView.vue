@@ -147,7 +147,7 @@ onMounted(async () => {
         <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)] lg:gap-16">
           <div class="max-w-[40rem]">
             <h1
-              class="max-w-[14ch] font-serif text-5xl leading-[0.98] font-semibold tracking-[-0.03em] text-navy md:text-6xl lg:text-[4.25rem]"
+              class="max-w-[14ch] font-serif text-4xl leading-[0.98] font-semibold tracking-[-0.03em] text-navy md:text-6xl lg:text-[4.25rem]"
             >
               Lektionsplanera direkt i webbläsaren.
             </h1>

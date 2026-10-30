@@ -10,7 +10,9 @@
  * - `glyph` is optional only for a word-only action such as Logga in, which has
  *   no catalogue meaning; such a button keeps its word at every width
  * - `word` is the visible word next to the glyph; `wordFrom="desktop"` hides it
- *   below 1280 px, `wordFrom="never"` makes the button glyph-only at every width.
+ *   below 1280 px, `wordFrom="tablet"` hides it below 768 px so the button is
+ *   glyph-only on phones and shows its word from 768 px as `always` does,
+ *   `wordFrom="never"` makes the button glyph-only at every width.
  *   The accessible name and tooltip are always `label`.
  * - `wordReserve` is the longest word the button can switch to; the word slot
  *   keeps its width, so a state change such as Logga ut -> Loggar ut… does
@@ -25,7 +27,7 @@ withDefaults(
     label: string;
     word?: string;
     wordReserve?: string;
-    wordFrom?: "always" | "desktop" | "never";
+    wordFrom?: "always" | "desktop" | "tablet" | "never";
     href?: string;
     pressed?: boolean;
     disabled?: boolean;
@@ -169,6 +171,17 @@ defineEmits<{
 @media (min-width: 768px) and (max-width: 1279px) and (pointer: fine) {
   .shell-bar-button--word-desktop {
     width: 36px;
+  }
+}
+
+@media (max-width: 767px) {
+  .shell-bar-button--word-tablet {
+    width: 44px;
+    padding: 0;
+  }
+
+  .shell-bar-button--word-tablet .shell-bar-button__word {
+    display: none;
   }
 }
 
