@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "861cd218dfd6808d81df2b8dc4cc65b508ec2443b76398c019d4b06613a63b14",
+  "source_set_digest": "1265e12a82ccfdee9e26b49f15f5ff18383c4652dce1b0d3127b7f5a72a8ecba",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9195,7 +9195,7 @@
       "type": "task",
       "title": "skriptoteket.hule.education serves the shared theme-sample page at /theme-sample from huleedu-integrated 0.1.40",
       "path": "docs/backlog/tasks/task-skript-rep-0062-skriptoteket-hule-education-serves-the-shared-theme-sample-page-at-theme-sample-from-huleedu-integrated-0-1-40.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "repository",
       "owners": [
         {
