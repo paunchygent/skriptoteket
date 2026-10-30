@@ -23,6 +23,8 @@ describe("AuthProvisioningRequiredView", () => {
     expect(wrapper.text()).toContain("Åtkomsten behöver aktiveras");
     expect(wrapper.text()).toContain("Du är inloggad");
     expect(wrapper.text()).toContain("ditt Skriptoteket-konto är ännu inte aktiverat");
+    expect(wrapper.get("h1").classes()).toContain("page-title");
+    expect(wrapper.findAll("p")[0]?.text()).toBe("Skriptoteket");
     expect(wrapper.findComponent(RouterLinkStub).props("to")).toEqual({
       name: "auth-login",
     });

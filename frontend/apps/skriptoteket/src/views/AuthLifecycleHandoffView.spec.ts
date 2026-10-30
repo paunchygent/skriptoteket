@@ -57,6 +57,16 @@ describe("AuthLifecycleHandoffView", () => {
     vi.unstubAllEnvs();
   });
 
+  it("uses the shared page-title role for the handoff heading", () => {
+    route.name = "register";
+
+    const wrapper = mountLifecycleHandoffView();
+    const title = wrapper.get("h1");
+
+    expect(title.classes()).toContain("page-title");
+    expect(title.classes()).not.toContain("text-4xl");
+  });
+
   it("hands registration to the HuleEdu standalone registration ceremony", () => {
     route.query = { next: "/apps/classroom.group-seating-studio" };
 

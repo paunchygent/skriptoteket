@@ -117,7 +117,7 @@ watch(
       >
         {{ lifecycleCopy.eyebrow }}
       </p>
-      <h1 class="font-serif text-4xl font-semibold tracking-normal text-navy">
+      <h1 class="page-title">
         {{ lifecycleCopy.title }}
       </h1>
       <p class="text-sm leading-6 text-navy/70">

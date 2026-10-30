@@ -68,6 +68,23 @@ describe("LandingLayout", () => {
     );
   });
 
+  it("shows the shared Skriptoteket home link as the only brand mark", () => {
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    const brand = wrapper.get("header.landing-topbar a.landing-brand");
+
+    expect(brand.classes()).toContain("brand-home-link");
+    expect(brand.attributes("href")).toBe("/");
+    expect(brand.get(".brand-logo").attributes("style")).toContain(
+      "height: var(--huleedu-space-10)",
+    );
+    expect(brand.text()).toBe("");
+  });
+
   it("opens login with a home redirect on signed-out auth routes", () => {
     layoutMocks.route.name = "register";
 

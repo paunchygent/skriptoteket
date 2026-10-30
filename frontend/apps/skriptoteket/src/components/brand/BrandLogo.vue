@@ -9,8 +9,8 @@
  * - the SVG fills read `--huleedu-wordmark-primary` and
  *   `--huleedu-wordmark-accent`, so a surface recolours the logo by overriding
  *   those two tokens
- * - `AuthTopBar` wraps it in the home link and `AuthLoginView` shows it
- *   unlinked, so the artwork sets no cursor of its own
+ * - `BrandHomeLink` wraps it in the home link for both top bars, so the
+ *   artwork sets no cursor of its own
  */
 
 import logoArtwork from "/logo-horizontal.svg?raw";
@@ -20,7 +20,7 @@ const props = withDefaults(
     /** Visible height, normally a spacing token such as `var(--huleedu-space-10)`. */
     height?: string;
   }>(),
-  { height: "32px" },
+  { height: "var(--huleedu-space-8)" },
 );
 
 /** The wrapper owns the accessible name, so the artwork itself stays decorative. */

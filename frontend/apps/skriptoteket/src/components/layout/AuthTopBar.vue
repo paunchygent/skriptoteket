@@ -19,7 +19,7 @@ import { computed, ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
 import { UiGlyph } from "../ui";
-import BrandLogo from "../brand/BrandLogo.vue";
+import BrandHomeLink from "../brand/BrandHomeLink.vue";
 import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
@@ -85,16 +85,12 @@ defineExpose({ menuButtonElement });
       @click="emit('toggleSidebar')"
     />
 
-    <RouterLink
-      to="/"
-      class="topbar-brand"
-    >
-      <BrandLogo height="var(--huleedu-space-10)" />
+    <BrandHomeLink class="topbar-brand">
       <small
         v-if="appLabel"
         class="topbar-brand-app"
       >{{ appLabel }}</small>
-    </RouterLink>
+    </BrandHomeLink>
 
     <RouterLink
       v-if="backLink"
@@ -166,21 +162,14 @@ defineExpose({ menuButtonElement });
   color: var(--huleedu-navy);
 }
 
-/* The wordmark carries the product name; `--huleedu-space-10` (40px) keeps its
-   visible ink (35px) above every app page title (24px) inside the 56px bar, and
-   the 44px action-control height keeps the home link a full touch target. */
+/* Both bars use `BrandHomeLink`, whose `--huleedu-space-10` (40px) logo keeps
+   the wordmark's visible ink (35px) above the 20 px page title inside the 56 px
+   bar, and whose 44 px action-control height keeps the home link a full touch
+   target. This class adds only the signed-in bar's spacing. */
 .topbar-brand {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--huleedu-space-1-5);
-  min-height: var(--huleedu-action-control-height);
   margin-left: var(--huleedu-space-2);
-  white-space: nowrap;
-  text-decoration: none;
 }
 
-.topbar-brand:focus-visible,
 .topbar-back-link:focus-visible {
   outline: 2px solid var(--huleedu-action-40);
   outline-offset: 2px;

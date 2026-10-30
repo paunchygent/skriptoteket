@@ -72,6 +72,22 @@ describe("AuthLoginView", () => {
     window.sessionStorage.clear();
   });
 
+  it("shows the page title role and no logo in the card", () => {
+    const wrapper = mount(AuthLoginView, {
+      global: {
+        stubs: {
+          AuthLoginPanel: { template: "<div data-test='auth-login-panel-stub' />" },
+        },
+      },
+    });
+
+    expect(wrapper.find(".brand-logo").exists()).toBe(false);
+
+    const title = wrapper.get("h1");
+    expect(title.classes()).toContain("page-title");
+    expect(title.text()).toBe("Logga in");
+  });
+
   it("starts the shared auth ceremony when no next param is present", () => {
     const wrapper = mount(AuthLoginView, {
       global: {
