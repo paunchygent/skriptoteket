@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-30'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-30'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Light route, no review (D6). Merged 5b9cf6981 (466c839b7, d9e747c6c) and deployed to production; deploy log .artifacts/hemma-deploy-20261030-012826.log, healthz 200, web and worker healthy. The user checked the top-bar logo in production on phone and desktop on 2026-10-30 and answered ''Looks right''.'
 task_kind: repository
 acceptance_criteria:
   - The signed-in top bar and the login page render the shared logo (huleedu-integrated 0.1.38) as inline SVG coloured by the wordmark tokens, with the app label beside it in the top bar

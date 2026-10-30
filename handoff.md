@@ -16,9 +16,7 @@
     plats row; stacked lock badges overlap the KLASSRUM header; Håll nära/isär A/B letters swap
     after a reload; the share page draws a one-seat room at full size, so phones pan sideways.
     Staging walk data left: class `Walk 40-01-02`, room `Walk 27-09-04 B`.
-  - REP-0060 (top-bar logo inline in token colours, shared package 0.1.38 from skill-repository
-    REP-0423) is in production; it waits for the user's phone and desktop check, then closes.
-    HuleEdu still carries the 0.1.37 logo (lighter second t) until it syncs 0.1.38.
+  - HuleEdu still carries the 0.1.37 logo (lighter second t) until it syncs design package 0.1.38.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
@@ -47,6 +45,10 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-10-30 `done`: REP-0060 top-bar logo inline in token colours, 40 px, links to `/`
+  (production `5b9cf6981`, user checked phone and desktop); shared logo fix 0.1.38 in
+  skill-repository REP-0423 (`fb10caa5`); REP-0059 copy (`dad31d98e`).
 
 - 2026-10-29 `done`: 39-06-11 ordering inside a part at 1 point and 26-06-01 share page
   (Mac staging walk at `d0064b1ce`, main `bd6cae1c8`); ST-SKRIPT-39-06 (Mac all-types

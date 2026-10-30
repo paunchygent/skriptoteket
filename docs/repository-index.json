@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "203a08ab17b6a5eb96b7822a77eb538d101529a4867263693a364a7f760ef180",
+  "source_set_digest": "340faf50cc06ba0c8327ec964db8a34010f207bfab4b03be0985c214f24a684b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9151,7 +9151,7 @@
       "type": "task",
       "title": "The top bar shows the Skriptoteket logo, larger than app titles, linking to the signed-in start page",
       "path": "docs/backlog/tasks/task-skript-rep-0060-the-top-bar-shows-the-skriptoteket-logo-larger-than-app-titles-linking-to-the-signed-in-start-page.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9161,7 +9161,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "orchestrator",
+        "decided_at": "2026-10-30",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Light route, no review (D6). Merged 5b9cf6981 (466c839b7, d9e747c6c) and deployed to production; deploy log .artifacts/hemma-deploy-20261030-012826.log, healthz 200, web and worker healthy. The user checked the top-bar logo in production on phone and desktop on 2026-10-30 and answered 'Looks right'."
       }
     },
     {
