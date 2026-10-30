@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "33960f24540d2da704ea5c144e8f5d1ef99ebeab1ce415c4885aec355ee96c3f",
+  "source_set_digest": "44ac61e3520e742852a27cfd4ebb613c5a6358ab922b37c5fd27576c7541a495",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9144,6 +9144,24 @@
         "decided_at": "2026-10-29",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Light route, no review. Merged ecf66f5e1; copy fix 289472a43 (user wording: Utkast kopplade till) merged dad31d98e with 42 focused Vitest tests and fe-lint passing, and deployed to production at dad31d98e. The user checked on their iPhone in production on 2026-10-29: delete in Redigera klasslista and Redigera klassrum asks first and Avbryt keeps the item."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0060",
+      "type": "task",
+      "title": "The top bar shows the Skriptoteket logo, larger than app titles, linking to the signed-in start page",
+      "path": "docs/backlog/tasks/task-skript-rep-0060-the-top-bar-shows-the-skriptoteket-logo-larger-than-app-titles-linking-to-the-signed-in-start-page.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
