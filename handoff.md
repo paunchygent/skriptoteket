@@ -4,8 +4,8 @@
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
   REP-0037, 41-03-02, 41-03-03. No Skriptoteket child is running; no task worktree is left.
 
-  - Production: Skriptoteket `5b9cf6981` (deployed 2026-10-30, seating-export gate passed,
-    log `.artifacts/hemma-deploy-20261030-012826.log`); HuleEdu `f59ea3b61`. Production `.env`
+  - Production: Skriptoteket `00fa763fa` (deployed 2026-10-30, seating-export gate passed,
+    log `.artifacts/hemma-deploy-20261030-123856.log`); HuleEdu `f59ea3b61`. Production `.env`
     holds `ALLOWED_HOSTS=skriptoteket.hule.education`. `ssh hemma` does not resolve on Hemma
     itself; run the deploy script detached locally. Healthz returned 503 twice at 14:09Z
     (database check timeout at load average about 20), then 200.
@@ -16,10 +16,10 @@
     plats row; stacked lock badges overlap the KLASSRUM header; Håll nära/isär A/B letters swap
     after a reload; the share page draws a one-seat room at full size, so phones pan sideways.
     Staging walk data left: class `Walk 40-01-02`, room `Walk 27-09-04 B`.
-  - REP-0061 (orchestrator): the signed-out bar still shows text, the login page shows two marks;
-    one shared logo link in both bars, login card logo gone, `.page-title` on the 20 px role.
-    Next: junior, then Mac staging walk at desktop and 360 px, then production and the user's check.
-  - HuleEdu still carries the 0.1.37 logo (lighter second t) until it syncs design package 0.1.38.
+  - REP-0061 (orchestrator) is in production `00fa763fa`: one 40 px logo link in both bars, page
+    titles and the greeting on the 20 px title role; Mac walks passed at 4e6939a4f and 00fa763fa.
+    Open: HuleEdu's sign-in page still shows the 0.1.37 logo at 28 px and a 30 px sans heading
+    (proposed HuleEdu session); then the user's check closes REP-0061.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
