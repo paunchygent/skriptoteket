@@ -94,3 +94,4 @@ Units, each for one junior:
 | D6  | Proof is focused Vitest and a Mac staging walk at desktop and 360 px, signed out and signed in, before the user looks. |
 | D7  | Below 768 px the signed-out bar's Hjälp shows its glyph only (`wordFrom="tablet"`); the logo keeps 40 px.              |
 | D8  | The home hero heading is 36 px below 768 px, so `/` has no horizontal scroll at 360 px.                                |
+| D9  | The signed-in start-page greeting H1 uses `.page-title` (user decision 2026-10-30, after the second walk).             |
