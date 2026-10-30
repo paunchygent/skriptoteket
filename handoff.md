@@ -16,10 +16,6 @@
     plats row; stacked lock badges overlap the KLASSRUM header; Håll nära/isär A/B letters swap
     after a reload; the share page draws a one-seat room at full size, so phones pan sideways.
     Staging walk data left: class `Walk 40-01-02`, room `Walk 27-09-04 B`.
-  - REP-0061 (orchestrator) is in production `00fa763fa`: one 40 px logo link in both bars, page
-    titles and the greeting on the 20 px title role; Mac walks passed at 4e6939a4f and 00fa763fa.
-    Open: HuleEdu's sign-in page still shows the 0.1.37 logo at 28 px and a 30 px sans heading
-    (proposed HuleEdu session); then the user's check closes REP-0061.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
@@ -48,6 +44,10 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-10-30 `done`: REP-0061 one 40 px logo link in both top bars, page titles and greeting on
+  the 20 px title role, glyph-only Hjälp on phones (production `00fa763fa`, Mac walks, user check);
+  HuleEdu sign-in page on design package 0.1.39 (HULE-REP-0150, production `86344a83d`).
 
 - 2026-10-30 `done`: REP-0060 signed-in top-bar logo (production `5b9cf6981`; the user
   withdrew approval, REP-0061 repairs it); shared logo fix 0.1.38 in skill-repository

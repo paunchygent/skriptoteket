@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-30'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: orchestrator
+  decided_at: '2026-10-30'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Juniors 004883339, 4e09bd1bd, 93a60ed1b merged 26a9f062a, 4e6939a4f, 00fa763fa. Mac staging walks: 26a9f062a stopped at 360 px (bar 372.6 px), repaired by D7-D8; 4e6939a4f passed steps 1, 3, 4, 5 and failed step 2 on the HuleEdu sign-in page, repaired by TASK-HULE-REP-0150 (HuleEdu production 86344a83d); 00fa763fa greeting passed at 1366 and 360 px (Mac records Repos/Skriptoteket/.artifacts/staging-walk-rep-0061-*). Production 00fa763fa, deploy log .artifacts/hemma-deploy-20261030-123856.log, healthz 200, web and worker healthy. The user checked production on phone and desktop on 2026-10-30 and answered ''Ser rätt ut''.'
 task_kind: repository
 acceptance_criteria:
   - The signed-in and signed-out top bars render one shared logo link at the same 40 px height, linking to /, at least 44 px high
