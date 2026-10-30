@@ -38,12 +38,18 @@ bar the same logo and brings the page titles onto the shared title role.
 - `.page-title` in `assets/main.css` uses `--huleedu-type-page-title-size` and `--huleedu-type-page-title-weight`
   (20 px, semibold) with the serif face. Every view using the class follows.
 - `BrandLogo` sizes are tokens only; the raw `32px` default and `34px` go.
-- Non-goals: the home hero heading, the logo artwork, game titles, the recovery page, HuleEdu.
+- Phone (< 768 px), from the first Mac walk at 26a9f062a: the signed-out bar needed 373 px at 360 px. Hjälp in the
+  signed-out bar shows its glyph only below 768 px through a new `wordFrom="tablet"` mode on `ShellBarButton`, so
+  the row is about 329 px. The home hero heading (`text-5xl`, 48 px) pushed the page to 376 px; its phone size
+  becomes `text-4xl` (36 px), with the `md` and `lg` sizes unchanged.
+- Non-goals: the logo artwork, game titles, the recovery page, HuleEdu.
 
 ## Contract Inputs
 
 - TASK-SKRIPT-REP-0060 (its contract named only the signed-in bar and the login page). The user withdrew the
   2026-10-30 approval after seeing the signed-out bar and the differing sizes.
+- Mac staging walk at 26a9f062a stopped at step 1 (360 px: bar 372.6 px, page 376 px). User decisions 2026-10-30:
+  Hjälp glyph-only on phone; the hero heading fix joins this task.
 - User decisions 2026-10-30 (AskUserQuestion): login shows only the bar logo; the activation label stays; the
   three auth H1s move to the title class in this task; `.page-title` moves to the token role in this task.
 - Advisor comparison with HuleEdu CJ admin and rater (`human-cj-desktop-workbench.css`): serif wordmark 22 px with
@@ -73,7 +79,7 @@ Units, each for one junior:
 
 ## Stop Conditions
 
-- The 40 px logo does not fit beside Logga in and Hjälp at 360 px: stop and bring the composition to the user.
+- The signed-out bar or the home page is wider than 360 px at 360 px after these changes: stop and report.
 - A view overrides `.page-title` so that the role change breaks its layout.
 
 ## Decided Contract Terms
@@ -86,3 +92,5 @@ Units, each for one junior:
 | D4  | `.page-title` uses the shared page-title role tokens (20 px, semibold) with the serif face.                            |
 | D5  | Logo sizes are tokens only.                                                                                            |
 | D6  | Proof is focused Vitest and a Mac staging walk at desktop and 360 px, signed out and signed in, before the user looks. |
+| D7  | Below 768 px the signed-out bar's Hjälp shows its glyph only (`wordFrom="tablet"`); the logo keeps 40 px.              |
+| D8  | The home hero heading is 36 px below 768 px, so `/` has no horizontal scroll at 360 px.                                |
