@@ -4,8 +4,8 @@
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
   REP-0037, 41-03-02, 41-03-03. No Skriptoteket child is running; no task worktree is left.
 
-  - Production: Skriptoteket `dad31d98e` (deployed 2026-10-29, seating-export gate passed,
-    log `.artifacts/hemma-deploy-20261029-153016.log`); HuleEdu `f59ea3b61`. Production `.env`
+  - Production: Skriptoteket `5b9cf6981` (deployed 2026-10-30, seating-export gate passed,
+    log `.artifacts/hemma-deploy-20261030-012826.log`); HuleEdu `f59ea3b61`. Production `.env`
     holds `ALLOWED_HOSTS=skriptoteket.hule.education`. `ssh hemma` does not resolve on Hemma
     itself; run the deploy script detached locally. Healthz returned 503 twice at 14:09Z
     (database check timeout at load average about 20), then 200.
@@ -16,6 +16,9 @@
     plats row; stacked lock badges overlap the KLASSRUM header; Håll nära/isär A/B letters swap
     after a reload; the share page draws a one-seat room at full size, so phones pan sideways.
     Staging walk data left: class `Walk 40-01-02`, room `Walk 27-09-04 B`.
+  - REP-0060 (top-bar logo inline in token colours, shared package 0.1.38 from skill-repository
+    REP-0423) is in production; it waits for the user's phone and desktop check, then closes.
+    HuleEdu still carries the 0.1.37 logo (lighter second t) until it syncs 0.1.38.
   - Decisions open with the user: REP-0017 (criterion 3 names Sir Convert settings that
     `smoke-seating-export-readiness` does not read; criteria 4-6 unmet), ST-SKRIPT-02-06
     (criteria 1, 2, 5, 6 unmet), EPIC-SKRIPT-40 (required HuleEdu release: map says 0.1.34,
