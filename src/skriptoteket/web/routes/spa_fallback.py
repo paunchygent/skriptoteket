@@ -30,6 +30,14 @@ from skriptoteket.web.spa_metadata import (
 router = APIRouter(tags=["spa"])
 
 _SPA_INDEX_PATH = Path(__file__).resolve().parent.parent / "static" / "spa" / "index.html"
+_THEME_SAMPLE_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "static"
+    / "spa"
+    / "src"
+    / "theme"
+    / "theme-sample.html"
+)
 _DEFAULT_PUBLIC_APP_BASE_URL = "https://skriptoteket.hule.education"
 _INDEXABLE_PUBLIC_PATHS = ("/", PUBLIC_CLASSROOM_APP_PATH)
 _EXCLUDED_PREFIXES = (
@@ -183,6 +191,17 @@ async def sitemap_xml(request: Request) -> Response:
         media_type="application/xml",
         headers={"Cache-Control": "public, max-age=3600"},
     )
+
+
+@router.get("/theme-sample", response_class=HTMLResponse, include_in_schema=False)
+async def theme_sample(request: Request) -> Response:
+    """Serve the shared theme-sample page built as a second Vite input."""
+    if not _THEME_SAMPLE_PATH.is_file():
+        return HTMLResponse(
+            content=build_not_found_html(public_base_url=_public_app_base_url(request)),
+            status_code=404,
+        )
+    return HTMLResponse(content=_THEME_SAMPLE_PATH.read_text(encoding="utf-8"))
 
 
 @router.get("/{full_path:path}", response_class=HTMLResponse, include_in_schema=False)

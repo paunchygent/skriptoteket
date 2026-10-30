@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.38",
+  "version": "0.1.40",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,7 +16,7 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "f1b2be0554c8c31adf4362fd018d70935ee325840d7053022e889a8af1fd5bfd"
+      "sha256": "086435e08850f4ec8b4c0f52b73a1efc45d4dc4e02e4ec46782aec680ee34292"
     },
     {
       "id": "tailwind-theme",
@@ -40,7 +40,7 @@
       "id": "auth-lifecycle",
       "kind": "css.component",
       "path": "src/css/auth-lifecycle.css",
-      "sha256": "afde1f5cbc47110e6be5c3d7dc5fe3026ec4c718b530b1adc8a009d9e144b9e4"
+      "sha256": "910df4190495cfe4fdf859dff377491a4efe5f0b0f4e3e652b7a997d2df87e96"
     },
     {
       "id": "skriptoteket-logo-horizontal",
@@ -119,6 +119,30 @@
       "kind": "typescript.barrel",
       "path": "src/vue/index.ts",
       "sha256": "9cc607b2937cb8e3395d14af8959e519e33da1f2df0af29ab0b189ac0d292400"
+    },
+    {
+      "id": "theme-head",
+      "kind": "asset",
+      "path": "src/theme/theme-head.js",
+      "sha256": "c20d220a0e15174a1c14d0d7e509dd6e7b9780985cd6044923abc12198a73906"
+    },
+    {
+      "id": "theme-preference",
+      "kind": "typescript.primitive",
+      "path": "src/theme/themePreference.ts",
+      "sha256": "657c18dc25faade96eeff8968b605c64365056e60437272fd75aa8e20307d556"
+    },
+    {
+      "id": "theme-sample",
+      "kind": "typescript.primitive",
+      "path": "src/theme/themeSample.ts",
+      "sha256": "f7b159692c99ef6adc1148133cc1e4fd0872556fb6e48e081c34d19bd2522792"
+    },
+    {
+      "id": "theme-sample-page",
+      "kind": "asset",
+      "path": "src/theme/theme-sample.html",
+      "sha256": "a736a43348a46a1544c9bf709f1d13819baef4089f112fb61ab4fcd8ef6b5085"
     }
   ],
   "consumer_validation": [

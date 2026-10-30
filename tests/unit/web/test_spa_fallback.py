@@ -49,9 +49,34 @@ SPA_INDEX_HTML = """<!doctype html>
 </html>
 """
 
+# Mirrors the shape of the second Vite input, `src/theme/theme-sample.html`.
+THEME_SAMPLE_HTML = """<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tema</title>
+    <script>document.documentElement.dataset.theme = "system";</script>
+  </head>
+  <body>
+    <div id="theme-sample"></div>
+  </body>
+</html>
+"""
+
 
 @pytest.fixture
-def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
+def theme_sample_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    path = tmp_path / "theme-sample.html"
+    monkeypatch.setattr(spa_fallback, "_THEME_SAMPLE_PATH", path)
+    return path
+
+
+@pytest.fixture
+def client(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    theme_sample_path: Path,
+) -> TestClient:
     index_path = tmp_path / "index.html"
     index_path.write_text(SPA_INDEX_HTML, encoding="utf-8")
     monkeypatch.setattr(spa_fallback, "_SPA_INDEX_PATH", index_path)
@@ -290,3 +315,46 @@ class TestSpaFallbackResponses:
         assert "<body>Not Found</body>" in response.text
         _assert_meta_name(response.text, "robots", "noindex,nofollow")
         assert '<div id="app"></div>' not in response.text
+
+
+@pytest.mark.unit
+class TestThemeSampleRoute:
+    """Test the shared theme-sample page served beside the SPA fallback."""
+
+    def test_theme_sample_returns_the_built_page(
+        self,
+        client: TestClient,
+        theme_sample_path: Path,
+    ) -> None:
+        theme_sample_path.write_text(THEME_SAMPLE_HTML, encoding="utf-8")
+
+        response = client.get("/theme-sample")
+
+        assert response.status_code == 200
+        assert response.headers["content-type"].startswith("text/html")
+        assert '<div id="theme-sample"></div>' in response.text
+        assert '<div id="app"></div>' not in response.text
+
+    def test_theme_sample_returns_404_page_when_the_build_is_missing(
+        self,
+        client: TestClient,
+    ) -> None:
+        response = client.get("/theme-sample")
+
+        assert response.status_code == 404
+        assert "<body>Not Found</body>" in response.text
+        _assert_meta_name(response.text, "robots", "noindex,nofollow")
+        assert '<div id="app"></div>' not in response.text
+
+    def test_existing_spa_route_still_returns_the_spa_index(
+        self,
+        client: TestClient,
+        theme_sample_path: Path,
+    ) -> None:
+        theme_sample_path.write_text(THEME_SAMPLE_HTML, encoding="utf-8")
+
+        response = client.get("/editor")
+
+        assert response.status_code == 200
+        assert '<div id="app"></div>' in response.text
+        assert '<div id="theme-sample"></div>' not in response.text
