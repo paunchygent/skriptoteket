@@ -26,6 +26,8 @@
   --huleedu-panel-muted: rgba(254, 254, 252, 0.38);
   --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
   --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent only */
+  --huleedu-wordmark-primary: var(--huleedu-navy);     /* Wordmark roles read by the shared logo SVG, which carries the hex fallbacks */
+  --huleedu-wordmark-accent: var(--huleedu-terracotta);
   --huleedu-action: #3F7F78;        /* Verdigris Teal: functional action/selection */
   --huleedu-critical: #4D1521;      /* Burgundy family: destructive/critical decisions */
   --huleedu-burgundy: var(--huleedu-critical); /* Deprecated compatibility alias */
