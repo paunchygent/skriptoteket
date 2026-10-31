@@ -9,7 +9,6 @@
 
 export { default as SystemMessage } from "./components/SystemMessage.vue";
 export type { SystemMessageTone } from "./components/SystemMessage.vue";
-export { default as ThemeSamplePage } from "./components/ThemeSamplePage.vue";
 export { default as ToastHost } from "./components/ToastHost.vue";
 export type { ToastItem, ToastPlacement, ToastVariant } from "./components/ToastHost.vue";
 export { default as UiDenseActionButton } from "./components/UiDenseActionButton.vue";

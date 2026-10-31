@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.46",
+  "version": "0.1.47",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -112,7 +112,7 @@
       "id": "ui-theme-sample-page",
       "kind": "vue.component",
       "path": "src/vue/components/ThemeSamplePage.vue",
-      "sha256": "6989760124c9962cfdcc13015036a40239e42d2997cd6c5896956b41541a7a43"
+      "sha256": "7669550c6565e43c6bf7a199ed96fbafb3f8b492ae4ccc7b40ca5f7386015c7d"
     },
     {
       "id": "ui-theme-sample-top-bars",
@@ -166,7 +166,7 @@
       "id": "vue-barrel",
       "kind": "typescript.barrel",
       "path": "src/vue/index.ts",
-      "sha256": "1cdbe353da4875e48bc38afbee5f0cd3a4aeb3a967e2f8e8bda7f817095c4456"
+      "sha256": "f746a480527162055fd35a72538b01f891220d85628808dc00d17215a1b2306c"
     },
     {
       "id": "theme-head",
