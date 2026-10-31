@@ -1,6 +1,6 @@
 {
   "name": "@huleedu/integrated-frontend-design-system",
-  "version": "0.1.40",
+  "version": "0.1.43",
   "private": true,
   "type": "module",
   "description": "Shared HuleEdu and Skriptoteket frontend design-system runtime resources.",
@@ -25,7 +25,6 @@
     "./vue": "./src/vue/index.ts",
     "./theme-head.js": "./src/theme/theme-head.js",
     "./theme": "./src/theme/themePreference.ts",
-    "./theme-sample": "./src/theme/themeSample.ts",
     "./theme-sample.html": "./src/theme/theme-sample.html"
   }
 }

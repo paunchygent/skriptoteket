@@ -9,7 +9,6 @@
     "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
     "theme-head": "frontend/apps/skriptoteket/src/theme/theme-head.js",
     "theme-preference": "frontend/apps/skriptoteket/src/theme/themePreference.ts",
-    "theme-sample": "frontend/apps/skriptoteket/src/theme/themeSample.ts",
     "theme-sample-page": "frontend/apps/skriptoteket/src/theme/theme-sample.html",
     "toast-host": "frontend/apps/skriptoteket/src/components/ui/shared/components/ToastHost.vue",
     "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
@@ -21,9 +20,17 @@
     "ui-glyphs": "frontend/apps/skriptoteket/src/components/ui/shared/uiGlyphs.ts",
     "ui-segmented-toggle": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiSegmentedToggle.vue",
     "ui-symbol": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiSymbol.vue",
+    "ui-theme-sample-controls": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSampleControls.vue",
+    "ui-theme-sample-dialog": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSampleDialog.vue",
+    "ui-theme-sample-page": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSamplePage.vue",
+    "ui-theme-sample-pinball": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSamplePinball.vue",
+    "ui-theme-sample-share": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSampleShare.vue",
+    "ui-theme-sample-top-bars": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSampleTopBars.vue",
+    "ui-theme-sample-workspaces": "frontend/apps/skriptoteket/src/components/ui/shared/components/ThemeSampleWorkspaces.vue",
+    "ui-theme-selector": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiThemeSelector.vue",
     "vue-barrel": "frontend/apps/skriptoteket/src/components/ui/shared/index.ts"
   },
   "mirror": "frontend/apps/skriptoteket/src/design-system/huleedu-integrated",
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.40"
+  "version": "0.1.43"
 }

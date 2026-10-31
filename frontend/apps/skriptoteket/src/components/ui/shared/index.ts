@@ -9,6 +9,7 @@
 
 export { default as SystemMessage } from "./components/SystemMessage.vue";
 export type { SystemMessageTone } from "./components/SystemMessage.vue";
+export { default as ThemeSamplePage } from "./components/ThemeSamplePage.vue";
 export { default as ToastHost } from "./components/ToastHost.vue";
 export type { ToastItem, ToastPlacement, ToastVariant } from "./components/ToastHost.vue";
 export { default as UiDenseActionButton } from "./components/UiDenseActionButton.vue";
@@ -18,6 +19,7 @@ export { default as UiDenseStatusPill } from "./components/UiDenseStatusPill.vue
 export { default as UiSegmentedToggle } from "./components/UiSegmentedToggle.vue";
 export { default as UiGlyph } from "./components/UiGlyph.vue";
 export { default as UiSymbol } from "./components/UiSymbol.vue";
+export { default as UiThemeSelector } from "./components/UiThemeSelector.vue";
 export { UI_GLYPHS } from "./uiGlyphs";
 export type {
   UiGlyphActionMeaning,
@@ -28,6 +30,7 @@ export type {
   UiGlyphUtilityMeaning,
 } from "./uiGlyphs";
 export type { UiSegmentedToggleOption } from "./components/UiSegmentedToggle.vue";
+export type { ThemePreferenceStore } from "./components/UiThemeSelector.vue";
 export type {
   DenseActionGroupPosition,
   DenseActionSize,

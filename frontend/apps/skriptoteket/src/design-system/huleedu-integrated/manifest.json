@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.40",
+  "version": "0.1.43",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,7 +16,7 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "086435e08850f4ec8b4c0f52b73a1efc45d4dc4e02e4ec46782aec680ee34292"
+      "sha256": "0a8dcd432609089215e36435606ac185113955b920f562df6f94e15e72276ae7"
     },
     {
       "id": "tailwind-theme",
@@ -58,7 +58,7 @@
       "id": "ui-glyphs",
       "kind": "typescript.primitive",
       "path": "src/vue/uiGlyphs.ts",
-      "sha256": "df7995ab60dca5daf07171ece3a04e95cd1af34808073d347e233ec550a9bddd"
+      "sha256": "a4e5955b11fb60fc277eebd307d5d024803c1a9cc52a0447f31e9822e02a464d"
     },
     {
       "id": "ui-dense-action-button",
@@ -103,6 +103,54 @@
       "sha256": "1a83bcf7279be2a32fe49f1d0502e64365e0cf35618d6ac8f37d6a1c14e89abc"
     },
     {
+      "id": "ui-theme-selector",
+      "kind": "vue.component",
+      "path": "src/vue/components/UiThemeSelector.vue",
+      "sha256": "d67a3b3b2e2eaa8e38defe6618433abe157833a01c610841afbfc17e82af99a6"
+    },
+    {
+      "id": "ui-theme-sample-page",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSamplePage.vue",
+      "sha256": "a00861c08d81228fadc1cec3caf037fc7aead34af87a5c90d1717ffe505edac7"
+    },
+    {
+      "id": "ui-theme-sample-top-bars",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSampleTopBars.vue",
+      "sha256": "552bc160cd6a69ab188b766711997f1a56a3ccce32682bfa462e7e8e45a63dab"
+    },
+    {
+      "id": "ui-theme-sample-controls",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSampleControls.vue",
+      "sha256": "a864e27e2f028291eef46424d841f5046804775b783cd78753c17d898db506e8"
+    },
+    {
+      "id": "ui-theme-sample-dialog",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSampleDialog.vue",
+      "sha256": "cfe9f01c07b3180ceef700c4cf4edaf52b9451490b3d95882654d942aa6621ce"
+    },
+    {
+      "id": "ui-theme-sample-workspaces",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSampleWorkspaces.vue",
+      "sha256": "3787a9280cfaa88abf953cadbe345c621d68a9ab6cd1de4f3efd6387240c7017"
+    },
+    {
+      "id": "ui-theme-sample-pinball",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSamplePinball.vue",
+      "sha256": "37bca6c8afc2105c22512637ece82983244f0716998ce33fcbdcf3499909dd4d"
+    },
+    {
+      "id": "ui-theme-sample-share",
+      "kind": "vue.component",
+      "path": "src/vue/components/ThemeSampleShare.vue",
+      "sha256": "129369276d92e5f1d371bab3b7609b0124ec8891659209ab1fb995794acace86"
+    },
+    {
       "id": "system-message",
       "kind": "vue.component",
       "path": "src/vue/components/SystemMessage.vue",
@@ -118,7 +166,7 @@
       "id": "vue-barrel",
       "kind": "typescript.barrel",
       "path": "src/vue/index.ts",
-      "sha256": "9cc607b2937cb8e3395d14af8959e519e33da1f2df0af29ab0b189ac0d292400"
+      "sha256": "1cdbe353da4875e48bc38afbee5f0cd3a4aeb3a967e2f8e8bda7f817095c4456"
     },
     {
       "id": "theme-head",
@@ -130,13 +178,7 @@
       "id": "theme-preference",
       "kind": "typescript.primitive",
       "path": "src/theme/themePreference.ts",
-      "sha256": "657c18dc25faade96eeff8968b605c64365056e60437272fd75aa8e20307d556"
-    },
-    {
-      "id": "theme-sample",
-      "kind": "typescript.primitive",
-      "path": "src/theme/themeSample.ts",
-      "sha256": "f7b159692c99ef6adc1148133cc1e4fd0872556fb6e48e081c34d19bd2522792"
+      "sha256": "a64a4f3ffc146fb4c916956c87e51af82bd7b2361847b6137fd518d75450e522"
     },
     {
       "id": "theme-sample-page",

@@ -69,6 +69,7 @@ import {
   Maximize2,
   Menu,
   Minus,
+  Moon,
   OctagonAlert,
   PanelLeft,
   Pencil,
@@ -92,6 +93,8 @@ import {
   SquareDashed,
   SquareDashedText,
   Subscript,
+  Sun,
+  SunMoon,
   Superscript,
   TextAlignCenter,
   TextAlignStart,
@@ -213,7 +216,10 @@ export type UiGlyphUtilityMeaning =
   | "focus-mode"
   | "overview"
   | "autosave-saved"
-  | "autosave-saving";
+  | "autosave-saving"
+  | "theme-light"
+  | "theme-dark"
+  | "theme-system";
 
 export type UiGlyphEditorToolbarMeaning =
   | "bold"
@@ -368,6 +374,9 @@ const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {
   overview: lucide(LayoutDashboard),
   "autosave-saved": lucide(CloudCheck),
   "autosave-saving": lucide(LoaderCircle),
+  "theme-light": lucide(Sun),
+  "theme-dark": lucide(Moon),
+  "theme-system": lucide(SunMoon),
 };
 
 const editorToolbarGlyphs: Record<UiGlyphEditorToolbarMeaning, UiGlyphSource> = {

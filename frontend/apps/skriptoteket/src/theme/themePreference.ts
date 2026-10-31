@@ -4,7 +4,8 @@
  *
  * Relationships:
  *     - theme-head.js applies the same huleedu_theme cookie before first paint.
- *     - themeSample.ts drives the choice through these functions.
+ *     - ThemeSamplePage drives the choice through these functions, through the
+ *       store its consumer builds.
  */
 
 export type ThemeChoice = "light" | "dark" | "midnight" | "system";
