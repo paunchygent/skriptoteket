@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ef2298236a0088c75244e47118ad2d7dcf4b4494ef6ba9282aeca98aa79918d4",
+  "source_set_digest": "e12f34f8578581ae72125bec3f5877723251d99af54e9688ec753f5498f18711",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9210,6 +9210,24 @@
         "decided_at": "2026-10-30T23:05:00Z",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "TASK-SKRIPT-REP-0062#closeout. Merged into main as b148d05d7, deployed to production with the user's approval and walked on 30 October 2026."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0063",
+      "type": "task",
+      "title": "skriptoteket.hule.education serves the full shared theme sample page at /theme-sample from huleedu-integrated 0.1.43",
+      "path": "docs/backlog/tasks/task-skript-rep-0063-skriptoteket-hule-education-serves-the-full-shared-theme-sample-page-at-theme-sample-from-huleedu-integrated-0-1-43.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
