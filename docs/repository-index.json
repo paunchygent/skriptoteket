@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b6aab449455969c3e0df9a1bd80ff5c2d2c145d4ce0e771f5eaf57bb09d3cd15",
+  "source_set_digest": "77ad0e486b45f44a4e8d3d3d873bc1f451c76534dc86db5520b5e42ab662f864",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9232,6 +9232,24 @@
         "decided_at": "2026-10-31T18:50:00Z",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "TASK-SKRIPT-REP-0063#closeout. Merged into main as 20ebba96a (0.1.46), deployed to production with the user's approval on 31 October 2026."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0064",
+      "type": "task",
+      "title": "skriptoteket.hule.education syncs huleedu-integrated 0.1.47 so its app CSS no longer carries the theme sample page",
+      "path": "docs/backlog/tasks/task-skript-rep-0064-skriptoteket-hule-education-syncs-huleedu-integrated-0-1-47-so-its-app-css-no-longer-carries-the-theme-sample-page.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
