@@ -390,16 +390,16 @@
   --huleedu-panel: rgba(26, 37, 50, 0.64);
   --huleedu-panel-muted: rgba(26, 37, 50, 0.38);
   --huleedu-navy: #EDEEEA;
-  --huleedu-terracotta: #EA845F;
-  --huleedu-action: #68BDB1;
-  --huleedu-critical: #EB8FA1;
+  --huleedu-terracotta: #E57A50;
+  --huleedu-action: #3FAE9F;
+  --huleedu-critical: #E5737F;
   --button-primary-text: #0E141B;
   --huleedu-success: #4CCF97;
   --huleedu-warning: #EEB04A;
   --huleedu-error: #F7857C;
   --huleedu-success-strong: #6CDCAC;
   --huleedu-warning-strong: #F4C168;
-  --huleedu-action-strong: #84CFC4;
+  --huleedu-action-strong: #5CC2B3;
   --huleedu-surface-content: #131A23;
 
   /* Editor, syntax, playfield and grid tokens. */
@@ -524,16 +524,16 @@
     --huleedu-panel: rgba(26, 37, 50, 0.64);
     --huleedu-panel-muted: rgba(26, 37, 50, 0.38);
     --huleedu-navy: #EDEEEA;
-    --huleedu-terracotta: #EA845F;
-    --huleedu-action: #68BDB1;
-    --huleedu-critical: #EB8FA1;
+    --huleedu-terracotta: #E57A50;
+    --huleedu-action: #3FAE9F;
+    --huleedu-critical: #E5737F;
     --button-primary-text: #0E141B;
     --huleedu-success: #4CCF97;
     --huleedu-warning: #EEB04A;
     --huleedu-error: #F7857C;
     --huleedu-success-strong: #6CDCAC;
     --huleedu-warning-strong: #F4C168;
-    --huleedu-action-strong: #84CFC4;
+    --huleedu-action-strong: #5CC2B3;
     --huleedu-surface-content: #131A23;
     --huleedu-grid-line-opacity: 0.03;
     --huleedu-critical-text: #0E141B;
