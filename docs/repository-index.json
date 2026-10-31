@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "77ad0e486b45f44a4e8d3d3d873bc1f451c76534dc86db5520b5e42ab662f864",
+  "source_set_digest": "f961fe8865222e0d111b8bbcdee71884b318518e3621dfebc6a93417fb3d9bb8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9249,7 +9249,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "Mac skill-repository orchestrator 6b4ee548 (merge; build proof checked)",
+        "decided_at": "2026-10-31T20:45:00Z",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0064#closeout. Merged into main as dc524bae0 and deployed to production with the user's approval on 31 October 2026."
       }
     },
     {
