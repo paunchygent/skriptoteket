@@ -161,7 +161,6 @@ def test_design_system_validation_runs_automatically_on_protected_paths() -> Non
         "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
         "theme-head": "frontend/apps/skriptoteket/src/theme/theme-head.js",
         "theme-preference": "frontend/apps/skriptoteket/src/theme/themePreference.ts",
-        "theme-sample": "frontend/apps/skriptoteket/src/theme/themeSample.ts",
         "theme-sample-page": "frontend/apps/skriptoteket/src/theme/theme-sample.html",
         "dense-tool-primitives": f"{shared_vue}/denseToolPrimitives.ts",
         "ui-glyphs": f"{shared_vue}/uiGlyphs.ts",
@@ -175,6 +174,14 @@ def test_design_system_validation_runs_automatically_on_protected_paths() -> Non
         "toast-host": f"{shared_vue}/components/ToastHost.vue",
         "ui-glyph": f"{shared_vue}/components/UiGlyph.vue",
         "ui-symbol": f"{shared_vue}/components/UiSymbol.vue",
+        "ui-theme-selector": f"{shared_vue}/components/UiThemeSelector.vue",
+        "ui-theme-sample-page": f"{shared_vue}/components/ThemeSamplePage.vue",
+        "ui-theme-sample-top-bars": f"{shared_vue}/components/ThemeSampleTopBars.vue",
+        "ui-theme-sample-controls": f"{shared_vue}/components/ThemeSampleControls.vue",
+        "ui-theme-sample-dialog": f"{shared_vue}/components/ThemeSampleDialog.vue",
+        "ui-theme-sample-workspaces": f"{shared_vue}/components/ThemeSampleWorkspaces.vue",
+        "ui-theme-sample-pinball": f"{shared_vue}/components/ThemeSamplePinball.vue",
+        "ui-theme-sample-share": f"{shared_vue}/components/ThemeSampleShare.vue",
     }
     mirror = design_map["mirror"]
     assert mirror == "frontend/apps/skriptoteket/src/design-system/huleedu-integrated"
