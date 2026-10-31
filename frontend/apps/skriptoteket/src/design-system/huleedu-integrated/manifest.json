@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.44",
+  "version": "0.1.45",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,7 +16,7 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "0a8dcd432609089215e36435606ac185113955b920f562df6f94e15e72276ae7"
+      "sha256": "086d2266f84835d7c16fe982c7db3ed1dda44269616db5382b98157c255dd212"
     },
     {
       "id": "tailwind-theme",
