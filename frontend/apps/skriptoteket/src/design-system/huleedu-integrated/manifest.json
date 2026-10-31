@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.43",
+  "version": "0.1.44",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -106,19 +106,19 @@
       "id": "ui-theme-selector",
       "kind": "vue.component",
       "path": "src/vue/components/UiThemeSelector.vue",
-      "sha256": "d67a3b3b2e2eaa8e38defe6618433abe157833a01c610841afbfc17e82af99a6"
+      "sha256": "b92776b99418be4e307b6ce8b79f031434ae465cd8619ef1220d385095d751db"
     },
     {
       "id": "ui-theme-sample-page",
       "kind": "vue.component",
       "path": "src/vue/components/ThemeSamplePage.vue",
-      "sha256": "a00861c08d81228fadc1cec3caf037fc7aead34af87a5c90d1717ffe505edac7"
+      "sha256": "6989760124c9962cfdcc13015036a40239e42d2997cd6c5896956b41541a7a43"
     },
     {
       "id": "ui-theme-sample-top-bars",
       "kind": "vue.component",
       "path": "src/vue/components/ThemeSampleTopBars.vue",
-      "sha256": "552bc160cd6a69ab188b766711997f1a56a3ccce32682bfa462e7e8e45a63dab"
+      "sha256": "86e8f19ae5b07504f6f0af6ebde486f89722e5caf9fc96271d49634716434094"
     },
     {
       "id": "ui-theme-sample-controls",

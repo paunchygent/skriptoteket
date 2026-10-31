@@ -1,17 +1,17 @@
 <script setup lang="ts">
 /**
  * Purpose:
- *     Show the HuleEdu and Skriptoteket top bars with the live theme selector
- *     and a static picture of the selector's open menu.
+ *     Show the HuleEdu and Skriptoteket top bars with the live theme selector.
  *
  * Relationships:
  *     - Composed by ThemeSamplePage as the first of its four sample sections.
  *     - Takes the same ThemePreferenceStore prop as UiThemeSelector, so a
  *       choice made in either bar applies at once through the shared store.
- *     - Repeats UiThemeSelector's menu rows as static, non-interactive markup:
- *       the selector opens its menu only on a click, so this section draws the
- *       open menu itself and reads the stored choice once on mount. The copy is
- *       aria-hidden because it is a picture of the live control.
+ *     - Draws no copy of the selector's menu. The live popup is the section's
+ *       only menu: a static picture of it under the live control read as a
+ *       menu that did nothing when the real one opened over it. The section
+ *       keeps shared-token space below the bars instead, because the popup
+ *       opens downward over the following sample section.
  *     - Renders the HuleEdu wordmark with the brand.css class and the real
  *       Skriptoteket logo inlined from `skriptoteketLogoSvg`, the raw markup of
  *       the package's `./skriptoteket-logo-horizontal.svg`. Consumers import
@@ -28,21 +28,9 @@
  *       items, so both bars fit 375 px without horizontal scroll.
  */
 
-import { computed, onMounted, ref } from "vue";
+import { computed } from "vue";
 
-import type { UiGlyphMeaning } from "../uiGlyphs";
-import UiGlyph from "./UiGlyph.vue";
-import UiThemeSelector, {
-  type ThemeChoice,
-  type ThemePreferenceStore,
-} from "./UiThemeSelector.vue";
-
-type ThemeMenuOption = {
-  value: ThemeChoice;
-  label: string;
-  glyph: UiGlyphMeaning;
-  swatch?: "midnight" | "dark";
-};
+import UiThemeSelector, { type ThemePreferenceStore } from "./UiThemeSelector.vue";
 
 const props = defineProps<{
   themePreference: ThemePreferenceStore;
@@ -50,29 +38,10 @@ const props = defineProps<{
   skriptoteketLogoSvg: string;
 }>();
 
-const THEME_OPTIONS: readonly ThemeMenuOption[] = [
-  { value: "light", label: "Ljust", glyph: "theme-light" },
-  {
-    value: "midnight",
-    label: "Midnatt",
-    glyph: "theme-dark",
-    swatch: "midnight",
-  },
-  { value: "dark", label: "Bläck", glyph: "theme-dark", swatch: "dark" },
-  { value: "system", label: "Följ enheten", glyph: "theme-system" },
-];
-
 /** The wrapper owns the accessible name, so the artwork stays decorative. */
 const skriptoteketLogoMarkup = computed(() =>
   props.skriptoteketLogoSvg.replace("<svg", '<svg aria-hidden="true" focusable="false"'),
 );
-
-/** The stored choice when the page mounts; the picture never follows changes. */
-const currentChoice = ref<ThemeChoice | null>(null);
-
-onMounted(() => {
-  currentChoice.value = props.themePreference.read();
-});
 </script>
 
 <template>
@@ -130,38 +99,6 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
-    <div class="theme-sample-top-bars__menu-frame">
-      <div
-        class="theme-sample-top-bars__menu"
-        aria-hidden="true"
-      >
-        <div
-          v-for="option in THEME_OPTIONS"
-          :key="option.value"
-          class="theme-sample-top-bars__menu-row"
-          :class="{
-            'theme-sample-top-bars__menu-row--current': option.value === currentChoice,
-          }"
-        >
-          <span class="theme-sample-top-bars__menu-glyph">
-            <UiGlyph :meaning="option.glyph" />
-            <span
-              v-if="option.swatch"
-              class="theme-sample-top-bars__menu-swatch"
-              :class="`theme-sample-top-bars__menu-swatch--${option.swatch}`"
-            ></span>
-          </span>
-          <span class="theme-sample-top-bars__menu-label">{{ option.label }}</span>
-          <span class="theme-sample-top-bars__menu-check">
-            <UiGlyph
-              v-if="option.value === currentChoice"
-              meaning="selected"
-            />
-          </span>
-        </div>
-      </div>
-    </div>
   </section>
 </template>
 
@@ -170,6 +107,12 @@ onMounted(() => {
   display: grid;
   gap: var(--huleedu-space-3);
   min-width: 0;
+  /* The live selector's popup opens downward out of either bar: four choice
+     rows at --huleedu-action-control-height plus its panel padding, row gaps
+     and offset. The section keeps that room below the bars from the spacing
+     tokens, not as an empty reserved block, so an open popup ends above the
+     next section's heading instead of covering it. */
+  margin-block-end: calc(4 * var(--huleedu-action-control-height) + var(--huleedu-space-6));
 }
 
 .theme-sample-top-bars__heading {
@@ -286,89 +229,6 @@ onMounted(() => {
   margin-inline-start: auto;
 }
 
-/* The selector's right edge sits one bar inset from the bar's right edge, so
-   the picture of its menu lines up with it. */
-.theme-sample-top-bars__menu-frame {
-  display: flex;
-  justify-content: flex-end;
-  min-width: 0;
-  padding-inline: var(--huleedu-space-4);
-}
-
-.theme-sample-top-bars__menu {
-  display: grid;
-  gap: var(--huleedu-space-0-5);
-  width: max-content;
-  padding: var(--huleedu-space-1);
-  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
-  border-radius: var(--huleedu-radius-lg);
-  background: var(--huleedu-modal);
-  box-shadow: var(--huleedu-shadow-md);
-  color: var(--huleedu-navy);
-  font-family: var(--huleedu-font-sans);
-}
-
-.theme-sample-top-bars__menu-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--huleedu-space-2);
-  height: var(--huleedu-action-control-height);
-  padding-inline: var(--huleedu-space-2);
-  border-radius: var(--huleedu-radius-md);
-  color: var(--huleedu-navy);
-  font-size: var(--huleedu-type-control-value-size);
-  font-weight: var(--huleedu-type-control-value-weight);
-  line-height: var(--huleedu-leading-snug);
-}
-
-.theme-sample-top-bars__menu-row--current {
-  background: var(--huleedu-action-10);
-}
-
-.theme-sample-top-bars__menu-glyph {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--huleedu-space-1);
-}
-
-/* UiGlyph accepts a numeric size only; the shared icon role sizes its svg. */
-.theme-sample-top-bars__menu-glyph :deep(svg),
-.theme-sample-top-bars__menu-check :deep(svg) {
-  width: var(--huleedu-workbench-icon-size);
-  height: var(--huleedu-workbench-icon-size);
-}
-
-.theme-sample-top-bars__menu-swatch {
-  display: inline-block;
-  width: var(--huleedu-space-3);
-  height: var(--huleedu-space-3);
-  border: var(--huleedu-border-width) solid var(--huleedu-navy-30);
-  border-radius: var(--huleedu-radius-sm);
-}
-
-.theme-sample-top-bars__menu-swatch--midnight {
-  background: var(--huleedu-theme-swatch-midnight);
-}
-
-.theme-sample-top-bars__menu-swatch--dark {
-  background: var(--huleedu-theme-swatch-dark);
-}
-
-.theme-sample-top-bars__menu-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.theme-sample-top-bars__menu-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--huleedu-workbench-icon-size);
-  color: var(--huleedu-action);
-}
-
 @media (max-width: 767px) {
   .theme-sample-top-bars__bar {
     gap: var(--huleedu-space-2);
@@ -377,10 +237,6 @@ onMounted(() => {
 
   .theme-sample-top-bars__nav {
     display: none;
-  }
-
-  .theme-sample-top-bars__menu-frame {
-    padding-inline: var(--huleedu-space-2);
   }
 }
 </style>

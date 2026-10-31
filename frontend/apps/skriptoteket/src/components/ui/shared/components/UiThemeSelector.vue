@@ -67,7 +67,7 @@ const MENU_ITEM_SELECTOR = '[role="menuitemradio"]';
 const MENU_ITEM_BASE_CLASS =
   "grid h-[var(--huleedu-action-control-height)] w-full grid-cols-[auto_1fr_auto] items-center gap-[var(--huleedu-space-2)] rounded-[var(--huleedu-radius-md)] px-[var(--huleedu-space-2)] text-left text-[length:var(--huleedu-type-control-value-size)] font-[number:var(--huleedu-type-control-value-weight)] text-navy transition-colors focus-visible:bg-navy/5 focus-visible:outline-none";
 const MENU_PANEL_CLASS =
-  "absolute right-0 top-full z-[var(--huleedu-z-dropdown)] mt-[var(--huleedu-space-1)] grid gap-[var(--huleedu-space-0-5)] rounded-[var(--huleedu-radius-lg)] border border-[var(--huleedu-panel-border)] bg-modal p-[var(--huleedu-space-1)] shadow-[var(--huleedu-shadow-md)]";
+  "absolute right-0 top-full z-[var(--huleedu-z-dropdown)] mt-[var(--huleedu-space-1)] grid w-max gap-[var(--huleedu-space-0-5)] rounded-[var(--huleedu-radius-lg)] border border-[var(--huleedu-panel-border)] bg-modal p-[var(--huleedu-space-1)] shadow-[var(--huleedu-shadow-md)]";
 
 type FocusableElement = Element & { focus: () => void };
 
@@ -283,7 +283,7 @@ onBeforeUnmount(() => {
             aria-hidden="true"
           ></span>
         </span>
-        <span>{{ option.label }}</span>
+        <span class="whitespace-nowrap">{{ option.label }}</span>
         <span
           class="huleedu-theme-selector-glyph inline-flex w-[var(--huleedu-workbench-icon-size)] items-center justify-center text-action"
         >

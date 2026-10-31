@@ -14,6 +14,9 @@
  *       read() returns that ref, store() refreshes it after the underlying
  *       store succeeds, and the status line shows the same ref. Both mounted
  *       selectors and the status line therefore display one choice.
+ *     - Shows a four-button choice row directly under the stored-choice line;
+ *       each button applies and stores its choice, and marks the current one
+ *       with aria-pressed.
  *     - Copies the task 1 companion-link rule: the page links to the other
  *       site's /theme-sample, using the primary hostname from any other host.
  *     - Sets the page shell from tokens in scoped styles. The unscoped
@@ -63,6 +66,11 @@ const wrappedThemePreference: ThemePreferenceStore = {
   },
 };
 
+function chooseStoredTheme(choice: ThemeChoice): void {
+  wrappedThemePreference.apply(choice);
+  wrappedThemePreference.store(choice);
+}
+
 const storedLabel = computed(
   () =>
     THEME_LABELS.find((option) => option.choice === storedChoice.value)?.label ?? "Följ enheten",
@@ -89,6 +97,22 @@ const companionSampleUrl = computed(() => {
         <p class="theme-sample-page__status">
           Lagrat val: {{ storedLabel }}. Värd: {{ hostname }}
         </p>
+        <div
+          class="theme-sample-page__theme-switch"
+          role="group"
+          aria-label="Färgtema"
+        >
+          <button
+            v-for="option in THEME_LABELS"
+            :key="option.choice"
+            type="button"
+            class="btn-ghost theme-sample-page__theme-button"
+            :aria-pressed="option.choice === storedChoice"
+            @click="chooseStoredTheme(option.choice)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
         <a
           class="theme-sample-page__link"
           :href="companionSampleUrl"
@@ -155,6 +179,21 @@ const companionSampleUrl = computed(() => {
   font-family: var(--huleedu-font-sans);
   font-weight: var(--huleedu-link-weight);
   text-underline-offset: var(--huleedu-link-underline-offset);
+}
+
+.theme-sample-page__theme-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+  min-width: 0;
+}
+
+.theme-sample-page__theme-button[aria-pressed="true"],
+.theme-sample-page__theme-button[aria-pressed="true"]:hover:not(:disabled) {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
 }
 </style>
 
