@@ -431,6 +431,7 @@ new-story = "new-story"
 new-task = "new-task"
 new-review = "new-review"
 docs-validate = "repository-governance-docs-validate"
+review-triage = "repository-governance-review-triage"
 format-md = "format-md"
 check-md = "check-md"
 format-md-all = "format-md-all"
@@ -528,7 +529,6 @@ test-migrations = {shell = "python -m scripts.run_pytest_with_native_libs -m doc
 
 # Docs-as-code governance
 handoff-validate = "repository-governance-handoff-validate"
-review-triage = "repository-governance-review-triage"
 ltm-validate = "python -m scripts.check_long_term_memory_entries"
 
 # Hemma production operator commands
