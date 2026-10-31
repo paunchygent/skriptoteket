@@ -33,14 +33,16 @@ changes; every app screen stays light.
 - `design-system-map.json`: remove `theme-sample` (the deleted
   `themeSample.ts`); add `ui-theme-selector`, `ui-theme-sample-page`,
   `ui-theme-sample-top-bars`, `ui-theme-sample-controls`,
-  `ui-theme-sample-workspaces` and `ui-theme-sample-share` beside the
+  `ui-theme-sample-workspaces`, `ui-theme-sample-share`, `ui-theme-sample-dialog`
+  and `ui-theme-sample-pinball` beside the
   existing components in `frontend/apps/skriptoteket/src/components/ui/shared/components/`.
 - `frontend/apps/skriptoteket/src/theme/theme-sample-entry.ts`: import the stylesheet that loads
   tokens, Tailwind, `brand.css` and `action-buttons.css` in the shared order
-  (the app main stylesheet under `frontend/apps/skriptoteket/src/styles/`), then `createApp(ThemeSamplePage, { themePreference })`
+  (the app main stylesheet under `frontend/apps/skriptoteket/src/styles/`), then `createApp(ThemeSamplePage, { themePreference, skriptoteketLogoSvg })`
   mounted on `#theme-sample`, where `themePreference` is
   `{ read: readThemeChoice, apply: applyThemeChoice, store: storeThemeChoice }`
-  from `./themePreference`. No existing view imports the page.
+  from `./themePreference`, and `skriptoteketLogoSvg` is the synced
+  `skriptoteket-logo-horizontal.svg` imported with `?raw`. No existing view imports the page.
 - `theme-sample.html` and `theme-head.js` are unchanged in 0.1.43, so the
   `/theme-sample` route (`src/skriptoteket/web/`) and the CSP hash stay as they are.
 - Production: after the user approves, the Skriptoteket production deploy route through `hemma-devops`.
