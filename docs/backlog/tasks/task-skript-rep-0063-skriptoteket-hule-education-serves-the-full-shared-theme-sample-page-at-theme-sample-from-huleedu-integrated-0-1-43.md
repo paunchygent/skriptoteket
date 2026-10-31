@@ -7,10 +7,15 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-31'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: Hemma skill-repository orchestrator 299c0dc4 (merge); no separate code review
+  decided_at: '2026-10-31T18:50:00Z'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: >-
+    TASK-SKRIPT-REP-0063#closeout. Merged into main as 20ebba96a (0.1.46), deployed to production with the user's approval on 31 October 2026.
 dependencies:
   - TASK-SKILL-17-01-04
 task_kind: repository
@@ -72,6 +77,13 @@ material performance concern.
 - Any change to an existing view or to a route other than `/theme-sample`.
 - Any existing page loads `theme-head.js` or `ThemeSamplePage`.
 - Production deploy before the user's approval in the orchestrator thread.
+
+## Closeout
+
+- Outcome: skriptoteket.hule.education/theme-sample serves `ThemeSamplePage` from huleedu-integrated, mounted by `frontend/apps/skriptoteket/src/theme/theme-sample-entry.ts` with a `themePreference` store and the inline Skriptoteket wordmark; `design-system-map.json` lists the sample page components and `ui-theme-selector`.
+- Syncs and merges on main, each deployed to production with the user's approval on 31 October 2026: 0.1.43 f9b9bba34, 0.1.44 50677e1fc, 0.1.45 45f3752a0, 0.1.46 20ebba96a. Production runs 0.1.46, not the 0.1.43 named in the acceptance criterion; the later versions follow skill-repository `TASK-SKILL-17-01-04` D12 to D14.
+- Checks on each sync: design-system-validate, fe-type-check, the frontend build and the /theme-sample route tests passed.
+- Live check in headless Chrome, 31 October 2026: all four choices at desktop and phone widths; after 0.1.46 a dark device on Följ enheten gets Midnatt (paper #0b1e33). The user approved the palettes and the selector. Story authority: skill-repository `TASK-SKILL-17-01-04`, which holds the full record.
 
 ## Decided Contract Terms
 
