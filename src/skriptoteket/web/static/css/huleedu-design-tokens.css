@@ -117,6 +117,37 @@
   --huleedu-warning-strong: #6D3800; /* 3.16:1 darkest frosted, 9.48:1 white */
   --huleedu-action-strong: #02504A;  /* 3.12:1 darkest frosted, 9.34:1 white */
 
+  /* Theme-selector swatches keep each dark palette's approved base tone in
+     every theme. No dark rule restates them. */
+  --huleedu-theme-swatch-dark: #0E141B;     /* Bläck base */
+  --huleedu-theme-swatch-midnight: #0B1E33; /* Midnatt base */
+
+  /* Shared editor, syntax, playfield, grid and overlay tokens. These are the
+     light values; each dark palette below restates every literal-colour
+     token declared here. */
+  --huleedu-overlay: var(--huleedu-navy-40);
+  --huleedu-grid-line-opacity: 0.04;
+  --huleedu-critical-text: #FFFFFF;
+  --huleedu-editor-bg: #FFFFFF;
+  --huleedu-editor-gutter-bg: #F5F6F7;
+  --huleedu-editor-gutter-text: #5C6B7A;
+  --huleedu-editor-active-line: #F1F4F7;
+  --huleedu-editor-selection: #D6E8E5;
+  --huleedu-editor-cursor: var(--huleedu-action);
+  --huleedu-syntax-keyword: #8C2F45;
+  --huleedu-syntax-string: #2C6A61;
+  --huleedu-syntax-number: #A6431F;
+  --huleedu-syntax-comment: #5E6D7C;
+  --huleedu-syntax-function: #1F5A8C;
+  --huleedu-playfield-board: #0E2F4F;
+  --huleedu-playfield-inlay: #1C4366;
+  --huleedu-playfield-rail: #E7EAEE;
+  --huleedu-playfield-bumper: #E07A5F;
+  --huleedu-playfield-bumper-cap: #FEFEFC;
+  --huleedu-playfield-flipper: #7FCDC1;
+  --huleedu-playfield-ball: #DCE3EA;
+  --huleedu-playfield-light: #F2B54A;
+
   /* ─────────────────────────────────────────────────────────────────────────
      TYPOGRAPHY
      ───────────────────────────────────────────────────────────────────────── */
@@ -298,23 +329,232 @@
 
 /* Intentionally tokens-only (CSS Custom Properties). */
 
-/* Placeholder dark values; ST-SKILL-17-01 task 2 replaces them. */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --huleedu-paper: #0E141B;
-  --huleedu-navy: #FEFEFC;
-}
-
+/* Dark palettes: Bläck (`dark`, and `system` on a dark device) and Midnatt
+   (`midnight`). Alpha tokens derive their alpha from their base colour, the
+   shadows deepen, the overlay darkens and the browser chrome follows
+   color-scheme. */
+:root[data-theme="dark"],
 :root[data-theme="midnight"] {
+  --huleedu-navy-02: color-mix(in srgb, var(--huleedu-navy) 2%, transparent);
+  --huleedu-navy-05: color-mix(in srgb, var(--huleedu-navy) 5%, transparent);
+  --huleedu-navy-10: color-mix(in srgb, var(--huleedu-navy) 10%, transparent);
+  --huleedu-navy-15: color-mix(in srgb, var(--huleedu-navy) 15%, transparent);
+  --huleedu-navy-20: color-mix(in srgb, var(--huleedu-navy) 20%, transparent);
+  --huleedu-navy-30: color-mix(in srgb, var(--huleedu-navy) 30%, transparent);
+  --huleedu-navy-40: color-mix(in srgb, var(--huleedu-navy) 40%, transparent);
+  --huleedu-navy-50: color-mix(in srgb, var(--huleedu-navy) 50%, transparent);
+  --huleedu-navy-60: color-mix(in srgb, var(--huleedu-navy) 60%, transparent);
+  --huleedu-navy-70: color-mix(in srgb, var(--huleedu-navy) 70%, transparent);
+  --huleedu-navy-80: color-mix(in srgb, var(--huleedu-navy) 80%, transparent);
+  --huleedu-terracotta-05: color-mix(in srgb, var(--huleedu-terracotta) 5%, transparent);
+  --huleedu-terracotta-10: color-mix(in srgb, var(--huleedu-terracotta) 10%, transparent);
+  --huleedu-terracotta-20: color-mix(in srgb, var(--huleedu-terracotta) 20%, transparent);
+  --huleedu-terracotta-30: color-mix(in srgb, var(--huleedu-terracotta) 30%, transparent);
+  --huleedu-terracotta-40: color-mix(in srgb, var(--huleedu-terracotta) 40%, transparent);
+  --huleedu-action-05: color-mix(in srgb, var(--huleedu-action) 5%, transparent);
+  --huleedu-action-10: color-mix(in srgb, var(--huleedu-action) 10%, transparent);
+  --huleedu-action-20: color-mix(in srgb, var(--huleedu-action) 20%, transparent);
+  --huleedu-action-30: color-mix(in srgb, var(--huleedu-action) 30%, transparent);
+  --huleedu-action-40: color-mix(in srgb, var(--huleedu-action) 40%, transparent);
+  --huleedu-critical-05: color-mix(in srgb, var(--huleedu-critical) 5%, transparent);
+  --huleedu-critical-10: color-mix(in srgb, var(--huleedu-critical) 10%, transparent);
+  --huleedu-critical-20: color-mix(in srgb, var(--huleedu-critical) 20%, transparent);
+  --huleedu-critical-30: color-mix(in srgb, var(--huleedu-critical) 30%, transparent);
+  --huleedu-critical-40: color-mix(in srgb, var(--huleedu-critical) 40%, transparent);
+  --huleedu-canvas-15: color-mix(in srgb, var(--huleedu-canvas) 15%, transparent);
+  --huleedu-canvas-30: color-mix(in srgb, var(--huleedu-canvas) 30%, transparent);
+  --huleedu-canvas-50: color-mix(in srgb, var(--huleedu-canvas) 50%, transparent);
+  --huleedu-canvas-80: color-mix(in srgb, var(--huleedu-canvas) 80%, transparent);
+  --huleedu-success-10: color-mix(in srgb, var(--huleedu-success) 10%, transparent);
+  --huleedu-success-15: color-mix(in srgb, var(--huleedu-success) 15%, transparent);
+  --huleedu-success-45: color-mix(in srgb, var(--huleedu-success) 45%, transparent);
+  --huleedu-success-50: color-mix(in srgb, var(--huleedu-success) 50%, transparent);
+  --huleedu-warning-15: color-mix(in srgb, var(--huleedu-warning) 15%, transparent);
+  --huleedu-warning-20: color-mix(in srgb, var(--huleedu-warning) 20%, transparent);
+  --huleedu-warning-50: color-mix(in srgb, var(--huleedu-warning) 50%, transparent);
+  --huleedu-warning-60: color-mix(in srgb, var(--huleedu-warning) 60%, transparent);
+  --huleedu-error-10: color-mix(in srgb, var(--huleedu-error) 10%, transparent);
+  --huleedu-error-15: color-mix(in srgb, var(--huleedu-error) 15%, transparent);
+  --huleedu-error-40: color-mix(in srgb, var(--huleedu-error) 40%, transparent);
+  --huleedu-error-45: color-mix(in srgb, var(--huleedu-error) 45%, transparent);
   color-scheme: dark;
-  --huleedu-paper: #0B1E33;
-  --huleedu-navy: #FEFEFC;
+  --huleedu-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --huleedu-shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+  --huleedu-overlay: rgba(2, 8, 14, 0.62);
 }
 
+/* Bläck (ink black), the approved dark palette. */
+:root[data-theme="dark"] {
+  --huleedu-paper: #0E141B;
+  --huleedu-modal: #17202A;
+  --huleedu-panel: rgba(26, 37, 50, 0.64);
+  --huleedu-panel-muted: rgba(26, 37, 50, 0.38);
+  --huleedu-navy: #EDEEEA;
+  --huleedu-terracotta: #EA845F;
+  --huleedu-action: #68BDB1;
+  --huleedu-critical: #EB8FA1;
+  --button-primary-text: #0E141B;
+  --huleedu-success: #4CCF97;
+  --huleedu-warning: #EEB04A;
+  --huleedu-error: #F7857C;
+  --huleedu-success-strong: #6CDCAC;
+  --huleedu-warning-strong: #F4C168;
+  --huleedu-action-strong: #84CFC4;
+  --huleedu-surface-content: #131A23;
+
+  /* Editor, syntax, playfield and grid tokens. */
+  --huleedu-grid-line-opacity: 0.03;
+  --huleedu-critical-text: #0E141B;
+  --huleedu-editor-bg: #111820;
+  --huleedu-editor-gutter-bg: #0D1218;
+  --huleedu-editor-gutter-text: #8E9BA8;
+  --huleedu-editor-active-line: #1A232E;
+  --huleedu-editor-selection: #22404A;
+  --huleedu-editor-cursor: var(--huleedu-action);
+  --huleedu-syntax-keyword: #F2A5B6;
+  --huleedu-syntax-string: #8FD6C8;
+  --huleedu-syntax-number: #F4A887;
+  --huleedu-syntax-comment: #97A3AF;
+  --huleedu-syntax-function: #A9CDF0;
+  --huleedu-playfield-board: #080C11;
+  --huleedu-playfield-inlay: #18212B;
+  --huleedu-playfield-rail: #B4BDC6;
+  --huleedu-playfield-bumper: #EA845F;
+  --huleedu-playfield-bumper-cap: #EDEEEA;
+  --huleedu-playfield-flipper: #68BDB1;
+  --huleedu-playfield-ball: #DCE3EA;
+  --huleedu-playfield-light: #EEB04A;
+}
+
+/* Midnatt (midnight), the approved midnight palette. */
+:root[data-theme="midnight"] {
+  --huleedu-paper: #0B1E33;
+  --huleedu-modal: #13293F;
+  --huleedu-panel: rgba(24, 52, 82, 0.64);
+  --huleedu-panel-muted: rgba(24, 52, 82, 0.38);
+  --huleedu-navy: #EDEEEA;
+  --huleedu-terracotta: #EE8A68;
+  --huleedu-action: #6CC2B6;
+  --huleedu-critical: #EE94A6;
+  --button-primary-text: #0B1E33;
+  --huleedu-success: #4FD49C;
+  --huleedu-warning: #F0B54E;
+  --huleedu-error: #F98B82;
+  --huleedu-success-strong: #6FDFB0;
+  --huleedu-warning-strong: #F5C46C;
+  --huleedu-action-strong: #88D2C7;
+  --huleedu-surface-content: #102438;
+
+  /* Editor, syntax, playfield and grid tokens. */
+  --huleedu-grid-line-opacity: 0.03;
+  --huleedu-critical-text: #0B1E33;
+  --huleedu-editor-bg: #0E2236;
+  --huleedu-editor-gutter-bg: #0B1D2F;
+  --huleedu-editor-gutter-text: #93A5B8;
+  --huleedu-editor-active-line: #14304B;
+  --huleedu-editor-selection: #21485C;
+  --huleedu-editor-cursor: var(--huleedu-action);
+  --huleedu-syntax-keyword: #F2A5B6;
+  --huleedu-syntax-string: #8FD6C8;
+  --huleedu-syntax-number: #F4A887;
+  --huleedu-syntax-comment: #9AAABA;
+  --huleedu-syntax-function: #A9CDF0;
+  --huleedu-playfield-board: #061424;
+  --huleedu-playfield-inlay: #11283F;
+  --huleedu-playfield-rail: #B9C6D3;
+  --huleedu-playfield-bumper: #EE8A68;
+  --huleedu-playfield-bumper-cap: #EDEEEA;
+  --huleedu-playfield-flipper: #6CC2B6;
+  --huleedu-playfield-ball: #DCE3EA;
+  --huleedu-playfield-light: #F0B54E;
+}
+
+/* A `system` theme on a dark device is Bläck. The media query cannot join
+   the shared selector list, so this rule repeats it once. */
 @media (prefers-color-scheme: dark) {
   :root[data-theme="system"] {
+    --huleedu-navy-02: color-mix(in srgb, var(--huleedu-navy) 2%, transparent);
+    --huleedu-navy-05: color-mix(in srgb, var(--huleedu-navy) 5%, transparent);
+    --huleedu-navy-10: color-mix(in srgb, var(--huleedu-navy) 10%, transparent);
+    --huleedu-navy-15: color-mix(in srgb, var(--huleedu-navy) 15%, transparent);
+    --huleedu-navy-20: color-mix(in srgb, var(--huleedu-navy) 20%, transparent);
+    --huleedu-navy-30: color-mix(in srgb, var(--huleedu-navy) 30%, transparent);
+    --huleedu-navy-40: color-mix(in srgb, var(--huleedu-navy) 40%, transparent);
+    --huleedu-navy-50: color-mix(in srgb, var(--huleedu-navy) 50%, transparent);
+    --huleedu-navy-60: color-mix(in srgb, var(--huleedu-navy) 60%, transparent);
+    --huleedu-navy-70: color-mix(in srgb, var(--huleedu-navy) 70%, transparent);
+    --huleedu-navy-80: color-mix(in srgb, var(--huleedu-navy) 80%, transparent);
+    --huleedu-terracotta-05: color-mix(in srgb, var(--huleedu-terracotta) 5%, transparent);
+    --huleedu-terracotta-10: color-mix(in srgb, var(--huleedu-terracotta) 10%, transparent);
+    --huleedu-terracotta-20: color-mix(in srgb, var(--huleedu-terracotta) 20%, transparent);
+    --huleedu-terracotta-30: color-mix(in srgb, var(--huleedu-terracotta) 30%, transparent);
+    --huleedu-terracotta-40: color-mix(in srgb, var(--huleedu-terracotta) 40%, transparent);
+    --huleedu-action-05: color-mix(in srgb, var(--huleedu-action) 5%, transparent);
+    --huleedu-action-10: color-mix(in srgb, var(--huleedu-action) 10%, transparent);
+    --huleedu-action-20: color-mix(in srgb, var(--huleedu-action) 20%, transparent);
+    --huleedu-action-30: color-mix(in srgb, var(--huleedu-action) 30%, transparent);
+    --huleedu-action-40: color-mix(in srgb, var(--huleedu-action) 40%, transparent);
+    --huleedu-critical-05: color-mix(in srgb, var(--huleedu-critical) 5%, transparent);
+    --huleedu-critical-10: color-mix(in srgb, var(--huleedu-critical) 10%, transparent);
+    --huleedu-critical-20: color-mix(in srgb, var(--huleedu-critical) 20%, transparent);
+    --huleedu-critical-30: color-mix(in srgb, var(--huleedu-critical) 30%, transparent);
+    --huleedu-critical-40: color-mix(in srgb, var(--huleedu-critical) 40%, transparent);
+    --huleedu-canvas-15: color-mix(in srgb, var(--huleedu-canvas) 15%, transparent);
+    --huleedu-canvas-30: color-mix(in srgb, var(--huleedu-canvas) 30%, transparent);
+    --huleedu-canvas-50: color-mix(in srgb, var(--huleedu-canvas) 50%, transparent);
+    --huleedu-canvas-80: color-mix(in srgb, var(--huleedu-canvas) 80%, transparent);
+    --huleedu-success-10: color-mix(in srgb, var(--huleedu-success) 10%, transparent);
+    --huleedu-success-15: color-mix(in srgb, var(--huleedu-success) 15%, transparent);
+    --huleedu-success-45: color-mix(in srgb, var(--huleedu-success) 45%, transparent);
+    --huleedu-success-50: color-mix(in srgb, var(--huleedu-success) 50%, transparent);
+    --huleedu-warning-15: color-mix(in srgb, var(--huleedu-warning) 15%, transparent);
+    --huleedu-warning-20: color-mix(in srgb, var(--huleedu-warning) 20%, transparent);
+    --huleedu-warning-50: color-mix(in srgb, var(--huleedu-warning) 50%, transparent);
+    --huleedu-warning-60: color-mix(in srgb, var(--huleedu-warning) 60%, transparent);
+    --huleedu-error-10: color-mix(in srgb, var(--huleedu-error) 10%, transparent);
+    --huleedu-error-15: color-mix(in srgb, var(--huleedu-error) 15%, transparent);
+    --huleedu-error-40: color-mix(in srgb, var(--huleedu-error) 40%, transparent);
+    --huleedu-error-45: color-mix(in srgb, var(--huleedu-error) 45%, transparent);
     color-scheme: dark;
+    --huleedu-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --huleedu-shadow-md: 0 4px 8px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+    --huleedu-overlay: rgba(2, 8, 14, 0.62);
     --huleedu-paper: #0E141B;
-    --huleedu-navy: #FEFEFC;
+    --huleedu-modal: #17202A;
+    --huleedu-panel: rgba(26, 37, 50, 0.64);
+    --huleedu-panel-muted: rgba(26, 37, 50, 0.38);
+    --huleedu-navy: #EDEEEA;
+    --huleedu-terracotta: #EA845F;
+    --huleedu-action: #68BDB1;
+    --huleedu-critical: #EB8FA1;
+    --button-primary-text: #0E141B;
+    --huleedu-success: #4CCF97;
+    --huleedu-warning: #EEB04A;
+    --huleedu-error: #F7857C;
+    --huleedu-success-strong: #6CDCAC;
+    --huleedu-warning-strong: #F4C168;
+    --huleedu-action-strong: #84CFC4;
+    --huleedu-surface-content: #131A23;
+    --huleedu-grid-line-opacity: 0.03;
+    --huleedu-critical-text: #0E141B;
+    --huleedu-editor-bg: #111820;
+    --huleedu-editor-gutter-bg: #0D1218;
+    --huleedu-editor-gutter-text: #8E9BA8;
+    --huleedu-editor-active-line: #1A232E;
+    --huleedu-editor-selection: #22404A;
+    --huleedu-editor-cursor: var(--huleedu-action);
+    --huleedu-syntax-keyword: #F2A5B6;
+    --huleedu-syntax-string: #8FD6C8;
+    --huleedu-syntax-number: #F4A887;
+    --huleedu-syntax-comment: #97A3AF;
+    --huleedu-syntax-function: #A9CDF0;
+    --huleedu-playfield-board: #080C11;
+    --huleedu-playfield-inlay: #18212B;
+    --huleedu-playfield-rail: #B4BDC6;
+    --huleedu-playfield-bumper: #EA845F;
+    --huleedu-playfield-bumper-cap: #EDEEEA;
+    --huleedu-playfield-flipper: #68BDB1;
+    --huleedu-playfield-ball: #DCE3EA;
+    --huleedu-playfield-light: #EEB04A;
   }
 }

@@ -1,0 +1,21 @@
+/**
+ * Purpose:
+ *     Load Tailwind and the adopted shared stylesheets for the theme-sample
+ *     page.
+ *
+ * Relationships:
+ *     - imported only by `theme-sample-entry.ts`; no app view imports it.
+ *     - follows the package's consumer order: Tailwind first, then tokens,
+ *       tailwind-theme and action-buttons.
+ *     - `brand.css` stays out because `design-system-map.json` does not adopt
+ *       that export; the sample top bars restate the HuleEdu wordmark from the
+ *       same tokens.
+ *     - the app main stylesheet stays out because it also applies
+ *       Skriptoteket-only global layout (Klassrumskartan surfaces, page
+ *       primitives and the body grid), which this page does not own.
+ */
+
+@import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/tailwind-theme.css";
+@import "../styles/action-buttons.css";
