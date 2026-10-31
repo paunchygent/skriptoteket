@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f961fe8865222e0d111b8bbcdee71884b318518e3621dfebc6a93417fb3d9bb8",
+  "source_set_digest": "a180fc3da3a911e3dbf54785093a20e9136504e183f4316a2295d4c793a5a1b3",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -580,6 +580,26 @@
       "title": "Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget",
       "path": "docs/backlog/epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md",
       "status": "active",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "EPIC-SKRIPT-42",
+      "type": "epic",
+      "title": "Dark mode on every skriptoteket.hule.education page from the shared design system",
+      "path": "docs/backlog/epics/epic-skript-42-dark-mode-on-every-skriptoteket-hule-education-page-from-the-shared-design-system.md",
+      "status": "proposed",
       "owners": [
         {
           "kind": "service",
@@ -2604,6 +2624,27 @@
       "path": "docs/backlog/stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md",
       "status": "ready",
       "epic": "EPIC-SKRIPT-41",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-42-01",
+      "type": "story",
+      "title": "Every skriptoteket.hule.education page renders light or dark from the shared tokens and shows the theme button",
+      "path": "docs/backlog/stories/st-skript-42-01-every-skriptoteket-hule-education-page-renders-light-or-dark-from-the-shared-tokens-and-shows-the-theme-button.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-42",
       "owners": [
         {
           "kind": "service",
