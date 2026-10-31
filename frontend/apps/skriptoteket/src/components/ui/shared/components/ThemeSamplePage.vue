@@ -198,8 +198,9 @@ const companionSampleUrl = computed(() => {
 </style>
 
 <!-- Unscoped on purpose, because the page fills the document box: both rules
-     match only while the page root carries data-ui="theme-sample-page", so
-     the shared barrel's import of this file restyles no other document. -->
+     match only while the page root carries data-ui="theme-sample-page". Only
+     the theme-sample entry imports this file; the shared barrel does not
+     export it, so app bundles never load these rules. -->
 <style>
 html:has([data-ui="theme-sample-page"]),
 body:has([data-ui="theme-sample-page"]) {
