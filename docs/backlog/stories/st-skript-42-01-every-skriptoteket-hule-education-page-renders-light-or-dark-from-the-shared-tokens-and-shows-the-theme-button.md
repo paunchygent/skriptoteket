@@ -93,8 +93,8 @@ the theme from a glyph button in the top bar. This is story 3 of EPIC-SKILL-17
    is stored, from `prefers-color-scheme`, and force light under `@media print`.
 4. T4, last: run `theme-head.js` in the SPA head, place the theme button in
    `AuthTopBar.vue` and `LandingLayout.vue`, and remove `/theme-sample`.
-   Gate: the user reviews a whole-screen mockup of both top bars with the
-   button, in Ljust and Bläck, before T4 starts.
+   Gate: the `/theme-sample` page approved in ST-SKILL-17-01 shows both top
+   bars with the button and its open menu; it is the approved mockup for T4.
 
 No walking skeleton: the story crosses no new system boundary, since the
 cookie, the token CSS and the selector component already exist.
@@ -124,5 +124,5 @@ cookie, the token CSS and the selector component already exist.
 | M1  | A local ESLint rule refuses hex, rgb, rgba and hsl colours and Tailwind palette classes in `.ts`, `.vue` and `.css`; `palette-scan-roots` is set. |
 | M2  | CodeMirror builds its theme and highlight style from the editor and syntax tokens and follows `data-theme`.                                       |
 | M3  | Share renderers emit a palette per theme (Ljust, Midnatt, Bläck), pick it from the cookie or the device, and print light.                         |
-| M4  | Tasks T1-T3 in any order, T4 last; a whole-screen mockup of both top bars gates T4.                                                               |
+| M4  | Tasks T1-T3 in any order, T4 last; the `/theme-sample` page approved in ST-SKILL-17-01 is the top-bar mockup for T4.                              |
 | M5  | Share pages give Midnatt its own palette, distinct from Bläck.                                                                                    |
