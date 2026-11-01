@@ -15,7 +15,7 @@ import re
 from datetime import datetime, timezone
 from urllib.parse import quote, urljoin
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse, Response
 
 from skriptoteket.application.curated_apps.classroom_planner import (
@@ -48,6 +48,10 @@ _PREVIEW_HEADERS = {
     "Cache-Control": "public, max-age=86400, immutable",
     "X-Robots-Tag": "noindex, nofollow",
 }
+# The hule.education theme button writes this cookie; themePreference.ts owns
+# the writer and the value set.
+_THEME_COOKIE_NAME = "huleedu_theme"
+_THEME_VALUES = frozenset({"light", "dark", "midnight", "system"})
 # Layered on the share page base stylesheet so the unavailable page keeps the
 # public share surface's ink, canvas, and type while centring one calm message.
 _UNAVAILABLE_PAGE_CSS = """
@@ -156,6 +160,7 @@ async def download_classroom_planner_share_pdf(
 )
 async def read_classroom_planner_share(
     public_token: str,
+    request: Request,
     handler: FromDishka[GetClassroomPlannerShareArtifactByTokenHandler],
     preview_handler: FromDishka[GetClassroomPlannerSharePreviewAssetHandler],
     settings: FromDishka[Settings],
@@ -187,9 +192,22 @@ async def read_classroom_planner_share(
         )
 
     return HTMLResponse(
-        content=content,
+        content=_with_theme_attribute(content, theme=_share_theme(request)),
         headers=_NOINDEX_HEADERS,
     )
+
+
+def _share_theme(request: Request) -> str:
+    """Resolve the share page theme from the stored HuleEdu theme cookie."""
+
+    value = request.cookies.get(_THEME_COOKIE_NAME)
+    return value if value in _THEME_VALUES else "system"
+
+
+def _with_theme_attribute(content: str, *, theme: str) -> str:
+    """Stamp data-theme on the first <html tag, keeping its attributes."""
+
+    return content.replace("<html", f'<html data-theme="{theme}"', 1)
 
 
 async def _load_active_artifact(
