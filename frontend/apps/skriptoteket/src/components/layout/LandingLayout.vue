@@ -7,6 +7,9 @@
  *   shared logo link at the left, Logga in and Hjälp as ghost buttons at the
  *   right; Hjälp is glyph-only on phones, so the row fits 360 px
  * - Logga in opens the HuleEdu ceremony directly with the route's continuation
+ * - the shared theme button sits at the right end of the bar at every width,
+ *   after Hjälp, and stores the choice in the huleedu_theme cookie through
+ *   `themePreferenceStore`
  * - the page frame is centred at 1040 px with the signed-in frame's padding;
  *   route-level hero surfaces own the strongest next step
  * - public documents.conversion_hub routes fill the frame
@@ -20,6 +23,8 @@ import { useRoute } from "vue-router";
 import { sharedAuthCeremonyUrl } from "../../api/sharedAuth";
 import { resolveLandingAuthContinuation } from "../../composables/auth/authEntryNavigation";
 import BrandHomeLink from "../brand/BrandHomeLink.vue";
+import { UiThemeSelector } from "../ui";
+import { themePreferenceStore } from "../../theme/themePreferenceStore";
 import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
@@ -60,6 +65,7 @@ const loginUrl = computed(() => {
           :href="loginUrl"
         />
         <ShellHelpButton word-from="tablet" />
+        <UiThemeSelector :theme-preference="themePreferenceStore" />
       </div>
     </header>
 

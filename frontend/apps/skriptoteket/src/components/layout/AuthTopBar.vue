@@ -13,13 +13,17 @@
  *   (contract with the exam workspace, TASK-SKRIPT-40-04-03)
  * - immersive game routes get a dark bar with the way back to the catalogue,
  *   Hjälp and Logga ut at every width, because they have no sidebar or drawer
+ * - the shared theme button sits at the right end of the bar at every width,
+ *   between Logga ut and Meny, and stores the choice in the huleedu_theme
+ *   cookie through `themePreferenceStore`
  */
 
 import { computed, ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
 
-import { UiGlyph } from "../ui";
+import { UiGlyph, UiThemeSelector } from "../ui";
 import BrandHomeLink from "../brand/BrandHomeLink.vue";
+import { themePreferenceStore } from "../../theme/themePreferenceStore";
 import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
@@ -134,6 +138,7 @@ defineExpose({ menuButtonElement });
       :disabled="logoutInProgress"
       @click="emit('logout')"
     />
+    <UiThemeSelector :theme-preference="themePreferenceStore" />
 
     <ShellBarButton
       v-if="!isImmersiveRoute"

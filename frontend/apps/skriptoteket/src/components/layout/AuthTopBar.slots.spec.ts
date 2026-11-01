@@ -54,3 +54,28 @@ describe("top-bar slots stay put across state changes", () => {
     expect(logout.get(".shell-bar-button__word-reserve").text()).toBe("Loggar ut…");
   });
 });
+
+describe("top-bar theme button", () => {
+  function themeButtons() {
+    return wrapper().findAll(".topbar button[aria-haspopup='menu']");
+  }
+
+  it("renders exactly one theme button between Logga ut and Meny", () => {
+    mountLayout();
+
+    expect(themeButtons()).toHaveLength(1);
+    const themeButton = themeButtons()[0];
+    expect(themeButton.attributes("aria-label")).toMatch(/^Färgtema: /);
+
+    const selectorRoot = themeButton.element.parentElement;
+    expect(selectorRoot?.previousElementSibling?.classList.contains("topbar-logout")).toBe(true);
+    expect(selectorRoot?.nextElementSibling?.classList.contains("topbar-menu-button")).toBe(true);
+  });
+
+  it("keeps the theme button on immersive game routes", () => {
+    mountLayout({ appId: "games.flunk_out_frenzy" });
+
+    expect(wrapper().get(".topbar").classes()).toContain("topbar--immersive");
+    expect(themeButtons()).toHaveLength(1);
+  });
+});
