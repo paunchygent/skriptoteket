@@ -294,7 +294,9 @@ function selectOption(option: UiSegmentedToggleOption): void {
         :class="[
           optionClass,
           'rounded-[4px] border text-navy transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-50',
-          option.value === modelValue ? 'border-navy/20 bg-white' : 'border-transparent bg-transparent hover:bg-white/70',
+          option.value === modelValue
+            ? 'border-navy/20 bg-[var(--huleedu-surface-content)]'
+            : 'border-transparent bg-transparent hover:bg-[var(--huleedu-surface-content)]/70',
         ]"
         @click="selectOption(option)"
         @keydown="onOptionKeydown($event, index)"

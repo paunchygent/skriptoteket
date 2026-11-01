@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.47",
+  "version": "0.1.48",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -52,7 +52,7 @@
       "id": "dense-tool-primitives",
       "kind": "typescript.primitive",
       "path": "src/vue/denseToolPrimitives.ts",
-      "sha256": "429e07e683a3ee7fa64c58a34a9b7d608d9da891e4225c2f8c060aab156d9f17"
+      "sha256": "964b1fb6fdb6de630ea11f8bd95962f7fdd52ac75d68cb3aab08fae9f56ca752"
     },
     {
       "id": "ui-glyphs",
@@ -88,7 +88,7 @@
       "id": "ui-segmented-toggle",
       "kind": "vue.component",
       "path": "src/vue/components/UiSegmentedToggle.vue",
-      "sha256": "8fc4b5223386949c4a671fbd58cadade0f24f1fa51ddcdf4e1e437e74ba1f95e"
+      "sha256": "6965c482e358979fcdaeaa816cd6322d3478c6a1d7ee51f35971c3c2fa0df5bc"
     },
     {
       "id": "ui-glyph",
