@@ -138,7 +138,7 @@ function submit(): void {
 </template>
 
 <style scoped>
-.scrim { position: fixed; inset: 0; z-index: 45; background: rgba(8, 43, 76, 0.32); }
+.scrim { position: fixed; inset: 0; z-index: 45; background: var(--huleedu-overlay); }
 .dialog {
   position: fixed; z-index: 46; left: 50%; top: 18vh; transform: translateX(-50%); outline: none;
   width: min(480px, calc(100vw - 32px)); padding: var(--huleedu-space-6);
