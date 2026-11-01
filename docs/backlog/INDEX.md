@@ -607,9 +607,6 @@
 - ST-SKRIPT-37-05 | [Cross-app save/export file naming protocol](stories/st-skript-37-05-cross-app-save-export-file-naming-protocol.md) | epic=[EPIC-SKRIPT-37](epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | tasks=none | depends_on=2 | dependents=0
 - ST-SKRIPT-39-10 | [Teachers import exams from PDF files that contain text into the exam workspace](stories/st-skript-39-10-teachers-import-exams-from-pdf-files-that-contain-text-into-the-exam-workspace.md) | epic=[EPIC-SKRIPT-39](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-41-03 | [Every signed-in teacher uses the exam and script-editor AI within the daily budget](stories/st-skript-41-03-every-signed-in-teacher-uses-the-exam-and-script-editor-ai-within-the-daily-budget.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
-
-### proposed
-
 - ST-SKRIPT-42-01 | [Every skriptoteket.hule.education page renders light or dark from the shared tokens and shows the theme button](stories/st-skript-42-01-every-skriptoteket-hule-education-page-renders-light-or-dark-from-the-shared-tokens-and-shows-the-theme-button.md) | epic=[EPIC-SKRIPT-42](epics/epic-skript-42-dark-mode-on-every-skriptoteket-hule-education-page-from-the-shared-design-system.md) | tasks=none | depends_on=0 | dependents=0
 
 ### blocked

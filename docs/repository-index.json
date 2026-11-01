@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a180fc3da3a911e3dbf54785093a20e9136504e183f4316a2295d4c793a5a1b3",
+  "source_set_digest": "5e80de8cd4f01d38d93eda975595a4bf944072df0bae6995b40e5fe5caac117a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2643,7 +2643,7 @@
       "type": "story",
       "title": "Every skriptoteket.hule.education page renders light or dark from the shared tokens and shows the theme button",
       "path": "docs/backlog/stories/st-skript-42-01-every-skriptoteket-hule-education-page-renders-light-or-dark-from-the-shared-tokens-and-shows-the-theme-button.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-42",
       "owners": [
         {
