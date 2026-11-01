@@ -107,6 +107,21 @@ describe("LandingLayout", () => {
     );
   });
 
+  it("shows exactly one theme button at the right end of the header actions", () => {
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    const headerActions = wrapper.get(".landing-header-actions");
+    const themeButtons = headerActions.findAll("button[aria-haspopup='menu']");
+
+    expect(themeButtons).toHaveLength(1);
+    expect(themeButtons[0].attributes("aria-label")).toMatch(/^Färgtema: /);
+    expect(headerActions.element.lastElementChild?.contains(themeButtons[0].element)).toBe(true);
+  });
+
   it("opens the shared help panel from the public Hjälp button and reflects it", async () => {    const help = useHelp();
     help.close({ restoreFocus: false });
 

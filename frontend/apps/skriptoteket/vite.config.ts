@@ -2,22 +2,22 @@
  * Skriptoteket SPA Vite development and production asset configuration.
  *
  * Purpose:
- *   Build the teacher-facing SPA and the shared theme-sample page, and keep
- *   local API proxy lanes aligned with the HuleEdu Gateway edge that owns
- *   browser auth and Sir Convert routing.
+ *   Build the teacher-facing SPA and keep local API proxy lanes aligned with
+ *   the HuleEdu Gateway edge that owns browser auth and Sir Convert routing.
  *
  * Relationships:
  *   - `src/api/*` clients rely on these proxy prefixes during local proof.
  *   - `src/skriptoteket/web/` serves the built SPA assets in production.
- *   - `src/skriptoteket/web/routes/spa_fallback.py` serves the built
- *     `src/theme/theme-sample.html` page at `/theme-sample`.
+ *   - `inlineThemeHead()` inlines `src/theme/theme-head.js` at the start of
+ *     the head so the stored theme applies before first paint.
  */
 
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const devHost = process.env.VITE_DEV_HOST ?? true;
@@ -36,8 +36,22 @@ const watch = usePolling
     }
   : undefined;
 
+function inlineThemeHead(): Plugin {
+  const themeHeadSource = readFileSync(path.resolve(dirname, "src/theme/theme-head.js"), "utf8");
+  return {
+    name: "skriptoteket-inline-theme-head",
+    transformIndexHtml: () => [
+      {
+        tag: "script",
+        children: themeHeadSource,
+        injectTo: "head-prepend",
+      },
+    ],
+  };
+}
+
 export default defineConfig(({ command }) => ({
-  plugins: [vue(), tailwindcss()],
+  plugins: [vue(), tailwindcss(), inlineThemeHead()],
   // The SPA is mounted at "/" in production, but its built assets live under "/static/spa/".
   // For Vite dev server we want routes like "/browse" to work directly.
   base: command === "serve" ? "/" : "/static/spa/",
@@ -48,7 +62,6 @@ export default defineConfig(({ command }) => ({
     rollupOptions: {
       input: {
         index: path.resolve(dirname, "index.html"),
-        themeSample: path.resolve(dirname, "src/theme/theme-sample.html"),
       },
     },
   },
