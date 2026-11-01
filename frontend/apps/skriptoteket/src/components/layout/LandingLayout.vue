@@ -6,6 +6,8 @@
  * - the same 56 px top bar as the signed-in shell, without a sidebar: the
  *   shared logo link at the left, Logga in and Hjälp as ghost buttons at the
  *   right; Hjälp is glyph-only on phones, so the row fits 360 px
+ * - below 400 px the bar tightens the gap and the Logga in padding so the
+ *   brand, Logga in, Hjälp and the theme button fit 360 px
  * - Logga in opens the HuleEdu ceremony directly with the route's continuation
  * - the shared theme button sits at the right end of the bar at every width,
  *   after Hjälp, and stores the choice in the huleedu_theme cookie through
@@ -151,6 +153,19 @@ const loginUrl = computed(() => {
   max-width: 1040px;
   min-height: 0;
   margin: 0 auto;
+}
+
+/* Below 400 px the bar tightens the gap and the Logga in padding so the
+   brand, Logga in, Hjälp and the theme button fit 360 px. The nested
+   selector outranks ShellBarButton's own padding on specificity alone. */
+@media (max-width: 399px) {
+  .landing-topbar {
+    gap: var(--huleedu-space-1);
+  }
+
+  .landing-header-actions .landing-header-link {
+    padding-inline: var(--huleedu-space-2);
+  }
 }
 
 @media (min-width: 768px) {
