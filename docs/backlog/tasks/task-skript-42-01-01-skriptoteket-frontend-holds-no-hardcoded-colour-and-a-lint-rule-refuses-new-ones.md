@@ -32,6 +32,9 @@ stays unchanged, because each token equals its replaced literal in Ljust.
   - The extra `.xw-pop` ring `rgba(0,0,0,0.02)` is dropped.
   - The `.xw-radio--on` inset `#fff` becomes `var(--huleedu-surface-content)`.
   - The dialog `.scrim` `rgba(8,43,76,0.32)` becomes `var(--huleedu-overlay)`.
+    This is the one exception to an unchanged Light rendering: the overlay
+    token is `rgba(8,43,76,0.4)`, so the Light scrim becomes 0.40 opacity
+    instead of 0.32. The user accepted this on 2026-11-01.
   - The `ExamWorkspaceImportBox.vue` fallback is dropped.
   - `bg-white` becomes `bg-[var(--huleedu-surface-content)]`, and
     `hover:bg-white/70` becomes `hover:bg-[var(--huleedu-surface-content)]/70`.
