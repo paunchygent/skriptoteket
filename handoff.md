@@ -1,10 +1,11 @@
 ## Current
 
 - Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator,
-  2026-11-01: ST-SKRIPT-42-01 is `ready` with tasks T1-T4 (tokens and lint rule, CodeMirror,
-  share-page palettes, then theme button and `/theme-sample` removal). Next action: scaffold
-  the task docs and dispatch T1-T3. User gate: a whole-screen mockup of both top bars before
-  T4. Plan: retained root `01a193d4-6820-7dd3-b25c-7f8c58836241`.
+  2026-11-01: ST-SKRIPT-42-01 tasks 01-03 are merged to main (`933cfd750`); task 04 (theme
+  button, `/theme-sample` removal) is not started. Next action: the whole-screen mockup of
+  both top bars, which is the user gate before T4. Worktree
+  `../Skriptoteket-st-skript-42-01` stays for T4. Plan: retained root
+  `01a193d4-6820-7dd3-b25c-7f8c58836241`.
 
 - Hemma orchestrator (Claude desktop SSH session, cwd `~/apps/skriptoteket`), 2026-10-29.
   User priority order of 2026-10-28; all Kodredigerare (script editor) tasks are deferred:
@@ -50,6 +51,11 @@
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
+
+- 2026-11-01 `merged`: ST-SKRIPT-42-01 tasks 01-03: frontend colours read `--huleedu-*` tokens,
+  lint rule `frontend/eslint-rules/no-hardcoded-colour.js`, `palette-scan-roots` set, themed
+  CodeMirror, share pages follow the theme (legacy grouping shares stay light); Light dialog
+  scrim is 0.40 by user decision. Hemma pre-push suites passed on `933cfd750`.
 
 - 2026-10-30 `done`: REP-0061 one 40 px logo link in both top bars, page titles and greeting on
   the 20 px title role, glyph-only Hjälp on phones (production `00fa763fa`, Mac walks, user check);
