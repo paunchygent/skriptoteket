@@ -220,7 +220,7 @@ function chooseKind(event: Event): void {
 .imp__steps li { display: flex; gap: var(--huleedu-space-2); font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70); }
 .imp__steps li::before {
   counter-increment: step; content: counter(step); flex: none; display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%; background: var(--huleedu-navy-10, rgba(8, 43, 76, 0.1));
+  width: 16px; height: 16px; border-radius: 50%; background: var(--huleedu-navy-10);
   font-size: 10px; font-weight: var(--huleedu-font-semibold);
 }
 .imp__retry {

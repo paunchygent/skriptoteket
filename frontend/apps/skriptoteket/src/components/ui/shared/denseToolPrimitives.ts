@@ -34,7 +34,7 @@ export type DenseActionValueClassOptions = {
 
 export const DENSE_MENU_ITEM_SELECTOR = '[role="menuitem"]:not([disabled])';
 export const DENSE_MENU_PANEL_CLASS =
-  "border border-navy bg-white shadow-[var(--huleedu-shadow-md)] outline-none z-[var(--huleedu-z-tooltip)]";
+  "border border-navy bg-[var(--huleedu-surface-content)] shadow-[var(--huleedu-shadow-md)] outline-none z-[var(--huleedu-z-tooltip)]";
 export const DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]";
 export const DENSE_ICON_SIZE_CLASS = "h-9 w-9";
 export const DENSE_TEXT_HEIGHT_CLASS = "h-[28px]";
@@ -47,13 +47,13 @@ export const DENSE_SEGMENTED_SHELL_CLASS =
 export const DENSE_SEGMENTED_SUBRAIL_SHELL_CLASS =
   `${DENSE_ACTION_RADIUS_CLASS} border border-navy/20 bg-canvas/60 p-px`;
 export const DENSE_SEGMENTED_WORKSPACE_SHELL_CLASS =
-  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-white p-[2px]`;
+  `${DENSE_ACTION_RADIUS_CLASS} border border-navy/25 bg-[var(--huleedu-surface-content)] p-[2px]`;
 export const DENSE_MENU_ITEM_BASE_CLASS =
   "flex w-full items-center gap-2 px-3 py-2 text-left text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-snug transition-colors focus-visible:outline-none focus:bg-canvas hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50";
 export const DENSE_MENU_SECTION_LABEL_CLASS =
   "text-[10px] font-semibold uppercase tracking-wide text-navy/60";
 export const DENSE_FORM_INPUT_CLASS =
-  `w-full ${DENSE_TEXT_HEIGHT_CLASS} ${DENSE_ACTION_RADIUS_CLASS} border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none`;
+  `w-full ${DENSE_TEXT_HEIGHT_CLASS} ${DENSE_ACTION_RADIUS_CLASS} border border-navy/30 bg-[var(--huleedu-surface-content)] px-2.5 text-[11px] text-navy shadow-none leading-none`;
 
 function groupPositionClass(position: DenseActionGroupPosition): string {
   switch (position) {
@@ -92,11 +92,11 @@ function toneClass(tone: DenseActionTone, active: boolean, iconOnly: boolean): s
     case "danger":
       return active
         ? "border-burgundy/40 bg-burgundy/10 text-burgundy"
-        : "border-burgundy/30 bg-white text-burgundy hover:bg-burgundy/5";
+        : "border-burgundy/30 bg-[var(--huleedu-surface-content)] text-burgundy hover:bg-burgundy/5";
     default:
       return active
         ? "border-navy/25 bg-canvas text-navy"
-        : "border-navy/20 bg-white text-navy hover:bg-canvas/70";
+        : "border-navy/20 bg-[var(--huleedu-surface-content)] text-navy hover:bg-canvas/70";
   }
 }
 

@@ -5,6 +5,17 @@
  * chrome cannot leak into the rest of the SPA.
  */
 
+body.app-shell-game-mode {
+  background:
+    radial-gradient(circle at 18% 10%, rgba(127, 219, 149, 0.12), transparent 20%),
+    linear-gradient(180deg, #2a3c33 0%, #26342e 16%, #6a4730 16%, #2b1b12 100%);
+  color: var(--color-canvas);
+}
+
+body.app-shell-game-mode::before {
+  opacity: 0;
+}
+
 .fof-game-container.fof-shell {
   --fof-ink: #241611;
   --fof-paper: #f2e6d1;

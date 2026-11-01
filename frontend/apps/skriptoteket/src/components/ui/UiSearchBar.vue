@@ -36,8 +36,8 @@ const emit = defineEmits<{
 
 const containerClass = computed(() => {
   return props.variant === "popover"
-    ? "flex items-stretch border border-navy/30 bg-white shadow-none"
-    : "flex items-stretch border border-navy bg-white shadow-none";
+    ? "flex items-stretch border border-navy/30 bg-[var(--huleedu-surface-content)] shadow-none"
+    : "flex items-stretch border border-navy bg-[var(--huleedu-surface-content)] shadow-none";
 });
 
 const inputClass = computed(() => {

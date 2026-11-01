@@ -15,7 +15,6 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirro
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
   bracketMatching,
-  defaultHighlightStyle,
   foldGutter,
   foldKeymap,
   indentOnInput,
@@ -34,6 +33,8 @@ import {
   lineNumbers,
   rectangularSelection } from "@codemirror/view";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+
+import { huleeduEditorTheme, huleeduHighlightStyle } from "./huleeduEditorTheme";
 
 const props = withDefaults(
   defineProps<{
@@ -103,7 +104,7 @@ onMounted(() => {
         dropCursor(),
         EditorState.allowMultipleSelections.of(true),
         indentOnInput(),
-        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        syntaxHighlighting(huleeduHighlightStyle, { fallback: true }),
         bracketMatching(),
         closeBrackets(),
         autocompletion(),
@@ -123,6 +124,7 @@ onMounted(() => {
         languageExtension.of(props.language ?? python()),
         tabSizeExtension.of(EditorState.tabSize.of(props.tabSize)),
         editorLayoutTheme,
+        huleeduEditorTheme,
         externalExtensions.of(props.extensions),
         readOnlyExtension.of([
           EditorView.editable.of(!props.readOnly),

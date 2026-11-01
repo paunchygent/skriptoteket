@@ -323,6 +323,7 @@ justified-exceptions = []
 [tool.repository-governance.design-system]
 map = "design-system-map.json"
 validate-command = ["pdm", "run", "design-system-validate"]
+palette-scan-roots = ["frontend/apps/skriptoteket/src"]
 
 [tool.repository-governance.quality]
 
