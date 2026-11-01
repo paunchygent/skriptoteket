@@ -1,10 +1,14 @@
 ## Current
 
 - Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator,
-  2026-11-01: ST-SKRIPT-42-01 tasks 01-04 are merged to main (`13cc23c5f`): the SPA head
-  applies `huleedu_theme` before first paint, both top bars show the theme button, and
-  `/theme-sample` is removed from Skriptoteket only. Next action: deploy, then walk the
-  story's Verification list on the deployed site and close the story. Worktree
+  2026-11-01: ST-SKRIPT-42-01 tasks 01-04 are merged and deployed (`b09ebf40c`, with the
+  360 px signed-out top-bar repair). Walked on production: the theme applies before first
+  paint, the cookie is set on `.hule.education`, choices persist, `/theme-sample` is 404,
+  landing and Klassrumskartan signed out (Ljust and Bläck, 360 px), and the catalogue and
+  Provhantering signed in (Midnatt and Bläck). Not walked: the editor (the user's account
+  lacks the contributor role), a tool page with output, Reagensberedning, a share page,
+  print and the seating PDF in Bläck, and the signed-in bar at phone width. Next action:
+  walk those, then close the story. Worktree
   `../Skriptoteket-st-skript-42-01` stays until closeout. Plan: retained root
   `01a193d4-6820-7dd3-b25c-7f8c58836241`.
 
