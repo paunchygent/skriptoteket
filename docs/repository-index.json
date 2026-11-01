@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5e80de8cd4f01d38d93eda975595a4bf944072df0bae6995b40e5fe5caac117a",
+  "source_set_digest": "acd704aaa6c72b84850e70316d5251e2769483d1798eb1901500713501fc75ec",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7792,6 +7792,63 @@
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-42-01-01",
+      "type": "task",
+      "title": "Skriptoteket frontend holds no hardcoded colour and a lint rule refuses new ones",
+      "path": "docs/backlog/tasks/task-skript-42-01-01-skriptoteket-frontend-holds-no-hardcoded-colour-and-a-lint-rule-refuses-new-ones.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-42-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-42-01-02",
+      "type": "task",
+      "title": "The Skriptoteket code editor takes its colours from the editor and syntax tokens and follows the theme",
+      "path": "docs/backlog/tasks/task-skript-42-01-02-the-skriptoteket-code-editor-takes-its-colours-from-the-editor-and-syntax-tokens-and-follows-the-theme.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-42-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-42-01-03",
+      "type": "task",
+      "title": "Klassrumskartan share pages render Ljust, Midnatt or Bläck from the stored choice and print light",
+      "path": "docs/backlog/tasks/task-skript-42-01-03-klassrumskartan-share-pages-render-ljust-midnatt-or-bläck-from-the-stored-choice-and-print-light.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-42-01",
       "owners": [
         {
           "kind": "service",

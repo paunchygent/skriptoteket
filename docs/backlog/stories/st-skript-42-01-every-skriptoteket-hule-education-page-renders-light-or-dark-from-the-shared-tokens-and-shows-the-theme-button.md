@@ -60,8 +60,8 @@ the theme from a glyph button in the top bar. This is story 3 of EPIC-SKILL-17
 - Colour literals, under `frontend/apps/skriptoteket/src/`: `assets/main.css`,
   `styles/tailwind-theme.css`, `components/ui/UiDenseToggle.vue`,
   `components/ui/UiSearchBar.vue`,
-  `ui/shared/components/UiSegmentedToggle.vue`,
-  `ui/shared/denseToolPrimitives.ts`, and under
+  `components/ui/shared/components/UiSegmentedToggle.vue`,
+  `components/ui/shared/denseToolPrimitives.ts`, and under
   `views/apps/exam-workspace/`: `ExamWorkspaceImportBox.vue`,
   `ExamWorkspaceNewExamConfirmDialog.vue`, `ExamWorkspaceSaveAsDialog.vue`,
   `examWorkspace.css`. Pinball files are out of scope.
@@ -81,14 +81,14 @@ the theme from a glyph button in the top bar. This is story 3 of EPIC-SKILL-17
 
 ## Tasks
 
-1. T1: convert every colour literal listed in Contract Inputs to tokens, and
+1. T1 (`TASK-SKRIPT-42-01-01`): convert every colour literal listed in Contract Inputs to tokens, and
    add a local ESLint rule that refuses hex, rgb, rgba and hsl colours and
    Tailwind palette classes in `.ts`, `.vue` and `.css`; set
    `palette-scan-roots` in `pyproject.toml`.
-2. T2: CodeMirror builds its editor theme and highlight style from
+2. T2 (`TASK-SKRIPT-42-01-02`): CodeMirror builds its editor theme and highlight style from
    `--huleedu-editor-*` and `--huleedu-syntax-*` and follows `data-theme`
    changes without a reload.
-3. T3: share renderers emit a Ljust, a Midnatt and a Bläck palette from the
+3. T3 (`TASK-SKRIPT-42-01-03`): share renderers emit a Ljust, a Midnatt and a Bläck palette from the
    shared token values, pick one from the `huleedu_theme` cookie or, when none
    is stored, from `prefers-color-scheme`, and force light under `@media print`.
 4. T4, last: run `theme-head.js` in the SPA head, place the theme button in
