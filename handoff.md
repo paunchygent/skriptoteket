@@ -1,10 +1,11 @@
 ## Current
 
 - Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator,
-  2026-11-01: ST-SKRIPT-42-01 tasks 01-03 are merged to main (`933cfd750`); task 04 (theme
-  button, `/theme-sample` removal) is not started. Next action: the whole-screen mockup of
-  both top bars, which is the user gate before T4. Worktree
-  `../Skriptoteket-st-skript-42-01` stays for T4. Plan: retained root
+  2026-11-01: ST-SKRIPT-42-01 tasks 01-04 are merged to main (`13cc23c5f`): the SPA head
+  applies `huleedu_theme` before first paint, both top bars show the theme button, and
+  `/theme-sample` is removed from Skriptoteket only. Next action: deploy, then walk the
+  story's Verification list on the deployed site and close the story. Worktree
+  `../Skriptoteket-st-skript-42-01` stays until closeout. Plan: retained root
   `01a193d4-6820-7dd3-b25c-7f8c58836241`.
 
 - Hemma orchestrator (Claude desktop SSH session, cwd `~/apps/skriptoteket`), 2026-10-29.
