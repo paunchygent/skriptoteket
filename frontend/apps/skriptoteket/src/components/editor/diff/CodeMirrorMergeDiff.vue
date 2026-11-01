@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { defaultKeymap } from "@codemirror/commands";
-import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { syntaxHighlighting } from "@codemirror/language";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import {
   drawSelection,
@@ -19,6 +19,8 @@ import {
   lineNumbers } from "@codemirror/view";
 import { MergeView } from "@codemirror/merge";
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+
+import { huleeduEditorTheme, huleeduHighlightStyle } from "../huleeduEditorTheme";
 
 const props = withDefaults(
   defineProps<{
@@ -65,12 +67,13 @@ function baseExtensions(): Extension[] {
     highlightActiveLineGutter(),
     highlightSpecialChars(),
     drawSelection(),
-    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+    syntaxHighlighting(huleeduHighlightStyle, { fallback: true }),
     highlightActiveLine(),
     keymap.of([...defaultKeymap]),
     tabSizeCompartment.of(EditorState.tabSize.of(props.tabSize)),
     languageCompartment.of(props.language ?? []),
     editorTheme,
+    huleeduEditorTheme,
     EditorView.editable.of(false),
     EditorState.readOnly.of(true),
   ];
