@@ -46,6 +46,11 @@ tsTester.run("no-hardcoded-colour", rule, {
       code: `const c = "var(--huleedu-text-primary)";`,
       filename: "sample.ts",
     },
+    { code: `const w = "border-t-2";`, filename: "sample.ts" },
+    { code: `const x = "border-x";`, filename: "sample.ts" },
+    { code: `const y = "text-shadow-lg";`, filename: "sample.ts" },
+    { code: `const z = "inset-shadow-sm";`, filename: "sample.ts" },
+    { code: `const o = "ring-offset-2";`, filename: "sample.ts" },
   ],
   invalid: [
     {
@@ -60,6 +65,46 @@ tsTester.run("no-hardcoded-colour", rule, {
     },
     {
       code: `const k = "hover:text-slate-500/50";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const a = "border-t-red-500";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const b = "border-x-blue-600";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const d = "border-s-slate-200";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const e = "inset-shadow-black/10";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const f = "inset-ring-gray-300";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const g = "text-shadow-white";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const h = "ring-offset-white";`,
+      filename: "sample.ts",
+      errors: [{ messageId: "noHardcodedColour", line: 1 }],
+    },
+    {
+      code: `const i = "drop-shadow-black/20";`,
       filename: "sample.ts",
       errors: [{ messageId: "noHardcodedColour", line: 1 }],
     },

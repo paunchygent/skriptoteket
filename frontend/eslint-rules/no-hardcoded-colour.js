@@ -4,7 +4,7 @@ const HEX_COLOUR =
   /(?<![\w&])#(?:[0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9a-zA-Z_-])/;
 const COLOUR_FUNCTION = /\b(?:rgba?|hsla?)\(/i;
 const TAILWIND_PALETTE_CLASS =
-  /(?<![\w-])(?:[a-z0-9-]+:)*(?:accent|bg|border|caret|decoration|divide|fill|from|outline|placeholder|ring|shadow|stroke|text|to|via)-(?:(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}|white|black)(?:\/\d{1,3})?(?![\w-])/;
+  /(?<![\w-])(?:[a-z0-9-]+:)*(?:scrollbar-thumb|scrollbar-track|border-bs|border-be|border-[trblxyse]|border|inset-shadow|inset-ring|ring-offset|drop-shadow|text-shadow|shadow|ring|accent|bg|caret|decoration|divide|fill|from|outline|placeholder|stroke|text|to|via)-(?:(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}|white|black)(?:\/\d{1,3})?(?![\w-])/;
 
 const PATTERN = new RegExp(
   [HEX_COLOUR.source, COLOUR_FUNCTION.source, TAILWIND_PALETTE_CLASS.source].join(
