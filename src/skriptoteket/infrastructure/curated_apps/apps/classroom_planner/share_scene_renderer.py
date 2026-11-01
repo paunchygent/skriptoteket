@@ -34,21 +34,21 @@ ROOM_WALL_THICKNESS_PX = 18
 
 SEATING_SHARE_CSS = """
 .share-subtitle {
-  color: #082b4c;
+  color: var(--navy);
   font-size: 1rem;
   font-weight: 700;
   margin: -12px 0 6px;
 }
 .share-description {
-  color: #4f5f75;
+  color: var(--navy-70);
   font-size: 0.92rem;
   line-height: 1.45;
   margin: 0 0 22px;
 }
 .room-frame {
-  background: #fff;
-  border: 1px solid #082b4c;
-  box-shadow: 4px 4px 0 #082b4c;
+  background: var(--surface);
+  border: 1px solid var(--navy);
+  box-shadow: 4px 4px 0 var(--navy);
 }
 .room-viewport {
   display: flex;
@@ -62,13 +62,13 @@ SEATING_SHARE_CSS = """
   aspect-ratio: var(--room-surface-aspect);
   container-type: inline-size;
   flex: 0 0 auto;
-  background: #fafaf6;
-  border: 1px solid rgba(8, 43, 76, 0.42);
+  background: var(--canvas);
+  border: 1px solid var(--navy-40);
 }
 .room-floor {
   position: absolute;
-  background-color: #fff;
-  border: 1px solid #082b4c;
+  background-color: var(--surface);
+  border: 1px solid var(--navy);
 }
 .room-fixture,
 .room-seat {
@@ -82,7 +82,7 @@ SEATING_SHARE_CSS = """
   text-align: center;
 }
 .room-fixture__label {
-  color: rgba(8, 43, 76, 0.68);
+  color: var(--navy-70);
   font-size: clamp(0.42rem, 1.05vw, 0.72rem);
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -92,12 +92,12 @@ SEATING_SHARE_CSS = """
   white-space: nowrap;
 }
 .room-fixture--wall {
-  background: #fff;
-  border: 1px solid #082b4c;
+  background: var(--surface);
+  border: 1px solid var(--navy);
   border-radius: 2px;
 }
 .room-fixture--whiteboard::after {
-  background: rgba(8, 43, 76, 0.35);
+  background: var(--navy-40);
   border-radius: 999px;
   bottom: 1px;
   content: "";
@@ -108,13 +108,13 @@ SEATING_SHARE_CSS = """
 }
 .room-fixture--teacher-desk,
 .room-fixture--strong {
-  background: rgba(8, 43, 76, 0.86);
-  border: 2px solid #082b4c;
+  background: var(--navy-80);
+  border: 2px solid var(--navy);
   border-radius: 2px;
 }
 .room-fixture--teacher-desk .room-fixture__label,
 .room-fixture--strong .room-fixture__label {
-  color: #fff;
+  color: var(--on-strong);
 }
 .room-fixture--bench {
   background: transparent;
@@ -122,10 +122,10 @@ SEATING_SHARE_CSS = """
   position: absolute;
 }
 .room-fixture--bench .room-bench-body {
-  background: rgba(8, 43, 76, 0.12);
-  border: 1px solid rgba(8, 43, 76, 0.25);
+  background: var(--navy-10);
+  border: 1px solid var(--navy-30);
   border-radius: 4px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 0 var(--canvas-50);
   bottom: 33%;
   left: 0.375rem;
   position: absolute;
@@ -133,8 +133,8 @@ SEATING_SHARE_CSS = """
   top: 33%;
 }
 .room-fixture--table {
-  background: rgba(8, 43, 76, 0.04);
-  border: 1px solid rgba(8, 43, 76, 0.55);
+  background: var(--navy-05);
+  border: 1px solid var(--navy-60);
 }
 .room-fixture--round {
   border-radius: 999px;
@@ -153,8 +153,8 @@ SEATING_SHARE_CSS = """
 .room-seat__token {
   align-items: center;
   aspect-ratio: 1;
-  background: #fff;
-  border: 1px solid #082b4c;
+  background: var(--surface);
+  border: 1px solid var(--navy);
   border-radius: 999px;
   display: flex;
   flex-direction: column;
@@ -167,7 +167,7 @@ SEATING_SHARE_CSS = """
   container-type: inline-size;
 }
 .room-seat__name-line {
-  color: #082b4c;
+  color: var(--navy);
   display: block;
   font-size: clamp(0.56rem, 17cqw, 0.88rem);
   font-weight: 500;
@@ -190,12 +190,12 @@ SEATING_SHARE_CSS = """
   line-height: 1.14;
 }
 .room-seat--empty .room-seat__token {
-  background: rgba(255, 255, 255, 0.72);
-  border-color: rgba(8, 43, 76, 0.35);
+  background: var(--panel);
+  border-color: var(--navy-40);
   border-style: dashed;
 }
 .room-seat--empty .room-seat__name-line {
-  color: rgba(8, 43, 76, 0.48);
+  color: var(--navy-50);
 }
 @media (max-width: 767px) {
   .share-page {

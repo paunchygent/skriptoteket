@@ -31,7 +31,7 @@ GROUPING_SHARE_CSS = """
   margin-bottom: 40px;
 }
 .group-card {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--navy);
   padding: 20px;
 }
@@ -76,7 +76,7 @@ GROUPING_SHARE_CSS = """
   align-items: center;
   background: var(--navy);
   border-radius: 50%;
-  color: #fff;
+  color: var(--on-strong);
   display: flex;
   flex: 0 0 auto;
   font-family: var(--font-mono);

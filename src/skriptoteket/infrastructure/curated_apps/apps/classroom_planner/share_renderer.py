@@ -43,8 +43,8 @@ from skriptoteket.protocols.classroom_planner_shares import (
     ClassroomPlannerShareRendererProtocol,
 )
 
-GROUPING_SHARE_RENDERER_VERSION = "klassrumskartan-share-renderer-v1"
-SEATING_SHARE_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v2"
+GROUPING_SHARE_RENDERER_VERSION = "klassrumskartan-share-renderer-v2"
+SEATING_SHARE_RENDERER_VERSION = "klassrumskartan-seating-share-renderer-v3"
 _GROUPING_SCHEMA_VERSION = "grouping-share-v1"
 _SEATING_SCHEMA_VERSION = "seating-share-v1"
 
@@ -53,8 +53,12 @@ _SEATING_SCHEMA_VERSION = "seating-share-v1"
 SHARE_BASE_CSS = """
 :root {
   color-scheme: light;
-  --canvas: #fafaf6;
-  --navy: #082b4c;
+  --canvas: #FEFEFC;
+  --surface: #FFFFFF;
+  --panel: rgba(254, 254, 252, 0.64);
+  --on-strong: #FFFFFF;
+  --canvas-50: rgba(254, 254, 252, 0.5);
+  --navy: #082B4C;
   --navy-05: rgba(8, 43, 76, 0.05);
   --navy-10: rgba(8, 43, 76, 0.10);
   --navy-15: rgba(8, 43, 76, 0.15);
@@ -64,6 +68,7 @@ SHARE_BASE_CSS = """
   --navy-50: rgba(8, 43, 76, 0.50);
   --navy-60: rgba(8, 43, 76, 0.60);
   --navy-70: rgba(8, 43, 76, 0.70);
+  --navy-80: rgba(8, 43, 76, 0.80);
   --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   --font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
@@ -80,6 +85,56 @@ SHARE_BASE_CSS = """
   background: var(--canvas);
   color: var(--navy);
   font-family: var(--font-sans);
+}
+:root[data-theme="midnight"],
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas-50: color-mix(in srgb, var(--canvas) 50%, transparent);
+  --navy-05: color-mix(in srgb, var(--navy) 5%, transparent);
+  --navy-10: color-mix(in srgb, var(--navy) 10%, transparent);
+  --navy-15: color-mix(in srgb, var(--navy) 15%, transparent);
+  --navy-20: color-mix(in srgb, var(--navy) 20%, transparent);
+  --navy-30: color-mix(in srgb, var(--navy) 30%, transparent);
+  --navy-40: color-mix(in srgb, var(--navy) 40%, transparent);
+  --navy-50: color-mix(in srgb, var(--navy) 50%, transparent);
+  --navy-60: color-mix(in srgb, var(--navy) 60%, transparent);
+  --navy-70: color-mix(in srgb, var(--navy) 70%, transparent);
+  --navy-80: color-mix(in srgb, var(--navy) 80%, transparent);
+}
+:root[data-theme="midnight"] {
+  --canvas: #0B1E33;
+  --surface: #102438;
+  --panel: rgba(24, 52, 82, 0.64);
+  --on-strong: #0B1E33;
+  --navy: #EDEEEA;
+}
+:root[data-theme="dark"] {
+  --canvas: #0E141B;
+  --surface: #131A23;
+  --panel: rgba(26, 37, 50, 0.64);
+  --on-strong: #0E141B;
+  --navy: #EDEEEA;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="system"] {
+    color-scheme: dark;
+    --canvas: #0B1E33;
+    --surface: #102438;
+    --panel: rgba(24, 52, 82, 0.64);
+    --on-strong: #0B1E33;
+    --canvas-50: color-mix(in srgb, var(--canvas) 50%, transparent);
+    --navy: #EDEEEA;
+    --navy-05: color-mix(in srgb, var(--navy) 5%, transparent);
+    --navy-10: color-mix(in srgb, var(--navy) 10%, transparent);
+    --navy-15: color-mix(in srgb, var(--navy) 15%, transparent);
+    --navy-20: color-mix(in srgb, var(--navy) 20%, transparent);
+    --navy-30: color-mix(in srgb, var(--navy) 30%, transparent);
+    --navy-40: color-mix(in srgb, var(--navy) 40%, transparent);
+    --navy-50: color-mix(in srgb, var(--navy) 50%, transparent);
+    --navy-60: color-mix(in srgb, var(--navy) 60%, transparent);
+    --navy-70: color-mix(in srgb, var(--navy) 70%, transparent);
+    --navy-80: color-mix(in srgb, var(--navy) 80%, transparent);
+  }
 }
 * {
   box-sizing: border-box;
@@ -179,8 +234,28 @@ body {
   }
 }
 @media print {
+  :root,
+  :root[data-theme] {
+    color-scheme: light;
+    --canvas: #FEFEFC;
+    --surface: #FFFFFF;
+    --panel: rgba(254, 254, 252, 0.64);
+    --on-strong: #FFFFFF;
+    --canvas-50: rgba(254, 254, 252, 0.5);
+    --navy: #082B4C;
+    --navy-05: rgba(8, 43, 76, 0.05);
+    --navy-10: rgba(8, 43, 76, 0.10);
+    --navy-15: rgba(8, 43, 76, 0.15);
+    --navy-20: rgba(8, 43, 76, 0.20);
+    --navy-30: rgba(8, 43, 76, 0.30);
+    --navy-40: rgba(8, 43, 76, 0.40);
+    --navy-50: rgba(8, 43, 76, 0.50);
+    --navy-60: rgba(8, 43, 76, 0.60);
+    --navy-70: rgba(8, 43, 76, 0.70);
+    --navy-80: rgba(8, 43, 76, 0.80);
+  }
   body {
-    background: #fff;
+    background: var(--surface);
   }
   .share-page {
     max-width: none;
