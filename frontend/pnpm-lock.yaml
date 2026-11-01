@@ -105,6 +105,9 @@ importers:
       '@dimforge/rapier3d-compat':
         specifier: ^0.19.3
         version: 0.19.3
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@lucide/vue':
         specifier: 'catalog:'
         version: 1.47.0(vue@3.5.26(typescript@5.9.3))

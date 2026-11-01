@@ -28,6 +28,7 @@
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.39.4",
     "@dimforge/rapier3d-compat": "^0.19.3",
+    "@lezer/highlight": "^1.2.3",
     "@lucide/vue": "catalog:",
     "@tabler/icons-vue": "^3.41.1",
     "@tiptap/core": "3.31.3",
