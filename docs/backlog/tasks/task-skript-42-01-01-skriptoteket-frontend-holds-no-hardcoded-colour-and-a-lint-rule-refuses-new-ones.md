@@ -69,9 +69,10 @@ stays unchanged, because each token equals its replaced literal in Ljust.
   `components/ui/shared/components/UiSegmentedToggle.vue:297` and
   `components/ui/shared/denseToolPrimitives.ts` lines 37, 50, 56, 95 and 99.
 - Lint: `frontend/apps/skriptoteket/eslint.config.js`, the rule pattern in
-  `frontend/eslint-rules/no-template-ref-value.js`, and the catalog in
-  `frontend/pnpm-workspace.yaml` (ESLint 9.39.2, which needs `@eslint/core`
-  ^0.17).
+  `frontend/eslint-rules/no-template-ref-value.js`, and
+  `frontend/apps/skriptoteket/package.json`, where `@eslint/css` 0.14.1 is
+  pinned as a devDependency; the pnpm catalog is rendered from skill-repository
+  and stays unchanged (ESLint 9.39.2, which needs `@eslint/core` ^0.17).
 - Palette scan: `pyproject.toml:323`, and
   `DEFAULT_PALETTE_CLASS_PATTERN` in the governance
   `design_system_consumer.py`.
@@ -101,8 +102,9 @@ No performance concern: the rule makes one text scan per file.
   `var(--huleedu-*)` sample. `pnpm --filter @skriptoteket/spa lint` is
   clean.
 - U3: with `palette-scan-roots` set, `pdm run design-system-validate` passes,
-  and it fails while a temporary `bg-white` fixture sits under `src`; the
-  fixture is removed afterwards. The scan matches Tailwind palette classes
+  and it fails while a temporary `bg-slate-100` fixture sits under `src`; the
+  fixture is removed afterwards. `bg-white` and `bg-black` are outside
+  `DEFAULT_PALETTE_CLASS_PATTERN`; the ESLint rule covers them. The scan matches Tailwind palette classes
   only (`DEFAULT_PALETTE_CLASS_PATTERN`), so the pinball CSS needs no scan
   exclusion.
 - U2a: `pdm run design-resources-validate` passes in skill-repository.
@@ -113,7 +115,7 @@ No performance concern: the rule makes one text scan per file.
 
 - A literal has no token equal to it in Ljust: stop and report it. Add no new
   token.
-- `@eslint/css` 0.14.1 cannot be installed under the pnpm catalog, or it
+- `@eslint/css` 0.14.1 cannot be pinned in the SPA `package.json`, or it
   conflicts with ESLint 9.39.2.
 - The rule reports a file outside the listed literals that is not a false
   positive: report the path and leave the file unchanged.
