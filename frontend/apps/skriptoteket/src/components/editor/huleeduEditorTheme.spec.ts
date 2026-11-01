@@ -12,6 +12,7 @@
  *     selectors and properties the module declares.
  */
 
+import { tags, type Tag } from "@lezer/highlight";
 import { describe, expect, it } from "vitest";
 
 import { huleeduEditorThemeSpec, huleeduHighlightStyle } from "./huleeduEditorTheme";
@@ -50,6 +51,25 @@ describe("huleeduEditorThemeSpec", () => {
     }
   });
 
+  it("styles focused and unfocused selection with the selection token", () => {
+    const focused = Object.entries(huleeduEditorThemeSpec).find(
+      ([key]) => key.includes(".cm-focused") && key.includes(".cm-selectionBackground"),
+    );
+    const unfocused = Object.entries(huleeduEditorThemeSpec).find(
+      ([key]) => key.includes(".cm-selectionBackground") && !key.includes(".cm-focused"),
+    );
+    expect(focused, "a focused-selection rule").toBeDefined();
+    expect(unfocused, "an unfocused-selection rule").toBeDefined();
+    expect(
+      (focused?.[1] as Record<string, unknown>).backgroundColor,
+      "focused selection must read --huleedu-editor-selection",
+    ).toBe("var(--huleedu-editor-selection)");
+    expect(
+      (unfocused?.[1] as Record<string, unknown>).backgroundColor,
+      "unfocused selection must read --huleedu-editor-selection",
+    ).toBe("var(--huleedu-editor-selection)");
+  });
+
   it("covers the editor background, gutter, gutter text, cursor, selection and active line", () => {
     const tokens = new Set(
       collectColourRules(huleeduEditorThemeSpec).map((rule) => String(rule.value)),
@@ -81,6 +101,24 @@ describe("huleeduHighlightStyle", () => {
     );
     for (const token of ["comment", "function", "keyword", "number", "string"]) {
       expect(tokens.has(`var(--huleedu-syntax-${token})`), `--huleedu-syntax-${token}`).toBe(true);
+    }
+  });
+
+  it("styles bool, class, definition and escape tags with the mapped syntax tokens", () => {
+    const mappings: Array<[Tag, string]> = [
+      [tags.bool, "var(--huleedu-syntax-number)"],
+      [tags.className, "var(--huleedu-syntax-function)"],
+      [tags.definition(tags.variableName), "var(--huleedu-syntax-function)"],
+      [tags.escape, "var(--huleedu-syntax-string)"],
+    ];
+    for (const [tag, token] of mappings) {
+      expect(huleeduHighlightStyle.style([tag]), `${tag} must resolve to a class`).not.toBeNull();
+      const spec = huleeduHighlightStyle.specs.find(
+        (entry) =>
+          entry.color === token &&
+          (Array.isArray(entry.tag) ? entry.tag : [entry.tag]).includes(tag),
+      );
+      expect(spec, `${tag} must be styled by a spec reading ${token}`).toBeDefined();
     }
   });
 });

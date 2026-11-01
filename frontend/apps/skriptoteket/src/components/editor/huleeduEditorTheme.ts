@@ -33,7 +33,10 @@ export const huleeduEditorThemeSpec = {
   ".cm-cursor, .cm-dropCursor": {
     borderLeftColor: "var(--huleedu-editor-cursor)",
   },
-  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+  "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, &.cm-focused .cm-content ::selection": {
+    backgroundColor: "var(--huleedu-editor-selection)",
+  },
+  ".cm-selectionBackground, .cm-content ::selection": {
     backgroundColor: "var(--huleedu-editor-selection)",
   },
   ".cm-activeLine": {
@@ -49,10 +52,15 @@ export const huleeduEditorTheme = EditorView.theme(huleeduEditorThemeSpec);
 export const huleeduHighlightStyle = HighlightStyle.define([
   { tag: tags.comment, color: "var(--huleedu-syntax-comment)" },
   {
-    tag: [tags.function(tags.variableName), tags.function(tags.propertyName)],
+    tag: [
+      tags.function(tags.variableName),
+      tags.function(tags.propertyName),
+      tags.className,
+      tags.definition(tags.variableName),
+    ],
     color: "var(--huleedu-syntax-function)",
   },
   { tag: tags.keyword, color: "var(--huleedu-syntax-keyword)" },
-  { tag: tags.number, color: "var(--huleedu-syntax-number)" },
-  { tag: tags.string, color: "var(--huleedu-syntax-string)" },
+  { tag: [tags.number, tags.bool], color: "var(--huleedu-syntax-number)" },
+  { tag: [tags.string, tags.escape], color: "var(--huleedu-syntax-string)" },
 ]);
