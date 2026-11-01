@@ -1,11 +1,28 @@
 // @ts-check
 
+import css from "@eslint/css";
 import eslint from "@eslint/js";
 import eslintPluginVue from "eslint-plugin-vue";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import vueParser from "vue-eslint-parser";
+import noHardcodedColour from "../../eslint-rules/no-hardcoded-colour.js";
 import noTemplateRefValue from "../../eslint-rules/no-template-ref-value.js";
+
+// The pinball game keeps its own palette (TASK-SKRIPT-42-01-01).
+const COLOUR_EXCLUSIONS = [
+  "src/views/apps/FlunkOutFrenzyView.vue",
+  "src/views/apps/styles/fof-shell-layout.css",
+  "src/views/apps/styles/fof-shell-panels.css",
+  "src/components/apps/flunk-out-frenzy/**",
+];
+
+const skriptoteketPlugin = {
+  rules: {
+    "no-template-ref-value": noTemplateRefValue,
+    "no-hardcoded-colour": noHardcodedColour,
+  },
+};
 
 export default tseslint.config(
   {
@@ -49,14 +66,30 @@ export default tseslint.config(
       },
     },
     plugins: {
-      skriptoteket: {
-        rules: {
-          "no-template-ref-value": noTemplateRefValue,
-        },
-      },
+      skriptoteket: skriptoteketPlugin,
     },
     rules: {
       "skriptoteket/no-template-ref-value": "error",
+    },
+  },
+  {
+    files: ["src/**/*.{ts,vue}"],
+    ignores: COLOUR_EXCLUSIONS,
+    plugins: {
+      skriptoteket: skriptoteketPlugin,
+    },
+    rules: {
+      "skriptoteket/no-hardcoded-colour": "error",
+    },
+  },
+  {
+    files: ["src/**/*.css"],
+    ignores: COLOUR_EXCLUSIONS,
+    plugins: { css, skriptoteket: skriptoteketPlugin },
+    language: "css/css",
+    languageOptions: { tolerant: true },
+    rules: {
+      "skriptoteket/no-hardcoded-colour": "error",
     },
   },
 );
