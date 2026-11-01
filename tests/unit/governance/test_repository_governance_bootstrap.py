@@ -74,6 +74,7 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
     assert facts["design-system"] == {
         "map": "design-system-map.json",
         "validate-command": ["pdm", "run", "design-system-validate"],
+        "palette-scan-roots": ["frontend/apps/skriptoteket/src"],
     }
     quality = facts["quality"]
     assert quality["cohorts"] == [
