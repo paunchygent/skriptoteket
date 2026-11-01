@@ -284,6 +284,7 @@ async def test_public_share_unavailable_page_uses_share_stylesheet_and_keeps_hea
     assert response.status_code == 410
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert '<html data-theme="system" lang="sv">' in body
     assert '<meta name="robots" content="noindex,nofollow">' in body
     assert f"<style>{SHARE_BASE_CSS.strip()}" in body
     assert '--font-sans: "IBM Plex Sans"' in body
@@ -325,6 +326,49 @@ async def test_public_share_missing_page_uses_share_stylesheet_and_keeps_not_fou
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.parametrize("theme", ["light", "dark", "midnight", "system"])
+async def test_public_share_unavailable_page_stamps_stored_theme_choice(theme: str) -> None:
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = _artifact(revoked_at=datetime.now(timezone.utc))
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share)(
+        public_token="public-token",
+        request=_request(theme=theme),
+        handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
+    )
+
+    assert response.status_code == 410
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert f'<html data-theme="{theme}" lang="sv">'.encode() in response.body
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+@pytest.mark.parametrize("theme", [None, "neon"])
+async def test_public_share_unavailable_page_defaults_to_system_theme(
+    theme: str | None,
+) -> None:
+    handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
+    handler.handle.return_value = _artifact(revoked_at=datetime.now(timezone.utc))
+
+    response = await _unwrap_dishka(pages.read_classroom_planner_share)(
+        public_token="public-token",
+        request=_request(theme=theme),
+        handler=handler,
+        preview_handler=AsyncMock(spec=GetClassroomPlannerSharePreviewAssetHandler),
+        settings=Settings(),
+    )
+
+    assert response.status_code == 410
+    assert response.headers["cache-control"] == "no-store"
+    assert b'<html data-theme="system" lang="sv">' in response.body
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
 async def test_public_share_preview_image_returns_png_for_active_matching_asset() -> None:
     artifact = _artifact()
     handler = AsyncMock(spec=GetClassroomPlannerShareArtifactByTokenHandler)
@@ -334,6 +378,7 @@ async def test_public_share_preview_image_returns_png_for_active_matching_asset(
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
         public_token="public-token",
+        request=_request(),
         handler=handler,
         preview_handler=preview_handler,
         v="sha256:preview",
@@ -357,6 +402,7 @@ async def test_public_share_preview_image_does_not_serve_stale_hash_url() -> Non
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
         public_token="public-token",
+        request=_request(),
         handler=handler,
         preview_handler=preview_handler,
         v="sha256:old-preview",
@@ -376,12 +422,15 @@ async def test_public_share_preview_image_does_not_leak_revoked_thumbnail() -> N
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
         public_token="public-token",
+        request=_request(theme="midnight"),
         handler=handler,
         preview_handler=preview_handler,
         v="sha256:preview",
     )
 
     assert response.status_code == 410
+    assert response.headers["cache-control"] == "no-store"
+    assert b'<html data-theme="midnight" lang="sv">' in response.body
     preview_handler.handle.assert_not_awaited()
 
 
@@ -397,6 +446,7 @@ async def test_public_share_preview_image_returns_not_found_for_missing_token() 
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
         public_token="missing-token",
+        request=_request(),
         handler=handler,
         preview_handler=preview_handler,
         v="sha256:preview",
@@ -417,6 +467,7 @@ async def test_public_share_preview_image_does_not_leak_expired_thumbnail() -> N
 
     response = await _unwrap_dishka(pages.read_classroom_planner_share_preview_image)(
         public_token="public-token",
+        request=_request(),
         handler=handler,
         preview_handler=preview_handler,
         v="sha256:preview",
@@ -442,6 +493,7 @@ async def test_public_share_pdf_download_returns_attachment_with_created_date_fi
 
     response = await _unwrap_dishka(pages.download_classroom_planner_share_pdf)(
         public_token="public-token",
+        request=_request(),
         handler=handler,
         pdf_renderer=pdf_renderer,
     )
@@ -466,12 +518,14 @@ async def test_public_share_pdf_download_returns_gone_for_revoked_artifact() -> 
 
     response = await _unwrap_dishka(pages.download_classroom_planner_share_pdf)(
         public_token="public-token",
+        request=_request(theme="midnight"),
         handler=handler,
         pdf_renderer=_FakePdfRenderer(),
     )
 
     assert response.status_code == 410
     assert response.headers["x-robots-tag"] == "noindex, nofollow"
+    assert b'<html data-theme="midnight" lang="sv">' in response.body
 
 
 class _FakePdfRenderer(ClassroomPlannerSharePdfRendererProtocol):

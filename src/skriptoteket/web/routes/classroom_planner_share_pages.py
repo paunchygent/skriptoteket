@@ -94,6 +94,7 @@ _UNAVAILABLE_PAGE_CSS = """
 )
 async def read_classroom_planner_share_preview_image(
     public_token: str,
+    request: Request,
     handler: FromDishka[GetClassroomPlannerShareArtifactByTokenHandler],
     preview_handler: FromDishka[GetClassroomPlannerSharePreviewAssetHandler],
     v: str | None = None,
@@ -102,16 +103,16 @@ async def read_classroom_planner_share_preview_image(
         artifact = await _load_active_artifact(public_token=public_token, handler=handler)
         preview_asset = await preview_handler.handle(share_id=artifact.id)
     except _UnavailableShareError as exc:
-        return _unavailable_response(status_code=exc.status_code)
+        return _unavailable_response(status_code=exc.status_code, theme=_share_theme(request))
     except DomainError as exc:
         if exc.code is not ErrorCode.NOT_FOUND:
             raise
-        return _unavailable_response(status_code=404)
+        return _unavailable_response(status_code=404, theme=_share_theme(request))
 
     if not _preview_matches_artifact(preview_asset=preview_asset, artifact=artifact):
-        return _unavailable_response(status_code=404)
+        return _unavailable_response(status_code=404, theme=_share_theme(request))
     if v is not None and v != preview_asset.preview_content_hash:
-        return _unavailable_response(status_code=404)
+        return _unavailable_response(status_code=404, theme=_share_theme(request))
 
     return Response(
         content=preview_asset.image_bytes,
@@ -130,13 +131,14 @@ async def read_classroom_planner_share_preview_image(
 )
 async def download_classroom_planner_share_pdf(
     public_token: str,
+    request: Request,
     handler: FromDishka[GetClassroomPlannerShareArtifactByTokenHandler],
     pdf_renderer: FromDishka[ClassroomPlannerSharePdfRendererProtocol],
 ) -> Response:
     try:
         artifact = await _load_active_artifact(public_token=public_token, handler=handler)
     except _UnavailableShareError as exc:
-        return _unavailable_response(status_code=exc.status_code)
+        return _unavailable_response(status_code=exc.status_code, theme=_share_theme(request))
 
     return Response(
         content=pdf_renderer.render(artifact=artifact),
@@ -170,7 +172,7 @@ async def read_classroom_planner_share(
     try:
         artifact = await _load_active_artifact(public_token=public_token, handler=handler)
     except _UnavailableShareError as exc:
-        return _unavailable_response(status_code=exc.status_code)
+        return _unavailable_response(status_code=exc.status_code, theme=_share_theme(request))
 
     try:
         preview_asset = await preview_handler.handle(share_id=artifact.id)
@@ -324,37 +326,38 @@ def _absolute_url(base_url: str, path: str) -> str:
     return urljoin(normalized_base, quoted_path.lstrip("/"))
 
 
-def _unavailable_response(*, status_code: int) -> HTMLResponse:
+def _unavailable_response(*, status_code: int, theme: str) -> HTMLResponse:
     """Render the public unavailable page on the active share page visual base."""
 
+    content = "\n".join(
+        [
+            "<!doctype html>",
+            '<html lang="sv">',
+            "<head>",
+            '<meta charset="utf-8">',
+            '<meta name="viewport" content="width=device-width, initial-scale=1">',
+            '<meta name="robots" content="noindex,nofollow">',
+            "<title>Delningen är inte tillgänglig</title>",
+            f"<style>{SHARE_BASE_CSS.strip()}\n{_UNAVAILABLE_PAGE_CSS}</style>",
+            "</head>",
+            "<body>",
+            '<main class="share-unavailable">',
+            '<div class="share-unavailable__card">',
+            '<p class="share-kicker">Klassrumskartan</p>',
+            '<h1 class="share-title">Delningen är inte tillgänglig</h1>',
+            (
+                '<p class="share-unavailable__text">'
+                "Länken kan ha återkallats, gått ut eller tagits bort."
+                "</p>"
+            ),
+            "</div>",
+            "</main>",
+            "</body>",
+            "</html>",
+        ]
+    )
     return HTMLResponse(
-        content="\n".join(
-            [
-                "<!doctype html>",
-                '<html lang="sv">',
-                "<head>",
-                '<meta charset="utf-8">',
-                '<meta name="viewport" content="width=device-width, initial-scale=1">',
-                '<meta name="robots" content="noindex,nofollow">',
-                "<title>Delningen är inte tillgänglig</title>",
-                f"<style>{SHARE_BASE_CSS.strip()}\n{_UNAVAILABLE_PAGE_CSS}</style>",
-                "</head>",
-                "<body>",
-                '<main class="share-unavailable">',
-                '<div class="share-unavailable__card">',
-                '<p class="share-kicker">Klassrumskartan</p>',
-                '<h1 class="share-title">Delningen är inte tillgänglig</h1>',
-                (
-                    '<p class="share-unavailable__text">'
-                    "Länken kan ha återkallats, gått ut eller tagits bort."
-                    "</p>"
-                ),
-                "</div>",
-                "</main>",
-                "</body>",
-                "</html>",
-            ]
-        ),
+        content=_with_theme_attribute(content, theme=theme),
         status_code=status_code,
         headers=_NOINDEX_HEADERS,
     )
