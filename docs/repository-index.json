@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "cf1eeb9cfa02a1c070d2669bf97898c94c21172bcdfd55fd7edda868b74cd913",
+  "source_set_digest": "aa46c226ddb10e9fe0e69782f7999b6b644c4ff98c8ce3cbb0093572645c52b2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9398,6 +9398,42 @@
       "type": "task",
       "title": "Skriptoteket adopts the shared tooling block and the shared pre-push check",
       "path": "docs/backlog/tasks/task-skript-rep-0066-skriptoteket-adopts-the-shared-tooling-block-and-the-shared-pre-push-check.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0067",
+      "type": "task",
+      "title": "Skriptoteket typechecks with pyrefly and retires mypy",
+      "path": "docs/backlog/tasks/task-skript-rep-0067-skriptoteket-typechecks-with-pyrefly-and-retires-mypy.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0068",
+      "type": "task",
+      "title": "Skriptoteket tests run without the log_level override",
+      "path": "docs/backlog/tasks/task-skript-rep-0068-skriptoteket-tests-run-without-the-log-level-override.md",
       "status": "proposed",
       "task_kind": "repository",
       "owners": [
