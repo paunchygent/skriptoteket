@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fed56b8a6a41770fcf1b70081b877715dba50aa78cee446787b3ae8104563029",
+  "source_set_digest": "e37dd361feaa6beeed07290f2a865ac6531f1ade90cd368b1ad0a48f5a1f35e8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9390,7 +9390,7 @@
         "record": "inline",
         "status": "not_required",
         "approval_protocol": "agent-planning:user-closure-gate",
-        "approval_evidence": "Branch commit ab21ef0ed declares the loader and removes the check. `pdm run check --plan` printed a plan and named no unresolved dynamic loader; `rg \"hemma-pre-push-check|hemma_pre_push_check|pre_push_touches_migrations\"` finds only this task file. The deletion and the one facts entry were both decided by the user on 7 Nov 2026 (TASK-SKILL-REP-0497 D7, TASK-SKILL-REP-0516 D2)."
+        "approval_evidence": "Branch commit ab21ef0ed declares the loader and removes the check. `pdm run check --plan` printed a plan and named no unresolved dynamic loader; `rg \"hemma-pre-push-check|hemma_pre_push_check|pre_push_touches_migrations\"` finds only this task file. The deletion and the one facts entry were both decided by the user on 7 Nov 2026 (TASK-SKILL-REP-0497 D7, TASK-SKILL-REP-0516 D2). Merge gate: every phase passed except bindings:complete, which fails identically on main d2c3bee7d (shared tooling-block drift, separate task)."
       }
     },
     {
