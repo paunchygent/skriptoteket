@@ -414,6 +414,11 @@ project = "."
 command = "repository-governance-bindings"
 arguments = ["check", "--project-file", "pyproject.toml"]
 
+[[tool.repository-governance.quality.declared-loaders]]
+path = "runner/_runner.py"
+function = "_load_module_from_path"
+reason = "Loads the user tool entrypoint from the runtime bundle directory; never a repository module."
+
 [tool.pdm]
 distribution = false
 

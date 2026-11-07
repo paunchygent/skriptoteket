@@ -165,7 +165,6 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-28
-- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, on Hemma the steps run directly with no ssh, an unverifiable push is blocked, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Flunk-Out Frenzy donor work never flattens a richer donor object into local bounds or a
   "good enough" approximation; the rule text is in
