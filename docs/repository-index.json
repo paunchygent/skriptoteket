@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bd14b7f31e6827c8f72dbaf634b6e85a429f005664c98119b9f168bbfdbe18c0",
+  "source_set_digest": "fed56b8a6a41770fcf1b70081b877715dba50aa78cee446787b3ae8104563029",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9378,7 +9378,7 @@
       "type": "task",
       "title": "Skriptoteket declares its runner loader and drops its own pre-push check",
       "path": "docs/backlog/tasks/task-skript-rep-0065-skriptoteket-declares-its-runner-loader-and-drops-its-own-pre-push-check.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9388,7 +9388,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Branch commit ab21ef0ed declares the loader and removes the check. `pdm run check --plan` printed a plan and named no unresolved dynamic loader; `rg \"hemma-pre-push-check|hemma_pre_push_check|pre_push_touches_migrations\"` finds only this task file. The deletion and the one facts entry were both decided by the user on 7 Nov 2026 (TASK-SKILL-REP-0497 D7, TASK-SKILL-REP-0516 D2)."
       }
     },
     {

@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-11-07'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: >-
+    Branch commit ab21ef0ed declares the loader and removes the check. `pdm run check --plan` printed a plan and named no unresolved dynamic loader; `rg "hemma-pre-push-check|hemma_pre_push_check|pre_push_touches_migrations"` finds only this task file. The deletion and the one facts entry were both decided by the user on 7 Nov 2026 (TASK-SKILL-REP-0497 D7, TASK-SKILL-REP-0516 D2).
 task_kind: repository
 acceptance_criteria:
   - "pyproject.toml declares `[[tool.repository-governance.quality.declared-loaders]]` with path `runner/_runner.py`, function `_load_module_from_path` and a reason, and `pdm run check --plan` with the runtime carrying TASK-SKILL-REP-0516 names no unresolved dynamic loader and prints a plan."
