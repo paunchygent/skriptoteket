@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1153e8ea60a573a65b66816f5f863bce3d289676da2f5527e83d12823305562b",
+  "source_set_digest": "dd3bac7650de733fcdd47f2ec51c2ba5e41880c5a9f3aab04359e92cc239ca8f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9371,6 +9371,24 @@
         "decided_at": "2026-10-31T20:45:00Z",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "TASK-SKRIPT-REP-0064#closeout. Merged into main as dc524bae0 and deployed to production with the user's approval on 31 October 2026."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0065",
+      "type": "task",
+      "title": "Skriptoteket declares its runner loader and drops its own pre-push check",
+      "path": "docs/backlog/tasks/task-skript-rep-0065-skriptoteket-declares-its-runner-loader-and-drops-its-own-pre-push-check.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
