@@ -37,11 +37,15 @@ application tests.
 
 ## Execution Mode
 
-- Every pytest run is parallel and quiet by default: `addopts` in
-  `pyproject.toml` carries `-n logical --dist worksteal`, no `-s`, `-v` or
-  live log streaming. INFO logs and stdout are captured and printed only for
-  failing tests, and the ten slowest tests are listed.
-- `-n logical` is sized by `pytest_xdist_auto_num_workers` in
+- Every pytest run is parallel and quiet by default: the shared tooling block's
+  `addopts` in `pyproject.toml` carries
+  `-n auto --dist worksteal --durations=10 --import-mode=importlib`, with no
+  `-s`, `-v` or live log streaming. Stdout and logs are captured and printed
+  only for failing tests, and the ten slowest tests are listed. `pdm run test`
+  and `pdm run check` add `--log-level=INFO` and the default marker filter
+  through the `backend-test` producer arguments; a bare `pdm run pytest`
+  captures WARNING and above and runs every marker.
+- `-n auto` is sized by `pytest_xdist_auto_num_workers` in
   `tests/conftest.py`: a run that selects fewer than 12 files runs
   in-process; a larger run gets one worker per 6 files, at least 2 and at most
   12 (`MAX_WORKERS`, user decision 2026-10-19). 10-15 agents run small focused runs on Hemma while a

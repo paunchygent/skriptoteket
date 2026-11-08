@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.identity.models import AuthProvider, Role
@@ -24,7 +25,7 @@ def now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def user_id(db_session: AsyncSession, now: datetime) -> UUID:
     uid = uuid4()
     db_session.add(

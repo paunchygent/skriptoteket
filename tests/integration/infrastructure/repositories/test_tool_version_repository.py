@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.catalog.models import Tool
@@ -20,7 +21,7 @@ def now():
     return datetime.now(timezone.utc)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def tool(db_session: AsyncSession, now: datetime) -> Tool:
     tool_id = uuid4()
     owner_user_id = uuid4()

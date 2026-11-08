@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from uuid import UUID, uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,7 +29,7 @@ def now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def user_id(db_session: AsyncSession, now: datetime) -> UUID:
     uid = uuid4()
     db_session.add(
@@ -46,7 +47,7 @@ async def user_id(db_session: AsyncSession, now: datetime) -> UUID:
     return uid
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def tool_id(db_session: AsyncSession, user_id: UUID, now: datetime) -> UUID:
     tid = uuid4()
     db_session.add(

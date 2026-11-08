@@ -83,17 +83,23 @@ llm = [
 ]
 
 [dependency-groups]
+# repository-governance:tooling-dependencies:start
+repository-governance-tooling = [
+    "coverage==7.17.2",
+    "pyrefly==1.4.1",
+    "pytest-asyncio==1.4.1.post1",
+    "pytest-cov==7.1.0",
+    "pytest-mock==3.17.0",
+    "pytest-timeout==2.4.0",
+    "pytest-xdist==3.8.0",
+    "pytest==9.2.0",
+    "ruff==0.17.4",
+    "testcontainers==4.15.0",
+]
+# repository-governance:tooling-dependencies:end
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "ruff",
     "mypy",
-    "pytest",
-    "pytest-mock",
-    "pytest-cov",
-    "pytest-asyncio",
-    "pytest-xdist",
-    "pytest-timeout",
-    "testcontainers",
     "pre-commit",
     "jsonschema",
     "pyyaml",
@@ -144,39 +150,6 @@ docs = [
     "mkdocs-material",
     "mkdocstrings[python]",
 ]
-
-[tool.ruff]
-line-length = 100
-target-version = "py313"
-exclude = [
-    ".git",
-    ".venv",
-    ".cache",
-    "__pycache__",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".pdm-python",
-    ".pdm-build",
-    "dist",
-    "build",
-    "jupyter_scripts",
-]
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-]
-ignore = [
-    "E203",  # whitespace before ':' (conflicts with black)
-]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
 
 [tool.ruff.lint.per-file-ignores]
 # Intentional re-exports
@@ -255,27 +228,13 @@ exclude_lines = [
     "@staticmethod",
 ]
 
-[tool.pytest.ini_options]
-testpaths = [
-    "tests",
-]
-pythonpath = [
-    "src",
-    ".",
-    "runner",
-]
-python_files = "test_*.py *_test.py"
-python_classes = "Test*"
-python_functions = "test_*"
-# Parallel and quiet by default: xdist workers, no live log streaming, INFO
-# records captured and shown only for failing tests. A serial run (`-n 0`) must
-# state why with `--serial-reason` (tests/conftest.py); `pdm run test-serial`
-# is the named live-output debugging route.
-addopts = "-n logical --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
-log_level = "INFO"
-asyncio_mode = "auto"
-asyncio_default_fixture_loop_scope = "module"
+[tool.repository-governance]
+schema-version = 3
+repository = "skriptoteket"
 
+[tool.repository-governance.tooling]
+testpaths = ["tests"]
+pythonpath = ["src", ".", "runner"]
 markers = [
     "financial: marks tests that incur real monetary costs via external API calls",
     "slow: marks tests as slow running",
@@ -286,15 +245,24 @@ markers = [
     "unit: marks tests as unit tests for isolated component testing",
     "timeout: marks tests with specific timeout requirements",
 ]
-
-filterwarnings = [
-    "ignore::DeprecationWarning:pydantic.*",
-    "ignore::DeprecationWarning:testcontainers.*",
+lint-exclude = [
+    ".git",
+    ".venv",
+    ".cache",
+    "__pycache__",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".pdm-python",
+    ".pdm-build",
+    "dist",
+    "build",
+    "jupyter_scripts",
 ]
-
-[tool.repository-governance]
-schema-version = 3
-repository = "skriptoteket"
+lint-src = [".", "src"]
+typecheck-includes = []
+typecheck-search-paths = ["src", "stubs"]
+untyped-modules = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
 
 [tool.repository-governance.owners]
 service = ["skriptoteket"]
@@ -306,7 +274,7 @@ forward-environment = []
 
 [tool.repository-governance.setup]
 projects = [
-    { path = ".", groups = ["default", "monorepo-tools", "dev"] },
+    { path = ".", groups = ["default", "monorepo-tools", "dev", "repository-governance-tooling"] },
 ]
 
 [tool.repository-governance.frontend]
@@ -374,7 +342,7 @@ name = "backend-test"
 intent = "test"
 project = "."
 command = "pytest"
-arguments = []
+arguments = ["-m", "not (financial or slow or docker or simulation)", "--log-level=INFO"]
 
 [[tool.repository-governance.quality.producers]]
 name = "frontend-typecheck"
@@ -561,7 +529,7 @@ skills-prompt = "python -m scripts.skills_prompt"
 skills-validate = "python -m scripts.skills_prompt --validate"
 
 # Dependency locking (multi-platform)
-lock-multi = "pdm lock --platform macos_14_0_arm64 --platform manylinux_2_40_x86_64 --platform manylinux_2_41_aarch64"
+lock-multi = {shell = "pdm lock -G:all --update-reuse --platform macos_14_0_arm64 && pdm lock -G:all --update-reuse --platform manylinux_2_39_x86_64 --append && pdm lock -G:all --update-reuse --platform manylinux_2_41_aarch64 --append && pdm lock --refresh"}
 
 # Database
 db-upgrade = "alembic upgrade head"
@@ -594,3 +562,27 @@ precommit-run = "pre-commit run --all-files"
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+# repository-governance:tooling-settings:start
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = [".git", ".venv", ".cache", "__pycache__", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".pdm-python", ".pdm-build", "dist", "build", "jupyter_scripts"]
+src = [".", "src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+[tool.pyrefly]
+python-version = "3.13"
+project-includes = []
+search-path = ["src", "stubs"]
+ignore-missing-imports = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
+[tool.pytest.ini_options]
+addopts = "-n auto --dist worksteal --durations=10 --import-mode=importlib"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+timeout = 300
+testpaths = ["tests"]
+markers = ["financial: marks tests that incur real monetary costs via external API calls", "slow: marks tests as slow running", "simulation: marks expensive statistical scenario suites excluded from the default test run", "integration: marks tests requiring external services", "docker: marks tests that need docker compose setup", "e2e: marks tests as end-to-end pipeline tests", "unit: marks tests as unit tests for isolated component testing", "timeout: marks tests with specific timeout requirements"]
+pythonpath = ["src", ".", "runner"]
+# repository-governance:tooling-settings:end

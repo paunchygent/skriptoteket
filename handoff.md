@@ -57,6 +57,12 @@
 
 ## Recent
 
+- 2026-11-08 `done` (TASK-SKRIPT-REP-0066): Skriptoteket adopted the shared tooling
+  block and the shared pre-push check (`check --pushed` installed); ruthless-reviewer
+  84b73b42 approved c8dd5e8a8 with no findings; full suite under a 16G cap passed
+  9024, 0 failed, `pdm run check` failed_phases=none. Mypy stays the checker until
+  REP-0067 and INFO producer logging until REP-0068.
+
 - 2026-11-01 `merged`: ST-SKRIPT-42-01 tasks 01-03: frontend colours read `--huleedu-*` tokens,
   lint rule `frontend/eslint-rules/no-hardcoded-colour.js`, `palette-scan-roots` set, themed
   CodeMirror, share pages follow the theme (legacy grouping shares stay light); Light dialog

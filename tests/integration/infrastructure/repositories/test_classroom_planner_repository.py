@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
@@ -40,7 +41,7 @@ def now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def planner_owner_id(db_session: AsyncSession, now: datetime) -> UUID:
     """Create a teacher/user row required by planner repository fixtures."""
 

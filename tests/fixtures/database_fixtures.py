@@ -18,6 +18,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
+import pytest_asyncio
 from alembic import command
 from alembic.config import Config
 from docker import DockerClient
@@ -228,7 +229,7 @@ def migrated_db(database_url: str) -> Iterator[str]:
         yield database_url
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def async_engine(migrated_db: str) -> AsyncIterator[AsyncEngine]:
     engine = create_async_engine(migrated_db, pool_pre_ping=True)
     yield engine
@@ -240,7 +241,7 @@ def session_factory(async_engine: AsyncEngine) -> async_sessionmaker[AsyncSessio
     return async_sessionmaker(async_engine, expire_on_commit=False, class_=AsyncSession)
 
 
-@pytest.fixture(scope="function")
+@pytest_asyncio.fixture(scope="function", loop_scope="module")
 async def db_session(
     session_factory: async_sessionmaker[AsyncSession], async_engine: AsyncEngine
 ) -> AsyncIterator[AsyncSession]:
