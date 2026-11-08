@@ -5,9 +5,13 @@ from pathlib import Path
 
 import pytest
 
+from skriptoteket.config import Settings
 from tests.fixtures.identity_fixtures import now
 
 __all__ = ["now"]
+
+# Tests never read a developer .env: settings come from defaults and the test's own environment.
+Settings.model_config["env_file"] = None
 
 SERIAL_REASON_OPTION = "--serial-reason"
 _SERIAL_REASON_KEY = pytest.StashKey[str]()

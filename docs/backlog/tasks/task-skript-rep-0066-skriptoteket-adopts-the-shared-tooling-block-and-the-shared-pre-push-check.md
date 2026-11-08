@@ -134,6 +134,12 @@ No product code changes.
   `test_vault_rename_races::test_overwrite_saved_during_lineage_rename`
   times out (10 s) when run alone, identically on unmodified main with the
   old tooling, and passes in the full suite.
+- Follow-up on 2026-11-08: the first `publish-main` run was refused by the
+  shared pre-push check because four tests build `Settings()` and read the
+  primary checkout's developer `.env` (`config.py` sets
+  `env_file=".env"`). `tests/conftest.py` now sets
+  `Settings.model_config["env_file"] = None` at module level so no test reads
+  a `.env`; the four node ids pass on the primary checkout.
 
 ## Stop Conditions
 
