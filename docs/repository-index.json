@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "aa46c226ddb10e9fe0e69782f7999b6b644c4ff98c8ce3cbb0093572645c52b2",
+  "source_set_digest": "3f44d43622a57b8b64402b41e434b107fdba9c59bf27e73a448205f04146c788",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9398,7 +9398,7 @@
       "type": "task",
       "title": "Skriptoteket adopts the shared tooling block and the shared pre-push check",
       "path": "docs/backlog/tasks/task-skript-rep-0066-skriptoteket-adopts-the-shared-tooling-block-and-the-shared-pre-push-check.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {

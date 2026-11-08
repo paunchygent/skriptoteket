@@ -28,16 +28,22 @@ def _run_pytest(*args: str) -> subprocess.CompletedProcess[str]:
 
 
 def test_default_addopts_are_parallel_and_quiet() -> None:
-    options = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["tool"][
-        "pytest"
-    ]["ini_options"]
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    options = project["tool"]["pytest"]["ini_options"]
     addopts = options["addopts"].split()
 
-    assert addopts[:4] == ["-n", "logical", "--dist", "worksteal"]
+    assert addopts[:4] == ["-n", "auto", "--dist", "worksteal"]
     assert not {"-s", "-v", "-vv"} & set(addopts)
     assert not any(option.startswith("--log-cli") for option in addopts)
     assert "log_cli" not in options
-    assert options["log_level"] == "INFO"
+    assert "log_level" not in options
+    producers = project["tool"]["repository-governance"]["quality"]["producers"]
+    backend_test = next(producer for producer in producers if producer["name"] == "backend-test")
+    assert backend_test["arguments"] == [
+        "-m",
+        "not (financial or slow or docker or simulation)",
+        "--log-level=INFO",
+    ]
 
 
 @pytest.mark.parametrize(

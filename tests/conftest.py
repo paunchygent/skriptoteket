@@ -83,7 +83,7 @@ def worker_cap() -> int:
 
 
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
-    """Size `-n logical` (the addopts default) to the selection, capped at MAX_WORKERS."""
+    """Size `-n auto` (the addopts default) to the selection, capped at MAX_WORKERS."""
 
     files = selected_test_files(
         config.args, base=config.invocation_params.dir, pyargs=bool(config.option.pyargs)

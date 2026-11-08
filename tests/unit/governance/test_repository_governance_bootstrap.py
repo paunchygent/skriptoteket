@@ -54,7 +54,12 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
         "forward-environment": [],
     }
     assert facts["setup"] == {
-        "projects": [{"path": ".", "groups": ["default", "monorepo-tools", "dev"]}],
+        "projects": [
+            {
+                "path": ".",
+                "groups": ["default", "monorepo-tools", "dev", "repository-governance-tooling"],
+            }
+        ],
     }
     assert facts["frontend"] == {
         "workspace-yaml": "frontend/pnpm-workspace.yaml",

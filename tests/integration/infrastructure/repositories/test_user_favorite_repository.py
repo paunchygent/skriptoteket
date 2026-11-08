@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from uuid import UUID, uuid4
 
 import pytest
+import pytest_asyncio
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -73,7 +74,7 @@ async def _create_tool(
     return tid
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def owner_id(db_session: AsyncSession, now: datetime) -> UUID:
     return await _create_user(
         db_session,
@@ -83,7 +84,7 @@ async def owner_id(db_session: AsyncSession, now: datetime) -> UUID:
     )
 
 
-@pytest.fixture
+@pytest_asyncio.fixture(loop_scope="module")
 async def user_id(db_session: AsyncSession, now: datetime) -> UUID:
     return await _create_user(
         db_session,

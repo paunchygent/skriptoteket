@@ -1,5 +1,13 @@
 ## Current
 
+- TASK-SKRIPT-REP-0066 (2026-11-07): shared tooling adoption is in progress in
+  `/home/paunchygent/apps/repos/skriptoteket-task-skript-rep-0066`. User decisions
+  D2-D12 and parent-approved setup/locking repairs D13-D14 are recorded in the
+  task. Collection is unchanged (9083 selected of 9384, 301 deselected). The
+  shared pre-push script is installed. Independent review and parent-owned
+  landing/publication remain; mypy stays the checker until REP-0067 and INFO
+  producer logging stays until REP-0068.
+
 - Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator,
   2026-11-01: ST-SKRIPT-42-01 tasks 01-04 are merged and deployed (`b09ebf40c`, with the
   360 px signed-out top-bar repair). Walked on production: the theme applies before first
