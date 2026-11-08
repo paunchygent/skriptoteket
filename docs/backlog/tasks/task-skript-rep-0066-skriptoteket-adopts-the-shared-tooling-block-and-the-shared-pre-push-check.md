@@ -7,10 +7,28 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-11-07'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-11-08'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: >-
+    Pi ruthless-reviewer 84b73b42-64ce-4ee0-aee3-af226b4a17e9 approved commit
+    c8dd5e8a8 on 2026-11-08 with no findings (retained session
+    01a1bc3d-275a-7fcc-a3b2-d4ffe4a7e9d9,
+    discovery/ruthless-reviewer/84b73b42-64ce-4ee0-aee3-af226b4a17e9); its
+    focused run over the changed governance and repository test files passed
+    74 tests. All three acceptance criteria are met: the full default suite
+    under a 16G cap passed 9024 tests with 59 skipped and 0 failed, and
+    `pdm run check` reported failed_phases=none with bindings:complete
+    exit=0; the shared pre-push hook is installed (`.git/hooks/pre-push`
+    runs `pdm run check --pushed`); every differing ruff, pyrefly and pytest
+    setting was moved or removed per user decisions D2-D12 with collection
+    unchanged at 9083 selected of 9384. Residual: the pre-existing isolated
+    timeout in test_vault_rename_races::test_overwrite_saved_during_lineage_rename
+    (identical on unmodified main; passes in the full suite).
 task_kind: repository
 acceptance_criteria:
   - "`pdm run check` passes its bindings:complete phase: the reserved tooling dependency, tooling settings and pre-push hook markers each occur once and match the shared package."
