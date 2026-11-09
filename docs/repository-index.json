@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0a29cca948b287377079fa3a31917dcbabc82317bfd70dbff5a90a90dc70a21d",
+  "source_set_digest": "d68a6ed60484256e2a20e46b04b4f7e0a7a65712032ec9a0c9d7d7dc1c2ece9f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9456,7 +9456,7 @@
       "type": "task",
       "title": "Adopt yamllint from the shared tooling list",
       "path": "docs/backlog/tasks/task-skript-rep-0069-adopt-yamllint-from-the-shared-tooling-list.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9466,7 +9466,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-11-09T17:14:23Z",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 36f588a5-64f0-4766-a6a5-ffcdc999e995 approved commit 090cd3242232d4fb75500b277105e91e7dfcadfb at 2026-11-09T17:14:23+00:00 with no findings (retained session 01a1be02-7ff8-7c5c-82d1-d370b5612689, discovery/ruthless-reviewer/36f588a5-64f0-4766-a6a5-ffcdc999e995/0001-review-three-commits-that-adopt-the-yamllint-pin-from-the.md); the review verified the managed tooling block adds exactly `yamllint==1.38.0`, preserves every existing locked package and version, and keeps the lock consistent with the pyproject. Both acceptance criteria are met: `pdm run yamllint --version` reports 1.38.0 and `repository-governance-bindings check` exits 0 with no drift."
       }
     },
     {
