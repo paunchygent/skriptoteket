@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f5c117fdbb0e242c73857857060319dca0089b45479d95c3eebc043cd7b3016a",
+  "source_set_digest": "0a29cca948b287377079fa3a31917dcbabc82317bfd70dbff5a90a90dc70a21d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9439,6 +9439,24 @@
       "title": "Skriptoteket tests run without the log_level override",
       "path": "docs/backlog/tasks/task-skript-rep-0068-skriptoteket-tests-run-without-the-log-level-override.md",
       "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0069",
+      "type": "task",
+      "title": "Adopt yamllint from the shared tooling list",
+      "path": "docs/backlog/tasks/task-skript-rep-0069-adopt-yamllint-from-the-shared-tooling-list.md",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {
