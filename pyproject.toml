@@ -95,6 +95,7 @@ repository-governance-tooling = [
     "pytest==9.2.0",
     "ruff==0.17.4",
     "testcontainers==4.15.0",
+    "yamllint==1.38.0",
 ]
 # repository-governance:tooling-dependencies:end
 # Repository tooling (lint/type/test/hooks + validation tooling)
