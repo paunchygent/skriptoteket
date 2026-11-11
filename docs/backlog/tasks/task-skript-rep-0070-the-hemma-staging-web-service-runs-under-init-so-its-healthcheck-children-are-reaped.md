@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-11-11'
-status: proposed
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer 95ad3eae-f186-4cd1-9b7a-86162253ac05
+  decided_at: '2026-11-11T14:57:18+00:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: TASK-SKRIPT-REP-0070#closeout
 task_kind: repository
 acceptance_criteria:
   - '`init: true` is set on the `web` service in `compose.hemma-dev.yaml`.'
@@ -51,3 +55,9 @@ In skriptoteket-dev, the `web` container (`pdm run serve`) had 7 zombies.
 | --- | --------------------------------------------------------------------------------------------------------- |
 | D1  | The scope is the staging `web` service, which has a curl healthcheck (user, 11 Nov 2026).                 |
 | D2  | After merge, skriptoteket-dev staging is recreated through `pdm run hemma-dev start` (user, 11 Nov 2026). |
+
+## Closeout
+
+- Outcome: `init: true` is set on the services the acceptance criteria list; reviewed commit `ae6f0af7e` was approved with no findings.
+- Review: ruthless-reviewer 95ad3eae-f186-4cd1-9b7a-86162253ac05 approved on 2026-11-11T14:57:18+00:00. Record, in the skill-repository primary checkout: `.orchestration/context/sessions/01a1cb01-9638-7245-b286-37175a5a9e1e/evidence/review/init-review.md`.
+- Runtime proof after staging recreate: see below.

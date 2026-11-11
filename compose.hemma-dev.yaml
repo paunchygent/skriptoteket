@@ -33,6 +33,7 @@ services:
       retries: 20
 
   web:
+    init: true
     build:
       context: .
       dockerfile: Dockerfile
