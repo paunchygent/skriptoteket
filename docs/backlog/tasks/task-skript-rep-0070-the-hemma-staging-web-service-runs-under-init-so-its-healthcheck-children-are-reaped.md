@@ -61,3 +61,9 @@ In skriptoteket-dev, the `web` container (`pdm run serve`) had 7 zombies.
 - Outcome: `init: true` is set on the services the acceptance criteria list; reviewed commit `ae6f0af7e` was approved with no findings.
 - Review: ruthless-reviewer 95ad3eae-f186-4cd1-9b7a-86162253ac05 approved on 2026-11-11T14:57:18+00:00. Record, in the skill-repository primary checkout: `.orchestration/context/sessions/01a1cb01-9638-7245-b286-37175a5a9e1e/evidence/review/init-review.md`.
 - Runtime proof after staging recreate: see below.
+
+Runtime proof (2026-11-11, Hemma, rootless daemon). skriptoteket-dev was updated by `git pull --ff-only origin main` (78 commits) to cbeae490e, then started with `pdm run hemma-dev start`.
+
+- Before the recreate: the `web` container had 7 `<defunct>` children. System-wide: 56 zombie processes.
+- After the recreate, at least 3 minutes up (more than two 15 s healthcheck intervals): `web` reports `HostConfig.Init` true and health healthy, with 0 `<defunct>` children under its PID 1. System-wide zombie count: 0.
+- Full commands and output: skill-repository retained root `01a1cb01-9638-7245-b286-37175a5a9e1e`, `evidence/init-rollout/rollout.md`.
