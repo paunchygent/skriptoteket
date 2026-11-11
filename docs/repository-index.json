@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9b732551d62552d7e301561452a31b472fc322e2a2cc74b99214031c500db21",
+  "source_set_digest": "c3f6072c6397ed9e71990b0403c707b895b751249736cbeb3010d4099804cedd",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -9478,7 +9478,7 @@
       "type": "task",
       "title": "The Hemma staging web service runs under init so its healthcheck children are reaped",
       "path": "docs/backlog/tasks/task-skript-rep-0070-the-hemma-staging-web-service-runs-under-init-so-its-healthcheck-children-are-reaped.md",
-      "status": "proposed",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -9488,7 +9488,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer 95ad3eae-f186-4cd1-9b7a-86162253ac05",
+        "decided_at": "2026-11-11T14:57:18+00:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "TASK-SKRIPT-REP-0070#closeout"
       }
     },
     {
