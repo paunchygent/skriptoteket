@@ -1,14 +1,13 @@
 ## Current
 
-- Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator,
-  2026-11-01: ST-SKRIPT-42-01 tasks 01-04 are merged and deployed (`b09ebf40c`, with the
-  360 px signed-out top-bar repair). Walked on production: the theme applies before first
-  paint, the cookie is set on `.hule.education`, choices persist, `/theme-sample` is 404,
-  landing and Klassrumskartan signed out (Ljust and Bläck, 360 px), and the catalogue and
-  Provhantering signed in (Midnatt and Bläck). Not walked: the editor (the user's account
-  lacks the contributor role), a tool page with output, Reagensberedning, a share page,
-  print and the seating PDF in Bläck, and the signed-in bar at phone width. Next action:
-  walk those, then close the story. Worktree
+- Dark mode (EPIC-SKRIPT-42, story 3 of skill-repository EPIC-SKILL-17), Mac orchestrator, 2026-11-01:
+  ST-SKRIPT-42-01 tasks 01-04 are merged and deployed (`b09ebf40c`, with the 360 px signed-out
+  top-bar repair). Walked on production: the theme applies before first paint, the cookie is set
+  on `.hule.education`, choices persist, `/theme-sample` is 404, landing and Klassrumskartan
+  signed out (Ljust and Bläck, 360 px), and the catalogue and Provhantering signed in (Midnatt
+  and Bläck). Not walked: the editor (the user's account lacks the contributor role), a tool
+  page with output, Reagensberedning, a share page, print and the seating PDF in Bläck, and the
+  signed-in bar at phone width. Next action: walk those, then close the story. Worktree
   `../Skriptoteket-st-skript-42-01` stays until closeout. Plan: retained root
   `01a193d4-6820-7dd3-b25c-7f8c58836241`.
 
@@ -38,149 +37,89 @@
   - Branch `codex/task-skript-39-06-09` (Exam.net ordering-in-part probe builder) is kept
     unmerged on purpose; probe package in `.artifacts/probe-39-06-09/`.
 
-- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
-  Klassrumskartan tutorial clips: tasks 01 and 02 `done`; guide Steg 1 corrected on main
-  2026-10-28. Real clips wait on HuleFilm ST-VIDEO-12-01 gates (talmanus approval,
-  ElevenLabs spend, render approval, prod media deploy); the Steg 1 clip script still shows
-  a Skola24 paste. Retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`.
+- ST-SKRIPT-08-36 (story under `docs/backlog/stories/`) Klassrumskartan tutorial clips: tasks 01
+  and 02 `done`; guide Steg 1 corrected on main 2026-10-28. Real clips wait on HuleFilm
+  ST-VIDEO-12-01 gates (talmanus approval, ElevenLabs spend, render approval, prod media
+  deploy); the Steg 1 clip script still shows a Skola24 paste.
+  Retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`.
 
-- [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
-  `in_progress`, deferred by the user 2026-10-28. Next when resumed: staging editor walk
-  (edit sibling `grouping.py`, sandbox run, save). Production gruppgeneratorn is depublished.
+- TASK-SKRIPT-REP-0037 (under `docs/backlog/tasks/`) `in_progress`, deferred by the user
+  2026-10-28. Next when resumed: staging editor walk (edit sibling `grouping.py`, sandbox run,
+  save). Production gruppgeneratorn is depublished.
 
 - Exam epics 39/40/41 working model (user decisions G1-G30 of 2026-10-17, retained
   `01a1495e-8398-75be-b2da-f0b08ba11afa`): walk only exam-converter changes; restyle and
-  repairs close on approved review plus unit tests. The Hemma orchestrator runs leads,
-  merges, pushes and rebuilds staging; the Mac thread walks staging and Exam.net. Exam.net
-  takes QTI; the print PDF renders the DOCX house template. Historical planning:
+  repairs close on approved review plus unit tests. The Hemma orchestrator runs leads, merges,
+  pushes and rebuilds staging; the Mac thread walks staging and Exam.net. Exam.net takes QTI;
+  the print PDF renders the DOCX house template. Historical planning:
   `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
 
 ## Recent
 
-- 2026-11-08 `done` (TASK-SKRIPT-REP-0066): Skriptoteket adopted the shared tooling
-  block and the shared pre-push check (`check --pushed` installed); ruthless-reviewer
-  84b73b42 approved c8dd5e8a8 with no findings; full suite under a 16G cap passed
-  9024, 0 failed, `pdm run check` failed_phases=none. Mypy stays the checker until
-  REP-0067 and INFO producer logging until REP-0068.
+Task ids are `TASK-SKRIPT-*`; a short id such as 39-04-22 is `TASK-SKRIPT-39-04-22`. Each task doc
+under `docs/backlog/tasks/` records its review and walk evidence.
 
-- 2026-11-01 `merged`: ST-SKRIPT-42-01 tasks 01-03: frontend colours read `--huleedu-*` tokens,
-  lint rule `frontend/eslint-rules/no-hardcoded-colour.js`, `palette-scan-roots` set, themed
-  CodeMirror, share pages follow the theme (legacy grouping shares stay light); Light dialog
-  scrim is 0.40 by user decision. Hemma pre-push suites passed on `933cfd750`.
-
-- 2026-10-30 `done`: REP-0061 one 40 px logo link in both top bars, page titles and greeting on
-  the 20 px title role, glyph-only Hjälp on phones (production `00fa763fa`, Mac walks, user check);
-  HuleEdu sign-in page on design package 0.1.39 (HULE-REP-0150, production `86344a83d`).
-
-- 2026-10-30 `done`: REP-0060 signed-in top-bar logo (production `5b9cf6981`; the user
-  withdrew approval, REP-0061 repairs it); shared logo fix 0.1.38 in skill-repository
-  REP-0423 (`fb10caa5`); REP-0059 copy (`dad31d98e`).
-
-- 2026-10-29 `done`: 39-06-11 ordering inside a part at 1 point and 26-06-01 share page
-  (Mac staging walk at `d0064b1ce`, main `bd6cae1c8`); ST-SKRIPT-39-06 (Mac all-types
-  Exam.net import, exam 5395761, 33p, no differences, `625aaf585`); 09-07-01 production
-  refuses loopback ALLOWED_HOSTS (`f4ae80743`); REP-0056 backlog leftovers (`6ab51ee9c`).
-
-- 2026-10-28 `done`: 39-10-03 (a failed import's message wraps in full, main `ec810361f`) and
-  39-06-09 (ordering inside a part probed in Exam.net, main `c0112dfdc`).
-
-- 2026-10-28 `done` (TASK-SKRIPT-REP-0055, merged to main `817a0cf67`): 24 tasks closed
-  on merge evidence, 10 tasks and ST-21-04 canceled, 25-06-14 partly canceled, 10 items
-  deferred, stories 06-17, 06-18, 39-01, 39-04, 40-02, 40-04 closed, EPIC-SKRIPT-20 active;
-  26-06-01 (D4) and 09-07-01 (D5) record their decisions and stay open.
-
-- 2026-10-29 `done` (Hemma orchestrator): 27-09-04, 27-09-05 builder pinch (`de4c60e93`), REP-0024,
-  27-09-03, REP-0057 16 px touch fields and one-row footers (`cbbf5d969`), REP-0058 Sittplatser
-  labels on one line (`a58dc8ed8`), REP-0059 delete asks first (`ecf66f5e1`, copy `dad31d98e`);
-  the user checked each on their iPhone in production (Chrome and Safari).
-
-- 2026-10-28 `done` (Hemma orchestrator): 40-04-26 type switch and AI toolbar (`23309e478`),
-  40-02-01 icons (`1b2ce75cc`), 39-04-24 rising count, 39-06-08 ordering, 40-04-09 and
-  REP-0048 (R14 keeps position numbers, user), 39-01-02 (Mac walks
-  `.artifacts/staging-walk-05b3fc12a/walk-record.md`); 41-02-07 claim per draft_id
-  (`a5aa760c6`); REP-0052 image PDM pin, REP-0053 Docker replay, REP-0054 ordering step;
-  39-04-20; HuleEdu REP-0149 deploy-check SIGPIPE and REP-0148 export download.
-
-- 2026-10-28 `done`: TASK-SKRIPT-REP-0040 Sir Convert public-host retirement (rereview
-  `d97caf5b` approved, main `ced7971b`; env check in retained `01a18444`). The user deleted the CNAME (NXDOMAIN).
-
-- 2026-10-22 `done`: 41-03-01 AI for every signed-in teacher (Mac walk
-  `.artifacts/staging-walk-41-03-01-78765d330/walk-record.md`); in production at `976d89b5b`.
-
-- 2026-10-22 `done`: 39-04-23 import phases and live signal (retained `01a1639f`; Mac re-walk
-  `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
-
-- 2026-10-22 `done`: 41-01-02 script editor on Luna and Sol through the door, and ST-SKRIPT-41-01
-  (Mac re-walk `.artifacts/staging-walk-rewalk-8569092ba/walk-record.md`; production `8569092ba`).
-
-- 2026-10-22 `done`: 41-01-04 AI capacity and try-again (`d44e946b5`; review F1-F8, retained
-  `01a16352`; Mac walk `.artifacts/staging-walk-41-01-04-d44e946b5/walk-record.md`). HuleEdu door
-  14-03-04/05/06 on main `ca7ff9700` (overage, gpt-6.1-sol price, cache writes, backlog 2048);
-  deployed to production 2026-10-22.
-
-- 2026-10-22 `done`: 39-04-22 Word drawn shapes as pictures, shapes kept
-  for Word export (`74eeceb2d`; review F1-F9 repaired on fail-first proof, retained
-  `01a162df`; Mac walk `.artifacts/staging-walk-39-04-22-74eeceb2d/walk-record.md`).
-  Follow-up `cae867222`: Word export writes compatibilityMode 15, no Compatibility
-  Mode; Mac walk `.artifacts/staging-walk-39-04-22-cae867222/walk-record.md` also
-  moved a Q6 box and edited a label by hand in Word.
-
-- 2026-10-22 `done`: 39-10-02 PDF pictures and figures (`7adde567`; Mac walk
-  `.artifacts/staging-walk-39-10-02-7adde567c/walk-record.md`; Word drawn
-  shapes go to TASK-SKRIPT-39-04-22, ready).
-
-- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-05, 40-04-12 and 39-04-11 (user closure; Mac walk `.artifacts/staging-walk-owed-2026-10-22/walk-record.md`). 39-10-01 PDF import done (walk `.artifacts/staging-walk-39-10-01/walk-record.md`). 40-04-19 done (two-tab fix; 403-message half dropped by the user). 41-01-03 exam AI through the door done (`fe2bc9b9` + D1 `2d16c24d`; HuleEdu staging door key `547e1deb`; B4 notes unit-proof only). REP-0049 done (`b8293abd`; Mac walk `.artifacts/staging-walk-overnight-fe2bc9b9/walk-record.md`). 39-10-04 Lägg till bild done (`4f555442` + W1 `e68e84a1`; Mac walks passed, check 4 re-walk at `fe2bc9b9`).
-
-- 2026-10-22 `done` on main: TASK-SKRIPT-40-04-21, 40-04-23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036 and ST-SKRIPT-39-07, 41-02, 40-01 (user closure; Mac walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`). Mina filer keeps every workspace version visible by user choice; head-only listing is later.
-
-- 2026-10-28 `done`: TASK-SKRIPT-REP-0035 passive web liveness (user closure, review waived in D8;
-  rollout proof in the task doc; raw receipts no longer on Hemma).
-
-- 2026-10-21 `done` on main: [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md) parallel and quiet pytest (merge `6a557b5d`; review 321854a9 F1-F6 medium repaired `b1f019e6`, admitted on focused proof).
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-40-04-20 print keeps imported formatting (`43f47eda`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Unreadable-notice wrap fix merged `a8de9ae6` (Pi review `ec4f5dae` approved; walk PASS).
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-41-02-06 unreadable exam files (`0ab8ccb8`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`).
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-40-04-13 and -14 gap lane (merge `f84eb85d`, rereview 12 approved, Mac step 5 re-walk PASS; user closure).
-
-- 2026-10-28 `done`: TASK-SKRIPT-REP-0038 repository rules retired (`eee397e31`, 40-03-09) and
-  the Mac-local shared-auth lane removed (`e559cae0e`); orchestrator closure, no review.
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-06-17-02 migration tests pinned to their own revision, plus the pre-push migration stage (`3d3f867a`, user closure; the stage ran on its first push, 118 passed). TASK-SKRIPT-06-17-01 canceled as superseded by it.
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-39-05-16 unused long-form readiness copy deleted (`5611f0c8`, user closure).
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-41-02-05 guest draft handover to Mina filer (`8be9aefa`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`). Follow-ups D10, D24 in Current.
-
-- 2026-10-20 `done` on main: TASK-SKRIPT-39-05-15 type choice on an unconverted question (`e4d15c4a`, user closure; Mac walk `.artifacts/staging-walk-e4d15c4a/walk-record.md`).
-
-- 2026-10-19 `done` on main: TASK-SKRIPT-39-04-21 points wording (`99378586`, user closure; Mac walk `.artifacts/staging-walk-99378586/walk-record.md`). U4 offer line parked.
-
-- 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
-
-- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over, 39-04-20 score field (closed 2026-10-28 on the K7 walk). Pre-push hook SIGPIPE false skip fixed (`003c874a`).
-
-- 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
-  EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
-  on migrating both epics to the contract-derived profile with open child
-  stories (user decision pending; ST-SIRCON-07-01 still states the old QTI
-  2.1 claim).
+- 2026-11-08 `done` REP-0066: shared tooling block and pre-push check (`check --pushed`) adopted;
+  review 84b73b42 approved `c8dd5e8a8`; suite 9024 passed. Mypy stays until REP-0067, INFO
+  producer logging until REP-0068.
+- 2026-11-01 `merged` ST-SKRIPT-42-01 tasks 01-03: colours read `--huleedu-*` tokens, lint rule
+  `frontend/eslint-rules/no-hardcoded-colour.js`, themed CodeMirror, share pages follow the
+  theme (legacy grouping shares stay light); Light scrim 0.40 by user decision (`933cfd750`).
+- 2026-10-30 `done` REP-0061 40 px logo link in both top bars, 20 px title role, glyph-only
+  Hjälp on phones (production `00fa763fa`); HuleEdu sign-in on design package 0.1.39
+  (HULE-REP-0150, `86344a83d`).
+- 2026-10-30 `done` REP-0060 signed-in top-bar logo (`5b9cf6981`; the user withdrew approval,
+  REP-0061 repairs it); shared logo fix 0.1.38 in skill-repository REP-0423 (`fb10caa5`);
+  REP-0059 copy (`dad31d98e`).
+- 2026-10-29 `done` 39-06-11 and 26-06-01 (Mac staging walk `d0064b1ce`, main `bd6cae1c8`);
+  ST-SKRIPT-39-06 (exam 5395761, `625aaf585`); 09-07-01 production refuses loopback
+  ALLOWED_HOSTS (`f4ae80743`); REP-0056 backlog leftovers (`6ab51ee9c`).
+- 2026-10-29 `done` (Hemma orchestrator) 27-09-04, 27-09-05 (`de4c60e93`), REP-0024, 27-09-03,
+  REP-0057 (`cbbf5d969`), REP-0058 (`a58dc8ed8`), REP-0059 (`ecf66f5e1`); the user checked each
+  on their iPhone in production.
+- 2026-10-28 `done` REP-0055 (main `817a0cf67`): 24 tasks closed on merge evidence, 10 tasks and
+  ST-21-04 canceled, 10 items deferred, six stories closed, EPIC-SKRIPT-20 active; 26-06-01
+  (D4) and 09-07-01 (D5) stay open.
+- 2026-10-28 `done` 39-10-03 (`ec810361f`), 39-06-09 (`c0112dfdc`), and (Hemma orchestrator)
+  40-04-26 (`23309e478`), 40-02-01 (`1b2ce75cc`), 39-04-24, 39-06-08, 40-04-09, REP-0048,
+  39-01-02 (walks `.artifacts/staging-walk-05b3fc12a/walk-record.md`), 41-02-07 (`a5aa760c6`),
+  REP-0052/0053/0054, 39-04-20; HuleEdu REP-0149 and REP-0148.
+- 2026-10-28 `done` REP-0040 Sir Convert public-host retirement (`ced7971b`, rereview `d97caf5b`;
+  the user deleted the CNAME); REP-0038 repository rules retired (`eee397e31`, `e559cae0e`);
+  REP-0035 passive web liveness (user closure; evidence in the task doc).
+- 2026-10-22 `done` 41-03-01 AI for every signed-in teacher (production `976d89b5b`); 39-04-23
+  import phases (`8569092ba`); 41-01-02 and ST-SKRIPT-41-01 script editor on Luna and Sol
+  (`8569092ba`); 41-01-04 AI capacity (`d44e946b5`) with HuleEdu door 14-03-04/05/06 (`ca7ff9700`).
+- 2026-10-22 `done` 39-04-22 Word drawn shapes (`74eeceb2d`, follow-up `cae867222`); 39-10-02 PDF
+  pictures (`7adde567`); 39-10-01, 39-10-04, 40-04-05/12/19, 39-04-11, 41-01-03, REP-0049.
+- 2026-10-22 `done` (user closure) 40-04-21/23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036,
+  ST-SKRIPT-39-07, 41-02, 40-01 (walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`);
+  Mina filer shows every workspace version by user choice; head-only listing is later.
+- 2026-10-21 `done` REP-0050 parallel and quiet pytest (merge `6a557b5d`, review 321854a9
+  repaired `b1f019e6`).
+- 2026-10-20 `done` (user closure) 40-04-20 (`43f47eda`), 41-02-06 (`0ab8ccb8`), 40-04-13/14
+  (`f84eb85d`), 06-17-02 (`3d3f867a`; 06-17-01 canceled), 39-05-16 (`5611f0c8`), 41-02-05
+  (`8be9aefa`; follow-ups D10, D24 in the task), 39-05-15 (`e4d15c4a`).
+- 2026-10-19 `done` 39-04-21 (`99378586`; U4 offer line parked), 40-04-07 (`003c874a`), 41-02-01,
+  39-04-15..20, REP-0046, REP-0047, HULE-14-03-01; pre-push SIGPIPE false skip fixed (`003c874a`).
+- 2026-10-19 `canceled` 40-04-11 as superseded by 40-04-17 (user decision); reuse list on branch
+  `codex/task-skript-40-04-compact-tools-remote`, inventory and mocks in root 01a15383.
+- 2026-10-10: sir-convert-a-lot `main` `3fb6f672` holds the EPIC-SIRCON-07/08 supersession notes;
+  their closure waits on migrating both epics to the contract-derived profile (user decision
+  pending; ST-SIRCON-07-01 still states the old QTI 2.1 claim).
 
 ## Facts
 
 - Session Date: 2026-10-15
-- Last Refreshed: 2026-10-28
-- Current docs validate with `pdm run docs-validate`.
+- Last Refreshed: 2026-11-12
+- Docs validate with `pdm run docs-validate`; historical terminal docs audit separately with
+  `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Flunk-Out Frenzy donor work never flattens a richer donor object into local bounds or a
   "good enough" approximation; the rule text is in
   `data/pinball_resources_and_repos/vpw-rom-example-table-donor-map.md` and the
   `pinball-board-authoring` skill.
-- Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
-- Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;
-  TASK-SKRIPT-REP-0040 retained capture `0004-pdm-run-typecheck`.
-- Open product questions (undecided, not silently resolved): native doc
-  format internals (new versioned doc type vs file-plus-sidecar state);
-  digital-PDF slice detail follows ST-39-04 review.
+- Open product questions (undecided, not silently resolved): native doc format internals (new
+  versioned doc type vs file-plus-sidecar state); digital-PDF slice detail follows ST-39-04 review.
 - Next: eval triage, item-type and parent/child authoring planning.
-- Tutorial media: web serves `MEDIA_ROOT` read-only at `/static/media` (404 while absent); dev bind `/home/paunchygent/apps/skriptoteket-media/dev`, prod bind inert until `hemma-deploy`.
+- Tutorial media: web serves `MEDIA_ROOT` read-only at `/static/media` (404 while absent); dev bind
+  `/home/paunchygent/apps/skriptoteket-media/dev`, prod bind inert until `hemma-deploy`.
