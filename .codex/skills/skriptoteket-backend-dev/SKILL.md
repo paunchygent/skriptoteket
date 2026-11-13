@@ -40,7 +40,7 @@ revision immutability belong to the testing skill's migration reference.
 - Raise `DomainError` (no HTTP) and map to HTTP in `src/skriptoteket/web/*`.
 - Unit of Work owns commit/rollback; repositories never commit (see `src/skriptoteket/infrastructure/db/uow.py`).
 - Preserve OpenAPI-safe router typing; follow the HTTP contracts in the routed reference.
-- For editor AI / LLM changes: follow `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`.
+- For editor AI / LLM changes: follow `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching.md`.
 - For execution queue/worker changes: follow `docs/decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md`.
 
 ## Key ADRs + “goal state” watchlist
@@ -54,7 +54,7 @@ Read first when touching these areas:
 - Tool sessions + persistence: `docs/decisions/adr-skript-0024-tool-sessions-and-ui-payload-persistence.md`
 - Multi-file inputs: `docs/decisions/adr-skript-0031-multi-file-input-contract.md`
 - Execution queue worker loop: `docs/decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md`
-- OpenAPI as source + frontend types: `docs/decisions/adr-skript-0030-openapi-as-the-api-source-of-truth-generated-typescript-types.md`
+- OpenAPI as source + frontend types: `docs/decisions/adr-skript-0030-openapi-as-the-api-source-of-truth-generated-typescript.md`
 - Runner request envelope v1: `docs/decisions/adr-skript-0063-runner-request-envelope-v1-request-json.md`
 - File references + resolver: `docs/decisions/adr-skript-0064-file-references-fileref-resolver-staging-manifest.md`
 
@@ -76,7 +76,7 @@ For roadmap/critical-path work, start from the active backlog through
 
 - Bootstrap superuser: `pdm run bootstrap-superuser`
 - Seed script bank:
-  - Runbook: `docs/runbooks/run-skript-runbook-script-bank-seeding-repo-db-runbook-script-bank-seeding-repo-db.md`
+  - Runbook: `docs/runbooks/run-skript-runbook-script-bank-seeding-repo-db.md`
   - Safe default: `pdm run seed-script-bank --dry-run --profile dev`
 - Execution worker (one-off): `PYTHONPATH=src pdm run python -m skriptoteket.cli run-execution-worker --once`
 
@@ -96,6 +96,6 @@ Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Testing protocol (backend)
 
-- Follow `.codex/skills/skriptoteket-testing/SKILL.md` and `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`.
+- Follow `.codex/skills/skriptoteket-testing/SKILL.md` and `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md`.
 - Default: `pdm run test` (unit tests mock protocols; integration uses Docker/testcontainers).
 - Also run: `pdm run lint` and `pdm run typecheck` for backend changes.

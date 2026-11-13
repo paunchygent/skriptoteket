@@ -42,7 +42,7 @@ AI-powered completions.
 - **Provider-agnostic**: Works with Ollama (local), OpenRouter, OpenAI
 
 See [ADR-0043](../../decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md) for architecture.
-See [ADR-0051](../../decisions/adr-skript-0051-chat-first-ai-editing-structured-crud-ops-diff-preview-apply-undo.md) for chat-first editing decisions.
+See [ADR-0051](../../decisions/adr-skript-0051-chat-first-ai-editing-structured-crud-ops-diff-preview-apply.md) for chat-first editing decisions.
 See [ADR-0052](../../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments-for-ai-editor-features.md) for prompt budgeting + KB fragment decisions.
 
 ## Artifacts to Review

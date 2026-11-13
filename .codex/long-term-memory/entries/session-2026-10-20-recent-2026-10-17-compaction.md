@@ -20,7 +20,7 @@ Retains the 2026-10-17 completed outcomes moved out of `handoff.md` Recent on
   Staging and Exam.net proof at main `1f9e4367` (exam 5345261):
   `01a149c9.../evidence/staging-proof-1f9e4367/proof.md`.
 
-- [TASK-SKRIPT-40-03-10](../../../docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
+- [TASK-SKRIPT-40-03-10](../../../docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit.md)
   `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
   edit controls glyph-only and frameless (0.1.31), roomier school forms; main `e5ab32c6`.
 
@@ -29,7 +29,7 @@ Retains the 2026-10-17 completed outcomes moved out of `handoff.md` Recent on
   so an install from a task worktree keeps the shared hook on the primary
   `.venv`; repository-governance pin 0.11.134 (`70bbfefd`, binding `6363b36e`).
 
-- [TASK-SKRIPT-REP-0042](../../../docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md)
+- [TASK-SKRIPT-REP-0042](../../../docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx.md)
   `done` 2026-10-17 (approved review): the docker DOCX job proof asserts the
   formatting diagnostics contract; one live recording answers the bf26 typed
   type-conflict resend; replays require a recording per build request; main

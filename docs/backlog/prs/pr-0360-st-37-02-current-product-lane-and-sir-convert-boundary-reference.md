@@ -51,7 +51,7 @@ Turn the current product direction into durable crosslinked docs.
 ## Implementation Summary
 
 Completed on 2026-06-18. The durable boundary reference is
-[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
+[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md).
 It defines the current teacher-facing lanes, separates Sir Convert-owned heavy
 conversion/model/runtime responsibilities from Skriptoteket-owned native product
 state, and preserves script/editor/runner capability without treating it as the

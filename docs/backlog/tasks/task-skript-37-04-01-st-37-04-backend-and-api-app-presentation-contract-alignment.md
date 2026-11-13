@@ -67,7 +67,7 @@ The source record did not define a separate section for this package heading.
    metadata split, capability split, or app-detail decomposition.
 3. Update generated frontend consumers and keep app-state ownership doctrine
    aligned with
-   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
+   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md).
 4. Stop and re-plan if the proposal drifts into Sir Convert producer/Gateway
    work or into implementation of a still-hypothetical Document Converter app.
 ### Test plan

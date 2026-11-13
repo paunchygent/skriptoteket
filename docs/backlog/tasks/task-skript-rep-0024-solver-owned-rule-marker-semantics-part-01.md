@@ -240,7 +240,7 @@ unambiguous.
 
 Add an additive diagnostics contract to the Smart seating result when the team
 needs visible fulfillment truth. The governing reference is
-[`REF-SKRIPT-GENERAL-klassrumskartan-solver-rule-diagnostics-contract`](../../reference/ref-skript-general-klassrumskartan-solver-rule-diagnostics-contract-klassrumskartan-solver-rule-diagnostics-contract.md).
+[`REF-SKRIPT-GENERAL-klassrumskartan-solver-rule-diagnostics-contract`](../../reference/ref-skript-general-klassrumskartan-solver-rule-diagnostics-contract.md).
 
 - rule id or stable rule key
 - affected student ids and seat ids

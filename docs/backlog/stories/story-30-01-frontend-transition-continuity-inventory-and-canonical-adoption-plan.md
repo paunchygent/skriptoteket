@@ -39,7 +39,7 @@ same transition bug will be reintroduced elsewhere.
 ## References
 
 - Epic parent: [EPIC-30](../epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md)
-- Transition ADR: [ADR-0077](../../decisions/adr-skript-0077-same-shell-transition-continuity-for-selector-driven-workspaces.md)
-- Transition reference: [REF-frontend-transition-continuity-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
-- Planner workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md)
+- Transition ADR: [ADR-0077](../../decisions/adr-skript-0077-same-shell-transition-continuity-for-selector-driven.md)
+- Transition reference: [REF-frontend-transition-continuity-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
+- Planner workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor.md)

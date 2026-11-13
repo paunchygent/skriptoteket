@@ -126,9 +126,9 @@ The source record did not define a separate section for this package heading.
   churn.
 
 ## Notes
-- [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
+- [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
   is the canonical evidence and analysis record for this epic.
-- [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+- [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
   now governs the upstream launch topology that this epic consumes.
 - The current intended platform shape is: `hule.education` = HuleEdu landing,
   `api.hule.education` = HuleEdu gateway/session edge, `skriptoteket.hule.education`

@@ -76,7 +76,7 @@ The source does not provide a separate contract inputs section; no additional co
 - [ST-29-08: Shared custom tooltip system and global hover contract](../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
 - [ST-29-09: Rule visibility and tool-feedback continuity](../stories/story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
 - [ST-29-10: First-run workspace gating and prerequisite guidance](../stories/story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md)
-- [ST-29-11: Shared site/app dense-control primitive tightening](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
+- [ST-29-11: Shared site/app dense-control primitive tightening](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive.md)
 - [ST-29-12: Canonical symbol language and discoverability contract completion](../stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md)
 - [ST-29-13: Small-screen shell and mode-switcher redesign](../stories/story-29-13-klassrumskartan-small-screen-shell-and-mode-switcher-redesign.md)
 - [ST-29-14: Small-screen overview redesign](../stories/story-29-14-klassrumskartan-small-screen-overview-redesign.md)

@@ -10,7 +10,7 @@ created: 2026-03-21
 updated: 2026-03-21
 ---
 
-Superseded by [PRD-group-seating-studio-v0.3](../reference/ref-skript-prd-curated-app-klassrumskartan-2-curated-app-klassrumskartan.md).
+Superseded by [PRD-group-seating-studio-v0.3](../reference/ref-skript-prd-curated-app-klassrumskartan-2.md).
 
 ## Summary
 

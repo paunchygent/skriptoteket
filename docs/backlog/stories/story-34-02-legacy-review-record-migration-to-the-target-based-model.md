@@ -41,5 +41,5 @@ historical archive still reuse one epic review id across multiple files.
 ## References
 
 - Epic parent: [EPIC-34](../epics/epic-34-docs-as-code-tightening-and-legacy-review-record-migration.md)
-- Review workflow reference: [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md)
+- Review workflow reference: [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records.md)
 - Retired sprint planning workflow: [REF-sprint-planning-workflow](../../reference/ref-sprint-planning-workflow.md)

@@ -85,7 +85,7 @@ AI_DEFAULT_ALLOW_REMOTE_FALLBACK=true
 - [ADR-0051: Chat-first AI editing](adr-0051-chat-first-ai-editing.md)
 - [ST-08-14: AI inline completions MVP](../backlog/stories/story-08-14-ai-inline-completions.md)
 - [ST-08-16: AI edit suggestions (CodeMirror changes)](../backlog/stories/story-08-16-ai-edit-suggestions.md)
-- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md)
+- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-skript-08-contextual-help-hj%C3%A4lp-and-onboarding.md)
 - [ref-ai-script-generation-kb.md](../reference/ref-ai-script-generation-kb.md) - KB content to inject
 
 ## Decision

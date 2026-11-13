@@ -64,7 +64,7 @@ The source does not provide a separate story contract section.
 - Auth bootstrap and route guards: [ST-11-05](story-11-05-auth-flow-and-route-guards.md)
 - Unified landing shell baseline: [ST-11-21](story-11-21-unified-landing-page.md)
 - Frontend transition reference:
-  [REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
+  [REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
 
 ## Contract Inputs
 
@@ -75,7 +75,7 @@ The source does not provide a separate story contract section.
 - Auth bootstrap and route guards: [ST-11-05](story-11-05-auth-flow-and-route-guards.md)
 - Unified landing shell baseline: [ST-11-21](story-11-21-unified-landing-page.md)
 - Frontend transition reference:
-  [REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
+  [REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)
 
 ## Tasks
 
@@ -157,7 +157,7 @@ enforcement thresholds.
 
 ### Planned PR slices
 
-- [TASK-SKRIPT-11-25-01: ST-SKRIPT-11-25 Playwright tree normalization under scripts/playwright](../tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts-playwright.md) (canceled)
+- [TASK-SKRIPT-11-25-01: ST-SKRIPT-11-25 Playwright tree normalization under scripts/playwright](../tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts.md) (canceled)
 - [TASK-SKRIPT-11-25-02: ST-SKRIPT-11-25 LHCI and bundle-visualizer toolchain wiring](../tasks/task-skript-11-25-02-st-11-25-lhci-and-bundle-visualizer-toolchain-wiring.md)
 - [TASK-SKRIPT-11-25-03: ST-SKRIPT-11-25 pilot route inventory and trace baselines](../tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md) (canceled)
 

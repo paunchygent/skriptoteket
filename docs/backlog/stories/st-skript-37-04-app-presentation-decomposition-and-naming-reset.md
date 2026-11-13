@@ -211,7 +211,7 @@ The source record did not define a separate section for this package heading.
 - The Audio Transcription lane is separate from document conversion even when
   downstream transcript exports are document-like artifacts.
 - Use
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)
   as the ownership boundary before proposing names, descriptions, route impacts,
   or registry changes.
 - `PR-0370` is a public landing mockup and copy-approval package only. It
@@ -247,9 +247,9 @@ The source record did not define a separate section for this package heading.
   public `/api/v1/public/...` proxy traffic on the Skriptoteket backend and
   protected `/api` on the HuleEdu Gateway.
 - `PR-0361` closed the service-shell planning package through
-  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md),
+  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan.md),
   and `PR-0362` closed the naming/decomposition planning package through
-  [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md).
+  [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan.md).
   `ST-37-04` remains open for `PR-0404` and only later concrete backend/API
   app-presentation needs; keep `PR-0369` blocked until such a need is proven.
 

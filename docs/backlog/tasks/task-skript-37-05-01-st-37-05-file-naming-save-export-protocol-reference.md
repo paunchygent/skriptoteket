@@ -47,7 +47,7 @@ The source does not record a separate decision and assumption ledger.
 ### Source: Goal
 
 Review and finalize
-[REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1](../../reference/ref-skript-general-file-naming-save-and-export-protocol-v1-file-naming-save-and-export-protocol-v1.md)
+[REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1](../../reference/ref-skript-general-file-naming-save-and-export-protocol-v1.md)
 as the cross-app planning contract for generated file names, editable save
 names, extension handling, duplicate saves, and `Mina filer` rename behavior.
 

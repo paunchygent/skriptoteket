@@ -9,7 +9,7 @@ Use this reference for ordinary Skriptoteket Vue/Vite unit and component tests.
 - `integrated-frontend-stack/references/testing.md`
 - `integrated-frontend-stack/references/state-and-api.md` when stores,
   schemas, or API clients are involved
-- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md`
 
 ## Rules
 

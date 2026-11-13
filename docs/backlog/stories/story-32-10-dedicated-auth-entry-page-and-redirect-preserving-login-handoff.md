@@ -79,4 +79,4 @@ handoff contract.
 - Product-realm ceremony-compatible auth interruption constraints:
   [ST-28-02](story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md)
 - Product-realm ceremony direction:
-  [ADR-0083](../../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket-login.md)
+  [ADR-0083](../../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket.md)

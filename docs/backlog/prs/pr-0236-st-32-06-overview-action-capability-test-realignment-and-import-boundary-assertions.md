@@ -40,7 +40,7 @@ create/edit workflow remains unchanged:
 
 - [PR-0137](pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md)
   moved import into the `Ny klasslista` / `Redigera` workflow.
-- [PR-0175](../tasks/task-skript-26-02-04-klassrumskartan-class-list-import-drag-and-drop-drop-zone-in-create-edit-modal.md)
+- [PR-0175](../tasks/task-skript-26-02-04-klassrumskartan-class-list-import-drag-and-drop-drop-zone-in.md)
   kept the drag/drop import affordance inside that same modal.
 
 This failure is therefore assessed as a stale isolated spec, not a user-facing

@@ -161,8 +161,8 @@ The source does not record separate ADR coverage.
 
 ### Source: Dependencies
 
-- [Klassrumskartan product direction](../../reference/ref-skript-general-klassrumskartan-product-direction-2026-03-21-klassrumskartan-product-direction-2026-03-21.md)
-- [Scoped sharing reference](../../reference/ref-skript-general-klassrumskartan-scoped-sharing-and-import-direction-klassrumskartan-scoped-sharing-and-import-direction.md)
+- [Klassrumskartan product direction](../../reference/ref-skript-general-klassrumskartan-product-direction-2026-03-21.md)
+- [Scoped sharing reference](../../reference/ref-skript-general-klassrumskartan-scoped-sharing-and-import-direction.md)
 - [EPIC-24: Klassrumskartan fundamentals recovery](epic-24-group-seating-studio-slice-2.md)
 - [EPIC-SKRIPT-26: explicit exports and share links](epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md)
 - [EPIC-32: public curated-app access foundation](epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md)

@@ -400,7 +400,7 @@ For re-review, the proposed policy should now be read as:
 - Story owner:
   [ST-32-05](../stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md)
 - Accepted public guest-state boundary ADR:
-  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state.md)
 - Initial authenticated guest-upgrade foundation:
   [PR-0221](pr-0221-st-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy-foundation.md)
 - Template-reuse/remap hardening:

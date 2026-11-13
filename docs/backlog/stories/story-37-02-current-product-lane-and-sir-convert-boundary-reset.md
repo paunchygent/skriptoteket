@@ -51,7 +51,7 @@ or shell routes are changed.
 Completed on 2026-06-18 through
 [PR-0360](../prs/pr-0360-st-37-02-current-product-lane-and-sir-convert-boundary-reference.md).
 The durable reference
-[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
+[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)
 now defines the current teacher-facing lanes, the Sir Convert heavy-conversion
 boundary, the Skriptoteket native-state boundary, and the preserved
 script/editor/runner capability. `EPIC-37` remains proposed until

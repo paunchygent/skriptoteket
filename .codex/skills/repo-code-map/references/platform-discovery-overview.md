@@ -122,9 +122,9 @@ and its Skriptoteket reference.
 
 Domain-scoped depth maps already live in `docs/reference/` and stay there:
 
-- [Frontend design-system codemap — `docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md`](../../../../docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md)
-- [Tool editor framework codemap — `docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md`](../../../../docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md)
-- [Runner/tool code modularization map — `docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md`](../../../../docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md)
+- [Frontend design-system codemap — `docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor.md`](../../../../docs/reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor.md)
+- [Tool editor framework codemap — `docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target.md`](../../../../docs/reference/ref-skript-general-tool-editor-framework-codemap-current-vs-target.md)
+- [Runner/tool code modularization map — `docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md`](../../../../docs/reference/ref-skript-general-runner-tool-code-modularization-map-shared-libs-multi-file-bundles.md)
 - [Exam Converter reviewed AI-facit contract map — `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`](../../../../docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md)
 
 The Exam Converter map is retained historical evidence and is marked

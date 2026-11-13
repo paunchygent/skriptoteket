@@ -57,7 +57,7 @@ The source does not record separate ADR coverage.
 
 ### Source: Stories (ordered)
 
-- [ ] 1. [ST-SKRIPT-22-01: Textbook corpus cleanup pipeline and manual restoration workflow](../stories/st-skript-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md)
+- [ ] 1. [ST-SKRIPT-22-01: Textbook corpus cleanup pipeline and manual restoration workflow](../stories/st-skript-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration.md)
 
 ## Epic Verification Plan
 

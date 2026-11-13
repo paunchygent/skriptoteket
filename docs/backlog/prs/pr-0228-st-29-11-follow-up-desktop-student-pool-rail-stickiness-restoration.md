@@ -162,7 +162,7 @@ real-data lane.
 ## References
 
 - Retained review gate: [REV-PR-0228](../reviews/review-pr-0228-planner-workspace-shell-breakpoint-and-overflow-contract.md)
-- Story parent: [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
+- Story parent: [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive.md)
 - Canonical desktop composition owner: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - User-facing grouping/seating composition owner: [ST-29-05](../stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)
 - Original split-pane/local-scroll execution slice: [PR-0128](pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md)

@@ -47,11 +47,11 @@ the app-presentation reset.
 ## Implementation plan
 
 1. Read the service-shell planning output:
-   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md).
+   [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan.md).
 2. Inventory current curated app registry, route, card, and copy surfaces.
 3. Propose app-lane names and descriptions for Klassrumskartan, Audio
    Transcription, Exam Converter, and Document Converter using
-   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
+   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)
    as the lane boundary reference.
 4. Identify which changes are copy-only, registry-only, route-visible, or
    backend/API-visible.
@@ -61,7 +61,7 @@ the app-presentation reset.
 ## Implementation Summary
 
 Completed on 2026-06-18. The durable planning output is
-[REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md).
+[REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan.md).
 It records the current technical compatibility shell, closes the naming and
 entrypoint sequencing for `Klassrumskartan`, `Audio Transcription`,
 `Exam Converter`, and future `Document Converter`, includes explicit docs

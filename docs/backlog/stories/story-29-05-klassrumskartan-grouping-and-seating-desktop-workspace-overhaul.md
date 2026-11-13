@@ -53,4 +53,4 @@ keep chrome, helper copy, and continuity affordances subordinate to the main wor
 - Shared desktop composition baseline: [ST-29-03](story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Shell compression baseline: [ST-29-02](story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md)
 - Rule/feedback continuity follow-on: [ST-29-09](story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)

@@ -5,7 +5,7 @@ application tests.
 
 ## Read First
 
-- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md`
 - `.codex/skills/skriptoteket-backend-dev/SKILL.md`
 
 ## Rules
@@ -99,6 +99,6 @@ cost is paid once per worker (24 times on Hemma).
 
 ## Commands
 
-Use the command map in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md` and `AGENTS.md`.
+Use the command map in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md` and `AGENTS.md`.
 Prefer focused pytest targets while iterating, then the backend close-out gates
 required for the touched layer.

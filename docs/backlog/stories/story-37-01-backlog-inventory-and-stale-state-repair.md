@@ -44,7 +44,7 @@ from building on stale backlog signals.
 - When an item is valuable but misplaced, prefer `split-or-rehome` over
   cancelation.
 - `PR-0358` is complete through
-  [REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md).
+  [REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md).
   The artifact now contains a post-review deep audit revision that supersedes
   the first-pass classification counts. `PR-0359` should start with the revised
   evidence-backed repair queue listed there and leave `needs-decision` rows

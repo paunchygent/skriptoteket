@@ -5,7 +5,7 @@ All harnesses must avoid logging prompt contents to stdout/stderr or artifacts.
 
 Primary reference:
 
-- Editor AI pipeline: `docs/runbooks/run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops-runbook-editor-ai-pipeline-completion-chat-edit-ops.md`
+- Editor AI pipeline: `docs/runbooks/run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops.md`
 
 ## Harnesses
 

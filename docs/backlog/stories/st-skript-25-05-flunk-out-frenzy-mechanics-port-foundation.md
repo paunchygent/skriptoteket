@@ -94,14 +94,14 @@ The source does not record separate contract inputs.
 
 ### Tranche 2: Higher-risk mechanics
 
-5. [TASK-SKRIPT-25-05-02: Flunk-Out Frenzy: flipper contact model and explicit launcher state](../tasks/task-skript-25-05-02-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md)
+5. [TASK-SKRIPT-25-05-02: Flunk-Out Frenzy: flipper contact model and explicit launcher state](../tasks/task-skript-25-05-02-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher.md)
 6. [TASK-SKRIPT-25-05-03: Flunk-Out Frenzy: capture, eject, and save devices](../tasks/task-skript-25-05-03-flunk-out-frenzy-capture-eject-and-save-devices.md)
 7. [TASK-SKRIPT-25-05-04: Flunk-Out Frenzy: ramps, gates, and field-zone semantics](../tasks/task-skript-25-05-04-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md)
 8. [TASK-SKRIPT-25-05-05: Flunk-Out Frenzy: objective controllers and bank progression](../tasks/task-skript-25-05-05-flunk-out-frenzy-objective-controllers-and-bank-progression.md)
 
 ### Tranche 3: Code quality and file size compliance
 
-9. [TASK-SKRIPT-25-05-06: Flunk-Out Frenzy: file size compliance and frontend module decomposition](../tasks/task-skript-25-05-06-flunk-out-frenzy-file-size-compliance-and-frontend-module-decomposition.md)
+9. [TASK-SKRIPT-25-05-06: Flunk-Out Frenzy: file size compliance and frontend module decomposition](../tasks/task-skript-25-05-06-flunk-out-frenzy-file-size-compliance-and-frontend-module.md)
 
 Dependency chain: `PR-0188 -> PR-0189 -> TASK-SKRIPT-25-05-01 -> PR-0191 -> TASK-SKRIPT-25-05-02 ->
 TASK-SKRIPT-25-05-03 -> TASK-SKRIPT-25-05-04 -> TASK-SKRIPT-25-05-05`. `TASK-SKRIPT-25-05-06` can proceed in parallel with Tranche 2

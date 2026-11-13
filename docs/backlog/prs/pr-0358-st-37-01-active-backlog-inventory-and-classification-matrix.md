@@ -43,7 +43,7 @@ Create the inventory evidence needed before any status cleanup begins.
    Klassrumskartan, Conversion Hub/Exam/Transcript/Document, games, auth/ops,
    docs/testing/security, and undecided.
 3. Record a classification for each row using
-   [REF-current-product-direction-and-backlog-inventory-2026-06-17](../../reference/ref-skript-research-current-product-direction-and-backlog-inventory-rules-current-product-direction-and-backlog-inventory-rules.md).
+   [REF-current-product-direction-and-backlog-inventory-2026-06-17](../../reference/ref-skript-research-current-product-direction-and-backlog-inventory-rules.md).
 4. Flag rows that require code verification before state repair.
 5. Update `.codex/handoff.md` with a short pointer to the retained inventory
    artifact.
@@ -62,7 +62,7 @@ rejected during review.
 ## Implementation Summary
 
 Completed on 2026-06-17. The retained inventory artifact is
-[REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md).
+[REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md).
 It captures 196 open backlog rows: 22 epics, 68 stories, and 106 PR tasks. The
 matrix classifies rows as `keep-active`, `needs-decision`,
 `done-state-repair`, `split-or-rehome`, `superseded-cancel`, or `drop-epic`,

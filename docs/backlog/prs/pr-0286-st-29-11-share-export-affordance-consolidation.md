@@ -174,7 +174,7 @@ because this slice is a frontend action-surface consolidation only.
 ## References
 
 - Parent primitive story:
-  [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
+  [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive.md)
 - Share-link lane:
   [ST-26-06](../stories/st-skript-26-06-klassrumskartan-shareable-html-css-export-links.md)
 - Prior share popover/bottom-sheet slice:
@@ -182,4 +182,4 @@ because this slice is a frontend action-surface consolidation only.
 - Prior dense busy-feedback slice:
   [PR-0281](pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
 - Approved mockup:
-  [ST-29-11 share/export affordance consolidation](../../reference/ref-skript-mockup-st-29-11-share-export-affordance-consolidation-st-29-11-share-export-affordance-consolidation.md)
+  [ST-29-11 share/export affordance consolidation](../../reference/ref-skript-mockup-st-29-11-share-export-affordance-consolidation.md)

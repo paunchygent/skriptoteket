@@ -52,7 +52,7 @@ route structure.
    exposes stale generic document-conversion naming.
 2. [x] Align `src/skriptoteket/infrastructure/curated_apps/registry.py` and any
    directly affected bootstrap/detail consumers to
-   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md).
+   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan.md).
 3. [x] Keep `documents.conversion_hub` as a technical compatibility app id unless a
    later reviewed route-visible slice proves a stronger change is needed.
 4. [x] Stop and return to planning if truthful metadata cannot be expressed without

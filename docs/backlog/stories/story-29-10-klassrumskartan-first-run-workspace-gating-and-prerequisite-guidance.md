@@ -54,5 +54,5 @@ onboarding feature. The scope is explicit affordance truthfulness plus approved 
 - Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Overview-first baseline: [ST-24-07](story-24-07-group-seating-studio-overview-first-workspace-management.md)
 - Rules-workspace baseline: [ST-27-07](story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
 - Planner contextual help baseline: [ST-08-34](story-08-34-klassrumskartan-contextual-help.md)

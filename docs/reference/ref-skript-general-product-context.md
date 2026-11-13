@@ -57,17 +57,17 @@ The product began as a "Script Hub" (a governed catalog of Python tools) and
 is now a teacher-first productivity service built around bespoke application
 lanes; script authoring and execution remain a preserved substrate, no longer
 the only front-door story per the
-[current product-direction memo](ref-skript-research-current-product-direction-and-backlog-inventory-rules-current-product-direction-and-backlog-inventory-rules.md).
+[current product-direction memo](ref-skript-research-current-product-direction-and-backlog-inventory-rules.md).
 
 Audiences:
 
 - Teachers, as authenticated users and as anonymous guests for open curated
   apps (Klassrumskartan works without an account; production Swedish landing
   copy is frozen in the
-  [public landing copy lock](ref-skript-general-reference-public-landing-copy-lock-reference-public-landing-copy-lock.md)).
+  [public landing copy lock](ref-skript-general-reference-public-landing-copy-lock.md)).
 - Teacher-authors and admins who create and govern tools (the
   [teacher-developer guide](../../stakeholders/guide-teacher-developers.md)
-  and the [tool-authoring PRD](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md)).
+  and the [tool-authoring PRD](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md)).
 - Municipal IT organizations as prospective self-hosters; the repo is built to
   be forked and adapted to local constraints (on-prem, VPN-only, approved SMTP
   relays, strict retention).
@@ -84,11 +84,11 @@ identity projections, profiles, AI preferences, and RBAC (`user`,
 `contributor`, `admin`, `superuser` are local promotions).
 
 Authorities:
-[ADR-0083 product identity realms](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket-login.md)
+[ADR-0083 product identity realms](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket.md)
 (accepted), the
-[identity-realms reference](ref-skript-general-reference-hule-education-product-identity-realms-and-skriptoteket-standalone-identity-reference-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md),
+[identity-realms reference](ref-skript-general-reference-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md),
 and the
-[launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
+[launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
 ### Deployment reality and constraints
 
@@ -99,7 +99,7 @@ and the
   `shared-postgres` container on the `hule-network` Docker bridge, behind the
   nginx-proxy + acme-companion edge, co-tenant with HuleEdu and Sir
   Convert-a-Lot. Use the
-  [launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+  [launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
   as the current host-topology authority.
 - Protected browser API traffic enters only through the HuleEdu Gateway at
   `https://api.hule.education/api/...`; direct protected calls to the app host
@@ -133,31 +133,31 @@ and the
   ([ADR-0023](../decisions/adr-skript-0023-curated-apps-registry-and-execution-owner-authored-apps.md)).
 - Tool authoring: the admin/contributor path for creating, reviewing, and
   publishing tools
-  ([tool-authoring PRD](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md)).
+  ([tool-authoring PRD](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md)).
 - Editor sandbox: the author-side iteration surface for running unsaved tool
   snapshots safely
-  ([editor-sandbox PRD](ref-skript-prd-editor-sandbox-prd-v0-1-editor-sandbox-prd-v0-1.md)).
+  ([editor-sandbox PRD](ref-skript-prd-editor-sandbox-prd-v0-1.md)).
 - Product identity realms: distinct account namespaces (`huleedu_school`,
   `skriptoteket_standalone`) behind one shared Hule Education login ceremony.
 - Sir Convert-a-Lot: the sibling producer service owning heavy conversion,
   OCR, and hosted model/STT runtime; Skriptoteket owns native product state
   after conversion per the
-  [product-lanes and Sir Convert boundary reference](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
+  [product-lanes and Sir Convert boundary reference](ref-skript-general-current-product-lanes-and-sir-convert-boundary.md).
 - Mina filer: the durable teacher-owned file vault addressed by `vault:*`
   FileRefs.
 
 ### Routing
 
 - Current PRDs:
-  [Klassrumskartan v0.3](ref-skript-prd-curated-app-klassrumskartan-2-curated-app-klassrumskartan.md) (active),
-  [SPA frontend v0.1](ref-skript-prd-frontend-prd-v0-1-full-vue-vite-spa-migration-frontend-prd-v0-1-full-vue-vite-spa-migration.md) (active),
-  [editor sandbox v0.1](ref-skript-prd-editor-sandbox-prd-v0-1-editor-sandbox-prd-v0-1.md) (active),
-  [script hub v0.2](ref-skript-prd-script-hub-prd-v0-2-features-planned-script-hub-prd-v0-2-features-planned.md) (draft),
-  [tool authoring v0.1](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md) (draft).
+  [Klassrumskartan v0.3](ref-skript-prd-curated-app-klassrumskartan-2.md) (active),
+  [SPA frontend v0.1](ref-skript-prd-frontend-prd-v0-1-full-vue-vite-spa-migration.md) (active),
+  [editor sandbox v0.1](ref-skript-prd-editor-sandbox-prd-v0-1.md) (active),
+  [script hub v0.2](ref-skript-prd-script-hub-prd-v0-2-features-planned.md) (draft),
+  [tool authoring v0.1](ref-skript-prd-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle.md) (draft).
 - Direction memos:
-  [product direction and backlog inventory](ref-skript-research-current-product-direction-and-backlog-inventory-rules-current-product-direction-and-backlog-inventory-rules.md),
-  [product lanes and Sir Convert boundary](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md),
-  [service-shell UX realignment plan](ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md).
+  [product direction and backlog inventory](ref-skript-research-current-product-direction-and-backlog-inventory-rules.md),
+  [product lanes and Sir Convert boundary](ref-skript-general-current-product-lanes-and-sir-convert-boundary.md),
+  [service-shell UX realignment plan](ref-skript-plan-service-shell-ux-realignment-plan.md).
 - Backlog: `docs/backlog/{epics,stories,prs,reviews}/`, hierarchy
   `EPIC -> STORY -> PR slice`; volatile state in `handoff.md`.
 - Docs contract and validation: the package-owned `repository-governance`
@@ -204,20 +204,20 @@ RAG readiness.
   [ADR-0076](../decisions/adr-skript-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md)).
 - A HuleEdu-only identity future: rejected; the standalone realm exists so
   Skriptoteket users never need the HuleEdu school product
-  ([ADR-0083](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket-login.md)).
+  ([ADR-0083](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket.md)).
 - Kafka / event streaming: deferred until durable async fan-out is actually
   needed ([ADR-0007](../decisions/adr-skript-0007-defer-kafka-event-streaming-until-it-is-needed.md)).
 - Arbitrary tool-provided JavaScript in the UI: interactivity comes only from
   platform-rendered allowlisted components
   ([ADR-0022](../decisions/adr-skript-0022-tool-ui-contract-v2-typed-outputs-actions-and-state.md)).
 - Offline mode / PWA and a second admin SPA: PRD non-goals
-  ([SPA frontend PRD](ref-skript-prd-frontend-prd-v0-1-full-vue-vite-spa-migration-frontend-prd-v0-1-full-vue-vite-spa-migration.md)).
+  ([SPA frontend PRD](ref-skript-prd-frontend-prd-v0-1-full-vue-vite-spa-migration.md)).
 - Solver/optimizer language in the default teacher UI: the manual happy path
   stays simple
-  ([Klassrumskartan PRD](ref-skript-prd-curated-app-klassrumskartan-2-curated-app-klassrumskartan.md)).
+  ([Klassrumskartan PRD](ref-skript-prd-curated-app-klassrumskartan-2.md)).
 - Sir Convert replay/fingerprint/artifact-overlay machinery for native app
   state: reserved for producer-owned heavy-conversion evidence only
-  ([product-lanes reference](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)).
+  ([product-lanes reference](ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)).
 - Scrapping the script editor/runner because bespoke apps are now the front
   door: explicitly out of scope in EPIC-37 — "no longer front-door
   positioning" is distinct from "no longer valuable".
@@ -237,7 +237,7 @@ RAG readiness.
 - [ADR-0023](../decisions/adr-skript-0023-curated-apps-registry-and-execution-owner-authored-apps.md)
   (accepted): curated apps as a first-class subject kind with a shipped
   registry.
-- [ADR-0013](../decisions/adr-skript-0013-execute-tool-scripts-via-sibling-runner-containers-docker-sock-docker-sdk.md) (proposed):
+- [ADR-0013](../decisions/adr-skript-0013-execute-tool-scripts-via-sibling-runner-containers-docker.md) (proposed):
   sandboxed sibling runner containers — `network_mode=none`, `cap_drop=ALL`,
   read-only root, resource limits.
 - [ADR-0062](../decisions/adr-skript-0062-execution-queue-and-worker-loop-postgres.md) (accepted):
@@ -246,12 +246,12 @@ RAG readiness.
 - [ADR-0076](../decisions/adr-skript-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md)
   (proposed): HuleEdu Identity as sole browser session authority — the
   decision EPIC-28 (done) implemented.
-- [ADR-0083](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket-login.md)
+- [ADR-0083](../decisions/adr-skript-0083-hule-education-product-identity-realms-for-skriptoteket.md)
   (accepted): product identity realms with fail-closed provisioning and
   explicit-only linking.
 - [ADR-0082](../decisions/adr-skript-0082-app-local-bootstrap-continuation-on-huleedu-owned-session.md)
   (accepted): app-local continuation on a HuleEdu-owned session.
-- [ADR-0079](../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+- [ADR-0079](../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state.md)
   (accepted, amended by ADR-0085): public curated-app access under declared
   profiles with bounded guest state.
 - [ADR-0081](../decisions/adr-skript-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md)
@@ -269,13 +269,13 @@ ADR-0053 (production security perimeter), ADR-0066 (Sir Convert v2 engine),
 ADR-0088 (R2 storage), ADR-0035 (editor intelligence). External reviewers must
 not read `proposed` status alone as "not implemented"; verify against code and
 backlog state. The
-[home-server architecture reference](ref-skript-general-reference-home-server-architecture-overview-reference-home-server-architecture-overview.md)
+[home-server architecture reference](ref-skript-general-reference-home-server-architecture-overview.md)
 host-fallback claims are superseded by the
-[launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
+[launch-surface and shared-auth topology reference](ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
 ### Reconciliation rule
 
 Update this reference — and its "Last reconciled" line — whenever an ADR is
 accepted or superseded, a PRD version becomes active, an epic opens or closes,
 or a product-direction memo lands. Governing task:
-[TASK-SKRIPT-REP-0001](../backlog/tasks/task-skript-rep-0001-publish-product-context-reference-for-external-architect-agents.md).
+[TASK-SKRIPT-REP-0001](../backlog/tasks/task-skript-rep-0001-publish-product-context-reference-for-external-architect.md).

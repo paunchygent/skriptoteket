@@ -129,7 +129,7 @@ URLs, or screenshots that expose account identifiers.
 
 
 - `PR-0269` added
-  [RUN-launch-seo-search-operations](../../runbooks/run-skript-runbook-launch-seo-search-operations-runbook-launch-seo-search-operations-part-02.md).
+  [RUN-launch-seo-search-operations](../../runbooks/run-skript-runbook-launch-seo-search-operations-part-02.md).
 - The agent-owned preparation work is complete: the runbook documents technical preflight,
   Search Console, Bing Webmaster Tools, sitemap submission, URL inspection, redacted evidence, and
   host-migration rerun steps.
@@ -145,11 +145,11 @@ URLs, or screenshots that expose account identifiers.
 - Epic parent:
   [EPIC-35](../epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md)
 - Evidence and analysis:
-  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
+  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
 - Hemma deployment baseline:
   [080-home-server-deployment.md](../../../.codex/rules/080-home-server-deployment.md)
 - Launch search operations runbook:
-  [RUN-launch-seo-search-operations](../../runbooks/run-skript-runbook-launch-seo-search-operations-runbook-launch-seo-search-operations-part-02.md)
+  [RUN-launch-seo-search-operations](../../runbooks/run-skript-runbook-launch-seo-search-operations-part-02.md)
 
 ## Decision And Assumption Ledger
 

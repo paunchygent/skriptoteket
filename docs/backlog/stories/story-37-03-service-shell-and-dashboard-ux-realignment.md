@@ -40,7 +40,7 @@ is explicit.
 
 - `PR-0361` is complete. The implementation sequence and scope-closure ledger
   now live in
-  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md).
+  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan.md).
   `ST-37-03` is now closed by the completed route-visible shell
   implementation slices below.
 - `PR-0363` is complete and approved by

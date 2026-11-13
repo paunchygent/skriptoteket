@@ -6,7 +6,7 @@ tests.
 ## Read First
 
 - `.codex/skills/skriptoteket-backend-dev/SKILL.md`
-- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md`
+- `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md`
 - `local-devops` plus its Skriptoteket reference for dev DB/container lanes
 
 ## Rules
@@ -23,5 +23,5 @@ tests.
 
 ## Commands
 
-Use the migration command surfaces in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright-runbook-testing-pytest-vitest-playwright.md` and `local-devops` plus its Skriptoteket reference.
+Use the migration command surfaces in `docs/runbooks/run-skript-runbook-testing-pytest-vitest-playwright.md` and `local-devops` plus its Skriptoteket reference.
 Run the docker-marked test lane before applying the migration to the dev DB.

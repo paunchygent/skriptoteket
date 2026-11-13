@@ -183,7 +183,7 @@ Current code seams that matter:
 - Dense primitive baseline: [PR-0157](pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md)
 - Rules workspace baseline: [PR-0155](pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md)
 - Export-flow baseline: [PR-0153](pr-0153-klassrumskartan-shared-export-flow-composable-and-planner-hotspot-reduction.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
 - Frontend skill: `integrated-frontend-stack` (Skriptoteket reference).
 - Browser proof skill: `staging-walk` (Skriptoteket reference).

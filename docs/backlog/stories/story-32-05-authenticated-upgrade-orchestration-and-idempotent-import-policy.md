@@ -84,7 +84,7 @@ That boundary therefore needs to be explicit before implementation begins.
 - Epic parent:
   [EPIC-32](../epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md)
 - Public curated-app access boundary:
-  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state.md)
 - Browser-owned guest-state foundation:
   [ST-32-04](story-32-04-browser-owned-guest-state-profiles-and-snapshot-contracts.md)
 - Related guest continuity consumer:

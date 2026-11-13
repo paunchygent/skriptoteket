@@ -75,9 +75,9 @@ curated-app APIs, editor AI, or execution-queue changes.
 - Focus unit proof under `tests/unit/infrastructure/llm/`; use `staging-walk`
   for real editor-flow proof. Read the affected producer's runbooks, not copied
   request examples:
-  `docs/runbooks/run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops-runbook-editor-ai-pipeline-completion-chat-edit-ops.md`
+  `docs/runbooks/run-skript-runbook-editor-ai-pipeline-completion-chat-edit-ops.md`
   and
-  `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching-runbook-openai-responses-api-prompt-caching.md`.
+  `docs/runbooks/run-skript-runbook-openai-responses-api-prompt-caching.md`.
 
 ## Execution Queue
 

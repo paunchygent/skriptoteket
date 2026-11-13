@@ -39,7 +39,7 @@ See [ADR-0043: AI completion integration](../../decisions/adr-skript-0043-ai-ass
 See [ADR-0050: Self-hosted LLM infrastructure](../../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md) for model choice
 (Qwen3-Coder-30B-A3B) and hosting stack (llama.cpp + Tabby on hemma.hule.education).
 
-See [ref-ai-completion-architecture.md](../../reference/ref-skript-general-ai-completion-architecture-technical-specification-ai-completion-architecture-technical-specification-part-01.md) for technical specification.
+See [ref-ai-completion-architecture.md](../../reference/ref-skript-general-ai-completion-architecture-technical-specification-part-01.md) for technical specification.
 
 ## Scope
 

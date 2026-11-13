@@ -153,7 +153,7 @@ Relationship drift or terminal ancestry must be resolved by the parent manifest 
 - [x] [ST-27-03: Smart seating v1](../stories/story-27-03-klassrumskartan-smart-seating-v1.md)
 - [x] [ST-27-07: Dedicated rules workspace with separate planning and seating maps](../stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
 - [x] [ST-27-08: Retire student notes drawer and seating-mode student activation](../stories/story-27-08-klassrumskartan-retire-student-notes-drawer-and-seating-mode-student-activation.md)
-- [ ] [ST-27-09: Fixed-seat rules and classroom-view-first rule authoring](../stories/st-skript-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first-rule-authoring.md)
+- [ ] [ST-27-09: Fixed-seat rules and classroom-view-first rule authoring](../stories/st-skript-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first.md)
 - [ ] [ST-27-04: Smart grouping v1](../stories/story-27-04-klassrumskartan-smart-grouping-v1.md)
 - [ ] [ST-27-05: Smart explanations and rerun messaging](../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md)
 

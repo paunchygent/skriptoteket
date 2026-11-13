@@ -67,7 +67,7 @@ The source record did not define a separate section for this package heading.
 
 - ADR-0066 (this epic's conversion strategy decision)
 - Current product lanes and Sir Convert/Skriptoteket ownership boundary:
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)
 - Existing curated apps platform: ADR-0022, ADR-0023, ADR-0024
 - Public curated-app access and abuse-control authority: ADR-0079, ADR-0085,
   ST-32-03
@@ -312,7 +312,7 @@ The source record did not define a separate section for this package heading.
   source-only intake and export-owned format UX slice, and `PR-0357` is the
   separate governed public-lane cleanup follow-up.
 - `PR-0360` / `ST-37-02` added
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary.md)
   on 2026-06-18. Future `EPIC-21` cleanup should treat broad "Conversion Hub"
   language as technical/historical unless it is explicitly describing the
   compatibility shell. Teacher-facing planning should use the separate Exam

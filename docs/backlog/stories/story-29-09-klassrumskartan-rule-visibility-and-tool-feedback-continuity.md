@@ -59,5 +59,5 @@ trustworthy than it should:
 - Rules-workspace baseline: [ST-27-07](story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
 - Shared control-language baseline: [ST-29-01](story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md)
 - Grouping/seating workspace baseline: [ST-29-05](story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
