@@ -37,13 +37,15 @@
   - Branch `codex/task-skript-39-06-09` (Exam.net ordering-in-part probe builder) is kept
     unmerged on purpose; probe package in `.artifacts/probe-39-06-09/`.
 
-- ST-SKRIPT-08-36 (story under `docs/backlog/stories/`) Klassrumskartan tutorial clips: tasks 01
+- [ST-SKRIPT-08-36](docs/backlog/stories/st-skript-08-36-klassrumskartan-tutorial-clips-in-hj%C3%A4lp-with-a-first-use-dialog.md)
+  Klassrumskartan tutorial clips: tasks 01
   and 02 `done`; guide Steg 1 corrected on main 2026-10-28. Real clips wait on HuleFilm
   ST-VIDEO-12-01 gates (talmanus approval, ElevenLabs spend, render approval, prod media
   deploy); the Steg 1 clip script still shows a Skola24 paste.
   Retained `01a13d03-cc0c-731e-a9e5-b3d536821e55`.
 
-- TASK-SKRIPT-REP-0037 (under `docs/backlog/tasks/`) `in_progress`, deferred by the user
+- [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
+  `in_progress`, deferred by the user
   2026-10-28. Next when resumed: staging editor walk (edit sibling `grouping.py`, sandbox run,
   save). Production gruppgeneratorn is depublished.
 
@@ -95,7 +97,7 @@ under `docs/backlog/tasks/` records its review and walk evidence.
 - 2026-10-22 `done` (user closure) 40-04-21/23, 39-07-03, 39-04-12, 40-01-04, 06-18-01, REP-0036,
   ST-SKRIPT-39-07, 41-02, 40-01 (walks `.artifacts/staging-walk-closure-ede1ea0d/walk-record.md`);
   Mina filer shows every workspace version by user choice; head-only listing is later.
-- 2026-10-21 `done` REP-0050 parallel and quiet pytest (merge `6a557b5d`, review 321854a9
+- 2026-10-21 `done` [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md) parallel and quiet pytest (merge `6a557b5d`, review 321854a9
   repaired `b1f019e6`).
 - 2026-10-20 `done` (user closure) 40-04-20 (`43f47eda`), 41-02-06 (`0ab8ccb8`), 40-04-13/14
   (`f84eb85d`), 06-17-02 (`3d3f867a`; 06-17-01 canceled), 39-05-16 (`5611f0c8`), 41-02-05
