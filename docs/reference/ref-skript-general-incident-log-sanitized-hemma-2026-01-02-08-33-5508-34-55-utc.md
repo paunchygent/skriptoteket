@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-incident-log-sanitized-hemma-2026-01-02-08-33-5508-34-55-
 title: 'Incident log (sanitized): hemma 2026-01-02 08:33:55–08:34:55 UTC'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-incident-log-2026-01-02-083355-083455
+  - REF-hemma-incident-log-2026-01-02-083355-083455
 summary: 'Incident log (sanitized): hemma 2026-01-02 08:33:55–08:34:55 UTC'
 ---
 

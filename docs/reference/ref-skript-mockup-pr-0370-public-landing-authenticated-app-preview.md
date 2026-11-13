@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0370-public-landing-authenticated-app-preview
 title: PR-0370 public landing authenticated-app preview
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -68,19 +68,17 @@ The source does not provide a separate runtime and proof boundary section; no ad
 
 ### Source: PR-0370 Public Landing Authenticated-App Preview
 
-
-
 ### Source: Current Product Truth Ledger
 
-| App or promise | Mockup treatment |
-|---|---|
-| Klassrumskartan | Public hero and primary CTA remain visible. |
-| Ljudtranskribering | May be shown as account-backed app value. |
-| Provkonverteraren | May be shown as account-backed app value with truthful export wording. |
-| Dokumentkonverteraren | May be shown as planned/account-backed lane only until a truthful route exists. |
-| HTML/CSS to PDF | May be explored as document conversion copy; production wording needs route/capability verification. |
-| Digital exams: create, edit, share | May be explored as product direction; production wording needs current capability verification. |
-| Exam.net import/export | May be explored only as provisional copy until the implementation slice verifies exact live capability. |
+| App or promise                     | Mockup treatment                                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Klassrumskartan                    | Public hero and primary CTA remain visible.                                                             |
+| Ljudtranskribering                 | May be shown as account-backed app value.                                                               |
+| Provkonverteraren                  | May be shown as account-backed app value with truthful export wording.                                  |
+| Dokumentkonverteraren              | May be shown as planned/account-backed lane only until a truthful route exists.                         |
+| HTML/CSS to PDF                    | May be explored as document conversion copy; production wording needs route/capability verification.    |
+| Digital exams: create, edit, share | May be explored as product direction; production wording needs current capability verification.         |
+| Exam.net import/export             | May be explored only as provisional copy until the implementation slice verifies exact live capability. |
 
 ### Source: Image Concept Brief
 
@@ -123,8 +121,7 @@ not final production assets:
   implementation.
 - 2026-06-19: First image-generation round rejected by product owner as too
   AI-sloppy. Do not use those concepts as implementation direction.
-- 2026-06-19: Product owner banned category/metadata labels such as `Vad du
-  gör` and `Nytta`; future concepts must rely on structure rather than labels.
+- 2026-06-19: Product owner banned category/metadata labels such as `Vad du gör` and `Nytta`; future concepts must rely on structure rather than labels.
 - 2026-06-19: Product owner accepted the label-free composition as close, with
   the required change that Roman numerals/index markers must be removed before
   HTML/CSS mockups begin.
@@ -134,8 +131,7 @@ not final production assets:
 - 2026-06-19: Product owner approved the final public landing copy. The copy is
   recorded in `approved-copy.md`; production copy lock update is deferred to
   the implementation slice.
-- 2026-06-19: Product owner corrected workflow heading to `När du skapar ett
-  konto`; HTML/CSS mockup updated accordingly.
+- 2026-06-19: Product owner corrected workflow heading to `När du skapar ett konto`; HTML/CSS mockup updated accordingly.
 - 2026-06-19: Product owner corrected workflow heading to `När du loggar in`;
   HTML/CSS mockup updated accordingly.
 - 2026-06-19: Product owner required the public landing authenticated-app

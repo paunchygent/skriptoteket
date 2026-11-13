@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-08-05
 title: Add Mina kurser courses on choice and save each change at once
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-17'
 status: done
 closeout_review:
@@ -79,13 +79,13 @@ unchanged.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1 | Choosing a course in the search box adds it to the list at once and clears the box; the `+` button is removed; choosing an already-listed course changes nothing. Source: the user's rejection of the `+` step and the parent's recommendation, 2026-10-17. |
-| D2 | Each add, remove and school-form toggle saves at once through `useProfile.updateExamCourses`; the Spara button and the success toast are removed; an inline `Sparat` status confirms the save. Source: parent recommendation, 2026-10-17. |
-| D3 | A failed save keeps the failure toast with the existing message and restores the last saved list and school forms. Source: parent recommendation, 2026-10-17. |
-| D4 | Saves are serialised: a change made during a save waits and is then saved with the latest value. Source: parent recommendation, 2026-10-17. |
-| D5 | `ExamCourseCombobox` keeps its shared behaviour. Source: parent constraint, 2026-10-17. |
+| ID  | Decided contract term                                                                                                                                                                                                                                       |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Choosing a course in the search box adds it to the list at once and clears the box; the `+` button is removed; choosing an already-listed course changes nothing. Source: the user's rejection of the `+` step and the parent's recommendation, 2026-10-17. |
+| D2  | Each add, remove and school-form toggle saves at once through `useProfile.updateExamCourses`; the Spara button and the success toast are removed; an inline `Sparat` status confirms the save. Source: parent recommendation, 2026-10-17.                   |
+| D3  | A failed save keeps the failure toast with the existing message and restores the last saved list and school forms. Source: parent recommendation, 2026-10-17.                                                                                               |
+| D4  | Saves are serialised: a change made during a save waits and is then saved with the latest value. Source: parent recommendation, 2026-10-17.                                                                                                                 |
+| D5  | `ExamCourseCombobox` keeps its shared behaviour. Source: parent constraint, 2026-10-17.                                                                                                                                                                     |
 
 ## Outcome
 

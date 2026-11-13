@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0045
 title: DOCX background replays carry a recording for the item-type labeler call
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: done
 closeout_review:
@@ -50,11 +50,11 @@ Stop and report to the parent before making any live model call beyond re-record
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| R1  | The root cause is named in the closeout before any fix. |
+| ID  | Decided contract term                                                                                                                                                                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | The root cause is named in the closeout before any fix.                                                                                                                                |
 | R2  | If the recordings predate the labeler step, only the missing labeler responses for the three exams are re-recorded live, and the token count is reported; nothing else is re-recorded. |
-| R3  | The replay rule that every build request needs its own recording stays. |
+| R3  | The replay rule that every build request needs its own recording stays.                                                                                                                |
 
 ### R2 amendment (user ruling 2026-10-18)
 

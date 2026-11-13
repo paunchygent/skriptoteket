@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-04
-title: 'Fritext criteria: a criteria list replaces the marking guide and exports as
-  1-point rows'
+title: 'Fritext criteria: a criteria list replaces the marking guide and exports as 1-point rows'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -18,8 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 28454af4 (oversized model and test modules) and approved the repair at dddf0d2f (merged a3525650). Staging walk at a3525650: DOCX-converted document a57a952f carries conversion-filled Fritext criteria; the criteria editor set 2+2+2 and 5; QTI export wrote 20 one-point rows, imported into Exam.net as 5337577 with 6, 5, 3 and 6 one-point rules. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-04/ and evidence/walk/TASK-SKRIPT-39-09-04/walk-record.md.'
 task_kind: story
 acceptance_criteria:
-- A teacher's Fritext with criteria exports one 1-point rule row per criterion point
-  and Exam.net imports those rows; DOCX conversion fills the criteria list
+  - A teacher's Fritext with criteria exports one 1-point rule row per criterion point and Exam.net imports those rows; DOCX conversion fills the criteria list
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -106,9 +104,9 @@ performance concern.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | Fritext criteria (text, whole points >= 1) replace the marking-guide text; item points are their sum (Q12). |
-| T2  | Export writes one 1-point row per criterion point; no criteria means one row worth the points (Q13). |
+| ID  | Decided contract term                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------- |
+| T1  | Fritext criteria (text, whole points >= 1) replace the marking-guide text; item points are their sum (Q12).   |
+| T2  | Export writes one 1-point row per criterion point; no criteria means one row worth the points (Q13).          |
 | T3  | Conversion fills the criteria; a guide without a points breakdown becomes one estimated criterion (Q12, R14). |
-| T4  | The criteria editor UI is the parent's last unit. |
+| T4  | The criteria editor UI is the parent's last unit.                                                             |

@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-current-product-direction-and-backlog-inventory-rules
 title: Current product direction and backlog inventory rules
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-current-product-direction-and-backlog-inventory-2026-06-17
+  - REF-current-product-direction-and-backlog-inventory-2026-06-17
 summary: Current product direction and backlog inventory rules
 ---
 
@@ -76,14 +76,14 @@ depends on producer-owned conversion evidence.
 Every active/proposed/ready/in-progress/blocked backlog item should receive one
 of these outcomes during the inventory:
 
-| Outcome | Meaning |
-|---------|---------|
-| `keep-active` | Still points at current architecture, current product lanes, or a preserved script/editor capability. |
-| `done-state-repair` | The implementation exists in code or docs, but the backlog item was never closed honestly. |
+| Outcome             | Meaning                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `keep-active`       | Still points at current architecture, current product lanes, or a preserved script/editor capability.               |
+| `done-state-repair` | The implementation exists in code or docs, but the backlog item was never closed honestly.                          |
 | `superseded-cancel` | The item is no longer the intended implementation path because later architecture or product direction replaced it. |
-| `drop-epic` | An epic is no longer a valid active/proposed product lane and should be marked `dropped` with retained rationale. |
-| `split-or-rehome` | The idea still has value, but the current backlog item is too broad or belongs under a newer epic/story. |
-| `needs-decision` | The item cannot be fairly classified without a product or architecture decision record. |
+| `drop-epic`         | An epic is no longer a valid active/proposed product lane and should be marked `dropped` with retained rationale.   |
+| `split-or-rehome`   | The idea still has value, but the current backlog item is too broad or belongs under a newer epic/story.            |
+| `needs-decision`    | The item cannot be fairly classified without a product or architecture decision record.                             |
 
 Historical documents should be retained unless deletion is explicitly useful
 and safe. The main cleanup is status truth, crosslink truth, and clear

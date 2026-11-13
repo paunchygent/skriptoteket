@@ -1,19 +1,17 @@
 ---
 type: epic
 id: EPIC-SKRIPT-41
-title: Teachers try the exam workspace without login and AI spend stays inside a fixed
-  daily budget
+title: Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: active
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers can convert and edit exams in the public workspace without login
-  and without AI, and every paid AI call stays inside one fixed daily budget
+outcome: Teachers can convert and edit exams in the public workspace without login and without AI, and every paid AI call stays inside one fixed daily budget
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -36,11 +34,11 @@ Non-goals: public AI (any later public AI is off by default and limited to one c
 
 ## Stories
 
-| Story | Delivers |
-| ----- | -------- |
+| Story           | Delivers                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ST-SKRIPT-41-01 | Done 2026-10-22: every exam and script-editor AI call goes through the HuleEdu door with the user's id (exam AI and inline completion on Luna in the small pool; chat, chat ops and edit on Sol 6.1 low in the full pool), the local token ledger and Devstral path are gone, the door serves 1,000 concurrent calls with a try-again answer; in production at `8569092ba` with HuleEdu door `ca7ff9700` |
-| ST-SKRIPT-41-02 | Done 2026-10-22 (user closure): QTI import, the public workspace without login, and removal of the guest DigiExam line; every guest start and export walked on staging at `4b321fa1`, the untitled-draft sign-in handoff at `ede1ea0d` |
-| ST-SKRIPT-41-03 | Every signed-in teacher uses the exam and script-editor AI within the daily shares; the admin-only AI check is deleted |
+| ST-SKRIPT-41-02 | Done 2026-10-22 (user closure): QTI import, the public workspace without login, and removal of the guest DigiExam line; every guest start and export walked on staging at `4b321fa1`, the untitled-draft sign-in handoff at `ede1ea0d`                                                                                                                                                                   |
+| ST-SKRIPT-41-03 | Every signed-in teacher uses the exam and script-editor AI within the daily shares; the admin-only AI check is deleted                                                                                                                                                                                                                                                                                   |
 
 ST-SKRIPT-41-01 and ST-SKRIPT-41-02 are built in parallel (user 2026-10-18); ST-SKRIPT-41-03 follows ST-SKRIPT-41-01.
 
@@ -50,11 +48,11 @@ Each story's verification holds; a staging walk proves a guest QTI import, edit 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| E1  | No unauthenticated route reaches a paid AI provider. |
-| E2  | Every paid AI call goes through the HuleEdu LLM provider door over `hule-network` with the internal key; Skriptoteket holds no OpenAI key and keeps no token ledger of its own. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1  | No unauthenticated route reaches a paid AI provider.                                                                                                                                                                                                                                                                                                                 |
+| E2  | Every paid AI call goes through the HuleEdu LLM provider door over `hule-network` with the internal key; Skriptoteket holds no OpenAI key and keeps no token ledger of its own.                                                                                                                                                                                      |
 | E3  | The door's pools apply per UTC day, resetting at UTC midnight: 10,000,000 tokens for small models (Luna, Terra) and 1,000,000 tokens for full models (Sol). Each teacher may use 20% of the small pool and 10% of the full pool per day; Skriptoteket has no USD ceiling of its own, and the pools are its shared limit (user decision 2026-10-22, ST-SKRIPT-41-03). |
-| E4  | Admin and staging test users meet only the pools. When a pool is exhausted, a call proceeds only with an explicit one-call paid-overage override that a person approves; agents running tests stop and ask the user. Deterministic fixture and corpus runs replay recordings and never call the door. |
-| E5  | DigiExam conversion lives only in the exam workspace behind login; the public guest DigiExam line is removed; the guest converter's URL opens the public workspace. |
-| E6  | Skriptoteket and the door serve 10,000 users and 1,000 concurrent AI calls, slowing down with a try-again answer instead of failing. |
+| E4  | Admin and staging test users meet only the pools. When a pool is exhausted, a call proceeds only with an explicit one-call paid-overage override that a person approves; agents running tests stop and ask the user. Deterministic fixture and corpus runs replay recordings and never call the door.                                                                |
+| E5  | DigiExam conversion lives only in the exam workspace behind login; the public guest DigiExam line is removed; the guest converter's URL opens the public workspace.                                                                                                                                                                                                  |
+| E6  | Skriptoteket and the door serve 10,000 users and 1,000 concurrent AI calls, slowing down with a try-again answer instead of failing.                                                                                                                                                                                                                                 |

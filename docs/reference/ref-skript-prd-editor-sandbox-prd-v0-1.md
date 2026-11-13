@@ -4,8 +4,8 @@ id: REF-SKRIPT-PRD-editor-sandbox-prd-v0-1
 title: Editor sandbox PRD v0.1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: prd

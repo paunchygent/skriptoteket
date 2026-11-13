@@ -4,8 +4,8 @@ id: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap-PART-01
 title: Vue/Vite SPA Migration Roadmap — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap
 part: 1
@@ -17,16 +17,16 @@ part: 1
 
 This roadmap details the migration from Jinja2/HTMX server-rendered frontend to a Vue 3/Vite SPA with a custom component library.
 
-| Decision | Choice |
-|----------|--------|
-| **Strategy** | Full SPA replacement (clean break cutover) |
+| Decision          | Choice                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
+| **Strategy**      | Full SPA replacement (clean break cutover)                                                                |
 | **Design System** | Tailwind CSS v4 (`@theme`) + HuleEdu design tokens (`--huleedu-*`) (ADR-SKRIPT-0032; supersedes ADR-0029) |
-| **API** | `/api/v1/*` + OpenAPI as source of truth + generated TypeScript (`openapi-typescript`) |
-| **Build** | pnpm monorepo with Vite 6 |
+| **API**           | `/api/v1/*` + OpenAPI as source of truth + generated TypeScript (`openapi-typescript`)                    |
+| **Build**         | pnpm monorepo with Vite 6                                                                                 |
 
 This plan follows ADR-SKRIPT-0027 and supersedes the prior SSR/HTMX and “SPA islands” paradigm decisions (ADR-0001, ADR-0025).
 
----
+______________________________________________________________________
 
 ## Planning Boundary
 
@@ -39,16 +39,16 @@ Legacy `frontend/islands/` has been deleted.
 No separate component-library package is maintained; SPA UI primitives live in
 `frontend/apps/skriptoteket/src/assets/main.css`.
 
-| Component | Location | Technology |
-|-----------|----------|------------|
-| SPA source | `frontend/apps/skriptoteket/` | Vue 3.5 + Vite 6 + Tailwind v4 (`@theme`) |
-| Built SPA assets | `src/skriptoteket/web/static/spa/` | Vite build output served by FastAPI |
-| SPA fallback | `src/skriptoteket/web/routes/spa_fallback.py` | FastAPI history fallback (`index.html`) |
-| Design tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` | Canonical `--huleedu-*` tokens |
-| Tailwind bridge | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` | `@theme inline` token mapping |
-| JSON API | `src/skriptoteket/web/api/v1/` | `/api/v1/*` (OpenAPI source of truth) |
+| Component        | Location                                                    | Technology                                |
+| ---------------- | ----------------------------------------------------------- | ----------------------------------------- |
+| SPA source       | `frontend/apps/skriptoteket/`                               | Vue 3.5 + Vite 6 + Tailwind v4 (`@theme`) |
+| Built SPA assets | `src/skriptoteket/web/static/spa/`                          | Vite build output served by FastAPI       |
+| SPA fallback     | `src/skriptoteket/web/routes/spa_fallback.py`               | FastAPI history fallback (`index.html`)   |
+| Design tokens    | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` | Canonical `--huleedu-*` tokens            |
+| Tailwind bridge  | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css`  | `@theme inline` token mapping             |
+| JSON API         | `src/skriptoteket/web/api/v1/`                              | `/api/v1/*` (OpenAPI source of truth)     |
 
----
+______________________________________________________________________
 
 ### Source: Target State
 
@@ -78,16 +78,16 @@ frontend/
 
 ### Island Migration Map
 
-| Current File | New Location |
-|--------------|--------------|
-| `editor/CodeMirrorEditor.vue` | `components/editor/CodeMirrorEditor.vue` |
-| `editor/EditorIslandApp.vue` | `views/admin/ScriptEditorView.vue` |
-| `runtime/UiOutputs.vue` | `components/tools/UiOutputs.vue` |
+| Current File                   | New Location                                 |
+| ------------------------------ | -------------------------------------------- |
+| `editor/CodeMirrorEditor.vue`  | `components/editor/CodeMirrorEditor.vue`     |
+| `editor/EditorIslandApp.vue`   | `views/admin/ScriptEditorView.vue`           |
+| `runtime/UiOutputs.vue`        | `components/tools/UiOutputs.vue`             |
 | `runtime/RuntimeIslandApp.vue` | `views/tools/RunResultView.vue` (integrated) |
 
 **Deleted after migration:** `frontend/islands/` directory
 
----
+______________________________________________________________________
 
 ### Source: Phase Breakdown
 
@@ -130,23 +130,23 @@ frontend/
 
 **Route mapping:**
 
-| Vue Route | Current HTML Route | Auth |
-|-----------|-------------------|------|
-| `/` | `/` | require_user |
-| `/browse` | `/browse` | require_user |
-| `/browse/:profession` | `/browse/{profession}` | require_user |
-| `/browse/:profession/:category` | `/browse/{profession}/{category}` | require_user |
-| `/apps/:appId` | `/apps/{app_id}` | require_user |
-| `/tools/:slug/run` | `/tools/{slug}/run` | require_user |
-| `/my-runs` | (new) | require_user |
-| `/my-runs/:id` | `/my-runs/{run_id}` | require_user |
-| `/my-tools` | `/my-tools` | require_contributor |
-| `/suggestions/new` | `/suggestions/new` | require_contributor |
-| `/admin/tools` | `/admin/tools` | require_admin |
-| `/admin/tools/:toolId` | `/admin/tools/{tool_id}` | require_contributor |
-| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}` | require_contributor |
-| `/admin/suggestions` | `/admin/suggestions` | require_admin |
-| `/admin/suggestions/:id` | `/admin/suggestions/{suggestion_id}` | require_admin |
+| Vue Route                         | Current HTML Route                   | Auth                |
+| --------------------------------- | ------------------------------------ | ------------------- |
+| `/`                               | `/`                                  | require_user        |
+| `/browse`                         | `/browse`                            | require_user        |
+| `/browse/:profession`             | `/browse/{profession}`               | require_user        |
+| `/browse/:profession/:category`   | `/browse/{profession}/{category}`    | require_user        |
+| `/apps/:appId`                    | `/apps/{app_id}`                     | require_user        |
+| `/tools/:slug/run`                | `/tools/{slug}/run`                  | require_user        |
+| `/my-runs`                        | (new)                                | require_user        |
+| `/my-runs/:id`                    | `/my-runs/{run_id}`                  | require_user        |
+| `/my-tools`                       | `/my-tools`                          | require_contributor |
+| `/suggestions/new`                | `/suggestions/new`                   | require_contributor |
+| `/admin/tools`                    | `/admin/tools`                       | require_admin       |
+| `/admin/tools/:toolId`            | `/admin/tools/{tool_id}`             | require_contributor |
+| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}`  | require_contributor |
+| `/admin/suggestions`              | `/admin/suggestions`                 | require_admin       |
+| `/admin/suggestions/:id`          | `/admin/suggestions/{suggestion_id}` | require_admin       |
 
 ### Phase 4: Backend API Layer
 
@@ -224,7 +224,7 @@ This roadmap is implemented as `EPIC-SKRIPT-11` and its stories:
 Downstream note: EPIC-12 work beyond ST-12-01 is **blocked until ST-11-13** so user-facing UX is implemented once in
 the SPA.
 
----
+______________________________________________________________________
 
 ## Evidence Basis
 
@@ -232,12 +232,12 @@ the SPA.
 
 ### Frontend Stack
 
-| Component | Location | Technology |
-|-----------|----------|------------|
-| Templates | `src/skriptoteket/web/templates/` | Jinja2 + HTMX |
-| Static CSS | `src/skriptoteket/web/static/css/` | HuleEdu design system (custom) |
-| Static JS | `src/skriptoteket/web/static/js/app.js` | Vanilla JS (HTMX helpers) |
-| Vue Islands | `frontend/islands/` | Vue 3.5 + Vite 6 (+ Tailwind v4 tokens via `@theme`; ADR-SKRIPT-0032) |
+| Component   | Location                                | Technology                                                            |
+| ----------- | --------------------------------------- | --------------------------------------------------------------------- |
+| Templates   | `src/skriptoteket/web/templates/`       | Jinja2 + HTMX                                                         |
+| Static CSS  | `src/skriptoteket/web/static/css/`      | HuleEdu design system (custom)                                        |
+| Static JS   | `src/skriptoteket/web/static/js/app.js` | Vanilla JS (HTMX helpers)                                             |
+| Vue Islands | `frontend/islands/`                     | Vue 3.5 + Vite 6 (+ Tailwind v4 tokens via `@theme`; ADR-SKRIPT-0032) |
 
 ### Existing Vue Islands
 
@@ -369,7 +369,7 @@ async def list_tools_by_tags(
 
 **Key insight:** Handlers return Pydantic models. JSON endpoints only need different serialization.
 
----
+______________________________________________________________________
 
 ### Source: API Additions
 

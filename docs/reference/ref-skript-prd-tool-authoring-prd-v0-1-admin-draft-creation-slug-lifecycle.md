@@ -4,8 +4,8 @@ id: REF-SKRIPT-PRD-tool-authoring-prd-v0-1-admin-draft-creation-slug-lifecycle
 title: Tool authoring PRD v0.1 (admin draft creation + slug lifecycle)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: draft
 reference_kind: prd
@@ -13,7 +13,9 @@ summary: Tool authoring PRD v0.1 (admin draft creation + slug lifecycle)
 ---
 
 ## Product Outcome And Users
+
 ### Summary
+
 Reduce friction for tool creation and iteration by enabling **admins** to create **draft tools** directly (without
 going through the contributor suggestion flow), while enforcing a clean and stable **slug** model for published tools.
 
@@ -22,11 +24,15 @@ This PRD also defines the v0.1 slug lifecycle policy:
 - Pre-publish (draft/unpublished): slug is mutable (admin-only).
 - On publish: a final, valid slug is required (no placeholders).
 - Post-publish: slug is immutable (no aliases/redirects in v0.1).
+
 ### User roles
+
 - **Admin**: can quick-create draft tools; can edit slug pre-publish; can publish/depublish.
 - **Contributor**: can still propose tools via suggestions; does not get admin bypass paths.
 - **User**: unaffected; only sees published tools.
+
 ### Requirements
+
 ### Draft creation (admin bypass)
 
 - Admins can create a new draft tool from `/admin/tools` with:
@@ -70,28 +76,38 @@ This PRD also defines the v0.1 slug lifecycle policy:
 
 - `/admin/tools` should remain visually unified: do not scatter semantically-related actions into multiple persistent
   cards. Prefer a modal/drawer or inline expansion within the existing admin tools page layout.
+
 ### Links
+
 - ADR: `docs/adr/adr-0037-tool-slug-lifecycle.md`
 - Epic: `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 
 ## Capability Direction
+
 ### Goals
+
 - Admins can create a new draft tool in under 1 minute from `/admin/tools` (title-only is sufficient).
 - Published tools have human-friendly, stable URLs.
 - Contributor suggestion flow remains intact, but admins can bypass it for internal iteration.
+
 ### Non-goals
+
 - Post-publish slug renames, slug aliases, or redirects (explicit v0.1 non-goal; may be added later).
 - “Public slug” vs “internal slug” differentiation (use `tool.id` as internal identifier; `tool.slug` remains public).
 - Tool deletion UX (scrapped tools remain unpublished).
 - Changing the browse taxonomy model (profession/category tagging remains as-is).
 
 ## Boundaries And Non-Goals
+
 The source record did not define a separate section for this package heading.
 
 ## Success Signals
+
 ### Metrics
+
 - Median time for an admin to create a draft tool: < 60 seconds.
 - Publish failures due to missing slug finalization or taxonomy: visible and actionable (clear validation errors).
 
 ## Governed Follow-Up
+
 The source record did not define a separate section for this package heading.

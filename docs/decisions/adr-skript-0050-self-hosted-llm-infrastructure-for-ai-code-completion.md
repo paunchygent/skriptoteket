@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0050
 title: Self-hosted LLM infrastructure for AI code completion
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0050
+  - ADR-0050
 ---
 
 ## Context
-
 
 ADR-0043 specifies an OpenAI-compatible backend proxy for AI inline completions. That ADR focuses on the
 application-layer protocol and CodeMirror integration. This ADR documents the **infrastructure decision**: which
@@ -32,7 +31,7 @@ model to run and how to host it.
 ### Hardware Available
 
 | Component    | Spec                                      |
-|--------------|-------------------------------------------|
+| ------------ | ----------------------------------------- |
 | GPU          | AMD Radeon AI PRO R9700 (RDNA 4, gfx1201) |
 | VRAM         | 32 GB GDDR6                               |
 | Driver/Stack | ROCm 7.2.0, kernel 6.14 HWE               |
@@ -40,13 +39,13 @@ model to run and how to host it.
 
 ### Options Considered
 
-| Option                       | VRAM   | Quality         | Speed     | Notes                                    |
-|------------------------------|--------|-----------------|-----------|------------------------------------------|
-| Qwen2.5-Coder-32B Q4         | ~18 GB | Excellent       | Slow      | Dense model, full 32B active per token   |
-| Qwen3-Coder-30B-A3B Q4_K_M   | ~18 GB | Excellent       | Fast      | MoE: 30B total, 3.3B active (8/128)      |
-| CodeLlama-34B Q4             | ~20 GB | Good            | Slow      | Older, less instruction-following        |
-| DeepSeek-Coder-33B Q4        | ~20 GB | Good            | Slow      | Strong but slower than MoE               |
-| Smaller models (7B-13B)      | ~4-8GB | Moderate        | Very fast | Quality trade-off for code completion    |
+| Option                     | VRAM   | Quality   | Speed     | Notes                                  |
+| -------------------------- | ------ | --------- | --------- | -------------------------------------- |
+| Qwen2.5-Coder-32B Q4       | ~18 GB | Excellent | Slow      | Dense model, full 32B active per token |
+| Qwen3-Coder-30B-A3B Q4_K_M | ~18 GB | Excellent | Fast      | MoE: 30B total, 3.3B active (8/128)    |
+| CodeLlama-34B Q4           | ~20 GB | Good      | Slow      | Older, less instruction-following      |
+| DeepSeek-Coder-33B Q4      | ~20 GB | Good      | Slow      | Strong but slower than MoE             |
+| Smaller models (7B-13B)    | ~4-8GB | Moderate  | Very fast | Quality trade-off for code completion  |
 
 ### Why Tabby?
 
@@ -61,7 +60,6 @@ Alternative considered: direct llama.cpp API. Rejected because Tabby's FIM templ
 repository indexing features add value for code completion use cases.
 
 ## Decision
-
 
 Use **Qwen3-Coder-30B-A3B** (MoE architecture) with **Tabby** proxying to **llama.cpp** (ROCm).
 
@@ -87,10 +85,10 @@ Qwen3-Coder-30B-A3B uses Mixture-of-Experts (MoE):
 
 ### Service Configuration
 
-| Service      | Port  | Runtime/Config |
-|--------------|-------|----------------|
-| llama-server | 8082  | Docker container `llama-server-rocm` (image `llama.cpp-rocm:7.2.0`) managed by `llama-server-rocm.service` |
-| tabby        | 8083  | `/usr/local/bin/tabby serve --port 8083 --no-webserver` (systemd: `tabby.service`) |
+| Service      | Port | Runtime/Config                                                                                             |
+| ------------ | ---- | ---------------------------------------------------------------------------------------------------------- |
+| llama-server | 8082 | Docker container `llama-server-rocm` (image `llama.cpp-rocm:7.2.0`) managed by `llama-server-rocm.service` |
+| tabby        | 8083 | `/usr/local/bin/tabby serve --port 8083 --no-webserver` (systemd: `tabby.service`)                         |
 
 llama.cpp runs via Docker (systemd wrapper) to match ROCm + llama.cpp recommended operations and to avoid accidental
 host-level instability from legacy units.
@@ -108,7 +106,6 @@ cmake -B build -DGGML_HIP=ON -DGGML_HIP_FA=OFF -DGGML_CURL=ON -DCMAKE_BUILD_TYPE
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 ### Positive
 
@@ -133,7 +130,6 @@ No separate non-decisions is stated in the source.
 
 ### Source: Update (2026-01-02): support chat-first AI editing
 
-
 We are moving toward a **chat-first** AI editing experience (ADR-0051) where the assistant can propose multi-step,
 auditable edits (structured CRUD ops + diff preview) and may need to see multiple logical documents (“virtual files”)
 such as `tool.py`, `input_schema.json`, and `settings_schema.json`.
@@ -151,7 +147,6 @@ This ADR remains focused on the “what runs where” infrastructure decision; b
 in ADR-0052, and the chat-first UX/protocol is defined in ADR-0051.
 
 ### Source: References
-
 
 - [ADR-0043: AI-assisted inline completions](adr-0043-ai-completion-integration.md) - Application layer design
 - [ADR-0035: Script editor intelligence](adr-0035-script-editor-intelligence-architecture.md) - CodeMirror architecture

@@ -4,8 +4,8 @@ id: ST-SKRIPT-37-04
 title: App presentation decomposition and naming reset
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,42 +16,31 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-37
 acceptance_criteria:
-- Given generic Conversion Hub presentation hides distinct teacher jobs, when app
-  presentation is decomposed, then exam conversion/editor work, audio transcription,
-  and general document conversion have separate names, descriptions, and entry surfaces.
-- Given Exam Converter is growing into a full app workflow, when its presentation
-  identity is split from the compatibility host, then creation, import/migration,
-  structure, item, point, answer-key, metadata editing, correction/replay, save, and
-  export workflows are preserved as Exam Converter scope.
-- Given presentation splitting touches protected Sir Convert flows, when route-visible
-  app identities are implemented, then the HuleEdu Gateway authenticated edge remains
-  the only supported protected proof path and is retained through shared-auth Docker/Playwright
-  proof.
-- Given Exam Converter is a native app lane after heavy source import, when future
-  QTI/edit/share workflows are presented, then they are described as Skriptoteket-owned
-  exam state rather than Sir Convert replay state.
-- Given document conversion is a separate lane, when it is presented, then it focuses
-  on format conversion and template-shaped output such as PDF, DOCX, HTML/CSS, and
-  platform-ready presentation artifacts.
-- Given route or app registry changes are implemented, when the slice closes, then
-  docs, generated types where relevant, frontend tests, and live browser proof all
-  reflect the new app presentation.
+  - Given generic Conversion Hub presentation hides distinct teacher jobs, when app presentation is decomposed, then exam conversion/editor work, audio transcription, and general document conversion have separate names, descriptions, and entry surfaces.
+  - Given Exam Converter is growing into a full app workflow, when its presentation identity is split from the compatibility host, then creation, import/migration, structure, item, point, answer-key, metadata editing, correction/replay, save, and export workflows are preserved as Exam Converter scope.
+  - Given presentation splitting touches protected Sir Convert flows, when route-visible app identities are implemented, then the HuleEdu Gateway authenticated edge remains the only supported protected proof path and is retained through shared-auth Docker/Playwright proof.
+  - Given Exam Converter is a native app lane after heavy source import, when future QTI/edit/share workflows are presented, then they are described as Skriptoteket-owned exam state rather than Sir Convert replay state.
+  - Given document conversion is a separate lane, when it is presented, then it focuses on format conversion and template-shaped output such as PDF, DOCX, HTML/CSS, and platform-ready presentation artifacts.
+  - Given route or app registry changes are implemented, when the slice closes, then docs, generated types where relevant, frontend tests, and live browser proof all reflect the new app presentation.
 retired_ids:
-- ST-37-04
+  - ST-37-04
 dependencies:
-- REF-SKRIPT-GENERAL-current-product-lanes-and-sir-convert-boundary
-- REF-SKRIPT-PLAN-service-shell-ux-realignment-plan
-- EPIC-SKRIPT-21
+  - REF-SKRIPT-GENERAL-current-product-lanes-and-sir-convert-boundary
+  - REF-SKRIPT-PLAN-service-shell-ux-realignment-plan
+  - EPIC-SKRIPT-21
 ---
 
 ## Context
+
 The product has grown from a generic Conversion Hub into several use-case
 specific application lanes. Teachers should not have to infer whether "the
 converter" means exam migration, speech-to-text, or document-format conversion.
 
 This story owns the app-presentation reset after the backlog inventory and
 dashboard direction are settled.
+
 ### Planned PR Slices
+
 - [x] [PR-0362: ST-37-04 app presentation decomposition and naming package](../prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md)
 - [x] [PR-0370: ST-37-04 public landing authenticated-app preview mockup approval](../prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md)
 - [x] [PR-0371: ST-37-04 public landing authenticated-app preview implementation](../prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md)
@@ -87,21 +76,27 @@ dashboard direction are settled.
 - [x] [PR-0407: ST-37-04 Audio Transcription retryable reattempt browser proof ownership](../prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md)
 
 ## Epic Contract Slice
+
 The source record did not define a separate section for this package heading.
 
 ## ADR Coverage
+
 The source record did not define a separate section for this package heading.
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Live Verification Plan
+
 The source record did not define a separate section for this package heading.
 
 ## Non-Goals
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 - The Exam Converter lane includes conversion, correction, future editing,
   sharing, QTI/source-neutral exam state, and later question-pool workflows.
 - The Exam Converter shell must grow toward the full exam workflow: creation,
@@ -254,10 +249,13 @@ The source record did not define a separate section for this package heading.
   app-presentation needs; keep `PR-0369` blocked until such a need is proven.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Story Closeout Review
+
 The source record did not define a separate section for this package heading.

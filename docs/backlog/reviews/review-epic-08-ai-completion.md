@@ -38,7 +38,7 @@ AI-powered completions.
 - **Backend proxy**: OpenAI-compatible endpoint (`POST /api/v1/editor/completions`) handles LLM calls
 - **KB injection**: System prompt includes `ref-ai-script-generation-kb.md` content
 - **CodeMirror extension**: Ghost text appears as semi-transparent text at cursor
-- **Triggers**: Debounced auto-trigger (1500ms) + manual trigger (Alt+\)
+- **Triggers**: Debounced auto-trigger (1500ms) + manual trigger (Alt+)
 - **Provider-agnostic**: Works with Ollama (local), OpenRouter, OpenAI
 
 See [ADR-0043](../../decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md) for architecture.
@@ -47,24 +47,24 @@ See [ADR-0052](../../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0043-ai-completion-integration.md` | Architecture decision, provider choice | 5 min |
-| `docs/reference/ref-ai-completion-architecture.md` | API contract, extension design | 5 min |
-| `docs/backlog/stories/story-08-14-ai-inline-completions.md` | Acceptance criteria, scope | 3 min |
-| `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md` | Updated scope, story list | 2 min |
+| File                                                           | Focus                                  | Time  |
+| -------------------------------------------------------------- | -------------------------------------- | ----- |
+| `docs/adr/adr-0043-ai-completion-integration.md`               | Architecture decision, provider choice | 5 min |
+| `docs/reference/ref-ai-completion-architecture.md`             | API contract, extension design         | 5 min |
+| `docs/backlog/stories/story-08-14-ai-inline-completions.md`    | Acceptance criteria, scope             | 3 min |
+| `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md` | Updated scope, story list              | 2 min |
 
 **Total estimated time:** ~15 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| OpenAI-compatible API | Supports Ollama (free/local), OpenRouter, OpenAI without vendor lock-in | ✅ |
-| Backend proxy (no frontend API keys) | Security: API keys never exposed to browser | ✅ |
-| KB injection in system prompt | Ensures suggestions follow runner constraints, Contract v2 | ⚠️ (approved w/ concerns) |
-| Fill-in-the-middle format | Standard approach for code completion prompts | ⚠️ (approved w/ concerns) |
-| Debounced auto-trigger (1500ms) | Balances responsiveness vs API load | ⚠️ (approved w/ concerns) |
+| Decision                             | Rationale                                                               | Approve?                  |
+| ------------------------------------ | ----------------------------------------------------------------------- | ------------------------- |
+| OpenAI-compatible API                | Supports Ollama (free/local), OpenRouter, OpenAI without vendor lock-in | ✅                        |
+| Backend proxy (no frontend API keys) | Security: API keys never exposed to browser                             | ✅                        |
+| KB injection in system prompt        | Ensures suggestions follow runner constraints, Contract v2              | ⚠️ (approved w/ concerns) |
+| Fill-in-the-middle format            | Standard approach for code completion prompts                           | ⚠️ (approved w/ concerns) |
+| Debounced auto-trigger (1500ms)      | Balances responsiveness vs API load                                     | ⚠️ (approved w/ concerns) |
 
 ## Review Checklist
 
@@ -75,7 +75,7 @@ See [ADR-0052](../../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments
 - [ ] Graceful degradation when LLM disabled (`enabled: false`)
 - [ ] Integration with existing intelligence bundle is clean
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -112,22 +112,22 @@ the retained record is approved overall.
 - ⚠️ Fill-in-the-middle format (stop tokens + truncation policy must support multi-line blocks)
 - ⚠️ Debounced auto-trigger (1500ms) (configurable; recommend tuning guidance)
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| Multi-line scope | ADR-0043:112-114, ST-08-14:12,135-137 | Multi-line completions explicitly in scope; AC and tests added |
-| API key config | ADR-0043:127, ref-ai-completion:203, ST-08-14:95 | `OPENAI_LLM_COMPLETION_API_KEY` added to all config blocks |
-| Rate limiting aligned | ADR-0043:190-191, ST-08-14:150 | Clarified as "follow-up if not in MVP" |
-| Stop tokens | ADR-0043:116, ref-ai-completion:112 | Simplified to triple backticks; restrictive tokens removed |
-| Truncation policy | ADR-0043:118-119, ref-ai-completion:66-67,86, ST-08-14:18 | Discard `finish_reason="length"`, return empty |
-| KB packaging | ADR-0043:193, ref-ai-completion:129-133 | Production packaging, memory cache, fallback behavior defined |
-| Keymap precedence | ref-ai-completion:182-185 | Tab/Escape override `indentWithTab` when ghost text visible |
-| Privacy/logging | ADR-0043:194, ref-ai-completion:244-245 | Never log code/prompts; third-party risks documented |
+| Change                | Artifact                                                  | Description                                                    |
+| --------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| Multi-line scope      | ADR-0043:112-114, ST-08-14:12,135-137                     | Multi-line completions explicitly in scope; AC and tests added |
+| API key config        | ADR-0043:127, ref-ai-completion:203, ST-08-14:95          | `OPENAI_LLM_COMPLETION_API_KEY` added to all config blocks     |
+| Rate limiting aligned | ADR-0043:190-191, ST-08-14:150                            | Clarified as "follow-up if not in MVP"                         |
+| Stop tokens           | ADR-0043:116, ref-ai-completion:112                       | Simplified to triple backticks; restrictive tokens removed     |
+| Truncation policy     | ADR-0043:118-119, ref-ai-completion:66-67,86, ST-08-14:18 | Discard `finish_reason="length"`, return empty                 |
+| KB packaging          | ADR-0043:193, ref-ai-completion:129-133                   | Production packaging, memory cache, fallback behavior defined  |
+| Keymap precedence     | ref-ai-completion:182-185                                 | Tab/Escape override `indentWithTab` when ghost text visible    |
+| Privacy/logging       | ADR-0043:194, ref-ai-completion:244-245                   | Never log code/prompts; third-party risks documented           |
 
----
+______________________________________________________________________
 
 ## Addendum (2026-01-01): Chat-first AI editing + prompt budgeting ADR cleanup
 

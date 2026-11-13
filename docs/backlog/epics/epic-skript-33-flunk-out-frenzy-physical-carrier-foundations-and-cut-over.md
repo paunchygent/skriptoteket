@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-33
 title: Flunk-Out Frenzy physical carrier foundations and cut-over governance
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,16 +14,12 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Flunk-Out Frenzy gains the carrier-role schema, launcher-world ownership
-  rules, donor overhead collider foundation, observation-spine proof layer, and cut-over
-  governance needed to replace route-driven launcher transport with a truthful physical
-  carrier graph without weakening PR-0214.
+outcome: Flunk-Out Frenzy gains the carrier-role schema, launcher-world ownership rules, donor overhead collider foundation, observation-spine proof layer, and cut-over governance needed to replace route-driven launcher transport with a truthful physical carrier graph without weakening PR-0214.
 retired_ids:
-- EPIC-33
+  - EPIC-33
 ---
 
 ## Scope
-
 
 - Define the carrier-role model required by
   `REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04`.
@@ -36,14 +32,12 @@ retired_ids:
 
 ### Source: Out of scope
 
-
 - Final physical carrier cut-over.
 - Baseline repin in `PR-0214`.
 - Broad whole-table gameplay-fidelity claims beyond the launcher/elevated-route
   boundary.
 
 ## Epic Contract
-
 
 - `REV-EPIC-SKRIPT-33` is now approved, so this corrective foundation epic is active.
 - `ST-33-01` is the approved prerequisite before any further physical cut-over
@@ -64,7 +58,6 @@ No separate contract inputs is stated in the source.
 
 ## Stories
 
-
 - [ ] [ST-33-01: Flunk-Out Frenzy physical carrier foundations and cut-over governance](../stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md)
 
 ## Epic Verification Plan
@@ -72,7 +65,6 @@ No separate contract inputs is stated in the source.
 No separate epic verification plan is stated in the source.
 
 ## Exceptions And Follow-Ups
-
 
 - This is a corrective foundation epic created after the architect direction in
   `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`.
@@ -83,7 +75,6 @@ No separate epic verification plan is stated in the source.
   blocked for further continuation.
 
 ## Risks
-
 
 - If this epic is skipped, later runtime work will be forced to invent carrier
   semantics inside launcher runtime code.

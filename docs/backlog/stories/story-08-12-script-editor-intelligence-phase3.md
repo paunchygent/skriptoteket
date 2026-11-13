@@ -32,12 +32,12 @@ Implementation note: extend the existing intelligence bundle (`skriptoteketIntel
 
 ### Best Practice Lint Rules
 
-| Rule ID | Severity | Swedish Message |
-|---------|----------|-----------------|
-| `ST_BESTPRACTICE_TOOLUSERERROR_IMPORT` | error | ToolUserError används men import saknas: `from tool_errors import ToolUserError` |
-| `ST_BESTPRACTICE_ENCODING` | info | Ange `encoding="utf-8"` vid textläsning/skrivning. |
-| `ST_BESTPRACTICE_WEASYPRINT_DIRECT` | info | Använd `pdf_helper.save_as_pdf` istället för `weasyprint.HTML` direkt. |
-| `ST_BESTPRACTICE_MKDIR` | info | Skapa gärna kataloger innan du skriver filer (särskilt undermappar). |
+| Rule ID                                | Severity | Swedish Message                                                                  |
+| -------------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `ST_BESTPRACTICE_TOOLUSERERROR_IMPORT` | error    | ToolUserError används men import saknas: `from tool_errors import ToolUserError` |
+| `ST_BESTPRACTICE_ENCODING`             | info     | Ange `encoding="utf-8"` vid textläsning/skrivning.                               |
+| `ST_BESTPRACTICE_WEASYPRINT_DIRECT`    | info     | Använd `pdf_helper.save_as_pdf` istället för `weasyprint.HTML` direkt.           |
+| `ST_BESTPRACTICE_MKDIR`                | info     | Skapa gärna kataloger innan du skriver filer (särskilt undermappar).             |
 
 ### Detection Patterns
 

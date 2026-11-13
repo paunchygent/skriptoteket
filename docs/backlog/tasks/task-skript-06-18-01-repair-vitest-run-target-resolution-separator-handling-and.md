@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-06-18-01
-title: Repair vitest-run target resolution, separator handling and the include transport
-  type
+title: Repair vitest-run target resolution, separator handling and the include transport type
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: done
 closeout_review:
@@ -18,9 +17,7 @@ closeout_review:
   approval_evidence: 'The user approved readiness and closure together on 2026-10-22: merged at 44197733 (4e9d65e0), and rereview finding R1 admitted on focused proof.'
 task_kind: story
 acceptance_criteria:
-- Review ecea35b6 findings F1-F3 are repaired with real-collection proof; default
-  discovery lists exactly the src/**/*.spec.ts set (505 at bf79abce, 506 after the
-  new vitestInclude.spec.ts).
+  - Review ecea35b6 findings F1-F3 are repaired with real-collection proof; default discovery lists exactly the src/**/*.spec.ts set (505 at bf79abce, 506 after the new vitestInclude.spec.ts).
 story: ST-SKRIPT-06-18
 backlog_document_profile: contract-derived
 ---
@@ -67,17 +64,17 @@ Stop and report to the orchestrator if a fix needs a change to Vitest's own conf
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | A target resolves through real matches: `fs.globSync` with file types is the one authority for literal paths and patterns alike (only `.` is the app folder directly), never the target's spelling. A matched spec file contributes itself; a matched folder contributes `<folder>/**/*.spec.ts`; other matched files are ignored. |
-| D2  | A matched path that does not name itself (`fs.globSync(path)` returns something other than exactly that path) fails the run: probes showed backslash escaping works in neither Node glob nor tinyglobby, so Vitest's include cannot name it exactly. A match that `statSync` cannot read fails the run with a `vitest-run:` message. |
-| D3  | The first `--` is package-manager forwarding and is removed. Every token after a remaining `--` is a path target and is validated; none is forwarded to Vitest unexamined. Flag values such as `--reporter dot` before it stay flag values. |
-| D4  | `scripts/vitest-include.mjs` owns the include transport: `VITEST_INCLUDE_ENV`, `encodeVitestInclude` and `decodeVitestInclude` (a non-empty JSON array of strings, validated at runtime, typed by `vitest-include.d.mts`). No cast and no comma-separated decoder. |
-| D5  | `vitest.config.ts` joins the vue-tsc `include` so the decoder's type is checked at its consumer. |
-| D6  | A line selector is valid only on a literal target that is itself a spec file; a folder holding one spec file with a selector is rejected. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A target resolves through real matches: `fs.globSync` with file types is the one authority for literal paths and patterns alike (only `.` is the app folder directly), never the target's spelling. A matched spec file contributes itself; a matched folder contributes `<folder>/**/*.spec.ts`; other matched files are ignored.                   |
+| D2  | A matched path that does not name itself (`fs.globSync(path)` returns something other than exactly that path) fails the run: probes showed backslash escaping works in neither Node glob nor tinyglobby, so Vitest's include cannot name it exactly. A match that `statSync` cannot read fails the run with a `vitest-run:` message.                 |
+| D3  | The first `--` is package-manager forwarding and is removed. Every token after a remaining `--` is a path target and is validated; none is forwarded to Vitest unexamined. Flag values such as `--reporter dot` before it stay flag values.                                                                                                          |
+| D4  | `scripts/vitest-include.mjs` owns the include transport: `VITEST_INCLUDE_ENV`, `encodeVitestInclude` and `decodeVitestInclude` (a non-empty JSON array of strings, validated at runtime, typed by `vitest-include.d.mts`). No cast and no comma-separated decoder.                                                                                   |
+| D5  | `vitest.config.ts` joins the vue-tsc `include` so the decoder's type is checked at its consumer.                                                                                                                                                                                                                                                     |
+| D6  | A line selector is valid only on a literal target that is itself a spec file; a folder holding one spec file with a selector is rejected.                                                                                                                                                                                                            |
 | D8  | Lead-found repairs of returned work: U3 moves `vitest.config.ts` into `tsconfig.node.json` because adding it to the browser project leaked Node `Timeout` types; U4 lets a `statSync` failure stop the run instead of dropping the match, and narrows D6 to file targets; U5 type-checks the two Node-environment wrapper specs in the Node project. |
-| D9  | Rereview ed8a6e7b (2026-10-19) cleared F1 and found R1 (medium): the hand-kept glob character list missed extglobs `@(...)` and `+(...)`. U6 deletes `isGlob` so `fs.globSync` alone classifies, and adds the prefixed unreadable-match failure. R1 is admitted on focused proof without rereview. |
-| D7  | The repaired F1 (high) returns to reviewer ecea35b6 for rereview through the orchestrator; F2 and F3 return with focused proof. |
+| D9  | Rereview ed8a6e7b (2026-10-19) cleared F1 and found R1 (medium): the hand-kept glob character list missed extglobs `@(...)` and `+(...)`. U6 deletes `isGlob` so `fs.globSync` alone classifies, and adds the prefixed unreadable-match failure. R1 is admitted on focused proof without rereview.                                                   |
+| D7  | The repaired F1 (high) returns to reviewer ecea35b6 for rereview through the orchestrator; F2 and F3 return with focused proof.                                                                                                                                                                                                                      |
 
 ## Progress
 

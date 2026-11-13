@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-curated-app-reagent-prep-chef
 title: 'Reference: Curated app — Reagent Prep Chef'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-curated-app-reagent-prep-chef
+  - REF-curated-app-reagent-prep-chef
 summary: 'Reference: Curated app — Reagent Prep Chef'
 ---
 

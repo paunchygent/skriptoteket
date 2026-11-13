@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0071
 title: Klassrumskartan Fundamentals Workflow, Draft Lifecycle, and Export Artifacts
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- architect
+  - architect
 retired_ids:
-- ADR-0071
+  - ADR-0071
 ---
 
 ## Context

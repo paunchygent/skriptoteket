@@ -1,12 +1,11 @@
 ---
 type: reference
 id: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment-PART-02
-title: Frontend design-system codemap (trace-based for cross-repo alignment) — part
-  02
+title: Frontend design-system codemap (trace-based for cross-repo alignment) — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment
 part: 2
@@ -20,10 +19,9 @@ part: 2
    `resources/frontend-design-system/huleedu-integrated/` in `skill-repository`.
    PR-0157 records the historical extraction, not current presentation authority.
 
----
+______________________________________________________________________
 
 ### Source: Design Principles Summary
-
 
 Current presentation guidance belongs to `huleedu-ui-design`, especially
 `references/visual-system.md`; workflow composition belongs to its
@@ -36,48 +34,45 @@ Token values, Tailwind mappings, Vue primitives and glyphs belong to the
 Use the current package contracts rather than freezing an earlier snapshot.
 `integrated-frontend-stack` owns token integration and CSS layout mechanics.
 
----
+______________________________________________________________________
 
 ### Source: Token Reference
-
 
 The current consumer mappings in `frontend/apps/skriptoteket/src/styles/tailwind-theme.css`
 include the following token names. Resolve values and component usage through the
 current package and `huleedu-ui-design`, not a copied palette or shadow table.
 
-| Token | Example mapped utility |
-|-------|------------------------|
-| `--huleedu-canvas` | `bg-canvas` |
-| `--huleedu-navy` | `text-navy`, `border-navy` |
-| `--huleedu-action` | `bg-action` |
-| `--huleedu-critical` | `text-critical` |
-| `--huleedu-success` | `text-success` |
-| `--huleedu-warning` | `text-warning` |
-| `--huleedu-error` | `text-error` |
+| Token                | Example mapped utility     |
+| -------------------- | -------------------------- |
+| `--huleedu-canvas`   | `bg-canvas`                |
+| `--huleedu-navy`     | `text-navy`, `border-navy` |
+| `--huleedu-action`   | `bg-action`                |
+| `--huleedu-critical` | `text-critical`            |
+| `--huleedu-success`  | `text-success`             |
+| `--huleedu-warning`  | `text-warning`             |
+| `--huleedu-error`    | `text-error`               |
 
----
+______________________________________________________________________
 
 ### Source: Primitive Constants
-
 
 `frontend/apps/skriptoteket/src/components/ui/shared/denseToolPrimitives.ts`
 contains these synced package exports:
 
-| Export | Current class |
-|--------|---------------|
-| `DENSE_ACTION_RADIUS_CLASS` | `rounded-[4px]` |
-| `DENSE_ICON_SIZE_CLASS` | `h-9 w-9` |
-| `DENSE_TEXT_HEIGHT_CLASS` | `h-[28px]` |
-| `DENSE_COMPACT_SEGMENT_HEIGHT_CLASS` | `h-6` |
+| Export                               | Current class   |
+| ------------------------------------ | --------------- |
+| `DENSE_ACTION_RADIUS_CLASS`          | `rounded-[4px]` |
+| `DENSE_ICON_SIZE_CLASS`              | `h-9 w-9`       |
+| `DENSE_TEXT_HEIGHT_CLASS`            | `h-[28px]`      |
+| `DENSE_COMPACT_SEGMENT_HEIGHT_CLASS` | `h-6`           |
 
 These are implementation facts, not independent cross-repo requirements.
 The current package owns primitive contracts; `huleedu-ui-design` owns which
 control role and feedback suit a surface.
 
----
+______________________________________________________________________
 
 ### Source: Verification Checklist
-
 
 When adopting this design system in another repo, verify:
 
@@ -93,10 +88,9 @@ When adopting this design system in another repo, verify:
 - [ ] No Tailwind default palette/spacing leaks into product UI
 - [ ] Only mapped token utilities are used (bg-canvas, text-navy, etc.)
 
----
+______________________________________________________________________
 
 ### Source: Related Files
-
 
 ### Token Pipeline
 

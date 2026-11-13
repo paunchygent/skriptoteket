@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-architecture-and-coding-principles
 title: Architecture and coding principles
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-architecture
+  - REF-architecture
 summary: Architecture and coding principles
 ---
 

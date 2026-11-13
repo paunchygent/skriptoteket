@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-01-03
 title: Degrade unknown DigiExam question types to reviewable free text
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-04'
 status: canceled
 closeout_review:
@@ -15,9 +15,7 @@ closeout_review:
   approval_evidence: User agreed to cancel this task as unnecessary after real-export discovery found only the four supported DigiExam types and the user confirmed those are the existing types. Future development should verify real-export correctness and repair demonstrated defects rather than invent unsupported types.
 task_kind: story
 acceptance_criteria:
-- Unknown DigiExam question types remain in the converted exam as reviewable free-text
-  items with their prompt and points preserved, an explicit item-bound warning, and
-  valid export artifacts instead of blocking the whole conversion
+  - Unknown DigiExam question types remain in the converted exam as reviewable free-text items with their prompt and points preserved, an explicit item-bound warning, and valid export artifacts instead of blocking the whole conversion
 story: ST-SKRIPT-39-01
 backlog_document_profile: contract-derived
 ---
@@ -130,11 +128,11 @@ Pi scout run `e7824daa-450a-43ff-b8a2-96405024dd49`, retained context
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | An unknown DigiExam question type becomes one free-text, manually evaluated item and does not block the exam. |
-| T2 | Preserve the source prompt, title or deterministic fallback, valid point value, usable images, and original source type code. |
-| T3 | Emit item-bound non-blocking Swedish information explaining the degradation and requiring teacher review or recreation before use. |
-| T4 | Unknown response structures are not interpreted as choice, gap, matching, scoring, or answer-key semantics. |
-| T5 | The degraded item remains present in valid PDF and QTI artifacts and in authenticated question/report review surfaces. |
-| T6 | The path is deterministic and provider-free; it never enters answer-key enrichment or adds an LLM call. |
+| ID  | Decided contract term                                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | An unknown DigiExam question type becomes one free-text, manually evaluated item and does not block the exam.                      |
+| T2  | Preserve the source prompt, title or deterministic fallback, valid point value, usable images, and original source type code.      |
+| T3  | Emit item-bound non-blocking Swedish information explaining the degradation and requiring teacher review or recreation before use. |
+| T4  | Unknown response structures are not interpreted as choice, gap, matching, scoring, or answer-key semantics.                        |
+| T5  | The degraded item remains present in valid PDF and QTI artifacts and in authenticated question/report review surfaces.             |
+| T6  | The path is deterministic and provider-free; it never enters answer-key enrichment or adds an LLM call.                            |

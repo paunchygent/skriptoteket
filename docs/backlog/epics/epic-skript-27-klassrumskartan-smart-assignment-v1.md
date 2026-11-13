@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-27
 title: Klassrumskartan smart assignment v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,12 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers can opt into smart grouping and smart seating through small per-draft
-  mode toggles, author a deliberately small visual rule model from a dedicated `Regler`
-  workspace, rely on export-backed checkpoints rather than draft history, and receive
-  short teacher-language reasons without being exposed to solver jargon.
+outcome: Teachers can opt into smart grouping and smart seating through small per-draft mode toggles, author a deliberately small visual rule model from a dedicated `Regler` workspace, rely on export-backed checkpoints rather than draft history, and receive short teacher-language reasons without being exposed to solver jargon.
 retired_ids:
-- EPIC-27
+  - EPIC-27
 ---
 
 ## Scope
@@ -280,8 +277,8 @@ Relationship drift or terminal ancestry must be resolved by the parent manifest 
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                 | Type      | Status | Question/Assumption              | Recommendation/Decision                                                        | Source                               |
+| ------------------ | --------- | ------ | -------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------ |
 | MIG-EPIC-SKRIPT-27 | migration | closed | How is source meaning preserved? | Preserve the source outcome and current contract while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

@@ -4,25 +4,23 @@ id: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap
 title: Vue/Vite SPA Migration Roadmap
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: plan
 retired_ids:
-- REF-vue-spa-migration-roadmap
-summary: This roadmap details the migration from Jinja2/HTMX server-rendered frontend
-  to a Vue 3/Vite SPA with a custom component library. | Decision | Choice | |----------|--------|
-  | **Strategy** | Full SPA replacement (clea…
+  - REF-vue-spa-migration-roadmap
+summary: This roadmap details the migration from Jinja2/HTMX server-rendered frontend to a Vue 3/Vite SPA with a custom component library. | Decision | Choice | |----------|--------| | **Strategy** | Full SPA replacement (clea…
 links:
   references:
-  - REF-SKRIPT-PRD-frontend-prd-v0-1-full-vue-vite-spa-migration
-  - EPIC-SKRIPT-11
-  - ADR-SKRIPT-0027
-  - ADR-SKRIPT-0028
-  - ADR-SKRIPT-0032
-  - ADR-SKRIPT-0030
-  - ADR-SKRIPT-0017
+    - REF-SKRIPT-PRD-frontend-prd-v0-1-full-vue-vite-spa-migration
+    - EPIC-SKRIPT-11
+    - ADR-SKRIPT-0027
+    - ADR-SKRIPT-0028
+    - ADR-SKRIPT-0032
+    - ADR-SKRIPT-0030
+    - ADR-SKRIPT-0017
 ---
 
 ## Outcome And Purpose

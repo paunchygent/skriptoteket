@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-epic-04-pre-implementation-architecture-review
 title: EPIC-04 Pre-Implementation Architecture Review
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-architectural-review-epic-04
+  - REF-architectural-review-epic-04
 summary: EPIC-04 Pre-Implementation Architecture Review
 ---
 
@@ -20,7 +20,7 @@ summary: EPIC-04 Pre-Implementation Architecture Review
 
 EPIC-04 is in a good state to proceed: ST-04-01 provides a coherent versioned script/run foundation and matches the intended "published implies runnable" invariant. The primary architectural risk sits in ST-04-02: using the Docker SDK from an async FastAPI app (blocking calls + docker.sock blast radius) is acceptable for v0.1 only if we enforce strict sandboxing, concurrency caps, and a clean separation between "control-plane failures" and "execution outcomes."
 
----
+______________________________________________________________________
 
 ### Foundation Assessment (ST-04-01)
 
@@ -42,7 +42,7 @@ Overall, the domain model and persistence layout are sound and aligned with ADR-
 
 4. **Web router contract compliance**: The backend conventions now routed through `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md` forbid `from __future__ import annotations` in router modules. At the original EPIC-04 review, `src/skriptoteket/web/router.py` included it and was flagged for correction when routing was next touched.
 
----
+______________________________________________________________________
 
 ### ST-04-02: Docker Runner
 
@@ -121,15 +121,15 @@ Extend Settings with explicit runner/artifact limits (as already listed in ST-04
 
 ### Risks & Mitigations
 
-| Risk | Mitigation |
-|------|------------|
-| Event-loop blocking / degraded API performance | Run Docker SDK in threads + semaphore + strict timeouts; consider rejecting new runs with a clear admin-visible error if concurrency is saturated |
-| Output bloat (stdout/stderr/html) | Enforce truncation at the runner boundary and again at persistence boundary (caps in Settings) |
-| Path traversal via artifacts | Artifacts manifest must reject absolute paths and any `..` segments (ST-04-02 explicitly requires this). Normalize and validate on ingestion; never trust runner-supplied paths |
-| Runner contract drift | Make `result.json` include `contract_version`; the app validates before parsing |
-| Operational risk of docker.sock | Accept for v0.1 with documented guardrails; explicitly plan ADR for "dedicated runner service" in v0.2+ if usage expands |
+| Risk                                           | Mitigation                                                                                                                                                                      |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Event-loop blocking / degraded API performance | Run Docker SDK in threads + semaphore + strict timeouts; consider rejecting new runs with a clear admin-visible error if concurrency is saturated                               |
+| Output bloat (stdout/stderr/html)              | Enforce truncation at the runner boundary and again at persistence boundary (caps in Settings)                                                                                  |
+| Path traversal via artifacts                   | Artifacts manifest must reject absolute paths and any `..` segments (ST-04-02 explicitly requires this). Normalize and validate on ingestion; never trust runner-supplied paths |
+| Runner contract drift                          | Make `result.json` include `contract_version`; the app validates before parsing                                                                                                 |
+| Operational risk of docker.sock                | Accept for v0.1 with documented guardrails; explicitly plan ADR for "dedicated runner service" in v0.2+ if usage expands                                                        |
 
----
+______________________________________________________________________
 
 ### ST-04-03: Admin Editor
 
@@ -189,7 +189,7 @@ RequestChanges endpoints are required by ST-04-04 but are not specified in `ref-
   - Artifact list refresh (or as part of run result)
 - Make conflict errors actionable: when `expected_parent_version_id` mismatches, return a UI message indicating that the draft head advanced and the user must reload
 
----
+______________________________________________________________________
 
 ### ST-04-04: Governance
 
@@ -231,7 +231,7 @@ Perform publish/rollback in a single transaction:
 
 This order avoids violating the partial unique index for ACTIVE.
 
----
+______________________________________________________________________
 
 ### ST-04-05: User Execution
 
@@ -239,10 +239,10 @@ This order avoids violating the partial unique index for ACTIVE.
 
 Use the same runner infrastructure with different config presets:
 
-| Context | Timeout | Resources | Input Retention | Log Visibility |
-|---------|---------|-----------|-----------------|----------------|
-| Sandbox | Shorter | Lower memory/cpu | Retain for debugging (short retention) | Full logs to admin |
-| Production | Longer | Potentially higher | Do not retain by default | Never display to end-users |
+| Context    | Timeout | Resources          | Input Retention                        | Log Visibility             |
+| ---------- | ------- | ------------------ | -------------------------------------- | -------------------------- |
+| Sandbox    | Shorter | Lower memory/cpu   | Retain for debugging (short retention) | Full logs to admin         |
+| Production | Longer  | Potentially higher | Do not retain by default               | Never display to end-users |
 
 I recommend separate handlers:
 
@@ -255,11 +255,11 @@ Internally they can share a pure function/service that calls `ToolRunnerProtocol
 
 Follow the contracts and the existing `DomainError` usage pattern:
 
-| Condition | Response | Details |
-|-----------|----------|---------|
-| Not runnable (tool missing, not published, missing/invalid `active_version_id`, or active version is not ACTIVE) | 404 | Defense in depth |
-| Execution completes but fails | 200 with `failed`/`timed_out` outcome | Show friendly error view using `ToolRun.error_summary`; do not show stdout/stderr to users |
-| Control-plane errors (docker daemon unreachable, unexpected infra error) | 500/502 | Raise `DomainError(INTERNAL_ERROR)` and render a generic error page |
+| Condition                                                                                                        | Response                              | Details                                                                                    |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Not runnable (tool missing, not published, missing/invalid `active_version_id`, or active version is not ACTIVE) | 404                                   | Defense in depth                                                                           |
+| Execution completes but fails                                                                                    | 200 with `failed`/`timed_out` outcome | Show friendly error view using `ToolRun.error_summary`; do not show stdout/stderr to users |
+| Control-plane errors (docker daemon unreachable, unexpected infra error)                                         | 500/502                               | Raise `DomainError(INTERNAL_ERROR)` and render a generic error page                        |
 
 ### User Experience
 
@@ -267,7 +267,7 @@ Follow the contracts and the existing `DomainError` usage pattern:
 - Provide `/my-runs/{run_id}` with ownership checks (404 if not owned)
 - If retention may delete artifacts/results, be explicit in UI (e.g., "Results retained for 30 days")
 
----
+______________________________________________________________________
 
 ### Cross-Cutting Concerns
 
@@ -278,11 +278,11 @@ Follow the contracts and the existing `DomainError` usage pattern:
 
 ### Testing Strategy
 
-| Type | Scope | Notes |
-|------|-------|-------|
-| Unit tests | Domain transition functions (`save_draft_snapshot`, `submit_for_review`, `publish_version`, `finish_tool_run`) | Pure functions; exhaustively test |
-| Contract tests | `_runner.py` output (`result.json`, artifact enumeration rules, `error_summary` sanitization) | Essential: this is the boundary between app and runner |
-| Integration tests | Run a small script through Docker in CI | Optional but valuable; if not available, mock `ToolRunnerProtocol` for application tests and run a manual "smoke" suite in staging |
+| Type              | Scope                                                                                                          | Notes                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Unit tests        | Domain transition functions (`save_draft_snapshot`, `submit_for_review`, `publish_version`, `finish_tool_run`) | Pure functions; exhaustively test                                                                                                  |
+| Contract tests    | `_runner.py` output (`result.json`, artifact enumeration rules, `error_summary` sanitization)                  | Essential: this is the boundary between app and runner                                                                             |
+| Integration tests | Run a small script through Docker in CI                                                                        | Optional but valuable; if not available, mock `ToolRunnerProtocol` for application tests and run a manual "smoke" suite in staging |
 
 ### Performance
 
@@ -290,7 +290,7 @@ Follow the contracts and the existing `DomainError` usage pattern:
 - Stream file uploads to disk; do not keep full files in memory
 - Truncate logs and HTML at safe limits before writing to Postgres
 
----
+______________________________________________________________________
 
 ### Implementation Sequencing
 
@@ -316,14 +316,14 @@ Follow the contracts and the existing `DomainError` usage pattern:
 
 ### Estimated Complexity
 
-| Story | Complexity | Key Challenges |
-|-------|------------|----------------|
-| ST-04-02 | High | Security + async integration + file handling |
-| ST-04-03 | Medium | Handler organization + UI state management |
-| ST-04-04 | Medium | Careful transactional ordering |
-| ST-04-05 | Medium-low | Mostly orchestration + templates |
+| Story    | Complexity | Key Challenges                               |
+| -------- | ---------- | -------------------------------------------- |
+| ST-04-02 | High       | Security + async integration + file handling |
+| ST-04-03 | Medium     | Handler organization + UI state management   |
+| ST-04-04 | Medium     | Careful transactional ordering               |
+| ST-04-05 | Medium-low | Mostly orchestration + templates             |
 
----
+______________________________________________________________________
 
 ### Open Questions
 
@@ -332,6 +332,7 @@ Follow the contracts and the existing `DomainError` usage pattern:
 2. **Runner dependency set**: Who owns updating the runner image and which libraries are "blessed" for v0.1? Without this, admins may expect packages that aren't present.
 
 3. **Retention policy and data sensitivity**: Confirm concrete defaults:
+
    - Sandbox retention (short)
    - Production retention for outputs/artifacts
    - Production input retention (default off)
@@ -340,7 +341,7 @@ Follow the contracts and the existing `DomainError` usage pattern:
 
 5. **Version-number race strategy**: Decide whether to implement retries or locking; relying only on the unique constraint will produce intermittent admin errors under concurrent saves.
 
----
+______________________________________________________________________
 
 ### ADR Recommendations
 
@@ -349,9 +350,11 @@ I recommend formalizing two additional ADRs (or advancing the "proposed" ADRs to
 ### Required
 
 1. **ADR: Runner Contract & Compatibility**
+
    - Define `result.json` schema, `contract_version`, truncation rules, and `error_summary` sanitization guarantees
 
 2. **ADR: Execution Concurrency & Backpressure**
+
    - Define max concurrent runs, queue/reject behavior, and operational limits (CPU/memory per context)
    - Prevents ad-hoc limits scattered across handlers
 

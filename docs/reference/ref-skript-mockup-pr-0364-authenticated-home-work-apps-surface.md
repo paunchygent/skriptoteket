@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0364-authenticated-home-work-apps-surface
 title: PR-0364 authenticated home work-apps surface
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

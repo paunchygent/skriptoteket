@@ -4,8 +4,8 @@ id: TASK-SKRIPT-08-36-02
 title: Keep signed-in shell help and account actions reachable across breakpoints
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -17,11 +17,9 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (Sol) closeout review 31089b51 in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-08-36-02/closeout-review.md: approved on 0a91a86a, whose four files are unchanged on main. The live viewport walk is not run: the user''s 2026-10-17 rule limits parent walks to the exam converter, so other UI closes on unit proof plus approved review. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
-- Signed-in teachers can open Hjälp at 375, 900, 1024 and 1280+ px through the
-  authenticated header or navigation drawer.
-- Focus mode and logout remain reachable wherever the top-bar actions are hidden;
-  focus mode can be exited and pending logout stays disabled.
-- Focused Vitest coverage, SPA typecheck, lint and build, and docs validation pass.
+  - Signed-in teachers can open Hjälp at 375, 900, 1024 and 1280+ px through the authenticated header or navigation drawer.
+  - Focus mode and logout remain reachable wherever the top-bar actions are hidden; focus mode can be exited and pending logout stays disabled.
+  - Focused Vitest coverage, SPA typecheck, lint and build, and docs validation pass.
 story: ST-SKRIPT-08-36
 backlog_document_profile: contract-derived
 ---
@@ -84,9 +82,9 @@ is not run under the user's 2026-10-17 rule that parent walks cover only the exa
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D01 | Signed-in Hjälp, focus mode and logout remain reachable through the header or drawer at every width; footer CSS follows the owning shell cutoff. |
-| D02 | Reuse shared help, labels and tokens. Close the drawer on selection; help restores focus to Meny and focus mode remains reversible. |
-| D03 | Add focused component proof and run SPA typecheck, lint, build and docs validation. The parent owns review, integration, deployment and live viewport walks. |
+| ID  | Decided contract term                                                                                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D01 | Signed-in Hjälp, focus mode and logout remain reachable through the header or drawer at every width; footer CSS follows the owning shell cutoff.                           |
+| D02 | Reuse shared help, labels and tokens. Close the drawer on selection; help restores focus to Meny and focus mode remains reversible.                                        |
+| D03 | Add focused component proof and run SPA typecheck, lint, build and docs validation. The parent owns review, integration, deployment and live viewport walks.               |
 | D04 | Commit only on fix/planner-hjalp-1024 without attribution lines; never push, change main, rebase or amend. At most two fresh Pi DeepSeek Flash 4.1 juniors are authorized. |

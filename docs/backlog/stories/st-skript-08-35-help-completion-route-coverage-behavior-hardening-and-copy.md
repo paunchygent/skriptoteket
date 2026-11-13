@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-35
 title: 'Help completion: route coverage, behavior hardening, and copy signoff'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,28 +16,15 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given the SPA route table changes, when help coverage is validated, then every named
-  route is either mapped to a help topic or explicitly marked as intentionally generic/unsupported
-  in a tested catalog.
-- Given Swedish help copy is product-facing, when implementation begins, then exact
-  word-by-word topic copy is first drafted in `docs/reference/ref-skriptoteket-help-copy-signoff.md`
-  and approved before Vue topic components are updated.
-- Given a user opens the help panel, when they press Escape, click outside, navigate,
-  or continue interacting with the app, then help closes or resynchronizes according
-  to the documented drawer behavior without trapping focus.
-- Given logged-in roles differ, when the help index renders, then users only see topics
-  relevant to their available role surfaces.
-- Given high-traffic routes such as auth lifecycle, catalog, tool runs/results, profile,
-  vault, my runs, contributor, admin, and recovery pages, when help opens, then the
-  topic content is concise, Swedish, action-focused, and matches the approved copy
-  reference.
-- Given the help drawer is opened, when the index renders inside it, then the drawer
-  uses a calm design-system off-white surface and nested link lists do not add brutal
-  shadows.
-- Given non-trivial fields need contextual help, when micro-help is added, then it
-  uses one shared accessible pattern instead of one-off popovers.
+  - Given the SPA route table changes, when help coverage is validated, then every named route is either mapped to a help topic or explicitly marked as intentionally generic/unsupported in a tested catalog.
+  - Given Swedish help copy is product-facing, when implementation begins, then exact word-by-word topic copy is first drafted in `docs/reference/ref-skriptoteket-help-copy-signoff.md` and approved before Vue topic components are updated.
+  - Given a user opens the help panel, when they press Escape, click outside, navigate, or continue interacting with the app, then help closes or resynchronizes according to the documented drawer behavior without trapping focus.
+  - Given logged-in roles differ, when the help index renders, then users only see topics relevant to their available role surfaces.
+  - Given high-traffic routes such as auth lifecycle, catalog, tool runs/results, profile, vault, my runs, contributor, admin, and recovery pages, when help opens, then the topic content is concise, Swedish, action-focused, and matches the approved copy reference.
+  - Given the help drawer is opened, when the index renders inside it, then the drawer uses a calm design-system off-white surface and nested link lists do not add brutal shadows.
+  - Given non-trivial fields need contextual help, when micro-help is added, then it uses one shared accessible pattern instead of one-off popovers.
 retired_ids:
-- ST-08-35
+  - ST-08-35
 ---
 
 ## Context

@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-29-10-first-run-workspace-gating
 title: ST-29-10 first-run workspace gating
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -16,11 +16,9 @@ summary: ST-29-10 first-run workspace gating
 
 ### ST-29-10 First-Run Workspace Gating
 
-
 Approved mockup bundle for Klassrumskartan first-run workspace gating.
 
 ## Package Manifest
-
 
 - `index.html` is the current direct preview.
 - `submissions/` for competing designer submissions.

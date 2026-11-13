@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0061
 title: 'Observability: ASGI correlation middleware for request-complete correlation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0061
+  - ADR-0061
 ---
 
 ## Context

@@ -4,8 +4,8 @@ id: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap-PART-02
 title: Vue/Vite SPA Migration Roadmap — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap
 part: 2
@@ -37,54 +37,54 @@ implementation guide.
 
 #### Catalog API (`/api/v1/catalog/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/catalog/professions` | GET | `ListProfessionsHandler` |
-| `/api/v1/catalog/professions/{slug}/categories` | GET | `ListCategoriesForProfessionHandler` |
-| `/api/v1/catalog/professions/{slug}/categories/{cat}/tools` | GET | `ListToolsByTagsHandler` |
-| `/api/v1/catalog/apps/{app_id}` | GET | New: curated app detail (registry) |
+| Endpoint                                                    | Method | Handler                              |
+| ----------------------------------------------------------- | ------ | ------------------------------------ |
+| `/api/v1/catalog/professions`                               | GET    | `ListProfessionsHandler`             |
+| `/api/v1/catalog/professions/{slug}/categories`             | GET    | `ListCategoriesForProfessionHandler` |
+| `/api/v1/catalog/professions/{slug}/categories/{cat}/tools` | GET    | `ListToolsByTagsHandler`             |
+| `/api/v1/catalog/apps/{app_id}`                             | GET    | New: curated app detail (registry)   |
 
 #### Tools API (`/api/v1/tools/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/tools/{slug}` | GET | New: returns tool details |
-| `/api/v1/tools/{slug}/run` | POST | `RunActiveToolHandler` |
+| Endpoint                   | Method | Handler                   |
+| -------------------------- | ------ | ------------------------- |
+| `/api/v1/tools/{slug}`     | GET    | New: returns tool details |
+| `/api/v1/tools/{slug}/run` | POST   | `RunActiveToolHandler`    |
 
 #### My Runs API (`/api/v1/my-runs/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/my-runs` | GET | New: list user's runs |
-| `/api/v1/my-runs/{run_id}` | GET | New: run detail for user |
+| Endpoint                   | Method | Handler                  |
+| -------------------------- | ------ | ------------------------ |
+| `/api/v1/my-runs`          | GET    | New: list user's runs    |
+| `/api/v1/my-runs/{run_id}` | GET    | New: run detail for user |
 
 #### Contributor API (`/api/v1/my-tools/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/my-tools` | GET | `ListToolsForContributorHandler` |
+| Endpoint           | Method | Handler                          |
+| ------------------ | ------ | -------------------------------- |
+| `/api/v1/my-tools` | GET    | `ListToolsForContributorHandler` |
 
 #### Suggestions API (`/api/v1/suggestions/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/suggestions` | POST | `SubmitSuggestionHandler` |
+| Endpoint              | Method | Handler                   |
+| --------------------- | ------ | ------------------------- |
+| `/api/v1/suggestions` | POST   | `SubmitSuggestionHandler` |
 
 #### Admin API (`/api/v1/admin/`)
 
-| Endpoint | Method | Handler |
-|----------|--------|---------|
-| `/api/v1/admin/tools` | GET | `ListToolsForAdminHandler` |
-| `/api/v1/admin/tools/{id}` | GET | Composite (tool + versions) |
-| `/api/v1/admin/tools/{id}/publish` | POST | `PublishToolHandler` |
-| `/api/v1/admin/tools/{id}/depublish` | POST | `DepublishToolHandler` |
-| `/api/v1/admin/suggestions` | GET | `ListSuggestionsForReviewHandler` |
-| `/api/v1/admin/suggestions/{id}` | GET | New: suggestion detail for review |
-| `/api/v1/admin/suggestions/{id}/decision` | POST | `DecideSuggestionHandler` |
+| Endpoint                                  | Method | Handler                           |
+| ----------------------------------------- | ------ | --------------------------------- |
+| `/api/v1/admin/tools`                     | GET    | `ListToolsForAdminHandler`        |
+| `/api/v1/admin/tools/{id}`                | GET    | Composite (tool + versions)       |
+| `/api/v1/admin/tools/{id}/publish`        | POST   | `PublishToolHandler`              |
+| `/api/v1/admin/tools/{id}/depublish`      | POST   | `DepublishToolHandler`            |
+| `/api/v1/admin/suggestions`               | GET    | `ListSuggestionsForReviewHandler` |
+| `/api/v1/admin/suggestions/{id}`          | GET    | New: suggestion detail for review |
+| `/api/v1/admin/suggestions/{id}/decision` | POST   | `DecideSuggestionHandler`         |
 
 **Keep existing (already migrated to v1):** `/api/v1/editor/*`, `/api/v1/start_action`, `/api/v1/runs/*`, `/api/v1/tools/{id}/sessions/*`
 
----
+______________________________________________________________________
 
 ### Source: Critical Review Points
 
@@ -117,12 +117,12 @@ await api.post(`/api/v1/tools/${slug}/run`, formData)
 
 Vue Router guards must match FastAPI dependencies:
 
-| FastAPI | Vue Guard |
-|---------|-----------|
-| `require_user` | `isAuthenticated` |
+| FastAPI               | Vue Guard                                        |
+| --------------------- | ------------------------------------------------ |
+| `require_user`        | `isAuthenticated`                                |
 | `require_contributor` | `hasRole(['contributor', 'admin', 'superuser'])` |
-| `require_admin` | `hasRole(['admin', 'superuser'])` |
-| `require_superuser` | `hasRole(['superuser'])` |
+| `require_admin`       | `hasRole(['admin', 'superuser'])`                |
+| `require_superuser`   | `hasRole(['superuser'])`                         |
 
 ### Toast System
 
@@ -145,18 +145,18 @@ Existing `CodeMirrorEditor.vue` uses CM6. Ensure same version in component libra
 Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu design tokens** via `@theme inline`
 (ADR-SKRIPT-0032; supersedes ADR-0029).
 
----
+______________________________________________________________________
 
 ### Source: Finalized Decisions
 
-| Question | Decision | Rationale |
-|----------|----------|-----------|
-| Tailwind vs CSS | **Tailwind v4 + design tokens (`@theme`)** | Utility productivity without losing token authority (no Tailwind defaults leak through) |
-| OpenAPI generation | **Yes**, `openapi-typescript` | Single source of truth; prevents frontend/backend drift |
-| Single vs separate admin | **Single SPA** with route guards | Shared auth context, shared components, simpler deployment |
-| Cutover strategy | **Clean break** (no redirects) | SPA replaces all routes; old templates deleted |
+| Question                 | Decision                                   | Rationale                                                                               |
+| ------------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| Tailwind vs CSS          | **Tailwind v4 + design tokens (`@theme`)** | Utility productivity without losing token authority (no Tailwind defaults leak through) |
+| OpenAPI generation       | **Yes**, `openapi-typescript`              | Single source of truth; prevents frontend/backend drift                                 |
+| Single vs separate admin | **Single SPA** with route guards           | Shared auth context, shared components, simpler deployment                              |
+| Cutover strategy         | **Clean break** (no redirects)             | SPA replaces all routes; old templates deleted                                          |
 
----
+______________________________________________________________________
 
 ### Source: Checklist
 
@@ -184,7 +184,7 @@ Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu desig
 - [ ] Update CLAUDE.md with new frontend commands
 - [ ] Update deployment scripts
 
----
+______________________________________________________________________
 
 ### Source: Related Documents
 
@@ -241,23 +241,23 @@ Decision: adopt **Tailwind CSS v4** as a utility layer backed by **HuleEdu desig
 
 **Route mapping:**
 
-| Vue Route | Current HTML Route | Auth |
-|-----------|-------------------|------|
-| `/` | `/` | require_user |
-| `/browse` | `/browse` | require_user |
-| `/browse/:profession` | `/browse/{profession}` | require_user |
-| `/browse/:profession/:category` | `/browse/{profession}/{category}` | require_user |
-| `/apps/:appId` | `/apps/{app_id}` | require_user |
-| `/tools/:slug/run` | `/tools/{slug}/run` | require_user |
-| `/my-runs` | (new) | require_user |
-| `/my-runs/:id` | `/my-runs/{run_id}` | require_user |
-| `/my-tools` | `/my-tools` | require_contributor |
-| `/suggestions/new` | `/suggestions/new` | require_contributor |
-| `/admin/tools` | `/admin/tools` | require_admin |
-| `/admin/tools/:toolId` | `/admin/tools/{tool_id}` | require_contributor |
-| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}` | require_contributor |
-| `/admin/suggestions` | `/admin/suggestions` | require_admin |
-| `/admin/suggestions/:id` | `/admin/suggestions/{suggestion_id}` | require_admin |
+| Vue Route                         | Current HTML Route                   | Auth                |
+| --------------------------------- | ------------------------------------ | ------------------- |
+| `/`                               | `/`                                  | require_user        |
+| `/browse`                         | `/browse`                            | require_user        |
+| `/browse/:profession`             | `/browse/{profession}`               | require_user        |
+| `/browse/:profession/:category`   | `/browse/{profession}/{category}`    | require_user        |
+| `/apps/:appId`                    | `/apps/{app_id}`                     | require_user        |
+| `/tools/:slug/run`                | `/tools/{slug}/run`                  | require_user        |
+| `/my-runs`                        | (new)                                | require_user        |
+| `/my-runs/:id`                    | `/my-runs/{run_id}`                  | require_user        |
+| `/my-tools`                       | `/my-tools`                          | require_contributor |
+| `/suggestions/new`                | `/suggestions/new`                   | require_contributor |
+| `/admin/tools`                    | `/admin/tools`                       | require_admin       |
+| `/admin/tools/:toolId`            | `/admin/tools/{tool_id}`             | require_contributor |
+| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}`  | require_contributor |
+| `/admin/suggestions`              | `/admin/suggestions`                 | require_admin       |
+| `/admin/suggestions/:id`          | `/admin/suggestions/{suggestion_id}` | require_admin       |
 
 ### Phase 4: Backend API Layer
 
@@ -335,7 +335,7 @@ This roadmap is implemented as `EPIC-SKRIPT-11` and its stories:
 Downstream note: EPIC-12 work beyond ST-12-01 is **blocked until ST-11-13** so user-facing UX is implemented once in
 the SPA.
 
----
+______________________________________________________________________
 
 ## Backlog Derivation
 

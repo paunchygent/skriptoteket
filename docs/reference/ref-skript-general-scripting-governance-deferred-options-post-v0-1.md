@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-scripting-governance-deferred-options-post-v0-1
 title: 'Scripting governance: deferred options (post-v0.1)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-scripting-governance-deferred-options
+  - REF-scripting-governance-deferred-options
 summary: 'Scripting governance: deferred options (post-v0.1)'
 ---
 

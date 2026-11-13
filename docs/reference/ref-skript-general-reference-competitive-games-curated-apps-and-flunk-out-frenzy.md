@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-competitive-games-curated-apps-and-flunk-out-fr
 title: 'Reference: Competitive games curated apps and Flunk-Out Frenzy'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code
+  - REF-curated-app-flunk-out-frenzy-architecture-and-foundational-code
 summary: 'Reference: Competitive games curated apps and Flunk-Out Frenzy'
 ---
 

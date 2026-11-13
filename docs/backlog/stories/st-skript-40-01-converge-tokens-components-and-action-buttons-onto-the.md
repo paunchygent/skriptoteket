@@ -4,8 +4,8 @@ id: ST-SKRIPT-40-01
 title: Converge tokens, components and action buttons onto the shared package
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
 status: done
 closeout_review:
@@ -17,10 +17,10 @@ closeout_review:
   approval_evidence: 'The user closed the story on 2026-10-22: TASK-SKRIPT-40-01-01 to TASK-SKRIPT-40-01-04 are done, and the story-level proof on main d9fab7e2 (clean-state repeat sync with no change, frontend and backend suites, migration tests) is recorded in its progress section.'
 epic: EPIC-SKRIPT-40
 acceptance_criteria:
-- The root map adopts tokens, tailwind-theme, horizontal logo, dense-tool-primitives, dense action/icon/status components, dense spinner, segmented toggle, SystemMessage, ToastHost, Vue barrel, ui-glyphs, ui-glyph, ui-symbol and action-buttons; only brand and auth-lifecycle remain null, and clean-state repeat sync changes no file
-- The released glyph peer and complete relative-import closure allow Story 1 to typecheck and build without the Story 2 release
-- Modal surfaces, secondary tone, busy behavior, equal-width toggle, nullable-string messages with preserved dismissal and announcements, ordered store-backed toasts and inline buttons work from the package without local forks
-- Frontend typecheck, unit tests, build and shared design-system validation pass, and the touched workflows pass a Hemma staging walk through the governed HuleEdu browser-session ceremony
+  - The root map adopts tokens, tailwind-theme, horizontal logo, dense-tool-primitives, dense action/icon/status components, dense spinner, segmented toggle, SystemMessage, ToastHost, Vue barrel, ui-glyphs, ui-glyph, ui-symbol and action-buttons; only brand and auth-lifecycle remain null, and clean-state repeat sync changes no file
+  - The released glyph peer and complete relative-import closure allow Story 1 to typecheck and build without the Story 2 release
+  - Modal surfaces, secondary tone, busy behavior, equal-width toggle, nullable-string messages with preserved dismissal and announcements, ordered store-backed toasts and inline buttons work from the package without local forks
+  - Frontend typecheck, unit tests, build and shared design-system validation pass, and the touched workflows pass a Hemma staging walk through the governed HuleEdu browser-session ceremony
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -55,13 +55,13 @@ is locally patched.
 
 ## Tasks
 
-| Order | Task | Outcome |
-| --- | --- | --- |
-| 0 | TASK-SKILL-REP-0186 | All promotions, explicit spinner export, released SystemMessage contract, HuleEdu sync and checks. |
-| 1 | TASK-SKRIPT-40-01-01 | Done 2026-10-12: three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook; Hemma staging walk passed at fc42b918. |
-| 2 | TASK-SKRIPT-40-01-02 | Complete shared Vue subtree, glyph peer/runtime, import migration, message adaptation and toast adapter. |
-| 3 | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules. |
-| 4 | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. Done 2026-10-22: main `e9983e4f`, F1/F2 fixed `3b91b792`, user closure. |
+| Order | Task                 | Outcome                                                                                                                                                  |
+| ----- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | TASK-SKILL-REP-0186  | All promotions, explicit spinner export, released SystemMessage contract, HuleEdu sync and checks.                                                       |
+| 1     | TASK-SKRIPT-40-01-01 | Done 2026-10-12: three-resource adoption, root map, real validator wrapper, clean checkpoints and automatic hook; Hemma staging walk passed at fc42b918. |
+| 2     | TASK-SKRIPT-40-01-02 | Complete shared Vue subtree, glyph peer/runtime, import migration, message adaptation and toast adapter.                                                 |
+| 3     | TASK-SKRIPT-40-01-03 | Shared action-button stylesheet and removal of local button rules.                                                                                       |
+| 4     | TASK-SKRIPT-40-01-04 | Adopt huleedu-integrated 0.1.34 through design-system sync. Done 2026-10-22: main `e9983e4f`, F1/F2 fixed `3b91b792`, user closure.                      |
 
 ## Progress
 
@@ -80,12 +80,12 @@ is locally patched.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | All Story 1 promotions ship in 0186's single release, including the manifest/barrel spinner export. Source: retained D15/D25; R1. |
-| D2 | Package ToastHost is fed by a local newest-first bottom-placement adapter around the unchanged store. Source: retained D10/D22; R4. |
-| D3 | Package tone/slots and optional string model preserve messages through explicit consumer dismissal and ARIA. Source: retained D12/D21; R3. |
-| D4 | Package Vue exports use the shared subtree; root map, mirror, CSS and logo paths stay established. Source: retained D19, replacing the literal retained D6 path term for Vue files; R2. |
-| D5 | Every task runs frontend, shared-validator and touched-screen staging proof. Source: retained D16. |
-| D6 | Story 1 adopts the glyph runtime/peer; Story 2 owns broad meaning migration and old-peer removal. Source: retained D20; R1. |
-| D7 | Sync proof uses admitted clean-map/result/repeat checkpoints with automatic hook enforcement restored before delivery. Source: retained D24; R6. |
+| ID  | Decided contract term                                                                                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | All Story 1 promotions ship in 0186's single release, including the manifest/barrel spinner export. Source: retained D15/D25; R1.                                                       |
+| D2  | Package ToastHost is fed by a local newest-first bottom-placement adapter around the unchanged store. Source: retained D10/D22; R4.                                                     |
+| D3  | Package tone/slots and optional string model preserve messages through explicit consumer dismissal and ARIA. Source: retained D12/D21; R3.                                              |
+| D4  | Package Vue exports use the shared subtree; root map, mirror, CSS and logo paths stay established. Source: retained D19, replacing the literal retained D6 path term for Vue files; R2. |
+| D5  | Every task runs frontend, shared-validator and touched-screen staging proof. Source: retained D16.                                                                                      |
+| D6  | Story 1 adopts the glyph runtime/peer; Story 2 owns broad meaning migration and old-peer removal. Source: retained D20; R1.                                                             |
+| D7  | Sync proof uses admitted clean-map/result/repeat checkpoints with automatic hook enforcement restored before delivery. Source: retained D24; R6.                                        |

@@ -4,8 +4,8 @@ id: ST-SKRIPT-29-12
 title: Klassrumskartan — Canonical symbol language and discoverability contract completion
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,31 +16,14 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-29
 acceptance_criteria:
-- Given the project must choose symbols deliberately rather than screen-by-screen,
-  when this story starts implementation, then a complete visual index exists for current
-  shared icon wrappers, current direct Lucide usage, and all locally available Lucide
-  symbols.
-- Given symbols can drift when the same icon represents unrelated concepts, when this
-  story completes, then every repeated global action, Klassrumskartan domain concept,
-  and approved site-specific semantic slot has one documented icon assignment or a
-  documented deferred decision.
-- Given repeated operations render across planner, editor, and adjacent tool-grade
-  SPA surfaces, when this story ships, then undo, redo, history, configure context,
-  create, close, export/download, zoom, fit view, and overflow use one canonical symbol-and-label
-  language without unicode or surface-local alternates.
-- Given icon-only and icon-led controls remain part of the dense-control system, when
-  this story is complete, then accessible names, visible labels, hover aids, and nearby
-  discoverability cues follow one documented contract across the shared control family.
-- Given configure-context destinations differ by surface such as `Regler` or `Inställningar`,
-  when the final symbol language is applied, then those controls are disambiguated
-  through the canonical label/icon contract rather than collapsing to ambiguous bare
-  icons.
-- Given the repo still relies mainly on browser-native `title` discoverability, when
-  this story defines the symbol/language baseline, then `ST-29-08` can later upgrade
-  that baseline into a custom tooltip system without reopening the canonical operation
-  vocabulary.
+  - Given the project must choose symbols deliberately rather than screen-by-screen, when this story starts implementation, then a complete visual index exists for current shared icon wrappers, current direct Lucide usage, and all locally available Lucide symbols.
+  - Given symbols can drift when the same icon represents unrelated concepts, when this story completes, then every repeated global action, Klassrumskartan domain concept, and approved site-specific semantic slot has one documented icon assignment or a documented deferred decision.
+  - Given repeated operations render across planner, editor, and adjacent tool-grade SPA surfaces, when this story ships, then undo, redo, history, configure context, create, close, export/download, zoom, fit view, and overflow use one canonical symbol-and-label language without unicode or surface-local alternates.
+  - Given icon-only and icon-led controls remain part of the dense-control system, when this story is complete, then accessible names, visible labels, hover aids, and nearby discoverability cues follow one documented contract across the shared control family.
+  - Given configure-context destinations differ by surface such as `Regler` or `Inställningar`, when the final symbol language is applied, then those controls are disambiguated through the canonical label/icon contract rather than collapsing to ambiguous bare icons.
+  - Given the repo still relies mainly on browser-native `title` discoverability, when this story defines the symbol/language baseline, then `ST-29-08` can later upgrade that baseline into a custom tooltip system without reopening the canonical operation vocabulary.
 retired_ids:
-- ST-29-12
+  - ST-29-12
 ---
 
 ## Context

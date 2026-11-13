@@ -41,8 +41,7 @@ This story gives `Regler` its own reduced authoring pattern.
   shared rules-map marker contract and clearer Smart outcome toast copy on
   phone.
 - [PR-0312: Shared phone classroom-map touch viewport gestures](../prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md)
-  (`done` 2026-05-10) adds reusable pinch/touch zoom for the phone `Fast
-  plats` map without changing fixed-seat selection semantics.
+  (`done` 2026-05-10) adds reusable pinch/touch zoom for the phone `Fast plats` map without changing fixed-seat selection semantics.
 - [PR-0313: Shared phone classroom-map real-device pinch remediation](../tasks/task-skript-27-09-03-shared-phone-classroom-map-real-device-pinch-remediation.md)
   follows up on real iPhone evidence that the simplified phone `Fast plats`
   map did not visibly zoom even after the shared gesture layer shipped.

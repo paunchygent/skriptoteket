@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-29-06-rules-no-classroom-fallback
 title: ST-29-06 rules no classroom fallback
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

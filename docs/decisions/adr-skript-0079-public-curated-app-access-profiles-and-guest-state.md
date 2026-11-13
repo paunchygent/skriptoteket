@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0079
 title: Public curated-app access profiles and guest-state boundaries
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0079
+  - ADR-0079
 ---
 
 ## Context

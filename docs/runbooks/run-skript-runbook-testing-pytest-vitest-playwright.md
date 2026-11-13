@@ -4,20 +4,24 @@ id: RUN-SKRIPT-runbook-testing-pytest-vitest-playwright
 title: 'Runbook: Testing (Pytest + Vitest + browser walk)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-testing
+  - RUN-testing
 summary: 'Runbook: Testing (Pytest + Vitest + browser walk)'
 system: skriptoteket-dev
 ---
 
 ## Trigger
+
 ### Source record
+
 This runbook describes how to run tests locally (and what each suite is responsible for).
+
 ### Quick start
+
 ```bash
 ### Backend checks
 pdm run lint
@@ -31,6 +35,7 @@ pdm run fe-test
 ```
 
 Use the shared staging-walk skill for staging and browser proof on Hemma.
+
 ### Changed-component quality
 
 For normal repository changes, use the package-owned changed-component gate:
@@ -40,6 +45,7 @@ pdm run check
 ```
 
 ### Backend (Pytest)
+
 ### When to use
 
 - Unit tests: domain/application behavior with mocked protocols.
@@ -112,7 +118,9 @@ pdm run test-serial --serial-reason "live log of the curated-app model test" tes
   - do not route Klassrumskartan-owned PDF export rendering through Sir Convert-a-Lot
 - Sir Convert remains relevant for general conversion workloads such as Conversion Hub and
   class-list import PDF extraction.
+
 ### Frontend (Vitest)
+
 ### Locations
 
 - Config: `frontend/apps/skriptoteket/vitest.config.ts`
@@ -133,21 +141,27 @@ pdm run fe-test-coverage
 - Coverage output is written under the SPA app (e.g. `frontend/apps/skriptoteket/coverage/`).
 - The canonical filtered command surface is `pdm run fe-test ...` (or `pnpm -C frontend/apps/skriptoteket test ...`), not raw `pnpm ... exec vitest ...`.
 - The SPA wrapper now normalizes both app-local targets like `src/views/apps/ClassroomPlannerEntryView.spec.ts` and repo-root targets like `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerEntryView.spec.ts`.
+
 ### UI / E2E (browser walk)
 
 Use the shared staging-walk skill for staging and browser proof on Hemma.
 
 ## Preconditions
+
 The source record did not define a separate section for this package heading.
 
 ## Steps
+
 The source record did not define a separate section for this package heading.
 
 ## Expected Results
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
 ## Rollback
+
 The source record did not define a separate section for this package heading.

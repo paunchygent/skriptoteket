@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-09
-title: 'Section headings: a higher-level heading opens its own questions instead of
-  becoming exam-wide text'
+title: 'Section headings: a higher-level heading opens its own questions instead of becoming exam-wide text'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -17,9 +16,7 @@ closeout_review:
   approval_evidence: 'Fix b62c8a98 merged b0b090cc; 15 focused tests pass; recorded-corpus diff changes only svenska_2_kursavslutande (Del 1 opens its parent); staging walk document ab1682a6 and Exam.net import 5339836 show each heading once in its own group; user directed no review ceremony for small fixes.'
 task_kind: story
 acceptance_criteria:
-- A DOCX whose Heading 1 section titles each sit above Heading 2 subsections converts
-  with every section title placed once, before the first question of its own section,
-  in the editor and in the Exam.net QTI export
+  - A DOCX whose Heading 1 section titles each sit above Heading 2 subsections converts with every section title placed once, before the first question of its own section, in the editor and in the Exam.net QTI export
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -68,8 +65,8 @@ of runs.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | A heading's reach ends at the next section heading of the same or a higher level; an unknown level counts as deeper than 3. |
+| ID  | Decided contract term                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A heading's reach ends at the next section heading of the same or a higher level; an unknown level counts as deeper than 3.         |
 | D2  | A section heading whose reach starts at a parent's first question opens that parent's instruction, ahead of the subsection heading. |
-| D3  | No other placement rule changes. |
+| D3  | No other placement rule changes.                                                                                                    |

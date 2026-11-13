@@ -4,8 +4,8 @@ id: RUN-SKRIPT-runbook-launch-seo-search-operations-PART-01
 title: 'Runbook: Launch SEO search operations — part 01'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: RUN-SKRIPT-runbook-launch-seo-search-operations
 part: 1
@@ -44,11 +44,11 @@ Official guidance checked on 2026-04-15:
 
 Use these terms in retained evidence:
 
-| Term | Meaning |
-|---|---|
+| Term                      | Meaning                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `crawlable and submitted` | The public URLs return correct HTTP/status/metadata, the sitemap is reachable, and the sitemap or URLs have been submitted in the relevant console. |
-| `eligible for indexing` | Console inspection reports the URL is accessible, not blocked by robots or `noindex`, and technically acceptable for indexing. |
-| `already indexed` | The search provider reports the URL is indexed, or the URL appears in provider-specific search results. |
+| `eligible for indexing`   | Console inspection reports the URL is accessible, not blocked by robots or `noindex`, and technically acceptable for indexing.                      |
+| `already indexed`         | The search provider reports the URL is indexed, or the URL appears in provider-specific search results.                                             |
 
 Do not treat `crawlable and submitted` as `already indexed`. Google documents that recrawling can
 take days or weeks and that requesting a crawl does not guarantee immediate or eventual inclusion.
@@ -240,11 +240,11 @@ Official guidance checked on 2026-04-15:
 
 Use these terms in retained evidence:
 
-| Term | Meaning |
-|---|---|
+| Term                      | Meaning                                                                                                                                             |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `crawlable and submitted` | The public URLs return correct HTTP/status/metadata, the sitemap is reachable, and the sitemap or URLs have been submitted in the relevant console. |
-| `eligible for indexing` | Console inspection reports the URL is accessible, not blocked by robots or `noindex`, and technically acceptable for indexing. |
-| `already indexed` | The search provider reports the URL is indexed, or the URL appears in provider-specific search results. |
+| `eligible for indexing`   | Console inspection reports the URL is accessible, not blocked by robots or `noindex`, and technically acceptable for indexing.                      |
+| `already indexed`         | The search provider reports the URL is indexed, or the URL appears in provider-specific search results.                                             |
 
 Do not treat `crawlable and submitted` as `already indexed`. Google documents that recrawling can
 take days or weeks and that requesting a crawl does not guarantee immediate or eventual inclusion.

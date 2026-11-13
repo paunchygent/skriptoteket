@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0016
 title: 'Klassrumskartan: seat drag preview and room-editor same-tool toggle removal'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,16 +16,11 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- When a teacher drags a student from the seating student list, the drag preview reads
-  as a seating token rather than as a list-row rectangle.
-- When the teacher has a room-editor tool selected and clicks an empty valid target,
-  the matching seat, floor fixture, or wall object is placed.
-- When the teacher clicks an already placed object again with the same tool still
-  selected, that same-kind object is removed instead of requiring the eraser.
-- When the teacher clicks a conflicting occupied target with a different tool selected,
-  the existing object remains unchanged and is not removed as a side effect.
-- A focused browser proof verifies the drag-preview polish and same-tool placement/removal
-  behavior on the live local SPA.
+  - When a teacher drags a student from the seating student list, the drag preview reads as a seating token rather than as a list-row rectangle.
+  - When the teacher has a room-editor tool selected and clicks an empty valid target, the matching seat, floor fixture, or wall object is placed.
+  - When the teacher clicks an already placed object again with the same tool still selected, that same-kind object is removed instead of requiring the eraser.
+  - When the teacher clicks a conflicting occupied target with a different tool selected, the existing object remains unchanged and is not removed as a side effect.
+  - A focused browser proof verifies the drag-preview polish and same-tool placement/removal behavior on the live local SPA.
 ---
 
 ## Context

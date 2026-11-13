@@ -101,6 +101,7 @@ real-data lane.
 
 1. Audit where the student-pool rail lost local stickiness in the current desktop planner layout,
    especially across:
+
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`
@@ -110,6 +111,7 @@ real-data lane.
    consume the same fix rather than drifting again.
 
 3. Restore the shell through CSS containment first:
+
    - fix containment, track sizing, `min-h-0`, and overflow ownership before adding any new runtime
      logic
    - define breakpoint cutover once in the shared layout tokens instead of re-encoding it in JS
@@ -117,11 +119,13 @@ real-data lane.
      a measured bounded-pane scroller
 
 4. Keep the sticky behavior bounded to the local workspace seam:
+
    - the rail should stay visible beside the board/canvas while the teacher scrolls the workspace
    - the rail header should remain fixed
    - the list body should remain the only scrolling region inside the panel
 
 5. Add focused frontend coverage that proves:
+
    - the rail/lane keeps the expected sticky desktop classes
    - the internal scroll body contract stays intact
    - guest/authenticated shared shells do not diverge on the affected surfaces

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-02
 title: 'Exam workspace two-mode layout: file handling and item editing'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-10'
 status: done
 closeout_review:
@@ -15,9 +15,7 @@ closeout_review:
   approval_evidence: User accepted the four-viewport staging walk on 2026-10-10 after independent code reviews approved every merged change.
 task_kind: story
 acceptance_criteria:
-- A teacher converts a DOCX exam into an Exam.net-ready QTI export and edits any item
-  in a desktop-first two-mode workspace without page-long scrolling, at every review
-  viewport
+  - A teacher converts a DOCX exam into an Exam.net-ready QTI export and edits any item in a desktop-first two-mode workspace without page-long scrolling, at every review viewport
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -63,8 +61,7 @@ that workflow harder without a good reason; add what makes it easier.
 
 ## Core Vertical And Performance
 
-`Filer: import DOCX -> Redigera: select item, edit, resolve blockers in the
-drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
+`Filer: import DOCX -> Redigera: select item, edit, resolve blockers in the drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
 
 - Desktop (>= 1024px) is the canonical composition: toolbar plus two panels
   filling the viewport below the app header. The page does not scroll; the
@@ -101,16 +98,16 @@ drawer -> Filer: save -> export QTI -> Exam.net import as expected`.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| L1 | Two modes, Filer and Redigera, switched in one stable toolbar; no three-panel desktop layout (user decision 2026-10-10). |
-| L2 | Redigera is item selection on the left plus a dominating editor; item metadata lives in an on-demand drawer (user decision 2026-10-10). |
-| L3 | Mode selection over expansions and extra clicks; no page-long scrolling; internal scroll only for long lists and oversized items (user decision 2026-10-10). |
-| L4 | Desktop-first; tablet and phone receive their own reduced layouts, with the phone editor as its own screen behind an item selector (user decision 2026-10-10). |
-| L5 | The editor cannot produce items that break the Exam.net contract; Exam.net accepting the test as the teacher expects is the final gate (user decision 2026-10-10). |
-| L6 | The browser walk judges user-friendliness at every review viewport (user decision 2026-10-10). |
-| L7 | Gap-fill items are edited as one continuous question text with each gap as an inline chip; activating a chip edits that gap's accepted answers in place (user decision 2026-10-10). |
-| L8 | On phones, the Redigera toolbar shows "Fråga N av M" with previous/next; the label opens a bottom-sheet list of every question with type, points and review status (ST-29 pattern) (user decision 2026-10-10). |
+| ID  | Decided contract term                                                                                                                                                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| L1  | Two modes, Filer and Redigera, switched in one stable toolbar; no three-panel desktop layout (user decision 2026-10-10).                                                                                       |
+| L2  | Redigera is item selection on the left plus a dominating editor; item metadata lives in an on-demand drawer (user decision 2026-10-10).                                                                        |
+| L3  | Mode selection over expansions and extra clicks; no page-long scrolling; internal scroll only for long lists and oversized items (user decision 2026-10-10).                                                   |
+| L4  | Desktop-first; tablet and phone receive their own reduced layouts, with the phone editor as its own screen behind an item selector (user decision 2026-10-10).                                                 |
+| L5  | The editor cannot produce items that break the Exam.net contract; Exam.net accepting the test as the teacher expects is the final gate (user decision 2026-10-10).                                             |
+| L6  | The browser walk judges user-friendliness at every review viewport (user decision 2026-10-10).                                                                                                                 |
+| L7  | Gap-fill items are edited as one continuous question text with each gap as an inline chip; activating a chip edits that gap's accepted answers in place (user decision 2026-10-10).                            |
+| L8  | On phones, the Redigera toolbar shows "Fråga N av M" with previous/next; the label opens a bottom-sheet list of every question with type, points and review status (ST-29 pattern) (user decision 2026-10-10). |
 
 ## Closeout Evidence
 

@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-29
 title: Klassrumskartan — desktop-first workspace overhaul
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,12 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers use the current denser, desktop-first Klassrumskartan workspace
-  with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard
-  behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen
-  companion lane that replaces cramped phone rails with mode-specific reduced layouts.
+outcome: Teachers use the current denser, desktop-first Klassrumskartan workspace with compressed shell chrome, clearer task hierarchy, calmer overview/dashboard behavior, coherent grouping/seating/rules work surfaces, and a mockup-first small-screen companion lane that replaces cramped phone rails with mode-specific reduced layouts.
 retired_ids:
-- EPIC-29
+  - EPIC-29
 ---
 
 ## Scope

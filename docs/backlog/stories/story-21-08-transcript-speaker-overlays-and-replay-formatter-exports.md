@@ -129,9 +129,7 @@ Latest retained proof
 `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/`
 shows the sanctioned Hemma browser-session path now reaches upload, truthful
 running progress, cancel, durable transcript save, and saved-transcript
-readback. The blocker moved into Skriptoteket client state: `GET
-/speaker-overlays` returned `overlay_count=0`, the subsequent `PUT
-/speaker-overlays` also persisted `overlay_count=0`, no
+readback. The blocker moved into Skriptoteket client state: `GET /speaker-overlays` returned `overlay_count=0`, the subsequent `PUT /speaker-overlays` also persisted `overlay_count=0`, no
 `/formatter-replay/prepare` or `/formatter-replay/complete` requests occurred,
 and the UI falsely rendered `Talarnamn sparade.` / `Exportfiler kan skapas.`
 while the replay button stayed disabled.

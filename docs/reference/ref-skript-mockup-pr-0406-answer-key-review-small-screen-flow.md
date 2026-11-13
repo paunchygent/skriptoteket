@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0406-answer-key-review-small-screen-flow
 title: PR-0406 answer-key review small-screen flow
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -75,15 +75,15 @@ All represented production symbols must resolve through the approved symbol
 contract in
 `docs/reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md`.
 
-| Mockup use | Semantic slot | Approved wrapper/component | Decision |
-|---|---|---|---|
-| Pending AI suggestion and `AI-förslag` badge | AI feature or AI-assisted behavior | `IconAi` / `Sparkles` | Approved. Do not use `Bot` for this PR-0406 state. |
-| `Klart` and selected correct answer | Success/selected | `IconCheck` / `Check` | Approved. The surrounding circle is status-container chrome, not a separate `CircleCheck` symbol. |
-| `Ändrat` | Edit existing answer-key content | `IconEdit` / `PencilLine` | Approved. Use because the current key is teacher-owned modified content. |
-| `Kontrollera` validation issue | Warning/risk state | `IconWarning` / `AlertTriangle` | Approved. Use for current validation problems such as missing key/value. |
-| App shell menu | Small-screen navigation menu | `Menu` from Lucide proper | No existing approved global slot; Lucide inventory contains `Menu`. Implementation should use the existing shell's approved menu treatment or add a wrapper decision before changing shared shell semantics. |
-| Return from detail to list | Local back navigation | `ChevronLeft` from Lucide proper | No existing approved global slot for this exact local back affordance. It is not `IconX`, because the action is navigation, not dismiss/delete. |
-| `Tidigare förslag` disclosure | Disclosure state indicator | `ChevronDown` from Lucide proper | Local control indicator only, not a product semantic. |
+| Mockup use                                   | Semantic slot                      | Approved wrapper/component       | Decision                                                                                                                                                                                                     |
+| -------------------------------------------- | ---------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Pending AI suggestion and `AI-förslag` badge | AI feature or AI-assisted behavior | `IconAi` / `Sparkles`            | Approved. Do not use `Bot` for this PR-0406 state.                                                                                                                                                           |
+| `Klart` and selected correct answer          | Success/selected                   | `IconCheck` / `Check`            | Approved. The surrounding circle is status-container chrome, not a separate `CircleCheck` symbol.                                                                                                            |
+| `Ändrat`                                     | Edit existing answer-key content   | `IconEdit` / `PencilLine`        | Approved. Use because the current key is teacher-owned modified content.                                                                                                                                     |
+| `Kontrollera` validation issue               | Warning/risk state                 | `IconWarning` / `AlertTriangle`  | Approved. Use for current validation problems such as missing key/value.                                                                                                                                     |
+| App shell menu                               | Small-screen navigation menu       | `Menu` from Lucide proper        | No existing approved global slot; Lucide inventory contains `Menu`. Implementation should use the existing shell's approved menu treatment or add a wrapper decision before changing shared shell semantics. |
+| Return from detail to list                   | Local back navigation              | `ChevronLeft` from Lucide proper | No existing approved global slot for this exact local back affordance. It is not `IconX`, because the action is navigation, not dismiss/delete.                                                              |
+| `Tidigare förslag` disclosure                | Disclosure state indicator         | `ChevronDown` from Lucide proper | Local control indicator only, not a product semantic.                                                                                                                                                        |
 
 ## Runtime And Proof Boundary
 

@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-huleedu-launch-surface-and-shared-auth-topology
 title: 'Reference: HuleEdu launch surface and shared auth topology (2026-04-08)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08
+  - REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08
 summary: 'Reference: HuleEdu launch surface and shared auth topology (2026-04-08)'
 ---
 
@@ -34,24 +34,24 @@ app-host needs.
 
 ### Ownership Matrix
 
-| Surface / concern | Primary owner | Why |
-|---|---|---|
-| `https://hule.education` landing page | HuleEdu | It is the product-family entrypoint, not a Skriptoteket-specific app shell |
-| `https://api.hule.education` browser auth/API edge | HuleEdu | `ADR-0076` makes HuleEdu Gateway/Identity the sole browser auth authority |
-| Browser session authority and CSRF contract | HuleEdu | Shared cross-app auth contract must not be owned locally by Skriptoteket |
-| `/auth/login` interruption and return-to-origin handling inside Skriptoteket | Skriptoteket, aligned to HuleEdu contract | Skriptoteket keeps its redirect-preserving app UX while the auth ceremony can be HuleEdu-owned |
-| `https://skriptoteket.hule.education` public app host | Skriptoteket | It is the real live product host today and the right place for app-specific crawlability work |
-| `robots.txt`, `sitemap.xml`, canonical tags, and route-level metadata for Skriptoteket public pages | Skriptoteket | These are app-host concerns on the Skriptoteket surface |
+| Surface / concern                                                                                   | Primary owner                             | Why                                                                                            |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `https://hule.education` landing page                                                               | HuleEdu                                   | It is the product-family entrypoint, not a Skriptoteket-specific app shell                     |
+| `https://api.hule.education` browser auth/API edge                                                  | HuleEdu                                   | `ADR-0076` makes HuleEdu Gateway/Identity the sole browser auth authority                      |
+| Browser session authority and CSRF contract                                                         | HuleEdu                                   | Shared cross-app auth contract must not be owned locally by Skriptoteket                       |
+| `/auth/login` interruption and return-to-origin handling inside Skriptoteket                        | Skriptoteket, aligned to HuleEdu contract | Skriptoteket keeps its redirect-preserving app UX while the auth ceremony can be HuleEdu-owned |
+| `https://skriptoteket.hule.education` public app host                                               | Skriptoteket                              | It is the real live product host today and the right place for app-specific crawlability work  |
+| `robots.txt`, `sitemap.xml`, canonical tags, and route-level metadata for Skriptoteket public pages | Skriptoteket                              | These are app-host concerns on the Skriptoteket surface                                        |
 
 ### Current Reality vs Target
 
-| Area | Current reality after 2026-05-02 `TASK-0509` | Target shape |
-|---|---|---|
-| `hule.education` | HuleEdu-owned runtime host on Hemma | Real HuleEdu landing page |
-| `api.hule.education` | HuleEdu-owned Gateway/auth edge with matching TLS/SNI proof | Real HuleEdu API gateway and browser auth edge |
-| `skriptoteket.hule.education` | Real live app host | Canonical public Skriptoteket app host |
-| Skriptoteket browser auth authority | Consumes HuleEdu-owned session authority via `EPIC-28` | Consumes HuleEdu-owned session authority via `EPIC-28` |
-| Skriptoteket launch SEO | Mixed with topology ambiguity if left unrefined | Narrowed to app-host crawlability under the frozen topology |
+| Area                                | Current reality after 2026-05-02 `TASK-0509`                | Target shape                                                |
+| ----------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| `hule.education`                    | HuleEdu-owned runtime host on Hemma                         | Real HuleEdu landing page                                   |
+| `api.hule.education`                | HuleEdu-owned Gateway/auth edge with matching TLS/SNI proof | Real HuleEdu API gateway and browser auth edge              |
+| `skriptoteket.hule.education`       | Real live app host                                          | Canonical public Skriptoteket app host                      |
+| Skriptoteket browser auth authority | Consumes HuleEdu-owned session authority via `EPIC-28`      | Consumes HuleEdu-owned session authority via `EPIC-28`      |
+| Skriptoteket launch SEO             | Mixed with topology ambiguity if left unrefined             | Narrowed to app-host crawlability under the frozen topology |
 
 ### Production Reality After Hemma Reboot Readiness Proof
 
@@ -133,12 +133,12 @@ Downstream work in `EPIC-35`:
 
 ### Decision Tree
 
-| Question | Decision |
-|---|---|
-| Should Skriptoteket take over the apex host for launch? | No |
-| Should Skriptoteket wait to make its public URLs crawlable until the full HuleEdu platform is perfect? | No |
-| Should Skriptoteket freeze its own app-host assumptions around the intended HuleEdu topology first? | Yes |
-| Should `EPIC-28` own the cross-repo auth/topology dependency freeze and let `EPIC-35` consume it? | Yes |
+| Question                                                                                               | Decision |
+| ------------------------------------------------------------------------------------------------------ | -------- |
+| Should Skriptoteket take over the apex host for launch?                                                | No       |
+| Should Skriptoteket wait to make its public URLs crawlable until the full HuleEdu platform is perfect? | No       |
+| Should Skriptoteket freeze its own app-host assumptions around the intended HuleEdu topology first?    | Yes      |
+| Should `EPIC-28` own the cross-repo auth/topology dependency freeze and let `EPIC-35` consume it?      | Yes      |
 
 ### Planning Consequences
 

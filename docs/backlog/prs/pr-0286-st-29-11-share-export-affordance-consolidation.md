@@ -63,32 +63,32 @@ stable `Dela` affordance that opens a `Dela och exportera` panel:
 
 ## Implementation Plan
 
-1. Add a small typed action model for planner distribution actions, for example
-   `plannerShareExportActions.ts`, so grouping/seating file-option lists no
-   longer import types from a visual export component.
-2. Replace the paired toolbar composition in
-   `PlannerGroupingWorkspaceToolbar.vue` and `PlannerSeatingWorkspaceToolbar.vue`
-   with one combined `PlannerShareExportPanel.vue` surface.
-3. Preserve `classroomPlannerExportFlow.ts` and `classroomPlannerShareFlow.ts`
-   as separate orchestration seams. The new component emits export and share
-   intents back to the existing shell flows instead of merging state machines.
-4. Reuse the existing dense action/button/spinner primitives from `PR-0281`.
-   The toolbar trigger should stay width-stable while share/export operations
-   are busy.
-5. Extract panel lifecycle behavior only if needed, for example to
-   `useDensePopoverSheet.ts`, rather than overloading `useDenseMenuSurface.ts`
-   with dialog/list behavior. The combined surface is a dialog/popover sheet,
-   not a `role=\"menu\"` list.
-6. Move the current share-link panel body into the combined panel's `Länk`
-   section with the same desktop popover and mobile bottom-sheet expectations
-   established by `PR-0275`.
-7. Add a `Filer` section that renders the active workspace's file actions using
-   dense controls, local busy/error feedback, and the same option ordering and
-   default semantics as the current split export control.
-8. Update data-test selectors deliberately so tests express the new model:
-   one `Dela` trigger plus file-action rows inside `Dela och exportera`.
-9. Add visual/browser proof against the approved mockup bundle at
-   `docs/mockups/st-29-11-share-export-affordance/`.
+01. Add a small typed action model for planner distribution actions, for example
+    `plannerShareExportActions.ts`, so grouping/seating file-option lists no
+    longer import types from a visual export component.
+02. Replace the paired toolbar composition in
+    `PlannerGroupingWorkspaceToolbar.vue` and `PlannerSeatingWorkspaceToolbar.vue`
+    with one combined `PlannerShareExportPanel.vue` surface.
+03. Preserve `classroomPlannerExportFlow.ts` and `classroomPlannerShareFlow.ts`
+    as separate orchestration seams. The new component emits export and share
+    intents back to the existing shell flows instead of merging state machines.
+04. Reuse the existing dense action/button/spinner primitives from `PR-0281`.
+    The toolbar trigger should stay width-stable while share/export operations
+    are busy.
+05. Extract panel lifecycle behavior only if needed, for example to
+    `useDensePopoverSheet.ts`, rather than overloading `useDenseMenuSurface.ts`
+    with dialog/list behavior. The combined surface is a dialog/popover sheet,
+    not a `role=\"menu\"` list.
+06. Move the current share-link panel body into the combined panel's `Länk`
+    section with the same desktop popover and mobile bottom-sheet expectations
+    established by `PR-0275`.
+07. Add a `Filer` section that renders the active workspace's file actions using
+    dense controls, local busy/error feedback, and the same option ordering and
+    default semantics as the current split export control.
+08. Update data-test selectors deliberately so tests express the new model:
+    one `Dela` trigger plus file-action rows inside `Dela och exportera`.
+09. Add visual/browser proof against the approved mockup bundle at
+    `docs/mockups/st-29-11-share-export-affordance/`.
 10. During implementation closeout, update this PR, `ST-29-11`, `ST-26-06`,
     and `.codex/handoff.md` with exact verification commands and artifacts.
 

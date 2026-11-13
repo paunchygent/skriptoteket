@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0007
 title: Sandbox transient settings + input multi_enum + clear settings API
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,14 +18,10 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Given the editor sandbox settings form has unsaved values, when testkor starts,
-  then the run uses those transient settings values without persisting them.
-- Given a published tool has saved settings, when the user clears settings, then persisted
-  settings are removed and subsequent runs use defaults.
-- Given sandbox settings are saved, when the user clears sandbox settings, then the
-  sandbox settings store is reset without affecting production settings.
-- Given input_schema uses multi_enum, when the user runs a tool, then the UI renders
-  the input and the runner receives the selected values via SKRIPTOTEKET_INPUTS.
+  - Given the editor sandbox settings form has unsaved values, when testkor starts, then the run uses those transient settings values without persisting them.
+  - Given a published tool has saved settings, when the user clears settings, then persisted settings are removed and subsequent runs use defaults.
+  - Given sandbox settings are saved, when the user clears sandbox settings, then the sandbox settings store is reset without affecting production settings.
+  - Given input_schema uses multi_enum, when the user runs a tool, then the UI renders the input and the runner receives the selected values via SKRIPTOTEKET_INPUTS.
 ---
 
 ## Context
@@ -33,7 +29,6 @@ acceptance_criteria:
 ## Impact And Escalation
 
 The source task is repository-scoped; impact and escalation remain bounded by the retained source contract.
-
 
 ### Problem
 
@@ -56,22 +51,26 @@ for published tools in /tools, and input_schema lacks multi_enum parity with set
 
 ### Implementation plan
 
-1) Sandbox transient settings
+1. Sandbox transient settings
+
    - Extend sandbox run API to accept `settings_values` (JSON object).
    - Validate against the snapshot settings schema and use for that run only.
    - Do not persist; saved sandbox settings remain separate.
 
-2) Clear settings API
+2. Clear settings API
+
    - Add DELETE endpoints:
      - `/api/v1/tools/{tool_id}/settings`
      - `/api/v1/editor/tool-versions/{version_id}/sandbox-settings`
    - Implement handlers to delete/reset session state for the settings context.
 
-3) Input schema multi_enum
+3. Input schema multi_enum
+
    - Add `multi_enum` to input schema domain model + validation.
    - Update OpenAPI types and frontend input rendering + value normalization.
 
-4) UI wiring
+4. UI wiring
+
    - Add "Rensa" action to production settings UI and sandbox settings card.
    - Ensure clear operations update local state and show success feedback.
    - Pass transient settings values into sandbox run requests.

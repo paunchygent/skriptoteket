@@ -4,18 +4,17 @@ id: REF-SKRIPT-GENERAL-reference-hemma-kdump-amdgpu-blacklist-dc-off-test-2026-0
 title: 'Reference: hemma kdump AMDGPU blacklist + DC-off test (2026-01-11)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-kdump-amdgpu-blacklist-dc0-test-2026-01-11
+  - REF-hemma-kdump-amdgpu-blacklist-dc0-test-2026-01-11
 summary: 'Reference: hemma kdump AMDGPU blacklist + DC-off test (2026-01-11)'
 ---
 
 ## Overview
-
 
 Stabilization steps after an AMDGPU display-path WARN panic:
 
@@ -24,12 +23,10 @@ Stabilization steps after an AMDGPU display-path WARN panic:
 
 ## Facts And Semantics
 
-
 - `/proc/cmdline` includes `amdgpu.dc=0` after the one-time boot.
 - Host reachable via SSH; local display shows static after early boot (expected with DC disabled).
 
 ### Source: Actions
-
 
 - Kdump crash-kernel blacklist:
   - Set `KDUMP_CMDLINE_APPEND="... modprobe.blacklist=amdgpu"` in `/etc/default/kdump-tools`.
@@ -41,7 +38,6 @@ Stabilization steps after an AMDGPU display-path WARN panic:
   - One-time test boot: `sudo grub-reboot "Ubuntu (dc=0 test)" && sudo reboot`.
 
 ### Source: Post-crash checklist (kdump + DC-off test)
-
 
 Run these after the next crash/reboot to capture evidence quickly.
 
@@ -69,12 +65,10 @@ ssh hemma "cat /proc/cmdline | rg amdgpu.dc=0"
 
 ### Source: Recovery
 
-
 - Normal reboot returns to the default boot entry (no `amdgpu.dc=0`).
 - Explicit safe boot (one-time): `sudo grub-reboot "Ubuntu (safe)" && sudo reboot`.
 
 ### Source: Related
-
 
 - Runbook: `docs/runbooks/runbook-home-server.md` (Crash Capture Hardening + DC-off test).
 - Prior context: `docs/reference/reports/ref-hemma-host-freeze-investigation-2026-01-03.md`.

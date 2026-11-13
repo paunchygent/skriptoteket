@@ -4,13 +4,13 @@ id: REF-SKRIPT-DECISIONS-klassrumskartan-smart-assignment-v1-decision-memo-2026-
 title: Klassrumskartan smart assignment v1 decision memo (2026-03-25)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: decisions
 retired_ids:
-- REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25
+  - REF-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25
 summary: Klassrumskartan smart assignment v1 decision memo (2026-03-25)
 ---
 

@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0351-transcript-progress-and-export-workspace-ux
 title: PR-0351 transcript progress and export workspace UX
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

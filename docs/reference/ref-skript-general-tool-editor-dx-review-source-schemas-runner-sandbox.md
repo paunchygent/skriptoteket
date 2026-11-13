@@ -4,18 +4,17 @@ id: REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox
 title: Tool editor DX review (source, schemas, runner, sandbox)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-tool-editor-dx-review-2025-12-29
+  - REF-tool-editor-dx-review-2025-12-29
 summary: Tool editor DX review (source, schemas, runner, sandbox)
 ---
 
 ## Overview
-
 
 This document captures a source-based review of the current **tool editor** experience in Skriptoteket (SPA),
 covering:
@@ -30,7 +29,6 @@ covering:
 No separate facts and semantics is stated in the source.
 
 ### Source: Current implementation map
-
 
 ### Frontend (SPA)
 
@@ -65,14 +63,12 @@ No separate facts and semantics is stated in the source.
 
 ### Source: Strengths
 
-
 - End-to-end sandbox iteration is strong: snapshots + lock enforcement + next_actions parity + sandbox-only settings.
 - The runner is reasonably well isolated (no network, non-root user, caps dropped, read-only FS, tmpfs).
 - Deterministic UI payload normalization + budgets keep the UI contract safe and bounded.
 - Editor intelligence already provides meaningful “guardrails” for common mistakes.
 
 ### Source: Key friction / risks
-
 
 ### 1) `input_schema` semantics are easy to get wrong
 
@@ -106,7 +102,6 @@ Version history navigation exists, but reviewers lack a first-class diff/compare
 
 ### Source: Follow-up backlog themes
 
-
 - Editor sandbox debug visibility:
   `docs/backlog/stories/story-14-12-editor-sandbox-debug-panel.md`
 - Schema editor and validation UX:
@@ -133,7 +128,6 @@ Related ADR:
 
 ### Source: Pro mode: combined bundle view (proposal)
 
-
 Some authors prefer a “single artifact” editing experience. A proposed Pro mode is a combined editor buffer that
 contains `tool.py`, `input_schema.json`, and `settings_schema.json` as delimited sections, while persistence remains
 separate fields.
@@ -141,7 +135,6 @@ separate fields.
 See: `docs/backlog/stories/story-14-29-editor-pro-mode-combined-bundle-view.md`
 
 ### Source: Interactive “gap” triage (authoring + runtime)
-
 
 The items below come up frequently when authoring or using multi-step interactive tools.
 
@@ -169,23 +162,22 @@ See also:
 
 ### Source: North-star use case: Seating planner (multi-step, interactive layout)
 
-
 Concrete scenario we want the platform to support well:
 
-1) User provides a roster list (paste or upload).
-2) Tool parses and extracts students.
-3) User configures a simple “slot” interface:
+1. User provides a roster list (paste or upload).
+2. Tool parses and extracts students.
+3. User configures a simple “slot” interface:
    - desks/tables as rectangles with a student slot
    - desks can be grouped into rows (1–5 per row) inside a “room” rectangle
    - room orientation objects (door, window, whiteboard)
-4) Tool generates an initial placement constrained to slots + additional logic (gender, student attributes, previous
+4. Tool generates an initial placement constrained to slots + additional logic (gender, student attributes, previous
    placement, settings).
-5) User manually moves students between slots to fine-tune.
-6) User finalizes → tool outputs:
+5. User manually moves students between slots to fine-tune.
+6. User finalizes → tool outputs:
    - an artifact (downloadable)
    - a JSON representation of layout + groups + student names + assignments
-7) User returns later → prior rosters/layouts are available from memory and can be used as a starting point.
-8) Repeat with tweaks/filters and remembered preferences.
+7. User returns later → prior rosters/layouts are available from memory and can be used as a starting point.
+8. Repeat with tweaks/filters and remembered preferences.
 
 How this maps to the planned work:
 
@@ -202,7 +194,6 @@ How this maps to the planned work:
   - ADR foundation: `docs/adr/adr-0047-layout-editor-v1.md`
 
 ### Source: Deferred “bigger bets”
-
 
 - Schema “v2” (defaults/required/help/min/max/placeholder) across domain + OpenAPI + SPA.
 - Vega-Lite end-to-end support (policy + normalization + client renderer).

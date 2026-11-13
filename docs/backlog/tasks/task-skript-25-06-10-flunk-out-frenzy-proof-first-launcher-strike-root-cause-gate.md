@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-25-06-10
-title: 'Flunk-Out Frenzy: proof-first launcher strike root-cause gate and seam-contract
-  lock'
+title: 'Flunk-Out Frenzy: proof-first launcher strike root-cause gate and seam-contract lock'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -20,27 +19,12 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given PR-0206 proved `no_effective_strike` under full-charge release, when this
-  task is complete, then telemetry and tests deterministically classify whether failure
-  is pre-contact pose mismatch or post-contact route-capture gating, without production
-  geometry/runtime behavior edits.
-- Given no-shortcuts invariants are non-negotiable, when this task is complete, then
-  no direct launch `setLinvel(...)` shortcut, no synthetic launch gate events, no
-  seam-tolerance relaxation, and no helper/freehand seam geometry are introduced.
-- Given the launcher seam contract must remain donor-faithful, when this task is complete,
-  then endpoint-bridge authoring remains exactly `[overheadExitAnchor, descentEntryAnchor]`
-  (two points only) with no intermediate bridge points, no helper rails, and no freehand
-  seam geometry.
-- Given this task is proof-first only, when this task is complete, then the unchanged
-  full PR-0206 matrix (`rest`, `short`, `medium`, `full`, `relaunch`) is executed
-  under identical thresholds, step budgets, and case set, and any red outcomes remain
-  explicit evidence instead of being greened by production behavior changes.
-- Given swplunger/sw16 semantic separation is hard-required, when this task is complete,
-  then `swplunger` remains feed/rest anchor and `sw16` remains exit anchor with real
-  exit transition semantics.
-- Given handoff consistency is required, when this task is complete, then docs and
-  handoff notes contain no conflicting guidance about scope, invariants, or evidence
-  expectations.
+  - Given PR-0206 proved `no_effective_strike` under full-charge release, when this task is complete, then telemetry and tests deterministically classify whether failure is pre-contact pose mismatch or post-contact route-capture gating, without production geometry/runtime behavior edits.
+  - Given no-shortcuts invariants are non-negotiable, when this task is complete, then no direct launch `setLinvel(...)` shortcut, no synthetic launch gate events, no seam-tolerance relaxation, and no helper/freehand seam geometry are introduced.
+  - Given the launcher seam contract must remain donor-faithful, when this task is complete, then endpoint-bridge authoring remains exactly `[overheadExitAnchor, descentEntryAnchor]` (two points only) with no intermediate bridge points, no helper rails, and no freehand seam geometry.
+  - Given this task is proof-first only, when this task is complete, then the unchanged full PR-0206 matrix (`rest`, `short`, `medium`, `full`, `relaunch`) is executed under identical thresholds, step budgets, and case set, and any red outcomes remain explicit evidence instead of being greened by production behavior changes.
+  - Given swplunger/sw16 semantic separation is hard-required, when this task is complete, then `swplunger` remains feed/rest anchor and `sw16` remains exit anchor with real exit transition semantics.
+  - Given handoff consistency is required, when this task is complete, then docs and handoff notes contain no conflicting guidance about scope, invariants, or evidence expectations.
 ---
 
 ## Context
@@ -86,6 +70,7 @@ Explicit out-of-scope clarification:
 ### Implementation plan
 
 1. Lock authored seam contract in compile-time proof (no authoring edits):
+
    - Assert endpoint-bridge contract remains exact and explicit:
      - bridge path is exactly `[overheadExitAnchor, descentEntryAnchor]`
      - bridge path length is exactly `2`
@@ -95,6 +80,7 @@ Explicit out-of-scope clarification:
    - Preserve donor ownership boundaries and route chain identity (`overhead -> endpoint-bridge -> descent`) as authored.
 
 2. Add deterministic rest-contract assertions:
+
    - At fed/rest state, enforce strike-observability conditions in proof:
      - feed sensor occupancy at serve baseline (`feedInside = true`)
      - exact rest-separation predicate:
@@ -104,6 +90,7 @@ Explicit out-of-scope clarification:
    - Keep these as testable invariants, not runtime heuristics.
 
 3. Preserve PR-0206 matrix as unchanged truth source:
+
    - Use unchanged PR-0206 fixed parameters:
      - `dtMs=16`, `holdSteps=8/26/56`, `relaunchGapSteps=16`, `observationSteps=60`
    - Use unchanged PR-0206 thresholds:
@@ -116,6 +103,7 @@ Explicit out-of-scope clarification:
      - any remaining red cases must be retained as explicit failure evidence with stable reason-codes/telemetry fields.
 
 4. Preserve no-shortcuts and seam semantics:
+
    - Keep route-entry and sw16 semantics tied to physical transitions.
    - Keep terminal-route-only handoff semantics.
    - Do not introduce fallback behaviors that bypass physical strike.

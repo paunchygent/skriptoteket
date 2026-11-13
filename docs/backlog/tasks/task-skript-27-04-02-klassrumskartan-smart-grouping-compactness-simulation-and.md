@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-27-04-02
-title: 'Klassrumskartan: smart grouping compactness simulation and seating-map overlay
-  tuning'
+title: 'Klassrumskartan: smart grouping compactness simulation and seating-map overlay tuning'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -18,41 +17,17 @@ closeout_review:
 story: ST-SKRIPT-27-04
 task_kind: story
 acceptance_criteria:
-- Given the grouping solver evaluates compactness candidates, when one candidate would
-  create uneven group sizes, then it is rejected before compactness scoring so final
-  group sizes never differ by more than one student.
-- Given the compactness lane needs tuning, when the first simulation pass runs, then
-  it uses whole-class seating projections rather than sparse tracked seating pairs
-  as the classroom-aware input.
-- Given keep-apart students still need to be absorbed into coherent nearby groups,
-  when the next compactness pass runs, then the solver adds one topology-aware post-separation
-  cohesion penalty instead of relying on pairwise Manhattan distance alone.
-- Given one simulation scenario runs, when operator artifacts are written, then the
-  output includes rough seating-map overlays where each student is rendered at their
-  seat and group-local splashes or islands remain visible.
-- Given one simulation candidate is rendered, when one group occupies multiple disconnected
-  seat regions, then the overlay shows multiple separate group-region boxes rather
-  than one misleading room-wide rectangle.
-- Given a candidate creates disconnected same-group islands, when topology-aware cohesion
-  scoring runs, then extra components, singleton components, and distant secondary
-  clusters are penalized separately so the comparison can reveal which term improves
-  the overlay.
-- Given multiple compactness parameter candidates are compared, when the summary artifact
-  is written, then it reports explicit-rule validity, compactness spread metrics,
-  and group-component counts alongside the generated PNG overlays.
-- Given canonical classroom scenarios already exist for smart seating and grouping,
-  when the simulation lane is implemented, then it reuses those same named classrooms
-  and rosters rather than inventing toy fixtures.
-- Given the next tuning pass completes, when we inspect the artifacts, then we can
-  compare a no-compactness baseline, a quadratic-only candidate, and at least two
-  topology-aware anti-island candidates for the same seating map.
-- Given canonical rooms differ structurally, when we inspect the overlays, then the
-  tuning lane can compare block-fit candidates for table-bound rooms instead of assuming
-  one compactness curve works equally well across benches and table islands.
-- Given greedy search order can change compactness outcomes, when the simulation report
-  runs, then each candidate is evaluated across repeated randomized trials, the best
-  found layout is rendered, and the summary reports the success rates instead of only
-  one lucky run.
+  - Given the grouping solver evaluates compactness candidates, when one candidate would create uneven group sizes, then it is rejected before compactness scoring so final group sizes never differ by more than one student.
+  - Given the compactness lane needs tuning, when the first simulation pass runs, then it uses whole-class seating projections rather than sparse tracked seating pairs as the classroom-aware input.
+  - Given keep-apart students still need to be absorbed into coherent nearby groups, when the next compactness pass runs, then the solver adds one topology-aware post-separation cohesion penalty instead of relying on pairwise Manhattan distance alone.
+  - Given one simulation scenario runs, when operator artifacts are written, then the output includes rough seating-map overlays where each student is rendered at their seat and group-local splashes or islands remain visible.
+  - Given one simulation candidate is rendered, when one group occupies multiple disconnected seat regions, then the overlay shows multiple separate group-region boxes rather than one misleading room-wide rectangle.
+  - Given a candidate creates disconnected same-group islands, when topology-aware cohesion scoring runs, then extra components, singleton components, and distant secondary clusters are penalized separately so the comparison can reveal which term improves the overlay.
+  - Given multiple compactness parameter candidates are compared, when the summary artifact is written, then it reports explicit-rule validity, compactness spread metrics, and group-component counts alongside the generated PNG overlays.
+  - Given canonical classroom scenarios already exist for smart seating and grouping, when the simulation lane is implemented, then it reuses those same named classrooms and rosters rather than inventing toy fixtures.
+  - Given the next tuning pass completes, when we inspect the artifacts, then we can compare a no-compactness baseline, a quadratic-only candidate, and at least two topology-aware anti-island candidates for the same seating map.
+  - Given canonical rooms differ structurally, when we inspect the overlays, then the tuning lane can compare block-fit candidates for table-bound rooms instead of assuming one compactness curve works equally well across benches and table islands.
+  - Given greedy search order can change compactness outcomes, when the simulation report runs, then each candidate is evaluated across repeated randomized trials, the best found layout is rendered, and the summary reports the success rates instead of only one lucky run.
 ---
 
 ## Context
@@ -63,8 +38,8 @@ Source: `docs/backlog/prs/pr-0178-st-27-04-smart-grouping-compactness-simulation
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-27-04-02 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -138,25 +113,29 @@ the classroom-aware lane produce compact local group regions without violating s
 ### Implementation plan
 
 1. Add one simulation/reporting lane on top of the canonical smart-grouping scenarios.
+
    - Reuse the existing named classrooms and rosters already used by the smart seating/grouping
      simulations.
    - Build full-class seating projections instead of sparse tracked-pair seating hints.
 
 2. Extend the compactness model beyond pairwise spread.
+
    - Keep production defaults reviewable through explicit config.
    - Add one topology-aware post-separation cohesion lane that can penalize:
      - disconnected same-group components
      - singleton components
      - distant secondary clusters relative to the nearest same-group cluster
    - Keep explicit rules and balanced sizes ahead of that lane.
-  - Add room-structure lanes for both table-block and bench-chain experiments so table-bound rooms
-    and corridor/bench rooms can reward different local shapes instead of sharing one generic
-    compactness signal.
-  - Add one post-construction local-improvement phase after the greedy assignment pass so the
-    solver can try pair swaps across groups and keep the single best improving full-score swap
-    before the report renders the candidate.
+
+- Add room-structure lanes for both table-block and bench-chain experiments so table-bound rooms
+  and corridor/bench rooms can reward different local shapes instead of sharing one generic
+  compactness signal.
+- Add one post-construction local-improvement phase after the greedy assignment pass so the
+  solver can try pair swaps across groups and keep the single best improving full-score swap
+  before the report renders the candidate.
 
 3. Parameterize compactness tuning for simulation runs.
+
    - Allow the simulation harness to sweep:
      - elastic radius
      - quadratic overflow penalty
@@ -170,16 +149,18 @@ the classroom-aware lane produce compact local group regions without violating s
      - the aggregate rule/compactness hit rates for robustness comparisons
 
 4. Generate operator-facing overlay artifacts.
+
    - Render one rough seating map where each seated student is one square.
    - Color student squares by assigned group.
    - Draw separate region boxes for disconnected same-group seat components.
    - Keep row and column spacing visible so islands and splashes read immediately.
 
 5. Write one machine-readable summary artifact for each run set.
+
    - Report explicit-rule validity.
    - Report within-group spread metrics.
    - Report disconnected component counts per group.
-    - Report singleton-island counts and nearest-cluster spread where applicable.
+   - Report singleton-island counts and nearest-cluster spread where applicable.
    - Report split-block group counts and secondary-block spill so table-fit tradeoffs are visible.
    - Compare baseline vs compactness candidates for the same seating map.
 

@@ -7,8 +7,7 @@ owners: "agents"
 created: 2026-04-08
 updated: 2026-04-08
 epic: "EPIC-32"
-dependencies:
-  ["ADR-0011", "ADR-0027", "ST-11-22", "ST-32-07", "ST-32-08", "ST-32-09"]
+dependencies: ["ADR-0011", "ADR-0027", "ST-11-22", "ST-32-07", "ST-32-08", "ST-32-09"]
 acceptance_criteria:
   - "Given a signed-out visitor starts auth from `/`, `/public/apps/classroom.group-seating-studio`, or the signed-out auth routes, when auth entry begins, then Skriptoteket navigates to the canonical dedicated auth-entry page `/auth/login` instead of opening an in-place modal on the current page."
   - "Given the auth-entry page replaces the overloaded signed-out modal seam, when it renders, then it preserves an explicit intended post-login destination through a route-level contract without depending on route-local modal state."

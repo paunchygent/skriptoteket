@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0018
 title: 'Observability: structured logging and correlation IDs (HuleEdu compatible)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0018
+  - ADR-0018
 ---
 
 ## Context

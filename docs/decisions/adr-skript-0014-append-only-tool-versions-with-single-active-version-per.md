@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0014
 title: Append-only tool versions with single active version per tool
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0014
+  - ADR-0014
 ---
 
 ## Context
@@ -29,8 +29,6 @@ Tools need draft testing, approval workflows, and exactly one published version 
 ## Decision
 
 ### Source: Decision
-
-
 
 ### Source: Version lifecycle states
 
@@ -52,6 +50,7 @@ Draft → InReview → Active → Archived
 ### Source: Single active version
 
 - `tools.active_version_id` points to the one ACTIVE `tool_versions` record
+
 - Database constraint (partial unique index) prevents multiple ACTIVE per tool:
 
   ```sql
@@ -77,8 +76,6 @@ Rationale for copy-on-activate over pointer-switching:
 - Audit trail reads naturally: "Rolled back by creating v17 from v12"
 
 ### Source: Implementation status (as of 2025-12-15)
-
-
 
 ## Non-Decisions
 

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-11
 title: Rewire the labeling feasibility report to the v14 batch recordings
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -17,9 +17,9 @@ closeout_review:
   approval_evidence: 'Codex Sol 6.1 ruthless-reviewer requested changes on the rewire (typed loader, 615-line methods.py, dead code) and approved the repair committed as aae91639. Evaluate on an empty evidence dir with no API keys exits 0; converter_today identical for all eight exams before and after the repair; ruff, ruff format and explicit-file mypy (13 files) pass. Records in Skriptoteket session 01a13f02-cbaf-71c0-bb3b-f16fc81c7017 evidence/ (parent-evaluate, parent-evaluate-2, repair-summary.md, results/).'
 task_kind: story
 acceptance_criteria:
-- The evaluate command scores the converter baseline from the committed v14 docx_w batch recordings for all eight corpus exams, with no path argument
-- No reference to round1.json, the old retained-context recordings path or the --converter-recordings flag remains
-- ruff and mypy pass on scripts/labeling_feasibility and one evaluate run on an empty evidence directory completes with no provider calls
+  - The evaluate command scores the converter baseline from the committed v14 docx_w batch recordings for all eight corpus exams, with no path argument
+  - No reference to round1.json, the old retained-context recordings path or the --converter-recordings flag remains
+  - ruff and mypy pass on scripts/labeling_feasibility and one evaluate run on an empty evidence directory completes with no provider calls
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -62,8 +62,7 @@ names the v14 recordings. Reading 64 small JSON files is negligible.
 
 - `pdm run ruff check scripts/labeling_feasibility` and
   `pdm run mypy scripts/labeling_feasibility`.
-- `pdm run python -m scripts.labeling_feasibility evaluate --evidence-dir
-  <scratch dir>` on an empty directory: no provider calls, eight
+- `pdm run python -m scripts.labeling_feasibility evaluate --evidence-dir <scratch dir>` on an empty directory: no provider calls, eight
   `converter_today` lines with plausible non-zero kind and keyed accuracy.
 
 ## Stop Conditions
@@ -74,10 +73,10 @@ names the v14 recordings. Reading 64 small JSON files is negligible.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1 | Keep the report and rewire it to the v14 recordings rather than delete it (user decision 2026-10-15). |
-| D2 | The baseline for an exam is the joined items of all its `docx_w*.json` batches, retries included (parent decision 2026-10-15, no anchor overlap found). |
-| D3 | Remove `_CONVERTER_RECORDINGS` and `--converter-recordings` with no fallback; the repo keeps no backward compatibility (CLAUDE.md, parent decision 2026-10-15). |
-| D4 | A Sol 6.1 implementation-specialist implements and a Sol 6.1 ruthless-reviewer reviews (user decision 2026-10-15). |
-| D5 | Review repair widens the write scope within `scripts/labeling_feasibility/`: typed loader and baseline input instead of `Any`, `methods.py` (615 lines) split by responsibility under 500 lines per file with behavior preserved, unconditional baseline line, and removal of the unused `_metric` and `methods.dump` (parent decision 2026-10-15, ruthless-review findings 1-3, Boy Scout rule). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Keep the report and rewire it to the v14 recordings rather than delete it (user decision 2026-10-15).                                                                                                                                                                                                                                                                                             |
+| D2  | The baseline for an exam is the joined items of all its `docx_w*.json` batches, retries included (parent decision 2026-10-15, no anchor overlap found).                                                                                                                                                                                                                                           |
+| D3  | Remove `_CONVERTER_RECORDINGS` and `--converter-recordings` with no fallback; the repo keeps no backward compatibility (CLAUDE.md, parent decision 2026-10-15).                                                                                                                                                                                                                                   |
+| D4  | A Sol 6.1 implementation-specialist implements and a Sol 6.1 ruthless-reviewer reviews (user decision 2026-10-15).                                                                                                                                                                                                                                                                                |
+| D5  | Review repair widens the write scope within `scripts/labeling_feasibility/`: typed loader and baseline input instead of `Any`, `methods.py` (615 lines) split by responsibility under 500 lines per file with behavior preserved, unconditional baseline line, and removal of the unused `_metric` and `methods.dump` (parent decision 2026-10-15, ruthless-review findings 1-3, Boy Scout rule). |

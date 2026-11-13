@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0042
 title: Repair the two failing docker-suite tests in the DOCX background job proof
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-17'
 status: done
 closeout_review:
@@ -17,10 +17,7 @@ closeout_review:
   approval_evidence: 'Independent Sol review .orchestration/context/sessions/01a148db-64d7-7b40-9a2e-34373c3de59c/evidence/review-rep0042.md (approved, no findings; docker 9 passed, 38 v14 replay files 298 passed). One live provider call per D5 (evidence/rep0042-r2-live-call.md, gpt-6-luna, 3,571 input and 373 output tokens). Merged to main as ef8cd6ea; docker suite 9 passed on main after the merge (evidence/merged-main-docker.log).'
 task_kind: repository
 acceptance_criteria:
-- All nine tests in tests/integration/test_exam_workspace_docx_background.py pass
-  under -m docker against the real PostgreSQL test database, each assertion tracks
-  the current job, diagnostics and recording contracts, and no test asserts wall-clock
-  timing
+  - All nine tests in tests/integration/test_exam_workspace_docx_background.py pass under -m docker against the real PostgreSQL test database, each assertion tracks the current job, diagnostics and recording contracts, and no test asserts wall-clock timing
 backlog_document_profile: contract-derived
 ---
 
@@ -78,10 +75,10 @@ repair touches. Scoped ruff and mypy.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | The docker test asserts the current diagnostics contract: a succeeded job holds no non-formatting event, and its formatting events are the per-item transfer paths. |
-| D2  | The bf26 replay matches the current build request contract; the fix follows the root cause of the request change, not a looser matcher that hides it. |
-| D3  | No test asserts wall-clock timing; contract tests track the current contracts. |
-| D4  | Production code changes only if the root cause shows production is wrong, and then only after reporting it. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The docker test asserts the current diagnostics contract: a succeeded job holds no non-formatting event, and its formatting events are the per-item transfer paths.                                                                                                                                                                                           |
+| D2  | The bf26 replay matches the current build request contract; the fix follows the root cause of the request change, not a looser matcher that hides it.                                                                                                                                                                                                         |
+| D3  | No test asserts wall-clock timing; contract tests track the current contracts.                                                                                                                                                                                                                                                                                |
+| D4  | Production code changes only if the root cause shows production is wrong, and then only after reporting it.                                                                                                                                                                                                                                                   |
 | D5  | Every provider request that the current replays send without a recording (first the bf26 type-conflict resend, 39-05-04 D32, reached since 7c8c6bd7) gets a live recording made on Hemma staging with the staging provider configuration from the exact current request, with 2-3 recorded rounds per item as needed; no full corpus rerun (user 2026-10-17). |

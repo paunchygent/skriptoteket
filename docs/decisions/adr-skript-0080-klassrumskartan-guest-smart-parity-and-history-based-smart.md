@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0080
 title: Klassrumskartan guest Smart parity and history-based Smart boundary
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0080
+  - ADR-0080
 ---
 
 ## Context

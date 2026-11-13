@@ -4,14 +4,13 @@ id: RUN-SKRIPT-runbook-observability-metrics-prometheus
 title: 'Runbook: Observability Metrics (Prometheus)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-observability-metrics
-summary: Metrics and health endpoints exposed by Skriptoteket, plus Prometheus scrape
-  guidance.
+  - RUN-observability-metrics
+summary: Metrics and health endpoints exposed by Skriptoteket, plus Prometheus scrape guidance.
 system: skriptoteket
 ---
 
@@ -98,17 +97,17 @@ sudo docker logs --since 10m skriptoteket-web | rg -n 'SMTP health check failed|
 
 ### Metrics exposed
 
-| Metric | Type | Labels | Description |
-|--------|------|--------|-------------|
-| `skriptoteket_http_requests_total` | Counter | method, endpoint, status_code | Total HTTP requests |
-| `skriptoteket_http_request_duration_seconds` | Histogram | method, endpoint | Request latency |
-| `skriptoteket_session_files_bytes_total` | Gauge | - | Total bytes of stored session files |
-| `skriptoteket_session_files_count` | Gauge | - | Count of stored session files |
-| `skriptoteket_logins_total` | Counter | status | Login attempts (success/failure) |
-| `skriptoteket_users_by_role` | Gauge | role | Active users by role |
-| `skriptoteket_auth_context_verifications_total` | Counter | outcome, reason | HuleEdu signed internal identity verification outcomes |
-| `skriptoteket_auth_projection_outcomes_total` | Counter | realm, outcome, reason | Realm-aware projection and provisioning outcomes |
-| `skriptoteket_auth_rbac_decisions_total` | Counter | decision, required_role, actual_role, route_family | Local RBAC decisions after shared-auth success |
+| Metric                                          | Type      | Labels                                             | Description                                            |
+| ----------------------------------------------- | --------- | -------------------------------------------------- | ------------------------------------------------------ |
+| `skriptoteket_http_requests_total`              | Counter   | method, endpoint, status_code                      | Total HTTP requests                                    |
+| `skriptoteket_http_request_duration_seconds`    | Histogram | method, endpoint                                   | Request latency                                        |
+| `skriptoteket_session_files_bytes_total`        | Gauge     | -                                                  | Total bytes of stored session files                    |
+| `skriptoteket_session_files_count`              | Gauge     | -                                                  | Count of stored session files                          |
+| `skriptoteket_logins_total`                     | Counter   | status                                             | Login attempts (success/failure)                       |
+| `skriptoteket_users_by_role`                    | Gauge     | role                                               | Active users by role                                   |
+| `skriptoteket_auth_context_verifications_total` | Counter   | outcome, reason                                    | HuleEdu signed internal identity verification outcomes |
+| `skriptoteket_auth_projection_outcomes_total`   | Counter   | realm, outcome, reason                             | Realm-aware projection and provisioning outcomes       |
+| `skriptoteket_auth_rbac_decisions_total`        | Counter   | decision, required_role, actual_role, route_family | Local RBAC decisions after shared-auth success         |
 
 Labels use route patterns (e.g., `/tools/{id}`) to avoid high cardinality.
 
@@ -133,11 +132,11 @@ Use these ownership rules for future auth observability:
 
 `PR-0264` adds the first bounded auth outcome metric surface for the HuleEdu cutover:
 
-| Metric | Labels | Expected values |
-|---|---|---|
-| `skriptoteket_auth_context_verifications_total` | `outcome`, `reason` | `outcome=accepted|rejected`; reason is a bounded verification code such as `ok`, `missing_internal_identity_headers`, `invalid_internal_identity_signature`, or `internal_identity_expired` |
-| `skriptoteket_auth_projection_outcomes_total` | `realm`, `outcome`, `reason` | `realm=skriptoteket_standalone|huleedu_school|unknown`; `outcome=resolved|provisioned|missing|blocked_provisioning|linking_required|unsupported_realm` |
-| `skriptoteket_auth_rbac_decisions_total` | `decision`, `required_role`, `actual_role`, `route_family` | `decision=denied`; roles are bounded local role names; route family is a coarse API family such as `admin`, `editor`, `curated_app`, or `profile` |
+| Metric                                          | Labels                                                     | Expected values                                                                                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `skriptoteket_auth_context_verifications_total` | `outcome`, `reason`                                        | \`outcome=accepted                                                                                                                                |
+| `skriptoteket_auth_projection_outcomes_total`   | `realm`, `outcome`, `reason`                               | \`realm=skriptoteket_standalone                                                                                                                   |
+| `skriptoteket_auth_rbac_decisions_total`        | `decision`, `required_role`, `actual_role`, `route_family` | `decision=denied`; roles are bounded local role names; route family is a coarse API family such as `admin`, `editor`, `curated_app`, or `profile` |
 
 Forbidden labels remain forbidden here: no user id, email, raw realm subject id, raw URL, path
 parameter, correlation id, trace id, signed header payload, cookie, CSRF token, or exception text.

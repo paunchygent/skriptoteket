@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-07
-title: 'Export checklist: the export panel lists what Exam.net loses on import after
-  a QTI export'
+title: 'Export checklist: the export panel lists what Exam.net loses on import after a QTI export'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -18,11 +17,11 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 0881fa9c and approved repair ff544d93. Walk at 19d9d8ef: Svenska 2 v26 export listed Fråga 17 at 0.66 per gap and the criteria of Fråga 21-24; Exam.net import 5339161 showed exactly those losses (Fråga 17 1.98 p, freeText items without criteria). The all-or-nothing case has no corpus item and rests on unit tests. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-07/ and evidence/walk/TASK-SKRIPT-39-09-07/walk-19d9d8ef.md.'
 task_kind: story
 acceptance_criteria:
-- After a successful QTI export the export panel lists every Fritext question with criteria, with each criterion's text and points to paste into Exam.net.
-- The panel lists every shared-instruction subquestion the export scores all-or-nothing with 2 or more points, because Exam.net gives it 1 point.
-- The panel lists every Lucktext whose points do not divide evenly over its gaps, with the rounded value each gap gets.
-- Questions that import complete are not listed; an export where nothing is lost shows no checklist, and no checklist file is written.
-- The checklist comes from the same QTI items the export builds, and an Exam.net import of a walked export shows exactly the listed losses.
+  - After a successful QTI export the export panel lists every Fritext question with criteria, with each criterion's text and points to paste into Exam.net.
+  - The panel lists every shared-instruction subquestion the export scores all-or-nothing with 2 or more points, because Exam.net gives it 1 point.
+  - The panel lists every Lucktext whose points do not divide evenly over its gaps, with the rounded value each gap gets.
+  - Questions that import complete are not listed; an export where nothing is lost shows no checklist, and no checklist file is written.
+  - The checklist comes from the same QTI items the export builds, and an Exam.net import of a walked export shows exactly the listed losses.
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -103,9 +102,9 @@ mapping once per request; no material performance concern.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                       |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | T1  | The checklist lists only Fritext with criteria, all-or-nothing shared-instruction subquestions with 2 or more points, and Lucktext with rounded gap values (story Q15-Q17). |
-| T2  | The server computes the checklist from the export's own QTI items and scoring predicates; a JSON route beside the QTI export returns it. |
-| T3  | The export panel shows the checklist after a successful QTI export and clears it when the document changes or another export starts; there is no checklist file. |
-| T4  | Only the exam workspace gets a checklist; the DigiExam converter lane is unchanged. |
+| T2  | The server computes the checklist from the export's own QTI items and scoring predicates; a JSON route beside the QTI export returns it.                                    |
+| T3  | The export panel shows the checklist after a successful QTI export and clears it when the document changes or another export starts; there is no checklist file.            |
+| T4  | Only the exam workspace gets a checklist; the DigiExam converter lane is unchanged.                                                                                         |

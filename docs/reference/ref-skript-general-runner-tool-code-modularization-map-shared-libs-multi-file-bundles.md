@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-runner-tool-code-modularization-map-shared-libs-multi-fil
 title: Runner/tool code modularization map (shared libs + multi-file bundles)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-runner-tool-code-modularization-map
+  - REF-runner-tool-code-modularization-map
 summary: Runner/tool code modularization map (shared libs + multi-file bundles)
 ---
 
@@ -18,8 +18,8 @@ summary: Runner/tool code modularization map (shared libs + multi-file bundles)
 
 This document maps two complementary, long-term goals for Skriptoteket tool scripts:
 
-1) **Direction A — shared runner libraries (platform-owned):** reusable Python modules shipped with the runner image.
-2) **Direction B — multi-file tool code bundles (tool-owned, per version):** each tool version can contain multiple
+1. **Direction A — shared runner libraries (platform-owned):** reusable Python modules shipped with the runner image.
+2. **Direction B — multi-file tool code bundles (tool-owned, per version):** each tool version can contain multiple
    `.py` files (and optional resources), executed via an explicit entrypoint.
 
 This is a **pre-ADR / pre-PRD** mapping doc: it enumerates decisions, constraints, risks, and a sequencing plan. It does
@@ -30,7 +30,6 @@ not choose final designs.
 No separate facts and semantics is stated in the source.
 
 ### Source: Current state (as of 2026-01-20)
-
 
 ### Tool code representation
 
@@ -54,7 +53,6 @@ No separate facts and semantics is stated in the source.
 - “Active file” for AI and edit-ops is a `Literal[...]` union over those virtual file IDs (hard-coded).
 
 ### Source: Direction A — shared runner libraries (platform-owned)
-
 
 ### Goal
 
@@ -85,8 +83,8 @@ Non-candidates (avoid unless explicitly approved):
 
 We should decide early whether shared libs are:
 
-1) **plain modules** on `sys.path` (current pattern: `runner/*.py`), or
-2) an **installed Python package** inside the runner venv (cleaner versioning + testing, clearer import story).
+1. **plain modules** on `sys.path` (current pattern: `runner/*.py`), or
+2. an **installed Python package** inside the runner venv (cleaner versioning + testing, clearer import story).
 
 Either can work; the key is to make the compatibility surface explicit and testable.
 
@@ -107,7 +105,6 @@ Minimum policy elements to define before scaling shared-lib usage:
 - **Security/perf drift:** shared libs may accidentally widen allowed patterns or create slow defaults.
 
 ### Source: Direction B — multi-file tool code bundles (tool-owned, per version)
-
 
 ### Goal
 
@@ -195,7 +192,6 @@ To honor “no legacy support/shims”, multi-file implementation should:
 
 ### Source: How Directions A and B fit together (recommended framing)
 
-
 - Direction A provides a **stable “standard library”** for Skriptoteket tool authors.
 - Direction B provides **tool-local modularity** when a tool is inherently complex or needs reusable internal modules.
 - A tool bundle should prefer importing shared libs for cross-tool patterns, and use its own modules for tool-specific
@@ -207,7 +203,6 @@ Rule of thumb:
 - Bundle modules: “only this tool needs this, or it evolves rapidly”.
 
 ### Source: Pre-ADR decision checklist
-
 
 Before writing ADRs/PRDs, we should explicitly decide:
 
@@ -228,25 +223,23 @@ Before writing ADRs/PRDs, we should explicitly decide:
 
 ### Source: Suggested implementation sequencing (roadmap)
 
-
 This sequencing keeps value flowing while containing blast radius:
 
-1) **Harden Direction A first (small, high leverage):**
+1. **Harden Direction A first (small, high leverage):**
    - formalize shared-lib compatibility policy
    - add runner contract tests for toolkit behavior
    - expand the toolkit only where it clearly replaces repeated tool boilerplate
-2) **Introduce Direction B backend+runner support next (no big editor UX yet):**
+2. **Introduce Direction B backend+runner support next (no big editor UX yet):**
    - new storage model + runner bundle execution path
    - migration from single-file versions
    - keep editor UI “single main file” initially if needed for transition, but plan removal of the old schema quickly
-3) **Ship full multi-file editor UX + AI file-path refactor:**
+3. **Ship full multi-file editor UX + AI file-path refactor:**
    - dynamic file sets, diffs, working copy, AI active_file as path
-4) **Optimize storage/retention and scale:**
+4. **Optimize storage/retention and scale:**
    - enforce bundle size budgets
    - evaluate compression or external storage if DB size becomes a constraint
 
 ### Source: Candidate ADR/PRD breakdown (for later)
-
 
 Potential ADR set (suggested split):
 

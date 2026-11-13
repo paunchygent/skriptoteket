@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-22
 title: Shapes drawn in a Word file land in their questions as pictures
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-22'
 status: done
 closeout_review:
@@ -17,11 +17,10 @@ closeout_review:
   approval_evidence: 'One review (D7) in retained root 01a162df: changes_requested, F1-F9 (evidence/reviews/task-skript-39-04-22-662397a95.md); all nine repaired on fail-first proof (evidence/repairs-39-04-22/), no rereview per the user rule "Now it''s enough."; merged as 74eeceb2d; Mac staging walk 2026-10-22 at 74eeceb2d passed checks 1-5 with metodprov_med_bilder.docx and .pdf (Mac .artifacts/staging-walk-39-04-22-74eeceb2d/walk-record.md); Word opened the export with no repair dialog and reports Q5/Q6 as shape groups, but no shape was moved or edited by hand. Follow-up walk at cae867222 (Compatibility Mode fix) moved a Q6 box and edited a label by hand in Word (Mac .artifacts/staging-walk-39-04-22-cae867222/walk-record.md).'
 task_kind: story
 acceptance_criteria:
-- A shape group, a single shape or a drawing canvas made of supported shapes becomes
-  a picture in its question
-- A figure holding an unsupported shape keeps today's descriptor and review warning
-- The Word import of metodprov_med_bilder.docx gives pictures in questions 5 and 6
-- Word export writes the figure's original shapes back, editable in Word
+  - A shape group, a single shape or a drawing canvas made of supported shapes becomes a picture in its question
+  - A figure holding an unsupported shape keeps today's descriptor and review warning
+  - The Word import of metodprov_med_bilder.docx gives pictures in questions 5 and 6
+  - Word export writes the figure's original shapes back, editable in Word
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -110,20 +109,20 @@ Units, one junior each:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Draw the shapes from Word's DrawingML data (preset geometry, group and child transforms, solid fill, solid outline, arrowheads, text-box labels) as SVG, and turn it into a PNG through the existing HTML-to-PDF and PDFium stack. Add no LibreOffice. |
-| D2  | Cover shape groups (`wpg:wgp`), single shapes (`wps:wsp`) and drawing canvases (`wpc:wpc`) built from rectangles, rounded rectangles, ellipses, triangles, right triangles, lines, straight connectors and the four block arrows, with their text-box labels. Native charts, SmartArt, custom geometry, gradient or picture fills and VML-only shapes are out. |
-| D3  | A figure holding any unsupported shape, fill or effect is left out whole, as today: "[Bild utan text]" and review with "Delar av källtexten saknas". |
-| D4  | A drawing made only of plain lines or connectors, with no arrowheads and no labels, is no figure and keeps today's handling, as drawn answer lines are not figures in the PDF import. |
-| D5  | The drawn PNG is the drawing chunk's picture. From the picture chunk onwards, the Word path runs unchanged: grouping, labeling, exam picture node, asset rules and limits, export. The label text stays inside the picture and is not question text. No new AI call site. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Draw the shapes from Word's DrawingML data (preset geometry, group and child transforms, solid fill, solid outline, arrowheads, text-box labels) as SVG, and turn it into a PNG through the existing HTML-to-PDF and PDFium stack. Add no LibreOffice.                                                                                                                             |
+| D2  | Cover shape groups (`wpg:wgp`), single shapes (`wps:wsp`) and drawing canvases (`wpc:wpc`) built from rectangles, rounded rectangles, ellipses, triangles, right triangles, lines, straight connectors and the four block arrows, with their text-box labels. Native charts, SmartArt, custom geometry, gradient or picture fills and VML-only shapes are out.                     |
+| D3  | A figure holding any unsupported shape, fill or effect is left out whole, as today: "[Bild utan text]" and review with "Delar av källtexten saknas".                                                                                                                                                                                                                               |
+| D4  | A drawing made only of plain lines or connectors, with no arrowheads and no labels, is no figure and keeps today's handling, as drawn answer lines are not figures in the PDF import.                                                                                                                                                                                              |
+| D5  | The drawn PNG is the drawing chunk's picture. From the picture chunk onwards, the Word path runs unchanged: grouping, labeling, exam picture node, asset rules and limits, export. The label text stays inside the picture and is not question text. No new AI call site.                                                                                                          |
 | D6  | Proof: focused tests for each supported shape kind and container, plus one for an unsupported shape and one for a line-only drawing. The Word import of `metodprov_med_bilder.docx` gives pictures in questions 5 and 6 at the same places as its PDF import. The existing Word picture tests stay green. A Mac staging walk covers that Word import and its PDF med facit export. |
-| D7  | One independent review at most. Repairs are admitted on focused fail-first proof, with no rereview unless the user asks (user rule 2026-10-22). |
-| D8  | The import stores the figure's original Word shape markup with its picture's asset. Display, Exam.net QTI, the student PDF and PDF med facit use the picture. |
-| D9  | Word (DOCX) export writes the stored shapes back in place of the picture, so the exported file opens in Word with editable shapes. |
-| D10 | When the teacher replaces or removes the picture in the workspace, its stored shapes go with it; the new picture carries none. |
-| D11 | Questions 5 and 6 of `metodprov_med_bilder.docx` are no longer review items for a missing picture. |
-| D12 | Only self-contained shape markup is stored. Markup that references a relationship (an embedded picture, a hyperlink or another part) stores none, and its Word export writes the picture. |
+| D7  | One independent review at most. Repairs are admitted on focused fail-first proof, with no rereview unless the user asks (user rule 2026-10-22).                                                                                                                                                                                                                                    |
+| D8  | The import stores the figure's original Word shape markup with its picture's asset. Display, Exam.net QTI, the student PDF and PDF med facit use the picture.                                                                                                                                                                                                                      |
+| D9  | Word (DOCX) export writes the stored shapes back in place of the picture, so the exported file opens in Word with editable shapes.                                                                                                                                                                                                                                                 |
+| D10 | When the teacher replaces or removes the picture in the workspace, its stored shapes go with it; the new picture carries none.                                                                                                                                                                                                                                                     |
+| D11 | Questions 5 and 6 of `metodprov_med_bilder.docx` are no longer review items for a missing picture.                                                                                                                                                                                                                                                                                 |
+| D12 | Only self-contained shape markup is stored. Markup that references a relationship (an embedded picture, a hyperlink or another part) stores none, and its Word export writes the picture.                                                                                                                                                                                          |
 
 D8–D11 are the user's decision (via the Mac orchestrator's AskUserQuestion, 2026-10-22,
 verbatim "Picture + keep shapes (Recommended)"; agent-planning:user-closure-gate). D1–D7

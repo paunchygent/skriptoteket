@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-33-01-02
-title: 'Flunk-Out Frenzy: launcher-world carrier compiler and donor overhead collider
-  foundation'
+title: 'Flunk-Out Frenzy: launcher-world carrier compiler and donor overhead collider foundation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,26 +17,11 @@ closeout_review:
 story: ST-SKRIPT-33-01
 task_kind: story
 acceptance_criteria:
-- 'Given the overhead donor wireforms (`RampS3`, `RampS001`, `RampS002`, `RampS4`)
-  are currently provenance-backed but render-only, when this task is complete, then
-  the compiler can produce launcher-world support/guard/receiver carrier output from
-  those donors without simply flipping top-level playfield rails to `physics: true`.'
-- Given donor-to-collider representation is now a design decision rather than an implementation
-  guess, when this task is complete, then support/guard/receiver carriers compile
-  as launcher-world fixed compound assemblies built from thick segments, capsules,
-  rounded cuboids, and receiver-appropriate convex/extruded surfaces rather than thin
-  mesh/polyline shortcuts.
-- Given geometry builders must remain pure, when this task is complete, then `LauncherWorldGeometry.ts`
-  can build the new launcher-world carrier colliders without phase logic or transport
-  policy leaking into geometry code.
-- Given world ownership must stay explicit, when this task is complete, then the compiled
-  output makes it clear which elevated-route surfaces are owned by the launcher Rapier
-  world, which seam remains the terminal board handoff, and that no donor-derived
-  span is physical in both worlds at once.
-- Given provenance and auditability are critical for this cut-over lane, when this
-  task is complete, then focused tests or emitted artifacts include a donor-source-to-compiled-collider
-  ownership matrix (`donor source id -> collider ids -> role -> owning world`) and
-  reject invisible stabilizer colliders with no donor provenance.
+  - 'Given the overhead donor wireforms (`RampS3`, `RampS001`, `RampS002`, `RampS4`) are currently provenance-backed but render-only, when this task is complete, then the compiler can produce launcher-world support/guard/receiver carrier output from those donors without simply flipping top-level playfield rails to `physics: true`.'
+  - Given donor-to-collider representation is now a design decision rather than an implementation guess, when this task is complete, then support/guard/receiver carriers compile as launcher-world fixed compound assemblies built from thick segments, capsules, rounded cuboids, and receiver-appropriate convex/extruded surfaces rather than thin mesh/polyline shortcuts.
+  - Given geometry builders must remain pure, when this task is complete, then `LauncherWorldGeometry.ts` can build the new launcher-world carrier colliders without phase logic or transport policy leaking into geometry code.
+  - Given world ownership must stay explicit, when this task is complete, then the compiled output makes it clear which elevated-route surfaces are owned by the launcher Rapier world, which seam remains the terminal board handoff, and that no donor-derived span is physical in both worlds at once.
+  - Given provenance and auditability are critical for this cut-over lane, when this task is complete, then focused tests or emitted artifacts include a donor-source-to-compiled-collider ownership matrix (`donor source id -> collider ids -> role -> owning world`) and reject invisible stabilizer colliders with no donor provenance.
 ---
 
 ## Context

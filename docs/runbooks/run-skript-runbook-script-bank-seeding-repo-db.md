@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-script-bank-seeding-repo-db
 title: 'Runbook: Script bank seeding (repo → DB)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-script-bank-seeding
+  - RUN-script-bank-seeding
 summary: 'Runbook: Script bank seeding (repo → DB)'
 system: skriptoteket
 ---
@@ -34,12 +34,10 @@ CLI-kommando:
 
 ## Preconditions
 
-
 - Du har en **admin/superuser**-användare (för audit fields och behörighet).
 - Du kör kommandot i samma miljö som appen (lokalt eller i web-containern).
 
 ## Steps
-
 
 ```bash
 ### Först: torrkörning
@@ -74,7 +72,6 @@ pdm run seed-script-bank --no-publish --profile dev
 
 ## Expected Results
 
-
 1. Gå till Katalog och kontrollera att verktyget syns (om `--publish`) och att titel/sammanfattning är rimliga.
 2. Öppna admin-skripteditor för verktyget och kontrollera att:
    - Det finns en ACTIVE version (`tools.active_version_id` pekar på ACTIVE).
@@ -82,13 +79,11 @@ pdm run seed-script-bank --no-publish --profile dev
 
 ## Stop Conditions
 
-
 - “Insufficient permissions”: credentials måste vara admin/superuser.
 - “Unknown profession/category slug”: script bank-entry refererar en slug som inte finns i taxonomy (migrations).
 - Om `--publish` och du får fel: verktyget måste ha en ACTIVE version (`tools.active_version_id` + version.state=active).
 
 ## Rollback
-
 
 - För att snabbt ta bort från Katalog: avpublicera verktyget i admin-vyn.
 - För att backa kod:
@@ -97,20 +92,17 @@ pdm run seed-script-bank --no-publish --profile dev
 
 ### Source: Seed-profiler (viktigt)
 
-
 - `--profile dev` (default): seedar **curated + test**.
 - `--profile prod`: seedar **endast curated** (testverktyg seedas inte alls).
 - `--group <curated|test>`: explicit override (repeatable), ignorerar `--profile`.
 
 ### Source: Säkerhetsprinciper (viktigt)
 
-
 - Default-beteende är konservativt:
   - Om verktyget redan finns: ändra inte metadata eller kod utan `--sync-*`.
   - Se alltid först vad som sker med `--dry-run`.
 
 ### Source: Körning (produktion via Docker)
-
 
 Kör i `skriptoteket-web`-containern (så att du får rätt `DATABASE_URL` och samma runtime deps som tjänsten):
 

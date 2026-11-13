@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-skriptoteket-post-mvp-architecture-review
 title: Skriptoteket Post-MVP Architecture Review
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-lead-architect-suggestions-post-mvp
+  - REF-lead-architect-suggestions-post-mvp
 summary: Skriptoteket Post-MVP Architecture Review
 ---
 
@@ -27,7 +27,7 @@ architecture.
 
 Skriptoteket's architecture is already set up for a clean post-MVP evolution: protocol-first DDD/Clean Architecture, clear bounded contexts (catalog, identity, suggestions, scripting), and an explicit DI composition root make deferred items straightforward to add without structural rewrites. The most "natural" next two epics are (1) finishing real-world identity/governance and adding operational visibility, followed by (2) scaling and hardening execution through policy, queueing, and runner isolation.
 
----
+______________________________________________________________________
 
 ### Current Architecture Assessment
 
@@ -41,12 +41,16 @@ Skriptoteket's architecture is already set up for a clean post-MVP evolution: pr
 ### Areas of Concern and Technical Debt
 
 - **Operational/security debt around execution remains the dominant risk.** v0.1 accepts docker.sock access for sibling runner containers (explicitly noted as "acceptable for v0.1 only"), but that remains the largest blast-radius lever until a dedicated runner boundary exists.
+
 - **Policy gaps for "real-world tools."** Two practical capabilities are explicitly deferred because there is no policy model yet:
+
   - per-tool **network enablement** (default `--network none`)
   - per-tool **secrets injection**
 
   These need a first-class execution policy model before they are implemented safely.
+
 - **Retention/data-handling is not fully formalized.** The hybrid storage ADR proposes DB logs + filesystem artifacts and mentions different sandbox vs production retention defaults, but the "source of truth" retention policy and the operational cleanup mechanism need to be formalized and enforced. This is both an ops and privacy/compliance issue in a school setting.
+
 - **User-facing reliability under load will eventually require async execution.** The current cap+reject approach is correct for early safety, but it will become user-hostile as adoption increases ("runner busy" retries) and is incompatible with truly long-running scripts unless you accept HTTP timeouts and poor UX.
 
 ### Cross-Cutting Risk Assessment (Post-MVP)
@@ -58,7 +62,7 @@ If deferred items are implemented in the wrong order, the main risks are:
 3. **Compliance risk** (artifact/input retention defaults not explicit; inability to purge sensitive inputs/outputs predictably).
 4. **Identity confusion** (provider projection or realm-subject matching mistakes leading to wrong-user access if matching rules are not explicit).
 
----
+______________________________________________________________________
 
 ### EPIC-05: Identity Federation and Operational Readiness
 
@@ -137,7 +141,7 @@ Skriptoteket is "production-ready for a real school environment": users authenti
 - **Operational drift** (cleanup not actually running): mitigate by making retention observable (dashboard shows disk usage/oldest artifact age).
 - **Security regressions** (provider ceremony misconfiguration): mitigate via strict configuration validation at startup and integration tests against signed context and allowlist boundaries.
 
----
+______________________________________________________________________
 
 ### EPIC-06: Execution Scale and Security Hardening
 
@@ -216,7 +220,7 @@ Tool execution becomes robust under increased usage and stricter security needs:
 - **Security risk amplification** if network/secrets are added without strict policy and audit: mitigate by making policies explicit, default-off, and requiring privileged approval.
 - **Data leakage** via artifacts/logs when secrets exist: mitigate via output sanitization rules, "do not log secrets" guardrails, and strong review practices.
 
----
+______________________________________________________________________
 
 ### New ADRs Recommended
 
@@ -249,7 +253,7 @@ These decisions are large enough to deserve formal ADRs before implementation:
 
 (Separately: keep the existing "defer Kafka until needed" stance unless queueing/integrations demonstrably require it.)
 
----
+______________________________________________________________________
 
 ### Adjustments to Current PRD Recommended
 
@@ -273,7 +277,7 @@ The PRD is directionally correct, but post-MVP reality benefits from making a fe
 
    This codifies the teacher-first safety posture and avoids ad-hoc exceptions later.
 
----
+______________________________________________________________________
 
 ### Roadmap Alignment
 

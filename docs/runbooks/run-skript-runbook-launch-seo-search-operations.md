@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-launch-seo-search-operations
 title: 'Runbook: Launch SEO search operations'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-launch-seo-search-operations
+  - RUN-launch-seo-search-operations
 summary: 'Runbook: Launch SEO search operations'
 system: skriptoteket-public-search
 ---

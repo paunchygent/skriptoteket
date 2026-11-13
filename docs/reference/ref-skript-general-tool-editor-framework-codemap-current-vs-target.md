@@ -4,18 +4,20 @@ id: REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target
 title: Tool editor framework codemap (current vs target)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-tool-editor-framework-codemap
+  - REF-tool-editor-framework-codemap
 summary: Tool editor framework codemap (current vs target)
 ---
 
 ## Overview
+
 ### Purpose
+
 A developer-oriented map of the **tool editor framework** in Skriptoteket, covering:
 
 - Current editor flow (SPA + backend) with ASCII diagrams
@@ -26,7 +28,9 @@ A developer-oriented map of the **tool editor framework** in Skriptoteket, cover
 This doc is descriptive, not prescriptive. It does not introduce new behavior.
 
 ## Facts And Semantics
+
 ### ASCII codemap: current editor flow
+
 ```
 AUTHOR (contributor/admin)
   |
@@ -72,7 +76,9 @@ POST /api/v1/editor/tools/{tool_id}/draft-lock (force? if admin)
        session files (optional):
          GET /api/v1/editor/tool-versions/{version_id}/session-files?snapshot_id=...
 ```
+
 ### ASCII codemap: target-state editor flow (planned)
+
 ```
 AUTHOR (contributor/admin)
   |
@@ -103,7 +109,9 @@ Editor boot + draft lock (same as current)
        - Click-to-assign + apply action
        - Drag/drop enhancement + a11y polish
 ```
+
 ### Tool UI contract v2: schema index + UI capabilities
+
 ### 1) Contract v2 (raw vs stored)
 
 ```
@@ -241,7 +249,9 @@ Key defaults (excerpt):
 
 See ADR-0024 for the full cap list (note: ADR-0024 was updated to raise `ui_payload` budgets to support `vega_lite`;
 code changes are tracked in ST-14-37).
+
 ### Current editor behavior (functional detail)
+
 ### Boot + save modes
 
 - `EditorBootResponse.save_mode` is either:
@@ -283,7 +293,9 @@ These live in drawers to keep the editor workspace focused.
   `frontend/apps/skriptoteket/src/composables/editor/skriptoteketIntelligence.ts`
 
 See ADR-0035 + ST-08-10/11 for the rule surface.
+
 ### Appendix: reference map
+
 ### ADRs
 
 - ADR-0022: Tool UI contract v2
@@ -315,7 +327,9 @@ See ADR-0035 + ST-08-10/11 for the rule surface.
 - `docs/backlog/stories/story-14-26-ui-renderer-layout-editor-v1-click-assign.md`
 - `docs/backlog/stories/story-14-27-layout-editor-v1-drag-drop.md`
 - `docs/backlog/stories/story-14-28-layout-editor-v1-ux-polish-and-a11y.md`
+
 ### Quick index (code + docs)
+
 ### Frontend (SPA)
 
 - Entry route: `frontend/apps/skriptoteket/src/views/admin/ScriptEditorView.vue`
@@ -368,7 +382,9 @@ See ADR-0035 + ST-08-10/11 for the rule surface.
 - Tool editor DX review: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Decisions And Interpretation
+
 ### Target state (derived from ADRs + stories)
+
 Grouped by area. Story IDs link to backlog details.
 
 ### Schema authoring (inputs + settings)

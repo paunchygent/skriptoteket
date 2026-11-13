@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-02-02
 title: 'Klassrumskartan: class-list import parsing heuristics and preview model mapping'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,21 +17,12 @@ closeout_review:
 story: ST-SKRIPT-26-02
 task_kind: story
 acceptance_criteria:
-- Given the backend receives extracted text or tabular rows from a document, when
-  the heuristic parser runs, then it identifies a suggested class name and extracts
-  probable student names using the logic from the established prototype script.
-- Given a row contains data that cannot be confidently parsed as a student name (e.g.,
-  blank rows, headers, noise), when the parser evaluates it, then the row is categorized
-  as an 'ambiguous row' rather than silently dropped or incorrectly coerced into a
-  name.
-- Given the parser identifies student names, when it builds the result, then it attempts
-  to split 'family_name' and 'given_name' if a comma format is used, otherwise falling
-  back to a full string.
-- Given multiple extraction variants exist (e.g., tabular vs raw text), when the parser
-  runs, then it accumulates and deduplicates records intelligently, picking the best
-  representation based on the prototype's merge priority.
+  - Given the backend receives extracted text or tabular rows from a document, when the heuristic parser runs, then it identifies a suggested class name and extracts probable student names using the logic from the established prototype script.
+  - Given a row contains data that cannot be confidently parsed as a student name (e.g., blank rows, headers, noise), when the parser evaluates it, then the row is categorized as an 'ambiguous row' rather than silently dropped or incorrectly coerced into a name.
+  - Given the parser identifies student names, when it builds the result, then it attempts to split 'family_name' and 'given_name' if a comma format is used, otherwise falling back to a full string.
+  - Given multiple extraction variants exist (e.g., tabular vs raw text), when the parser runs, then it accumulates and deduplicates records intelligently, picking the best representation based on the prototype's merge priority.
 dependencies:
-- ST-SKRIPT-26-02
+  - ST-SKRIPT-26-02
 ---
 
 ## Context

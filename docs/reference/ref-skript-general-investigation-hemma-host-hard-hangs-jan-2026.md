@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-investigation-hemma-host-hard-hangs-jan-2026
 title: 'Investigation: hemma host hard hangs (Jan 2026)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-host-freeze-investigation-2026-01-03
+  - REF-hemma-host-freeze-investigation-2026-01-03
 summary: 'Investigation: hemma host hard hangs (Jan 2026)'
 ---
 

@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix-PART-01
 title: EPIC-05 Frontend expert review (repomix) — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix
 part: 1
@@ -36,8 +36,8 @@ Detta skapar två problem:
 
 Ni har minst två centrala layout-selektorer definierade i *både* tokens-filen och app-layout:
 
-* `.huleedu-frame` definieras i tokens-filen och i `layout.css`.
-* `.huleedu-header` definieras i tokens-filen och i `layout.css`.
+- `.huleedu-frame` definieras i tokens-filen och i `layout.css`.
+- `.huleedu-header` definieras i tokens-filen och i `layout.css`.
 
 Konsekvens: små förändringar i en fil kan ge oväntade effekter, särskilt på höjd/scroll (som är ett av era uttalade problemområden).
 
@@ -58,7 +58,7 @@ Detta är en “stop‑the‑line”‑bugg: fixa först, annars blir alla efter
 Ni har fortfarande inline styles i run-result‑partials och admin‑editor, bl.a. för iframe‑presentation och “border-color”.
 Det här driver exakt den inkonsekvens ni beskriver (mix av utility-klasser och inline).
 
----
+______________________________________________________________________
 
 ### 1.2 CSS: beroendekarta (import/cascade och vad som “äger” vad)
 
@@ -70,16 +70,16 @@ Det är i grunden en rimlig ordning, men kombinationen med att tokens-filen äve
 
 #### Nuvarande ansvarsfördelning (faktiskt, inte avsett)
 
-* `huleedu-design-tokens.css`: tokens + bas/utility/komponenter/animationer/HTMX‑states.
-* `base.css`: reset + body‑typografi + bakgrund.
-* `layout.css`: frame/header/main scroll‑containment och “fluid main”.
-* `buttons.css`: varianter, states, loading, danger. (Bas-CTA ligger i tokens-filen.)
-* `forms.css`: form layout, errors, file input‑pattern (screenreader-only native input).
-* `components.css`: alerts + toasts + pills + tabs + HTMX loading states (blandat ansvar).
-* `editor.css`: CodeMirror theme + editor layout (min-height/overflow‑val).
-* `utilities.css`: utilities + list/table/tool-row komponenter + panel‑container.
+- `huleedu-design-tokens.css`: tokens + bas/utility/komponenter/animationer/HTMX‑states.
+- `base.css`: reset + body‑typografi + bakgrund.
+- `layout.css`: frame/header/main scroll‑containment och “fluid main”.
+- `buttons.css`: varianter, states, loading, danger. (Bas-CTA ligger i tokens-filen.)
+- `forms.css`: form layout, errors, file input‑pattern (screenreader-only native input).
+- `components.css`: alerts + toasts + pills + tabs + HTMX loading states (blandat ansvar).
+- `editor.css`: CodeMirror theme + editor layout (min-height/overflow‑val).
+- `utilities.css`: utilities + list/table/tool-row komponenter + panel‑container.
 
----
+______________________________________________________________________
 
 ### 1.3 JavaScript: funktioner, ansvar och korsningar
 
@@ -87,12 +87,12 @@ Det är i grunden en rimlig ordning, men kombinationen med att tokens-filen äve
 
 I `static/js/app.js` ligger:
 
-* Vendor lazy‑load (CodeMirror CSS/JS)
-* CodeMirror init/cleanup/refresh
-* HTMX lifecycle listeners (`htmx:load`, `afterSwap`, `afterSettle`, `configRequest`)
-* Toast auto‑dismiss + single-toast replace (HTMX OOB)
-* File input filename display (data‑attribute)
-* Form sync (submit + HTMX configRequest)
+- Vendor lazy‑load (CodeMirror CSS/JS)
+- CodeMirror init/cleanup/refresh
+- HTMX lifecycle listeners (`htmx:load`, `afterSwap`, `afterSettle`, `configRequest`)
+- Toast auto‑dismiss + single-toast replace (HTMX OOB)
+- File input filename display (data‑attribute)
+- Form sync (submit + HTMX configRequest)
 
 Detta framgår tydligt av funktionerna och eventregistreringen.
 
@@ -100,15 +100,18 @@ Detta framgår tydligt av funktionerna och eventregistreringen.
 
 Exempel på “korsningar” (cross‑cutting):
 
-* **`init(root)`**: orchestrator som initierar *både* toasts, file inputs och CodeMirror samt cleanup, och används i *både* `DOMContentLoaded` och HTMX‑events.
-* **CodeMirror ↔ HTMX**:
+- **`init(root)`**: orchestrator som initierar *både* toasts, file inputs och CodeMirror samt cleanup, och används i *både* `DOMContentLoaded` och HTMX‑events.
 
-  * `htmx:configRequest` triggar `syncCodeMirrorFields()` så att textarea får rätt value före request.
-  * `htmx:afterSwap`/`afterSettle` triggar `scheduleAllEditorsRefresh()` för att motverka “collapse” efter swap/timing.
-* **Toast ↔ HTMX/DOM**: `htmx:oobBeforeSwap` tar över OOB-swap för `#toast-container` för att få single-toast + fade-out vid replace; auto‑dismiss schemaläggs utan MutationObserver.
-* **File input ↔ markup**: `data-huleedu-file-name-target` kopplar input till span med filnamn.
+- **CodeMirror ↔ HTMX**:
 
----
+  - `htmx:configRequest` triggar `syncCodeMirrorFields()` så att textarea får rätt value före request.
+  - `htmx:afterSwap`/`afterSettle` triggar `scheduleAllEditorsRefresh()` för att motverka “collapse” efter swap/timing.
+
+- **Toast ↔ HTMX/DOM**: `htmx:oobBeforeSwap` tar över OOB-swap för `#toast-container` för att få single-toast + fade-out vid replace; auto‑dismiss schemaläggs utan MutationObserver.
+
+- **File input ↔ markup**: `data-huleedu-file-name-target` kopplar input till span med filnamn.
+
+______________________________________________________________________
 
 ### 1.4 HTMX-dataflöden (dokumenterat)
 
@@ -129,25 +132,25 @@ Responsen förväntas ersätta resultat‑container via `innerHTML`.
 
 #### D. Toast‑pipeline (cookie → middleware → template → JS/OOB)
 
-* Server sätter toast cookie (t.ex. `set_toast_cookie`) och kan läsa den (`read_toast_cookie`).
-* Middleware läser cookie, sätter `request.state.toast_message` och rensar cookie efter request.
-* `base.html` renderar toast DOM om `request.state.toast_message` finns.
-* För HTMX‑fel finns `run_error_with_toast.html` som inkluderar toast-partial med `hx-swap-oob="innerHTML:#toast-container"` (single toast, ingen stacking).
-* Frontend event listeners hanterar auto‑dismiss + dismiss/replace animation.
+- Server sätter toast cookie (t.ex. `set_toast_cookie`) och kan läsa den (`read_toast_cookie`).
+- Middleware läser cookie, sätter `request.state.toast_message` och rensar cookie efter request.
+- `base.html` renderar toast DOM om `request.state.toast_message` finns.
+- För HTMX‑fel finns `run_error_with_toast.html` som inkluderar toast-partial med `hx-swap-oob="innerHTML:#toast-container"` (single toast, ingen stacking).
+- Frontend event listeners hanterar auto‑dismiss + dismiss/replace animation.
 
 Detta är funktionellt, men “lagerdjupet” gör det svårare att förändra eller felsöka.
 
----
+______________________________________________________________________
 
 ### 1.5 Modern CSS audit (möjligheter och realism under er browser-baseline)
 
 #### Redan bra / modern usage
 
-* CSS custom properties (tokens) som grund.
-* Grid + flex + `gap` används brett.
-* `accent-color` för checkbox/radio.
-* `:focus-visible` och SR-only‑pattern finns.
-* `overscroll-behavior` används i editor-sidans sidebar‑container (minskar scroll chaining).
+- CSS custom properties (tokens) som grund.
+- Grid + flex + `gap` används brett.
+- `accent-color` för checkbox/radio.
+- `:focus-visible` och SR-only‑pattern finns.
+- `overscroll-behavior` används i editor-sidans sidebar‑container (minskar scroll chaining).
 
 #### Risk/bugg kopplat till moderna viewport units
 
@@ -156,12 +159,12 @@ Det är bra i nya mobila browsers, men om er faktiska baseline inkluderar äldre
 
 #### Rekommenderade “modern CSS”-förbättringar som är säkra inkrementellt
 
-* **Fallback + override‑stacking** för viewport units: `height: 100vh; height: 100dvh;` (då ignoreras `dvh` där det saknas, men ni får alltid en fungerande höjd). (Se kod i implementeringsdelen.)
-* **Logical properties**: byt `margin-left/right` till `margin-inline`, `top/right` till `inset-block-start/inset-inline-end` där det passar. Ni har redan flera ställen där detta ger tydligare intention (t.ex. `.huleedu-panel`).
-* **`clamp()`**: använd för att göra padding/typografi “fluid” utan media queries. (Inom era constraints bör detta vara säkert.)
-* **Progressive enhancement** för `:has()` och Container Queries via `@supports` (men inte som baseline). Detta kan ni lägga senare utan att bryta äldre browsers.
+- **Fallback + override‑stacking** för viewport units: `height: 100vh; height: 100dvh;` (då ignoreras `dvh` där det saknas, men ni får alltid en fungerande höjd). (Se kod i implementeringsdelen.)
+- **Logical properties**: byt `margin-left/right` till `margin-inline`, `top/right` till `inset-block-start/inset-inline-end` där det passar. Ni har redan flera ställen där detta ger tydligare intention (t.ex. `.huleedu-panel`).
+- **`clamp()`**: använd för att göra padding/typografi “fluid” utan media queries. (Inom era constraints bör detta vara säkert.)
+- **Progressive enhancement** för `:has()` och Container Queries via `@supports` (men inte som baseline). Detta kan ni lägga senare utan att bryta äldre browsers.
 
----
+______________________________________________________________________
 
 ### Source: 2. Refactoring-plan (prioriterad, inkrementell)
 
@@ -176,28 +179,28 @@ Nedan är en plan som kan deployas stegvis och där varje steg ger stabilitetsvi
 
 3. **Flytta inline styles i run_result/iframes till CSS-klasser**
 
-   * `tools/partials/run_result.html` har inline `style="border-color: …"` och iframe inline style.
-   * `admin/partials/run_result.html` har iframe styling inline.
+   - `tools/partials/run_result.html` har inline `style="border-color: …"` och iframe inline style.
+   - `admin/partials/run_result.html` har iframe styling inline.
 
 **Breaking?** Nej.
 
----
+______________________________________________________________________
 
 ### Fas 1 — Panel/card-bredd (snabb visuell kvalitet, liten förändring)
 
 **Mål:** En konsekvent single‑column max‑width över huvudflöden.
 
-* Ni har redan `.huleedu-panel` med max-width `--huleedu-max-width-2xl`.
-* Men `home.html` och `login.html` använder `huleedu-max-w-md huleedu-mx-auto` vilket ger smalare kort och skapar “dissonans”.
+- Ni har redan `.huleedu-panel` med max-width `--huleedu-max-width-2xl`.
+- Men `home.html` och `login.html` använder `huleedu-max-w-md huleedu-mx-auto` vilket ger smalare kort och skapar “dissonans”.
 
 **Åtgärd:**
 
-* Inför `--huleedu-content-width` som en app‑policy och låt `.huleedu-panel` alltid använda den.
-* Uppdatera mallar (home/login + övriga single‑column pages i repo) att använda `.huleedu-panel` i stället för `huleedu-max-w-*` där panel‑konsekvens är önskad.
+- Inför `--huleedu-content-width` som en app‑policy och låt `.huleedu-panel` alltid använda den.
+- Uppdatera mallar (home/login + övriga single‑column pages i repo) att använda `.huleedu-panel` i stället för `huleedu-max-w-*` där panel‑konsekvens är önskad.
 
 **Breaking?** Nej (CSS + klassjustering i templates).
 
----
+______________________________________________________________________
 
 ### Fas 2 — CSS‑arkitektur: separera “utilities” från komponenter
 
@@ -205,16 +208,16 @@ Nedan är en plan som kan deployas stegvis och där varje steg ger stabilitetsvi
 
 1. **Flytta komponent‑styles ur `utilities.css`**
 
-   * `.huleedu-list`, `.huleedu-table`, `.huleedu-tool-row` osv flyttas till nya komponentfiler (`lists.css`, `tables.css` eller `lists.css` som även inkluderar tool rows).
+   - `.huleedu-list`, `.huleedu-table`, `.huleedu-tool-row` osv flyttas till nya komponentfiler (`lists.css`, `tables.css` eller `lists.css` som även inkluderar tool rows).
      `utilities.css` ska därefter bara innehålla atomic utilities och helpers.
 
 2. **Split `components.css`** till komponentfiler:
 
-   * `toasts.css` (toast container + toast)
-   * `alerts.css` (huleedu-alert)
-   * `pills.css` / `badges.css` (pills, badges)
-   * `tabs.css`
-   * (ev) `htmx.css` (loading states)
+   - `toasts.css` (toast container + toast)
+   - `alerts.css` (huleedu-alert)
+   - `pills.css` / `badges.css` (pills, badges)
+   - `tabs.css`
+   - (ev) `htmx.css` (loading states)
 
    Idag ligger alerts/toasts/pills/tabs/htmx states i samma fil.
 
@@ -223,11 +226,11 @@ Nedan är en plan som kan deployas stegvis och där varje steg ger stabilitetsvi
 
 **Breaking?** Låg, om ni gör det som “copy then delete”:
 
-* Skapa nya filer + importera dem,
-* låt gamla filer ligga kvar temporärt,
-* flytta block för block och radera när coverage är 100%.
+- Skapa nya filer + importera dem,
+- låt gamla filer ligga kvar temporärt,
+- flytta block för block och radera när coverage är 100%.
 
----
+______________________________________________________________________
 
 ### Fas 3 — JavaScript modularisering (utan bundler)
 
@@ -235,22 +238,22 @@ Nedan är en plan som kan deployas stegvis och där varje steg ger stabilitetsvi
 
 **Rekommenderad strategi inom constraints:**
 
-* Behåll vanilla JS och inga npm‑beroenden.
-* Skapa flera filer under `static/js/` (t.ex. `huleedu/toast.js`, `huleedu/editor.js`, `huleedu/file-input.js`, `huleedu/htmx.js`) och exponera dem via ett enda namespace (`window.HuleEdu`).
-* Låt nuvarande `app.js` bli en liten orchestrator (eller ersätts av `app.js` som importerar/förutsätter namespace).
+- Behåll vanilla JS och inga npm‑beroenden.
+- Skapa flera filer under `static/js/` (t.ex. `huleedu/toast.js`, `huleedu/editor.js`, `huleedu/file-input.js`, `huleedu/htmx.js`) och exponera dem via ett enda namespace (`window.HuleEdu`).
+- Låt nuvarande `app.js` bli en liten orchestrator (eller ersätts av `app.js` som importerar/förutsätter namespace).
 
 Det här är fullt kompatibelt med “inkrementella deployer” eftersom ni kan flytta en concern i taget utan att ändra resten.
 
 **Breaking?** Låg (mest filstruktur + script includes).
 
----
+______________________________________________________________________
 
 ### Fas 4 — Template‑konsolidering (DRY, men respektera säkerhetskrav)
 
 #### Run result: säkerhetsdriven skillnad mellan admin och user
 
-* User‑partial saknar stdout/stderr av säkerhetsskäl (uttalat i kommentaren).
-* Admin‑partial visar stdout/stderr.
+- User‑partial saknar stdout/stderr av säkerhetsskäl (uttalat i kommentaren).
+- Admin‑partial visar stdout/stderr.
 
 **Rekommendation:** Konsolidera till en gemensam partial, men med flagga `show_debug` (admin=true, tools=false), så att ni inte duplicerar markup. Detta ligger i linje med er målbild.
 
@@ -260,26 +263,26 @@ Det här är fullt kompatibelt med “inkrementella deployer” eftersom ni kan 
 
 **Breaking?** Medel‑låg (uppdatera include-paths).
 
----
+______________________________________________________________________
 
 ### Fas 5 — Editor-sidan: rekommendation och motivering
 
 Ni bad explicit om att utvärdera alternativen. Med era constraints:
 
-* **Alternativ 2 (Vue + Vite SPA)** faller på “ingen SPA‑migrering” och “inga externa beroenden/bundler”.
-* **Alternativ 3 (Alpine.js)** introducerar ett nytt dependency (även om lätt), vilket bryter “inga externa beroenden”.
+- **Alternativ 2 (Vue + Vite SPA)** faller på “ingen SPA‑migrering” och “inga externa beroenden/bundler”.
+- **Alternativ 3 (Alpine.js)** introducerar ett nytt dependency (även om lätt), vilket bryter “inga externa beroenden”.
 
 **Rekommendation: Alternativ 1 — Ren CSS Grid + tydliga scroll‑containrar, plus minimal JS‑refresh för CodeMirror.**
 Det passar er arkitektur, kräver ingen ny toolchain och är deploybart inkrementellt.
 
 #### Varför editorn är bräcklig idag
 
-* Editorns textarea wrapper har `min-height: 500px` och `flex: 1 0 auto` (växer men krymper inte), samtidigt som run-result får expandera fritt (`max-height: none; overflow: visible`). Det gör höjd‑dynamik känslig när innehåll byts via HTMX.
-* CodeMirror kräver refresh när container dimension ändras; ni kompenserar via HTMX hooks + timeouts.
+- Editorns textarea wrapper har `min-height: 500px` och `flex: 1 0 auto` (växer men krymper inte), samtidigt som run-result får expandera fritt (`max-height: none; overflow: visible`). Det gör höjd‑dynamik känslig när innehåll byts via HTMX.
+- CodeMirror kräver refresh när container dimension ändras; ni kompenserar via HTMX hooks + timeouts.
 
 **Förslag:** Lägg till ResizeObserver‑baserad refresh (se kod) och gör scroll‑ansvaret tydligt (en scroll container per kolumn) så att CodeMirror inte kollapsar vid HTMX‑swap.
 
----
+______________________________________________________________________
 
 ### Source: 3. Implementeringsförslag (konkreta kodsnuttar)
 
@@ -312,8 +315,8 @@ Detta uppfyller ert krav: “EN konsekvent max-width”, “CSS Custom Property�
 
 **Steg 3: uppdatera mallar som idag använder `max-w-md` för huvudpanel**
 
-* `home.html`: byt `huleedu-max-w-md huleedu-mx-auto` → `huleedu-panel`
-* `login.html`: byt `huleedu-max-w-md huleedu-mx-auto` → `huleedu-panel`
+- `home.html`: byt `huleedu-max-w-md huleedu-mx-auto` → `huleedu-panel`
+- `login.html`: byt `huleedu-max-w-md huleedu-mx-auto` → `huleedu-panel`
 
 Minimal mall‑diff (exempel):
 
@@ -325,7 +328,7 @@ Minimal mall‑diff (exempel):
 <div class="huleedu-card huleedu-stack huleedu-panel">
 ```
 
----
+______________________________________________________________________
 
 ### 3.2 Toast: fixa buggen och gör layouten robust på smal viewport
 
@@ -347,9 +350,9 @@ I `components.css` måste `.huleedu-toast-container` stängas.
 **Steg 2: gör toast container responsiv och mindre “header‑intrusive”**
 Utöver buggen kan ni minska header‑krockar med:
 
-* logical properties
-* max-inline-size
-* pointer-events policy (container none, toast auto)
+- logical properties
+- max-inline-size
+- pointer-events policy (container none, toast auto)
 
 ```css
 .huleedu-toast-container {
@@ -377,7 +380,7 @@ Utöver buggen kan ni minska header‑krockar med:
 
 Toast DOM och auto-dismiss beteende finns redan i base + JS.
 
----
+______________________________________________________________________
 
 ### 3.3 Layout: `dvh` med fallback
 

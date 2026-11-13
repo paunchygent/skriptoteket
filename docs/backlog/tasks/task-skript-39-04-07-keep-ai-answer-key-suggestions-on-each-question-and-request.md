@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-07
 title: Keep AI answer-key suggestions on each question and request them per question
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-13'
 status: done
 closeout_review:
@@ -15,9 +15,7 @@ closeout_review:
   approval_evidence: User closed 39-04-07 on 2026-10-13 and waived independent review of the final F11/F12 repair ace0cc39. Ruthless-reviewer rereviews ended at changes_requested on c5c98fbc with only F11/F12 open (retained evidence/reviews/TASK-SKRIPT-39-04-07/rereview-c5c98fbc.md); repair evidence/implementation/TASK-SKRIPT-39-04-07/repair4/report.md; merged main 838baea9; T7 staging walk evidence/staging-walk-838baea9/README.md, all in session 01a133f5-7568-7aa9-8c03-d65722dbff09.
 task_kind: story
 acceptance_criteria:
-- Each question keeps its AI answer-key suggestion in the saved exam after the key is accepted
-  or changed, and suggestions can be requested for one question or all keyless questions from
-  the editor's current content
+  - Each question keeps its AI answer-key suggestion in the saved exam after the key is accepted or changed, and suggestions can be requested for one question or all keyless questions from the editor's current content
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -39,8 +37,10 @@ editor request suggestions for the content it is showing.
   matches and parent instruction, as the answer-key view defines them), and
   the provider profile, model and prompt version. It is saved with the exam
   like every other item field.
+
 - **Request.** A new request sends questions as they are in the editor, not
   the saved head:
+
   - "suggest for all" sends every keyed-kind question without a key;
   - the per-question action sends one question, with or without a key.
 
@@ -49,6 +49,7 @@ editor request suggestions for the content it is showing.
   timeout and daily token limit. The status response returns one suggestion
   per question that got a valid answer. A request works while the editor has
   unsaved changes.
+
 - **Applying a suggestion.** The editor writes an arriving suggestion onto
   its question. When the question has no key, or its key is an unreviewed
   `machine_proposed` key equal to its previous suggestion, the suggestion
@@ -58,14 +59,17 @@ editor request suggestions for the content it is showing.
   longer fits its question, because the teacher changed its choices, match
   entries or gaps while the request ran, is stored on the question and
   reported as out of date; it never becomes the key (P13).
+
 - **Key origins.** Marking the question reviewed turns a `machine_proposed`
   key into `reviewed_advisory`. Choosing another option makes the key
   `teacher_authored` and keeps the suggestion. Restoring the suggestion makes
   it the key again as `machine_proposed` with `review_required`. A suggestion
   whose fingerprint no longer matches the question is reported as out of
   date.
+
 - **Removal.** Delete the workspace's overlay path in the same change,
   keeping no reader or fallback for it:
+
   - the workspace's rows and every workspace read and write of
     `exam_answer_key_proposed_overlays`. The table, model and repository stay
     because the DigiExam converter stores its proposals there;
@@ -151,12 +155,12 @@ only. Applying suggestions must not reload or re-render the whole exam.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | This task owns only AI answer-key suggestions; Mina filer exports and version pruning, question titles at import, and exam metadata belong to TASK-SKRIPT-39-04-08, TASK-SKRIPT-39-05-08 and ST-SKRIPT-39-08 (P1, P2). |
-| T2  | Each question stores its suggestion in the saved exam: the proposed key, a fingerprint of its answer-relevant content, and provider profile, model and prompt version (P5). |
-| T3  | The workspace's use of the overlay table (the table stays for the DigiExam converter until ST-SKRIPT-39-07), proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5, P10). |
-| T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | This task owns only AI answer-key suggestions; Mina filer exports and version pruning, question titles at import, and exam metadata belong to TASK-SKRIPT-39-04-08, TASK-SKRIPT-39-05-08 and ST-SKRIPT-39-08 (P1, P2).                                                                                                                                                                        |
+| T2  | Each question stores its suggestion in the saved exam: the proposed key, a fingerprint of its answer-relevant content, and provider profile, model and prompt version (P5).                                                                                                                                                                                                                   |
+| T3  | The workspace's use of the overlay table (the table stays for the DigiExam converter until ST-SKRIPT-39-07), proposal carry-forward, `rejected_proposal_item_ids`, the whole-head enrichment routes and the frontend approve, edit and reject flow are deleted with no fallback (P5, P10).                                                                                                    |
+| T4  | A request sends the editor's current questions and the job runs on that content in the existing worker; "suggest for all" sends keyless keyed-kind questions, the per-question action sends one question with or without a key; requests work with unsaved changes (P6).                                                                                                                      |
 | T5  | An arriving suggestion becomes the key only where the question has no key or its key is an unreviewed `machine_proposed` key equal to its previous suggestion, with origin `machine_proposed` and `review_required`; source, teacher and reviewed keys always stay; a suggestion that no longer fits its question is stored and reported out of date, never made the key (P8, P12, P13, D42). |
-| T6  | Review turns `machine_proposed` into `reviewed_advisory`; choosing another option makes the key `teacher_authored`; restoring the suggestion makes it `machine_proposed` with `review_required`; a fingerprint mismatch reports the suggestion as out of date (P8, D42). |
-| T7  | The staging walk covers "Föreslå facit" on unsaved edits, review, save and reopen; the per-question request and restore are walked in TASK-SKRIPT-39-04-05 (P11). |
+| T6  | Review turns `machine_proposed` into `reviewed_advisory`; choosing another option makes the key `teacher_authored`; restoring the suggestion makes it `machine_proposed` with `review_required`; a fingerprint mismatch reports the suggestion as out of date (P8, D42).                                                                                                                      |
+| T7  | The staging walk covers "Föreslå facit" on unsaved edits, review, save and reopen; the per-question request and restore are walked in TASK-SKRIPT-39-04-05 (P11).                                                                                                                                                                                                                             |

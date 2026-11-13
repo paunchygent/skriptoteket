@@ -4,8 +4,8 @@ id: ST-SKRIPT-27-09
 title: 'Klassrumskartan: fixed-seat rules and classroom-view-first rule authoring'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,31 +18,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-27
 acceptance_criteria:
-- Given a classroom exists for the current seating draft, when the teacher opens `Regler`,
-  then the physical classroom view is selected by default rather than the abstract
-  planning map.
-- Given the teacher switches to `Planeringskarta`, when they use ordinary student-bound
-  rules such as `Keep near`, `Keep apart`, or `Närmare läraren`, then the app keeps
-  the teacher in control while making it clear that Smart will interpret those rules
-  through classroom geometry.
-- Given the teacher clicks `Fast plats` while `Planeringskarta` is active, when the
-  contextual prompt appears, then it says `Fast plats kräver en fysisk plats. Vill
-  du byta till klassrumsvyn?` and offers `Ja`, `Nej`, and a close action.
-- Given that prompt is open, when the teacher chooses `Ja`, then the app switches
-  to the classroom view and activates `Fast plats` without losing the current roster
-  or draft context.
-- Given that prompt is open, when the teacher chooses `Nej` or closes it, then the
-  app stays on `Planeringskarta` and does not activate `Fast plats`.
-- Given the teacher authors a fixed-seat rule, when the rule is saved, then it binds
-  exactly one roster student to one seat in the selected classroom template.
-- Given fixed-seat rules exist, when Smart seating runs, then the solver seeds those
-  placements as hard assignments and scores all remaining candidate placements against
-  the seeded mapping.
-- Given fixed-seat rules conflict with the roster, room template, duplicate students,
-  duplicate seats, or the available seat count, when Smart seating runs or rules are
-  saved, then the operation fails honestly without persisting a partial seating result.
+  - Given a classroom exists for the current seating draft, when the teacher opens `Regler`, then the physical classroom view is selected by default rather than the abstract planning map.
+  - Given the teacher switches to `Planeringskarta`, when they use ordinary student-bound rules such as `Keep near`, `Keep apart`, or `Närmare läraren`, then the app keeps the teacher in control while making it clear that Smart will interpret those rules through classroom geometry.
+  - Given the teacher clicks `Fast plats` while `Planeringskarta` is active, when the contextual prompt appears, then it says `Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?` and offers `Ja`, `Nej`, and a close action.
+  - Given that prompt is open, when the teacher chooses `Ja`, then the app switches to the classroom view and activates `Fast plats` without losing the current roster or draft context.
+  - Given that prompt is open, when the teacher chooses `Nej` or closes it, then the app stays on `Planeringskarta` and does not activate `Fast plats`.
+  - Given the teacher authors a fixed-seat rule, when the rule is saved, then it binds exactly one roster student to one seat in the selected classroom template.
+  - Given fixed-seat rules exist, when Smart seating runs, then the solver seeds those placements as hard assignments and scores all remaining candidate placements against the seeded mapping.
+  - Given fixed-seat rules conflict with the roster, room template, duplicate students, duplicate seats, or the available seat count, when Smart seating runs or rules are saved, then the operation fails honestly without persisting a partial seating result.
 retired_ids:
-- ST-27-09
+  - ST-27-09
 ---
 
 ## Context

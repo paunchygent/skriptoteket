@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-runner-contract-v3-structured-results-state-promotions
 title: Runner Contract V3 - Structured Results, State & Promotions
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-runner-contract-v3
+  - REF-runner-contract-v3
 summary: Runner Contract V3 - Structured Results, State & Promotions
 ---
 
@@ -24,18 +24,18 @@ Runner Contract V3 is the authoritative interface between the Skriptoteket platf
 
 Related documents:
 
-* ADR-0065: Runner contract v3
-* ADR-0063: Runner request envelope v1
-* ADR-0064: File references and resolver
+- ADR-0065: Runner contract v3
+- ADR-0063: Runner request envelope v1
+- ADR-0064: File references and resolver
 
 ### Execution Environment
 
-* **OS:** Debian-based (Docker)
-* **Python:** 3.13+
-* **Network:** Disabled (`--network none`)
-* **Filesystem:** Read-only except for `/work` and `/tmp`.
-* **Work Directory:** `/work`
-* **Entrypoint:** Default is `run_tool(input_dir: str, output_dir: str) -> dict | str`.
+- **OS:** Debian-based (Docker)
+- **Python:** 3.13+
+- **Network:** Disabled (`--network none`)
+- **Filesystem:** Read-only except for `/work` and `/tmp`.
+- **Work Directory:** `/work`
+- **Entrypoint:** Default is `run_tool(input_dir: str, output_dir: str) -> dict | str`.
 
 ### Request Inputs (Environment)
 
@@ -47,12 +47,12 @@ The `skriptoteket_toolkit` library reads from `/work/request.json`. This file co
 **Legacy/Secondary (Environment Variables):**
 Direct access to these is supported but discouraged in favor of the toolkit.
 
-| Variable | Description |
-| :------- | :---------- |
-| `SKRIPTOTEKET_INPUTS` | JSON object containing form inputs. |
-| `SKRIPTOTEKET_INPUT_DIR` | Path to input files directory (default: `/work/input`). |
-| `SKRIPTOTEKET_ACTION` | JSON object for multi-step tools. |
-| `SKRIPTOTEKET_MEMORY_PATH` | Path to memory JSON file (settings). |
+| Variable                   | Description                                             |
+| :------------------------- | :------------------------------------------------------ |
+| `SKRIPTOTEKET_INPUTS`      | JSON object containing form inputs.                     |
+| `SKRIPTOTEKET_INPUT_DIR`   | Path to input files directory (default: `/work/input`). |
+| `SKRIPTOTEKET_ACTION`      | JSON object for multi-step tools.                       |
+| `SKRIPTOTEKET_MEMORY_PATH` | Path to memory JSON file (settings).                    |
 
 **Recommendation:** Always use `skriptoteket_toolkit`.
 
@@ -90,25 +90,25 @@ The script must write its result to `/work/result.json` (handled automatically i
 
 Unlike V2, V3 requires explicit state update semantics:
 
-* `no_change`: Keep the existing session state.
-* `clear`: Delete the session state.
-* `set`: Replace the session state with the provided object.
+- `no_change`: Keep the existing session state.
+- `clear`: Delete the session state.
+- `set`: Replace the session state with the provided object.
 
 ### Structured Errors
 
-* `error_summary`: Always required on failure. Safe for display to non-technical users.
-* `error`: Optional structured data for the UI to handle specific error cases (e.g., highlighting fields).
+- `error_summary`: Always required on failure. Safe for display to non-technical users.
+- `error`: Optional structured data for the UI to handle specific error cases (e.g., highlighting fields).
 
 ### UI Elements (`outputs`)
 
 Tool results are rendered as a list of UI objects:
 
-* **notice:** `{"kind": "notice", "level": "info|warning|error", "message": "..."}`
-* **markdown:** `{"kind": "markdown", "markdown": "..."}`
-* **table:** `{"kind": "table", "title": "...", "columns": [...], "rows": [...]}`
-* **json:** `{"kind": "json", "title": "...", "value": {...}}`
-* **html_sandboxed:** `{"kind": "html_sandboxed", "html": "..."}`
-* **vega_lite:** `{"kind": "vega_lite", "spec": {...}}`
+- **notice:** `{"kind": "notice", "level": "info|warning|error", "message": "..."}`
+- **markdown:** `{"kind": "markdown", "markdown": "..."}`
+- **table:** `{"kind": "table", "title": "...", "columns": [...], "rows": [...]}`
+- **json:** `{"kind": "json", "title": "...", "value": {...}}`
+- **html_sandboxed:** `{"kind": "html_sandboxed", "html": "..."}`
+- **vega_lite:** `{"kind": "vega_lite", "spec": {...}}`
 
 ### Developer Experience (DX)
 

@@ -4,20 +4,18 @@ id: REF-SKRIPT-GENERAL-guide-hemma-bios-update-prime-x370-pro
 title: 'Guide: hemma BIOS update (PRIME X370-PRO)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-bios-update-guide-2026-01-03
-summary: '# Guide: hemma BIOS update (PRIME X370-PRO) This is a step-by-step guide
-  for safely updating the ASUS PRIME X370-PRO BIOS on the hemma host. It includes
-  pre-checks, exact commands to stage the BIOS file, the EZ Flash…'
+  - REF-hemma-bios-update-guide-2026-01-03
+summary: '# Guide: hemma BIOS update (PRIME X370-PRO) This is a step-by-step guide for safely updating the ASUS PRIME X370-PRO BIOS on the hemma host. It includes pre-checks, exact commands to stage the BIOS file, the EZ Flash…'
 links:
   references:
-  - RUN-SKRIPT-runbook-home-server-operations
-  - RUN-SKRIPT-runbook-gpu-ai-workloads-amd-radeon-ai-pro-r9700
+    - RUN-SKRIPT-runbook-home-server-operations
+    - RUN-SKRIPT-runbook-gpu-ai-workloads-amd-radeon-ai-pro-r9700
 ---
 
 ## Overview
@@ -130,20 +128,24 @@ Operational notes:
 - Treat remote KVM like “physical access”: keep it on LAN/VPN, use strong auth, and restrict exposure.
 
 ### BIOS file not visible in EZ Flash
+
 - Ensure the USB is **FAT32** and the `.CAP` is in the **root** of the drive.
 - Try a different USB port (rear ports are more reliable).
 - Use a smaller USB stick if the BIOS is picky.
 
 ### CPU compatibility warnings
+
 - ASUS removed **7th‑gen A‑series/Athlon X4** support starting at BIOS 6026.
 - Ryzen 7 1700 remains supported in the official CPU list.
 
 ### System won’t boot after update
+
 - Clear CMOS using the motherboard jumper or battery removal.
 - Re-enter BIOS and re‑enable the expected boot mode (Legacy vs UEFI).
 - Re-check boot order and SATA/NVMe settings.
 
 ### UEFI vs Legacy
+
 - The board supports UEFI, but the host is currently **Legacy BIOS** boot.
 - Switching to UEFI requires an EFI System Partition (ESP) on disk.
 

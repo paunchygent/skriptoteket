@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-25-06-14-PART-02
-title: 'Flunk-Out Frenzy: launcher runtime shortcut remediation and physical-truth
-  alignment — part 02'
+title: 'Flunk-Out Frenzy: launcher runtime shortcut remediation and physical-truth alignment — part 02'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: TASK-SKRIPT-25-06-14
 part: 2

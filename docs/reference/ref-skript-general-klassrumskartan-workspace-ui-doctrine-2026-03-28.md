@@ -4,22 +4,20 @@ id: REF-SKRIPT-GENERAL-klassrumskartan-workspace-ui-doctrine-2026-03-28
 title: Klassrumskartan workspace UI doctrine (2026-03-28)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-klassrumskartan-workspace-ui-doctrine-2026-03-28
-summary: This note defines how Klassrumskartan should feel now that the planning logic
-  is largely in place and the remaining product risk is presentation quality rather
-  than missing capability. The goal is not "more design." T…
+  - REF-klassrumskartan-workspace-ui-doctrine-2026-03-28
+summary: This note defines how Klassrumskartan should feel now that the planning logic is largely in place and the remaining product risk is presentation quality rather than missing capability. The goal is not "more design." T…
 links:
   references:
-  - REF-SKRIPT-PRD-curated-app-klassrumskartan-2
-  - ADR-SKRIPT-0077
-  - REF-SKRIPT-GENERAL-klassrumskartan-product-direction-2026-03-21
-  - REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1
+    - REF-SKRIPT-PRD-curated-app-klassrumskartan-2
+    - ADR-SKRIPT-0077
+    - REF-SKRIPT-GENERAL-klassrumskartan-product-direction-2026-03-21
+    - REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1
 ---
 
 ## Overview
@@ -158,7 +156,7 @@ Use these named viewports in redesign reviews instead of vague references to "co
   - inline status inside the action row
   - a compact strip attached to the local surface
   - toast/inbox feedback for completed exports
-  instead of a new page-wide band.
+    instead of a new page-wide band.
 - If a workspace switch needs loading or teardown, the current surface should stay coherent until
   the next one can fade in; never clear the planner to an empty frame just to start the animation.
 

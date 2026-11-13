@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-08
-title: 'Source formatting: conversion keeps bold, italic, underline, sub/superscript
-  and heading levels deterministically through editor and QTI export'
+title: 'Source formatting: conversion keeps bold, italic, underline, sub/superscript and heading levels deterministically through editor and QTI export'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -17,11 +16,11 @@ closeout_review:
   approval_evidence: 'User waived the review after repair 6 (2026-10-15). Five Pi ruthless-reviewer rounds requested changes on a864a085 through 60256eb1; repair 6 66e2fe37 fixed the last findings (token-level provenance, alignment boundary costs, linear exact allocation): 287 focused tests, recorded corpus 304 exact / 7 aligned / 2 rebuilt / 0 Granska, every timing row under 1 s. Merged 0262f054 and pushed with toolbar divider e72f27f3. Staging walk on e72f27f3: formateringsprov_t08.docx kept bold, italic, underline, sup, sub and H1-H3 in the editor; Cmd+I toggled a mark and saved. QTI export and Exam.net import 5339805 showed strong, em, u, sup, sub and h1-h3. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/impl/TASK-SKRIPT-39-09-08/ and evidence/reviews/TASK-SKRIPT-39-09-08/.'
 task_kind: story
 acceptance_criteria:
-- Converting a DOCX keeps bold, italic, underline, superscript and subscript on every student-visible text run, copied by code from the source runs and never chosen by the model.
-- Title and Heading 1-3 paragraphs, and whole paragraphs set clearly larger than the body text, become heading levels 1-3.
-- When the model's text cannot be matched to the source runs, the text is rebuilt from the source runs with their formatting; if that also fails the question goes to Granska with a formatting reason. Formatting is never dropped silently.
-- The editor shows the formatting and lets the teacher toggle it with Ctrl/Cmd+B/I/U and a compact glyph toolbar (B, I, U, sup, sub, heading level).
-- The QTI export writes the formatting as strong, em, u, sup, sub and h1-h3, and an Exam.net import of a walked export shows it.
+  - Converting a DOCX keeps bold, italic, underline, superscript and subscript on every student-visible text run, copied by code from the source runs and never chosen by the model.
+  - Title and Heading 1-3 paragraphs, and whole paragraphs set clearly larger than the body text, become heading levels 1-3.
+  - When the model's text cannot be matched to the source runs, the text is rebuilt from the source runs with their formatting; if that also fails the question goes to Granska with a formatting reason. Formatting is never dropped silently.
+  - The editor shows the formatting and lets the teacher toggle it with Ctrl/Cmd+B/I/U and a compact glyph toolbar (B, I, U, sup, sub, heading level).
+  - The QTI export writes the formatting as strong, em, u, sup, sub and h1-h3, and an Exam.net import of a walked export shows it.
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -92,7 +91,7 @@ edits.
 **Export:** the QTI export writes the marks as `strong`, `em`, `u`, `sup` and
 `sub` and heading levels as `h1`-`h3`, in item bodies, prompts, shared
 instructions, choice options and matching entries. Probe r20 (Exam.net
-5339086) proved that Exam.net keeps and renders `em`, `i`, `strong`, `b`,
+5339086\) proved that Exam.net keeps and renders `em`, `i`, `strong`, `b`,
 `u`, `h1`-`h3` and `small`, and does not render inline font-size styles.
 Superscript and subscript are not yet proven in Exam.net and are proven by
 this task's walk.
@@ -151,13 +150,13 @@ The recorded corpus is the focused performance and fallback-frequency check.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| F1  | Bold, italic, underline, superscript and subscript are kept; colour and highlight are not. |
-| F2  | Title and Heading 1-3 styles, and whole paragraphs clearly larger than body text by fixed thresholds, become heading levels 1-3; inline size changes keep only their marks. |
+| ID  | Decided contract term                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| F1  | Bold, italic, underline, superscript and subscript are kept; colour and highlight are not.                                                                                                       |
+| F2  | Title and Heading 1-3 styles, and whole paragraphs clearly larger than body text by fixed thresholds, become heading levels 1-3; inline size changes keep only their marks.                      |
 | F3  | Code copies formatting from the source runs; the model never decides it. An unmatched text is rebuilt from source runs, else the question goes to Granska; formatting is never dropped silently. |
-| F4  | Formatting applies to question text, shared and exam instructions, choice options and matching entries; criteria and facit stay plain. |
-| F5  | The editor shows formatting and toggles it with Ctrl/Cmd+B/I/U and a compact glyph toolbar (B, I, U, sup, sub, heading level). |
-| F6  | The QTI export writes strong, em, u, sup, sub and h1-h3; the old plain format is removed without compatibility readers. |
-| F7  | The model may reword questions; formatting survival is judged on real exams so teachers rarely fix formatting by hand, not on constructed edge cases (user 2026-10-15). |
-| F8  | Whether a score annotation such as (2 p) stays in visible text is unimportant (user 2026-10-15). |
+| F4  | Formatting applies to question text, shared and exam instructions, choice options and matching entries; criteria and facit stay plain.                                                           |
+| F5  | The editor shows formatting and toggles it with Ctrl/Cmd+B/I/U and a compact glyph toolbar (B, I, U, sup, sub, heading level).                                                                   |
+| F6  | The QTI export writes strong, em, u, sup, sub and h1-h3; the old plain format is removed without compatibility readers.                                                                          |
+| F7  | The model may reword questions; formatting survival is judged on real exams so teachers rarely fix formatting by hand, not on constructed edge cases (user 2026-10-15).                          |
+| F8  | Whether a score annotation such as (2 p) stays in visible text is unimportant (user 2026-10-15).                                                                                                 |

@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-29-11-02
-title: 'ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation
-  and undo/redo shortcut parity'
+title: 'ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,27 +17,12 @@ closeout_review:
 story: ST-SKRIPT-29-11
 task_kind: story
 acceptance_criteria:
-- Given the authenticated planner shell is rendered near the shared desktop breakpoint,
-  when the viewport is `1279px` wide, then the left nav stays collapsed with the mobile
-  header owning the chrome; when the viewport reaches `1280px`, then the desktop sidebar
-  pins and the stacked mobile header is gone.
-- Given the grouping or seating toolbar is rendered in authenticated or guest shells,
-  when the viewport shrinks through its exact live cutoff widths, then the toolbar
-  stays one row and lower-priority actions collapse into overflow before any control
-  is pushed outside the visible bar or wraps onto a second row.
-- Given the shared planner toolbar reaches its first overflow breakpoint, when secondary
-  actions must collapse, then undo and redo move into overflow before primary workflow,
-  export, or required context controls.
-- Given width pressure increases after undo/redo are already overflowed, when the
-  one-row desktop strip still cannot hold, then `Börja om` collapses next into overflow
-  before more critical workflow controls are displaced.
-- Given undo or redo are no longer visibly pinned in the toolbar, when the teacher
-  uses canonical planner shortcuts outside editable text fields or menu focus traps,
-  then the same undo/redo actions still fire in grouping and seating without requiring
-  the buttons to stay visible.
-- Given browser proof is run on the shared planner toolbar, when each lane is checked
-  just above and just below its exact live cutoffs, then the overflow ladder is deliberate,
-  monotonic, and reviewable rather than spill-driven or accidental.
+  - Given the authenticated planner shell is rendered near the shared desktop breakpoint, when the viewport is `1279px` wide, then the left nav stays collapsed with the mobile header owning the chrome; when the viewport reaches `1280px`, then the desktop sidebar pins and the stacked mobile header is gone.
+  - Given the grouping or seating toolbar is rendered in authenticated or guest shells, when the viewport shrinks through its exact live cutoff widths, then the toolbar stays one row and lower-priority actions collapse into overflow before any control is pushed outside the visible bar or wraps onto a second row.
+  - Given the shared planner toolbar reaches its first overflow breakpoint, when secondary actions must collapse, then undo and redo move into overflow before primary workflow, export, or required context controls.
+  - Given width pressure increases after undo/redo are already overflowed, when the one-row desktop strip still cannot hold, then `Börja om` collapses next into overflow before more critical workflow controls are displaced.
+  - Given undo or redo are no longer visibly pinned in the toolbar, when the teacher uses canonical planner shortcuts outside editable text fields or menu focus traps, then the same undo/redo actions still fire in grouping and seating without requiring the buttons to stay visible.
+  - Given browser proof is run on the shared planner toolbar, when each lane is checked just above and just below its exact live cutoffs, then the overflow ladder is deliberate, monotonic, and reviewable rather than spill-driven or accidental.
 ---
 
 ## Context
@@ -83,27 +67,30 @@ Define and implement the next toolbar hardening step for the planner-family desk
 ### Source: Implementation plan
 
 1. Freeze an explicit shared shell and toolbar breakpoint ladder.
+
    - keep the authenticated planner shell compact below `1280px` and pinned at `1280px` and above
    - derive exact toolbar cutoffs from live geometry instead of a coarse review-width matrix
    - define which controls are always-visible, which collapse first, and which collapse second
 
 2. Escalate overflow intentionally instead of letting the strip spill.
+
    - move `undo` / `redo` into overflow first
    - move `Börja om` into overflow next if more width must be reclaimed
    - keep the more critical workflow/export/context controls visible for longer
 
 3. Add canonical keyboard shortcut parity for `undo` / `redo`.
-  - support planner-scoped undo/redo shortcuts when focus is not inside a text input, textarea, or
-    menu interaction that should keep the key event
-  - keep authenticated and guest grouping/seating on the same shortcut contract
-  - prove the negative path explicitly so the shared listener never steals `Cmd/Ctrl+Z` while the
-    teacher is typing or navigating overflow/menu focus traps
-  - if `PR-0232` lands first and introduces the shared shortcut composable to unblock guest
-    parity, this PR owns the follow-up polish and alignment work:
-     - keep authenticated and guest toolbar surfaces on one deliberate shortcut contract
-     - align shortcut discoverability with overflow behavior once undo/redo are no longer pinned
-     - absorb any post-`PR-0232` toolbar-shell cleanup needed to keep the shared command strip
-       coherent across guest/auth lanes
+
+- support planner-scoped undo/redo shortcuts when focus is not inside a text input, textarea, or
+  menu interaction that should keep the key event
+- keep authenticated and guest grouping/seating on the same shortcut contract
+- prove the negative path explicitly so the shared listener never steals `Cmd/Ctrl+Z` while the
+  teacher is typing or navigating overflow/menu focus traps
+- if `PR-0232` lands first and introduces the shared shortcut composable to unblock guest
+  parity, this PR owns the follow-up polish and alignment work:
+  - keep authenticated and guest toolbar surfaces on one deliberate shortcut contract
+  - align shortcut discoverability with overflow behavior once undo/redo are no longer pinned
+  - absorb any post-`PR-0232` toolbar-shell cleanup needed to keep the shared command strip
+    coherent across guest/auth lanes
 
 4. Strengthen proof at the shared toolbar seam.
    - add focused component/spec coverage for overflow-order behavior plus shared shortcut handling

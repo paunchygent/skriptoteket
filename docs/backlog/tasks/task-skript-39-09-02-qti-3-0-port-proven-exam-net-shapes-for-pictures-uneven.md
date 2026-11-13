@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-02
-title: 'QTI 3.0 port: proven Exam.net shapes for pictures, uneven points and gap values
-  in both lanes'
+title: 'QTI 3.0 port: proven Exam.net shapes for pictures, uneven points and gap values in both lanes'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -18,8 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol, high) approved 83d522c6 with no findings (merged 6807d20c). Staging walk at 6807d20c: DigiExam conversion with a picture imported into Exam.net as 5333308 (picture shown, all-or-nothing 4p, equal 1p and 3p rows, gaps 0.66 x3); workspace export with a 2p three-pair grid subquestion imported as 5333310 (ALL_CORRECT 1p, Q16 flag case). Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-02/ and evidence/walk/TASK-SKRIPT-39-09-02/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
-- Exam.net imports a staging workspace export and a DigiExam conversion with every
-  picture shown and every question's key and points as the contract states
+  - Exam.net imports a staging workspace export and a DigiExam conversion with every picture shown and every question's key and points as the contract states
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -113,9 +111,9 @@ unchanged.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                              |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| T1  | Pictures live at `items/images/`, are referenced as `images/<file>` and are listed as item-resource files; the `resources/` location is deleted (story Q6).        |
+| ID  | Decided contract term                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | Pictures live at `items/images/`, are referenced as `images/<file>` and are listed as item-resource files; the `resources/` location is deleted (story Q6).       |
 | T2  | Choice, multiple-response and matching questions use equal mapped values when exact to 2 decimals and otherwise all-or-nothing, standalone and as children (Q16). |
-| T3  | Every gap of one Lucktext has the points divided by the gaps rounded down to 2 decimals; unequal splits are deleted (Q17).                                         |
-| T4  | Both lanes use the same writer and are each proved by an Exam.net import with readback (story Q2).                                                                 |
+| T3  | Every gap of one Lucktext has the points divided by the gaps rounded down to 2 decimals; unequal splits are deleted (Q17).                                        |
+| T4  | Both lanes use the same writer and are each proved by an Exam.net import with readback (story Q2).                                                                |

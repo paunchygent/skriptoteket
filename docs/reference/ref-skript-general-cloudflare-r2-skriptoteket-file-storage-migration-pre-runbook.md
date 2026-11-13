@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-cloudflare-r2-skriptoteket-file-storage-migration-pre-run
 title: Cloudflare R2 Skriptoteket file storage migration pre-runbook
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook
+  - REF-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook
 summary: Cloudflare R2 Skriptoteket file storage migration pre-runbook
 ---
 
@@ -45,18 +45,16 @@ changes, data copy, or cleanup.
 
 ### Source: Current Storage Surfaces
 
-| Surface | Current boundary | Durability | Migration stance |
-|---|---|---|---|
-| `Mina filer` vault | `VaultStorageProtocol` and `LocalVaultStorage` | durable user-owned files | First migration candidate. |
-| Session files | `SessionFileStorageProtocol` and local session roots | session-scoped input/staging | Open question; likely remains local until a separate decision. |
-| Document Converter artifacts | App artifact store under conversion/document-converter infrastructure | generated app outputs | Do not migrate with the first vault slice. |
-| Document Converter previews | Project preview store | generated preview state | Do not migrate with the first vault slice. |
-| Runner artifacts | Runner artifact manager/storage | tool-run output staging | Separate decision if needed. |
-| Transcript formatter blobs | Database-backed app state | durable app data | Not part of object-storage cutover. |
+| Surface                      | Current boundary                                                      | Durability                   | Migration stance                                               |
+| ---------------------------- | --------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------- |
+| `Mina filer` vault           | `VaultStorageProtocol` and `LocalVaultStorage`                        | durable user-owned files     | First migration candidate.                                     |
+| Session files                | `SessionFileStorageProtocol` and local session roots                  | session-scoped input/staging | Open question; likely remains local until a separate decision. |
+| Document Converter artifacts | App artifact store under conversion/document-converter infrastructure | generated app outputs        | Do not migrate with the first vault slice.                     |
+| Document Converter previews  | Project preview store                                                 | generated preview state      | Do not migrate with the first vault slice.                     |
+| Runner artifacts             | Runner artifact manager/storage                                       | tool-run output staging      | Separate decision if needed.                                   |
+| Transcript formatter blobs   | Database-backed app state                                             | durable app data             | Not part of object-storage cutover.                            |
 
 ### Source: Cloudflare R2 Skriptoteket File Storage Migration Pre-Runbook
-
-
 
 ### Source: Proposed Architecture
 
@@ -161,6 +159,6 @@ The runbook cannot be written until these are closed:
 5. Exact migration batch manifest schema and storage location?
 6. Exact dual-read and rollback window?
 7. Exact tests and browser proof required for `Mina filer` plus Document
-    Converter saved-source batches?
+   Converter saved-source batches?
 8. Exact prod `.env` sync order for Skriptoteket, HuleEdu, and Sir Convert?
 9. Exact observability events, metrics, alerts, and redaction rules?

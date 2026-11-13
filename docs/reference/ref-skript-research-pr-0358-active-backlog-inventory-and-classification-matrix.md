@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-pr-0358-active-backlog-inventory-and-classification-matr
 title: PR-0358 active backlog inventory and classification matrix
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-pr-0358-active-backlog-inventory-2026-06-17
+  - REF-pr-0358-active-backlog-inventory-2026-06-17
 summary: PR-0358 active backlog inventory and classification matrix
 ---
 

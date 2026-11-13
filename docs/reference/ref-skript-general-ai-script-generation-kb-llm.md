@@ -4,16 +4,14 @@ id: REF-SKRIPT-GENERAL-ai-script-generation-kb-llm
 title: AI Script Generation KB (LLM)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-ai-script-generation-kb-llm
-summary: Short, LLM-optimized rules for Skriptoteket. Use this **as the system prompt
-  KB** instead of the full human reference doc. Keep this file **compact** and focused
-  on execution constraints.
+  - REF-ai-script-generation-kb-llm
+summary: Short, LLM-optimized rules for Skriptoteket. Use this **as the system prompt KB** instead of the full human reference doc. Keep this file **compact** and focused on execution constraints.
 ---
 
 ## Overview
@@ -60,7 +58,7 @@ on execution constraints.
 - **table:** `{"kind":"table","title":?, "columns":[{key,label}], "rows":[...]}`
   - max 40 columns, 750 rows, 512 bytes per cell
 - **json:** `{"kind":"json","title":?, "value":{...}}`
-  - max 96 KB, depth <= 10, 1000 keys/object, 2000 items/array
+  - max 96 KB, depth \<= 10, 1000 keys/object, 2000 items/array
 - **html_sandboxed:** `{"kind":"html_sandboxed","html":"..."}`
   max 96 KB (no JS access)
 

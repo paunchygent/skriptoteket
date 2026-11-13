@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-25-06-11
-title: 'Flunk-Out Frenzy: strike-ready rest-pose alignment and release-contact integration
-  fix'
+title: 'Flunk-Out Frenzy: strike-ready rest-pose alignment and release-contact integration fix'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,26 +17,13 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given `PR-0207` proof remains authoritative, when this task is complete, then the
-  launcher feed/rest baseline satisfies strike-ready rest pose (`feedInside=true`,
-  `0<=separationPx<=2`) through production mechanics, not through assertion changes.
-- Given full-charge inert behavior is still unresolved, when this task is complete,
-  then full-charge release meets unchanged `PR-0206` launch-effect threshold (`minVy<=-40`)
-  without relaxing proof thresholds, case set, or observation windows.
-- Given no-shortcuts invariants are hard requirements, when this task is complete,
-  then no direct launch `setLinvel(...)` shortcut, no synthetic `gate-passed` route-start
-  emission, and no route-start teleport substitute are introduced.
-- Given donor seam invariants are non-negotiable, when this task is complete, then
-  endpoint-bridge authoring remains exact `[overheadExitAnchor, descentEntryAnchor]`,
-  seam continuity remains `xy<=1/z<=1`, and no helper/freehand seam geometry is added.
-- Given launcher semantics must remain explicit, when this task is complete, then
-  `swplunger` remains feed/rest anchor and `sw16` remains real exit anchor with physical
-  transition semantics.
-- Given this is a bounded launcher seam fix, when this task is complete, then implementation
-  scope is limited to launcher-chain release/contact mechanics plus focused proof/spec
-  updates needed to keep contract checks strict and typed.
-- Given UI/route workflow rules require evidence, when this task is complete, then
-  focused verification and live launcher route checks are recorded in `.codex/handoff.md`.
+  - Given `PR-0207` proof remains authoritative, when this task is complete, then the launcher feed/rest baseline satisfies strike-ready rest pose (`feedInside=true`, `0<=separationPx<=2`) through production mechanics, not through assertion changes.
+  - Given full-charge inert behavior is still unresolved, when this task is complete, then full-charge release meets unchanged `PR-0206` launch-effect threshold (`minVy<=-40`) without relaxing proof thresholds, case set, or observation windows.
+  - Given no-shortcuts invariants are hard requirements, when this task is complete, then no direct launch `setLinvel(...)` shortcut, no synthetic `gate-passed` route-start emission, and no route-start teleport substitute are introduced.
+  - Given donor seam invariants are non-negotiable, when this task is complete, then endpoint-bridge authoring remains exact `[overheadExitAnchor, descentEntryAnchor]`, seam continuity remains `xy<=1/z<=1`, and no helper/freehand seam geometry is added.
+  - Given launcher semantics must remain explicit, when this task is complete, then `swplunger` remains feed/rest anchor and `sw16` remains real exit anchor with physical transition semantics.
+  - Given this is a bounded launcher seam fix, when this task is complete, then implementation scope is limited to launcher-chain release/contact mechanics plus focused proof/spec updates needed to keep contract checks strict and typed.
+  - Given UI/route workflow rules require evidence, when this task is complete, then focused verification and live launcher route checks are recorded in `.codex/handoff.md`.
 ---
 
 ## Context
@@ -72,6 +58,7 @@ No separate contract inputs were recorded in the source snapshot.
 ### Source: Implementation plan
 
 1. Strike-ready rest alignment (production mechanics, no threshold edits):
+
    - On launcher-chain ball ownership/spawn, align ball Y to a strike-ready rest pose derived from plunger front face:
      - `plungerFrontFaceY = plungerCenterY - plungerDepth/2`
      - `ballRestY = plungerFrontFaceY - ballRadius - restGapPx`
@@ -79,6 +66,7 @@ No separate contract inputs were recorded in the source snapshot.
    - Keep donor feed semantics unchanged (`swplunger` remains feed/rest anchor).
 
 2. Release-contact integration fidelity (physical, no shortcut impulse write):
+
    - Keep release contact plunger-driven via kinematic plunger body.
    - Add bounded post-release physics substep integration window so plunger-body strike resolves deterministically:
      - substep interval `4ms`
@@ -86,10 +74,12 @@ No separate contract inputs were recorded in the source snapshot.
    - Keep route entry and route handoff semantics unchanged (no route-start gate synthesis, no mid-chain handoff).
 
 3. Contact telemetry robustness (non-behavioral semantics preserved):
+
    - Preserve contact entry/exit event markers.
    - Aggregate per-step overlap/relative-contact velocity across release substeps for deterministic telemetry evidence.
 
 4. Keep proof contracts strict and typed:
+
    - Fix nullable proof typing in `PhysicsWorld.launcher.spec.ts` by asserting/guarding required telemetry fields (no `number|null` silent coercion).
    - Do not relax or delete any existing failing assertions.
 
@@ -102,12 +92,14 @@ The source records no separate implementation steps.
 ### Source: Test plan
 
 - Focused regression commands:
+
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run fe-build`
   - `pdm run docs-validate`
 
 - Required proof expectations:
+
   - rest proof remains strict and turns green through mechanics (`0<=separationPx<=2`)
   - full-charge proof remains strict and turns green through mechanics (`minVy<=-40`)
   - unchanged matrix case contracts remain intact

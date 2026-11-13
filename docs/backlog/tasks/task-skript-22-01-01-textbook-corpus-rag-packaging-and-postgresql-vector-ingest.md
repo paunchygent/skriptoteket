@@ -4,8 +4,8 @@ id: TASK-SKRIPT-22-01-01
 title: Textbook corpus — RAG packaging and PostgreSQL vector ingest contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -19,12 +19,9 @@ closeout_review:
 story: ST-SKRIPT-22-01
 task_kind: story
 acceptance_criteria:
-- Chunk packaging includes stable IDs, page ranges, section paths, content types,
-  and hashes for every chunk.
-- Vector-ingest contract supports metadata filtering and provenance traceability from
-  retrieval result back to source pages.
-- Retrieval QA gates over textbook tasks/answer keys block ingest promotion on quality
-  failure.
+  - Chunk packaging includes stable IDs, page ranges, section paths, content types, and hashes for every chunk.
+  - Vector-ingest contract supports metadata filtering and provenance traceability from retrieval result back to source pages.
+  - Retrieval QA gates over textbook tasks/answer keys block ingest promotion on quality failure.
 ---
 
 ## Context

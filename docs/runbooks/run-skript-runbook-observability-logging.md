@@ -4,22 +4,26 @@ id: RUN-SKRIPT-runbook-observability-logging
 title: 'Runbook: Observability Logging'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-observability-logging
+  - RUN-observability-logging
 summary: 'Runbook: Observability Logging'
 system: skriptoteket
 ---
 
 ## Trigger
+
 ### Source record
+
 How to debug Skriptoteket using structured logs and correlation IDs.
 
 Reference: `docs/reference/reports/ref-external-observability-integration.md`.
+
 ### Configuration
+
 Environment variables:
 
 - `SERVICE_NAME` (default: `skriptoteket`)
@@ -32,7 +36,9 @@ Recommended defaults:
 
 - Local dev: `LOG_FORMAT=console`
 - Production: `LOG_FORMAT=json`
+
 ### Correlation ID
+
 Skriptoteket accepts `X-Correlation-ID` on incoming requests and echoes it on responses. The value is bound as
 `correlation_id` for logs emitted during request handling.
 
@@ -48,7 +54,9 @@ Search logs for the correlation id:
 ```bash
 docker logs skriptoteket_web | rg "${CID}"
 ```
+
 ### Auth Outcome Triage After HuleEdu Cutover
+
 Skriptoteket no longer owns browser sessions, CSRF ceremony, logout authority, provider
 registration, password reset, or email verification telemetry. Start with one known
 `X-Correlation-ID`, then decide whether the signal belongs to Skriptoteket or must be handed to
@@ -70,13 +78,13 @@ rg "${CID}" .artifacts/dev-backend.log
 
 ### Skriptoteket-owned auth log events
 
-| Event | Meaning | Safe fields |
-|---|---|---|
-| `auth.internal_identity.verified` | HuleEdu signed internal identity context was accepted by Skriptoteket | `outcome`, `reason`, `correlation_id` |
-| `auth.internal_identity.rejected` | HuleEdu signed internal identity context failed closed at Skriptoteket | `outcome`, `reason`, `correlation_id` |
-| `auth.projection.resolved` | Realm-aware local projection resolved or provisioned | `realm`, `outcome`, `reason`, `correlation_id` |
-| `auth.projection.rejected` | Projection/provisioning was missing, blocked, linking-required, or unsupported | `realm`, `outcome`, `reason`, `correlation_id` |
-| `auth.rbac.denied` | Skriptoteket-local `User.role` blocked a protected API route | `decision`, `required_role`, `actual_role`, `route_family`, `correlation_id` |
+| Event                             | Meaning                                                                        | Safe fields                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `auth.internal_identity.verified` | HuleEdu signed internal identity context was accepted by Skriptoteket          | `outcome`, `reason`, `correlation_id`                                        |
+| `auth.internal_identity.rejected` | HuleEdu signed internal identity context failed closed at Skriptoteket         | `outcome`, `reason`, `correlation_id`                                        |
+| `auth.projection.resolved`        | Realm-aware local projection resolved or provisioned                           | `realm`, `outcome`, `reason`, `correlation_id`                               |
+| `auth.projection.rejected`        | Projection/provisioning was missing, blocked, linking-required, or unsupported | `realm`, `outcome`, `reason`, `correlation_id`                               |
+| `auth.rbac.denied`                | Skriptoteket-local `User.role` blocked a protected API route                   | `decision`, `required_role`, `actual_role`, `route_family`, `correlation_id` |
 
 ### Failure interpretation
 
@@ -94,7 +102,9 @@ rg "${CID}" .artifacts/dev-backend.log
 - `auth.rbac.denied`: shared auth succeeded; the failure is Skriptoteket-local authorization.
 - CSRF write rejection, logout invalidation, provider lifecycle, and browser-session validity are
   HuleEdu-owned. Hand off the same correlation id and time window to HuleEdu Gateway/session logs.
+
 ### JSON log shape (HuleEdu)
+
 Required fields:
 
 - `timestamp` (RFC 3339 / ISO 8601)
@@ -107,7 +117,9 @@ Optional fields (when available):
 
 - `correlation_id`
 - `trace_id`, `span_id` (when OpenTelemetry is enabled)
+
 ### Where to view logs
+
 Local:
 
 ```bash
@@ -121,7 +133,9 @@ ssh hemma "sudo docker logs -f skriptoteket-web"
 ```
 
 Grafana + Loki: see `docs/runbooks/runbook-observability-grafana.md`.
+
 ### nginx-proxy bot/probe analysis (Loki)
+
 `nginx-proxy` access logs are shipped to Loki via Promtail. We label only low-cardinality fields:
 
 - `vhost` (Host header / vhost)
@@ -150,7 +164,9 @@ sum(count_over_time({container="nginx-proxy",method="PROPFIND"}[24h]))
 ```
 
 Avoid labeling full paths (high cardinality). Use query-time filters (`|=` / `|~`) instead.
+
 ### Sensitive Data Policy
+
 Skriptoteket handles school-related data. Observability must not become a data leakage vector.
 
 ### What MAY be logged
@@ -190,7 +206,9 @@ When adding new log statements, verify:
 - [ ] No raw request/response body logging
 - [ ] Error messages don't expose internal system details
 - [ ] File paths don't reveal user-specific information
+
 ### Platform-only LLM debug captures (Option A)
+
 Skriptoteket can optionally persist **sensitive** “full model response” debug captures for edit-ops generation and
 preview failures.
 
@@ -242,16 +260,21 @@ Payload contents are kind-specific and may contain sensitive data (model output,
 - Home server (prod): see `docs/runbooks/runbook-home-server.md` for `ssh` + `docker exec` commands.
 
 ## Preconditions
+
 The source record did not define a separate section for this package heading.
 
 ## Steps
+
 The source record did not define a separate section for this package heading.
 
 ## Expected Results
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
 ## Rollback
+
 The source record did not define a separate section for this package heading.

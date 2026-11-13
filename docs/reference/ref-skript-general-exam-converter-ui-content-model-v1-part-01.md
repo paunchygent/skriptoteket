@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1-PART-01
 title: Exam Converter UI content model v1 — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1
 part: 1
@@ -69,11 +69,11 @@ outcomes.
 
 The authenticated Exam Converter screen has four content regions.
 
-| Region | Default visibility | Purpose | Content |
-|---|---:|---|---|
-| Left workflow rail | Always visible | Collect inputs and start work | source upload, start/reset actions, compact status |
-| Result strip | Visible after activity starts | State what happened and the next action | one status headline, one concise next-step line, report action when relevant |
-| Inspection surface | One active mode at a time | Let the teacher inspect files, questions, or report details without flattening everything | segmented modes or equivalent disclosure: `Filer`, `Frågor`, `Rapport`; only the active mode renders its list/detail surface |
+| Region             |            Default visibility | Purpose                                                                                   | Content                                                                                                                      |
+| ------------------ | ----------------------------: | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Left workflow rail |                Always visible | Collect inputs and start work                                                             | source upload, start/reset actions, compact status                                                                           |
+| Result strip       | Visible after activity starts | State what happened and the next action                                                   | one status headline, one concise next-step line, report action when relevant                                                 |
+| Inspection surface |     One active mode at a time | Let the teacher inspect files, questions, or report details without flattening everything | segmented modes or equivalent disclosure: `Filer`, `Frågor`, `Rapport`; only the active mode renders its list/detail surface |
 
 Do not add summary cards for item types, students, vanity metrics, or aggregate
 status. Counts may appear in section headings only when they help navigation,
@@ -108,13 +108,13 @@ one default view. That is not progressive disclosure.
 
 Use these exact headline states:
 
-| State | Headline |
-|---|---|
-| Idle | `Välj provfil för att börja` |
-| Running | `Konverterar provet...` |
-| Complete | `Provet är konverterat` |
-| Partial | `Konverteringen av provet lyckades delvis` |
-| Failed | `Konverteringen av provet misslyckades` |
+| State    | Headline                                   |
+| -------- | ------------------------------------------ |
+| Idle     | `Välj provfil för att börja`               |
+| Running  | `Konverterar provet...`                    |
+| Complete | `Provet är konverterat`                    |
+| Partial  | `Konverteringen av provet lyckades delvis` |
+| Failed   | `Konverteringen av provet misslyckades`    |
 
 Next-step copy must be action-level and direct. Good examples:
 
@@ -212,8 +212,7 @@ row disabled and guide the teacher back to `Granska`. Export policy must not
 be persisted or replayed as teacher authoring state.
 
 If a file cannot be created, the row copy should state the visible outcome and
-the next action, for example `Kunde inte skapa QTI-paketet. Öppna rapporten och
-kontrollera frågorna som saknar facit eller poäng.`
+the next action, for example `Kunde inte skapa QTI-paketet. Öppna rapporten och kontrollera frågorna som saknar facit eller poäng.`
 
 If a first-pass file exists before review is complete, the row must not imply
 that it is the final recommended export. Use visible outcome copy such as:
@@ -382,8 +381,7 @@ complete as possible with minimal unnecessary clicks.
 Status in dense question rows should use approved lucide success/warning
 symbols with accessible labels, not repeated visible text. The scanning row
 must let the `Saknas` column carry the actionable missing-field labels. Use
-screen-reader labels only when needed, for example `Klar`, `Saknas`, `Kunde
-inte konverteras`, or `Inte vald`.
+screen-reader labels only when needed, for example `Klar`, `Saknas`, `Kunde inte konverteras`, or `Inte vald`.
 
 ### Report Content
 

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-06-01
 title: 'Flunk-Out Frenzy: VPW donor topology extraction and table-spec cutover'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,22 +17,14 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- A checked-in donor map artifact captures the VPW whole-board boundary grammar, lower-third
-  lane fork, shooter corridor, and gate or kicker anchors we are borrowing.
-- '`prototypeAlphaTableSpec.ts` is rebuilt from a donor-backed board skeleton instead
-  of locally-invented lane geometry.'
-- The compiled pinball-table system, rules layer, and runtime continue unchanged apart
-  from consuming the new authored table spec.
-- The topology cutover documents any remaining donor semantic-representation gaps
-  explicitly instead of treating flattened devices as 'good enough' final ports.
-- The donor topology cutover keeps shooter lanes and other donor lane corridors on
-  donor carriers only; if a lane still depends on a local `laneBounds` or other flattening
-  seam, that seam stays explicitly open and linked to `PR-0199` rather than being
-  treated as donor-faithful.
-- Focused verification plus a fresh reviewer pass document whether the donor topology
-  cutover is ready for manual browser inspection.
+  - A checked-in donor map artifact captures the VPW whole-board boundary grammar, lower-third lane fork, shooter corridor, and gate or kicker anchors we are borrowing.
+  - '`prototypeAlphaTableSpec.ts` is rebuilt from a donor-backed board skeleton instead of locally-invented lane geometry.'
+  - The compiled pinball-table system, rules layer, and runtime continue unchanged apart from consuming the new authored table spec.
+  - The topology cutover documents any remaining donor semantic-representation gaps explicitly instead of treating flattened devices as 'good enough' final ports.
+  - The donor topology cutover keeps shooter lanes and other donor lane corridors on donor carriers only; if a lane still depends on a local `laneBounds` or other flattening seam, that seam stays explicitly open and linked to `PR-0199` rather than being treated as donor-faithful.
+  - Focused verification plus a fresh reviewer pass document whether the donor topology cutover is ready for manual browser inspection.
 dependencies:
-- ST-SKRIPT-25-06
+  - ST-SKRIPT-25-06
 ---
 
 ## Context

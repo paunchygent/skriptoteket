@@ -4,12 +4,12 @@ id: ADR-SKRIPT-0089
 title: Tool slug lifecycle (draft-mutable, publish-final, post-publish immutable)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 ---
 
 ## Context
@@ -32,8 +32,6 @@ development. The system needs a slug policy that:
 ## Decision
 
 ### Source: Decision
-
-
 
 ## Non-Decisions
 

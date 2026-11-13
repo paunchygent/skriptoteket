@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-32-08-landing-authenticated-value-copy-alternatives
 title: ST-32-08 landing authenticated-value copy alternatives
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -48,12 +48,10 @@ No separate source material was recorded for this section.
 ### Source: Shared Copy Changes
 
 - `Skapa salen, placera eleverna, spara som PDF. Allt i webbläsaren.` becomes
-  `Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad
-  är alla dina klasser, grupperingar och klassrumsplaceringar sparade.`
+  `Skapa salen, placera eleverna, spara som PDF eller för Excel. Som inloggad är alla dina klasser, grupperingar och klassrumsplaceringar sparade.`
 - Numeric step markers use `I`, `II`, `III`.
 - The signed-in section includes language close to:
-  `Få tillgång till fler appar och arbetsverktyg samt ge förslag på nya appar
-  som du anser skulle underlätta ditt arbete.`
+  `Få tillgång till fler appar och arbetsverktyg samt ge förslag på nya appar som du anser skulle underlätta ditt arbete.`
 
 ### Source: Preview
 

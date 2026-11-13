@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0011
 title: 'Editor AI: tolerant diff matching + normalization for LLM patch ops'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,14 +16,10 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Given patch_lines include embedded newlines, preview/apply splits them into per-line
-  entries before validation and apply behavior is deterministic.
-- Given a diff has valid body context but incorrect hunk ranges, preview/apply can
-  re-anchor headers against base_text and reduce false offset/fuzz warnings.
-- Given a diff omits a small number of structural base lines between context lines,
-  preview/apply can still match within tight safety bounds (no broad greedy matching).
-- Given the relaxed matcher still fails, preview fails with clear error details (expected/base
-  snippets) rather than silent success.
+  - Given patch_lines include embedded newlines, preview/apply splits them into per-line entries before validation and apply behavior is deterministic.
+  - Given a diff has valid body context but incorrect hunk ranges, preview/apply can re-anchor headers against base_text and reduce false offset/fuzz warnings.
+  - Given a diff omits a small number of structural base lines between context lines, preview/apply can still match within tight safety bounds (no broad greedy matching).
+  - Given the relaxed matcher still fails, preview fails with clear error details (expected/base snippets) rather than silent success.
 ---
 
 ## Context
@@ -36,6 +32,7 @@ one or two non-blank context lines or when their hunk headers are off by a few l
 "patch_apply_failed" outcomes and confusing warnings even when the model intent is correct.
 
 Make the diff normalizer and matcher resilient to common LLM output variability without compromising safety:
+
 - accept line-list encoding quirks (embedded newlines inside patch_lines entries),
 - re-anchor hunk headers to base_text when header line numbers are wrong,
 - allow limited, well-scoped non-blank skips between context lines,
@@ -48,6 +45,7 @@ The source snapshot is the governing record for the decisions and assumptions st
 ### Story Contract Slice
 
 Make the diff normalizer and matcher resilient to common LLM output variability without compromising safety:
+
 - accept line-list encoding quirks (embedded newlines inside patch_lines entries),
 - re-anchor hunk headers to base_text when header line numbers are wrong,
 - allow limited, well-scoped non-blank skips between context lines,
@@ -59,7 +57,8 @@ No separate material is recorded in the source snapshot.
 
 ### Plan
 
-1) Patch_lines normalization (safe, always-on)
+1. Patch_lines normalization (safe, always-on)
+
 - Add a helper to flatten patch_lines before joining:
   - Split any entry containing `\n` or `\r\n` into multiple lines (preserve empty lines).
   - Keep the existing trailing newline rule.
@@ -68,7 +67,8 @@ No separate material is recorded in the source snapshot.
 - Add a unit test that feeds `patch_lines` with embedded newlines and asserts prepare/apply is identical to the
   per-line equivalent.
 
-2) Header re-anchoring when headers are wrong (safe fallback)
+2. Header re-anchoring when headers are wrong (safe fallback)
+
 - Add a fallback stage that re-computes hunk header ranges using base_text even when headers exist.
 - Suggested approach:
   - In `NativeUnifiedDiffApplier.prepare(...)`, add an optional `reanchor_headers` flag.
@@ -78,7 +78,8 @@ No separate material is recorded in the source snapshot.
     (e.g., > 10).
 - Keep normalizations list updated (e.g., `reanchored_hunk_ranges`).
 
-3) Limited non-blank skips between context lines (moderate fallback)
+3. Limited non-blank skips between context lines (moderate fallback)
+
 - Extend `_match_from` to allow skipping a small number of base lines between expected context lines.
 - Safety constraints:
   - Only enabled in a late fallback stage.
@@ -89,7 +90,8 @@ No separate material is recorded in the source snapshot.
   - Add `max_extra_skips` and `skip_predicate` to `_match_from` / `_find_hunk_match`.
   - Run a new fallback stage: strict -> whitespace -> fuzz -> structural-skip.
 
-4) Optional internal context drop (aggressive, last resort)
+4. Optional internal context drop (aggressive, last resort)
+
 - Allow dropping a small number of internal context lines inside a hunk (not just lead/tail) to handle
   one missing unchanged line in the model output.
 - Safety constraints:
@@ -103,7 +105,8 @@ No separate material is recorded in the source snapshot.
 
 ### Implementation Steps
 
-1) Patch_lines normalization (safe, always-on)
+1. Patch_lines normalization (safe, always-on)
+
 - Add a helper to flatten patch_lines before joining:
   - Split any entry containing `\n` or `\r\n` into multiple lines (preserve empty lines).
   - Keep the existing trailing newline rule.
@@ -112,7 +115,8 @@ No separate material is recorded in the source snapshot.
 - Add a unit test that feeds `patch_lines` with embedded newlines and asserts prepare/apply is identical to the
   per-line equivalent.
 
-2) Header re-anchoring when headers are wrong (safe fallback)
+2. Header re-anchoring when headers are wrong (safe fallback)
+
 - Add a fallback stage that re-computes hunk header ranges using base_text even when headers exist.
 - Suggested approach:
   - In `NativeUnifiedDiffApplier.prepare(...)`, add an optional `reanchor_headers` flag.
@@ -122,7 +126,8 @@ No separate material is recorded in the source snapshot.
     (e.g., > 10).
 - Keep normalizations list updated (e.g., `reanchored_hunk_ranges`).
 
-3) Limited non-blank skips between context lines (moderate fallback)
+3. Limited non-blank skips between context lines (moderate fallback)
+
 - Extend `_match_from` to allow skipping a small number of base lines between expected context lines.
 - Safety constraints:
   - Only enabled in a late fallback stage.
@@ -133,7 +138,8 @@ No separate material is recorded in the source snapshot.
   - Add `max_extra_skips` and `skip_predicate` to `_match_from` / `_find_hunk_match`.
   - Run a new fallback stage: strict -> whitespace -> fuzz -> structural-skip.
 
-4) Optional internal context drop (aggressive, last resort)
+4. Optional internal context drop (aggressive, last resort)
+
 - Allow dropping a small number of internal context lines inside a hunk (not just lead/tail) to handle
   one missing unchanged line in the model output.
 - Safety constraints:
@@ -192,6 +198,7 @@ one or two non-blank context lines or when their hunk headers are off by a few l
 ### Goal
 
 Make the diff normalizer and matcher resilient to common LLM output variability without compromising safety:
+
 - accept line-list encoding quirks (embedded newlines inside patch_lines entries),
 - re-anchor hunk headers to base_text when header line numbers are wrong,
 - allow limited, well-scoped non-blank skips between context lines,
@@ -205,7 +212,8 @@ Make the diff normalizer and matcher resilient to common LLM output variability 
 
 ### Implementation plan
 
-1) Patch_lines normalization (safe, always-on)
+1. Patch_lines normalization (safe, always-on)
+
 - Add a helper to flatten patch_lines before joining:
   - Split any entry containing `\n` or `\r\n` into multiple lines (preserve empty lines).
   - Keep the existing trailing newline rule.
@@ -214,7 +222,8 @@ Make the diff normalizer and matcher resilient to common LLM output variability 
 - Add a unit test that feeds `patch_lines` with embedded newlines and asserts prepare/apply is identical to the
   per-line equivalent.
 
-2) Header re-anchoring when headers are wrong (safe fallback)
+2. Header re-anchoring when headers are wrong (safe fallback)
+
 - Add a fallback stage that re-computes hunk header ranges using base_text even when headers exist.
 - Suggested approach:
   - In `NativeUnifiedDiffApplier.prepare(...)`, add an optional `reanchor_headers` flag.
@@ -224,7 +233,8 @@ Make the diff normalizer and matcher resilient to common LLM output variability 
     (e.g., > 10).
 - Keep normalizations list updated (e.g., `reanchored_hunk_ranges`).
 
-3) Limited non-blank skips between context lines (moderate fallback)
+3. Limited non-blank skips between context lines (moderate fallback)
+
 - Extend `_match_from` to allow skipping a small number of base lines between expected context lines.
 - Safety constraints:
   - Only enabled in a late fallback stage.
@@ -235,7 +245,8 @@ Make the diff normalizer and matcher resilient to common LLM output variability 
   - Add `max_extra_skips` and `skip_predicate` to `_match_from` / `_find_hunk_match`.
   - Run a new fallback stage: strict -> whitespace -> fuzz -> structural-skip.
 
-4) Optional internal context drop (aggressive, last resort)
+4. Optional internal context drop (aggressive, last resort)
+
 - Allow dropping a small number of internal context lines inside a hunk (not just lead/tail) to handle
   one missing unchanged line in the model output.
 - Safety constraints:

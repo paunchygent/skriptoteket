@@ -4,16 +4,16 @@ id: ADR-SKRIPT-0091
 title: Native editable exam workspace narrows the ADR-0090 authoring-UI non-decision
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-05'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 links:
   governing:
-  - EPIC-SKRIPT-39
-  - ADR-SKRIPT-0090
+    - EPIC-SKRIPT-39
+    - ADR-SKRIPT-0090
 ---
 
 ## Context

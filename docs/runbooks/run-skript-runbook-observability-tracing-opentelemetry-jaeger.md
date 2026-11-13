@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-observability-tracing-opentelemetry-jaeger
 title: 'Runbook: Observability Tracing (OpenTelemetry + Jaeger)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-observability-tracing
+  - RUN-observability-tracing
 summary: 'Runbook: Observability Tracing (OpenTelemetry + Jaeger)'
 system: skriptoteket
 ---
@@ -35,12 +35,12 @@ Basic auth is configured via nginx-proxy `htpasswd`:
 
 ### Source: Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OTEL_TRACING_ENABLED` | `false` | Enable tracing (explicit opt-in) |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | OTLP collector endpoint (gRPC) |
-| `SERVICE_VERSION` | from `APP_VERSION` | Service version in traces |
-| `ENVIRONMENT` | `development` | Deployment environment |
+| Variable                      | Default                 | Description                      |
+| ----------------------------- | ----------------------- | -------------------------------- |
+| `OTEL_TRACING_ENABLED`        | `false`                 | Enable tracing (explicit opt-in) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://localhost:4317` | OTLP collector endpoint (gRPC)   |
+| `SERVICE_VERSION`             | from `APP_VERSION`      | Service version in traces        |
+| `ENVIRONMENT`                 | `development`           | Deployment environment           |
 
 ## Steps
 
@@ -65,11 +65,11 @@ pdm run dev
 
 ### Source: Traced Operations
 
-| Operation | Span Name | Key Attributes |
-|-----------|-----------|----------------|
-| HTTP request | `{METHOD} {route}` | `http.method`, `http.route`, `http.status_code` |
-| Tool execution | `execute_tool_version` | `tool.id`, `version.id`, `run.id`, `run.status` |
-| Docker runner | `docker_runner.execute` | `run.id`, `run.context`, `run.status`, `run.duration_seconds` |
+| Operation      | Span Name               | Key Attributes                                                |
+| -------------- | ----------------------- | ------------------------------------------------------------- |
+| HTTP request   | `{METHOD} {route}`      | `http.method`, `http.route`, `http.status_code`               |
+| Tool execution | `execute_tool_version`  | `tool.id`, `version.id`, `run.id`, `run.status`               |
+| Docker runner  | `docker_runner.execute` | `run.id`, `run.context`, `run.status`, `run.duration_seconds` |
 
 ### Source: Span Events (Docker Runner)
 

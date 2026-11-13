@@ -1,19 +1,18 @@
 ---
 type: adr
 id: ADR-SKRIPT-0092
-title: Script-bank tools ship as tool-owned bundles loaded as a package over their
-  own directory
+title: Script-bank tools ship as tool-owned bundles loaded as a package over their own directory
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-11'
 status: accepted
 deciders:
-- user
+  - user
 links:
   governing:
-  - TASK-SKRIPT-REP-0037
+    - TASK-SKRIPT-REP-0037
 ---
 
 ## Context

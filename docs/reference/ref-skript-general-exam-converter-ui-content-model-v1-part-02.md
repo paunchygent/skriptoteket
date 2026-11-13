@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1-PART-02
 title: Exam Converter UI content model v1 — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1
 part: 2
@@ -112,17 +112,17 @@ slices.
 
 Recommended UI slice order:
 
-1. app shell and authenticated Exam Converter host frame;
-2. left workflow rail;
-3. result strip and next-action copy;
-4. inspection mode control;
-5. question list scanning surface;
-6. review decision gate: `Granska` / `Skapa filer` with dynamic help/info
-   copy;
-7. selected-question detail pane and completion actions;
-8. files inspection mode with download/save actions gated by replay artifact
-   references;
-9. report inspection mode;
+01. app shell and authenticated Exam Converter host frame;
+02. left workflow rail;
+03. result strip and next-action copy;
+04. inspection mode control;
+05. question list scanning surface;
+06. review decision gate: `Granska` / `Skapa filer` with dynamic help/info
+    copy;
+07. selected-question detail pane and completion actions;
+08. files inspection mode with download/save actions gated by replay artifact
+    references;
+09. report inspection mode;
 10. empty, loading, failed, and partial states across the approved surfaces.
 
 Service/runtime wiring is a separate implementation concern and must not be

@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0383-document-converter-copy-expert-brief
 title: PR-0383 Document Converter copy expert brief
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -15,7 +15,6 @@ summary: PR-0383 Document Converter copy expert brief
 ## Intent
 
 ### PR-0383 Document Converter Copy Expert Brief
-
 
 The approved proof screenshots are retained locally at:
 
@@ -31,7 +30,6 @@ No separate package manifest is stated in the source.
 
 ## Design Interpretation
 
-
 - The default workspace is HTML/CSS project preview.
 - Batch conversion is secondary.
 - The teacher supplies project inputs and chooses the desired output.
@@ -46,7 +44,6 @@ No separate package manifest is stated in the source.
 
 ### Source: Assignment
 
-
 This brief produced the approved Swedish v4 copy sheet for the Document
 Converter mockup. The accepted handoff is recorded in `swedish-copy-v4.md`.
 
@@ -55,7 +52,6 @@ the approved static HTML/CSS mockup, governing PR docs, product constraints, and
 the visible-string inventory.
 
 ### Source: Required Output
-
 
 Return a concise Markdown proposal with:
 
@@ -72,7 +68,6 @@ Return a concise Markdown proposal with:
 
 ### Source: Copy Guardrails
 
-
 - Do not write final marketing copy or landing-page language.
 - Do not add eyebrow or overline labels. Obvious surfaces must not be narrated
   with duplicate subheadings.
@@ -87,7 +82,6 @@ Return a concise Markdown proposal with:
 - Prefer short command labels over explanatory sentences.
 
 ### Source: Out Of Scope
-
 
 - Production Vue implementation.
 - Backend/API contract changes.

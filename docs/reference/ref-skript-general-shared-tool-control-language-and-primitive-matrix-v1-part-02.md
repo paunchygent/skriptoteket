@@ -4,28 +4,28 @@ id: REF-SKRIPT-GENERAL-shared-tool-control-language-and-primitive-matrix-v1-PART
 title: Shared tool control language and primitive matrix v1 — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-shared-tool-control-language-and-primitive-matrix-v1
 part: 2
 ---
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| classlist editor modal shell | `modal dialog` | `dialog_shell` | `work_surface` | — | `shared_composition` | contained editor frame with create/edit lifecycle |
-| modal title block (`Klasslistor`, `Ny klasslista` / `Redigera klasslista`) | `identity block` | `dialog_shell` | `information` | — | `shared_composition` | editor identity changes by state, not by pattern type |
-| modal close (`×`) | `icon button` | `dialog_shell` | `action / toolbar_action` | `direct` | `shared_primitive` | local dismiss for the editor |
-| import block shell | `instruction panel` | `support_surface` | `information` | — | `shared_composition` | compact ingress block for file-based population |
-| supported file-format copy | `instruction panel` | `support_surface` | `information` | — | `mode_local_instance` | explains acceptable import sources without becoming a separate workflow surface |
-| `Importera från fil` | `command button` | `support_surface` | `action / secondary_action` | `direct` | `shared_primitive` | file-ingress action attached to the editor, not a new modal family |
-| class name field | `form field` | `support_surface` | `action` | `direct` | `shared_primitive` | single-value identity field |
-| student-list field (`Elever`) | `form field` | `support_surface` | `action` | `direct` | `shared_primitive` | multiline bulk-input field for roster authoring; stays inside the form-field family |
-| student count metadata | inline metadata attached to the roster field | `support_surface` | `information` | — | `shared_composition` | lightweight progress/count signal for the current list |
-| roster helper copy | helper text attached to the roster field | `support_surface` | `information` | — | `shared_composition` | keeps input grammar explicit without adding a new panel |
-| `Radera klasslista` | `command button` | `dialog_footer` | `action / destructive_action` | `direct` | `shared_primitive` | destructive footer action in edit state only |
-| `Avbryt` | `command button` | `dialog_footer` | `navigation` | `direct` | `shared_primitive` | dismiss editor without commit |
-| `Skapa klasslista` / `Spara ändringar` | `command button` | `dialog_footer` | `action / primary_cta` | `direct` | `shared_primitive` | primary commit action varies by create/edit state, not by primitive family |
+| UI item                                                                    | Pattern typology                             | Topology layer    | Content role                  | Behavior | Ownership             | Design implication                                                                  |
+| -------------------------------------------------------------------------- | -------------------------------------------- | ----------------- | ----------------------------- | -------- | --------------------- | ----------------------------------------------------------------------------------- |
+| classlist editor modal shell                                               | `modal dialog`                               | `dialog_shell`    | `work_surface`                | —        | `shared_composition`  | contained editor frame with create/edit lifecycle                                   |
+| modal title block (`Klasslistor`, `Ny klasslista` / `Redigera klasslista`) | `identity block`                             | `dialog_shell`    | `information`                 | —        | `shared_composition`  | editor identity changes by state, not by pattern type                               |
+| modal close (`×`)                                                          | `icon button`                                | `dialog_shell`    | `action / toolbar_action`     | `direct` | `shared_primitive`    | local dismiss for the editor                                                        |
+| import block shell                                                         | `instruction panel`                          | `support_surface` | `information`                 | —        | `shared_composition`  | compact ingress block for file-based population                                     |
+| supported file-format copy                                                 | `instruction panel`                          | `support_surface` | `information`                 | —        | `mode_local_instance` | explains acceptable import sources without becoming a separate workflow surface     |
+| `Importera från fil`                                                       | `command button`                             | `support_surface` | `action / secondary_action`   | `direct` | `shared_primitive`    | file-ingress action attached to the editor, not a new modal family                  |
+| class name field                                                           | `form field`                                 | `support_surface` | `action`                      | `direct` | `shared_primitive`    | single-value identity field                                                         |
+| student-list field (`Elever`)                                              | `form field`                                 | `support_surface` | `action`                      | `direct` | `shared_primitive`    | multiline bulk-input field for roster authoring; stays inside the form-field family |
+| student count metadata                                                     | inline metadata attached to the roster field | `support_surface` | `information`                 | —        | `shared_composition`  | lightweight progress/count signal for the current list                              |
+| roster helper copy                                                         | helper text attached to the roster field     | `support_surface` | `information`                 | —        | `shared_composition`  | keeps input grammar explicit without adding a new panel                             |
+| `Radera klasslista`                                                        | `command button`                             | `dialog_footer`   | `action / destructive_action` | `direct` | `shared_primitive`    | destructive footer action in edit state only                                        |
+| `Avbryt`                                                                   | `command button`                             | `dialog_footer`   | `navigation`                  | `direct` | `shared_primitive`    | dismiss editor without commit                                                       |
+| `Skapa klasslista` / `Spara ändringar`                                     | `command button`                             | `dialog_footer`   | `action / primary_cta`        | `direct` | `shared_primitive`    | primary commit action varies by create/edit state, not by primitive family          |
 
 ### Source: Worked topology: Code editor hub as coordination mode
 
@@ -35,18 +35,18 @@ or create the next tool to edit.
 
 ### Code editor hub (`Kodredigeraren`) as coordination mode
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| workspace identity block | `identity block` | `app_shell` | `information` | — | `shared_composition` | establishes the authoring context and purpose of the hub |
-| supporting links (`Mina verktyg`, `Alla verktyg`) | navigation links inside the header | `workspace_header` | `navigation` | `direct` | `mode_local_instance` | secondary wayfinding stays lightweight and subordinate to the hub task |
-| hub search field | `form field` | `workspace_header` | `action` | `direct` | `shared_primitive` | canonical search affordance for opening a tool without changing the surrounding shell |
-| search results overlay | `resource list` | `support_surface` | `work_surface` | `direct` | `shared_composition` | transient result surface attached to the search field, not a separate page |
-| `Skapa nytt verktyg` | `command button` | `workspace_header` | `action / primary_cta` | `direct` | `shared_primitive` | create path remains a simple top-level CTA and reuses the standard modal editor entry |
-| recents panel shell (`Senast öppnade`) | `management panel` | `resume_surface` | `work_surface` | — | `shared_composition` | resumable authoring work belongs in a dedicated, calm panel |
-| recent-tools list | `resource list` | `resume_surface` | `work_surface` | `direct` | `shared_composition` | recent items are selectable work entries, not cards with bespoke chrome |
-| `Inga senaste verktyg än.` | `empty state` | `resume_surface` | `information` | — | `shared_composition` | empty recents should stay explicit and lightweight |
-| my-tools panel shell (`Mina verktyg`) | `management panel` | `management_surface` | `work_surface` | — | `shared_composition` | stable entity-management panel for owned tools |
-| my-tools list | `resource list` | `management_surface` | `work_surface` | `direct` | `shared_composition` | owned tools are selected from a list, not a second dashboard card family |
+| UI item                                           | Pattern typology                   | Topology layer       | Content role           | Behavior | Ownership             | Design implication                                                                    |
+| ------------------------------------------------- | ---------------------------------- | -------------------- | ---------------------- | -------- | --------------------- | ------------------------------------------------------------------------------------- |
+| workspace identity block                          | `identity block`                   | `app_shell`          | `information`          | —        | `shared_composition`  | establishes the authoring context and purpose of the hub                              |
+| supporting links (`Mina verktyg`, `Alla verktyg`) | navigation links inside the header | `workspace_header`   | `navigation`           | `direct` | `mode_local_instance` | secondary wayfinding stays lightweight and subordinate to the hub task                |
+| hub search field                                  | `form field`                       | `workspace_header`   | `action`               | `direct` | `shared_primitive`    | canonical search affordance for opening a tool without changing the surrounding shell |
+| search results overlay                            | `resource list`                    | `support_surface`    | `work_surface`         | `direct` | `shared_composition`  | transient result surface attached to the search field, not a separate page            |
+| `Skapa nytt verktyg`                              | `command button`                   | `workspace_header`   | `action / primary_cta` | `direct` | `shared_primitive`    | create path remains a simple top-level CTA and reuses the standard modal editor entry |
+| recents panel shell (`Senast öppnade`)            | `management panel`                 | `resume_surface`     | `work_surface`         | —        | `shared_composition`  | resumable authoring work belongs in a dedicated, calm panel                           |
+| recent-tools list                                 | `resource list`                    | `resume_surface`     | `work_surface`         | `direct` | `shared_composition`  | recent items are selectable work entries, not cards with bespoke chrome               |
+| `Inga senaste verktyg än.`                        | `empty state`                      | `resume_surface`     | `information`          | —        | `shared_composition`  | empty recents should stay explicit and lightweight                                    |
+| my-tools panel shell (`Mina verktyg`)             | `management panel`                 | `management_surface` | `work_surface`         | —        | `shared_composition`  | stable entity-management panel for owned tools                                        |
+| my-tools list                                     | `resource list`                    | `management_surface` | `work_surface`         | `direct` | `shared_composition`  | owned tools are selected from a list, not a second dashboard card family              |
 
 ### Source: Worked topology: Tool editor as dense authoring mode
 
@@ -64,52 +64,52 @@ bespoke shell for each mode.
 
 ### Tool editor shell and source mode
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| editable tool identity block (`Titel`, `Sammanfattning`, `URL-namn`) | `identity block` + `summary strip` | `app_shell` | `information` / `action` | `direct` | `shared_composition` | the editor shell owns tool identity, but the identity area stays compact and inline-editable |
-| `Spara/Öppna` | `menu button` | `command_surface` | `action / secondary_action` | `menu` | `shared_primitive` | save, checkpoint, and open-history actions are grouped behind one stable command trigger |
-| `Verktyg` | `menu button` | `command_surface` | `action / overflow_action` | `menu` | `shared_primitive` | tool switching and tool creation branch from one shared resource-switch command |
-| publication state line (`Ej publicerad · Ny arbetsversion`) | `status strip` | `workspace_header` | `information` | — | `shared_composition` | publication state belongs in the shell, not as a large alert band |
-| workflow action cluster (`Begär publicering`, `Publicera`, `Avslå`) | `command toolbar` | `command_surface` | `action` | `direct` | `shared_composition` | role-dependent workflow actions stay grouped and explicit |
-| editor-mode switch (`Källkod`, `Diff`, `Metadata`, `Testkör`) | `mode switcher` | `workspace_header` | `navigation` | `direct` | `shared_composition` | mode changes are explicit, mutually exclusive, and remain inside one stable shell |
-| source code surface | `editor surface` | `primary_surface` | `work_surface` | `direct` | `shared_composition` | canonical authoring surface for the editor; this is the editor equivalent of a primary canvas |
-| schema support section header (`Indata & inställningar (JSON)`) | support section header | `support_surface` | `information` | — | `shared_composition` | secondary authoring surfaces stay subordinate to the primary code editor |
-| `Visa` / `Dölj` schema section toggle | `command button` | `support_surface` | `action / toolbar_action` | `toggle` | `shared_primitive` | support surfaces can collapse without changing the main editing model |
-| `Indata` JSON editor | `editor surface` | `support_surface` | `work_surface` | `direct` | `shared_composition` | structured text authoring still belongs to the editor-surface family |
-| `Inställningar` JSON editor | `editor surface` | `support_surface` | `work_surface` | `direct` | `shared_composition` | settings authoring reuses the same primary primitive family as source editing |
-| `formatera` | `command button` | `support_surface` | `action / toolbar_action` | `direct` | `shared_primitive` | routine formatting remains a compact support action |
-| `förval` | `menu button` | `support_surface` | `action / toolbar_action` | `menu` | `shared_primitive` | schema presets branch from a compact menu instead of adding shell clutter |
-| `Kodassistenten` | `assistant panel` | `support_surface` | `work_surface` | — | `shared_composition` | conversational support is a persistent secondary workspace, not a modal interruption |
-| assistant composer | `form field` | `support_surface` | `action` | `direct` | `shared_primitive` | prompt composition stays inside the assistant panel rather than the global shell |
-| assistant mode tabs (`Chat`, `Edit`) | `mode switcher` | `support_surface` | `navigation` | `direct` | `shared_composition` | assistant-local modes follow the same segmented-switch rule as workspace modes |
-| `Minimera kodassistenten` / `Expandera kodassistenten` | `icon button` | `support_surface` | `action / toolbar_action` | `direct` | `shared_primitive` | support surfaces may collapse, but the collapsed rail remains part of the same panel family |
+| UI item                                                              | Pattern typology                   | Topology layer     | Content role                | Behavior | Ownership            | Design implication                                                                            |
+| -------------------------------------------------------------------- | ---------------------------------- | ------------------ | --------------------------- | -------- | -------------------- | --------------------------------------------------------------------------------------------- |
+| editable tool identity block (`Titel`, `Sammanfattning`, `URL-namn`) | `identity block` + `summary strip` | `app_shell`        | `information` / `action`    | `direct` | `shared_composition` | the editor shell owns tool identity, but the identity area stays compact and inline-editable  |
+| `Spara/Öppna`                                                        | `menu button`                      | `command_surface`  | `action / secondary_action` | `menu`   | `shared_primitive`   | save, checkpoint, and open-history actions are grouped behind one stable command trigger      |
+| `Verktyg`                                                            | `menu button`                      | `command_surface`  | `action / overflow_action`  | `menu`   | `shared_primitive`   | tool switching and tool creation branch from one shared resource-switch command               |
+| publication state line (`Ej publicerad · Ny arbetsversion`)          | `status strip`                     | `workspace_header` | `information`               | —        | `shared_composition` | publication state belongs in the shell, not as a large alert band                             |
+| workflow action cluster (`Begär publicering`, `Publicera`, `Avslå`)  | `command toolbar`                  | `command_surface`  | `action`                    | `direct` | `shared_composition` | role-dependent workflow actions stay grouped and explicit                                     |
+| editor-mode switch (`Källkod`, `Diff`, `Metadata`, `Testkör`)        | `mode switcher`                    | `workspace_header` | `navigation`                | `direct` | `shared_composition` | mode changes are explicit, mutually exclusive, and remain inside one stable shell             |
+| source code surface                                                  | `editor surface`                   | `primary_surface`  | `work_surface`              | `direct` | `shared_composition` | canonical authoring surface for the editor; this is the editor equivalent of a primary canvas |
+| schema support section header (`Indata & inställningar (JSON)`)      | support section header             | `support_surface`  | `information`               | —        | `shared_composition` | secondary authoring surfaces stay subordinate to the primary code editor                      |
+| `Visa` / `Dölj` schema section toggle                                | `command button`                   | `support_surface`  | `action / toolbar_action`   | `toggle` | `shared_primitive`   | support surfaces can collapse without changing the main editing model                         |
+| `Indata` JSON editor                                                 | `editor surface`                   | `support_surface`  | `work_surface`              | `direct` | `shared_composition` | structured text authoring still belongs to the editor-surface family                          |
+| `Inställningar` JSON editor                                          | `editor surface`                   | `support_surface`  | `work_surface`              | `direct` | `shared_composition` | settings authoring reuses the same primary primitive family as source editing                 |
+| `formatera`                                                          | `command button`                   | `support_surface`  | `action / toolbar_action`   | `direct` | `shared_primitive`   | routine formatting remains a compact support action                                           |
+| `förval`                                                             | `menu button`                      | `support_surface`  | `action / toolbar_action`   | `menu`   | `shared_primitive`   | schema presets branch from a compact menu instead of adding shell clutter                     |
+| `Kodassistenten`                                                     | `assistant panel`                  | `support_surface`  | `work_surface`              | —        | `shared_composition` | conversational support is a persistent secondary workspace, not a modal interruption          |
+| assistant composer                                                   | `form field`                       | `support_surface`  | `action`                    | `direct` | `shared_primitive`   | prompt composition stays inside the assistant panel rather than the global shell              |
+| assistant mode tabs (`Chat`, `Edit`)                                 | `mode switcher`                    | `support_surface`  | `navigation`                | `direct` | `shared_composition` | assistant-local modes follow the same segmented-switch rule as workspace modes                |
+| `Minimera kodassistenten` / `Expandera kodassistenten`               | `icon button`                      | `support_surface`  | `action / toolbar_action`   | `direct` | `shared_primitive`   | support surfaces may collapse, but the collapsed rail remains part of the same panel family   |
 
 ### Diff mode as comparison surface
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| compare target selector (`Diff mot`) | `context selector` | `command_surface` | `action` | `direct` | `shared_primitive` | comparison target selection is a context-setting action, not a bespoke diff control family |
-| `Stäng diff` | `command button` | `command_surface` | `navigation` | `direct` | `shared_primitive` | exits comparison mode explicitly without changing the shell |
-| diff surface | `diff viewer` | `primary_surface` | `work_surface` | — | `shared_composition` | before/after comparison is a distinct reusable surface type, not a variant of spatial canvas or plain text editor |
-| `Ingen diff att visa.` | `empty state` | `primary_surface` | `information` | — | `shared_composition` | the comparison mode fails gracefully without inventing a new error shell |
+| UI item                              | Pattern typology   | Topology layer    | Content role   | Behavior | Ownership            | Design implication                                                                                                |
+| ------------------------------------ | ------------------ | ----------------- | -------------- | -------- | -------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| compare target selector (`Diff mot`) | `context selector` | `command_surface` | `action`       | `direct` | `shared_primitive`   | comparison target selection is a context-setting action, not a bespoke diff control family                        |
+| `Stäng diff`                         | `command button`   | `command_surface` | `navigation`   | `direct` | `shared_primitive`   | exits comparison mode explicitly without changing the shell                                                       |
+| diff surface                         | `diff viewer`      | `primary_surface` | `work_surface` | —        | `shared_composition` | before/after comparison is a distinct reusable surface type, not a variant of spatial canvas or plain text editor |
+| `Ingen diff att visa.`               | `empty state`      | `primary_surface` | `information`  | —        | `shared_composition` | the comparison mode fails gracefully without inventing a new error shell                                          |
 
 ### Metadata mode and supporting dialog surfaces
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| `Verktygsinfo` panel | `management panel` | `management_surface` | `work_surface` | — | `shared_composition` | metadata editing is a structured management task, not a special editor family |
-| title / slug / summary fields | `form field` | `management_surface` | `action` | `direct` | `shared_primitive` | scalar metadata continues to use the standard field family |
-| profession/category selectors | `form field` groups | `management_surface` | `action` | `direct` | `shared_composition` | taxonomy selection remains part of the form system instead of spawning a dedicated picker type |
-| `Instruktioner` panel | `instruction panel` | `management_surface` | `work_surface` | — | `shared_composition` | usage guidance is edited in its own supportive panel, not mixed into source mode |
-| instructions markdown field | `form field` | `management_surface` | `action` | `direct` | `shared_primitive` | prose authoring stays inside the standard field family here |
-| `Behörigheter` panel | `management panel` | `management_surface` | `work_surface` | — | `shared_composition` | collaborator management is another management surface, not a bespoke admin page |
-| maintainer list | `resource list` | `management_surface` | `work_surface` | `direct` | `shared_composition` | maintainers are managed as list items inside the panel |
-| add-maintainer field + action | `form field` + `command button` | `management_surface` | `action` | `direct` | `shared_composition` | add/remove flows compose from existing primitives |
-| test-mode entrypoint selector | `context selector` | `command_surface` | `action` | `direct` | `shared_primitive` | test execution is configured via the standard selector family |
-| `Spara ett utkast för att kunna testa.` | `empty state` | `primary_surface` | `information` | — | `shared_composition` | test mode uses a straightforward blocking empty state when execution prerequisites are missing |
-| `Öppna sparade` popover | `modal dialog` | `dialog_shell` | `work_surface` | — | `shared_composition` | version/history access uses an existing dialog family rather than a bespoke history page |
-| server-version list | `resource list` | `dialog_shell` | `work_surface` | `direct` | `shared_composition` | saved versions are selected from the same list family used elsewhere in the editor |
-| checkpoint list | `resource list` | `dialog_shell` | `work_surface` | `direct` | `shared_composition` | local checkpoints remain part of the same saved-state selection model |
+| UI item                                 | Pattern typology                | Topology layer       | Content role   | Behavior | Ownership            | Design implication                                                                             |
+| --------------------------------------- | ------------------------------- | -------------------- | -------------- | -------- | -------------------- | ---------------------------------------------------------------------------------------------- |
+| `Verktygsinfo` panel                    | `management panel`              | `management_surface` | `work_surface` | —        | `shared_composition` | metadata editing is a structured management task, not a special editor family                  |
+| title / slug / summary fields           | `form field`                    | `management_surface` | `action`       | `direct` | `shared_primitive`   | scalar metadata continues to use the standard field family                                     |
+| profession/category selectors           | `form field` groups             | `management_surface` | `action`       | `direct` | `shared_composition` | taxonomy selection remains part of the form system instead of spawning a dedicated picker type |
+| `Instruktioner` panel                   | `instruction panel`             | `management_surface` | `work_surface` | —        | `shared_composition` | usage guidance is edited in its own supportive panel, not mixed into source mode               |
+| instructions markdown field             | `form field`                    | `management_surface` | `action`       | `direct` | `shared_primitive`   | prose authoring stays inside the standard field family here                                    |
+| `Behörigheter` panel                    | `management panel`              | `management_surface` | `work_surface` | —        | `shared_composition` | collaborator management is another management surface, not a bespoke admin page                |
+| maintainer list                         | `resource list`                 | `management_surface` | `work_surface` | `direct` | `shared_composition` | maintainers are managed as list items inside the panel                                         |
+| add-maintainer field + action           | `form field` + `command button` | `management_surface` | `action`       | `direct` | `shared_composition` | add/remove flows compose from existing primitives                                              |
+| test-mode entrypoint selector           | `context selector`              | `command_surface`    | `action`       | `direct` | `shared_primitive`   | test execution is configured via the standard selector family                                  |
+| `Spara ett utkast för att kunna testa.` | `empty state`                   | `primary_surface`    | `information`  | —        | `shared_composition` | test mode uses a straightforward blocking empty state when execution prerequisites are missing |
+| `Öppna sparade` popover                 | `modal dialog`                  | `dialog_shell`       | `work_surface` | —        | `shared_composition` | version/history access uses an existing dialog family rather than a bespoke history page       |
+| server-version list                     | `resource list`                 | `dialog_shell`       | `work_surface` | `direct` | `shared_composition` | saved versions are selected from the same list family used elsewhere in the editor             |
+| checkpoint list                         | `resource list`                 | `dialog_shell`       | `work_surface` | `direct` | `shared_composition` | local checkpoints remain part of the same saved-state selection model                          |
 
 ### Source: Code editor review outcome
 
@@ -299,10 +299,10 @@ to pause the flow, restate the consequence, and force an explicit binary decisio
 
 ### Confirmation dialog (`Ta bort klasslista` / `Ta bort klassrum`) as decision mode
 
-| UI item | Pattern typology | Topology layer | Content role | Behavior | Ownership | Design implication |
-|---------|------------------|----------------|--------------|----------|-----------|--------------------|
-| confirmation shell | `confirmation dialog` | `dialog_shell` | `work_surface` | — | `shared_composition` | focused consequence-check surface for a high-commitment action |
-| confirmation heading block (`Ta bort …`, `Är du säker?`) | `identity block` | `dialog_shell` | `information` | — | `shared_composition` | restates object type and decision frame clearly |
-| consequence copy | confirmation-specific message block | `dialog_shell` | `information` | — | `mode_local_instance` | explains blast radius before the destructive path is taken |
-| `Avbryt` | `command button` | `dialog_footer` | `navigation` | `direct` | `shared_primitive` | explicit safe escape path |
-| `Ta bort klasslista` / `Ta bort klassrum` | `command button` | `dialog_footer` | `action / destructive_action` | `direct` | `shared_primitive` | explicit destructive confirmation; never hidden behind iconography or overflow |
+| UI item                                                  | Pattern typology                    | Topology layer  | Content role                  | Behavior | Ownership             | Design implication                                                             |
+| -------------------------------------------------------- | ----------------------------------- | --------------- | ----------------------------- | -------- | --------------------- | ------------------------------------------------------------------------------ |
+| confirmation shell                                       | `confirmation dialog`               | `dialog_shell`  | `work_surface`                | —        | `shared_composition`  | focused consequence-check surface for a high-commitment action                 |
+| confirmation heading block (`Ta bort …`, `Är du säker?`) | `identity block`                    | `dialog_shell`  | `information`                 | —        | `shared_composition`  | restates object type and decision frame clearly                                |
+| consequence copy                                         | confirmation-specific message block | `dialog_shell`  | `information`                 | —        | `mode_local_instance` | explains blast radius before the destructive path is taken                     |
+| `Avbryt`                                                 | `command button`                    | `dialog_footer` | `navigation`                  | `direct` | `shared_primitive`    | explicit safe escape path                                                      |
+| `Ta bort klasslista` / `Ta bort klassrum`                | `command button`                    | `dialog_footer` | `action / destructive_action` | `direct` | `shared_primitive`    | explicit destructive confirmation; never hidden behind iconography or overflow |

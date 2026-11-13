@@ -1,19 +1,17 @@
 ---
 type: reference
 id: REF-SKRIPT-GENERAL-reference-hule-education-product-identity-realms-and-skriptoteket-standalone-identity
-title: 'Reference: Hule Education product identity realms and Skriptoteket standalone
-  identity'
+title: 'Reference: Hule Education product identity realms and Skriptoteket standalone identity'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity
-summary: 'Reference: Hule Education product identity realms and Skriptoteket standalone
-  identity'
+  - REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity
+summary: 'Reference: Hule Education product identity realms and Skriptoteket standalone identity'
 ---
 
 ## Overview
@@ -58,15 +56,15 @@ edge for signed-context routes. Direct browser calls to protected
 
 ### Source: Required Separation Of Concerns
 
-| Concern | Owner | Notes |
-|---|---|---|
-| Browser session cookies | Hule Education Gateway / Identity | One browser session authority for the umbrella, not per-app cookies |
-| CSRF for browser writes | Hule Education Gateway / Identity | Shared browser safety contract |
-| Browser login ceremony | Hule Education Identity surface | Must be a browser-navigable ceremony, not a POST-only API route |
-| Product identity realm choice | Hule Education Identity surface, with product input from Skriptoteket | Login can offer HuleEdu school identity, Skriptoteket standalone identity, or account linking |
-| Skriptoteket projection | Skriptoteket | Resolves the signed identity context into local app user/profile state |
-| Skriptoteket RBAC | Skriptoteket | Contributor/admin/superuser remain app-local decisions |
-| Skriptoteket registration meaning | Skriptoteket product + Hule Education Identity implementation | Signup can be hosted by the shared identity platform while still creating a Skriptoteket identity |
+| Concern                           | Owner                                                                 | Notes                                                                                             |
+| --------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Browser session cookies           | Hule Education Gateway / Identity                                     | One browser session authority for the umbrella, not per-app cookies                               |
+| CSRF for browser writes           | Hule Education Gateway / Identity                                     | Shared browser safety contract                                                                    |
+| Browser login ceremony            | Hule Education Identity surface                                       | Must be a browser-navigable ceremony, not a POST-only API route                                   |
+| Product identity realm choice     | Hule Education Identity surface, with product input from Skriptoteket | Login can offer HuleEdu school identity, Skriptoteket standalone identity, or account linking     |
+| Skriptoteket projection           | Skriptoteket                                                          | Resolves the signed identity context into local app user/profile state                            |
+| Skriptoteket RBAC                 | Skriptoteket                                                          | Contributor/admin/superuser remain app-local decisions                                            |
+| Skriptoteket registration meaning | Skriptoteket product + Hule Education Identity implementation         | Signup can be hosted by the shared identity platform while still creating a Skriptoteket identity |
 
 ### Source: Core Concept: Product Identity Realm
 

@@ -4,18 +4,17 @@ id: REF-SKRIPT-GENERAL-klassrumskartan-scoped-sharing-and-import-direction
 title: Klassrumskartan scoped sharing and import direction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-klassrumskartan-scoped-sharing-and-import-direction-2026-05-01
+  - REF-klassrumskartan-scoped-sharing-and-import-direction-2026-05-01
 summary: Klassrumskartan scoped sharing and import direction
 ---
 
 ## Overview
-
 
 Klassrumskartan sharing should follow the teacher's pedagogical object, not the
 browser or account that happened to create the latest link.
@@ -53,7 +52,6 @@ No separate facts and semantics is stated in the source.
 
 ### Source: Current Problem
 
-
 The existing share-link implementation has two useful but incomplete scopes:
 
 - Authenticated shares are owner and draft scoped. Listing/revoke behavior is
@@ -68,7 +66,6 @@ the current link to belong to the class's current grouping or seating work, not
 to a global account/browser lane.
 
 ### Source: Target Scope Key
-
 
 Use a current-share scope key that identifies the semantic object whose newest
 share link is being managed.
@@ -106,7 +103,6 @@ artifact.
 
 ### Source: Classroom Fingerprint Semantics
 
-
 `classroom_fingerprint` is the portable identity for classroom templates. It is
 used for authenticated classroom-template import/discovery and seating share
 scope.
@@ -135,7 +131,6 @@ teacher-facing room metadata. Normalize them with the same conservative profile
 used for roster and template names; do not infer or alias label meanings.
 
 ### Source: Roster Fingerprint Semantics
-
 
 `roster_fingerprint` should be derived from normalized roster name plus
 an order-insensitive sorted multiset of normalized student display names.
@@ -185,7 +180,6 @@ that boundary rather than reimplement the algorithm locally.
 
 ### Source: Fingerprint Authority
 
-
 Authenticated scoped sharing should compute `roster_fingerprint` on the server.
 The frontend should continue to pass stable route/action inputs such as
 `draft_id` and `expected_revision`; the backend resolves the draft, loads the
@@ -214,7 +208,6 @@ school/organization roster model may add stable student ids through an explicit
 new fingerprint version, but that is not part of this direction yet.
 
 ### Source: Artifact Identity Versus Scope Identity
-
 
 Do not use the arrangement/content hash as the current-link scope key.
 
@@ -271,7 +264,6 @@ teacher-to-teacher import/discovery model.
 
 ### Source: Authenticated Direction
 
-
 Authenticated sharing is the long-term coherent model for durable sharing,
 discovery, and import.
 
@@ -291,7 +283,6 @@ privacy, and audit contract before discovery is implemented.
 
 ### Source: Public Guest Boundary
 
-
 Public guest mode should remain deliberately smaller.
 
 Public guest sharing may use class-scoped browser metadata so the same browser
@@ -309,7 +300,6 @@ This keeps public sharing inside the accepted `ADR-0084` exception and avoids
 making browser storage carry a product model it cannot safely own.
 
 ### Source: Import Direction
-
 
 Future import/discovery belongs to authenticated users and should focus on
 reusable assets, not short-lived arrangement state.
@@ -329,7 +319,6 @@ often and are already useful as immutable shared links; importing them as drafts
 risks adding complexity without saving much teacher time.
 
 ## Decisions And Interpretation
-
 
 - Add a reviewed current-share scope contract before changing persistence.
 - Prefer additive schema fields for scope identity, then migrate existing

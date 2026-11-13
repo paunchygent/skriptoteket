@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-01-01
 title: Adopt the shared tokens, theme and logo through design-system sync
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
 status: done
 closeout_review:
@@ -17,11 +17,11 @@ closeout_review:
   approval_evidence: User closed the task on 2026-10-12 after the Hemma staging walk at main fc42b918 passed (home, tool list, Klassrumskartan planner and modal; Skriptoteket retained session 01a13061-ff38-7099-aa3d-e23f6e5bba43 evidence/staging-walk/walk-40-01-01-fc42b918.md).
 task_kind: story
 acceptance_criteria:
-- Running repository-governance-frontend-catalog design-system sync against Skriptoteket writes the package tokens, Tailwind theme and horizontal logo to their current Skriptoteket paths as named in the root design-system-map.json, with every other export null, and Skriptoteket's validate command passes
-- Skriptoteket docs name the sync command instead of hand copying, and the unused mirror manifest.schema.json is gone
-- Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
+  - Running repository-governance-frontend-catalog design-system sync against Skriptoteket writes the package tokens, Tailwind theme and horizontal logo to their current Skriptoteket paths as named in the root design-system-map.json, with every other export null, and Skriptoteket's validate command passes
+  - Skriptoteket docs name the sync command instead of hand copying, and the unused mirror manifest.schema.json is gone
+  - Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
 dependencies:
-- TASK-SKILL-REP-0186
+  - TASK-SKILL-REP-0186
 story: ST-SKRIPT-40-01
 backlog_document_profile: contract-derived
 ---
@@ -68,11 +68,11 @@ Static CSS/SVG introduces no identified material runtime-performance concern.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Adopt only tokens, theme and logo; all other release exports are null in this task. Source: retained D2. |
-| D2 | Those resources keep their existing paths; the map stays at repository root. Source: retained D6. |
-| D3 | A PDM wrapper runs the real shared validator through an automatic pre-commit hook at delivery. Source: retained D4. |
-| D4 | Remove unused mirror manifest.schema.json. Source: retained D4. |
-| D5 | Codemap documents sync instead of hand copying. Source: retained D4. |
-| D6 | Parent owns clean-map, validated-result and repeatability checkpoints under the explicit bootstrap exception. Source: retained D24; R6. |
+| ID  | Decided contract term                                                                                                                   |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Adopt only tokens, theme and logo; all other release exports are null in this task. Source: retained D2.                                |
+| D2  | Those resources keep their existing paths; the map stays at repository root. Source: retained D6.                                       |
+| D3  | A PDM wrapper runs the real shared validator through an automatic pre-commit hook at delivery. Source: retained D4.                     |
+| D4  | Remove unused mirror manifest.schema.json. Source: retained D4.                                                                         |
+| D5  | Codemap documents sync instead of hand copying. Source: retained D4.                                                                    |
+| D6  | Parent owns clean-map, validated-result and repeatability checkpoints under the explicit bootstrap exception. Source: retained D24; R6. |

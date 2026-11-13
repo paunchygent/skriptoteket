@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-hemma-critical-paths-and-operations-inventory-2026-01-06
 title: Hemma critical paths and operations inventory (2026-01-06)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-hemma-critical-paths-2026-01-06
+  - REF-hemma-critical-paths-2026-01-06
 summary: Hemma critical paths and operations inventory (2026-01-06)
 ---
 
@@ -22,6 +22,7 @@ This reference lists critical paths, configs, and operational dependencies for
 the Hemma host. It is meant to support restores, reimages, and fast audits.
 
 Host snapshot context:
+
 - Hostname: `paunchygent-server`
 - OS: Ubuntu 24.04.3 LTS (Noble)
 - Backup snapshot: `/mnt/backup/hemma-root-20260106/` (~110G)
@@ -195,27 +196,29 @@ Anywhere (v6) on cali+     ALLOW IN    Anywhere (v6)
 ### Source: CLI / Ops Tooling (installed)
 
 Core operational tools (non-exhaustive):
+
 - `ripgrep`, `fd-find`, `bat`, `fzf`, `jq`, `yq`
 - `curl`, `wget`, `git`, `rsync`, `tmux`, `htop`, `tree`
 - `openssh-server`, `tailscale`, `ufw`, `fail2ban`
 - Docker snap (`snap.docker.dockerd.service`)
 
 Authoritative package inventory:
+
 - Live system: `dpkg --get-selections`
 - Snapshot: `/mnt/backup/hemma-root-20260106/dpkg-selections.txt`
 
 ### Source: Restore Checklist (minimum)
 
-1) Restore `/etc` (ssh, netplan, nginx, ufw, fail2ban).
-2) Restore `/home/paunchygent` and `/root` (keys, scripts).
-3) Restore docker stacks (`/home/paunchygent/infrastructure`, `/home/paunchygent/apps`).
-4) Reinstall AMD GPU/ROCm stack and verify GPU health.
+1. Restore `/etc` (ssh, netplan, nginx, ufw, fail2ban).
+2. Restore `/home/paunchygent` and `/root` (keys, scripts).
+3. Restore docker stacks (`/home/paunchygent/infrastructure`, `/home/paunchygent/apps`).
+4. Reinstall AMD GPU/ROCm stack and verify GPU health.
 
 ### Source: Autoinstall boot (SSH-from-start)
 
 Use the Ubuntu 24.04.2 Server ISO with the CIDATA seed on `/dev/sdd1`:
 
-1) At GRUB, press `e` and append:
+1. At GRUB, press `e` and append:
 
 ```
 autoinstall ds=nocloud

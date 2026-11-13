@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base-PART-01
 title: AI Script Generation Knowledge Base — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base
 part: 1
@@ -15,7 +15,7 @@ part: 1
 
 Detta dokument innehåller all information som en AI-assistent behöver för att hjälpa användare skapa skript enligt Skriptotekets datakontrakt.
 
----
+______________________________________________________________________
 
 ### 1. Översikt
 
@@ -28,7 +28,7 @@ Skriptoteket är en plattform för att köra Python-skript som bearbetar uppladd
 - Skriptet returnerar UI-element (tabeller, meddelanden, markdown) och/eller nedladdningsbara artefakter
 - Skriptet körs i en isolerad Docker-container utan nätverksåtkomst
 
----
+______________________________________________________________________
 
 ### 2. Skriptets grundstruktur
 
@@ -96,7 +96,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     }
 ```
 
----
+______________________________________________________________________
 
 ### 3. Output-kontrakt (Contract v2)
 
@@ -195,12 +195,12 @@ Skriptet returnerar en dict med tre fält:
 
 ### 3.2 Globala begränsningar för outputs
 
-| Begränsning | Standardprofil | Utökad profil |
-|-------------|----------------|------------------|
-| Max antal outputs | 50 | 150 |
-| UI payload total | 256 KB | 512 KB |
+| Begränsning       | Standardprofil | Utökad profil |
+| ----------------- | -------------- | ------------- |
+| Max antal outputs | 50             | 150           |
+| UI payload total  | 256 KB         | 512 KB        |
 
----
+______________________________________________________________________
 
 ### 3.3 Actions (`next_actions`) + state (interaktiva flöden)
 
@@ -293,7 +293,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 - **Retention:** Artefakter sparas i 7 dagar som standard
 - **Automatisk upptäckt:** Runner samlar automatiskt in alla filer under `output_dir`
 
----
+______________________________________________________________________
 
 ### 5. Tillgängliga bibliotek
 
@@ -301,57 +301,57 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 
 ### 5.1 Databearbetning
 
-| Bibliotek | Användning |
-|-----------|------------|
-| `pandas` | Läsa/manipulera CSV, Excel-data |
-| `openpyxl` | Läsa/skriva XLSX-filer |
-| `pypdf` | Läsa PDF-filer |
-| `python-docx` | Läsa/skriva Word-dokument |
+| Bibliotek     | Användning                      |
+| ------------- | ------------------------------- |
+| `pandas`      | Läsa/manipulera CSV, Excel-data |
+| `openpyxl`    | Läsa/skriva XLSX-filer          |
+| `pypdf`       | Läsa PDF-filer                  |
+| `python-docx` | Läsa/skriva Word-dokument       |
 
 ### 5.2 Dokumentgenerering
 
-| Bibliotek | Användning |
-|-----------|------------|
-| `pypandoc` | Konvertera mellan dokumentformat |
-| `weasyprint` | Skapa PDF från HTML/CSS |
-| `jinja2` | Template-rendering |
+| Bibliotek    | Användning                       |
+| ------------ | -------------------------------- |
+| `pypandoc`   | Konvertera mellan dokumentformat |
+| `weasyprint` | Skapa PDF från HTML/CSS          |
+| `jinja2`     | Template-rendering               |
 
 ### 5.3 Verktyg
 
-| Bibliotek | Användning |
-|-----------|------------|
-| `pydantic` | Datavalidering |
-| `aiohttp` | HTTP-klient (BLOCKERAD: nätverket är avstängt) |
-| `structlog` | Strukturerad loggning |
-| `pyyaml` | YAML-parsing |
+| Bibliotek   | Användning                                     |
+| ----------- | ---------------------------------------------- |
+| `pydantic`  | Datavalidering                                 |
+| `aiohttp`   | HTTP-klient (BLOCKERAD: nätverket är avstängt) |
+| `structlog` | Strukturerad loggning                          |
+| `pyyaml`    | YAML-parsing                                   |
 
 ### 5.4 Systemverktyg (via apt)
 
 - `pandoc` - Dokumentkonvertering
 - `libcairo2` - 2D-grafik (används av weasyprint)
 
----
+______________________________________________________________________
 
 ### 6. Körmiljöns begränsningar
 
 ### 6.1 Resursbegränsningar
 
-| Resurs | Sandbox | Produktion |
-|--------|---------|------------|
-| Timeout | 60 sekunder | 120 sekunder |
-| CPU | 1 kärna | 1 kärna |
-| Minne | 1 GB | 1 GB |
-| Max processer | 256 | 256 |
-| Tmpfs | 256 MB | 256 MB |
+| Resurs        | Sandbox     | Produktion   |
+| ------------- | ----------- | ------------ |
+| Timeout       | 60 sekunder | 120 sekunder |
+| CPU           | 1 kärna     | 1 kärna      |
+| Minne         | 1 GB        | 1 GB         |
+| Max processer | 256         | 256          |
+| Tmpfs         | 256 MB      | 256 MB       |
 
 ### 6.2 Säkerhetsbegränsningar
 
-| Begränsning | Status |
-|-------------|--------|
-| Nätverksåtkomst | **BLOCKERAD** (`--network none`) |
-| Läs filsystem | Read-only (utom /work, /tmp) |
-| Root-privilegier | Körs som `runner`-användare |
-| Capabilities | Alla droppade (`--cap-drop ALL`) |
+| Begränsning      | Status                           |
+| ---------------- | -------------------------------- |
+| Nätverksåtkomst  | **BLOCKERAD** (`--network none`) |
+| Läs filsystem    | Read-only (utom /work, /tmp)     |
+| Root-privilegier | Körs som `runner`-användare      |
+| Capabilities     | Alla droppade (`--cap-drop ALL`) |
 
 ### 6.3 Filsystemlayout i containern
 
@@ -379,7 +379,7 @@ Följande Python-bibliotek finns förinstallerade i körmiljön:
 - `SKRIPTOTEKET_OUTPUT_DIR`: Katalog för artefakter
 - `SKRIPTOTEKET_RESULT_PATH`: Där result.json skrivs
 
----
+______________________________________________________________________
 
 ### 7. Vanliga mönster
 

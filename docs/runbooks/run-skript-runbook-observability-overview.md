@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-observability-overview
 title: 'Runbook: Observability Overview'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-observability
+  - RUN-observability
 summary: 'Runbook: Observability Overview'
 system: skriptoteket
 ---
@@ -23,11 +23,11 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 
 ### Access (Home Server)
 
-| Service | URL | Notes |
-|---------|-----|-------|
-| Grafana | https://grafana.hemma.hule.education | Credentials in `~/apps/skriptoteket/.env` |
-| Prometheus | https://prometheus.hemma.hule.education | Basic auth password in `~/apps/skriptoteket/.env` |
-| Jaeger | https://jaeger.hemma.hule.education | Basic auth (user `admin`, password `JAEGER_BASIC_AUTH_PASSWORD`) |
+| Service    | URL                                     | Notes                                                            |
+| ---------- | --------------------------------------- | ---------------------------------------------------------------- |
+| Grafana    | https://grafana.hemma.hule.education    | Credentials in `~/apps/skriptoteket/.env`                        |
+| Prometheus | https://prometheus.hemma.hule.education | Basic auth password in `~/apps/skriptoteket/.env`                |
+| Jaeger     | https://jaeger.hemma.hule.education     | Basic auth (user `admin`, password `JAEGER_BASIC_AUTH_PASSWORD`) |
 
 Components (ports):
 
@@ -54,18 +54,18 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observabilit
 
 ### Triage Flow (Fast Path)
 
-1) **Health check**: confirm `/healthz` is responsive.
-2) **Metrics**: check request rate/latency and session file gauges.
-3) **Logs**: filter by correlation ID and error code.
-4) **Trace**: if enabled, jump to Jaeger and inspect spans.
+1. **Health check**: confirm `/healthz` is responsive.
+2. **Metrics**: check request rate/latency and session file gauges.
+3. **Logs**: filter by correlation ID and error code.
+4. **Trace**: if enabled, jump to Jaeger and inspect spans.
 
 ### Alerts (Prometheus)
 
 Prometheus rules are loaded, but there is no Alertmanager in this stack yet. Alerts are visible in the Prometheus UI:
 
-1) Open https://prometheus.hemma.hule.education
-2) Go to **Alerts**
-3) Inspect **Pending/Firing** alerts and their labels/annotations
+1. Open https://prometheus.hemma.hule.education
+2. Go to **Alerts**
+3. Inspect **Pending/Firing** alerts and their labels/annotations
 
 ### Alert response (quick playbooks)
 
@@ -91,9 +91,9 @@ curl -sS -o /dev/null -w "%{http_code}\n" -H "X-Correlation-ID: ${CID}" \
 
 Then in Grafana Explore:
 
-1) Search Loki logs for `${CID}`.
-2) Click **View Trace** on the extracted `trace_id` field → Jaeger opens.
-3) In Jaeger, click **View Logs** → Loki opens with the trace filter.
+1. Search Loki logs for `${CID}`.
+2. Click **View Trace** on the extracted `trace_id` field → Jaeger opens.
+3. In Jaeger, click **View Logs** → Loki opens with the trace filter.
 
 ### Runbooks
 

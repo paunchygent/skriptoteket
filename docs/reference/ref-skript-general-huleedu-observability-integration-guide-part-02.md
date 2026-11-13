@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-huleedu-observability-integration-guide-PART-02
 title: HuleEdu Observability Integration Guide — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-huleedu-observability-integration-guide
 part: 2
@@ -49,7 +49,7 @@ async def health_check():
     }), status_code
 ```
 
----
+______________________________________________________________________
 
 ### 5. Metrics Endpoint
 
@@ -70,7 +70,7 @@ async def metrics():
     return Response(metrics_data, content_type=CONTENT_TYPE_LATEST)
 ```
 
----
+______________________________________________________________________
 
 ### 6. Infrastructure Integration
 
@@ -97,6 +97,7 @@ Logs are collected from Docker containers automatically. Ensure your service:
 3. **Includes standard fields** (level, timestamp, service.name)
 
 Promtail extracts and indexes:
+
 - `level` → Label (for filtering: `{level="error"}`)
 - `service` → Label (for filtering: `{service="your_service"}`)
 - Other fields → Available via JSON parsing in queries
@@ -104,10 +105,11 @@ Promtail extracts and indexes:
 ### Jaeger Trace Collection
 
 Services send traces via OTLP gRPC:
+
 - **Endpoint**: `http://jaeger:4317` (internal Docker network)
 - **External UI**: `http://localhost:16686`
 
----
+______________________________________________________________________
 
 ### 7. Alert Integration
 
@@ -152,7 +154,7 @@ receivers:
     send_resolved: true
 ```
 
----
+______________________________________________________________________
 
 ### 8. Quick Start Checklist
 
@@ -191,7 +193,7 @@ LOG_MAX_BYTES=104857600
 LOG_BACKUP_COUNT=10
 ```
 
----
+______________________________________________________________________
 
 ### 9. Dependencies
 
@@ -223,20 +225,20 @@ services:
       - huleedu_internal_network
 ```
 
----
+______________________________________________________________________
 
 ### 10. Observability Stack Ports Reference
 
-| Service | Internal Port | External Port | Purpose |
-|---------|--------------|---------------|---------|
-| Prometheus | 9090 | 9091 | Metrics storage |
-| Grafana | 3000 | 3000 | Dashboards |
-| Jaeger UI | 16686 | 16686 | Trace visualization |
-| Jaeger OTLP | 4317 | 4317 | Trace ingestion (gRPC) |
-| Loki | 3100 | 3100 | Log aggregation |
-| Alertmanager | 9093 | 9094 | Alert routing |
+| Service      | Internal Port | External Port | Purpose                |
+| ------------ | ------------- | ------------- | ---------------------- |
+| Prometheus   | 9090          | 9091          | Metrics storage        |
+| Grafana      | 3000          | 3000          | Dashboards             |
+| Jaeger UI    | 16686         | 16686         | Trace visualization    |
+| Jaeger OTLP  | 4317          | 4317          | Trace ingestion (gRPC) |
+| Loki         | 3100          | 3100          | Log aggregation        |
+| Alertmanager | 9093          | 9094          | Alert routing          |
 
----
+______________________________________________________________________
 
 ### Reference Implementation
 
@@ -246,7 +248,7 @@ See these HuleEdu services for complete examples:
 - **Batch Orchestrator Service**: Complex service with database monitoring
 - **LLM Provider Service**: Service with custom business metrics
 
----
+______________________________________________________________________
 
 *Last Updated: December 2024*
 

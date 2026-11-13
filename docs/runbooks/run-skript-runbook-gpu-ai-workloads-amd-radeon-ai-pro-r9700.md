@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-gpu-ai-workloads-amd-radeon-ai-pro-r9700
 title: 'Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-gpu-ai-workloads
+  - RUN-gpu-ai-workloads
 summary: 'Runbook: GPU AI Workloads (AMD Radeon AI PRO R9700)'
 system: hemma.hule.education
 ---

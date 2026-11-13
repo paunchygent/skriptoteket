@@ -4,23 +4,23 @@ id: ADR-SKRIPT-0077
 title: Same-shell transition continuity for selector-driven workspaces
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - ADR-SKRIPT-0027
-  - ADR-SKRIPT-0037
-  - ADR-SKRIPT-0072
-  - EPIC-SKRIPT-29
-  - REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1
-  - REF-SKRIPT-PLAN-frontend-design-system-codemap-spa-planner-editor
-  - REF-SKRIPT-GENERAL-klassrumskartan-workspace-ui-doctrine-2026-03-28
+    - ADR-SKRIPT-0027
+    - ADR-SKRIPT-0037
+    - ADR-SKRIPT-0072
+    - EPIC-SKRIPT-29
+    - REF-SKRIPT-RESEARCH-frontend-transition-continuity-pattern-and-adoption-inventory-v1
+    - REF-SKRIPT-PLAN-frontend-design-system-codemap-spa-planner-editor
+    - REF-SKRIPT-GENERAL-klassrumskartan-workspace-ui-doctrine-2026-03-28
 deciders:
-- lead-developer
+  - lead-developer
 retired_ids:
-- ADR-0077
+  - ADR-0077
 ---
 
 ## Context

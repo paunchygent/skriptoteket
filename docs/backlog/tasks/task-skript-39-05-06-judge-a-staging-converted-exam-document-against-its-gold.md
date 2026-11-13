@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-06
 title: Judge a staging-converted exam document against its gold with one command
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-11'
 status: done
 closeout_review:
@@ -17,9 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer review of 20463fca found F1 (crashed conversion printed the gold title as an observed title); repair 2c13468e approved on rereview; merged into main. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-06/.'
 task_kind: story
 acceptance_criteria:
-- pdm run exam-conversion-judge <exam stem> <saved document json> prints the eval
-  comparator verdict per principle, the title check and every mismatch for a document
-  fetched from staging, and exits non-zero when any item or the title fails
+  - pdm run exam-conversion-judge <exam stem> <saved document json> prints the eval comparator verdict per principle, the title check and every mismatch for a document fetched from staging, and exits non-zero when any item or the title fails
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -61,8 +59,8 @@ or network call.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | `pdm run exam-conversion-judge <exam stem> <document json>` reuses the eval comparator, gold and chunker; accepts the API envelope or a bare document; prints per-principle failures, the title verdict and every mismatch; exits 1 on any failure. |
 
 ## Implementation Evidence

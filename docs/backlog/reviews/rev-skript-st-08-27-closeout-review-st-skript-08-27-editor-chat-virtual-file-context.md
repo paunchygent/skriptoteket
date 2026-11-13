@@ -4,8 +4,8 @@ id: REV-SKRIPT-ST-08-27-CLOSEOUT
 title: 'Review: ST-SKRIPT-08-27 editor chat virtual file context retention + tokenizers'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: changes_requested
 decided_at: '2026-01-11'
@@ -33,12 +33,12 @@ accurate token budgeting now that chat will include structured file context.
 
 ### Source: Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Hidden per-file context messages | Minimal DB change; supports resend rules | [ ] |
-| Post-user-message retention + refresh | Guarantees no resend unless dropped/changed | [ ] |
-| Tokenizer-backed budgets | Fixes accuracy for JSON + long contexts | [ ] |
-| Optional chat request fields | Backwards compatible API extension | [ ] |
+| Decision                              | Rationale                                   | Approve? |
+| ------------------------------------- | ------------------------------------------- | -------- |
+| Hidden per-file context messages      | Minimal DB change; supports resend rules    | [ ]      |
+| Post-user-message retention + refresh | Guarantees no resend unless dropped/changed | [ ]      |
+| Tokenizer-backed budgets              | Fixes accuracy for JSON + long contexts     | [ ]      |
+| Optional chat request fields          | Backwards compatible API extension          | [ ]      |
 
 ## Reviewed Scope
 
@@ -51,13 +51,13 @@ accurate token budgeting now that chat will include structured file context.
 
 ### Source: Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md` | Research scope + questions | 5 min |
-| `docs/adr/adr-0051-chat-first-ai-editing.md` | Chat-first AI editing architecture | 5 min |
-| `docs/adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md` | Budgeting constraints | 5 min |
-| `src/skriptoteket/application/editor/chat_handler.py` | Chat prompt assembly + budgeting | 10 min |
-| `src/skriptoteket/application/editor/edit_ops_handler.py` | Virtual file payload format | 10 min |
+| File                                                                                            | Focus                              | Time   |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------- | ------ |
+| `docs/backlog/stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md` | Research scope + questions         | 5 min  |
+| `docs/adr/adr-0051-chat-first-ai-editing.md`                                                    | Chat-first AI editing architecture | 5 min  |
+| `docs/adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md`                                      | Budgeting constraints              | 5 min  |
+| `src/skriptoteket/application/editor/chat_handler.py`                                           | Chat prompt assembly + budgeting   | 10 min |
+| `src/skriptoteket/application/editor/edit_ops_handler.py`                                       | Virtual file payload format        | 10 min |
 
 **Total estimated time:** ~35 minutes
 
@@ -69,11 +69,9 @@ accurate token budgeting now that chat will include structured file context.
 - [ ] Tokenizer integration path is operationally feasible
 - [ ] Hidden context messages are filtered from chat history
 
----
+______________________________________________________________________
 
 ### Source: Appendix: Detailed Assessment Notes
-
-
 
 ## Evidence
 
@@ -159,7 +157,7 @@ Fallback: if tokenizer assets missing, log metadata-only warning and use heurist
 - [ ] Tokenizer-backed budgeting
 - [ ] Optional chat request fields
 
----
+______________________________________________________________________
 
 ## Decision
 
@@ -169,9 +167,9 @@ The source does not provide a separate decision section; no additional decision 
 
 ### Source: Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-27` target-based story review record. |
+| Change | Artifact      | Description                                                                                                                  |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-27` target-based story review record. |
 
 ## Validation Not Run
 

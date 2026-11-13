@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-scripting-api-contracts-admin-script-editor-user-executio
 title: Scripting API Contracts - Admin Script Editor & User Execution — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-scripting-api-contracts-admin-script-editor-user-execution
 part: 2

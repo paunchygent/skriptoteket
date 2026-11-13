@@ -1,19 +1,17 @@
 ---
 type: reference
 id: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment-PART-01
-title: Frontend design-system codemap (trace-based for cross-repo alignment) — part
-  01
+title: Frontend design-system codemap (trace-based for cross-repo alignment) — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo-alignment
 part: 1
 ---
 
 ## Overview
-
 
 This codemap maps the **Skriptoteket design system as a reusable pipeline** that other integrated repos can adopt for cohesive UI language. Use it when you need to:
 
@@ -27,7 +25,6 @@ This codemap maps the **Skriptoteket design system as a reusable pipeline** that
 No separate facts and semantics is stated in the source.
 
 ### Source: Cross-Repo Adoption Strategy
-
 
 To adopt this design system in another repo:
 
@@ -50,7 +47,6 @@ Skriptoteket adopts `tokens` → `src/skriptoteket/web/static/css/huleedu-design
 
 ### Source: Trace Map
 
-
 ```text
 Trace 1: Token Pipeline (Backend → Frontend Bridge)
   ↓
@@ -65,10 +61,9 @@ Trace 5: Segmented Toggle (Shell Classes → Workspace Usage)
 Trace 6: Design System Governance (ADRs → Rules → Reference)
 ```
 
----
+______________________________________________________________________
 
 ### Source: Trace 1: Token Pipeline (Backend Static CSS → Frontend Theme Bridge)
-
 
 **Purpose**: Establish the canonical source of design tokens and bridge them to Tailwind utilities.
 
@@ -96,15 +91,15 @@ Tailwind 4 Theme Bridge
 
 ### Trace 1 Location Map
 
-| ID   | Description                | Path                                                               |
-|------|----------------------------|--------------------------------------------------------------------|
-| 1a   | Canonical token source     | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:22`     |
-| 1b   | Core brand colors          | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:20-24` |
-| 1c   | Brutalist shadow tokens    | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:130-134` |
-| 1d   | Frontend import wrapper    | `frontend/apps/skriptoteket/src/styles/tokens.css:1`               |
-| 1e   | Tailwind theme bridge      | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:1`        |
-| 1f   | Color mapping              | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:8-10`    |
-| 1g   | Shadow utility mapping     | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:16-20`   |
+| ID  | Description             | Path                                                                |
+| --- | ----------------------- | ------------------------------------------------------------------- |
+| 1a  | Canonical token source  | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:22`      |
+| 1b  | Core brand colors       | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:20-24`   |
+| 1c  | Brutalist shadow tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css:130-134` |
+| 1d  | Frontend import wrapper | `frontend/apps/skriptoteket/src/styles/tokens.css:1`                |
+| 1e  | Tailwind theme bridge   | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:1`        |
+| 1f  | Color mapping           | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:8-10`     |
+| 1g  | Shadow utility mapping  | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:16-20`    |
 
 ### Trace 1 Adoption Steps
 
@@ -118,10 +113,9 @@ Tailwind 4 Theme Bridge
 
 5. **Never modify `huleedu-design-tokens.css` or any other adopted target directly** - changes land in the shared package and arrive through sync
 
----
+______________________________________________________________________
 
 ### Source: Trace 2: SPA Styling Entry (main.ts → main.css Assembly)
-
 
 **Purpose**: Define the single CSS entry point that loads the complete styling stack at boot time.
 
@@ -149,25 +143,25 @@ main.ts application entry [2a]
 
 ### Trace 2 Location Map
 
-| ID   | Description                  | Path                                                              |
-|------|------------------------------|-------------------------------------------------------------------|
-| 2a   | SPA boot imports main.css    | `frontend/apps/skriptoteket/src/main.ts:4`                       |
-| 2b   | Main CSS entry               | `frontend/apps/skriptoteket/src/assets/main.css:1`                |
-| 2c   | Tailwind 4 import            | `frontend/apps/skriptoteket/src/assets/main.css:1`                |
-| 2d   | Token import                 | `frontend/apps/skriptoteket/src/assets/main.css:3`                |
-| 2e   | Token file loads backend CSS | `frontend/apps/skriptoteket/src/styles/tokens.css:1`              |
-| 2f   | Theme bridge import          | `frontend/apps/skriptoteket/src/assets/main.css:4`                |
-| 2g   | @theme inline block          | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:1`       |
-| 2h   | Component layer              | `frontend/apps/skriptoteket/src/assets/main.css:46`               |
-| 2i   | Button primitive definition  | `frontend/apps/skriptoteket/src/assets/main.css:88`               |
-| 2j   | Base button styles           | `frontend/apps/skriptoteket/src/assets/main.css:93`               |
-| 2k   | Hover behavior               | `frontend/apps/skriptoteket/src/assets/main.css:625`              |
-| 2l   | Physical press behavior      | `frontend/apps/skriptoteket/src/assets/main.css:94`               |
-| 2m   | CTA button                   | `frontend/apps/skriptoteket/src/assets/main.css:98`               |
-| 2n   | Ghost button                 | `frontend/apps/skriptoteket/src/assets/main.css:108`              |
-| 2o   | Toast primitives             | `frontend/apps/skriptoteket/src/assets/main.css:371`              |
-| 2p   | Planner workspace classes    | `frontend/apps/skriptoteket/src/assets/main.css:729`              |
-| 2q   | Page transitions             | `frontend/apps/skriptoteket/src/assets/main.css:886`              |
+| ID  | Description                  | Path                                                         |
+| --- | ---------------------------- | ------------------------------------------------------------ |
+| 2a  | SPA boot imports main.css    | `frontend/apps/skriptoteket/src/main.ts:4`                   |
+| 2b  | Main CSS entry               | `frontend/apps/skriptoteket/src/assets/main.css:1`           |
+| 2c  | Tailwind 4 import            | `frontend/apps/skriptoteket/src/assets/main.css:1`           |
+| 2d  | Token import                 | `frontend/apps/skriptoteket/src/assets/main.css:3`           |
+| 2e  | Token file loads backend CSS | `frontend/apps/skriptoteket/src/styles/tokens.css:1`         |
+| 2f  | Theme bridge import          | `frontend/apps/skriptoteket/src/assets/main.css:4`           |
+| 2g  | @theme inline block          | `frontend/apps/skriptoteket/src/styles/tailwind-theme.css:1` |
+| 2h  | Component layer              | `frontend/apps/skriptoteket/src/assets/main.css:46`          |
+| 2i  | Button primitive definition  | `frontend/apps/skriptoteket/src/assets/main.css:88`          |
+| 2j  | Base button styles           | `frontend/apps/skriptoteket/src/assets/main.css:93`          |
+| 2k  | Hover behavior               | `frontend/apps/skriptoteket/src/assets/main.css:625`         |
+| 2l  | Physical press behavior      | `frontend/apps/skriptoteket/src/assets/main.css:94`          |
+| 2m  | CTA button                   | `frontend/apps/skriptoteket/src/assets/main.css:98`          |
+| 2n  | Ghost button                 | `frontend/apps/skriptoteket/src/assets/main.css:108`         |
+| 2o  | Toast primitives             | `frontend/apps/skriptoteket/src/assets/main.css:371`         |
+| 2p  | Planner workspace classes    | `frontend/apps/skriptoteket/src/assets/main.css:729`         |
+| 2q  | Page transitions             | `frontend/apps/skriptoteket/src/assets/main.css:886`         |
 
 ### Trace 2 Adoption Steps
 
@@ -179,10 +173,9 @@ main.ts application entry [2a]
 
 4. **Keep the entry point minimal** - don't sprinkle extra Tailwind imports elsewhere
 
----
+______________________________________________________________________
 
 ### Source: Trace 3: Dense Tool Primitive (Class Builder → Component → Usage)
-
 
 **Purpose**: Define the shared primitive class builders and components for dense toolbar controls.
 
@@ -212,17 +205,17 @@ Shared UI Export Surface
 
 ### Trace 3 Location Map
 
-| ID   | Description                  | Path                                                               |
-|------|------------------------------|--------------------------------------------------------------------|
-| 3a   | Hard small radius constant   | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:37` |
-| 3b   | Class builder function       | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:108` |
-| 3c   | Returns Tailwind classes     | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:125` |
-| 3d   | Component calls class builder | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:57` |
-| 3e   | Calls denseActionButtonClass | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:55` |
-| 3f   | Dynamic class binding        | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:91` |
-| 3g   | Icon button wrapper          | `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue:55` |
-| 3h   | Icon-only mode               | `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue:63` |
-| 3i   | Primitive export surface     | `frontend/apps/skriptoteket/src/components/ui/index.ts:11` |
+| ID  | Description                   | Path                                                                      |
+| --- | ----------------------------- | ------------------------------------------------------------------------- |
+| 3a  | Hard small radius constant    | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:37`  |
+| 3b  | Class builder function        | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:108` |
+| 3c  | Returns Tailwind classes      | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:125` |
+| 3d  | Component calls class builder | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:57` |
+| 3e  | Calls denseActionButtonClass  | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:55` |
+| 3f  | Dynamic class binding         | `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue:91` |
+| 3g  | Icon button wrapper           | `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue:55`   |
+| 3h  | Icon-only mode                | `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue:63`   |
+| 3i  | Primitive export surface      | `frontend/apps/skriptoteket/src/components/ui/index.ts:11`                |
 
 ### Trace 3 Adoption Steps
 
@@ -236,10 +229,9 @@ Shared UI Export Surface
 
 5. **Respect the frozen constants** (e.g., `DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]"`)
 
----
+______________________________________________________________________
 
 ### Source: Trace 4: Toast System (Primitive Classes → Component → App Mount)
-
 
 **Purpose**: Define the toast notification flow from CSS primitives through component to app-level mounting.
 
@@ -271,24 +263,24 @@ Toast Component (ToastHost.vue) [4h]
 
 ### Trace 4 Location Map
 
-| ID   | Description                  | Path                                                               |
-|------|------------------------------|--------------------------------------------------------------------|
-| 4a   | Toast container positioning  | `frontend/apps/skriptoteket/src/assets/main.css:345`              |
-| 4b   | Toast base styles            | `frontend/apps/skriptoteket/src/assets/main.css:371`              |
-| 4c   | Toast variant classes        | `frontend/apps/skriptoteket/src/assets/main.css:398`              |
-| 4d   | 90% opacity backgrounds       | `frontend/apps/skriptoteket/src/assets/main.css:399`              |
-| 4e   | SPA boot imports main.css    | `frontend/apps/skriptoteket/src/main.ts:4`                       |
-| 4f   | Root component                | `frontend/apps/skriptoteket/src/App.vue:1`                        |
-| 4g   | App-level toast mount        | `frontend/apps/skriptoteket/src/App.vue:214`                      |
-| 4h   | Toast component              | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:1`    |
-| 4i   | Teleport to body             | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:28`   |
-| 4j   | TransitionGroup              | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:30`   |
-| 4k   | Toast rendering loop         | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:35`   |
-| 4l   | Dynamic variant binding      | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:39`   |
-| 4m   | Icon rendering               | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:47`   |
-| 4n   | Close button                 | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:70`   |
-| 4o   | Toast composable             | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:6`    |
-| 4p   | Reactive toasts array        | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:36`   |
+| ID  | Description                 | Path                                                            |
+| --- | --------------------------- | --------------------------------------------------------------- |
+| 4a  | Toast container positioning | `frontend/apps/skriptoteket/src/assets/main.css:345`            |
+| 4b  | Toast base styles           | `frontend/apps/skriptoteket/src/assets/main.css:371`            |
+| 4c  | Toast variant classes       | `frontend/apps/skriptoteket/src/assets/main.css:398`            |
+| 4d  | 90% opacity backgrounds     | `frontend/apps/skriptoteket/src/assets/main.css:399`            |
+| 4e  | SPA boot imports main.css   | `frontend/apps/skriptoteket/src/main.ts:4`                      |
+| 4f  | Root component              | `frontend/apps/skriptoteket/src/App.vue:1`                      |
+| 4g  | App-level toast mount       | `frontend/apps/skriptoteket/src/App.vue:214`                    |
+| 4h  | Toast component             | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:1`  |
+| 4i  | Teleport to body            | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:28` |
+| 4j  | TransitionGroup             | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:30` |
+| 4k  | Toast rendering loop        | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:35` |
+| 4l  | Dynamic variant binding     | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:39` |
+| 4m  | Icon rendering              | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:47` |
+| 4n  | Close button                | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:70` |
+| 4o  | Toast composable            | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:6`  |
+| 4p  | Reactive toasts array       | `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue:36` |
 
 ### Trace 4 Adoption Steps
 
@@ -300,10 +292,9 @@ Toast Component (ToastHost.vue) [4h]
 
 4. **Use the `useToast()` composable** for programmatic toast notifications
 
----
+______________________________________________________________________
 
 ### Source: Trace 5: Segmented Toggle (Shell Classes → Component → Workspace Usage)
-
 
 **Purpose**: Define the segmented toggle primitive for mode switchers in planner/editor workspaces.
 
@@ -330,19 +321,19 @@ Workspace Integration
 
 ### Trace 5 Location Map
 
-| ID   | Description                  | Path                                                               |
-|------|------------------------------|--------------------------------------------------------------------|
-| 5a   | Segmented shell constant      | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:38` |
-| 5b   | Shell class selection        | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:98` |
-| 5c   | Template rendering           | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:348` |
-| 5d   | Animated slider background   | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:360` |
-| 5e   | Radio button options         | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:371` |
-| 5f   | aria-checked binding         | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:376` |
-| 5g   | Keyboard navigation         | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:242` |
-| 5h   | Workspace shell primitive    | `frontend/apps/skriptoteket/src/assets/main.css:729`              |
-| 5i   | Mode selector                | `PlannerWorkspaceShell.vue`                                      |
-| 5j   | Toolbar action bar           | `frontend/apps/skriptoteket/src/assets/main.css:743`              |
-| 5k   | Canvas/pool layout           | `frontend/apps/skriptoteket/src/assets/main.css:771`              |
+| ID  | Description                | Path                                                                     |
+| --- | -------------------------- | ------------------------------------------------------------------------ |
+| 5a  | Segmented shell constant   | `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts:38` |
+| 5b  | Shell class selection      | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:98`  |
+| 5c  | Template rendering         | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:348` |
+| 5d  | Animated slider background | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:360` |
+| 5e  | Radio button options       | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:371` |
+| 5f  | aria-checked binding       | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:376` |
+| 5g  | Keyboard navigation        | `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue:242` |
+| 5h  | Workspace shell primitive  | `frontend/apps/skriptoteket/src/assets/main.css:729`                     |
+| 5i  | Mode selector              | `PlannerWorkspaceShell.vue`                                              |
+| 5j  | Toolbar action bar         | `frontend/apps/skriptoteket/src/assets/main.css:743`                     |
+| 5k  | Canvas/pool layout         | `frontend/apps/skriptoteket/src/assets/main.css:771`                     |
 
 ### Trace 5 Adoption Steps
 
@@ -354,10 +345,9 @@ Workspace Integration
 
 4. **Respect the keyboard navigation** and ARIA semantics
 
----
+______________________________________________________________________
 
 ### Source: Trace 6: Design System Governance (ADRs → Skills → Reference Codemap)
-
 
 **Purpose**: Map decision records to the skills that own current presentation and token contracts.
 
@@ -385,20 +375,20 @@ Reference Documentation
 
 ### Trace 6 Location Map
 
-| ID   | Description                  | Path                                                                               |
-|------|------------------------------|------------------------------------------------------------------------------------|
-| 6a   | HuleEdu adoption decision   | `docs/adr/adr-0017-huleedu-design-system-adoption.md:24`                          |
-| 6b   | Mandates HuleEdu tokens      | `docs/adr/adr-0017-huleedu-design-system-adoption.md:15`                          |
-| 6c   | Tailwind 4 @theme decision   | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:33`                                 |
-| 6d   | CSS-first token bridge       | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:23`                                 |
-| 6e   | Presentation authority       | `huleedu-ui-design` skill |
-| 6f   | Design system principles     | `huleedu-ui-design` skill |
-| 6g   | Historical feedback guidance | Retired rule 045; use `huleedu-ui-design` for current interaction guidance |
-| 6h   | Historical press behavior    | Retired rule 045; its 4px press example is not current authority |
-| 6i   | Design system codemap        | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:119`             |
-| 6j   | Token pipeline mapping       | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:120`             |
-| 6k   | Dense primitive implementation | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:34` |
-| 6l   | Shared primitive spec        | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:38` |
+| ID  | Description                    | Path                                                                                               |
+| --- | ------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 6a  | HuleEdu adoption decision      | `docs/adr/adr-0017-huleedu-design-system-adoption.md:24`                                           |
+| 6b  | Mandates HuleEdu tokens        | `docs/adr/adr-0017-huleedu-design-system-adoption.md:15`                                           |
+| 6c  | Tailwind 4 @theme decision     | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:33`                                                  |
+| 6d  | CSS-first token bridge         | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:23`                                                  |
+| 6e  | Presentation authority         | `huleedu-ui-design` skill                                                                          |
+| 6f  | Design system principles       | `huleedu-ui-design` skill                                                                          |
+| 6g  | Historical feedback guidance   | Retired rule 045; use `huleedu-ui-design` for current interaction guidance                         |
+| 6h  | Historical press behavior      | Retired rule 045; its 4px press example is not current authority                                   |
+| 6i  | Design system codemap          | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:119`                              |
+| 6j  | Token pipeline mapping         | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:120`                              |
+| 6k  | Dense primitive implementation | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:34` |
+| 6l  | Shared primitive spec          | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:38` |
 
 ### Trace 6 Adoption Steps
 

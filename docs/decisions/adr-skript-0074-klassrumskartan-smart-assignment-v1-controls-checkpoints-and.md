@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0074
 title: Klassrumskartan Smart Assignment V1 Controls, Checkpoints, and Solver Boundaries
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- architect
+  - architect
 retired_ids:
-- ADR-0074
+  - ADR-0074
 ---
 
 ## Context

@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-incident-log-sanitized-hemma-2026-01-04-15-39-0015-40-30-
 title: 'Incident log (sanitized): hemma 2026-01-04 15:39:00–15:40:30 UTC'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-incident-log-2026-01-04-153900-154030
+  - REF-hemma-incident-log-2026-01-04-153900-154030
 summary: 'Incident log (sanitized): hemma 2026-01-04 15:39:00–15:40:30 UTC'
 ---
 
@@ -18,7 +18,7 @@ summary: 'Incident log (sanitized): hemma 2026-01-04 15:39:00–15:40:30 UTC'
 
 Source: `docs/reference/reports/ref-hemma-incident-log-2026-01-04-153900-154030.md`. Incident log (sanitized): hemma 2026-01-04 15:39:00–15:40:30 UTC.
 
-This file contains a sanitized copy of the host capture: - Source (on host): `/root/logs/incident-20260104-153900-154030.log` - Window: **2026-01-04T15:39:00Z → 2026-01-04T15:40:30Z** Redactions applied: - IPv4 addresses → `<ip_redacted>` - MAC addresses → `<mac_redacted>` - SSIDs → `<ssid_redacted>` - Local IPv6 addresses (`fdaa:*`, `fd7a:*`, `fe80:*`) → `<ipv6_redacted>` Update (2026-01-13): Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). Any `llama-server-vulkan.service` references below reflect the historical runtime during Jan 2026 debugging. ```text incident_window_start=2026-01-04 15:39:00 UTC incident_window_end=2026-01-04 15:40:
+This file contains a sanitized copy of the host capture: - Source (on host): `/root/logs/incident-20260104-153900-154030.log` - Window: **2026-01-04T15:39:00Z → 2026-01-04T15:40:30Z** Redactions applied: - IPv4 addresses → `<ip_redacted>` - MAC addresses → `<mac_redacted>` - SSIDs → `<ssid_redacted>` - Local IPv6 addresses (`fdaa:*`, `fd7a:*`, `fe80:*`) → `<ipv6_redacted>` Update (2026-01-13): Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). Any `llama-server-vulkan.service` references below reflect the historical runtime during Jan 2026 debugging. \`\`\`text incident_window_start=2026-01-04 15:39:00 UTC incident_window_end=2026-01-04 15:40:
 
 ## Facts And Semantics
 

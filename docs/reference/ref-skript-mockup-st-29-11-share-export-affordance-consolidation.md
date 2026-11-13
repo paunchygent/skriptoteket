@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-29-11-share-export-affordance-consolidation
 title: ST-29-11 share/export affordance consolidation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -13,11 +13,15 @@ summary: ST-29-11 share/export affordance consolidation
 ---
 
 ## Intent
+
 ### Purpose
+
 Retain the approved visual direction for consolidating the split
 `Exportera`/`Dela` toolbar affordances in Klassrumskartan `Grupper` and
 `Sittplatser`.
+
 ### Direction
+
 - The workspace toolbar exposes one `Dela` affordance for outward distribution.
 - The opened panel is titled `Dela och exportera`.
 - Link actions stay grouped under `Länk` with `Skapa länk`, active links,
@@ -30,18 +34,24 @@ Retain the approved visual direction for consolidating the split
   combined surface.
 
 ## Package Manifest
+
 ### Assets
+
 - [Share/export affordance mockup](share-export-affordance-mockup.png)
 - [Overview scope selector alternatives](share-export-scope-selector-alternatives-2026-05-05.png)
 
 ## Design Interpretation
+
 The source record did not define a separate section for this package heading.
 
 ## Runtime And Proof Boundary
+
 The source record did not define a separate section for this package heading.
 
 ## Governing Links And Follow-Up
+
 ### Preferred Follow-up Direction
+
 For the overview workspace `Dela och exportera` selector, product-owner review
 on 2026-05-05 selected the third alternative from the scope-selector mockup:
 

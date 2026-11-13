@@ -1,13 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-40-04-18
-title: The exam workspace header opens Provets uppgifter from an Uppgifter command
-  and free-text questions set their writing area and criteria in one boxless answer
-  block
+title: The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-20'
 status: done
 closeout_review:
@@ -19,9 +17,9 @@ closeout_review:
   approval_evidence: 'The user closed the task on 2026-10-20 after main 98cbab6c (Hemma pre-push suite 552 files, 3964 passed), independent ruthless-reviewer db7cc9e8 (changes_requested, three medium findings F1-F3, repaired at ebe967ca and admitted on focused proof) and a passing staging walk at 98cbab6c (retained root 01a15680 evidence/staging-walk-98cbab6c/walk-record.md).'
 task_kind: story
 acceptance_criteria:
-- The exam workspace header shows an Uppgifter command (info glyph and the word) first in the toolbar, before a separator and Öppna; it opens and closes the Provets uppgifter drawer, shows aria-expanded, and the course and points line under the title is plain text
-- A free-text question shows Skrivyta and Bedömningskriterier as rows of one bordered answer block with a shared label column; the stepper, trash and add controls have no box, the line count sits in a fixed-width slot, and no row leaves a wide empty space at its right
-- Alla fritextfrågor opens a popover that names how many free-text questions get the count and which ones have another count today, with Avbryt and Använd N rader; when every free-text question already has the count, the popover says so and offers Stäng; nothing in the row moves or changes size between the two states
+  - The exam workspace header shows an Uppgifter command (info glyph and the word) first in the toolbar, before a separator and Öppna; it opens and closes the Provets uppgifter drawer, shows aria-expanded, and the course and points line under the title is plain text
+  - A free-text question shows Skrivyta and Bedömningskriterier as rows of one bordered answer block with a shared label column; the stepper, trash and add controls have no box, the line count sits in a fixed-width slot, and no row leaves a wide empty space at its right
+  - Alla fritextfrågor opens a popover that names how many free-text questions get the count and which ones have another count today, with Avbryt and Använd N rader; when every free-text question already has the count, the popover says so and offers Stäng; nothing in the row moves or changes size between the two states
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -81,11 +79,11 @@ Paths under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| Q1  | The details entry is an "Uppgifter" command with the info glyph and the word, first in the header toolbar (user 2026-10-20). |
-| Q2  | Applying one writing area to all free-text questions goes through a popover that names the changes and asks for confirmation (user 2026-10-20). |
-| Q3  | Skrivyta and Bedömningskriterier sit in one bordered answer block with a label column, as in the mockup (user 2026-10-20). |
-| Q4  | The approved mockup becomes this implementation task (user 2026-10-20). |
-| L1  | Lead decision 2026-10-20: the criteria row has no "X av Y p" line, because the question's points field already shows the criteria sum (the points always match), and the design system asks for the least text. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                           |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | The details entry is an "Uppgifter" command with the info glyph and the word, first in the header toolbar (user 2026-10-20).                                                                                                                                                    |
+| Q2  | Applying one writing area to all free-text questions goes through a popover that names the changes and asks for confirmation (user 2026-10-20).                                                                                                                                 |
+| Q3  | Skrivyta and Bedömningskriterier sit in one bordered answer block with a label column, as in the mockup (user 2026-10-20).                                                                                                                                                      |
+| Q4  | The approved mockup becomes this implementation task (user 2026-10-20).                                                                                                                                                                                                         |
+| L1  | Lead decision 2026-10-20: the criteria row has no "X av Y p" line, because the question's points field already shows the criteria sum (the points always match), and the design system asks for the least text.                                                                 |
 | L2  | Lead decision 2026-10-20 (review F3): Escape anywhere closes the popover and returns focus to the tool; Tab out of it closes it and leaves focus where the teacher moved; an outside click returns focus to the tool unless it lands on another control, which keeps the focus. |

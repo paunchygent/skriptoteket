@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0009
 title: Editor save/restore UX clarity (naming, availability, last restore source)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,13 +16,10 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Versionlistan skiljer tydligt på serverversioner och lokala återställningspunkter
-  och visar inte autosparade debounce-punkter.
-- UI visar vilken arbetsversion som är aktuell och vilken återställningspunkt som
-  senast användes (lokal vs server).
-- Benämningar och hjälpcopy för spar/återställ är begripliga för icke-tekniska användare.
-- Undo/redo (återställ senaste ändring) kommuniceras som återhämtning, inte som sparade
-  versioner.
+  - Versionlistan skiljer tydligt på serverversioner och lokala återställningspunkter och visar inte autosparade debounce-punkter.
+  - UI visar vilken arbetsversion som är aktuell och vilken återställningspunkt som senast användes (lokal vs server).
+  - Benämningar och hjälpcopy för spar/återställ är begripliga för icke-tekniska användare.
+  - Undo/redo (återställ senaste ändring) kommuniceras som återhämtning, inte som sparade versioner.
 ---
 
 ## Context
@@ -37,8 +34,8 @@ The source task remains bounded to its repository-owned surface; product behavio
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-REP-0009 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Contract Inputs
@@ -83,6 +80,7 @@ för användaren att förstå vilken arbetsversion som är aktiv, vad som senast
 ### Goal
 
 Skapa en tydlig och konsekvent UX för spar/återställ:
+
 - Separera serverversioner från lokala återställningspunkter.
 - Dölja autosparade debounce-punkter från listan (de används endast för automatisk återställning).
 - Visa vilken återställningspunkt som senast användes och om den var lokal eller serverbaserad.
@@ -96,20 +94,25 @@ Skapa en tydlig och konsekvent UX för spar/återställ:
 
 ### Implementation plan
 
-1) **Namngivning och copy**
+1. **Namngivning och copy**
+
    - Byt etiketter i versionlistor och återställningsytor så de matchar användarens mentala modell.
 
-2) **Avgränsa listor**
+2. **Avgränsa listor**
+
    - Visa endast serverversioner + manuella lokala checkpoints.
    - Autosparade debounce-punkter används enbart för automatisk återställning och syns inte i listan.
 
-3) **Källa för senaste återställning**
+3. **Källa för senaste återställning**
+
    - Lägg till visning av senaste återställningskälla (serverversion eller lokal checkpoint) i editor-UI.
 
-4) **Undo/redo-kommunikation**
+4. **Undo/redo-kommunikation**
+
    - Tydliggör att debounce-punkter används för återhämtning (återställ senaste ändring), inte som sparade versioner.
 
-5) **UI-städning**
+5. **UI-städning**
+
    - Göra listor/knappar kompaktare och mer IDE-lika.
 
 ### Test plan

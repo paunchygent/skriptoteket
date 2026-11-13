@@ -4,8 +4,8 @@ id: REF-SKRIPT-PRD-script-hub-prd-v0-1-mvp
 title: Script Hub PRD v0.1 (MVP)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: draft
 reference_kind: prd
@@ -49,16 +49,16 @@ In v0.1, scripts/tools move through a small set of states:
 
 ### Permissions Matrix (v0.1)
 
-| Capability | User | Contributor | Admin | Superuser |
-|---|---:|---:|---:|---:|
-| Browse and run published scripts | ✅ | ✅ | ✅ | ✅ |
-| Suggest new scripts / improvements | ❌ | ✅ | ✅ | ✅ |
-| View and triage suggestions | ❌ | ❌ | ✅ | ✅ |
-| Accept / modify / deny suggestions | ❌ | ❌ | ✅ | ✅ |
-| Publish / depublish scripts | ❌ | ❌ | ✅ | ✅ |
-| Manage users / contributors | ❌ | ❌ | ✅ | ✅ |
-| Nominate new admins | ❌ | ❌ | ✅ | ✅ |
-| Approve/deny admin nominations | ❌ | ❌ | ❌ | ✅ |
+| Capability                         | User | Contributor | Admin | Superuser |
+| ---------------------------------- | ---: | ----------: | ----: | --------: |
+| Browse and run published scripts   |   ✅ |          ✅ |    ✅ |        ✅ |
+| Suggest new scripts / improvements |   ❌ |          ✅ |    ✅ |        ✅ |
+| View and triage suggestions        |   ❌ |          ❌ |    ✅ |        ✅ |
+| Accept / modify / deny suggestions |   ❌ |          ❌ |    ✅ |        ✅ |
+| Publish / depublish scripts        |   ❌ |          ❌ |    ✅ |        ✅ |
+| Manage users / contributors        |   ❌ |          ❌ |    ✅ |        ✅ |
+| Nominate new admins                |   ❌ |          ❌ |    ✅ |        ✅ |
+| Approve/deny admin nominations     |   ❌ |          ❌ |    ❌ |        ✅ |
 
 ### Identity & Authorization (MVP)
 

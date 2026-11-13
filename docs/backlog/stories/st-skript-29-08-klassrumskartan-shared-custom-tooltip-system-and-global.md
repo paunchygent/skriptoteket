@@ -4,8 +4,8 @@ id: ST-SKRIPT-29-08
 title: Klassrumskartan — Shared custom tooltip system and global hover contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,21 +16,12 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-29
 acceptance_criteria:
-- Given dense planner and editor controls still rely on browser-native `title` tooltips,
-  when this enhancement ships, then the relevant shared control surfaces render through
-  one custom tooltip system instead of inheriting browser-specific timing and styling.
-- Given tooltip timing should be tunable globally, when the shared tooltip system
-  ships, then open delay, close delay, and hover/focus behavior live in one shared
-  frontend contract rather than in per-component ad hoc logic.
-- Given shared controls must remain accessible and discoverable, when a tooltip is
-  shown, then it supports hover and focus entry, exposes the correct `role="tooltip"`
-  / `aria-describedby` relationship, and dismisses predictably without trapping focus.
-- Given this is an enhancement rather than a core prerequisite for the desktop-first
-  overhaul, when EPIC-29 is sequenced, then this story is taken after the current
-  post-core primitive and symbol tightening lane instead of delaying or reopening
-  the shipped workspace redesign.
+  - Given dense planner and editor controls still rely on browser-native `title` tooltips, when this enhancement ships, then the relevant shared control surfaces render through one custom tooltip system instead of inheriting browser-specific timing and styling.
+  - Given tooltip timing should be tunable globally, when the shared tooltip system ships, then open delay, close delay, and hover/focus behavior live in one shared frontend contract rather than in per-component ad hoc logic.
+  - Given shared controls must remain accessible and discoverable, when a tooltip is shown, then it supports hover and focus entry, exposes the correct `role="tooltip"` / `aria-describedby` relationship, and dismisses predictably without trapping focus.
+  - Given this is an enhancement rather than a core prerequisite for the desktop-first overhaul, when EPIC-29 is sequenced, then this story is taken after the current post-core primitive and symbol tightening lane instead of delaying or reopening the shipped workspace redesign.
 retired_ids:
-- ST-29-08
+  - ST-29-08
 ---
 
 ## Context
@@ -39,7 +30,7 @@ retired_ids:
 
 The current dense-tool lane still depends heavily on browser-native `title` tooltips for hover
 discoverability. That keeps the implementation cheap, but it also means timing, presentation, and
- delay behavior are browser-owned rather than product-owned.
+delay behavior are browser-owned rather than product-owned.
 
 The tooltip upgrade should be treated as a separate enhancement lane. It improves the polish and
 governance of shared controls, but it should not be allowed to block the main desktop-first

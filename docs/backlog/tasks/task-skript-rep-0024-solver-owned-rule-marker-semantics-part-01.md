@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0024-PART-01
 title: Solver-owned rule marker semantics — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: TASK-SKRIPT-REP-0024
 part: 1
@@ -124,7 +124,7 @@ Step B implemented on 2026-05-10.
   diagnostic still matches the visible student/seat assignment; stale or absent
   soft-rule diagnostics render neutral markers.
 - The G20 / SA24D room-scale simulation proof was split into a scenario helper
-  so the test modules remain inside the <500 LoC SRP boundary.
+  so the test modules remain inside the \<500 LoC SRP boundary.
 
 Additional verification:
 

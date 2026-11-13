@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-04-11
 title: Exam workspace controls follow one compact three-tier control system
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: canceled
 closeout_review:
@@ -15,8 +15,7 @@ closeout_review:
   approval_evidence: The user decided on 2026-10-19 (AskUserQuestion, relayed by orchestrator 944b5a5a) to close this task as superseded by TASK-SKRIPT-40-04-17 (on main 35caaef3), which folds it. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-40-04-17 named as its successor. No product code was built under this task.
 task_kind: story
 acceptance_criteria:
-- The exam workspace controls follow one compact three-tier control system with
-  one shared owner; delivered under the successor TASK-SKRIPT-40-04-17
+  - The exam workspace controls follow one compact three-tier control system with one shared owner; delivered under the successor TASK-SKRIPT-40-04-17
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -26,7 +25,9 @@ backlog_document_profile: contract-derived
 Source: four user messages of 2026-10-19, relayed by the Hemma orchestrator session (944b5a5a).
 
 1. On a Fritextfråga item, the user circled the boxed Skrivyta row and "+ Kriterium". Quotes: "Button *containers* are too big for a compact workspace" and "Direction is NO visible containers for tools, just the glyphs".
+
 2. On the workspace header (staging 26f84883), the user wrote:
+
    - "you barely see the file name";
    - "why is Osparat so far from the save button?";
    - the undo buttons are "super large" and "should be within the toolbar integrated";
@@ -34,8 +35,11 @@ Source: four user messages of 2026-10-19, relayed by the Hemma orchestrator sess
    - the admin-only AI note "eats a lot of valuable space";
    - "buttons are too spaced out";
    - Ny uppgift and Markera should be "only the glyph and the little word", lined up on the glyph.
+
 3. On density, the user wrote: "the buttons are too large"; controls should "size-wise align with the nav bar"; and the workspace "gives a bit of a scattered impression… almost like it's a tablet type of user interface". VS Code is the benchmark.
+
 4. The user clarified the scope: this task is the control design system of the compact exam workspace. It covers button sizes, containers, toolbar layout, and padding and spacing, with exact values and no wasted space. The user's three tiers are:
+
    - glyph only where the glyph is clear;
    - glyph plus a short eyebrow word directly above it where the glyph alone is not clear;
    - text inside a container where a button needs it.
@@ -100,25 +104,25 @@ Every tool is a 28 px boxless box with a 20 px glyph, the same glyph size as the
 
 Planned junior units, in order. Each unit has its own focused spec. The final list depends on the open questions in Resume here.
 
-1. Overlap probe (lead): measure the computed layout of the Skrivyta and Bedömningskriterier fieldsets in a real browser at 1024 and 1440 px, and record the cause.
-2. Shared glyph meanings (skill repository, through its change route):
-   - add `apply-to-all` (Lucide Layers), `make-gap` (TextCursorInput) and `gap-tool` (MousePointerClick);
-   - release a package version, then run `design-system sync` and `pdm run design-system-validate` here.
-3. Control system: add the token block and the `.xw-tool`, `.xw-tool--eyebrow`, `.xw-cmd`, `.xw-bar` and `.xw-stepper` classes and the state rules to `examWorkspace.css`. The values come from the draft.
-4. Header: `ExamWorkspaceHeader.vue`, plus the Exportera trigger in `ExamWorkspaceExportMenu.vue`:
-   - the title and inline metadata;
-   - the tool groups;
-   - the AI note becomes the tooltip and the `aria-describedby` text of the AI glyph;
-   - Osparat moves beside Spara.
-5. List: `ExamWorkspaceQuestionList.vue`:
-   - the head carries the Ny uppgift and Markera eyebrow tools, and the mark bar shows only while marking;
-   - Lägg till instruktioner becomes a list entry.
-6. Question head and tools: `ExamWorkspaceQuestionHead.vue` and `ExamWorkspaceQuestionTools.vue`.
-7. Editor toolbar: `ExamWorkspaceMarkToolbar.vue` moves to `UiGlyph` meanings and tier 1 tools, and the floating gap button in `ExamWorkspaceRichTextEditor.vue` takes its size from the tokens. This unit is coordinated with lead 73032e62.
-8. Fritextfråga fields:
-   - `ExamWorkspaceWritingLinesField.vue`: "− 10 +", then the apply-to-all glyph;
-   - `ExamWorkspaceCriteriaField.vue`: the add glyph moves into the label row, remove becomes a tier 1 delete, and the inputs use `xw-input`.
-9. Other editor tools: the ordering, instruction, gap popover, gap answer list and gap automatic value components, the course combobox clear, the inline notice close, the phone strip and the sign-in bar.
+01. Overlap probe (lead): measure the computed layout of the Skrivyta and Bedömningskriterier fieldsets in a real browser at 1024 and 1440 px, and record the cause.
+02. Shared glyph meanings (skill repository, through its change route):
+    - add `apply-to-all` (Lucide Layers), `make-gap` (TextCursorInput) and `gap-tool` (MousePointerClick);
+    - release a package version, then run `design-system sync` and `pdm run design-system-validate` here.
+03. Control system: add the token block and the `.xw-tool`, `.xw-tool--eyebrow`, `.xw-cmd`, `.xw-bar` and `.xw-stepper` classes and the state rules to `examWorkspace.css`. The values come from the draft.
+04. Header: `ExamWorkspaceHeader.vue`, plus the Exportera trigger in `ExamWorkspaceExportMenu.vue`:
+    - the title and inline metadata;
+    - the tool groups;
+    - the AI note becomes the tooltip and the `aria-describedby` text of the AI glyph;
+    - Osparat moves beside Spara.
+05. List: `ExamWorkspaceQuestionList.vue`:
+    - the head carries the Ny uppgift and Markera eyebrow tools, and the mark bar shows only while marking;
+    - Lägg till instruktioner becomes a list entry.
+06. Question head and tools: `ExamWorkspaceQuestionHead.vue` and `ExamWorkspaceQuestionTools.vue`.
+07. Editor toolbar: `ExamWorkspaceMarkToolbar.vue` moves to `UiGlyph` meanings and tier 1 tools, and the floating gap button in `ExamWorkspaceRichTextEditor.vue` takes its size from the tokens. This unit is coordinated with lead 73032e62.
+08. Fritextfråga fields:
+    - `ExamWorkspaceWritingLinesField.vue`: "− 10 +", then the apply-to-all glyph;
+    - `ExamWorkspaceCriteriaField.vue`: the add glyph moves into the label row, remove becomes a tier 1 delete, and the inputs use `xw-input`.
+09. Other editor tools: the ordering, instruction, gap popover, gap answer list and gap automatic value components, the course combobox clear, the inline notice close, the phone strip and the sign-in bar.
 10. Panels, dialogs and menus: the drawer, print preview, details drawer, open drawer, editor pane, import box and save-as dialog; the class rename in the three export files; menu rows at 32 px.
 11. Removal and guard:
     - delete `.xw-btn*`, `.xw-rm`, `.xw-linkbtn`, `--xw-ctl` and `--xw-ctl-fine`;
@@ -148,16 +152,16 @@ Planned junior units, in order. Each unit has its own focused spec. The final li
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | One owner: `examWorkspace.css` holds the tier rule's classes, every control size, the bar heights, the gaps and the states, as a `.xw-root` token block whose values alias existing huleedu-integrated tokens. Components add no control CSS and pass no glyph size to a control; `.xw-tool svg` and `.xw-cmd svg` set it (user 2026-10-19 scope clarification). Whether any value needs a new shared token is D12 and D13. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T1  | One owner: `examWorkspace.css` holds the tier rule's classes, every control size, the bar heights, the gaps and the states, as a `.xw-root` token block whose values alias existing huleedu-integrated tokens. Components add no control CSS and pass no glyph size to a control; `.xw-tool svg` and `.xw-cmd svg` set it (user 2026-10-19 scope clarification). Whether any value needs a new shared token is D12 and D13.                            |
 | T2  | Three tiers (user 2026-10-19). Tier 1, `.xw-tool`: the glyph only, where the glyph is a convention or its row names it. Tier 2, `.xw-tool--eyebrow`: a short word directly above the glyph where the glyph alone is ambiguous. Tier 3, `.xw-cmd`: text inside a container for primary, committing and dialog commands. Menu rows, list entries, segment options and value triggers (title, question type) are not tiered controls and keep their text. |
-| T3  | Names: a tier 1 or tier 2 control's action phrase is its aria-label and native title; a tier 2 aria-label contains its eyebrow word (WCAG 2.5.3). While disabled by a bound or a no-op, the title gives the reason. Glyphs are decorative to assistive technology. |
-| T4  | Apply-to-all (user 2026-10-19): a tier 1 glyph with the new shared meaning `apply-to-all` (Lucide Layers). Tooltip and aria-label "Använd {n} rader för alla fritextfrågor"; while every free-text item already has n lines, the title is "Alla fritextfrågor har redan {n} rader". It runs at once, with no confirmation; Ångra reverses it. |
-| T5  | Stepper (user 2026-10-19): the field label reads "Skrivyta"; the row is the decrement glyph, the count, the increment glyph, a separator and the apply-to-all glyph. The count has the title "{n} rader" and a slot two digits wide. The label no longer repeats the count. |
-| T6  | Scope (user 2026-10-19): every control in the exam workspace except the export menu's rows and its download and save logic, which belong to the export lead. The export files get only the class rename and the header trigger. |
-| T7  | New glyph meanings go into the shared skill-repository `uiGlyphs.ts` through that repository's change route, then reach this repository through `design-system sync` (user 2026-10-19). The mark toolbar uses the catalogue's existing `bold`, `italic`, `underline`, `superscript`, `subscript` and `heading-1..3` meanings. |
-| T8  | Validation is the focused specs, the guard spec, keyboard reach and focus ring, and the screenshots named above; no staging walk. |
+| T3  | Names: a tier 1 or tier 2 control's action phrase is its aria-label and native title; a tier 2 aria-label contains its eyebrow word (WCAG 2.5.3). While disabled by a bound or a no-op, the title gives the reason. Glyphs are decorative to assistive technology.                                                                                                                                                                                     |
+| T4  | Apply-to-all (user 2026-10-19): a tier 1 glyph with the new shared meaning `apply-to-all` (Lucide Layers). Tooltip and aria-label "Använd {n} rader för alla fritextfrågor"; while every free-text item already has n lines, the title is "Alla fritextfrågor har redan {n} rader". It runs at once, with no confirmation; Ångra reverses it.                                                                                                          |
+| T5  | Stepper (user 2026-10-19): the field label reads "Skrivyta"; the row is the decrement glyph, the count, the increment glyph, a separator and the apply-to-all glyph. The count has the title "{n} rader" and a slot two digits wide. The label no longer repeats the count.                                                                                                                                                                            |
+| T6  | Scope (user 2026-10-19): every control in the exam workspace except the export menu's rows and its download and save logic, which belong to the export lead. The export files get only the class rename and the header trigger.                                                                                                                                                                                                                        |
+| T7  | New glyph meanings go into the shared skill-repository `uiGlyphs.ts` through that repository's change route, then reach this repository through `design-system sync` (user 2026-10-19). The mark toolbar uses the catalogue's existing `bold`, `italic`, `underline`, `superscript`, `subscript` and `heading-1..3` meanings.                                                                                                                          |
+| T8  | Validation is the focused specs, the guard spec, keyboard reach and focus ring, and the screenshots named above; no staging walk.                                                                                                                                                                                                                                                                                                                      |
 
 ## Superseded by TASK-SKRIPT-40-04-17 (2026-10-19)
 

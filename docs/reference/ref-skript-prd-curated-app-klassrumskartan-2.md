@@ -4,8 +4,8 @@ id: REF-SKRIPT-PRD-curated-app-klassrumskartan-2
 title: 'Curated App: Klassrumskartan'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: prd

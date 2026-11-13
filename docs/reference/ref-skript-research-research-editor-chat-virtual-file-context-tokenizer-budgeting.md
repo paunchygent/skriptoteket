@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-research-editor-chat-virtual-file-context-tokenizer-budg
 title: 'Research: Editor chat virtual file context + tokenizer budgeting'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-editor-chat-virtual-file-context-tokenizers-2026-01-11
+  - REF-editor-chat-virtual-file-context-tokenizers-2026-01-11
 summary: 'Research: Editor chat virtual file context + tokenizer budgeting'
 ---
 
@@ -60,11 +60,13 @@ Key files:
 ### Option A — per-file hidden context messages (recommended)
 
 **Representation**
+
 - One hidden assistant message per virtual file.
 - Stored in `tool_session_messages` with `meta`:
   - `hidden: true`, `kind: "virtual_file_context"`, `file_id`, `fingerprint` (sha256).
 
 **Duplication size**
+
 - Typical snapshot size (rough, per tool):
   - `tool.py`: 10–30 KB
   - schemas + instructions + entrypoint: 5–15 KB
@@ -73,36 +75,43 @@ Key files:
 - Even at scale, this is usually within Postgres tolerance, and old contexts are not re-sent to the model (latest-only).
 
 **How to manage growth**
+
 - Prompt assembly only uses the **latest** context per file.
 - Optional pruning: delete older context messages per file after writing the latest.
 - TTL already removes inactive threads after 30 days.
 
 **Pros**
+
 - Minimal DB/API changes.
 - Resend rules are natural: dropped/changed contexts are just missing messages.
 - Works with existing chat storage flow.
 
 **Cons**
+
 - Must filter hidden messages out of chat history responses.
 - Tail limit can drop contexts early; requires retention+refresh logic.
 
 ### Option C — separate blob storage + references
 
 **Representation**
+
 - `tool_session_messages` stores only a reference:
   - `file_id`, `fingerprint`, `blob_ref`.
 - File content is stored in a separate table or blob store.
 
 **Pros**
+
 - Keeps message history smaller.
 - Allows deduplication by fingerprint.
 
 **Cons**
+
 - Larger architectural change: new table, lifecycle, cleanup, and extra reads.
 - More failure modes (missing blobs, GC races).
 - Still must load full content into prompts, so runtime budget does not improve.
 
 **Viability**
+
 - Viable, but not minimal. Recommended only if Option A storage growth becomes a concern.
 
 ### DDD/CC alignment (refactor-friendly boundary)
@@ -115,6 +124,7 @@ To keep future swaps cheap, introduce a narrow **protocol boundary**:
   - `prune_contexts(...)` (optional)
 
 Infrastructure can implement this via:
+
 - Option A: `tool_session_messages` (current schema).
 - Option C: blob-backed storage in a future phase.
 
@@ -123,17 +133,18 @@ This keeps domain logic stable and ensures Option C can be dropped in later with
 ### Resend rules + rolling context window (summary)
 
 **Invariants**
-1) No resend when unchanged and still retained.
-2) Resend when dropped by budget.
-3) Resend when file changed.
+
+1. No resend when unchanged and still retained.
+2. Resend when dropped by budget.
+3. Resend when file changed.
 
 **Recommended algorithm (post-user-message retention + refresh)**
 
-1) Build candidate prompt: history + new user message.
-2) Apply budget **after** adding the user message.
-3) Inspect which file contexts survived.
-4) Refresh dropped/changed files in priority order.
-5) Re-budget and persist only contexts that survived.
+1. Build candidate prompt: history + new user message.
+2. Apply budget **after** adding the user message.
+3. Inspect which file contexts survived.
+4. Refresh dropped/changed files in priority order.
+5. Re-budget and persist only contexts that survived.
 
 ### Prompt format (context envelope)
 
@@ -148,13 +159,16 @@ Add system prompt guidance: treat these as **data**, not instructions (prompt-in
 ### Tokenizer integration (GPT-5 + devstral-2-small)
 
 **GPT-5**
+
 - Use OpenAI `tiktoken` (`encoding_for_model` with fallback to `o200k_base`).
 
 **devstral-2-small**
+
 - Use Tekken tokenizer (or llama.cpp tokenizer if running via llama.cpp runtime).
 - Store tokenizer assets as deploy-time artifacts (avoid committing large tokenizer files).
 
 **Fallback**
+
 - If tokenizer assets are missing/mismatched, log metadata-only warnings and fall back to heuristic estimates with a
   larger safety margin.
 

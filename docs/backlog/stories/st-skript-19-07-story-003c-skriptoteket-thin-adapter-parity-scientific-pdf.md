@@ -4,8 +4,8 @@ id: ST-SKRIPT-19-07
 title: 'Story 003c: Skriptoteket thin adapter parity + scientific PDF workload validation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,21 +16,12 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-19
 acceptance_criteria:
-- Given HuleEdu integrates through the canonical Story 003c adapter contract, when
-  requests reach Skriptoteket, then adapter handling remains thin and contract-faithful
-  with no HuleEdu-specific logic forks in Skriptoteket.
-- Given demanding scientific-paper PDFs are submitted from the HuleEdu integration
-  path, when workloads execute end-to-end (submit, poll, retrieve), then outcomes
-  are surfaced via canonical status and structured error surfaces without per-document
-  code changes.
-- Given a representative scientific-paper corpus is executed, when validation completes,
-  then evidence includes per-document status, duration distribution (min/p50/p95/max),
-  and failure taxonomy mapped to canonical error codes.
-- Given Story 003c closure review, when reviewers inspect Skriptoteket docs, then
-  this story and linked evidence clearly support closure readiness from the provider
-  side.
+  - Given HuleEdu integrates through the canonical Story 003c adapter contract, when requests reach Skriptoteket, then adapter handling remains thin and contract-faithful with no HuleEdu-specific logic forks in Skriptoteket.
+  - Given demanding scientific-paper PDFs are submitted from the HuleEdu integration path, when workloads execute end-to-end (submit, poll, retrieve), then outcomes are surfaced via canonical status and structured error surfaces without per-document code changes.
+  - Given a representative scientific-paper corpus is executed, when validation completes, then evidence includes per-document status, duration distribution (min/p50/p95/max), and failure taxonomy mapped to canonical error codes.
+  - Given Story 003c closure review, when reviewers inspect Skriptoteket docs, then this story and linked evidence clearly support closure readiness from the provider side.
 retired_ids:
-- ST-19-07
+  - ST-19-07
 ---
 
 ## Context
@@ -63,6 +54,7 @@ The source does not provide a separate contract inputs section; no additional co
 ### Source: Workload Validation Requirements
 
 - Corpus profile:
+
   - Real, non-sensitive scientific papers with mixed complexity (figures, tables, multi-column
     text, references, appendices).
   - Representative page-count spread for demanding workloads.
@@ -70,6 +62,7 @@ The source does not provide a separate contract inputs section; no additional co
     - `/Users/olofs_mba/Documents/Repos/huledu-reboot/docs/research/research_papers/llm_as_a_annotater`
 
 - Operational behavior:
+
   - Submit, poll, and retrieve flows must run without converter code edits across documents.
   - Failures (if any) must surface through canonical status/error surfaces with actionable
     diagnostics.
@@ -85,10 +78,12 @@ The source does not provide a separate contract inputs section; no additional co
 ### Source: Validation Plan
 
 - In Skriptoteket repo:
+
   - `pdm run docs-validate`
   - `pdm run pytest tests/integration --override-ini "addopts=-s -v --durations=10 --log-cli-level=INFO --import-mode=importlib"`
 
 - In HuleEdu repo (captured as evidence links):
+
   - Integration tests for adapter path.
   - End-to-end smoke against Hemma tunnel/service.
   - Workload run command set over the scientific-paper corpus.

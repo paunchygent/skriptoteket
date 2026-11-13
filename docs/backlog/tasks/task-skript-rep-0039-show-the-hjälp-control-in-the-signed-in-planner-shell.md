@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0039
-title: Show the Hjälp control in the signed-in planner shell between 1024 and 1279
-  px
+title: Show the Hjälp control in the signed-in planner shell between 1024 and 1279 px
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: canceled
 closeout_review:
@@ -14,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- At every viewport from 1024 px up, the signed-in Klassrumskartan shell exposes a
-  visible Hjälp control (top bar or drawer) that opens the help panel, with the existing
-  no-duplication rule for app lanes preserved
+  - At every viewport from 1024 px up, the signed-in Klassrumskartan shell exposes a visible Hjälp control (top bar or drawer) that opens the help panel, with the existing no-duplication rule for app lanes preserved
 backlog_document_profile: contract-derived
 ---
 
@@ -73,6 +70,6 @@ opens → Klass thumbnail replays the clip. No layout shift in the shell at the
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                            |
+| --- | -------------------------------------------------------------------------------------------------------------------------------- |
 | T01 | Widths under 1024 px keep their current shell; the tutorial first-use dialog is desktop-only and this task does not change that. |

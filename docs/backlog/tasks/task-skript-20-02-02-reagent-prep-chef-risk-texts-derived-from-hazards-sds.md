@@ -4,8 +4,8 @@ id: TASK-SKRIPT-20-02-02
 title: Reagent Prep Chef — Risk texts derived from hazards (SDS-aligned data)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,16 +17,11 @@ closeout_review:
 story: ST-SKRIPT-20-02
 task_kind: story
 acceptance_criteria:
-- Riskbedömning risk draft uses complete, subject-specific hazard codes (H/P) for
-  each curated chemical (no generic fallbacks caused by missing codes).
-- The hazards dataset is validated/backfilled offline against the SDS markdown corpus
-  (no runtime parsing).
-- A gap report is produced for hazards entries that still cannot be validated against
-  SDS markdown.
-- A school-MVP SDS shortcard dataset is built offline from repo-owned markdown and
-  committed for deterministic portal autofill.
-- 'Invariant: parser output is never treated as ground truth; when parser/structure
-  issues arise, all SDS markdown files require manual validation.'
+  - Riskbedömning risk draft uses complete, subject-specific hazard codes (H/P) for each curated chemical (no generic fallbacks caused by missing codes).
+  - The hazards dataset is validated/backfilled offline against the SDS markdown corpus (no runtime parsing).
+  - A gap report is produced for hazards entries that still cannot be validated against SDS markdown.
+  - A school-MVP SDS shortcard dataset is built offline from repo-owned markdown and committed for deterministic portal autofill.
+  - 'Invariant: parser output is never treated as ground truth; when parser/structure issues arise, all SDS markdown files require manual validation.'
 ---
 
 ## Context
@@ -37,8 +32,8 @@ Risk texts are currently driven by the hazards dataset. If hazard codes are miss
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-20-02-02 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -112,25 +107,33 @@ draft becomes generic or misleading (even when SDS markdown clearly contains the
 ### Implementation notes (2026-03-04)
 
 1. Added offline shortcard builder:
+
    - `scripts/build_reagent_prep_chef_sds_shortcards.py`
    - Extracts school-MVP fields (identity, CLP, PPE hints, spill/incompatibility/waste notes).
+
 2. Added parser trust invariant enforcement:
+
    - `parser_ground_truth=false` in output.
    - If any parser/structure issue appears, report marks manual validation scope as `all_files`.
    - Manual checklist for all SDS markdown files is emitted under `.artifacts/`.
+
 3. Added tests for extraction + invariant behavior:
+
    - `tests/unit/scripts/test_build_reagent_prep_chef_sds_shortcards.py`
 
 4. Added offline hazards↔shortcards alignment script and applied deterministic backfill:
+
    - `scripts/align_reagent_prep_chef_hazard_codes_from_shortcards.py`
    - Backfill scope this run: 108 entries with empty `hazard_codes` got SDS shortcard H-codes.
    - Report artifact: `.artifacts/reagent_prep_chef/hazard-sds-alignment-report.json`
 
 5. Added invariant test so hazards cannot drift behind shortcards:
+
    - `tests/unit/infrastructure/curated_apps/apps/test_reagent_prep_chef_hazards_store.py`
    - Rule asserted: if shortcard has H-codes for an `sds_ref`, hazards entry for same `key` must not be empty.
 
 6. Added blocking CI/pre-commit guard + policy doc:
+
    - Guard script: `scripts/check_reagent_prep_chef_hazard_shortcard_alignment.py`
    - Quality wiring: `pyproject.toml` (`lint`) + `.pre-commit-config.yaml`
    - Policy reference: `docs/reference/ref-reagent-prep-chef-hazard-shortcard-alignment-policy.md`

@@ -116,24 +116,24 @@ Out of scope:
 
 ## Closed Decisions
 
-| Decision | Source | Result |
-|----------|--------|--------|
-| `PR-0364` may proceed to review/implementation planning. | User approval on 2026-06-19 and approved C2 mockup. | Prior design block is resolved. |
-| Authenticated home becomes app-first. | `EPIC-37`, `ST-37-03`, approved C2 mockup. | App shelf appears before files/catalog/contribution surfaces. |
-| `Kodredigerare` is an app. | User approval notes on 2026-06-19. | Place it in the primary app shelf for contributors and above, not in a nested create/develop panel. |
-| `Mina körningar` is no longer part of the home direction. | User approval notes on 2026-06-19. | Remove run-history/run-count cards from the authenticated home surface. |
-| Latest-used/recent-used vanity rows are removed. | User approval notes on 2026-06-19. | Do not show latest-used apps or recent-used rows on the home surface. |
-| App cards are whole-card click targets. | Approved C2 mockup. | Do not add separate `Öppna` links inside app cards. |
-| Nested card layouts are forbidden. | User approval notes on 2026-06-19 and UI doctrine. | Secondary affordances use flat ledgers or equivalent un-nested layouts. |
-| Exam and transcript links use the query-mode compatibility route. | `PR-0363`. | Use exact `mode=exam` and `mode=transcript` route targets. |
-| Protected browser proof must use Docker-backed HuleEdu Gateway lane. | `AGENTS.md`, repo testing refs, `PR-0363` runtime breadcrumb. | Use Docker `skriptoteket_web`; do not use host Uvicorn for proof. |
+| Decision                                                             | Source                                                        | Result                                                                                              |
+| -------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `PR-0364` may proceed to review/implementation planning.             | User approval on 2026-06-19 and approved C2 mockup.           | Prior design block is resolved.                                                                     |
+| Authenticated home becomes app-first.                                | `EPIC-37`, `ST-37-03`, approved C2 mockup.                    | App shelf appears before files/catalog/contribution surfaces.                                       |
+| `Kodredigerare` is an app.                                           | User approval notes on 2026-06-19.                            | Place it in the primary app shelf for contributors and above, not in a nested create/develop panel. |
+| `Mina körningar` is no longer part of the home direction.            | User approval notes on 2026-06-19.                            | Remove run-history/run-count cards from the authenticated home surface.                             |
+| Latest-used/recent-used vanity rows are removed.                     | User approval notes on 2026-06-19.                            | Do not show latest-used apps or recent-used rows on the home surface.                               |
+| App cards are whole-card click targets.                              | Approved C2 mockup.                                           | Do not add separate `Öppna` links inside app cards.                                                 |
+| Nested card layouts are forbidden.                                   | User approval notes on 2026-06-19 and UI doctrine.            | Secondary affordances use flat ledgers or equivalent un-nested layouts.                             |
+| Exam and transcript links use the query-mode compatibility route.    | `PR-0363`.                                                    | Use exact `mode=exam` and `mode=transcript` route targets.                                          |
+| Protected browser proof must use Docker-backed HuleEdu Gateway lane. | `AGENTS.md`, repo testing refs, `PR-0363` runtime breadcrumb. | Use Docker `skriptoteket_web`; do not use host Uvicorn for proof.                                   |
 
 ## Remaining Implementation Decision
 
-| Decision | Options | Recommendation |
-|----------|---------|----------------|
+| Decision                    | Options                                                                                                                                                                                             | Recommendation                                                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Dokumentkonvertering target | A: use a reviewed truthful route if it exists by implementation time. B: stop and create/attach a route-visible document-lane slice. C: point to the current `documents.conversion_hub` or catalog. | Choose A only if the route exists and is truthful; otherwise choose B. Reject C because it breaks the approved product direction. |
-| Persistent navigation scope | A: implement only home content in `PR-0364`, keeping sidebar changes for `PR-0365`. B: widen `PR-0364` to include sidebar realignment. | Choose A unless the user explicitly merges the scopes. The C2 mockup remains the shared target for both slices. |
+| Persistent navigation scope | A: implement only home content in `PR-0364`, keeping sidebar changes for `PR-0365`. B: widen `PR-0364` to include sidebar realignment.                                                              | Choose A unless the user explicitly merges the scopes. The C2 mockup remains the shared target for both slices.                   |
 
 ## Implementation Plan
 
@@ -317,11 +317,11 @@ Browser proof:
   - `pdm run fe-build`
   - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-home-labels-final.json`
   - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final`
-  Retained artifact:
-  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final/20260619T172451Z/manifest.redacted.json`.
-  The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
-  lanes; both were restarted with the documented Gateway-proxy setup before the
-  retained proof passed.
+    Retained artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-home-labels-final/20260619T172451Z/manifest.redacted.json`.
+    The first local proof attempt found exited HuleEdu and Skriptoteket Vite dev
+    lanes; both were restarted with the documented Gateway-proxy setup before the
+    retained proof passed.
 - Post-deploy sidebar/help correction proof passed with:
   - `pdm run fe-test -- --run src/views/HomeView.spec.ts src/composables/home/useHomeDashboard.spec.ts src/components/layout/AuthSidebar.spec.ts src/components/help/HelpPanel.spec.ts`
   - `pdm run fe-type-check`
@@ -329,8 +329,8 @@ Browser proof:
   - `pdm run fe-build`
   - `pdm run auth-edge-bootstrap-preflight --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json --output-json .artifacts/skriptoteket-auth-bootstrap/preflight-pr-0364-no-my-runs-nav.json`
   - `pdm run python -m scripts.playwright_pr_0364_authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav`
-  Retained artifact:
-  `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav/20260619T174051Z/manifest.redacted.json`.
+    Retained artifact:
+    `.artifacts/playwright-pr-0364-authenticated-home-work-apps-surface-no-my-runs-nav/20260619T174051Z/manifest.redacted.json`.
 
 ## Stop Conditions
 

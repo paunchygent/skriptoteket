@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-research-vpn-gating-ssh-and-observability-on-hemma
 title: 'Research: VPN gating SSH and observability on hemma'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-security-perimeter-vpn-gating-ssh-and-observability
+  - REF-security-perimeter-vpn-gating-ssh-and-observability
 summary: 'Research: VPN gating SSH and observability on hemma'
 ---
 

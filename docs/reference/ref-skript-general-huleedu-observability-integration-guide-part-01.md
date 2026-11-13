@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-huleedu-observability-integration-guide-PART-01
 title: HuleEdu Observability Integration Guide — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-huleedu-observability-integration-guide
 part: 1
@@ -17,20 +17,20 @@ part: 1
 
 > **Purpose**: Enable external development teams to build services that integrate with HuleEdu's observability infrastructure.
 
----
+______________________________________________________________________
 
 ### Overview
 
 HuleEdu uses a comprehensive observability stack based on open standards:
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **Logging** | Structlog + Loki | Structured JSON logs with correlation |
-| **Tracing** | OpenTelemetry + Jaeger | Distributed trace propagation |
-| **Metrics** | Prometheus + Grafana | Service and business metrics |
-| **Alerting** | Alertmanager | Threshold-based notifications |
+| Component    | Technology             | Purpose                               |
+| ------------ | ---------------------- | ------------------------------------- |
+| **Logging**  | Structlog + Loki       | Structured JSON logs with correlation |
+| **Tracing**  | OpenTelemetry + Jaeger | Distributed trace propagation         |
+| **Metrics**  | Prometheus + Grafana   | Service and business metrics          |
+| **Alerting** | Alertmanager           | Threshold-based notifications         |
 
----
+______________________________________________________________________
 
 ### 1. Structured Logging
 
@@ -56,23 +56,23 @@ All services emit **JSON-formatted logs** with these standard fields:
 
 ### Required Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `timestamp` | ISO 8601 | Event timestamp (RFC 3339 format) |
-| `level` | string | Log level: `debug`, `info`, `warning`, `error`, `critical` |
-| `event` | string | Human-readable event description |
-| `service.name` | string | Service identifier (OTEL semantic convention) |
-| `deployment.environment` | string | Environment: `development`, `staging`, `production` |
+| Field                    | Type     | Description                                                |
+| ------------------------ | -------- | ---------------------------------------------------------- |
+| `timestamp`              | ISO 8601 | Event timestamp (RFC 3339 format)                          |
+| `level`                  | string   | Log level: `debug`, `info`, `warning`, `error`, `critical` |
+| `event`                  | string   | Human-readable event description                           |
+| `service.name`           | string   | Service identifier (OTEL semantic convention)              |
+| `deployment.environment` | string   | Environment: `development`, `staging`, `production`        |
 
 ### Recommended Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `correlation_id` | UUID string | Request correlation across services |
-| `trace_id` | 32-char hex | OpenTelemetry trace ID |
-| `span_id` | 16-char hex | OpenTelemetry span ID |
-| `event_type` | string | For event-driven: Kafka event type |
-| `source_service` | string | For event-driven: originating service |
+| Field            | Type        | Description                           |
+| ---------------- | ----------- | ------------------------------------- |
+| `correlation_id` | UUID string | Request correlation across services   |
+| `trace_id`       | 32-char hex | OpenTelemetry trace ID                |
+| `span_id`        | 16-char hex | OpenTelemetry span ID                 |
+| `event_type`     | string      | For event-driven: Kafka event type    |
+| `source_service` | string      | For event-driven: originating service |
 
 ### Python Implementation Example
 
@@ -151,7 +151,7 @@ async def before_request():
 logger.info("Processing request", user_id="123")
 ```
 
----
+______________________________________________________________________
 
 ### 2. Distributed Tracing
 
@@ -244,13 +244,13 @@ def process_event(message):
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://jaeger:4317` | OTLP collector endpoint |
-| `OTEL_SERVICE_NAME` | - | Service name (auto-set if using init_tracing) |
-| `SERVICE_VERSION` | `1.0.0` | Service version for resource attributes |
+| Variable                      | Default              | Description                                   |
+| ----------------------------- | -------------------- | --------------------------------------------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://jaeger:4317` | OTLP collector endpoint                       |
+| `OTEL_SERVICE_NAME`           | -                    | Service name (auto-set if using init_tracing) |
+| `SERVICE_VERSION`             | `1.0.0`              | Service version for resource attributes       |
 
----
+______________________________________________________________________
 
 ### 3. Prometheus Metrics
 
@@ -261,6 +261,7 @@ def process_event(message):
 ```
 
 Examples:
+
 - `content_service_http_requests_total`
 - `content_service_http_request_duration_seconds`
 - `batch_orchestrator_database_query_duration_seconds`
@@ -269,10 +270,10 @@ Examples:
 
 All HTTP services expose these metrics:
 
-| Metric | Type | Labels | Description |
-|--------|------|--------|-------------|
-| `{service}_http_requests_total` | Counter | method, endpoint, status_code | Total HTTP requests |
-| `{service}_http_request_duration_seconds` | Histogram | method, endpoint | Request latency |
+| Metric                                    | Type      | Labels                        | Description         |
+| ----------------------------------------- | --------- | ----------------------------- | ------------------- |
+| `{service}_http_requests_total`           | Counter   | method, endpoint, status_code | Total HTTP requests |
+| `{service}_http_request_duration_seconds` | Histogram | method, endpoint              | Request latency     |
 
 ### Implementation Pattern
 
@@ -320,12 +321,12 @@ async def metrics_middleware(request, call_next):
 
 For database-backed services:
 
-| Metric | Type | Labels | Description |
-|--------|------|--------|-------------|
-| `{service}_database_query_duration_seconds` | Histogram | operation, table, result | Query latency |
-| `{service}_database_connections_active` | Gauge | - | Active connections |
-| `{service}_database_connections_idle` | Gauge | - | Idle connections |
-| `{service}_database_errors_total` | Counter | error_type, operation | Database errors |
+| Metric                                      | Type      | Labels                   | Description        |
+| ------------------------------------------- | --------- | ------------------------ | ------------------ |
+| `{service}_database_query_duration_seconds` | Histogram | operation, table, result | Query latency      |
+| `{service}_database_connections_active`     | Gauge     | -                        | Active connections |
+| `{service}_database_connections_idle`       | Gauge     | -                        | Idle connections   |
+| `{service}_database_errors_total`           | Counter   | error_type, operation    | Database errors    |
 
 ### Business Metrics Examples
 
@@ -347,7 +348,7 @@ batches_processed.labels(status="success", type="essay").inc()
 processing_queue_size.set(queue.size())
 ```
 
----
+______________________________________________________________________
 
 ### 4. Health Check Endpoint
 

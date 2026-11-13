@@ -4,8 +4,8 @@ id: REF-SKRIPT-RESEARCH-runner-execution-flow-frontend-to-server-and-back
 title: 'Runner Execution Flow: Frontend to Server and Back'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
@@ -16,7 +16,7 @@ summary: 'Runner Execution Flow: Frontend to Server and Back'
 
 Source: `docs/reference/reports/codemaps/runner-execution-flow.md`. Runner Execution Flow: Frontend to Server and Back.
 
-This codemap traces the complete runner execution flow from frontend user interaction through server processing, background queuing, Docker container execution, and result delivery back to the frontend. - **Submission Hook**: `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` - **Polling Mechanism**: `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` - **Result View**: `frontend/apps/skriptoteket/src/views/tools/ToolRunView.vue` - **Tool Run Endpoint**: `src/skriptoteket/web/api/v1/tools.py` - **Execution Handler**: `src/skriptoteket/application/scripting/handlers/execute_tool_version.py` - **Execution Pipeline**: `src/skriptoteket/application/scripting/handlers/e
+This codemap traces the complete runner execution flow from frontend user interaction through server processing, background queuing, Docker container execution, and result delivery back to the frontend. - **Submission Hook**: `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` - **Polling Mechanism**: `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts` - **Result View**: `frontend/apps/skriptoteket/src/views/tools/ToolRunView.vue` - **Tool Run Endpoint**: `src/skriptoteket/web/api/v1/tools.py` - **Execution Handler**: `src/skriptoteket/application/scripting/handlers/execute_tool_version.py` - **Execution Pipeline**: \`src/skriptoteket/application/scripting/handlers/e
 
 ## Evidence And Sources
 
@@ -57,7 +57,7 @@ This codemap traces the complete runner execution flow from frontend user intera
 - **Docker Runner**: `src/skriptoteket/infrastructure/runner/docker/runner.py`
 - **Container Runner**: `runner/_runner.py`
 
----
+______________________________________________________________________
 
 ### Execution Flow
 
@@ -167,34 +167,34 @@ Result Processing Chain
     └── UI updates with execution results <-- ToolRunView.vue:334
 ```
 
----
+______________________________________________________________________
 
 ### Key Locations
 
-| ID | Title | Path |
-| -- | ----- | ---- |
-| 1a | Submit tool run via API | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:182` |
-| 1b | Fetch initial run details | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:203` |
-| 1c | Start polling for updates | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:206` |
-| 1d | FastAPI endpoint handler | `src/skriptoteket/web/api/v1/tools.py:209` |
-| 1e | Delegate to application handler | `src/skriptoteket/web/api/v1/tools.py:248` |
-| 2a | Check queue configuration | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:154` |
-| 2b | Create queued run record | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:183` |
-| 2c | Enqueue background job | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:201` |
-| 2d | Direct execution pipeline | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:242` |
-| 2e | Call runner protocol | `src/skriptoteket/application/scripting/handlers/execute_tool_version_pipeline.py:178` |
-| 3a | Claim next available job | `src/skriptoteket/workers/execution_queue_worker.py:104` |
-| 3b | Process claimed job | `src/skriptoteket/workers/execution_queue_worker.py:117` |
-| 3c | Load execution context | `src/skriptoteket/workers/execution_queue_job_processor.py:77` |
-| 3d | Execute tool via runner | `src/skriptoteket/workers/execution_queue_job_processor.py:170` |
-| 3e | Finalize run results | `src/skriptoteket/workers/execution_queue_job_processor.py:274` |
-| 4a | Execute in thread pool | `src/skriptoteket/infrastructure/runner/docker/runner.py:94` |
-| 4b | Initialize Docker client | `src/skriptoteket/infrastructure/runner/docker/runner.py:437` |
-| 4c | Create Docker container | `src/skriptoteket/infrastructure/runner/docker/runner.py:467` |
-| 4d | Upload work directory | `src/skriptoteket/infrastructure/runner/docker/runner.py:495` |
-| 4e | Execute user script | `runner/_runner.py:172` |
-| 5a | Extract stdout/stderr | `src/skriptoteket/infrastructure/runner/docker/runner.py:515` |
-| 5b | Extract result JSON | `src/skriptoteket/infrastructure/runner/docker/runner.py:521` |
-| 5c | Store output artifacts | `src/skriptoteket/infrastructure/runner/docker/runner.py:637` |
-| 5d | Write result file | `runner/_runner.py:191` |
-| 5e | Poll for run results | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:120` |
+| ID  | Title                           | Path                                                                                   |
+| --- | ------------------------------- | -------------------------------------------------------------------------------------- |
+| 1a  | Submit tool run via API         | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:182`                   |
+| 1b  | Fetch initial run details       | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:203`                   |
+| 1c  | Start polling for updates       | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:206`                   |
+| 1d  | FastAPI endpoint handler        | `src/skriptoteket/web/api/v1/tools.py:209`                                             |
+| 1e  | Delegate to application handler | `src/skriptoteket/web/api/v1/tools.py:248`                                             |
+| 2a  | Check queue configuration       | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:154`          |
+| 2b  | Create queued run record        | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:183`          |
+| 2c  | Enqueue background job          | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:201`          |
+| 2d  | Direct execution pipeline       | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py:242`          |
+| 2e  | Call runner protocol            | `src/skriptoteket/application/scripting/handlers/execute_tool_version_pipeline.py:178` |
+| 3a  | Claim next available job        | `src/skriptoteket/workers/execution_queue_worker.py:104`                               |
+| 3b  | Process claimed job             | `src/skriptoteket/workers/execution_queue_worker.py:117`                               |
+| 3c  | Load execution context          | `src/skriptoteket/workers/execution_queue_job_processor.py:77`                         |
+| 3d  | Execute tool via runner         | `src/skriptoteket/workers/execution_queue_job_processor.py:170`                        |
+| 3e  | Finalize run results            | `src/skriptoteket/workers/execution_queue_job_processor.py:274`                        |
+| 4a  | Execute in thread pool          | `src/skriptoteket/infrastructure/runner/docker/runner.py:94`                           |
+| 4b  | Initialize Docker client        | `src/skriptoteket/infrastructure/runner/docker/runner.py:437`                          |
+| 4c  | Create Docker container         | `src/skriptoteket/infrastructure/runner/docker/runner.py:467`                          |
+| 4d  | Upload work directory           | `src/skriptoteket/infrastructure/runner/docker/runner.py:495`                          |
+| 4e  | Execute user script             | `runner/_runner.py:172`                                                                |
+| 5a  | Extract stdout/stderr           | `src/skriptoteket/infrastructure/runner/docker/runner.py:515`                          |
+| 5b  | Extract result JSON             | `src/skriptoteket/infrastructure/runner/docker/runner.py:521`                          |
+| 5c  | Store output artifacts          | `src/skriptoteket/infrastructure/runner/docker/runner.py:637`                          |
+| 5d  | Write result file               | `runner/_runner.py:191`                                                                |
+| 5e  | Poll for run results            | `frontend/apps/skriptoteket/src/composables/tools/useToolRun.ts:120`                   |

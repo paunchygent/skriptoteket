@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-36
 title: Klassrumskartan scoped sharing and authenticated import
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 readiness_review:
@@ -16,16 +16,13 @@ closeout_review:
   status: not_started
 links:
   decisions:
-  - ADR-SKRIPT-0079
-  - ADR-SKRIPT-0084
-outcome: Klassrumskartan share links and current-link management are scoped by roster
-  fingerprints, with seating prepared to add classroom context, while later authenticated
-  import/discovery focuses on reusable roster and classroom-template assets rather
-  than short-lived grouping or seating snapshot state.
+    - ADR-SKRIPT-0079
+    - ADR-SKRIPT-0084
+outcome: Klassrumskartan share links and current-link management are scoped by roster fingerprints, with seating prepared to add classroom context, while later authenticated import/discovery focuses on reusable roster and classroom-template assets rather than short-lived grouping or seating snapshot state.
 retired_ids:
-- EPIC-36
+  - EPIC-36
 dependencies:
-- EPIC-SKRIPT-26
+  - EPIC-SKRIPT-26
 ---
 
 ## Scope

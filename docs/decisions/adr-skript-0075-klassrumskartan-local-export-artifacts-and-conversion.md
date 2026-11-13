@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0075
 title: Klassrumskartan local export artifacts and conversion boundary
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0075
+  - ADR-0075
 ---
 
 ## Context
-
 
 Klassrumskartan now has three distinct export families:
 
@@ -50,7 +49,6 @@ teacher export path.
 
 ## Decision
 
-
 - Klassrumskartan app-owned export artifacts are rendered and finalized locally
   inside Skriptoteket.
 - This rule applies to:
@@ -73,7 +71,6 @@ No separate non-decisions is stated in the source.
 
 ## Consequences
 
-
 - Seating PDF should migrate to the same local render/finalize model already
   used by grouping PDF.
 - The seating-specific Sir Convert webhook/subscription path becomes removable
@@ -86,12 +83,11 @@ No separate non-decisions is stated in the source.
 
 ### Source: Migration direction
 
-
 1. Record this boundary first in docs and backlog.
-1. Migrate seating PDF export to a local renderer/finalizer path with no
+2. Migrate seating PDF export to a local renderer/finalizer path with no
    backwards-compatibility shims.
-1. Remove the seating-specific Sir Convert webhook/subscription/reconciliation
+3. Remove the seating-specific Sir Convert webhook/subscription/reconciliation
    path after the local cutover.
-1. Keep Sir Convert integration only where Skriptoteket is acting as a client of
+4. Keep Sir Convert integration only where Skriptoteket is acting as a client of
    an external conversion service rather than as the owner of the export
    renderer.

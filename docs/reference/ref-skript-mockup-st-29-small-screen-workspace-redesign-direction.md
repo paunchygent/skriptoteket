@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-29-small-screen-workspace-redesign-direction
 title: ST-29 small-screen workspace redesign direction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

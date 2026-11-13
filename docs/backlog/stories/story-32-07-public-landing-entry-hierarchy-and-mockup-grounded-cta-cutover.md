@@ -7,8 +7,7 @@ owners: "agents"
 created: 2026-04-07
 updated: 2026-04-08
 epic: "EPIC-32"
-dependencies:
-  ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06"]
+dependencies: ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06"]
 acceptance_criteria:
   - "Given an unauthenticated visitor opens `/`, when the landing page renders, then the header and hero expose one obvious public entry into Klassrumskartan at `/public/apps/classroom.group-seating-studio` without forcing login first."
   - "Given this story contains layout-heavy landing-page changes, when any implementation slice starts, then the assigned developer has first reviewed `.codex/rules/045-huleedu-design-system.md`, the `integrated-frontend-stack` skill, and the `brutalist-academic-ui` skill, and has iterated on a story-scoped mockup under `docs/mockups/` before production Vue code changes."

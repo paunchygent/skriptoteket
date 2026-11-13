@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-14
-title: Exam header lines become document metadata and question headings stay with
-  their questions
+title: Exam header lines become document metadata and question headings stay with their questions
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: done
 closeout_review:
@@ -17,11 +16,7 @@ closeout_review:
   approval_evidence: 'User asked on 2026-10-17 to repair the five main test failures and then close the task ("Reopen TASK-SKRIPT-39-05-14 (and keep ST-SKRIPT-39-05 open), repair the five failing tests through a Sol pair and reviewer, then close both"). Repair units R1, R1F and R1G passed independent Sol review; second rereview approved with no open findings (evidence/rereview2-R1.md, D15 user decision recorded in b421b5f2). Merged to main d92b828e; domain tests pass (evidence/merged-main-d92b828e-domain.log). Staging walk at d92b828e converted Svenska 2 kursavslutande to 24 items, 0 review items, judge 24/24 gold, and Exam.net import 5344901 shows three parts, 36p and no header text (Skriptoteket session 01a144e3-b8c4-7ea5-bee6-6dfc5e242786 evidence/staging-walk-39-05-14c/walk-report.md).'
 task_kind: story
 acceptance_criteria:
-- A converted DOCX exam shows no header line (course line, exam total, part totals)
-  as exam text in the editor, PDF, DOCX or Exam.net items; a printed total that differs
-  from the item points raises a non-blocking signal; a heading carrying a question
-  number or points opens its question or parent; and Svenska 2 kursavslutande imports
-  into Exam.net with no repeated header text
+  - A converted DOCX exam shows no header line (course line, exam total, part totals) as exam text in the editor, PDF, DOCX or Exam.net items; a printed total that differs from the item points raises a non-blocking signal; a heading carrying a question number or points opens its question or parent; and Svenska 2 kursavslutande imports into Exam.net with no repeated header text
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -136,16 +131,16 @@ exam and the task adds no model call.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Printed exam and part totals are compared with item points and are not stored as exam text; the course line is kept as document metadata for ST-SKRIPT-39-08; QTI carries the title plus the course in manifest metadata and repeats nothing header-derived in items (user 2026-10-16). |
-| D2  | Code assigns a numbered or pointed heading to the question it opens, or to the parent when it heads several questions; header anchors replace the reader-less `other_anchors` bucket (user 2026-10-16). |
-| D3  | Validation is focused tests, a grouping-only re-record replayed offline, and one staging walk with an Exam.net import; no full corpus rerun (user 2026-10-16). |
-| D6  | The document format changes in place under a new schema version with no reader, migration or compatibility path, because Skriptoteket is not a live app with users (user 2026-10-16). |
-| D8  | A totals mismatch is a non-blocking signal; export stays allowed (user 2026-10-16). |
-| D9  | This task is the conversion fix; the course dropdown, course list and metadata panel are the first task of ST-SKRIPT-39-08 (user 2026-10-16). |
-| D11 | PDF and DOCX print a generated header with the title, the raw course hint and "Totalt: N poäng" computed from item points; the editor gets no course control in this task (user 2026-10-16). |
-| D12 | A line whose whole content is metadata is a header anchor at its own scope (exam, part or one question); a question's own points line is a question-level header anchor and never item text (user 2026-10-16). |
-| D13 | A question's printed points, in its heading or on its own points line, set that question's points; criteria and split items are redistributed through native scoring; the build's points apply only when nothing is printed, replacing the heading-conflict review (user 2026-10-16). |
-| D14 | The question-level repair is validated by focused tests, a fresh grouping-only corpus re-record, and a staging re-walk of Svenska 2 kursavslutande with the Exam.net import (user 2026-10-16). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Printed exam and part totals are compared with item points and are not stored as exam text; the course line is kept as document metadata for ST-SKRIPT-39-08; QTI carries the title plus the course in manifest metadata and repeats nothing header-derived in items (user 2026-10-16).      |
+| D2  | Code assigns a numbered or pointed heading to the question it opens, or to the parent when it heads several questions; header anchors replace the reader-less `other_anchors` bucket (user 2026-10-16).                                                                                      |
+| D3  | Validation is focused tests, a grouping-only re-record replayed offline, and one staging walk with an Exam.net import; no full corpus rerun (user 2026-10-16).                                                                                                                               |
+| D6  | The document format changes in place under a new schema version with no reader, migration or compatibility path, because Skriptoteket is not a live app with users (user 2026-10-16).                                                                                                        |
+| D8  | A totals mismatch is a non-blocking signal; export stays allowed (user 2026-10-16).                                                                                                                                                                                                          |
+| D9  | This task is the conversion fix; the course dropdown, course list and metadata panel are the first task of ST-SKRIPT-39-08 (user 2026-10-16).                                                                                                                                                |
+| D11 | PDF and DOCX print a generated header with the title, the raw course hint and "Totalt: N poäng" computed from item points; the editor gets no course control in this task (user 2026-10-16).                                                                                                 |
+| D12 | A line whose whole content is metadata is a header anchor at its own scope (exam, part or one question); a question's own points line is a question-level header anchor and never item text (user 2026-10-16).                                                                               |
+| D13 | A question's printed points, in its heading or on its own points line, set that question's points; criteria and split items are redistributed through native scoring; the build's points apply only when nothing is printed, replacing the heading-conflict review (user 2026-10-16).        |
+| D14 | The question-level repair is validated by focused tests, a fresh grouping-only corpus re-record, and a staging re-walk of Svenska 2 kursavslutande with the Exam.net import (user 2026-10-16).                                                                                               |
 | D15 | When any part of a split question cannot represent its share of the printed points, the whole question becomes one blocking source-review item holding the full source, the printed total and a reason naming the printed value; no part keeps a converted or build score (user 2026-10-17). |

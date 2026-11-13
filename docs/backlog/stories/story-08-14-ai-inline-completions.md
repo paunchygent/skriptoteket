@@ -82,7 +82,7 @@ class InlineCompletionProviderProtocol(Protocol):
 - `StateField` for ghost text state (text, position, decorations)
 - `GhostTextWidget` renders semi-transparent text
 - Debounced auto-trigger (1500ms default)
-- Keymap: Tab (accept), Escape (dismiss), Alt+\ (manual trigger)
+- Keymap: Tab (accept), Escape (dismiss), Alt+\\ (manual trigger)
 
 #### Integration
 

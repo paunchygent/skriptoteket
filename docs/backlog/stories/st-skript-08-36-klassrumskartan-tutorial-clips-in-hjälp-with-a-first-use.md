@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-36
 title: Klassrumskartan tutorial clips in Hjälp with a first-use dialog
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: ready
 closeout_review:
@@ -13,13 +13,9 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- The first visit to each planner section at desktop width opens a centered dialog
-  with the section's first clip poster and a play button, and dismissing it records
-  the section as seen for that guest browser or signed-in user.
-- Every planner Hjälp section lists its clips as thumbnails that open the same dialog,
-  on every width.
-- Clips are served from a mounted media volume under the existing static path with
-  range support, and a missing clip degrades to the written help without an error.
+  - The first visit to each planner section at desktop width opens a centered dialog with the section's first clip poster and a play button, and dismissing it records the section as seen for that guest browser or signed-in user.
+  - Every planner Hjälp section lists its clips as thumbnails that open the same dialog, on every width.
+  - Clips are served from a mounted media volume under the existing static path with range support, and a missing clip degrades to the written help without an error.
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -63,21 +59,21 @@ Klassrumskartan teachers and guest demo users meet one narrated Swedish tutorial
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D01 | Narrated clips embedded in Hjälp, one set per planner section, opening automatically on first use. |
-| D02 | Swedish only, du-form, no first person, dry yet warm and concrete. |
-| D03 | Scope: klass, klassrum, sittschema, grupper, regler, dela, fast plats. |
-| D04 | First use opens once per section at desktop width as a centered dialog with poster and play; no autoplaying sound; dismissing marks the section seen. |
-| D05 | Hjälp planner sections list their clips as thumbnails that open the same dialog, on every width. |
-| D06 | Guests and signed-in users both; guest seen-state in the browser, signed-in seen-state per user. |
-| D07 | No pop-up under 1024 px; thumbnails still play; seen-state unaffected. |
-| D08 | Clips hosted on a Hemma media directory served under the existing static path; HuleFilm publishes there. |
-| D09 | The production mount and publish step need separate authority; the skeleton runs on Hemma dev. |
-| D10 | The first task is the walking skeleton. |
-| D11 | Seven clips mapped to the four sections; the pop-up plays the section's first clip and lists the rest. |
-| D12 | This story owns the Skriptoteket surface; HuleFilm EPIC-VIDEO-12 owns the clips; they meet at the manifest contract. |
-| D13 | An approved clip talmanus replaces the guide's TALMANUS block for that clip. |
-| D14 | Infrastructure is built on draft scripts; talmanus approval comes last; a missing clip degrades to the written help. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D01 | Narrated clips embedded in Hjälp, one set per planner section, opening automatically on first use.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| D02 | Swedish only, du-form, no first person, dry yet warm and concrete.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| D03 | Scope: klass, klassrum, sittschema, grupper, regler, dela, fast plats.                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| D04 | First use opens once per section at desktop width as a centered dialog with poster and play; no autoplaying sound; dismissing marks the section seen.                                                                                                                                                                                                                                                                                                                                                 |
+| D05 | Hjälp planner sections list their clips as thumbnails that open the same dialog, on every width.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| D06 | Guests and signed-in users both; guest seen-state in the browser, signed-in seen-state per user.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| D07 | No pop-up under 1024 px; thumbnails still play; seen-state unaffected.                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| D08 | Clips hosted on a Hemma media directory served under the existing static path; HuleFilm publishes there.                                                                                                                                                                                                                                                                                                                                                                                              |
+| D09 | The production mount and publish step need separate authority; the skeleton runs on Hemma dev.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| D10 | The first task is the walking skeleton.                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| D11 | Seven clips mapped to the four sections; the pop-up plays the section's first clip and lists the rest.                                                                                                                                                                                                                                                                                                                                                                                                |
+| D12 | This story owns the Skriptoteket surface; HuleFilm EPIC-VIDEO-12 owns the clips; they meet at the manifest contract.                                                                                                                                                                                                                                                                                                                                                                                  |
+| D13 | An approved clip talmanus replaces the guide's TALMANUS block for that clip.                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| D14 | Infrastructure is built on draft scripts; talmanus approval comes last; a missing clip degrades to the written help.                                                                                                                                                                                                                                                                                                                                                                                  |
 | D15 | Clip manifest at `/static/media/klassrumskartan/clips.json`: `schema_version` 1, `app` `classroom.group-seating-studio`, and `clips[]` with `id`, `section` (exactly `planner_overview`, `planner_seating`, `planner_grouping` or `planner_rules`), `order`, `title`, `duration_seconds`, `video` and `poster` as paths relative to the manifest. A missing manifest means no pop-up and no thumbnails; a missing video shows the poster with a Swedish load-error line while the written help stays. |
-| D16 | Media directory on Hemma at `/home/paunchygent/apps/skriptoteket-media/<dev|prod>/`, bind-mounted read-only at `/var/lib/skriptoteket/media` in the web container by `compose.hemma-dev.yaml` and `compose.prod.yaml`, served by the existing static mount at `/static/media`. The production compose change is inert until `hemma-deploy`, which needs its own authority. |
+| D16 | Media directory on Hemma at \`/home/paunchygent/apps/skriptoteket-media/\<dev                                                                                                                                                                                                                                                                                                                                                                                                                         |

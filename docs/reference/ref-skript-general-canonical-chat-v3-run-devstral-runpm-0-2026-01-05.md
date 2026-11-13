@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-canonical-chat-v3-run-devstral-runpm-0-2026-01-05
 title: Canonical chat v3 run (Devstral, runpm=0) - 2026-01-05
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-canonical-chat-v3-run-2026-01-05
+  - REF-hemma-canonical-chat-v3-run-2026-01-05
 summary: Canonical chat v3 run (Devstral, runpm=0) - 2026-01-05
 ---
 
@@ -18,7 +18,7 @@ summary: Canonical chat v3 run (Devstral, runpm=0) - 2026-01-05
 
 Source: `docs/reference/reports/ref-hemma-canonical-chat-v3-run-2026-01-05.md`. Canonical chat v3 run (Devstral, runpm=0) - 2026-01-05.
 
-Controlled inference run using the canonical chat v3 prompts after enabling `amdgpu.runpm=0`. Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). The `llama-server-vulkan` references in this report reflect the historical runtime during Jan 2026 debugging. - Timestamp (artifact id): **2026-01-05T01:19:23Z** - Model: **Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf** (current model only; no Qwen3) - Endpoint: `http://127.0.0.1:8082/v1/chat/completions` (llama-server-vulkan) - Prompts: canonical v3 (review + diff) Artifacts: - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-20260105T011923Z/` - Requests: `review.
+Controlled inference run using the canonical chat v3 prompts after enabling `amdgpu.runpm=0`. Hemma now runs llama.cpp via Docker using `llama-server-rocm.service` (container `llama-server-rocm`). The `llama-server-vulkan` references in this report reflect the historical runtime during Jan 2026 debugging. - Timestamp (artifact id): **2026-01-05T01:19:23Z** - Model: **Devstral-Small-2-24B-Instruct-2512-Q8_0.gguf** (current model only; no Qwen3) - Endpoint: `http://127.0.0.1:8082/v1/chat/completions` (llama-server-vulkan) - Prompts: canonical v3 (review + diff) Artifacts: - `docs/reference/reports/artifacts/llama-canonical-chat-v3/llama-canonical-chat-v3-20260105T011923Z/` - Requests: \`review.
 
 ## Facts And Semantics
 

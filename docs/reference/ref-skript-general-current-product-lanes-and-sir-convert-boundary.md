@@ -4,48 +4,57 @@ id: REF-SKRIPT-GENERAL-current-product-lanes-and-sir-convert-boundary
 title: Current product lanes and Sir Convert boundary
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-current-product-lanes-and-sir-convert-boundary-v1
+  - REF-current-product-lanes-and-sir-convert-boundary-v1
 summary: Current product lanes and Sir Convert boundary
 ---
 
 ## Overview
+
 The source record did not define a separate section for this package heading.
 
 ## Facts And Semantics
+
 ### Current Teacher-Facing Lanes
-| Lane | Teacher job | Current code reality | Next planning owner |
-|------|-------------|----------------------|---------------------|
-| Klassrumskartan | Plan classrooms, groups, seating, rules, exports, and sharing. | Bespoke curated app `classroom.group-seating-studio`. | `EPIC-26`, `EPIC-27`, `EPIC-29`, `EPIC-36`, and `ST-37-03` shell work. |
-| Audio Transcription | Convert speech or media to saved transcript, review speakers, and export transcript formats. | Authenticated transcript workflow currently lives under `documents.conversion_hub` technical surfaces. | `EPIC-21` transcript stories and later app-presentation decomposition. |
-| Exam Converter | Create exams, import exams, edit structure, items, points, answer keys, and metadata, review/correct answer-key state, export files, and grow toward source-neutral QTI/share workflows. | Public and authenticated Exam Converter currently live under `documents.conversion_hub` technical surfaces. | `ST-21-10`, `PR-0357`, `ST-21-04`, and later exam-state/editor slices. |
-| Document Converter | Convert and prepare presentation/document formats such as PDF, DOCX, HTML/CSS, Markdown, and template-shaped outputs. | Approved as a visible shell lane. `PR-0379` adds a route-inactive scoped backend foundation, and `PR-0380` corrects follow-up planning toward app-boundary simple conversion, batch input, and HTML/CSS preview before route-visible UI. | `ST-37-04`, `PR-0381`, and a reviewed route-visible slice after mockup/copy approval. |
+
+| Lane                | Teacher job                                                                                                                                                                              | Current code reality                                                                                                                                                                                                                     | Next planning owner                                                                   |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Klassrumskartan     | Plan classrooms, groups, seating, rules, exports, and sharing.                                                                                                                           | Bespoke curated app `classroom.group-seating-studio`.                                                                                                                                                                                    | `EPIC-26`, `EPIC-27`, `EPIC-29`, `EPIC-36`, and `ST-37-03` shell work.                |
+| Audio Transcription | Convert speech or media to saved transcript, review speakers, and export transcript formats.                                                                                             | Authenticated transcript workflow currently lives under `documents.conversion_hub` technical surfaces.                                                                                                                                   | `EPIC-21` transcript stories and later app-presentation decomposition.                |
+| Exam Converter      | Create exams, import exams, edit structure, items, points, answer keys, and metadata, review/correct answer-key state, export files, and grow toward source-neutral QTI/share workflows. | Public and authenticated Exam Converter currently live under `documents.conversion_hub` technical surfaces.                                                                                                                              | `ST-21-10`, `PR-0357`, `ST-21-04`, and later exam-state/editor slices.                |
+| Document Converter  | Convert and prepare presentation/document formats such as PDF, DOCX, HTML/CSS, Markdown, and template-shaped outputs.                                                                    | Approved as a visible shell lane. `PR-0379` adds a route-inactive scoped backend foundation, and `PR-0380` corrects follow-up planning toward app-boundary simple conversion, batch input, and HTML/CSS preview before route-visible UI. | `ST-37-04`, `PR-0381`, and a reviewed route-visible slice after mockup/copy approval. |
 
 `documents.conversion_hub` remains a technical compatibility shell until later
 work decomposes app presentation. New product planning should not use the broad
 "Conversion Hub" name as the teacher-facing concept unless it explicitly means
 historical or technical compatibility.
+
 ### Boundary Matrix
-| Workflow question | Owner | Notes |
-|-------------------|-------|-------|
-| Does the user need a source file parsed, OCRed, enriched, diarized, or converted into a producer representation? | Sir Convert | Skriptoteket coordinates and persists product-side references. |
-| Does the user need to edit, share, assemble, or review already-converted app state? | Skriptoteket | Sir Convert may later replay/export from the current state, but does not own teacher state. |
-| Does the output need producer-owned evidence, source binding, artifact readiness, or conversion manifest proof? | Sir Convert | Keep hashes/signatures/artifact references producer-owned. |
-| Does the action only change labels, teacher decisions, selected file actions, or product presentation? | Skriptoteket | Avoid unnecessary replay/fingerprint coupling. |
-| Is the operation a public anonymous upload or compute path? | Sir Convert plus Skriptoteket public boundary | Must stay scoped, abuse-controlled, TTL-bound, and direct-download only unless a later accepted contract expands it. |
+
+| Workflow question                                                                                                | Owner                                         | Notes                                                                                                                |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Does the user need a source file parsed, OCRed, enriched, diarized, or converted into a producer representation? | Sir Convert                                   | Skriptoteket coordinates and persists product-side references.                                                       |
+| Does the user need to edit, share, assemble, or review already-converted app state?                              | Skriptoteket                                  | Sir Convert may later replay/export from the current state, but does not own teacher state.                          |
+| Does the output need producer-owned evidence, source binding, artifact readiness, or conversion manifest proof?  | Sir Convert                                   | Keep hashes/signatures/artifact references producer-owned.                                                           |
+| Does the action only change labels, teacher decisions, selected file actions, or product presentation?           | Skriptoteket                                  | Avoid unnecessary replay/fingerprint coupling.                                                                       |
+| Is the operation a public anonymous upload or compute path?                                                      | Sir Convert plus Skriptoteket public boundary | Must stay scoped, abuse-controlled, TTL-bound, and direct-download only unless a later accepted contract expands it. |
+
 ### Source record
+
 This reference is the durable doctrine for `ST-37-02` / `PR-0360`. It turns the
 post-inventory product direction into a stable planning boundary for later UI,
 app-presentation, conversion, exam, and transcript work.
 
 It does not rename routes, app ids, API modules, or production copy by itself.
 Those implementation choices belong to later reviewed slices.
+
 ### Sir Convert Owns Heavy Conversion
+
 Sir Convert-a-Lot remains the producer/runtime authority when the workflow
 depends on heavy conversion, model, or artifact evidence that Skriptoteket
 should not own inside the app boundary:
@@ -65,7 +74,9 @@ should not own inside the app boundary:
 Skriptoteket may call Sir Convert through the accepted HuleEdu Gateway or local
 producer boundary, but should not expose Sir Convert service credentials,
 workdirs, raw upstream ownership, or browser-direct authority.
+
 ### Skriptoteket Owns Native Product State
+
 Skriptoteket owns teacher-facing product state after heavy conversion has
 produced an accepted source representation:
 
@@ -86,7 +97,9 @@ Native app state must not be routed through Sir Convert replay, hash-table,
 fingerprint, or artifact-overlay workflows merely because those workflows
 existed for heavy conversion. Use Sir Convert only when the product needs fresh
 producer evidence or generated artifacts.
+
 ### Lane-Specific Doctrine
+
 ### Klassrumskartan
 
 Klassrumskartan is already a bespoke native app lane. Its classroom, roster,
@@ -146,7 +159,9 @@ app registry titles, descriptions, or route surfaces. `PR-0381` is the next
 actionable backend/product-contract slice and must research local converter
 libraries before code. `PR-0364` may use the approved C2 mockup as home design
 direction, but must stop rather than fake a Document Converter route.
+
 ### Script, Editor, And Runner Preservation
+
 The script editor, runner contracts, file references, Vault, and governance
 tools remain valuable platform capabilities. `Kodredigerare` is a first-class
 app surface in the approved authenticated shell, while `Mina körningar` is no
@@ -155,7 +170,9 @@ longer part of the home-surface proposition.
 Future shell and app-presentation work should present editor capability as an
 aligned authoring/power-user app while centering the teacher-facing productivity
 lanes and files/materials flow above retired run-history chrome.
+
 ### Implementation Guidance
+
 - Use this reference before `PR-0357`, `PR-0361`, `PR-0362`, and later
   Document Converter or exam-state/editor work.
 - Do not rename app ids or routes in this reference. Use later implementation
@@ -167,4 +184,5 @@ lanes and files/materials flow above retired run-history chrome.
   approve the proposed epic.
 
 ## Decisions And Interpretation
+
 The source record did not define a separate section for this package heading.

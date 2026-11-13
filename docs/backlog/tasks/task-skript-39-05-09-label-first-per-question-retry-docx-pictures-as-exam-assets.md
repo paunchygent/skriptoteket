@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-09
-title: Label-first per-question retry, DOCX pictures as exam assets, field-label gaps
-  and the marking-guide rubric
+title: Label-first per-question retry, DOCX pictures as exam assets, field-label gaps and the marking-guide rubric
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-14'
 status: done
 closeout_review:
@@ -18,9 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer approved the repair 659973e5 after review of 0beba709 and rereview of c20ce483; merged eafb1487. D44 live replay on low-27 Fråga 6 kept all six given phrases as text. Staging walk at eafb1487: pictures in editor and review items, label-first retry reconverted only the chosen question, QTI export with 4 inline pictures, Exam.net import exam 5331367 kept every picture with SUN inline. Records in Skriptoteket session 01a13798-9df1-75fa-a4c5-bd755b4bfd85 evidence/review/TASK-SKRIPT-39-05-09/ and evidence/walk/TASK-SKRIPT-39-05-09/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
-- A teacher keeps or changes a question's type and reconverts only that question;
-  DOCX pictures show in review and converted items and reach the QTI export; low-27
-  field-label phrases stay text
+  - A teacher keeps or changes a question's type and reconverts only that question; DOCX pictures show in review and converted items and reach the QTI export; low-27 field-label phrases stay text
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -87,10 +84,10 @@ touched.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Label-first retry: the review shows the labeler's type first; the teacher keeps or changes it and reconverts only that question with that type; the reply replaces the item (user decision 2026-10-14). |
-| D2  | DOCX pictures become exam assets at their place in the question: review and converted items carry them, the editor shows them as images, the QTI export carries them (user decision 2026-10-14). |
+| ID  | Decided contract term                                                                                                                                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Label-first retry: the review shows the labeler's type first; the teacher keeps or changes it and reconverts only that question with that type; the reply replaces the item (user decision 2026-10-14).                      |
+| D2  | DOCX pictures become exam assets at their place in the question: review and converted items carry them, the editor shows them as images, the QTI export carries them (user decision 2026-10-14).                             |
 | D3  | D44 is fixed by one structural prompt sentence (a phrase after a field label is given material unless the instruction asks for it), proven by a live replay of the low-27 question; no new check (user decision 2026-10-14). |
-| D4  | The marking guide stays out of the QTI export: the 2026-10-14 probe showed Exam.net puts a QTI rubric block into the student-visible information block (exam 5326289). |
-| D5  | One task, one branch, in the shared TASK-SKRIPT-39-05-06 worktree (user decision 2026-10-14). |
+| D4  | The marking guide stays out of the QTI export: the 2026-10-14 probe showed Exam.net puts a QTI rubric block into the student-visible information block (exam 5326289).                                                       |
+| D5  | One task, one branch, in the shared TASK-SKRIPT-39-05-06 worktree (user decision 2026-10-14).                                                                                                                                |

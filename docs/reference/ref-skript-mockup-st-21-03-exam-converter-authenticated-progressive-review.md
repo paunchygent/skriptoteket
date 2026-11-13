@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-21-03-exam-converter-authenticated-progressive-review
 title: ST-21-03 Exam Converter authenticated progressive review
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

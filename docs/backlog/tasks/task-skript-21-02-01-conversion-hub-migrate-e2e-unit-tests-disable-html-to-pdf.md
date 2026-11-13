@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-21-02-01
-title: 'Conversion Hub: migrate E2E/unit tests + disable html-to-pdf-preview seeding
-  in prod'
+title: 'Conversion Hub: migrate E2E/unit tests + disable html-to-pdf-preview seeding in prod'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,16 +17,12 @@ closeout_review:
 story: ST-SKRIPT-21-02
 task_kind: story
 acceptance_criteria:
-- Playwright E2Es that currently use `/tools/html-to-pdf-preview/run` are migrated
-  to the Conversion Hub curated app while preserving the intent (session file persistence
-  + vault save flows).
-- '`html-to-pdf-preview` is no longer seeded/published for the production seed profile.'
-- Unit tests that directly import `html_to_pdf_preview.py` are removed or migrated
-  to validate v2-driven conversion behavior, keeping coverage high.
+  - Playwright E2Es that currently use `/tools/html-to-pdf-preview/run` are migrated to the Conversion Hub curated app while preserving the intent (session file persistence + vault save flows).
+  - '`html-to-pdf-preview` is no longer seeded/published for the production seed profile.'
+  - Unit tests that directly import `html_to_pdf_preview.py` are removed or migrated to validate v2-driven conversion behavior, keeping coverage high.
 ---
 
 ## Context
-
 
 Today, production and tests depend on the legacy tool `html-to-pdf-preview` registered in the script bank
 (`src/skriptoteket/script_bank/bank.py`). After we ship the curated Conversion Hub, this becomes legacy slop and a
@@ -39,7 +34,6 @@ security/maintenance liability.
 
 ## Story Contract Slice
 
-
 - Update tests to use the curated Conversion Hub surface.
 - Disable production seeding of `html-to-pdf-preview` (clean break; we update our callers).
 
@@ -48,7 +42,6 @@ security/maintenance liability.
 No separate contract inputs is stated in the source.
 
 ## Plan
-
 
 - [ ] Disable prod seeding:
   - change `seed_group` of the `html-to-pdf-preview` ScriptBankEntry from `CURATED` to `TEST` in
@@ -72,7 +65,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - `pdm run test`
 - `pdm run ui-smoke` (or run the specific Playwright scripts above)
 
@@ -81,7 +73,6 @@ No separate implementation steps is stated in the source.
 No separate validation is stated in the source.
 
 ## Stop Conditions
-
 
 - Revert the seed-group change and restore old tests if the curated app is not ready for production yet.
 
@@ -94,7 +85,6 @@ No separate lessons learned is stated in the source.
 No separate notes is stated in the source.
 
 ### Source: Non-goals
-
 
 - No changes to Sir Convert-a-Lot itself (this repo consumes v2).
 

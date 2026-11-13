@@ -4,8 +4,8 @@ id: TASK-SKRIPT-11-25-02
 title: 'ST-SKRIPT-11-25: LHCI and bundle-visualizer toolchain wiring'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,21 +17,11 @@ closeout_review:
 story: ST-SKRIPT-11-25
 task_kind: story
 acceptance_criteria:
-- Given Skriptoteket needs a standard lab-audit lane, when this slice ships, then
-  `@lhci/cli` is wired as the canonical LHCI runner and `rollup-plugin-visualizer`
-  is wired as the canonical bundle-ownership reporter.
-- Given the repo should avoid handrolled measurement code, when this slice ships,
-  then the frontend app exposes narrow app-local scripts and the repo exposes narrow
-  `pdm` wrappers instead of a custom performance framework.
-- Given the LHCI lane must be executable from a clean local checkout, when this slice
-  ships, then `lighthouserc.json` explicitly defines the collect URL, server bootstrap
-  command, ready pattern, run count, and filesystem output path.
-- Given this slice is toolchain-only, when it ships, then it proves `fe-perf-bundle`
-  and `fe-perf-lhci` work for the public route baseline without also introducing authenticated
-  route-inventory logic.
-- Given field telemetry is not part of this first wiring pass, when dependency guidance
-  is documented, then `web-vitals` remains optional follow-on work and is not added
-  in this slice.
+  - Given Skriptoteket needs a standard lab-audit lane, when this slice ships, then `@lhci/cli` is wired as the canonical LHCI runner and `rollup-plugin-visualizer` is wired as the canonical bundle-ownership reporter.
+  - Given the repo should avoid handrolled measurement code, when this slice ships, then the frontend app exposes narrow app-local scripts and the repo exposes narrow `pdm` wrappers instead of a custom performance framework.
+  - Given the LHCI lane must be executable from a clean local checkout, when this slice ships, then `lighthouserc.json` explicitly defines the collect URL, server bootstrap command, ready pattern, run count, and filesystem output path.
+  - Given this slice is toolchain-only, when it ships, then it proves `fe-perf-bundle` and `fe-perf-lhci` work for the public route baseline without also introducing authenticated route-inventory logic.
+  - Given field telemetry is not part of this first wiring pass, when dependency guidance is documented, then `web-vitals` remains optional follow-on work and is not added in this slice.
 ---
 
 ## Context
@@ -151,8 +141,6 @@ This slice should document clearly that LHCI owns its own serving step; the oper
 to guess whether a separate backend process must already be running.
 
 ### Source: Concrete command surface
-
-
 
 ### Source: `frontend/apps/skriptoteket/package.json`
 

@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-shared-tool-control-language-and-primitive-matrix-v1
 title: Shared tool control language and primitive matrix v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-shared-tool-control-language-v1
+  - REF-shared-tool-control-language-v1
 summary: Shared tool control language and primitive matrix v1
 ---
 

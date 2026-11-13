@@ -123,8 +123,7 @@ Implemented as a frontend-only polish slice:
 - `pdm run pytest tests/unit/scripts/test_playwright_script_surface.py -q`
   passed: 3 tests.
 - `pdm run python -m scripts.playwright_pr_0286_share_export_affordance --start-backend --start-vite`
-  passed with rendered-height assertions for the overview scope rail, `Skapa
-  länk`, and export buttons, and wrote overview selector screenshots at
+  passed with rendered-height assertions for the overview scope rail, `Skapa länk`, and export buttons, and wrote overview selector screenshots at
   `.artifacts/playwright-pr-0286-share-export-affordance/overview-390x844-share-export-scope-selector.png`,
   `.artifacts/playwright-pr-0286-share-export-affordance/overview-1366x768-share-export-scope-selector.png`,
   and

@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-repo
 title: Frontend design-system codemap (trace-based for cross-repo alignment)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-frontend-design-system-codemap-2026-04-13
+  - REF-frontend-design-system-codemap-2026-04-13
 summary: Frontend design-system codemap (trace-based for cross-repo alignment)
 ---
 

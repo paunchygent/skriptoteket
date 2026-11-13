@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0014
 title: 'Klassrumskartan: fundamentals contract split, draft lifecycle, and saved artifacts'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,28 +16,17 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- 'The fundamentals contract is class-first: the class becomes the main workspace
-  anchor and classrooms become secondary reusable context.'
-- Draft lifecycle is server-owned and class-scoped, with one active grouping draft
-  and one active seating draft per class.
-- Planner navigation and API surfaces are split by teacher task and draft kind, so
-  grouping and seating stop sharing one default whole-workspace randomize/save contract.
-- Frontend planner state is organized into a normalized workspace core plus grouping,
-  seating, and advanced slices, and autosave patches only the dirty slice instead
-  of rewriting the whole workspace on every save.
-- Draft revision checks are enforced atomically in the write path, and mode-specific
-  save flows no longer rely on a non-atomic pre-check plus full child-collection replacement.
-- Named saved groupings and seating arrangements use class-owned root records plus
-  immutable revisions, store only mode-relevant payloads/settings, and project into
-  the vault without making the vault the source of truth.
-- Deleting a class or classroom is blocked safely or handled via a retention-safe
-  policy when active drafts still depend on it.
-- The planner web layer is brought back into repo standards by removing forbidden
-  router-module patterns and depending on application protocols rather than concrete
-  handler classes at the web boundary.
+  - 'The fundamentals contract is class-first: the class becomes the main workspace anchor and classrooms become secondary reusable context.'
+  - Draft lifecycle is server-owned and class-scoped, with one active grouping draft and one active seating draft per class.
+  - Planner navigation and API surfaces are split by teacher task and draft kind, so grouping and seating stop sharing one default whole-workspace randomize/save contract.
+  - Frontend planner state is organized into a normalized workspace core plus grouping, seating, and advanced slices, and autosave patches only the dirty slice instead of rewriting the whole workspace on every save.
+  - Draft revision checks are enforced atomically in the write path, and mode-specific save flows no longer rely on a non-atomic pre-check plus full child-collection replacement.
+  - Named saved groupings and seating arrangements use class-owned root records plus immutable revisions, store only mode-relevant payloads/settings, and project into the vault without making the vault the source of truth.
+  - Deleting a class or classroom is blocked safely or handled via a retention-safe policy when active drafts still depend on it.
+  - The planner web layer is brought back into repo standards by removing forbidden router-module patterns and depending on application protocols rather than concrete handler classes at the web boundary.
 dependencies:
-- ADR-SKRIPT-0071
-- ADR-SKRIPT-0072
+  - ADR-SKRIPT-0071
+  - ADR-SKRIPT-0072
 ---
 
 ## Context

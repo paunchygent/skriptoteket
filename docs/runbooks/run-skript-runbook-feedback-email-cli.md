@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-feedback-email-cli
 title: 'Runbook: Feedback Email CLI'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-feedback-email-cli
+  - RUN-feedback-email-cli
 summary: 'Runbook: Feedback Email CLI'
 system: skriptoteket-email
 ---
@@ -120,9 +120,11 @@ pdm run send-feedback-emails \
 ### Operational checks
 
 - API/service readiness:
+
 ```bash
 curl -s http://127.0.0.1:8000/healthz | jq '.status, .dependencies.smtp'
 ```
+
 - SMTP troubleshooting:
   - See `docs/runbooks/runbook-observability-metrics.md` (`/healthz` SMTP section).
   - Review backend logs for `Failed to send email` and `EMAIL_SEND_FAILED`.

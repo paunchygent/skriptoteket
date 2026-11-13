@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0022
 title: ST-28-04 HuleEdu internal identity header spelling remediation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,27 +16,11 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Given HuleEdu Gateway now emits corrected `X-HuleEdu-Identity-*` transport headers,
-  when Skriptoteket verifies protected app API requests, then the verifier consumes
-  the corrected spelling and no longer rejects Gateway-proxied requests as `missing_internal_identity_headers`
-  because it expects `X-Huledu-Identity-*`.
-- Given older `Huledu` spellings may remain in tests, proof helpers, docs, or historical
-  path defaults, when this remediation is implemented, then every remaining `Huledu`
-  or `huledu` occurrence is either removed, updated, or explicitly classified as unrelated
-  historical checkout/path text with no runtime header effect.
-- Given protected browser `/api` traffic must enter through `https://api.hule.education/api/...`,
-  when the live proof runs for an existing Skriptoteket projection, then `GET /api/v1/profile/app-continuation`
-  returns `200` through the HuleEdu Gateway edge and no direct app-host protected
-  API shortcut is introduced.
-- Given the auth cutover owns local projection and RBAC inside Skriptoteket, when
-  the spelling fix ships, then it does not change projection keys, local `User.role`
-  authorization, first-login provisioning policy, CSRF handling, logout semantics,
-  or product identity realm validation.
-- Given auth outcome observability is already in place, when the proof exercises the
-  failing path with a known correlation id, then the retained evidence distinguishes
-  corrected signed-context acceptance from unrelated missing-projection, unsupported-realm,
-  or local RBAC failures without logging signed headers, raw subjects, emails, cookies,
-  CSRF tokens, or request bodies.
+  - Given HuleEdu Gateway now emits corrected `X-HuleEdu-Identity-*` transport headers, when Skriptoteket verifies protected app API requests, then the verifier consumes the corrected spelling and no longer rejects Gateway-proxied requests as `missing_internal_identity_headers` because it expects `X-Huledu-Identity-*`.
+  - Given older `Huledu` spellings may remain in tests, proof helpers, docs, or historical path defaults, when this remediation is implemented, then every remaining `Huledu` or `huledu` occurrence is either removed, updated, or explicitly classified as unrelated historical checkout/path text with no runtime header effect.
+  - Given protected browser `/api` traffic must enter through `https://api.hule.education/api/...`, when the live proof runs for an existing Skriptoteket projection, then `GET /api/v1/profile/app-continuation` returns `200` through the HuleEdu Gateway edge and no direct app-host protected API shortcut is introduced.
+  - Given the auth cutover owns local projection and RBAC inside Skriptoteket, when the spelling fix ships, then it does not change projection keys, local `User.role` authorization, first-login provisioning policy, CSRF handling, logout semantics, or product identity realm validation.
+  - Given auth outcome observability is already in place, when the proof exercises the failing path with a known correlation id, then the retained evidence distinguishes corrected signed-context acceptance from unrelated missing-projection, unsupported-realm, or local RBAC failures without logging signed headers, raw subjects, emails, cookies, CSRF tokens, or request bodies.
 ---
 
 ## Context

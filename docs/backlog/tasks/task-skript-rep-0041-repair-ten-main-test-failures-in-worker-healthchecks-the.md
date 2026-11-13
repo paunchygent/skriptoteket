@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0041
-title: Repair ten main test failures in worker healthchecks, the compose contract
-  and alignment timing
+title: Repair ten main test failures in worker healthchecks, the compose contract and alignment timing
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-16'
 status: done
 closeout_review:
@@ -74,10 +73,10 @@ wrong rather than the tests.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Production healthcheck script and compose files stay unchanged; the tests change. |
-| D2  | The healthcheck test environment supplies `timeout` so the same script path runs on macOS and Linux. |
-| D3  | The compose-contract tests assert the current native worker healthcheck. |
+| ID  | Decided contract term                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Production healthcheck script and compose files stay unchanged; the tests change.                                                                    |
+| D2  | The healthcheck test environment supplies `timeout` so the same script path runs on macOS and Linux.                                                 |
+| D3  | The compose-contract tests assert the current native worker healthcheck.                                                                             |
 | D4  | Host-dependent timing tests are deleted: the repair6 focused-item timing test and any other test asserting elapsed wall-clock time or a speed ratio. |
-| D5  | Contract tests assert the current contracts, and the healthcheck tests assert the current script behaviour. |
+| D5  | Contract tests assert the current contracts, and the healthcheck tests assert the current script behaviour.                                          |

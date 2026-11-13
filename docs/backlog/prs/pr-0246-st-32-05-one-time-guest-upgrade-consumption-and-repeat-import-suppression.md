@@ -8,15 +8,7 @@ created: 2026-04-08
 updated: 2026-04-08
 stories:
   - "ST-32-05"
-tags:
-  [
-    "frontend",
-    "klassrumskartan",
-    "guest-upgrade",
-    "import-policy",
-    "one-time-bridge",
-    "browser-state",
-  ]
+tags: ["frontend", "klassrumskartan", "guest-upgrade", "import-policy", "one-time-bridge", "browser-state"]
 dependencies:
   - "ADR-0079"
   - "ST-32-04"
@@ -273,13 +265,13 @@ Current behavior before `PR-0246`:
 
 ### Decision table
 
-| Browser history in this browser | Later public visit behavior | Later authenticated visit behavior | Import prompt allowed? | Recommended? |
-|---|---|---|---|---|
-| No prior authenticated Klassrumskartan visit; no prior consuming import | Public guest workspace may initialize normally | Authenticated host may offer the first guest-upgrade prompt if meaningful guest state exists | Yes | Yes |
-| Prior authenticated Klassrumskartan visit; no prior guest-upgrade consumption fact | Public guest workspace should not initialize a new upgrade-capable snapshot; show login-first guidance instead | Authenticated host opens the normal planner without guest-upgrade prompt unless stale pre-closure guest state exists locally | No | Yes |
-| Prior consuming guest-upgrade commit in this browser and backend ledger says consumed | Public guest workspace should not initialize; rely on browser marker only and show login-first guidance | Authenticated host may use backend truth to repair stale local state and must not show a repeat-import prompt | No | Yes |
-| Prior authenticated visit but browser closure marker is missing and a later guest snapshot was still created | Public guest workspace may still initialize under current code; this is the gap `PR-0246` closes | Authenticated host should treat this as stale/invalid guest state once the stricter closure rule ships | No after remediation | Transitional only |
-| All-zero suspicious `200` commit receipt with guest snapshot still present | Public guest workspace remains governed by browser state; no consumption/closure should be inferred from the bad receipt | Authenticated host must stay on the truthful `PR-0245` prompt/error lane and keep the snapshot non-consuming | Yes, because bridge not consumed | Yes |
+| Browser history in this browser                                                                              | Later public visit behavior                                                                                              | Later authenticated visit behavior                                                                                           | Import prompt allowed?           | Recommended?      |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------- |
+| No prior authenticated Klassrumskartan visit; no prior consuming import                                      | Public guest workspace may initialize normally                                                                           | Authenticated host may offer the first guest-upgrade prompt if meaningful guest state exists                                 | Yes                              | Yes               |
+| Prior authenticated Klassrumskartan visit; no prior guest-upgrade consumption fact                           | Public guest workspace should not initialize a new upgrade-capable snapshot; show login-first guidance instead           | Authenticated host opens the normal planner without guest-upgrade prompt unless stale pre-closure guest state exists locally | No                               | Yes               |
+| Prior consuming guest-upgrade commit in this browser and backend ledger says consumed                        | Public guest workspace should not initialize; rely on browser marker only and show login-first guidance                  | Authenticated host may use backend truth to repair stale local state and must not show a repeat-import prompt                | No                               | Yes               |
+| Prior authenticated visit but browser closure marker is missing and a later guest snapshot was still created | Public guest workspace may still initialize under current code; this is the gap `PR-0246` closes                         | Authenticated host should treat this as stale/invalid guest state once the stricter closure rule ships                       | No after remediation             | Transitional only |
+| All-zero suspicious `200` commit receipt with guest snapshot still present                                   | Public guest workspace remains governed by browser state; no consumption/closure should be inferred from the bad receipt | Authenticated host must stay on the truthful `PR-0245` prompt/error lane and keep the snapshot non-consuming                 | Yes, because bridge not consumed | Yes               |
 
 Options:
 
@@ -363,7 +355,7 @@ For re-review, the proposed policy should now be read as:
 5. Update the public guest shell so it consults browser-owned markers only and
    never the backend consumption fact:
    - does not reinitialize an upgrade-capable guest snapshot
-    - presents a clear login-first affordance instead
+   - presents a clear login-first affordance instead
 6. Replace the existing card-based import result surface with compact
    text-first outcome copy that can explain partial imports without implying
    the teacher can keep retrying the same guest snapshot forever.
@@ -384,8 +376,8 @@ For re-review, the proposed policy should now be read as:
 - Live browser proof on:
   - `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`
   - `http://127.0.0.1:5173/apps/classroom.group-seating-studio`
-  showing first import consumption plus later signed-out public re-entry
-  blocking in the same browser context
+    showing first import consumption plus later signed-out public re-entry
+    blocking in the same browser context
 
 ## Rollback plan
 

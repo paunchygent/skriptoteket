@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-skriptoteket-linter-architecture
 title: Skriptoteket Linter Architecture
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-linter-architecture
+  - REF-linter-architecture
 summary: Skriptoteket Linter Architecture
 ---
 
@@ -163,8 +163,6 @@ Rules MAY provide IDE-like quick fixes by attaching CodeMirror actions to diagno
 
 ### Source: Implementation Strategy
 
-
-
 ### Source: Phase 1: Infrastructure & Harness
 
 1. **Extract parsers:** Move AST traversal logic from `skriptoteketLinter.ts` to dedicated parsers in `skriptoteketPythonAnalysis.ts`.
@@ -185,8 +183,6 @@ Rules MAY provide IDE-like quick fixes by attaching CodeMirror actions to diagno
 3. **Add quick-fix actions + lint panel/keybindings (IDE parity).**
 
 ### Source: Verification Plan
-
-
 
 ### Source: Unit Tests (New)
 

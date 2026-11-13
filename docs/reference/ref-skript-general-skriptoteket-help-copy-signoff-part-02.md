@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff-PART-02
 title: Skriptoteket help copy signoff — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff
 part: 2

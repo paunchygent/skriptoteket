@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base
 title: AI Script Generation Knowledge Base
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-ai-script-generation-kb
+  - REF-ai-script-generation-kb
 summary: AI Script Generation Knowledge Base
 ---
 

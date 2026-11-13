@@ -4,16 +4,16 @@ id: ADR-SKRIPT-0090
 title: Skriptoteket-owned exam conversion boundary with Sir Convert generic extraction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-28'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 links:
   governing:
-  - EPIC-SKRIPT-39
-  - ADR-SKRIPT-0066
+    - EPIC-SKRIPT-39
+    - ADR-SKRIPT-0066
 ---
 
 ## Context

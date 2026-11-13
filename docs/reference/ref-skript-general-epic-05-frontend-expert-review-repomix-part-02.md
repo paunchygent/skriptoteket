@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix-PART-02
 title: EPIC-05 Frontend expert review (repomix) — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix
 part: 2
@@ -35,23 +35,23 @@ Och i media query:
 }
 ```
 
----
+______________________________________________________________________
 
 ### 3.4 Editor-sidan: CSS Grid‑layout och scroll‑containment
 
 Utifrån nuvarande markup (editor-layout + toolbar + run-result) och era problem, är målet att:
 
-* göra editor-ytan deterministisk i höjd,
-* isolera scroll per kolumn,
-* undvika att run-result “trycker sönder” editorns höjd.
+- göra editor-ytan deterministisk i höjd,
+- isolera scroll per kolumn,
+- undvika att run-result “trycker sönder” editorns höjd.
 
 Ni har redan flera editor‑relaterade flex/höjd‑val (min-height 500px och run-result som expanderar fritt).
 
 **Konservativ förbättring (ingen markup‑brytning):**
 
-* gör `.huleedu-editor-code-card` till grid med `rows: 1fr auto auto` (editor, toolbar, runresult)
-* låt CodeMirror‑wrappern ha `min-height: 0` och `overflow: hidden`
-* gör run-result scroll‑capped (så editor inte kollapsar när resultatet blir långt)
+- gör `.huleedu-editor-code-card` till grid med `rows: 1fr auto auto` (editor, toolbar, runresult)
+- låt CodeMirror‑wrappern ha `min-height: 0` och `overflow: hidden`
+- gör run-result scroll‑capped (så editor inte kollapsar när resultatet blir långt)
 
 Exempel:
 
@@ -75,14 +75,14 @@ Exempel:
 
 Detta är i linje med era egna observationer om nested scroll och min-height:0‑kritikalitet, men gör “run result” mindre destruktivt.
 
----
+______________________________________________________________________
 
 ### 3.5 CodeMirror: decoupla från HTMX timing med ResizeObserver
 
 Ni har redan refresh på HTMX events och timeouts.
 Den robustaste “minimal JS”-lösningen (utan ny dependency) är att:
 
-* refresha editor när dess wrapper ändrar storlek, oavsett *varför* (HTMX swap, panel expand, sidebar toggles, viewport).
+- refresha editor när dess wrapper ändrar storlek, oavsett *varför* (HTMX swap, panel expand, sidebar toggles, viewport).
 
 Skiss (att lägga i editor‑modul):
 
@@ -112,14 +112,14 @@ function attachAutoRefresh(editor) {
 
 Då minskar ni beroendet av HTMX event‑timing (även om ni kan behålla hooks som extra säkerhetsnät). Detta adresserar direkt problemet “CodeMirror kan kollapsa efter HTMX‑swap om timing är fel”.
 
----
+______________________________________________________________________
 
 ### 3.6 Template‑konsolidering: `run_result.html` med flagga
 
 Ni har två `run_result.html`:
 
-* tools: utan stdout/stderr (säkerhetskrav)
-* admin: med stdout/stderr
+- tools: utan stdout/stderr (säkerhetskrav)
+- admin: med stdout/stderr
 
 **Rekommenderad struktur:**
 
@@ -180,28 +180,30 @@ I admin‑partial:
 
 Säkerhetskravet bibehålls (tools får aldrig debug), men markup dupliceras inte.
 
----
+______________________________________________________________________
 
 ### Source: 4. Teststrategi (praktisk och inkrementell)
 
 ### A. “Smoke checks” per deploy (utan nya verktyg)
 
-* Verifiera att toasts renderas och auto-dismiss fungerar:
+- Verifiera att toasts renderas och auto-dismiss fungerar:
 
-  * full page (cookie/middleware)
-  * HTMX OOB (run_error_with_toast)
-* Verifiera HTMX-run på tools och admin:
+  - full page (cookie/middleware)
+  - HTMX OOB (run_error_with_toast)
 
-  * tools: `hx-post` och target container
-  * admin: `hx-post` och `#run-result`
-* Verifiera panelbredd: home/login använder `.huleedu-panel` och att `--huleedu-content-width` tar effekt.
+- Verifiera HTMX-run på tools och admin:
+
+  - tools: `hx-post` och target container
+  - admin: `hx-post` och `#run-result`
+
+- Verifiera panelbredd: home/login använder `.huleedu-panel` och att `--huleedu-content-width` tar effekt.
 
 ### B. Cross‑browser fokus för editor (där ni har mest risk)
 
-* Testa scroll‑interaktion (main vs sidebar), samt run-result med lång output.
-* Testa HTMX navigation (hx-boost) in/ut från editor och att CodeMirror behåller storlek (ResizeObserver‑refresh).
+- Testa scroll‑interaktion (main vs sidebar), samt run-result med lång output.
+- Testa HTMX navigation (hx-boost) in/ut från editor och att CodeMirror behåller storlek (ResizeObserver‑refresh).
 
----
+______________________________________________________________________
 
 ### Source: Rekommenderad “nästa commit”-scope (minsta men högst effekt)
 

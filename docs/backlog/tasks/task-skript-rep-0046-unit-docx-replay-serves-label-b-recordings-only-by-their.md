@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0046
-title: Unit DOCX replay serves label_b recordings only by their capture-time request
-  key
+title: Unit DOCX replay serves label_b recordings only by their capture-time request key
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: done
 closeout_review:
@@ -61,13 +60,13 @@ Method: a detached throwaway worktree at `b7ca932c` replayed both exams through 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| R1  | Root cause: `ReplayProvider.complete_structured` names the reply `request.item_id.replace(":", "_")` and serves it once the file exists. The request text never takes part in the match. |
+| ID  | Decided contract term                                                                                                                                                                                                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Root cause: `ReplayProvider.complete_structured` names the reply `request.item_id.replace(":", "_")` and serves it once the file exists. The request text never takes part in the match.                                                                       |
 | R2  | The `label_b` key load (sidecar parity assertion included) and the key match move from `RecordedTransport` into one shared test-support module under `tests/fixtures/`. `RecordedTransport` and `ReplayProvider` both import it; no copy of the logic remains. |
-| R3  | `ReplayProvider` loads the keys for `root / exam` when it is constructed. A `label_b_*.json` without its `.request.txt`, or a sidecar without its recording, is refused there. |
-| R4  | An `item_type_label` request is matched only on `request.user_payload` ending with `### Question q1\n<key>` against an unused recording. An unmatched request raises `MissingRecording`. The provider has no id-derived fallback. |
-| R5  | No re-recording and no live model calls; the converter-batch anchor match is out of scope. |
+| R3  | `ReplayProvider` loads the keys for `root / exam` when it is constructed. A `label_b_*.json` without its `.request.txt`, or a sidecar without its recording, is refused there.                                                                                 |
+| R4  | An `item_type_label` request is matched only on `request.user_payload` ending with `### Question q1\n<key>` against an unused recording. An unmatched request raises `MissingRecording`. The provider has no id-derived fallback.                              |
+| R5  | No re-recording and no live model calls; the converter-batch anchor match is out of scope.                                                                                                                                                                     |
 
 ### Capture-Revision Correction (review finding, 2026-10-18)
 

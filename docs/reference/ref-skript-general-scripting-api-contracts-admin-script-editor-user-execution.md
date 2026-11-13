@@ -4,16 +4,14 @@ id: REF-SKRIPT-GENERAL-scripting-api-contracts-admin-script-editor-user-executio
 title: Scripting API Contracts - Admin Script Editor & User Execution
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-scripting-api-contracts
-summary: 'defines the API contracts for the Admin Script Editor and User Execution
-  features (EPIC-04). Related documents: - ADRs: ADR-SKRIPT-0012, ADR-SKRIPT-0013,
-  ADR-SKRIPT-0014, ADR-SKRIPT-0015, ADR-SKRIPT-0016 - Epic: EPIC-…'
+  - REF-scripting-api-contracts
+summary: 'defines the API contracts for the Admin Script Editor and User Execution features (EPIC-04). Related documents: - ADRs: ADR-SKRIPT-0012, ADR-SKRIPT-0013, ADR-SKRIPT-0014, ADR-SKRIPT-0015, ADR-SKRIPT-0016 - Epic: EPIC-…'
 ---
 
 ## Overview

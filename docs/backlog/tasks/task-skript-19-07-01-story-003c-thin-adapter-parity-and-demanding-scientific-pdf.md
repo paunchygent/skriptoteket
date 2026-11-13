@@ -4,8 +4,8 @@ id: TASK-SKRIPT-19-07-01
 title: 'Story 003c: thin adapter parity and demanding scientific PDF workload validation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,17 +17,12 @@ closeout_review:
 story: ST-SKRIPT-19-07
 task_kind: story
 acceptance_criteria:
-- Skriptoteket provider-side adapter behavior is verified against canonical Story
-  003c contract semantics, with no HuleEdu-specific logic forks.
-- End-to-end HuleEdu consumer flow (submit, poll, retrieve) runs against Skriptoteket
-  without per-document converter code changes.
-- Demanding scientific-paper workload evidence is produced with per-document status,
-  duration distribution (min/p50/p95/max), and failure taxonomy mapped to canonical
-  error codes.
-- Story/PR docs link to provider + consumer evidence artifacts sufficient to support
-  Story 003c closure review.
+  - Skriptoteket provider-side adapter behavior is verified against canonical Story 003c contract semantics, with no HuleEdu-specific logic forks.
+  - End-to-end HuleEdu consumer flow (submit, poll, retrieve) runs against Skriptoteket without per-document converter code changes.
+  - Demanding scientific-paper workload evidence is produced with per-document status, duration distribution (min/p50/p95/max), and failure taxonomy mapped to canonical error codes.
+  - Story/PR docs link to provider + consumer evidence artifacts sufficient to support Story 003c closure review.
 dependencies:
-- ST-SKRIPT-19-07
+  - ST-SKRIPT-19-07
 ---
 
 ## Context

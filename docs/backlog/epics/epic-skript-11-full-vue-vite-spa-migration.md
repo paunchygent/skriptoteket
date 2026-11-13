@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-11
 title: Full Vue/Vite SPA migration
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,10 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admin),
-  backed by /api/v1 with generated TypeScript types, with legacy Jinja2/HTMX removed.
+outcome: Skriptoteket runs as a single Vue/Vite SPA for all routes (user + admin), backed by /api/v1 with generated TypeScript types, with legacy Jinja2/HTMX removed.
 retired_ids:
-- EPIC-11
+  - EPIC-11
 ---
 
 ## Scope
@@ -43,6 +42,7 @@ retired_ids:
 ### Stories
 
 ### Phase 1: Foundation (done)
+
 - [ST-11-01: Frontend workspace + SPA scaffold](../stories/story-11-01-frontend-workspace-and-spa-scaffold.md)
 - [ST-11-02: UI library + design tokens (pure CSS)](../stories/story-11-02-ui-library-and-design-tokens.md)
 - [ST-11-03: Serve SPA from FastAPI (manifest + history fallback)](../stories/story-11-03-spa-hosting-fastapi-integration.md)
@@ -50,17 +50,20 @@ retired_ids:
 - [ST-11-05: Auth flow + route guards](../stories/story-11-05-auth-flow-and-route-guards.md)
 
 ### Phase 2: User-facing views (done)
+
 - [ST-11-06: Catalog browse views (professions/categories/tools)](../stories/story-11-06-spa-browse-views.md)
 - [ST-11-07: Tool run + results (uploads, artifacts, typed outputs)](../stories/story-11-07-tool-run-and-results.md)
 - [ST-11-08: My runs list + detail](../stories/story-11-08-my-runs-views.md)
 - [ST-11-09: Curated apps views (`/apps/:app_id`)](../stories/story-11-09-curated-apps-views.md)
 
 ### Phase 3: Contributor/admin views (done)
+
 - [ST-11-10: Suggestions flows (contributor + admin review)](../stories/story-11-10-suggestions-flows.md)
 - [ST-11-11: Admin tools list + publish/depublish](../stories/story-11-11-admin-tools-management.md)
 - [ST-11-12: Script editor migration (CodeMirror 6)](../stories/story-11-12-script-editor-migration.md)
 
 ### Phase 4: Remaining features (done)
+
 - [ST-11-15: My Tools view (contributor dashboard)](../stories/story-11-15-my-tools-view.md)
 - [ST-11-16: Editor workflow actions (review, publish, reject)](../stories/story-11-16-editor-workflow-actions.md)
 - [ST-11-17: Tool metadata editor (title, summary, tags)](../stories/story-11-17-tool-metadata-editor.md)
@@ -68,9 +71,11 @@ retired_ids:
 - [ST-11-19: Help framework (contextual help panel)](../stories/story-11-19-help-framework.md)
 
 ### Phase 5: Cutover (done)
+
 - [ST-11-13: Cutover + deletion + E2E](../stories/story-11-13-cutover-and-e2e.md) (done)
 
 ### Post-cutover follow-ups
+
 - [ST-11-20: Tool taxonomy editor (professions + categories)](../stories/story-11-20-tool-taxonomy-editor.md) (done)
 - [ST-11-21: Unified landing page (auth-adaptive home view)](../stories/story-11-21-unified-landing-page.md) (done)
 - [ST-11-22: Remove /login route (modal-only login)](../stories/story-11-22-remove-login-route.md) (done; historical direction later superseded for new auth-entry work by `ST-32-10`)

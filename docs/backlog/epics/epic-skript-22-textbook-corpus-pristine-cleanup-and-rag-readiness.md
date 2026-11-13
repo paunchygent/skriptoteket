@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-22
 title: Textbook corpus pristine cleanup and RAG readiness
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 readiness_review:
@@ -14,11 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: A deterministic, provenance-complete textbook corpus pipeline that preserves
-  pagination/context, requires manual restoration for semantically important fixes,
-  and produces trustworthy RAG-ready artifacts for PostgreSQL vector retrieval.
+outcome: A deterministic, provenance-complete textbook corpus pipeline that preserves pagination/context, requires manual restoration for semantically important fixes, and produces trustworthy RAG-ready artifacts for PostgreSQL vector retrieval.
 retired_ids:
-- EPIC-22
+  - EPIC-22
 ---
 
 ## Scope

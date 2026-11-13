@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-03
 title: AI item interpretation at DOCX import
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-10'
 status: canceled
 closeout_review:
@@ -15,11 +15,7 @@ closeout_review:
   approval_evidence: User decided 2026-10-10 (GrillMe A1) that the AI-first converter is the new story ST-SKRIPT-39-05 and that this task is superseded with a pointer; its terms F4, F6, F10 and F11 carry into that story as A11, A10, A8 and A9.
 task_kind: story
 acceptance_criteria:
-- A DOCX exam whose items the rules cannot resolve imports export-ready without teacher
-  action wherever the AI can resolve them from the teacher's facit, showing the student
-  only source text, asking only what the item asks, and accepting facit answers plus
-  close misspellings; the teacher is asked only about unresolved items, and AI failure
-  leaves a valid rule-based item marked for review
+  - A DOCX exam whose items the rules cannot resolve imports export-ready without teacher action wherever the AI can resolve them from the teacher's facit, showing the student only source text, asking only what the item asks, and accepting facit answers plus close misspellings; the teacher is asked only about unresolved items, and AI failure leaves a valid rule-based item marked for review
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -114,10 +110,7 @@ DOCX exams in general, not for one fixture.
 
 ## Core Vertical And Performance
 
-`DOCX import -> rules segment items -> unresolved items to AI, one call each
--> code checks accept or discard -> confident results applied with "Tolkad
-av AI" provenance; only unresolved items ask the teacher -> save -> QTI
-export with one keyed text entry per asked slot`.
+`DOCX import -> rules segment items -> unresolved items to AI, one call each -> code checks accept or discard -> confident results applied with "Tolkad av AI" provenance; only unresolved items ask the teacher -> save -> QTI export with one keyed text entry per asked slot`.
 
 - Token use scales with unresolved items only; resolved items never reach
   the AI. Decisions and Responses calls both draw on the daily token lease
@@ -155,16 +148,16 @@ export with one keyed text entry per asked slot`.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| F1 | The merged facit value is fixed in its own task under ST-SKRIPT-39-04 (user decision 2026-10-10). |
-| F2 | Rules may not decide given versus asked from one fixture's layout; DOCX import must work for exams in general, with AI interpretation for what rules cannot resolve (user decision 2026-10-10, replacing one gap per label). |
-| F3 | A gap holds any number of accepted answers, never one answer per label (user decision 2026-10-10); the AI may split facit alternatives into separate accepted answers of one gap. |
-| F4 | The gap popover gets "Visa som text", turning a gap into fixed text (user decision 2026-10-10). |
-| F5 | AI interpretation runs automatically at import, only for items the rules could not resolve (user decision 2026-10-10). |
-| F6 | The app adds close misspellings of facit answers automatically, bounded by a code-enforced edit distance; never synonyms or different words; no teacher ticking (user decision 2026-10-10, replacing teacher-ticked suggestions). |
-| F7 | The AI is boxed in by code-enforced checks; invalid output is discarded and the rule-based item stays, so AI failure never breaks import or an item (user decision 2026-10-10). |
-| F8 | This task is rescoped from label splitting to AI item interpretation at import, including Visa som text (user decision 2026-10-10). |
-| F9 | Decisions API first (`gpt-6-luna`, typed classification of code-built candidates), with the existing Responses structured-output lane only as fallback for items without buildable candidates and for variant suggestions (user decision 2026-10-10; Decisions API verified in OpenAI docs as public beta, input-only pricing, EU residency). |
-| F10 | High-confidence, check-passing interpretation of the teacher's own facit is applied directly and export-eligible with "Tolkad av AI" provenance and undo; the teacher is asked only about unresolved items (user decision 2026-10-10, amending E4 and S4). |
-| F11 | AI-invented answer keys for items without a facit keep the teacher check before export (user decision 2026-10-10). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1  | The merged facit value is fixed in its own task under ST-SKRIPT-39-04 (user decision 2026-10-10).                                                                                                                                                                                                                                             |
+| F2  | Rules may not decide given versus asked from one fixture's layout; DOCX import must work for exams in general, with AI interpretation for what rules cannot resolve (user decision 2026-10-10, replacing one gap per label).                                                                                                                  |
+| F3  | A gap holds any number of accepted answers, never one answer per label (user decision 2026-10-10); the AI may split facit alternatives into separate accepted answers of one gap.                                                                                                                                                             |
+| F4  | The gap popover gets "Visa som text", turning a gap into fixed text (user decision 2026-10-10).                                                                                                                                                                                                                                               |
+| F5  | AI interpretation runs automatically at import, only for items the rules could not resolve (user decision 2026-10-10).                                                                                                                                                                                                                        |
+| F6  | The app adds close misspellings of facit answers automatically, bounded by a code-enforced edit distance; never synonyms or different words; no teacher ticking (user decision 2026-10-10, replacing teacher-ticked suggestions).                                                                                                             |
+| F7  | The AI is boxed in by code-enforced checks; invalid output is discarded and the rule-based item stays, so AI failure never breaks import or an item (user decision 2026-10-10).                                                                                                                                                               |
+| F8  | This task is rescoped from label splitting to AI item interpretation at import, including Visa som text (user decision 2026-10-10).                                                                                                                                                                                                           |
+| F9  | Decisions API first (`gpt-6-luna`, typed classification of code-built candidates), with the existing Responses structured-output lane only as fallback for items without buildable candidates and for variant suggestions (user decision 2026-10-10; Decisions API verified in OpenAI docs as public beta, input-only pricing, EU residency). |
+| F10 | High-confidence, check-passing interpretation of the teacher's own facit is applied directly and export-eligible with "Tolkad av AI" provenance and undo; the teacher is asked only about unresolved items (user decision 2026-10-10, amending E4 and S4).                                                                                    |
+| F11 | AI-invented answer keys for items without a facit keep the teacher check before export (user decision 2026-10-10).                                                                                                                                                                                                                            |

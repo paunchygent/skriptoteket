@@ -9,8 +9,7 @@ updated: 2026-04-07
 stories:
   - "ST-32-06"
   - "ST-26-02"
-tags:
-  ["frontend", "klassrumskartan", "overview", "public-access", "import", "tests"]
+tags: ["frontend", "klassrumskartan", "overview", "public-access", "import", "tests"]
 dependencies:
   - "PR-0223"
   - "PR-0137"

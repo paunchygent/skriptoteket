@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-scripting-api-contracts-admin-script-editor-user-executio
 title: Scripting API Contracts - Admin Script Editor & User Execution — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-scripting-api-contracts-admin-script-editor-user-execution
 part: 1
@@ -20,7 +20,7 @@ Related documents:
 - ADRs: ADR-SKRIPT-0012, ADR-SKRIPT-0013, ADR-SKRIPT-0014, ADR-SKRIPT-0015, ADR-SKRIPT-0016
 - Epic: EPIC-04
 
----
+______________________________________________________________________
 
 ## Facts And Semantics
 
@@ -33,7 +33,7 @@ Related documents:
 - ADRs: ADR-SKRIPT-0012, ADR-SKRIPT-0013, ADR-SKRIPT-0014, ADR-SKRIPT-0015, ADR-SKRIPT-0016
 - Epic: EPIC-04
 
----
+______________________________________________________________________
 
 ### Source: 0. Standard Response Shapes
 
@@ -53,13 +53,13 @@ Related documents:
 
 **Common error codes:**
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `FORBIDDEN` | 403 | User lacks permission |
-| `NOT_FOUND` | 404 | Resource not found |
-| `VALIDATION_ERROR` | 400 | Invalid request data |
-| `CONFLICT` | 409 | State conflict (e.g. `STATE_CONFLICT`, `ACTIVE_VERSION_CONSTRAINT`) |
-| `SERVICE_UNAVAILABLE` | 503 | Execution service is temporarily unavailable (e.g. runner at capacity) |
+| Code                  | HTTP Status | Description                                                            |
+| --------------------- | ----------- | ---------------------------------------------------------------------- |
+| `FORBIDDEN`           | 403         | User lacks permission                                                  |
+| `NOT_FOUND`           | 404         | Resource not found                                                     |
+| `VALIDATION_ERROR`    | 400         | Invalid request data                                                   |
+| `CONFLICT`            | 409         | State conflict (e.g. `STATE_CONFLICT`, `ACTIVE_VERSION_CONSTRAINT`)    |
+| `SERVICE_UNAVAILABLE` | 503         | Execution service is temporarily unavailable (e.g. runner at capacity) |
 
 Notes:
 
@@ -170,7 +170,7 @@ Used when opening a version (includes `source_code`):
 }
 ```
 
----
+______________________________________________________________________
 
 ### Source: 1. User Endpoints (Production Run)
 
@@ -211,7 +211,7 @@ Auth: User (own runs only)
 
 **Response 404:** Run does not exist or does not belong to the current user.
 
----
+______________________________________________________________________
 
 ### Source: 2. Admin Editor Endpoints
 
@@ -357,7 +357,7 @@ Auth: Superuser
 **Request:** `RollbackIn`
 **Response 200:** `RollbackResultOut`
 
----
+______________________________________________________________________
 
 ### Source: 3. Sandbox Run Endpoints
 
@@ -388,4 +388,4 @@ Auth: Admin, Superuser (Contributor for own runs)
 
 **Response 200:** File stream.
 
----
+______________________________________________________________________

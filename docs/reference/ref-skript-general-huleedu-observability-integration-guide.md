@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-huleedu-observability-integration-guide
 title: HuleEdu Observability Integration Guide
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-external-observability-integration
+  - REF-external-observability-integration
 summary: HuleEdu Observability Integration Guide
 ---
 

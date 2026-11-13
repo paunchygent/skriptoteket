@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-10
-title: AI glyph with undo on interpreted keys, checked AI-invented keys, automatic
-  misspellings and Visa som text
+title: AI glyph with undo on interpreted keys, checked AI-invented keys, automatic misspellings and Visa som text
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-14'
 status: done
 closeout_review:
@@ -18,11 +17,11 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer approved the frontend repair e4a5e2eb after review of c7d6db01 (merged c270419e) and the replay repair 42050a03 after review of the re-record commit 87478dcd (merged 426d7551). 118 live v14 replies replace the obsolete recordings; source audit of all eight corpus exams found no misreported key source. Staging walk at c270419e: glyph, undo, review, automatic misspellings and Visa som text passed; Exam.net import exam 5332346 accepted several values per gap (Stockholm, Stockolm; syre, syr). Records in Skriptoteket session 01a13a87-acac-7730-bb4e-746618d73cfd evidence/review/TASK-SKRIPT-39-05-10/ and evidence/walk/TASK-SKRIPT-39-05-10/staging-walk.md.'
 task_kind: story
 acceptance_criteria:
-- An AI-interpreted key carries the AI glyph with an undo that clears it and shows the teacher's facit text
-- A key the AI invented without a facit carries the AI glyph and the review warning and blocks export until marked reviewed
-- Gap answers from the facit carry removable automatic misspellings that reach the QTI export
-- Visa som text turns a gap into plain text, disabled on the item's last gap
-- The staging walk and the Exam.net import of its QTI export pass
+  - An AI-interpreted key carries the AI glyph with an undo that clears it and shows the teacher's facit text
+  - A key the AI invented without a facit carries the AI glyph and the review warning and blocks export until marked reviewed
+  - Gap answers from the facit carry removable automatic misspellings that reach the QTI export
+  - Visa som text turns a gap into plain text, disabled on the item's last gap
+  - The staging walk and the Exam.net import of its QTI export pass
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -122,15 +121,15 @@ with the result read back from Exam.net:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1 | An AI-interpreted key is marked with the AI glyph and status semantics of the DOCX-to-QTI converter, one per item with one undo (user decision 2026-10-14). |
-| D2 | Undo clears the interpreted key, shows the teacher's facit text beside the item and leaves the key empty, so the missing-key blocker stops export (user decision 2026-10-14). |
-| D3 | Automatic misspellings are visible extra accepted answers marked "automatisk", each removable, with no AI glyph (user decision 2026-10-14). |
-| D4 | The conversion model states each key's source; a key invented without a facit is `machine_proposed` and blocks export until marked reviewed (user decision 2026-10-14). |
-| D5 | Only real interpretation gets the glyph: copying the facit's answer words, including splitting listed alternatives, does not (user decision 2026-10-14). |
-| D6 | "Visa som text" replaces a gap with its first accepted answer as text; disabled with an explanation on the item's last gap; points unchanged (user decision 2026-10-14). |
-| D7 | Misspellings are added at conversion only, for facit gap answers, within the A10 distance, at most 3 per answer; adding them after conversion is a later feature outside the current stories (user decision 2026-10-14). |
-| D8 | The glyph on an interpreted key goes away on undo, a teacher change of the key, or "Markera som granskad" (user decision 2026-10-14). |
-| D9 | An invented key shows the AI glyph plus the review-required warning and has no undo (user decision 2026-10-14). |
-| D10 | The QTI export writes every accepted value of a gap, also without own gap points (parent decision 2026-10-14, defect found in discovery). |
+| ID  | Decided contract term                                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | An AI-interpreted key is marked with the AI glyph and status semantics of the DOCX-to-QTI converter, one per item with one undo (user decision 2026-10-14).                                                              |
+| D2  | Undo clears the interpreted key, shows the teacher's facit text beside the item and leaves the key empty, so the missing-key blocker stops export (user decision 2026-10-14).                                            |
+| D3  | Automatic misspellings are visible extra accepted answers marked "automatisk", each removable, with no AI glyph (user decision 2026-10-14).                                                                              |
+| D4  | The conversion model states each key's source; a key invented without a facit is `machine_proposed` and blocks export until marked reviewed (user decision 2026-10-14).                                                  |
+| D5  | Only real interpretation gets the glyph: copying the facit's answer words, including splitting listed alternatives, does not (user decision 2026-10-14).                                                                 |
+| D6  | "Visa som text" replaces a gap with its first accepted answer as text; disabled with an explanation on the item's last gap; points unchanged (user decision 2026-10-14).                                                 |
+| D7  | Misspellings are added at conversion only, for facit gap answers, within the A10 distance, at most 3 per answer; adding them after conversion is a later feature outside the current stories (user decision 2026-10-14). |
+| D8  | The glyph on an interpreted key goes away on undo, a teacher change of the key, or "Markera som granskad" (user decision 2026-10-14).                                                                                    |
+| D9  | An invented key shows the AI glyph plus the review-required warning and has no undo (user decision 2026-10-14).                                                                                                          |
+| D10 | The QTI export writes every accepted value of a gap, also without own gap points (parent decision 2026-10-14, defect found in discovery).                                                                                |

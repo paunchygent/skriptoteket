@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-script-bank-seeding-home-server
 title: 'Runbook: Script bank seeding (home server)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-script-bank-seeding-home-server
+  - RUN-script-bank-seeding-home-server
 summary: 'Runbook: Script bank seeding (home server)'
 system: hemma.hule.education
 ---

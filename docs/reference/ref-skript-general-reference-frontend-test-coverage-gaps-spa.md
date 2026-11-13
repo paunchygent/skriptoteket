@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-frontend-test-coverage-gaps-spa
 title: 'Reference: Frontend test coverage gaps (SPA)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-frontend-test-gaps-2025-12-29
+  - REF-frontend-test-gaps-2025-12-29
 summary: 'Reference: Frontend test coverage gaps (SPA)'
 ---
 

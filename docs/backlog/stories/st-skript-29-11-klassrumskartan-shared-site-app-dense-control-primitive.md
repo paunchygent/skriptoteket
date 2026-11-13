@@ -4,8 +4,8 @@ id: ST-SKRIPT-29-11
 title: Klassrumskartan — Shared site/app dense-control primitive tightening
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,24 +16,12 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-29
 acceptance_criteria:
-- Given dense controls now exist across overview, grouping, seating, rules, editor,
-  and other tool-grade SPA surfaces, when this follow-on ships, then repeated control
-  families use one shared primitive contract instead of surface-owned variants or
-  wrapper-specific visual rules.
-- Given shared dense controls still rely on local CSS overrides or toolbar-owned spacing,
-  radius, disabled, focus, active, and disclosure behavior, when this story ships,
-  then those rules live in the shared primitive layer and surface wrappers become
-  thin adapters.
-- Given planner/editor/tool surfaces still expose overlapping icon-button, menu-button,
-  split-button, toggle, or segmented-switch abstractions, when this story is complete,
-  then the remaining wrappers are intentional usage adapters rather than accidental
-  competing sources of truth.
-- Given browser proof is run on the current dense-control surfaces at the canonical
-  `laptop` and `desktop` review widths, when this story is reviewed, then control
-  rhythm and interaction polish stay consistent without reopening the shipped workspace
-  layouts.
+  - Given dense controls now exist across overview, grouping, seating, rules, editor, and other tool-grade SPA surfaces, when this follow-on ships, then repeated control families use one shared primitive contract instead of surface-owned variants or wrapper-specific visual rules.
+  - Given shared dense controls still rely on local CSS overrides or toolbar-owned spacing, radius, disabled, focus, active, and disclosure behavior, when this story ships, then those rules live in the shared primitive layer and surface wrappers become thin adapters.
+  - Given planner/editor/tool surfaces still expose overlapping icon-button, menu-button, split-button, toggle, or segmented-switch abstractions, when this story is complete, then the remaining wrappers are intentional usage adapters rather than accidental competing sources of truth.
+  - Given browser proof is run on the current dense-control surfaces at the canonical `laptop` and `desktop` review widths, when this story is reviewed, then control rhythm and interaction polish stay consistent without reopening the shipped workspace layouts.
 retired_ids:
-- ST-29-11
+  - ST-29-11
 ---
 
 ## Context
@@ -141,8 +129,7 @@ instead of treating it as unfinished planner-layout implementation.
   short browser-handoff guard with restored `href` and cleared busy attributes;
   retained proof covers grouping/seating at desktop and mobile widths.
 - `PR-0286` is closed as the next bounded toolbar/distribution-surface follow-up:
-  it folds file export choices into the single `Dela` affordance as `Dela och
-  exportera`, keeps share and export orchestration as separate state machines,
+  it folds file export choices into the single `Dela` affordance as `Dela och exportera`, keeps share and export orchestration as separate state machines,
   and proves the composition in both `Grupper` and `Sittplatser` at phone and
   desktop viewports without changing backend or artifact contracts.
 - `PR-0287` is closed as the Smart settings persistence follow-up: grouping and
@@ -204,8 +191,8 @@ instead of treating it as unfinished planner-layout implementation.
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                  | Type      | Status | Question/Assumption              | Recommendation/Decision                                                             | Source                               |
+| ------------------- | --------- | ------ | -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-ST-SKRIPT-29-11 | migration | closed | How is source meaning preserved? | Preserve the source story contract and current status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

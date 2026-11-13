@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-dire
 title: Exam workspace approved mockups for the shared design direction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-12'
 status: active
 reference_kind: mockup
@@ -23,13 +23,13 @@ controls, teal primary action and sentence-case labels.
 
 Images live in `docs/mockups/exam-workspace-shared-direction/approved/`:
 
-| File | Shows |
-| --- | --- |
-| `r2-2-desktop-edit-rail.jpg` | Desktop Redigera with the details rail of stacked cards beside the editor. |
-| `r2-4-desktop-files.jpg` | Desktop Filer view. |
-| `r2-5-tablet-edit-open.jpg` | Tablet Redigera with the floating details panel over the editor. |
-| `r2-6-phone-edit-closed.jpg` | Phone Redigera with Detaljer at the end of the question strip. |
-| `r2-7-phone-details-open.jpg` | Phone details as a full screen with Tillbaka. |
+| File                          | Shows                                                                      |
+| ----------------------------- | -------------------------------------------------------------------------- |
+| `r2-2-desktop-edit-rail.jpg`  | Desktop Redigera with the details rail of stacked cards beside the editor. |
+| `r2-4-desktop-files.jpg`      | Desktop Filer view.                                                        |
+| `r2-5-tablet-edit-open.jpg`   | Tablet Redigera with the floating details panel over the editor.           |
+| `r2-6-phone-edit-closed.jpg`  | Phone Redigera with Detaljer at the end of the question strip.             |
+| `r2-7-phone-details-open.jpg` | Phone details as a full screen with Tillbaka.                              |
 
 ## Design Interpretation
 

@@ -4,8 +4,8 @@ id: ST-SKRIPT-35-04
 title: Search Console, Bing, and launch-day SEO operations
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
 readiness_review:
@@ -16,28 +16,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-35
 acceptance_criteria:
-- Given launch readiness needs operator proof rather than guesswork, when this story
-  ships, then Google Search Console and Bing Webmaster Tools are configured by an
-  account-owning operator for the chosen canonical host, or the story records a blocked
-  state with the missing access named explicitly.
-- Given indexing cannot be guaranteed instantly, when this story ships, then the success
-  criteria distinguish clearly between `crawlable and submitted`, `eligible for indexing`,
-  and `already indexed`.
-- Given launch regressions will often be operational, when this story ships, then
-  the operator checklist covers DNS, TLS validity, redirect checks, robots, sitemap,
-  sample URL inspection, and post-deploy revalidation.
-- Given the canonical host may change later, when this story ships, then the rerun
-  steps for re-verification and redirect migration are documented instead of being
-  left implicit.
-- Given verification tokens and console screenshots can expose account-sensitive data,
-  when this story ships, then retained evidence uses the redacted artifact shape below
-  and never commits raw verification tokens or account identifiers.
+  - Given launch readiness needs operator proof rather than guesswork, when this story ships, then Google Search Console and Bing Webmaster Tools are configured by an account-owning operator for the chosen canonical host, or the story records a blocked state with the missing access named explicitly.
+  - Given indexing cannot be guaranteed instantly, when this story ships, then the success criteria distinguish clearly between `crawlable and submitted`, `eligible for indexing`, and `already indexed`.
+  - Given launch regressions will often be operational, when this story ships, then the operator checklist covers DNS, TLS validity, redirect checks, robots, sitemap, sample URL inspection, and post-deploy revalidation.
+  - Given the canonical host may change later, when this story ships, then the rerun steps for re-verification and redirect migration are documented instead of being left implicit.
+  - Given verification tokens and console screenshots can expose account-sensitive data, when this story ships, then retained evidence uses the redacted artifact shape below and never commits raw verification tokens or account identifiers.
 retired_ids:
-- ST-35-04
+  - ST-35-04
 ---
 
 ## Context
-
 
 The current launch assessment can verify public edge behavior from the outside, but it cannot prove
 whether Search Console or Bing ownership, sitemap submission, or live indexing requests already
@@ -60,7 +48,6 @@ No separate contract inputs is stated in the source.
 
 ## Live Verification Plan
 
-
 1. Confirm DNS and TLS for `https://skriptoteket.hule.education`.
 2. Confirm HTTP-to-HTTPS and host redirects do not split the canonical host.
 3. Curl `/robots.txt`, `/sitemap.xml`, `/`, `/public/apps/classroom.group-seating-studio`, and a
@@ -77,7 +64,6 @@ No separate non-goals is stated in the source.
 
 ## Notes
 
-
 - This story is intentionally operational. It should end with a repeatable checklist, not only a
   one-time screenshot or memory of having clicked the right buttons.
 - Do not promise “indexed by launch day” as a binary engineering acceptance criterion. Promise that
@@ -86,17 +72,15 @@ No separate non-goals is stated in the source.
 
 ### Source: Operator Handoff Contract
 
-
-| Responsibility | Owner | Proof shape |
-|---|---|---|
-| Prepare technical endpoints and curl checklist | Agents/developer | Commands and pass/fail results retained in docs or handoff |
-| Verify Google Search Console property | Product owner or deployment operator with account access | Redacted note with property type, canonical host, verification method, date, and operator initials |
-| Verify Bing Webmaster Tools site | Product owner or deployment operator with account access | Redacted note with site URL, verification method, date, and operator initials |
-| Submit sitemap and inspect sample URLs | Product owner or deployment operator with account access | Redacted note with sitemap URL, submitted timestamp, sample URL inspection outcomes, and follow-up date |
-| Revalidate after deploy or host migration | Deployment operator | Post-deploy note covering DNS, TLS, redirects, robots, sitemap, and sample URL inspection |
+| Responsibility                                 | Owner                                                    | Proof shape                                                                                             |
+| ---------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Prepare technical endpoints and curl checklist | Agents/developer                                         | Commands and pass/fail results retained in docs or handoff                                              |
+| Verify Google Search Console property          | Product owner or deployment operator with account access | Redacted note with property type, canonical host, verification method, date, and operator initials      |
+| Verify Bing Webmaster Tools site               | Product owner or deployment operator with account access | Redacted note with site URL, verification method, date, and operator initials                           |
+| Submit sitemap and inspect sample URLs         | Product owner or deployment operator with account access | Redacted note with sitemap URL, submitted timestamp, sample URL inspection outcomes, and follow-up date |
+| Revalidate after deploy or host migration      | Deployment operator                                      | Post-deploy note covering DNS, TLS, redirects, robots, sitemap, and sample URL inspection               |
 
 ### Source: Allowed Verification Methods
-
 
 - Preferred: DNS verification for durable ownership when the operator controls the relevant DNS
   zone. Retain only the record type and verified date; do not retain raw token values.
@@ -109,7 +93,6 @@ No separate non-goals is stated in the source.
   Search Console or Bing setup is complete.
 
 ### Source: Redacted Evidence Fields
-
 
 Retain a short Markdown note or review attachment with:
 
@@ -127,7 +110,6 @@ URLs, or screenshots that expose account identifiers.
 
 ### Source: Implementation Summary (as of 2026-04-15)
 
-
 - `PR-0269` added
   [RUN-launch-seo-search-operations](../../runbooks/run-skript-runbook-launch-seo-search-operations-part-02.md).
 - The agent-owned preparation work is complete: the runbook documents technical preflight,
@@ -140,7 +122,6 @@ URLs, or screenshots that expose account identifiers.
   and the chosen verification method.
 
 ### Source: References
-
 
 - Epic parent:
   [EPIC-35](../epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md)

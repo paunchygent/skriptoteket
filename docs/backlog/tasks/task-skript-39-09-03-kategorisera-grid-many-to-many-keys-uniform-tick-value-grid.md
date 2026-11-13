@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-03
-title: 'Kategorisera grid: many-to-many keys, uniform tick value, grid-only export
-  and DOCX category sorting'
+title: 'Kategorisera grid: many-to-many keys, uniform tick value, grid-only export and DOCX category sorting'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -18,9 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on c6e0e28c and 0fa48e19, approved 07bede41 (merged 2ebed4cb). Live eval found valid type_conflict replies rejected by the key validator; repair 7c8c6bd7 approved and merged. Walk at 7c8c6bd7: kategorisera exam converted to two Kategorisera grids with vila keyed to two columns; tick 0.5 gave 2 points; export imported into Exam.net as 5339116, categorizingItems 2p with four 0.5 rules and answers [1,2]. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-03/ and evidence/walk/TASK-SKRIPT-39-09-03/walk-7c8c6bd7.md.'
 task_kind: story
 acceptance_criteria:
-- A teacher keys a many-to-many Kategorisera grid with one tick value, exports it,
-  and Exam.net imports it as categorizingItems with every tick keyed at that value;
-  DOCX conversion produces such grids and the gold eval covers them
+  - A teacher keys a many-to-many Kategorisera grid with one tick value, exports it, and Exam.net imports it as categorizingItems with every tick keyed at that value; DOCX conversion produces such grids and the gold eval covers them
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -119,12 +116,12 @@ concern: grid sizes are small.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | A matching key is many-to-many: every row has at least one correct column, a column may serve several rows or none (Q9). |
-| T2  | One `tick_points` per grid, default 1; points are `tick_points` × ticks and shown read-only (Q10, R11). |
-| T3  | Matching exports only as the `qti-match-interaction` grid with one mapped value per tick (Q7, V51). |
-| T4  | The PDF prints a grid as a tick table; the answer-key version marks the correct cells (R13). |
+| ID  | Decided contract term                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| T1  | A matching key is many-to-many: every row has at least one correct column, a column may serve several rows or none (Q9).                     |
+| T2  | One `tick_points` per grid, default 1; points are `tick_points` × ticks and shown read-only (Q10, R11).                                      |
+| T3  | Matching exports only as the `qti-match-interaction` grid with one mapped value per tick (Q7, V51).                                          |
+| T4  | The PDF prints a grid as a tick table; the answer-key version marks the correct cells (R13).                                                 |
 | T5  | DOCX conversion produces many-to-many grids; the tick value is points ÷ ticks rounded down to 2 decimals, estimated when inexact (Q11, R12). |
-| T6  | The gold corpus gains one agent-authored, labelled category-sorting exam (R10). |
-| T7  | The teacher-facing name is Kategorisera; the editor UI is the parent's last unit (Q8). |
+| T6  | The gold corpus gains one agent-authored, labelled category-sorting exam (R10).                                                              |
+| T7  | The teacher-facing name is Kategorisera; the editor UI is the parent's last unit (Q8).                                                       |

@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5
 title: Klassrumskartan SVG redesign v5
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

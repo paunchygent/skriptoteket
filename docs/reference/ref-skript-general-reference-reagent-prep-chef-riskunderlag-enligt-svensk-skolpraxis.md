@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-reagent-prep-chef-riskunderlag-enligt-svensk-sk
 title: 'Reference: Reagent Prep Chef — riskunderlag enligt svensk skolpraxis'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-reagent-prep-chef-riskunderlag-skolpraxis
+  - REF-reagent-prep-chef-riskunderlag-skolpraxis
 summary: 'Reference: Reagent Prep Chef — riskunderlag enligt svensk skolpraxis'
 ---
 
@@ -79,15 +79,15 @@ Använd **“Underlag till riskbedömning”** för exporterad PDF och filnamn.
 
 ### Mapping: current field → keep/merge/drop
 
-| current_field | source anchor | decision | why |
-| --- | --- | --- | --- |
-| `scope` | AFS 2023:10, 7 kap. 12 § p1–p2 | **keep (required)** | Måste beskriva vad/situation som riskbedömningen avser. |
-| `location` | AFS 2023:10, 7 kap. 12 § p1 | **keep (optional)** | Hjälper i skolmiljö med flera salar/lab, men behövs inte som blockerande krav. |
-| `participants` | AFS 2023:10, 7 kap. 12 § p7 | **keep (required)** | Vem som deltagit i undersökning/riskbedömning ska framgå. |
-| `approver` | AFS 2023:10, 7 kap. 12 § p9 | **keep (required)** | Ansvarig person som godkänt dokumentet ska framgå. |
-| `assessment_date` | AFS 2023:10, 7 kap. 12 § p9 | **keep (required)** | Datum för dokumentet krävs uttryckligen. |
-| `next_review_date` | AFS 2023:10, 7 kap. 12 § p8 | **keep (required)** | Nästa planerade undersökning/riskbedömning ska framgå. |
-| `local_routines` | AFS 2023:10, 7 kap. 12 § p3/p5/p6 | **keep (optional)** | Lokala rutiner kan förtydliga åtgärd/beredskap men bör inte blockera export. |
+| current_field      | source anchor                     | decision            | why                                                                            |
+| ------------------ | --------------------------------- | ------------------- | ------------------------------------------------------------------------------ |
+| `scope`            | AFS 2023:10, 7 kap. 12 § p1–p2    | **keep (required)** | Måste beskriva vad/situation som riskbedömningen avser.                        |
+| `location`         | AFS 2023:10, 7 kap. 12 § p1       | **keep (optional)** | Hjälper i skolmiljö med flera salar/lab, men behövs inte som blockerande krav. |
+| `participants`     | AFS 2023:10, 7 kap. 12 § p7       | **keep (required)** | Vem som deltagit i undersökning/riskbedömning ska framgå.                      |
+| `approver`         | AFS 2023:10, 7 kap. 12 § p9       | **keep (required)** | Ansvarig person som godkänt dokumentet ska framgå.                             |
+| `assessment_date`  | AFS 2023:10, 7 kap. 12 § p9       | **keep (required)** | Datum för dokumentet krävs uttryckligen.                                       |
+| `next_review_date` | AFS 2023:10, 7 kap. 12 § p8       | **keep (required)** | Nästa planerade undersökning/riskbedömning ska framgå.                         |
+| `local_routines`   | AFS 2023:10, 7 kap. 12 § p3/p5/p6 | **keep (optional)** | Lokala rutiner kan förtydliga åtgärd/beredskap men bör inte blockera export.   |
 
 ### Implementation implications
 

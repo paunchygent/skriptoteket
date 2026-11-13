@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0065
 title: Runner contract v3 (state_update, structured errors, session promotions)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0065
+  - ADR-0065
 ---
 
 ## Context
@@ -19,9 +19,9 @@ retired_ids:
 The current runner result contract v2 (`/work/result.json`) supports `outputs`, `next_actions`, and `state`, but it has
 three foundation gaps:
 
-1) `state` has ambiguous semantics (`null` vs `{}` vs missing)
-2) errors are only `error_summary` (hard to handle deterministically)
-3) there is no standard way for tools/platform to request/record promotions (artifact → session file)
+1. `state` has ambiguous semantics (`null` vs `{}` vs missing)
+2. errors are only `error_summary` (hard to handle deterministically)
+3. there is no standard way for tools/platform to request/record promotions (artifact → session file)
 
 ## Decision
 
@@ -85,9 +85,9 @@ No separate material is recorded in the source snapshot.
 The current runner result contract v2 (`/work/result.json`) supports `outputs`, `next_actions`, and `state`, but it has
 three foundation gaps:
 
-1) `state` has ambiguous semantics (`null` vs `{}` vs missing)
-2) errors are only `error_summary` (hard to handle deterministically)
-3) there is no standard way for tools/platform to request/record promotions (artifact → session file)
+1. `state` has ambiguous semantics (`null` vs `{}` vs missing)
+2. errors are only `error_summary` (hard to handle deterministically)
+3. there is no standard way for tools/platform to request/record promotions (artifact → session file)
 
 ### Decision
 

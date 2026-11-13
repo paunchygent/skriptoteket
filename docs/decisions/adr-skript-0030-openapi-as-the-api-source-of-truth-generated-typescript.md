@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0030
 title: OpenAPI as the API source of truth + generated TypeScript types
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0030
+  - ADR-0030
 ---
 
 ## Context

@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-file-naming-save-and-export-protocol-v1
 title: File naming, save, and export protocol v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-file-naming-save-export-protocol-v1
+  - REF-file-naming-save-export-protocol-v1
 summary: File naming, save, and export protocol v1
 ---
 
@@ -31,8 +31,6 @@ reviewed before production adoption.
 The source does not provide a separate facts and semantics section; no additional facts and semantics is recorded.
 
 ### Source: File Naming, Save, And Export Protocol V1
-
-
 
 ### Source: Scope
 
@@ -87,15 +85,15 @@ Rules:
 
 Canonical output-purpose labels:
 
-| Use case | Canonical label | Notes |
-|---|---|---|
-| Transcript-style output | `Transkribering` | Use for transcript downloads/saves even when the chosen format is TXT, Markdown, VTT, or SRT. |
-| Corrected exam output | `Rättat prov` | Use for reviewed/corrected teacher-facing exam outputs. |
-| Converted PDF output | `Konverterad PDF` | Use when the output purpose is a PDF converted from another source. |
-| Word-compatible document output | `Word-dokument` | Use when the output purpose is a DOCX/Word-compatible document converted from another source; the extension remains `.docx`. |
-| Markdown output | `Markdown` | Use when Markdown is the teacher-recognizable output purpose. |
-| Combined project output | `Sammanslagen PDF` | Use for one merged PDF from multiple/project inputs. |
-| Separate project output | `Separat PDF` | Use for one file in a set of per-input/per-page outputs; add a system-owned distinguisher when several files share the same source title. |
+| Use case                        | Canonical label    | Notes                                                                                                                                     |
+| ------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Transcript-style output         | `Transkribering`   | Use for transcript downloads/saves even when the chosen format is TXT, Markdown, VTT, or SRT.                                             |
+| Corrected exam output           | `Rättat prov`      | Use for reviewed/corrected teacher-facing exam outputs.                                                                                   |
+| Converted PDF output            | `Konverterad PDF`  | Use when the output purpose is a PDF converted from another source.                                                                       |
+| Word-compatible document output | `Word-dokument`    | Use when the output purpose is a DOCX/Word-compatible document converted from another source; the extension remains `.docx`.              |
+| Markdown output                 | `Markdown`         | Use when Markdown is the teacher-recognizable output purpose.                                                                             |
+| Combined project output         | `Sammanslagen PDF` | Use for one merged PDF from multiple/project inputs.                                                                                      |
+| Separate project output         | `Separat PDF`      | Use for one file in a set of per-input/per-page outputs; add a system-owned distinguisher when several files share the same source title. |
 
 The protocol prefers teacher-readable Swedish labels with spaces. ASCII-only
 slug forms are not the default product surface and require an explicit adapter

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-04-01
 title: 'Klassrumskartan: grouping PDF A4 portrait presentation renderer and delivery'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,24 +17,12 @@ closeout_review:
 story: ST-SKRIPT-26-04
 task_kind: story
 acceptance_criteria:
-- Given a grouping export job is created with `export_kind=pdf`, when the artifact
-  is rendered, then the renderer consumes the shared `GroupingExportPresentation`
-  model and produces export-owned HTML/CSS that is converted locally to PDF with WeasyPrint
-  instead of reusing the live planner DOM or converting the `XLSX` workbook to PDF.
-- Given the PDF is generated, when the teacher opens it, then `A4` portrait is the
-  default and only page contract in this slice.
-- Given the PDF spans one or more pages, when groups are laid out, then class/document
-  headings, group labels, member ordering, section boundaries, and left-right row
-  pairing remain deterministic and easy to scan on screen and on paper.
-- Given a group section is near a page break, when pagination occurs, then the renderer
-  avoids orphaning a group heading at the bottom of a page without at least the first
-  member row.
-- Given the grouping PDF is rendered, when the teacher opens it, then the document
-  uses a restrained Skriptoteket-branded letterhead and a two-column grid of framed
-  group cards that reduces page count while keeping scan order intuitive.
-- Given the PDF succeeds, when the teacher downloads it, then the file is delivered
-  through the explicit grouping export job lane with a teacher-safe filename and `Ladda
-  ned igen` support from the grouping workspace.
+  - Given a grouping export job is created with `export_kind=pdf`, when the artifact is rendered, then the renderer consumes the shared `GroupingExportPresentation` model and produces export-owned HTML/CSS that is converted locally to PDF with WeasyPrint instead of reusing the live planner DOM or converting the `XLSX` workbook to PDF.
+  - Given the PDF is generated, when the teacher opens it, then `A4` portrait is the default and only page contract in this slice.
+  - Given the PDF spans one or more pages, when groups are laid out, then class/document headings, group labels, member ordering, section boundaries, and left-right row pairing remain deterministic and easy to scan on screen and on paper.
+  - Given a group section is near a page break, when pagination occurs, then the renderer avoids orphaning a group heading at the bottom of a page without at least the first member row.
+  - Given the grouping PDF is rendered, when the teacher opens it, then the document uses a restrained Skriptoteket-branded letterhead and a two-column grid of framed group cards that reduces page count while keeping scan order intuitive.
+  - Given the PDF succeeds, when the teacher downloads it, then the file is delivered through the explicit grouping export job lane with a teacher-safe filename and `Ladda ned igen` support from the grouping workspace.
 ---
 
 ## Context
@@ -45,8 +33,8 @@ The grouping PDF is important for presentation, but without a locked page contra
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-26-04-01 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice

@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-development-changelog-PART-02
 title: Development changelog — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-development-changelog
 part: 2
@@ -55,33 +55,18 @@ repo line-count limit.
 
 - Repeated `pdm run docs-validate` and `git diff --check` passes recorded the docs gates for
   `PR-0250` through `REV-PR-0258` planning/review closeouts.
-- `PR-0251` / `PR-0255` frontend gates included `pdm run fe-test -- --run
-  src/api/sharedAuth.spec.ts src/stores/auth.spec.ts src/api/client.spec.ts`, `pdm run
-  fe-type-check`, and `pdm run fe-lint`.
-- `PR-0255` backend/live proof included `pdm run pytest -q
-  tests/unit/web/test_profile_app_continuation_api.py`, `pdm run typecheck`, `pdm run lint`,
-  `docker compose up -d db`, `pdm run db-upgrade`, and `pdm run pr-0255-auth-bootstrap
-  --start-backend --start-vite`.
-- `PR-0252` proof included focused auth-entry Vitest suites, `pdm run python -m py_compile
-  scripts/_playwright_huleedu_auth.py scripts/playwright_pr_0252_auth_return_to_origin.py
-  scripts/playwright_pr_0255_auth_bootstrap.py`, `pdm run db-upgrade`, and
-  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0252-auth-return --start-backend
-  --start-vite`.
+- `PR-0251` / `PR-0255` frontend gates included `pdm run fe-test -- --run src/api/sharedAuth.spec.ts src/stores/auth.spec.ts src/api/client.spec.ts`, `pdm run fe-type-check`, and `pdm run fe-lint`.
+- `PR-0255` backend/live proof included `pdm run pytest -q tests/unit/web/test_profile_app_continuation_api.py`, `pdm run typecheck`, `pdm run lint`,
+  `docker compose up -d db`, `pdm run db-upgrade`, and `pdm run pr-0255-auth-bootstrap --start-backend --start-vite`.
+- `PR-0252` proof included focused auth-entry Vitest suites, `pdm run python -m py_compile scripts/_playwright_huleedu_auth.py scripts/playwright_pr_0252_auth_return_to_origin.py scripts/playwright_pr_0255_auth_bootstrap.py`, `pdm run db-upgrade`, and
+  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0252-auth-return --start-backend --start-vite`.
 - `PR-0253` proof included focused backend route/contract tests, frontend auth/router tests,
   `pdm run pytest tests/unit/web -q`, Docker migration coverage for `c1d2e3f4a5b6`,
   `pdm run python -m scripts.check_migration_test_coverage`, and
-  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend
-  --start-vite`.
+  `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend --start-vite`.
 - `ST-28-06` / `ADR-SKRIPT-0083` proof included `pdm run docs-validate` and `git diff --check`.
-- `PR-0256` proof included focused auth ceremony Vitest suites, `pdm run test
-  tests/unit/web/test_profile_app_continuation_api.py`, `pdm run fe-type-check`, `pdm run
-  typecheck`, `pdm run fe-lint`, `pdm run lint`, and `pdm run python -m
-  scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite`.
-- `PR-0257` proof included focused lifecycle Vitest suites, `pdm run pytest -q
-  tests/unit/web/test_pr_0253_auth_retirement_contracts.py`, `pdm run python -m py_compile
-  scripts/playwright_pr_0257_auth_lifecycle.py`, `pdm run python -m
-  scripts.playwright_pr_0257_auth_lifecycle --start-vite`, `pdm run fe-type-check`, `pdm run
-  fe-lint`, `pdm run typecheck`, `pdm run lint`, `pdm run docs-validate`, and `git diff --check`.
+- `PR-0256` proof included focused auth ceremony Vitest suites, `pdm run test tests/unit/web/test_profile_app_continuation_api.py`, `pdm run fe-type-check`, `pdm run typecheck`, `pdm run fe-lint`, `pdm run lint`, and `pdm run python -m scripts.playwright_pr_0256_auth_ceremony --start-backend --start-vite`.
+- `PR-0257` proof included focused lifecycle Vitest suites, `pdm run pytest -q tests/unit/web/test_pr_0253_auth_retirement_contracts.py`, `pdm run python -m py_compile scripts/playwright_pr_0257_auth_lifecycle.py`, `pdm run python -m scripts.playwright_pr_0257_auth_lifecycle --start-vite`, `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run typecheck`, `pdm run lint`, `pdm run docs-validate`, and `git diff --check`.
 
 ### Previous Next Steps
 
@@ -123,26 +108,17 @@ repo line-count limit.
 ### Previous Verification
 
 - `pdm run fe-gen-api-types` (pass during PR-0261).
-- `pdm run fe-test -- --run src/router/index.spec.ts src/views/AuthLoginView.spec.ts
-  src/components/auth/AuthLoginPanel.spec.ts src/components/layout/LandingLayout.spec.ts
-  src/views/HomeView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts
-  src/composables/auth/authEntryNavigation.spec.ts src/stores/auth.spec.ts` (pass; 66 tests).
+- `pdm run fe-test -- --run src/router/index.spec.ts src/views/AuthLoginView.spec.ts src/components/auth/AuthLoginPanel.spec.ts src/components/layout/LandingLayout.spec.ts src/views/HomeView.spec.ts src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts src/composables/auth/authEntryNavigation.spec.ts src/stores/auth.spec.ts` (pass; 66 tests).
 - `pdm run typecheck`, `pdm run lint`, `pdm run fe-type-check`, and `pdm run fe-lint` (pass
   during the auth-cutover chain).
-- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection
-  --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000` (pass; artifacts in
+- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0258-auth-projection --start-backend --start-vite --gateway-base-url http://127.0.0.1:8000` (pass; artifacts in
   `.artifacts/playwright-pr-0258-auth-projection/`).
 - `pdm run pr-0261-auth-action-matrix` (pass; actions=5 and sanitized manifest under
   `.artifacts/playwright-pr-0261-auth-action-matrix/`).
-- `pdm run pr-0262-real-lifecycle --huleedu-artifact
-  <HuleEdu retained lifecycle-proof artifact>
-  --artifact-dir .artifacts/playwright-pr-0262-real-lifecycle/local-nonprod` (pass; manifest at
+- `pdm run pr-0262-real-lifecycle --huleedu-artifact <HuleEdu retained lifecycle-proof artifact> --artifact-dir .artifacts/playwright-pr-0262-real-lifecycle/local-nonprod` (pass; manifest at
   `.artifacts/playwright-pr-0262-real-lifecycle/local-nonprod/20260413T132801Z/manifest.redacted.json`).
 - Focused backend/proof tests passed:
-  `pdm run pytest -q tests/unit/application/auth/test_pr_0262_lifecycle_manifest.py
-  tests/unit/web/test_huleedu_identity_context_probe_api.py
-  tests/unit/web/test_profile_app_continuation_api.py
-  tests/unit/web/test_profile_app_continuation_context_api.py` (38 tests).
+  `pdm run pytest -q tests/unit/application/auth/test_pr_0262_lifecycle_manifest.py tests/unit/web/test_huleedu_identity_context_probe_api.py tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_context_api.py` (38 tests).
 
 ### Previous Next Steps
 

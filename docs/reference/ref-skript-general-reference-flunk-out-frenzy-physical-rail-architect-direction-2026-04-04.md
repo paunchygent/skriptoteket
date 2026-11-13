@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-flunk-out-frenzy-physical-rail-architect-direct
 title: 'Reference: Flunk-Out Frenzy physical rail architect direction (2026-04-04)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04
+  - REF-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04
 summary: 'Reference: Flunk-Out Frenzy physical rail architect direction (2026-04-04)'
 ---
 
@@ -121,8 +121,6 @@ surfaces or volumes, not just rails.
 
 ### Source: 2. Recommended authored / compiler / runtime split
 
-
-
 ### Source: Authored spec
 
 - Keep donor provenance explicit.
@@ -171,8 +169,6 @@ added there.
   raw-row-backed, never reconstructed.
 
 ### Source: 3. Acceptable vs forbidden heuristics
-
-
 
 ### Source: Acceptable
 
@@ -345,8 +341,6 @@ Drift policy should stay two-stage:
   mechanics are intentional and stable.
 
 ### Source: 7. Candidate recommendation judgments
-
-
 
 ### Source: 1. Do not physicalize the current `travelRoutes`; demote them to observation / proof spines only.
 

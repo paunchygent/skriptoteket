@@ -287,16 +287,16 @@ page-based handoff contract, not with the older modal-only assumption from `ST-1
 
 `ST-28-05` is now the cross-repo gating story for this epic. The paced order is:
 
-1. freeze launch topology and shared-edge ownership
-2. land the dedicated `/auth/login` route contract through `ST-32-10` / `PR-0242`
-3. ingest HuleEdu provider conformance and handoff through `PR-0250` (done)
-4. consume the shared browser session contract in Skriptoteket through `PR-0251`
-5. preserve `/auth/login` interruption and return-to-origin behavior through `PR-0252`
-6. remove local browser auth ownership through `PR-0253`
-7. accept the product identity realm contract through `ST-28-06` / `ADR-0083` (done)
-8. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07` (done)
-9. restore standalone registration/password lifecycle through the shared identity surface in
-   `ST-28-08` / `PR-0257` (done)
+01. freeze launch topology and shared-edge ownership
+02. land the dedicated `/auth/login` route contract through `ST-32-10` / `PR-0242`
+03. ingest HuleEdu provider conformance and handoff through `PR-0250` (done)
+04. consume the shared browser session contract in Skriptoteket through `PR-0251`
+05. preserve `/auth/login` interruption and return-to-origin behavior through `PR-0252`
+06. remove local browser auth ownership through `PR-0253`
+07. accept the product identity realm contract through `ST-28-06` / `ADR-0083` (done)
+08. implement the Hule Education-hosted Skriptoteket login ceremony through `ST-28-07` (done)
+09. restore standalone registration/password lifecycle through the shared identity surface in
+    `ST-28-08` / `PR-0257` (done)
 10. make projection provisioning realm-aware through `ST-28-09` (done)
 11. complete HuleEdu `TASK-0325` so local/non-production Gateway proof has exact dev origins,
     HuleEdu login UI on `5174`, Gateway-proxied Skriptoteket `/api` traffic with exact Gateway

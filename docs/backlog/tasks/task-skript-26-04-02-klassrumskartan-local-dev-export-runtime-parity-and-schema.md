@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-04-02
 title: 'Klassrumskartan: local-dev export runtime parity and schema remediation'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,23 +17,11 @@ closeout_review:
 story: ST-SKRIPT-26-04
 task_kind: story
 acceptance_criteria:
-- Given a developer verifies Klassrumskartan through `http://127.0.0.1:5173/apps/classroom.group-seating-studio`,
-  when they follow the documented local lane, then it is explicit whether the browser
-  is targeting host `dev-local` services or Docker services and the matching logs/runtime
-  expectations are documented in the same place.
-- Given the host `dev-local` lane is used for export verification, when a seating
-  export job is started, then the host backend reaches a resolvable Sir Convert endpoint
-  instead of failing on `host.docker.internal` DNS lookup.
-- Given a previously completed local seating export exists, when the teacher retries
-  the download from the host verification lane, then the backend serves the artifact
-  from a host-accessible Vault path instead of returning `500 Internal server error`.
-- Given the current local code expects the `classroom_planner_plan_drafts.smart_enabled`
-  column, when the host app boots against the local dev database, then `/api/v1/apps/classroom.group-seating-studio/drafts/resumable`
-  no longer fails with schema drift.
-- Given follow-on export work resumes under `ST-26-03`, `ST-SKRIPT-26-04`, or `ST-26-05`,
-  when a developer performs the required live verification, then the remediation doc,
-  handoff, and index point them to one reliable local verification lane instead of
-  leaving runtime parity to tribal knowledge.
+  - Given a developer verifies Klassrumskartan through `http://127.0.0.1:5173/apps/classroom.group-seating-studio`, when they follow the documented local lane, then it is explicit whether the browser is targeting host `dev-local` services or Docker services and the matching logs/runtime expectations are documented in the same place.
+  - Given the host `dev-local` lane is used for export verification, when a seating export job is started, then the host backend reaches a resolvable Sir Convert endpoint instead of failing on `host.docker.internal` DNS lookup.
+  - Given a previously completed local seating export exists, when the teacher retries the download from the host verification lane, then the backend serves the artifact from a host-accessible Vault path instead of returning `500 Internal server error`.
+  - Given the current local code expects the `classroom_planner_plan_drafts.smart_enabled` column, when the host app boots against the local dev database, then `/api/v1/apps/classroom.group-seating-studio/drafts/resumable` no longer fails with schema drift.
+  - Given follow-on export work resumes under `ST-26-03`, `ST-SKRIPT-26-04`, or `ST-26-05`, when a developer performs the required live verification, then the remediation doc, handoff, and index point them to one reliable local verification lane instead of leaving runtime parity to tribal knowledge.
 ---
 
 ## Context

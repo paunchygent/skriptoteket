@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-toasts-and-system-messages-spa
 title: 'Reference: Toasts and system messages (SPA)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-toast-system-messages
+  - REF-toast-system-messages
 summary: 'Reference: Toasts and system messages (SPA)'
 ---
 
@@ -24,17 +24,15 @@ The source does not provide a separate facts and semantics section; no additiona
 
 ### Source: Overview (what goes where)
 
-| Kind | Use for | Lives where | Notes |
-|------|---------|-------------|-------|
-| **Toast** | transient action feedback (save/publish/submit) | overlay (fixed) | should not move layout |
-| **Inline error** | validation + blocking states | in flow | sticky + dismissible (`×`) |
-| **Typed UI outputs** | tool-run results (`notice`, `table`, `markdown`, etc.) | results area | not “toasts” |
+| Kind                 | Use for                                                | Lives where     | Notes                      |
+| -------------------- | ------------------------------------------------------ | --------------- | -------------------------- |
+| **Toast**            | transient action feedback (save/publish/submit)        | overlay (fixed) | should not move layout     |
+| **Inline error**     | validation + blocking states                           | in flow         | sticky + dismissible (`×`) |
+| **Typed UI outputs** | tool-run results (`notice`, `table`, `markdown`, etc.) | results area    | not “toasts”               |
 
 See ADR-0037 for the decision and EPIC-13 for execution.
 
 ### Source: Toasts (standard)
-
-
 
 ### Source: When to use
 
@@ -58,12 +56,12 @@ Do not use toasts for:
 
 Toasts are **overlay cards** with an icon + message, and **never push content**.
 
-| Variant | Use for | Background | Icon |
-|---------|---------|------------|------|
-| `info` | neutral status | navy (90% opacity) | `i` / dot |
-| `success` | completed positive outcome | pine green (`--huleedu-success`, 90% opacity) | check |
-| `warning` | caution, attention | amber (`--huleedu-warning`, 90% opacity) | warning |
-| `failure` | action did not complete | warm terracotta (`--huleedu-terracotta`, 90% opacity) | × |
+| Variant   | Use for                    | Background                                            | Icon      |
+| --------- | -------------------------- | ----------------------------------------------------- | --------- |
+| `info`    | neutral status             | navy (90% opacity)                                    | `i` / dot |
+| `success` | completed positive outcome | pine green (`--huleedu-success`, 90% opacity)         | check     |
+| `warning` | caution, attention         | amber (`--huleedu-warning`, 90% opacity)              | warning   |
+| `failure` | action did not complete    | warm terracotta (`--huleedu-terracotta`, 90% opacity) | ×         |
 
 Recommended durations (auto-dismiss):
 
@@ -100,14 +98,14 @@ Inline errors:
 
 This table is the “where do I change X?” map for the most common UI primitives.
 
-| Primitive | Source of truth | Notes |
-|----------|------------------|-------|
-| Buttons | `frontend/apps/skriptoteket/src/assets/main.css` (`.btn-primary`, `.btn-cta`, `.btn-ghost`) | No ad-hoc button styling in templates |
-| Fonts + tokens | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` + `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` | Tokens are canonical; Tailwind maps them via `@theme` |
-| Grid background | `frontend/apps/skriptoteket/src/assets/main.css` (`body::before`) | Uses `--huleedu-grid-size` |
-| Tables | `frontend/apps/skriptoteket/src/components/ui-outputs/UiOutputTable.vue` | Canonical table output style |
-| Animations | Prefer Tailwind utilities (`animate-spin`) + Vue `Transition` CSS in components | Avoid custom keyframes unless necessary |
-| Toasts + system messages | ADR-0037 + EPIC-13 + this doc | Implement as primitives + shared API |
+| Primitive                | Source of truth                                                                                                          | Notes                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------- |
+| Buttons                  | `frontend/apps/skriptoteket/src/assets/main.css` (`.btn-primary`, `.btn-cta`, `.btn-ghost`)                              | No ad-hoc button styling in templates                 |
+| Fonts + tokens           | `src/skriptoteket/web/static/css/huleedu-design-tokens.css` + `frontend/apps/skriptoteket/src/styles/tailwind-theme.css` | Tokens are canonical; Tailwind maps them via `@theme` |
+| Grid background          | `frontend/apps/skriptoteket/src/assets/main.css` (`body::before`)                                                        | Uses `--huleedu-grid-size`                            |
+| Tables                   | `frontend/apps/skriptoteket/src/components/ui-outputs/UiOutputTable.vue`                                                 | Canonical table output style                          |
+| Animations               | Prefer Tailwind utilities (`animate-spin`) + Vue `Transition` CSS in components                                          | Avoid custom keyframes unless necessary               |
+| Toasts + system messages | ADR-0037 + EPIC-13 + this doc                                                                                            | Implement as primitives + shared API                  |
 
 ## Decisions And Interpretation
 

@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-27
 title: 'Research: editor chat virtual file context retention + tokenizer budgets'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,17 +16,11 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given the need for editor chat to see virtual files without resending unchanged
-  context, when research completes, then a documented recommendation exists for context
-  representation, resend rules, and prompt structure.
-- Given the requirement to decide tokenization accuracy, when research completes,
-  then GPT-5 and devstral-2-small tokenization approaches are compared and a recommended
-  integration path is documented.
-- Given the existing editor chat/edit-ops architecture, when research completes, then
-  the minimal-change API and storage impacts are identified with explicit tradeoffs
-  and risks.
+  - Given the need for editor chat to see virtual files without resending unchanged context, when research completes, then a documented recommendation exists for context representation, resend rules, and prompt structure.
+  - Given the requirement to decide tokenization accuracy, when research completes, then GPT-5 and devstral-2-small tokenization approaches are compared and a recommended integration path is documented.
+  - Given the existing editor chat/edit-ops architecture, when research completes, then the minimal-change API and storage impacts are identified with explicit tradeoffs and risks.
 retired_ids:
-- ST-08-27
+  - ST-08-27
 ---
 
 ## Context
@@ -63,6 +57,7 @@ No adjacent capability, terminal record, or unapproved implementation scope is a
 ### Context
 
 Editor chat currently does not receive virtual files, while edit-ops does. The next phase must:
+
 - Allow normal chat to see virtual files.
 - Avoid resending unchanged virtual files if they are already in the active model context.
 - Determine if a virtual file was dropped by the rolling context window (post-user message).
@@ -76,6 +71,7 @@ This story is a research task to answer the design questions before ADRs, storie
 ### Research questions (design + open questions)
 
 ### Context representation + storage
+
 - How should virtual file context be represented in the LLM message list?
   - Dedicated hidden assistant messages?
   - Tool/session messages with metadata only and filtered from UI history?
@@ -84,30 +80,35 @@ This story is a research task to answer the design questions before ADRs, storie
 - What metadata is required to detect file identity + freshness (file_id, fingerprint, version, etc.)?
 
 ### Resend rules + rolling context window
+
 - How do we determine whether a virtual file is still in the active context **after** the user message is added?
 - What algorithm guarantees:
-  1) no resend when unchanged and still present,
-  2) resend when dropped by budget,
-  3) resend when file changed?
+  1. no resend when unchanged and still present,
+  2. resend when dropped by budget,
+  3. resend when file changed?
 - Should resend be per-file priority (active file → tool.py → others), and what are the fallback rules if budget is tight?
 
 ### Prompt format
+
 - What exact JSON payload format should be used for virtual file context messages?
 - Should the chat system prompt be updated to interpret context messages explicitly?
 - How do we prevent drift between edit-ops payload format and chat payload format?
 
 ### Tokenizer integration
+
 - Which tokenizer implementation should we use for GPT-5 (OpenAI tokenizer)?
 - Which tokenizer implementation should we use for devstral-2-small (llama.cpp/llama tokenizer vs sentencepiece)?
 - Where should tokenizer assets live (repo vs server), and how are they configured per model?
 - What is the fallback when tokenizer assets are missing or mismatched?
 
 ### API + minimal-change architecture
+
 - What minimal API changes are required in `EditorChatRequest` (optional `virtual_files`, `active_file`)?
 - How do we keep these changes backward compatible?
 - How can we reuse existing prompt budgeting logic without duplicating logic across chat + edit-ops?
 
 ### Observability + safety
+
 - What metadata can be logged safely (sizes, counts, fingerprints) without leaking content?
 - How do we test/verify that resending logic is working (unit + integration)?
 
@@ -124,8 +125,8 @@ This story is a research task to answer the design questions before ADRs, storie
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                  | Type      | Status | Question/Assumption              | Recommendation/Decision                                                             | Source                               |
+| ------------------- | --------- | ------ | -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-ST-SKRIPT-08-27 | migration | closed | How is source meaning preserved? | Preserve the source story contract and current status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

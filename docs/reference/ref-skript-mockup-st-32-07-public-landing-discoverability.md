@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-32-07-public-landing-discoverability
 title: ST-32-07 public landing discoverability
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

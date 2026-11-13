@@ -4,8 +4,8 @@ id: RUN-SKRIPT-runbook-home-server-operations-PART-01
 title: 'Runbook: Home Server Operations — part 01'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: RUN-SKRIPT-runbook-home-server-operations
 part: 1
@@ -19,7 +19,7 @@ Run this procedure only for the system condition described by the source record 
 
 Source: `docs/runbooks/runbook-home-server.md`. Runbook: Home Server Operations.
 
-Operations guide for the home server hosting Skriptoteket and future HuleEdu services. - `/srv/scratch` = fast SSD work tier - Docker root and BuildKit cache - HF/model caches - active generated artifacts - `/srv/storage` = large HDD bulk-data tier - raw corpora - cold retained datasets - `/` = OS disk - not the long-term home for Docker persistent state or large ML artifact trees ```bash ssh hemma           # paunchygent (non-root default) ssh hemma-root      # root (use only with explicit approval) ssh hemma-local ssh hemma-local-root ``` Notes: - SSH is intentionally **not exposed on the public internet** (no router port-forward for `22/tcp`). - Default user is non-root (`paunchygent`); u
+Operations guide for the home server hosting Skriptoteket and future HuleEdu services. - `/srv/scratch` = fast SSD work tier - Docker root and BuildKit cache - HF/model caches - active generated artifacts - `/srv/storage` = large HDD bulk-data tier - raw corpora - cold retained datasets - `/` = OS disk - not the long-term home for Docker persistent state or large ML artifact trees `bash ssh hemma           # paunchygent (non-root default) ssh hemma-root      # root (use only with explicit approval) ssh hemma-local ssh hemma-local-root ` Notes: - SSH is intentionally **not exposed on the public internet** (no router port-forward for `22/tcp`). - Default user is non-root (`paunchygent`); u
 
 ## Steps
 

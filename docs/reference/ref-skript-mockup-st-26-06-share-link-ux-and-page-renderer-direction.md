@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-st-26-06-share-link-ux-and-page-renderer-direction
 title: ST-26-06 share link UX and page renderer direction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup

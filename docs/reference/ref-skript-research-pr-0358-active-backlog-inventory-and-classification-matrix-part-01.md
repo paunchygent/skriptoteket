@@ -4,22 +4,26 @@ id: REF-SKRIPT-RESEARCH-pr-0358-active-backlog-inventory-and-classification-matr
 title: PR-0358 active backlog inventory and classification matrix — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-RESEARCH-pr-0358-active-backlog-inventory-and-classification-matrix
 part: 1
 ---
 
 ## Research Purpose And Boundary
+
 ### Summary
-| Measure | Count |
-|---------|-------|
-| Open backlog rows inventoried | 196 |
-| Epics | 22 |
-| Stories | 68 |
-| PR tasks | 106 |
+
+| Measure                       | Count |
+| ----------------------------- | ----- |
+| Open backlog rows inventoried | 196   |
+| Epics                         | 22    |
+| Stories                       | 68    |
+| PR tasks                      | 106   |
+
 ### Deep Audit Revision
+
 This revision responds to review feedback that the first pass was too coarse.
 It vets each major domain set against the current codebase and newer done-state
 backlog evidence. The goal is to avoid preserving stale open work just because
@@ -246,7 +250,9 @@ still depends on the capability.
   decision/evidence rather than product-direction inference.
 - Park `EPIC-15` / `ST-15-02` until the service-shell and app-lane reset decide
   whether avatar/profile polish matters.
+
 ### Revised PR-0359 Queue
+
 `PR-0359` should operate from this revised queue, not from the raw first-pass
 counts. Keep the cleanup batch small enough that every status change can cite
 code or newer backlog evidence.
@@ -330,7 +336,9 @@ Rows marked `needs-decision` should not be canceled during `PR-0359` unless a
 separate product decision closes the uncertainty first.
 
 ## Evidence And Sources
+
 ### Source record
+
 This reference is the retained output for `PR-0358`. It inventories every
 backlog epic, story, and PR task whose frontmatter status was open at the start
 of the slice:
@@ -341,45 +349,49 @@ of the slice:
 
 The snapshot includes `PR-0358` itself while it was still `ready`; the PR task
 is closed after this artifact is attached.
+
 ### Evidence Keys
-| Key | Evidence or rationale |
-|-----|-----------------------|
-| K1 | Aligned with current architecture, launch, ops, quality, or security foundation. |
-| K2 | Preserved platform capability under the current product-direction reference: script/editor/runner remains valuable when aligned. |
-| K3 | Current app-family priority: Klassrumskartan. |
-| K4 | Current app-family priority: conversion, exam, transcript, or document lane; verify Sir Convert/native ownership as work proceeds. |
-| K5 | Part of `EPIC-37` sequence approved by the user for this inventory tranche. |
-| K6 | Help/catalog work is retained for now but should be rechecked during service-shell/app-lane planning. |
-| D1 | `EPIC-30` summary says `ST-30-01` and `ST-30-02` completed through `PR-0165`/`PR-0166`. |
-| D2 | Development changelog records the palette/token changes and green build/docs checks for `ST-11-26` / `PR-0295`. |
-| D3 | `EPIC-21` summary says `PR-0342` proved transcript intake/lifecycle through HuleEdu Gateway. |
-| D4 | `EPIC-21` summary says authenticated Exam Converter runtime UI/save remediation was implemented through `PR-0325`. |
-| D5 | `EPIC-26` summary says `PR-0277` implemented and deployed preview thumbnails; the story still needs retained review/proof closeout. |
-| R1 | Current direction splits generic Conversion Hub into Exam Converter, Audio Transcription, and Document Converter lanes. |
-| R2 | `ST-21-10` supersedes optional graded-result upload and early target-selection assumptions. |
-| R3 | Catalog/home cleanup should be re-evaluated under service-shell/app-lane presentation work. |
-| S1 | `AGENTS.md` and `EPIC-28` put browser auth and password lifecycle under the HuleEdu ceremony. |
-| S2 | Blocked authenticated Exam Converter proof was overtaken by `PR-0325` remediation and `ST-21-10` source-only direction. |
-| X1 | Proposed side-game epic is outside current four app-family priorities; retain only by explicit decision. |
-| N1 | Games are outside the current product-center list; decide retain, pause, or drop before more work. |
-| N2 | Science/textbook lanes are outside the four current app-family priorities; decide retain, pause, or drop. |
-| N3 | Profile/settings work is not central to the current product reset; decide after shell/app lane priorities. |
-| N4 | Parent auth cutover is done; inspect whether the follow-up remains current or stale. |
-| N5 | Needs code/docs verification or a product decision before cleanup. |
+
+| Key | Evidence or rationale                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| K1  | Aligned with current architecture, launch, ops, quality, or security foundation.                                                    |
+| K2  | Preserved platform capability under the current product-direction reference: script/editor/runner remains valuable when aligned.    |
+| K3  | Current app-family priority: Klassrumskartan.                                                                                       |
+| K4  | Current app-family priority: conversion, exam, transcript, or document lane; verify Sir Convert/native ownership as work proceeds.  |
+| K5  | Part of `EPIC-37` sequence approved by the user for this inventory tranche.                                                         |
+| K6  | Help/catalog work is retained for now but should be rechecked during service-shell/app-lane planning.                               |
+| D1  | `EPIC-30` summary says `ST-30-01` and `ST-30-02` completed through `PR-0165`/`PR-0166`.                                             |
+| D2  | Development changelog records the palette/token changes and green build/docs checks for `ST-11-26` / `PR-0295`.                     |
+| D3  | `EPIC-21` summary says `PR-0342` proved transcript intake/lifecycle through HuleEdu Gateway.                                        |
+| D4  | `EPIC-21` summary says authenticated Exam Converter runtime UI/save remediation was implemented through `PR-0325`.                  |
+| D5  | `EPIC-26` summary says `PR-0277` implemented and deployed preview thumbnails; the story still needs retained review/proof closeout. |
+| R1  | Current direction splits generic Conversion Hub into Exam Converter, Audio Transcription, and Document Converter lanes.             |
+| R2  | `ST-21-10` supersedes optional graded-result upload and early target-selection assumptions.                                         |
+| R3  | Catalog/home cleanup should be re-evaluated under service-shell/app-lane presentation work.                                         |
+| S1  | `AGENTS.md` and `EPIC-28` put browser auth and password lifecycle under the HuleEdu ceremony.                                       |
+| S2  | Blocked authenticated Exam Converter proof was overtaken by `PR-0325` remediation and `ST-21-10` source-only direction.             |
+| X1  | Proposed side-game epic is outside current four app-family priorities; retain only by explicit decision.                            |
+| N1  | Games are outside the current product-center list; decide retain, pause, or drop before more work.                                  |
+| N2  | Science/textbook lanes are outside the four current app-family priorities; decide retain, pause, or drop.                           |
+| N3  | Profile/settings work is not central to the current product reset; decide after shell/app lane priorities.                          |
+| N4  | Parent auth cutover is done; inspect whether the follow-up remains current or stale.                                                |
+| N5  | Needs code/docs verification or a product decision before cleanup.                                                                  |
+
 ### First-Pass Inventory Matrix
+
 ### Backlog/Product Direction
 
-| Item | Status | Parent | Classification | Evidence |
-|------|--------|--------|----------------|----------|
-| [EPIC-37](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface.md) | `proposed` | - | `keep-active` | K5 |
-| [PR-0358](../backlog/prs/pr-0358-st-37-01-active-backlog-inventory-and-classification-matrix.md) | `ready` | `ST-37-01` | `keep-active` | K5 |
-| [PR-0359](../backlog/prs/pr-0359-st-37-01-stale-state-repair-and-supersession-cleanup-batch.md) | `ready` | `ST-37-01` | `keep-active` | K5 |
-| [PR-0360](../backlog/prs/pr-0360-st-37-02-current-product-lane-and-sir-convert-boundary-reference.md) | `ready` | `ST-37-02` | `keep-active` | K5 |
-| [PR-0361](../backlog/prs/pr-0361-st-37-03-service-shell-ux-realignment-planning-package.md) | `blocked` | `ST-37-03` | `keep-active` | K5 |
-| [PR-0362](../backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md) | `blocked` | `ST-37-04` | `keep-active` | K5 |
-| [ST-37-01](../backlog/stories/story-37-01-backlog-inventory-and-stale-state-repair.md) | `ready` | `EPIC-37` | `keep-active` | K5 |
-| [ST-37-02](../backlog/stories/story-37-02-current-product-lane-and-sir-convert-boundary-reset.md) | `ready` | `EPIC-37` | `keep-active` | K5 |
-| [ST-37-03](../backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md) | `blocked` | `EPIC-37` | `keep-active` | K5 |
-| [ST-37-04](../backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md) | `blocked` | `EPIC-37` | `keep-active` | K5 |
+| Item                                                                                                  | Status     | Parent     | Classification | Evidence |
+| ----------------------------------------------------------------------------------------------------- | ---------- | ---------- | -------------- | -------- |
+| [EPIC-37](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface.md)     | `proposed` | -          | `keep-active`  | K5       |
+| [PR-0358](../backlog/prs/pr-0358-st-37-01-active-backlog-inventory-and-classification-matrix.md)      | `ready`    | `ST-37-01` | `keep-active`  | K5       |
+| [PR-0359](../backlog/prs/pr-0359-st-37-01-stale-state-repair-and-supersession-cleanup-batch.md)       | `ready`    | `ST-37-01` | `keep-active`  | K5       |
+| [PR-0360](../backlog/prs/pr-0360-st-37-02-current-product-lane-and-sir-convert-boundary-reference.md) | `ready`    | `ST-37-02` | `keep-active`  | K5       |
+| [PR-0361](../backlog/prs/pr-0361-st-37-03-service-shell-ux-realignment-planning-package.md)           | `blocked`  | `ST-37-03` | `keep-active`  | K5       |
+| [PR-0362](../backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md)       | `blocked`  | `ST-37-04` | `keep-active`  | K5       |
+| [ST-37-01](../backlog/stories/story-37-01-backlog-inventory-and-stale-state-repair.md)                | `ready`    | `EPIC-37`  | `keep-active`  | K5       |
+| [ST-37-02](../backlog/stories/story-37-02-current-product-lane-and-sir-convert-boundary-reset.md)     | `ready`    | `EPIC-37`  | `keep-active`  | K5       |
+| [ST-37-03](../backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md)              | `blocked`  | `EPIC-37`  | `keep-active`  | K5       |
+| [ST-37-04](../backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md)     | `blocked`  | `EPIC-37`  | `keep-active`  | K5       |
 
 ### Conversion/Exam/Transcript/Document

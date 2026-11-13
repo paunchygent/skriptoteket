@@ -4,17 +4,18 @@ id: ADR-SKRIPT-0035
 title: Script editor intelligence architecture (CodeMirror 6)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0035
+  - ADR-0035
 ---
 
 ## Context
+
 Script authors writing tools for Skriptoteket need to discover available helpers (`pdf_helper`, `tool_errors`) and follow
 the runner contract. Currently, this information exists only in the KB documentation (`ref-ai-script-generation-kb.md`)
 and is not surfaced in the editor.
@@ -37,7 +38,9 @@ We need an in-editor intelligence system that provides:
 1. **Regex-based scanning** - Simple but prone to false positives in strings/comments
 2. **Lezer syntax tree** - Already bundled via `@codemirror/lang-python`, reliable structure detection
 3. **Tree-sitter / Pyodide** - Heavy payload, unnecessary for this scope
+
 ### Review Notes (2025-12-24)
+
 Reviewed in ST-08-10 technical design review:
 
 - Confirmed Lezer-first, regex only where structure doesn't matter
@@ -60,12 +63,15 @@ Reviewed in ST-08-10 technical design review:
 - Ensure custom completions do not replace built-in Python completions (prefer language data over `autocompletion({override})`)
 - Performance: avoid multiple full tree traversals per lint run; build a small per-run snapshot for rules to consume
 - Tooltip styling may need a dedicated theme/CSS hook to match Skriptoteket’s brutalist UI (default CM6 tooltip is acceptable for MVP)
+
 ### References
+
 - [ST-08-10: Script editor intelligence](../backlog/stories/story-08-10-script-editor-intelligence.md)
 - [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-skript-08-contextual-help-hj%C3%A4lp-and-onboarding.md)
 - [ref-ai-script-generation-kb.md](../reference/ref-ai-script-generation-kb.md) - Source of truth for lint rules
 
 ## Decision
+
 Use **Lezer-based syntax tree analysis** with the following architecture:
 
 ### Extension Composition
@@ -120,9 +126,11 @@ Implementation note: `extensions` injection must be reactive (use a CodeMirror `
 to entrypoint/config can update linting/completions without destroying the editor instance.
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 ### Positive
 
 - **Reliable detection**: Lezer provides robust parsing even on incomplete code

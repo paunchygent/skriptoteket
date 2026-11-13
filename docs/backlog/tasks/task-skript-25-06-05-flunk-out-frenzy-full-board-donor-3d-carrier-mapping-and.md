@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-06-05
 title: 'Flunk-Out Frenzy: full-board donor 3D carrier mapping and elevated rail fidelity'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
 readiness_review:
@@ -17,23 +17,11 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given ST-SKRIPT-25-06 now uses the VPW donor as geometry truth, when this task is
-  complete, then the full board-path carrier map (perimeter, lane forks, shooter chain,
-  upper guides) is represented as explicit donor-backed 3D carriers instead of mixed
-  legacy/local approximations.
-- Given the donor table includes above-playfield metal/wire rail paths, when this
-  task is complete, then those rails are represented as first-class donor-backed 3D
-  carrier definitions with source provenance and elevation semantics rather than flattened
-  ad hoc 2D overlays.
-- Given the top-down render remains the user-facing board, when this task is complete,
-  then render nodes are projected from the same donor-backed 3D carrier source of
-  truth used by compile/physics contracts.
-- Given anti-flattening is now a hard rule, when this task is complete, then no new
-  laneBounds/AABB shortcuts or undocumented donor remaps are introduced for board
-  carriers in this slice.
-- Focused compile/physics regression coverage proves the new donor carrier map and
-  elevated rails compile deterministically, keep provenance explicit, and do not silently
-  reintroduce local freehand carriers.
+  - Given ST-SKRIPT-25-06 now uses the VPW donor as geometry truth, when this task is complete, then the full board-path carrier map (perimeter, lane forks, shooter chain, upper guides) is represented as explicit donor-backed 3D carriers instead of mixed legacy/local approximations.
+  - Given the donor table includes above-playfield metal/wire rail paths, when this task is complete, then those rails are represented as first-class donor-backed 3D carrier definitions with source provenance and elevation semantics rather than flattened ad hoc 2D overlays.
+  - Given the top-down render remains the user-facing board, when this task is complete, then render nodes are projected from the same donor-backed 3D carrier source of truth used by compile/physics contracts.
+  - Given anti-flattening is now a hard rule, when this task is complete, then no new laneBounds/AABB shortcuts or undocumented donor remaps are introduced for board carriers in this slice.
+  - Focused compile/physics regression coverage proves the new donor carrier map and elevated rails compile deterministically, keep provenance explicit, and do not silently reintroduce local freehand carriers.
 ---
 
 ## Context

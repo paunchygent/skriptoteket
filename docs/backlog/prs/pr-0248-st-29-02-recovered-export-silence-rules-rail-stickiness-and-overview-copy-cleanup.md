@@ -80,6 +80,7 @@ The selector and empty-state copy already provide enough guidance:
 ## Implementation plan
 
 1. Tighten the shared authenticated export-recovery seam rather than treating this as a generic toast cleanup.
+
    - Update the shared recovery logic in the planner export-flow layer and the grouping/seating wrappers together so the same contract applies to both workspaces.
    - Keep recovered export polling and state restoration for active in-flight work.
    - Suppress success replay only when the restored export is already terminal `succeeded` on workspace entry.
@@ -88,6 +89,7 @@ The selector and empty-state copy already provide enough guidance:
    - Do not replace the removed replay with a banner or another persistent reminder surface.
 
 2. Restore a bounded sticky `Regler` rail contract.
+
    - Keep the current left-rail + map composition from `PR-0155`.
    - Make the rail locally sticky with the same desktop support-surface posture as the other
      planner side rails.
@@ -95,10 +97,12 @@ The selector and empty-state copy already provide enough guidance:
      sticky lane.
 
 3. Remove the redundant no-class metadata label in `Översikt`.
+
    - Keep `Ingen klass vald` as the sole title.
    - Leave the selector placeholder and empty-state helper copy intact.
 
 4. Lock the intended behavior in focused frontend tests and live browser proof.
+
    - Update both export-flow specs so they separately prove silent historical-success recovery and one-time recovered in-flight completion success.
    - Keep the layout/copy proof isolated to the existing `Regler` rail and overview specs.
 

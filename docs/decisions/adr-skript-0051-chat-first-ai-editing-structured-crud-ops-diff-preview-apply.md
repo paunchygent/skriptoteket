@@ -4,21 +4,22 @@ id: ADR-SKRIPT-0051
 title: Chat-first AI editing (structured CRUD ops + diff preview + apply/ undo)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - EPIC-SKRIPT-08
-  - ADR-SKRIPT-0043
+    - EPIC-SKRIPT-08
+    - ADR-SKRIPT-0043
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0051
+  - ADR-0051
 ---
 
 ## Context
+
 Skriptoteket’s editor currently has:
 
 - Static —editor intelligence— (lint, hover, completions).
@@ -50,6 +51,7 @@ Constraints:
   own business logic).
 
 ## Decision
+
 Introduce a chat-first AI assistant in the script editor that proposes
 **structured CRUD edit operations** and uses a
 safe preview/apply flow.
@@ -187,6 +189,7 @@ Rules:
 
 To reduce `parse_failed` due to malformed JSON (e.g. unquoted `@@ ... @@` lines in `patch_lines` or stray code fences),
 the backend enforces structured output at decode time:
+
 - For llama.cpp (`llama-server`), send a **patch-only strict GBNF grammar** via the OpenAI-compatible `grammar` field.
 - For OpenAI, use `response_format` (JSON schema) for patch-only responses.
 
@@ -201,7 +204,7 @@ These guarantees are syntactic (JSON shape). Unified-diff validity is still enfo
 - Applying a proposal MUST be a single atomic CodeMirror transaction so a
   single undo reverts the change.
 - If the underlying editor content changes after the proposal is generated, apply MUST be blocked and the user prompted
-    to regenerate.
+  to regenerate.
 - Preview and apply MUST be version-gated so —what the user saw is what gets applied—:
   - Preview returns `base_hash` + `patch_id` for the exact base + normalized ops/diff.
   - Apply MUST include the same tokens and MUST return `409` on mismatch; the user must re-preview and confirm again.
@@ -236,9 +239,11 @@ These guarantees are syntactic (JSON shape). Unified-diff validity is still enfo
   (existing `X-Skriptoteket-Eval` pattern).
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 ### Positive
 
 - Beginner-friendly entry point (—describe what you want—) without requiring

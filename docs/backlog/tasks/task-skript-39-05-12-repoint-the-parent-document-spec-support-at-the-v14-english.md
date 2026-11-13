@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-12
 title: Repoint the parent-document spec support at the v14 English recording
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -17,12 +17,9 @@ closeout_review:
   approval_evidence: 'User chose "Merge, push, walk" on 2026-10-15 (task closes after the walk); Sol 6.1 review r1 F1 closed by r2 APPROVED at 34045206; merged b8e43394 and pushed; staging walk at b8e43394 saved a matching edit (version 10); evidence .orchestration/context/sessions/01a13f01-f1dc-7614-beb6-76a946b50b74/evidence/{review,walk}/'
 task_kind: story
 acceptance_criteria:
-- The frontend typecheck passes on main with no import of the removed docx_build_v7
-  recording
-- The three specs that import examWorkspaceParentDocument.specSupport.ts pass against
-  a fixture built from the docx_key_provenance_v14 BF26 English recordings
-- ExamWorkspaceItemEditor.vue and every module split from it are at most 500 lines,
-  with unchanged props, events and user-visible behavior
+  - The frontend typecheck passes on main with no import of the removed docx_build_v7 recording
+  - The three specs that import examWorkspaceParentDocument.specSupport.ts pass against a fixture built from the docx_key_provenance_v14 BF26 English recordings
+  - ExamWorkspaceItemEditor.vue and every module split from it are at most 500 lines, with unchanged props, events and user-visible behavior
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -51,6 +48,7 @@ its current item mapping; the document shape and item IDs are unchanged.
 
 - `tests/fixtures/exam_conversion/docx_key_provenance_v14/README.md` and
   `bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-01.json`, `docx_w1-04.json`.
+
 - Consumers: `ExamWorkspaceItemTable.parents.spec.ts`,
   `examWorkspaceParents.spec.ts`, `useExamWorkspaceDocument.parents.spec.ts`.
 
@@ -81,9 +79,9 @@ the affected UI.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Children and the shared instruction come from `docx_w1-01.json` (`instructions[1]`, `items[0..2]`); the standalone item is the first single_choice of `docx_w1-04.json`. User choice 2026-10-15. |
-| D2  | The builder keeps its current field mapping; v14-only fields (`spelling_candidates`, `facit_text`, `printed_label`, `key_source`) are not mapped. User choice 2026-10-15. |
-| D3  | Delivery: one Sol 6.1 implementation-specialist (may fan out DeepSeek Flash 4.1 juniors), then an independent Sol 6.1 ruthless review before merge to main. User choice 2026-10-15. |
+| ID  | Decided contract term                                                                                                                                                                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Children and the shared instruction come from `docx_w1-01.json` (`instructions[1]`, `items[0..2]`); the standalone item is the first single_choice of `docx_w1-04.json`. User choice 2026-10-15.                                                                |
+| D2  | The builder keeps its current field mapping; v14-only fields (`spelling_candidates`, `facit_text`, `printed_label`, `key_source`) are not mapped. User choice 2026-10-15.                                                                                       |
+| D3  | Delivery: one Sol 6.1 implementation-specialist (may fan out DeepSeek Flash 4.1 juniors), then an independent Sol 6.1 ruthless review before merge to main. User choice 2026-10-15.                                                                             |
 | D4  | Review r1 F1 is repaired on this branch before merge: matching-entry and pair editing moves out of `ExamWorkspaceItemEditor.vue` into its own component, with unchanged behavior; fresh Sol 6.1 implementation, then reviewer rereview. User choice 2026-10-15. |

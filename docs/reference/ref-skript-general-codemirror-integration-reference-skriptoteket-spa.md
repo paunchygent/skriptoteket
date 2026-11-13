@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-codemirror-integration-reference-skriptoteket-spa
 title: CodeMirror integration reference (Skriptoteket SPA)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-codemirror-integration
+  - REF-codemirror-integration
 summary: CodeMirror integration reference (Skriptoteket SPA)
 ---
 

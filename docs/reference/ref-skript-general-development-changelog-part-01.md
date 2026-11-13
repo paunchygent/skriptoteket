@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-development-changelog-PART-01
 title: Development changelog — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-development-changelog
 part: 1
@@ -16,6 +16,7 @@ part: 1
 Append-only development log and repo long-term memory for compacted handoff history.
 
 Rule:
+
 - When compacting `.codex/handoff.md`, move non-session-vital handoff history here first.
 - Paste the removed handoff content directly with minimal reshaping.
 
@@ -104,8 +105,7 @@ repo line-count limit.
   tests (`4 passed`), `pdm run lint`, `pdm run typecheck`, `pdm run fe-type-check`,
   `pdm run fe-lint`, route-shell Vitest (`4 passed`), `pdm run docs-validate`, and
   `git diff --check`.
-- Fixed-seat rules UX parity check passed: `pdm run fe-test -- --run
-  classroomPlannerSmartRuleActions PlannerRulesWorkspacePane PlannerRulesMapCanvas` passed
+- Fixed-seat rules UX parity check passed: `pdm run fe-test -- --run classroomPlannerSmartRuleActions PlannerRulesWorkspacePane PlannerRulesMapCanvas` passed
   (3 files, 19 tests), `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run docs-validate`, and
   `git diff --check` passed. In-app browser was reachable through browser-use and showed the
   HuleEdu login ceremony for Skriptoteket; no credentials were submitted.
@@ -135,10 +135,7 @@ repo line-count limit.
   reserves a fixed 480px desktop height so dynamic rule controls do not resize the panel. New CSS
   lives in the focused `klassrumskartan-rules-workspace.css` import. Focused Vitest,
   `fe-type-check`, `fe-lint`, `docs-validate`, and `git diff --check` passed.
-- `pdm run fe-test -- src/App.spec.ts src/components/layout/AuthLayout.spec.ts
-  src/views/apps/classroomPlannerPublicShareFlow.spec.ts
-  src/views/apps/classroomPlannerShareFlow.spec.ts
-  src/views/apps/classroomPlannerRouteShellWorkspace.spec.ts src/components/vault/VaultPanel.spec.ts`
+- `pdm run fe-test -- src/App.spec.ts src/components/layout/AuthLayout.spec.ts src/views/apps/classroomPlannerPublicShareFlow.spec.ts src/views/apps/classroomPlannerShareFlow.spec.ts src/views/apps/classroomPlannerRouteShellWorkspace.spec.ts src/components/vault/VaultPanel.spec.ts`
   passed: 6 files, 19 tests.
 - `pdm run fe-type-check` passed.
 - `pdm run fe-lint` passed.
@@ -204,9 +201,9 @@ Moved from `.codex/handoff.md` during task-draft bookkeeping for `PR-0248` / `PR
 
 - `Keep PR-0232 scoped to the now-implemented guest/auth boundary split unless review finds a concrete regression: local guest history only, public direct-download export only, and no fallback into authenticated export/history/recovery seams.`
 - `Preserve the PR-0233 seam shape while implementing PR-0232: later guest export/checkpoint continuity should keep feeding the existing authenticated import / discard / postpone prompt instead of adding a new compatibility lane.`
-- `PR-0248` freezes the shared planner UX correction package for silent recovered export re-entry, bounded sticky Regler rail behavior, and removal of the redundant VÄLJ EN KLASSLISTA overview label.`
-- `PR-0249` freezes the public-host reconciliation package for one singular login-first blocked state with approved Logga in / Skapa konto copy and action hierarchy.`
-- `REV-PR-0248` and `REV-PR-0249` now exist as retained review records with initial `changes_requested` findings; the PR drafts were tightened around export-recovery truth, guest controller/view seam ownership, and auth action-target proof before implementation.`
+- `PR-0248` freezes the shared planner UX correction package for silent recovered export re-entry, bounded sticky Regler rail behavior, and removal of the redundant VÄLJ EN KLASSLISTA overview label.\`
+- `PR-0249` freezes the public-host reconciliation package for one singular login-first blocked state with approved Logga in / Skapa konto copy and action hierarchy.\`
+- `REV-PR-0248` and `REV-PR-0249` now exist as retained review records with initial `changes_requested` findings; the PR drafts were tightened around export-recovery truth, guest controller/view seam ownership, and auth action-target proof before implementation.\`
 
 ### Source: 2026-04-07 handoff compaction dump
 

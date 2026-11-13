@@ -4,30 +4,30 @@ id: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap-PART-03
 title: Vue/Vite SPA Migration Roadmap — part 03
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-PLAN-vue-vite-spa-migration-roadmap
 part: 3
 ---
 
-| Vue Route | Current HTML Route | Auth |
-|-----------|-------------------|------|
-| `/` | `/` | require_user |
-| `/browse` | `/browse` | require_user |
-| `/browse/:profession` | `/browse/{profession}` | require_user |
-| `/browse/:profession/:category` | `/browse/{profession}/{category}` | require_user |
-| `/apps/:appId` | `/apps/{app_id}` | require_user |
-| `/tools/:slug/run` | `/tools/{slug}/run` | require_user |
-| `/my-runs` | (new) | require_user |
-| `/my-runs/:id` | `/my-runs/{run_id}` | require_user |
-| `/my-tools` | `/my-tools` | require_contributor |
-| `/suggestions/new` | `/suggestions/new` | require_contributor |
-| `/admin/tools` | `/admin/tools` | require_admin |
-| `/admin/tools/:toolId` | `/admin/tools/{tool_id}` | require_contributor |
-| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}` | require_contributor |
-| `/admin/suggestions` | `/admin/suggestions` | require_admin |
-| `/admin/suggestions/:id` | `/admin/suggestions/{suggestion_id}` | require_admin |
+| Vue Route                         | Current HTML Route                   | Auth                |
+| --------------------------------- | ------------------------------------ | ------------------- |
+| `/`                               | `/`                                  | require_user        |
+| `/browse`                         | `/browse`                            | require_user        |
+| `/browse/:profession`             | `/browse/{profession}`               | require_user        |
+| `/browse/:profession/:category`   | `/browse/{profession}/{category}`    | require_user        |
+| `/apps/:appId`                    | `/apps/{app_id}`                     | require_user        |
+| `/tools/:slug/run`                | `/tools/{slug}/run`                  | require_user        |
+| `/my-runs`                        | (new)                                | require_user        |
+| `/my-runs/:id`                    | `/my-runs/{run_id}`                  | require_user        |
+| `/my-tools`                       | `/my-tools`                          | require_contributor |
+| `/suggestions/new`                | `/suggestions/new`                   | require_contributor |
+| `/admin/tools`                    | `/admin/tools`                       | require_admin       |
+| `/admin/tools/:toolId`            | `/admin/tools/{tool_id}`             | require_contributor |
+| `/admin/tool-versions/:versionId` | `/admin/tool-versions/{version_id}`  | require_contributor |
+| `/admin/suggestions`              | `/admin/suggestions`                 | require_admin       |
+| `/admin/suggestions/:id`          | `/admin/suggestions/{suggestion_id}` | require_admin       |
 
 ### Phase 4: Backend API Layer
 
@@ -105,7 +105,7 @@ This roadmap is implemented as `EPIC-SKRIPT-11` and its stories:
 Downstream note: EPIC-12 work beyond ST-12-01 is **blocked until ST-11-13** so user-facing UX is implemented once in
 the SPA.
 
----
+______________________________________________________________________
 
 ## Planning Stop Conditions
 

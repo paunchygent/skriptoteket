@@ -4,8 +4,8 @@ id: ST-SKRIPT-39-10
 title: Teachers import exams from PDF files that contain text into the exam workspace
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-21'
 status: ready
 closeout_review:
@@ -13,8 +13,7 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-- A teacher's exam saved as a PDF with text opens in the exam workspace with the same
-  questions, points and types as the same exam imported from Word
+  - A teacher's exam saved as a PDF with text opens in the exam workspace with the same questions, points and types as the same exam imported from Word
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -56,14 +55,14 @@ Focused tests per task. The closing proof is one staging walk over the proof set
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| P1  | The target PDFs are teachers' own exams written in Word or Google Docs and saved as PDF with selectable text; publisher PDFs are best effort. Proof uses Word corpus exams saved as PDF plus two or three real PDF exams from the user. |
-| P2  | A PDF with no text imports nothing and shows a clear stop message telling the teacher to save the exam as Word or as a PDF from the original; when only some pages lack text, the text pages import and a note names the skipped pages. Scanned-PDF support stays deferred. |
-| P3  | Embedded pictures come along with their question, and figures drawn with lines are cut out of the page as a picture and placed in their question in the first version (user 2026-10-21, changing the first placeholder answer). |
-| P4  | PDF import follows Word import access: signed-in teachers with AI access; guests get the sign-in prompt. Behaviour is judged as if AI is on for teachers; the REP-0044 admin-only gate is not part of this story. |
-| P5  | Digital PDFs parse locally into the Word import's chunk sequence and run the existing conversion, review, points-warning and export path unchanged, with no new AI call site. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | The target PDFs are teachers' own exams written in Word or Google Docs and saved as PDF with selectable text; publisher PDFs are best effort. Proof uses Word corpus exams saved as PDF plus two or three real PDF exams from the user.                                                                       |
+| P2  | A PDF with no text imports nothing and shows a clear stop message telling the teacher to save the exam as Word or as a PDF from the original; when only some pages lack text, the text pages import and a note names the skipped pages. Scanned-PDF support stays deferred.                                   |
+| P3  | Embedded pictures come along with their question, and figures drawn with lines are cut out of the page as a picture and placed in their question in the first version (user 2026-10-21, changing the first placeholder answer).                                                                               |
+| P4  | PDF import follows Word import access: signed-in teachers with AI access; guests get the sign-in prompt. Behaviour is judged as if AI is on for teachers; the REP-0044 admin-only gate is not part of this story.                                                                                             |
+| P5  | Digital PDFs parse locally into the Word import's chunk sequence and run the existing conversion, review, points-warning and export path unchanged, with no new AI call site.                                                                                                                                 |
 | P6  | Closure bar: on the proof set each PDF import gives the same questions, types and points as the Word import of the same exam, with pictures and cut-out figures in the right questions; any difference shows as a visible review item. Best effort, judged on one staging walk pass, no repeated corpus runs. |
-| P7  | Pages whose text layer is mostly unreadable follow the no-text rule of P2. |
-| P8  | Figures are cut generously. The question editor gains "Lägg till bild", which inserts a chosen picture file or replaces the selected picture, in every exam; its look follows huleedu-ui-design and is shown to the user as a mock before it is built. |
-| P9  | Five tasks in the order above, walking skeleton first; the Hemma orchestrator owns the story and runs one lead per task. |
+| P7  | Pages whose text layer is mostly unreadable follow the no-text rule of P2.                                                                                                                                                                                                                                    |
+| P8  | Figures are cut generously. The question editor gains "Lägg till bild", which inserts a chosen picture file or replaces the selected picture, in every exam; its look follows huleedu-ui-design and is shown to the user as a mock before it is built.                                                        |
+| P9  | Five tasks in the order above, walking skeleton first; the Hemma orchestrator owns the story and runs one lead per task.                                                                                                                                                                                      |

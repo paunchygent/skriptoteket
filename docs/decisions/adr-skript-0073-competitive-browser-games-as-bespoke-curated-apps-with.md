@@ -1,18 +1,17 @@
 ---
 type: adr
 id: ADR-SKRIPT-0073
-title: Competitive browser games as bespoke curated apps with lightweight global high-score
-  support
+title: Competitive browser games as bespoke curated apps with lightweight global high-score support
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0073
+  - ADR-0073
 ---
 
 ## Context
@@ -43,8 +42,6 @@ to add lightweight global high-score support.
 
 ### Source: Decision
 
-
-
 ## Non-Decisions
 
 The source does not provide a separate non-decisions section; no additional non-decisions is recorded.
@@ -52,8 +49,6 @@ The source does not provide a separate non-decisions section; no additional non-
 ## Consequences
 
 ### Source: Consequences
-
-
 
 ### Source: Benefits
 

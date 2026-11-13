@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-26
 title: Klassrumskartan — explicit exports and class-list import
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,15 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers can export Klassrumskartan seating plans as a poster-grade standalone
-  PDF, import class lists from common teacher files with confirmation before save,
-  export seating as editable XLSX, export grouping first as an editable XLSX collaboration
-  artifact and then as an A4 portrait PDF presentation artifact, publish immutable
-  shareable HTML/CSS export links for grouping and seating with reliable renderer-derived
-  Teams/social previews, and rely on teacher-facing planner surfaces that remain usable
-  and hierarchy-stable while hosting those explicit I/O controls.
+outcome: Teachers can export Klassrumskartan seating plans as a poster-grade standalone PDF, import class lists from common teacher files with confirmation before save, export seating as editable XLSX, export grouping first as an editable XLSX collaboration artifact and then as an A4 portrait PDF presentation artifact, publish immutable shareable HTML/CSS export links for grouping and seating with reliable renderer-derived Teams/social previews, and rely on teacher-facing planner surfaces that remain usable and hierarchy-stable while hosting those explicit I/O controls.
 retired_ids:
-- EPIC-26
+  - EPIC-26
 ---
 
 ## Scope

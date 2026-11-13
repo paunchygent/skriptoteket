@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-investigation-hemma-host-hard-hangs-jan-2026-PART-02
 title: 'Investigation: hemma host hard hangs (Jan 2026) — part 02'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-investigation-hemma-host-hard-hangs-jan-2026
 part: 2
@@ -30,7 +30,7 @@ part: 2
 2. **Run an A/B isolation trial** for 24–48h each:
    - A: stop/disable `llama-server` (and/or `tabby`) temporarily
    - B: re-enable one service at a time
-   Track whether hangs recur.
+     Track whether hangs recur.
 3. **After next reboot following a hang**, immediately collect:
    - `journalctl --list-boots --no-pager | tail -10`
    - `journalctl -b -1 --no-pager | tail -300`
@@ -51,7 +51,7 @@ part: 2
 - **Last confirmed command (pre-freeze):** `ssh -o ConnectTimeout=5 -o BatchMode=yes hemma "echo ok"` timed out.
 - **First successful command after power-cycle:** `ssh -o ConnectTimeout=5 -o BatchMode=yes hemma "echo ok"` returned `ok`.
 
----
+______________________________________________________________________
 
 ### Source: Mitigation applied (post-incident): reboot-safe “GPU stays awake” clamp
 

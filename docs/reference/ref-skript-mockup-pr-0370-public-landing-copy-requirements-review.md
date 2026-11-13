@@ -4,8 +4,8 @@ id: REF-SKRIPT-MOCKUP-pr-0370-public-landing-copy-requirements-review
 title: PR-0370 public landing copy requirements review
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: mockup
@@ -26,16 +26,16 @@ The approved wording is recorded separately in
 
 ### Minimum Communication
 
-| Surface | Must communicate | Must not imply |
-|---|---|---|
-| Header | The visitor is on Skriptoteket and can reach Klassrumskartan directly. | That login is required before the public app can be opened. |
-| Hero | Klassrumskartan is the public first action and works directly in the browser. | That all Skriptoteket apps are public or anonymous. |
-| Hero account line | An account is optional and mainly extends the work over time. | That account creation is a prerequisite for trying Klassrumskartan. |
-| Authenticated-app preview | Logging in gives access to additional teacher workflows. | That the previewed workflows are available to signed-out visitors. |
-| Speech workflow | Speech or media can become text/transcript work. | That live diarization, speaker review, or every export format exists unless verified in the implementation slice. |
-| PDF workflow | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability. | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven. |
-| Exam workflow | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
-| Auth actions | Login and account creation must remain direct actions when shown. | That a user is sent to a generic hub, chooser, or duplicate action page first. |
+| Surface                   | Must communicate                                                                                                                                         | Must not imply                                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Header                    | The visitor is on Skriptoteket and can reach Klassrumskartan directly.                                                                                   | That login is required before the public app can be opened.                                                          |
+| Hero                      | Klassrumskartan is the public first action and works directly in the browser.                                                                            | That all Skriptoteket apps are public or anonymous.                                                                  |
+| Hero account line         | An account is optional and mainly extends the work over time.                                                                                            | That account creation is a prerequisite for trying Klassrumskartan.                                                  |
+| Authenticated-app preview | Logging in gives access to additional teacher workflows.                                                                                                 | That the previewed workflows are available to signed-out visitors.                                                   |
+| Speech workflow           | Speech or media can become text/transcript work.                                                                                                         | That live diarization, speaker review, or every export format exists unless verified in the implementation slice.    |
+| PDF workflow              | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability.                             | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven.                        |
+| Exam workflow             | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
+| Auth actions              | Login and account creation must remain direct actions when shown.                                                                                        | That a user is sent to a generic hub, chooser, or duplicate action page first.                                       |
 
 ### Copy Budget
 
@@ -88,16 +88,16 @@ The approved wording is recorded separately in
 
 ### Minimum Communication
 
-| Surface | Must communicate | Must not imply |
-|---|---|---|
-| Header | The visitor is on Skriptoteket and can reach Klassrumskartan directly. | That login is required before the public app can be opened. |
-| Hero | Klassrumskartan is the public first action and works directly in the browser. | That all Skriptoteket apps are public or anonymous. |
-| Hero account line | An account is optional and mainly extends the work over time. | That account creation is a prerequisite for trying Klassrumskartan. |
-| Authenticated-app preview | Logging in gives access to additional teacher workflows. | That the previewed workflows are available to signed-out visitors. |
-| Speech workflow | Speech or media can become text/transcript work. | That live diarization, speaker review, or every export format exists unless verified in the implementation slice. |
-| PDF workflow | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability. | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven. |
-| Exam workflow | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
-| Auth actions | Login and account creation must remain direct actions when shown. | That a user is sent to a generic hub, chooser, or duplicate action page first. |
+| Surface                   | Must communicate                                                                                                                                         | Must not imply                                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Header                    | The visitor is on Skriptoteket and can reach Klassrumskartan directly.                                                                                   | That login is required before the public app can be opened.                                                          |
+| Hero                      | Klassrumskartan is the public first action and works directly in the browser.                                                                            | That all Skriptoteket apps are public or anonymous.                                                                  |
+| Hero account line         | An account is optional and mainly extends the work over time.                                                                                            | That account creation is a prerequisite for trying Klassrumskartan.                                                  |
+| Authenticated-app preview | Logging in gives access to additional teacher workflows.                                                                                                 | That the previewed workflows are available to signed-out visitors.                                                   |
+| Speech workflow           | Speech or media can become text/transcript work.                                                                                                         | That live diarization, speaker review, or every export format exists unless verified in the implementation slice.    |
+| PDF workflow              | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability.                             | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven.                        |
+| Exam workflow             | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
+| Auth actions              | Login and account creation must remain direct actions when shown.                                                                                        | That a user is sent to a generic hub, chooser, or duplicate action page first.                                       |
 
 ### Copy Budget
 
@@ -154,16 +154,16 @@ The approved wording is recorded separately in
 
 ### Minimum Communication
 
-| Surface | Must communicate | Must not imply |
-|---|---|---|
-| Header | The visitor is on Skriptoteket and can reach Klassrumskartan directly. | That login is required before the public app can be opened. |
-| Hero | Klassrumskartan is the public first action and works directly in the browser. | That all Skriptoteket apps are public or anonymous. |
-| Hero account line | An account is optional and mainly extends the work over time. | That account creation is a prerequisite for trying Klassrumskartan. |
-| Authenticated-app preview | Logging in gives access to additional teacher workflows. | That the previewed workflows are available to signed-out visitors. |
-| Speech workflow | Speech or media can become text/transcript work. | That live diarization, speaker review, or every export format exists unless verified in the implementation slice. |
-| PDF workflow | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability. | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven. |
-| Exam workflow | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
-| Auth actions | Login and account creation must remain direct actions when shown. | That a user is sent to a generic hub, chooser, or duplicate action page first. |
+| Surface                   | Must communicate                                                                                                                                         | Must not imply                                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Header                    | The visitor is on Skriptoteket and can reach Klassrumskartan directly.                                                                                   | That login is required before the public app can be opened.                                                          |
+| Hero                      | Klassrumskartan is the public first action and works directly in the browser.                                                                            | That all Skriptoteket apps are public or anonymous.                                                                  |
+| Hero account line         | An account is optional and mainly extends the work over time.                                                                                            | That account creation is a prerequisite for trying Klassrumskartan.                                                  |
+| Authenticated-app preview | Logging in gives access to additional teacher workflows.                                                                                                 | That the previewed workflows are available to signed-out visitors.                                                   |
+| Speech workflow           | Speech or media can become text/transcript work.                                                                                                         | That live diarization, speaker review, or every export format exists unless verified in the implementation slice.    |
+| PDF workflow              | HTML/CSS or document material can become polished PDF output if the implementation slice verifies the live route/capability.                             | That Dokumentkonverteraren has a runnable public or authenticated route before one is proven.                        |
+| Exam workflow             | Digital exam work may include creation, editing, sharing, print export, and Exam.net-oriented export only to the extent verified before production copy. | That Exam.net direct import, create/edit/share, QTI, DOCX, or source-neutral exam state is live before verification. |
+| Auth actions              | Login and account creation must remain direct actions when shown.                                                                                        | That a user is sent to a generic hub, chooser, or duplicate action page first.                                       |
 
 ### Copy Budget
 

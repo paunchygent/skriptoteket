@@ -4,8 +4,8 @@ id: REF-SKRIPT-PRD-frontend-prd-v0-1-full-vue-vite-spa-migration
 title: 'Frontend PRD v0.1: Full Vue/Vite SPA migration'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: prd

@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-40-03-10
-title: Adopt huleedu-integrated 0.1.30 and make delete and edit actions glyph-only
-  across Skriptoteket
+title: Adopt huleedu-integrated 0.1.30 and make delete and edit actions glyph-only across Skriptoteket
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-17'
 status: done
 closeout_review:
@@ -85,12 +84,12 @@ Presentation only; no behaviour or API changes.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | Delete glyph actions have no border or background square anywhere (user 2026-10-17). The worded `Radera` buttons in the two planner modal footers stay, because they commit a destructive action beside Spara and Avbryt. |
-| D2  | Edit actions are the edit glyph alone, everywhere in Skriptoteket (user 2026-10-17). |
-| D3  | The Mina kurser school-form checkboxes get more, but not much more, space above and below (user 2026-10-17). |
-| D4  | Non-delete icon-only buttons keep their current border until the user decides otherwise. |
+| D2  | Edit actions are the edit glyph alone, everywhere in Skriptoteket (user 2026-10-17).                                                                                                                                      |
+| D3  | The Mina kurser school-form checkboxes get more, but not much more, space above and below (user 2026-10-17).                                                                                                              |
+| D4  | Non-delete icon-only buttons keep their current border until the user decides otherwise.                                                                                                                                  |
 
 Follow-up the same day (user decision): huleedu-integrated 0.1.31 draws every
 icon-only default action and glyph edit trigger without a frame, and the Mina

@@ -4,17 +4,18 @@ id: ADR-SKRIPT-0043
 title: AI-assisted inline completions for script editor
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0043
+  - ADR-0043
 ---
 
 ## Context
+
 The script editor intelligence system (ST-08-10/11/12) provides static analysis-based assistance: import autocomplete,
 contract validation, security linting, and hover documentation. While helpful, these features are limited to predefined
 patterns and cannot generate novel code suggestions.
@@ -37,14 +38,18 @@ runner constraints and Contract v2 requirements.
 2. **Claude API (Anthropic)** - High quality but vendor lock-in and requires Anthropic API key.
 3. **OpenAI-compatible API** - Works with Ollama (local), OpenRouter, OpenAI, and other providers.
 4. **Both Anthropic + OpenAI-compatible** - Maximum flexibility but increased complexity.
+
 ### Update (2026-01-11): legacy edit suggestions removed
+
 Skriptoteket initially added a separate “edit suggestions” surface using `POST /api/v1/editor/edits` and the `LLM_EDIT_*`
 profile (ST-08-16). The product direction has since converged on **chat-first editing** with structured edit ops
 (ADR-0051) using the `LLM_CHAT_OPS_*` profile.
 
 To avoid maintaining two overlapping edit paths, the `/edits` endpoint and related UI code were removed; chat-first
 edit-ops is the canonical editing capability.
+
 ### Update (2026-01-18): remote-first completions + local fallback + admin policy + per-user completion provider
+
 We want inline completions to be **remote-first** (OpenAI `gpt-5-nano`) when allowed, to reduce load on local inference,
 while still supporting a **local fallback** (Devstral via llama.cpp) for resilience.
 
@@ -80,7 +85,9 @@ LLM_COMPLETION_FALLBACK_MODEL=Devstral-Small-2-24B
 ### Default per-user remote fallback preference (used when creating new profiles)
 AI_DEFAULT_ALLOW_REMOTE_FALLBACK=true
 ```
+
 ### References
+
 - [ADR-0035: Script editor intelligence architecture](adr-0035-script-editor-intelligence-architecture.md)
 - [ADR-0051: Chat-first AI editing](adr-0051-chat-first-ai-editing.md)
 - [ST-08-14: AI inline completions MVP](../backlog/stories/story-08-14-ai-inline-completions.md)
@@ -89,6 +96,7 @@ AI_DEFAULT_ALLOW_REMOTE_FALLBACK=true
 - [ref-ai-script-generation-kb.md](../reference/ref-ai-script-generation-kb.md) - KB content to inject
 
 ## Decision
+
 Use an **OpenAI-compatible backend proxy** with knowledge base injection.
 
 The long-term goal is to support multiple AI assistance capabilities (e.g. inline completions and edit suggestions).
@@ -223,9 +231,11 @@ skriptoteketIntelligence(config)
 ```
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 ### Positive
 
 - **Flexible provider support**: Works with Ollama (local/free), OpenRouter (many models), OpenAI (quality)

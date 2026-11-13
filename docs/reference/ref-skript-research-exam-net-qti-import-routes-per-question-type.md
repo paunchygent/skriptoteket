@@ -4,13 +4,12 @@ id: REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type
 title: Exam.net QTI import routes per question type
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: draft
 reference_kind: research
-summary: Probed Exam.net QTI 3.0 import behaviour per question type, with the QTI
-  route the export uses and what the teacher completes after import
+summary: Probed Exam.net QTI 3.0 import behaviour per question type, with the QTI route the export uses and what the teacher completes after import
 ---
 
 ## Research Purpose And Boundary

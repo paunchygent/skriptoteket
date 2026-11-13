@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-klassrumskartan-product-direction-2026-03-21
 title: Klassrumskartan product direction (2026-03-21)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-group-seating-studio-product-direction-2026-03-21
+  - REF-group-seating-studio-product-direction-2026-03-21
 summary: Klassrumskartan product direction (2026-03-21)
 ---
 

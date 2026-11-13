@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff
 title: Skriptoteket help copy signoff
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-skriptoteket-help-copy-signoff
+  - REF-skriptoteket-help-copy-signoff
 summary: Skriptoteket help copy signoff
 ---
 

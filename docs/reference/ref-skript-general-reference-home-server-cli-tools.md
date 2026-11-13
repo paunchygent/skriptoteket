@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-home-server-cli-tools
 title: 'Reference: Home Server CLI Tools'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-home-server-cli-tools
+  - REF-home-server-cli-tools
 summary: 'Reference: Home Server CLI Tools'
 ---
 

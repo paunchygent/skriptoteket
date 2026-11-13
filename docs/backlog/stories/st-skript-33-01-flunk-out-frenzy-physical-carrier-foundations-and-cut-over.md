@@ -4,8 +4,8 @@ id: ST-SKRIPT-33-01
 title: Flunk-Out Frenzy physical carrier foundations and cut-over governance
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,25 +16,13 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-33
 acceptance_criteria:
-- Given the architect direction now defines a physical carrier graph plus observation-spine
-  overlay as the target model, when this story is complete, then the launcher/table
-  authored schema distinguishes support, guard, receiver, observation-spine, and handoff-seam
-  roles without overloading `guideRails` or `travelRoutes`.
-- Given world ownership is the critical architectural risk, when this story is complete,
-  then the compiler and launcher-world geometry plan make it explicit which causal
-  elevated-route surfaces live in the launcher Rapier world and where the one terminal
-  board handoff seam occurs.
-- Given physical cut-over work must not outrun its foundations, when this story is
-  complete, then a shadow-observer and cut-over readiness gate exist so future transport
-  deletion can be judged against strict proof rather than intuition.
-- Given `PR-0214` is the canonical truth surface, when this story is complete, then
-  no drift thresholds are widened, no summary reconstruction is introduced, and no
-  baseline repin is allowed yet.
-- Given existing cut-over tasks were planned under route-driven assumptions, when
-  this story is complete, then those tasks are explicitly blocked or re-scoped so
-  no slotted work remains in conflict with the architect reference.
+  - Given the architect direction now defines a physical carrier graph plus observation-spine overlay as the target model, when this story is complete, then the launcher/table authored schema distinguishes support, guard, receiver, observation-spine, and handoff-seam roles without overloading `guideRails` or `travelRoutes`.
+  - Given world ownership is the critical architectural risk, when this story is complete, then the compiler and launcher-world geometry plan make it explicit which causal elevated-route surfaces live in the launcher Rapier world and where the one terminal board handoff seam occurs.
+  - Given physical cut-over work must not outrun its foundations, when this story is complete, then a shadow-observer and cut-over readiness gate exist so future transport deletion can be judged against strict proof rather than intuition.
+  - Given `PR-0214` is the canonical truth surface, when this story is complete, then no drift thresholds are widened, no summary reconstruction is introduced, and no baseline repin is allowed yet.
+  - Given existing cut-over tasks were planned under route-driven assumptions, when this story is complete, then those tasks are explicitly blocked or re-scoped so no slotted work remains in conflict with the architect reference.
 retired_ids:
-- ST-33-01
+  - ST-33-01
 ---
 
 ## Context

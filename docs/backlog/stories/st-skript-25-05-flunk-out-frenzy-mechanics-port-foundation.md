@@ -4,8 +4,8 @@ id: ST-SKRIPT-25-05
 title: Flunk-Out Frenzy mechanics-port foundation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -17,29 +17,16 @@ closeout_review:
 epic: EPIC-SKRIPT-25
 links:
   decisions:
-  - ADR-SKRIPT-0073
+    - ADR-SKRIPT-0073
 acceptance_criteria:
-- Given the local runtime needs richer table behavior, when this story is complete,
-  then the physics boundary can emit semantic events for targets, lanes, capture/eject
-  devices, ramps, gates, and launcher/feed lifecycle without leaking Rapier internals.
-- Given the rule engine must grow beyond bumper and `L-A-T-E` rollover scoring, when
-  this story is complete, then score, bonus, jackpot, ball-save or shoot-again, and
-  objective progression are decomposed into small rule modules instead of one monolithic
-  controller.
-- Given the prototype-alpha table expands, when new devices are authored, then their
-  geometry, tags, and authored parameters remain in typed TypeScript table modules
-  rather than an external JSON content system.
-- Given lightweight score submission and leaderboard support still matter later, when
-  these mechanics slices land, then the browser-owned runtime plus the app/version/ruleset
-  seams from `ST-25-02` remain intact and ready for a compact post-run score handoff.
-- Given the work is reviewed incrementally, when the mechanics backlog is executed,
-  then each PR remains narrow, testable, and aligned with the repo size budget instead
-  of introducing a new engine monolith.
-- Given repo file size limits are enforced, when PR-0210 completes, then all Flunk-Out
-  Frenzy frontend modules are under 500 LoC with clear component communication patterns
-  and no memory leaks.
+  - Given the local runtime needs richer table behavior, when this story is complete, then the physics boundary can emit semantic events for targets, lanes, capture/eject devices, ramps, gates, and launcher/feed lifecycle without leaking Rapier internals.
+  - Given the rule engine must grow beyond bumper and `L-A-T-E` rollover scoring, when this story is complete, then score, bonus, jackpot, ball-save or shoot-again, and objective progression are decomposed into small rule modules instead of one monolithic controller.
+  - Given the prototype-alpha table expands, when new devices are authored, then their geometry, tags, and authored parameters remain in typed TypeScript table modules rather than an external JSON content system.
+  - Given lightweight score submission and leaderboard support still matter later, when these mechanics slices land, then the browser-owned runtime plus the app/version/ruleset seams from `ST-25-02` remain intact and ready for a compact post-run score handoff.
+  - Given the work is reviewed incrementally, when the mechanics backlog is executed, then each PR remains narrow, testable, and aligned with the repo size budget instead of introducing a new engine monolith.
+  - Given repo file size limits are enforced, when PR-0210 completes, then all Flunk-Out Frenzy frontend modules are under 500 LoC with clear component communication patterns and no memory leaks.
 retired_ids:
-- ST-25-05
+  - ST-25-05
 ---
 
 ## Context
@@ -103,8 +90,7 @@ The source does not record separate contract inputs.
 
 9. [TASK-SKRIPT-25-05-06: Flunk-Out Frenzy: file size compliance and frontend module decomposition](../tasks/task-skript-25-05-06-flunk-out-frenzy-file-size-compliance-and-frontend-module.md)
 
-Dependency chain: `PR-0188 -> PR-0189 -> TASK-SKRIPT-25-05-01 -> PR-0191 -> TASK-SKRIPT-25-05-02 ->
-TASK-SKRIPT-25-05-03 -> TASK-SKRIPT-25-05-04 -> TASK-SKRIPT-25-05-05`. `TASK-SKRIPT-25-05-06` can proceed in parallel with Tranche 2
+Dependency chain: `PR-0188 -> PR-0189 -> TASK-SKRIPT-25-05-01 -> PR-0191 -> TASK-SKRIPT-25-05-02 -> TASK-SKRIPT-25-05-03 -> TASK-SKRIPT-25-05-04 -> TASK-SKRIPT-25-05-05`. `TASK-SKRIPT-25-05-06` can proceed in parallel with Tranche 2
 but must complete before any additional mechanics work that would further
 increase file sizes.
 

@@ -120,25 +120,19 @@ as a small Smart-placement remediation:
 
 ## Verification
 
-- Smart overflow/default amendment: `pdm run fe-test -- --run
-  PlannerGroupingWorkspaceToolbar.overflow PlannerSeatingWorkspaceToolbar.overflow
-  usePlannerToolbarOverflow classroomPlannerGuestDraftWorkspace` passed: 4 files
+- Smart overflow/default amendment: `pdm run fe-test -- --run PlannerGroupingWorkspaceToolbar.overflow PlannerSeatingWorkspaceToolbar.overflow usePlannerToolbarOverflow classroomPlannerGuestDraftWorkspace` passed: 4 files
   / 18 tests.
-- Smart overflow/default amendment: `pdm run pytest
-  tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py -q`
+- Smart overflow/default amendment: `pdm run pytest tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py -q`
   passed: 20 tests.
 - Smart overflow/default amendment: `pdm run fe-type-check` passed.
 - Smart overflow/default amendment: `pdm run fe-lint` passed.
 - Smart overflow/default amendment: broader Smart-state frontend test command
-  `pdm run fe-test -- --run useClassroomState useSmartGroupingRun
-  useSmartSeatingRun usePublicSmartGroupingRun usePublicSmartSeatingRun
-  classroomPlannerSmartRunActions` still has pre-existing fixed-seat-rule
+  `pdm run fe-test -- --run useClassroomState useSmartGroupingRun useSmartSeatingRun usePublicSmartGroupingRun usePublicSmartSeatingRun classroomPlannerSmartRunActions` still has pre-existing fixed-seat-rule
   payload assertion drift from the active `ST-27-09` local worktree changes; the
   Smart-run/public Smart files in that command passed.
 - `pdm run fe-test -- --run PlannerGroupingWorkspaceToolbar.overflow PlannerSeatingWorkspaceToolbar.overflow usePlannerToolbarOverflow`
   plus `denseToolPrimitives` passed: 4 files / 14 tests.
-- `pdm run python -m scripts.playwright_pr_0302_toolbar_overflow_parity
-  --start-backend --start-vite` passed. It exercised authenticated and public
+- `pdm run python -m scripts.playwright_pr_0302_toolbar_overflow_parity --start-backend --start-vite` passed. It exercised authenticated and public
   guest shells, both grouping and seating workspaces, full desktop -> phone ->
   desktop roundtrips, the `767px` breakpoint-adjacent state, staged one-control
   compact-phone overflow, priority-prefix assertions, no toolbar horizontal
@@ -147,8 +141,7 @@ as a small Smart-placement remediation:
 - `pdm run fe-type-check` passed.
 - `pdm run fe-lint` passed.
 - `pdm run fe-build` passed; the existing large chunk-size warnings remain.
-- `pdm run ruff check scripts/playwright_pr_0302_toolbar_overflow_parity.py
-  tests/unit/scripts/test_playwright_script_surface.py` passed.
+- `pdm run ruff check scripts/playwright_pr_0302_toolbar_overflow_parity.py tests/unit/scripts/test_playwright_script_surface.py` passed.
 - `pdm run pytest tests/unit/scripts/test_playwright_script_surface.py -q`
   passed: 3 tests.
 - `pdm run docs-validate` passed.

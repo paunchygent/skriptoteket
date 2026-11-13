@@ -4,34 +4,40 @@ id: RUN-SKRIPT-runbook-ai-code-completion-services
 title: 'Runbook: AI Code Completion Services'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-tabby-codemirror
+  - RUN-tabby-codemirror
 summary: 'Runbook: AI Code Completion Services'
 system: hemma.hule.education
 ---
 
 ## Trigger
+
 ### Source record
+
 Operations runbook for AI code completion services (llama.cpp + Tabby) on hemma.hule.education.
 
 For architecture, models, and integration details, see
 [ref-ai-completion-architecture.md](../reference/ref-skript-general-ai-completion-architecture-technical-specification-part-01.md).
 
----
+______________________________________________________________________
+
 ### Services Overview
-| Service | Port | Purpose | Systemd Unit |
-| ------- | ---- | ------- | ------------ |
+
+| Service      | Port | Purpose                                 | Systemd Unit                |
+| ------------ | ---- | --------------------------------------- | --------------------------- |
 | llama-server | 8082 | ROCm GPU inference (Docker via systemd) | `llama-server-rocm.service` |
-| Tabby | 8083 | Completion API proxy | `tabby.service` |
+| Tabby        | 8083 | Completion API proxy                    | `tabby.service`             |
 
 **Current model:** Qwen3-Coder-30B-A3B (Q4_K_M, ~18.5 GB VRAM)
 
----
+______________________________________________________________________
+
 ### Health Checks
+
 ### Quick Status
 
 ```bash
@@ -62,8 +68,10 @@ ssh hemma 'curl -s http://localhost:8083/v1/completions \
   -d "{\"language\": \"python\", \"segments\": {\"prefix\": \"def fib(n):\\n    \", \"suffix\": \"\"}}" | jq .choices[0].text'
 ```
 
----
+______________________________________________________________________
+
 ### View Logs
+
 ```bash
 ### llama-server logs
 ssh hemma "journalctl -u llama-server-rocm.service -f"
@@ -75,8 +83,10 @@ ssh hemma "journalctl -u tabby -f"
 ssh hemma "journalctl -u llama-server-rocm.service -n 50 --no-pager"
 ```
 
----
+______________________________________________________________________
+
 ### Switch Models
+
 1. Stop services:
 
    ```bash
@@ -107,8 +117,10 @@ ssh hemma "journalctl -u llama-server-rocm.service -n 50 --no-pager"
    ssh hemma "curl -s http://localhost:8083/v1/health | jq ."
    ```
 
----
+______________________________________________________________________
+
 ### Monitor GPU
+
 ```bash
 ### Watch GPU usage during inference
 ssh hemma "watch -n 1 rocm-smi"
@@ -117,8 +129,10 @@ ssh hemma "watch -n 1 rocm-smi"
 ssh hemma "rocm-smi --showtemp"
 ```
 
----
+______________________________________________________________________
+
 ### Troubleshooting
+
 ### llama-server Won't Start
 
 ```bash
@@ -153,28 +167,32 @@ Common causes:
 
 Tabby v0.31+ has auth enabled by default. Use `--no-webserver` flag to disable.
 
----
+______________________________________________________________________
+
 ### Known Issues
+
 ### RDNA 4 Flash Attention Crash
 
 ROCm 7.1.1 clang crashes on gfx1201 flash attention. Build with `-DGGML_HIP_FA=OFF`.
 
 ### Port Conflicts
 
-| Port | Service | Notes |
-| ---- | ------- | ----- |
-| 8080 | node | Pre-existing |
-| 8081 | Apache httpd | Pre-existing |
-| 8082 | llama-server | AI inference |
-| 8083 | Tabby | Completion API |
+| Port  | Service              | Notes               |
+| ----- | -------------------- | ------------------- |
+| 8080  | node                 | Pre-existing        |
+| 8081  | Apache httpd         | Pre-existing        |
+| 8082  | llama-server         | AI inference        |
+| 8083  | Tabby                | Completion API      |
 | 30888 | llama-server (Tabby) | Internal embeddings |
 
 ### Tabby Requires Bundled llama-server
 
 Even with external HTTP backend, Tabby needs its bundled llama-server for embeddings. Copy from tarball to `/usr/local/bin/`.
 
----
+______________________________________________________________________
+
 ### Service Files
+
 ### llama-server-rocm.service (Docker wrapper)
 
 Location: `/etc/systemd/system/llama-server-rocm.service`
@@ -207,23 +225,30 @@ api_endpoint = "http://127.0.0.1:8082/v1"
 model_name = "Devstral-Small-2-24B"
 ```
 
----
+______________________________________________________________________
+
 ### References
+
 - [ref-ai-completion-architecture.md](../reference/ref-skript-general-ai-completion-architecture-technical-specification-part-01.md) - Architecture and integration
 - [ADR-0050](../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md) - Infrastructure decisions
 - [runbook-gpu-ai-workloads.md](runbook-gpu-ai-workloads.md) - GPU operations
 
 ## Preconditions
+
 The source record did not define a separate section for this package heading.
 
 ## Steps
+
 The source record did not define a separate section for this package heading.
 
 ## Expected Results
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 ### Start/Stop/Restart
+
 ### Start Services
 
 ```bash
@@ -249,7 +274,8 @@ ssh hemma "sudo systemctl restart llama-server-rocm.service && sleep 5 && sudo s
 ssh hemma "sudo systemctl daemon-reload"
 ```
 
----
+______________________________________________________________________
 
 ## Rollback
+
 The source record did not define a separate section for this package heading.

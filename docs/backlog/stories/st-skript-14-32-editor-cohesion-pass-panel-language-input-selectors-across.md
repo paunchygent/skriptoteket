@@ -4,8 +4,8 @@ id: ST-SKRIPT-14-32
 title: 'Editor: cohesion pass (panel language + input selectors across modes)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,21 +16,13 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-14
 acceptance_criteria:
-- Given the author switches between Källkod/Diff/Metadata/Testkör, then typography,
-  spacing, borders, and button sizes stay consistent (IDE-like, no drawer-style headers
-  inside the editor surface).
-- Given the editor shows input selectors (preset/entrypoint/diff target), then they
-  share one compact size system (height, font, padding) and one tooltip/help pattern
-  without label collisions.
-- Given the author interacts with Testkör mode, then in-editor actions (file picker,
-  run, clear) use the same editor utility hierarchy (no large CTA-style buttons inside
-  the editor).
-- Given the author uses Metadata mode, then the panel uses the same compact section
-  headers and actions as the main editor (no redundant intro copy).
-- Given the author uses Diff mode, then diff controls use the same utility button
-  + select styling as the rest of the editor.
+  - Given the author switches between Källkod/Diff/Metadata/Testkör, then typography, spacing, borders, and button sizes stay consistent (IDE-like, no drawer-style headers inside the editor surface).
+  - Given the editor shows input selectors (preset/entrypoint/diff target), then they share one compact size system (height, font, padding) and one tooltip/help pattern without label collisions.
+  - Given the author interacts with Testkör mode, then in-editor actions (file picker, run, clear) use the same editor utility hierarchy (no large CTA-style buttons inside the editor).
+  - Given the author uses Metadata mode, then the panel uses the same compact section headers and actions as the main editor (no redundant intro copy).
+  - Given the author uses Diff mode, then diff controls use the same utility button + select styling as the rest of the editor.
 retired_ids:
-- ST-14-32
+  - ST-14-32
 ---
 
 ## Context

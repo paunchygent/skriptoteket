@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-05-06
 title: 'Flunk-Out Frenzy: file size compliance and frontend module decomposition'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,54 +17,58 @@ closeout_review:
 story: ST-SKRIPT-25-05
 task_kind: story
 acceptance_criteria:
-- All Flunk-Out Frenzy frontend files are under the 500 LoC hard limit per repo rules.
-- FlunkOutFrenzyView.vue is decomposed from 1109 lines into focused sub-components
-  and composables.
-- The Flunk-Out Frenzy physics spec surface is split into domain-specific `game/physics/__tests__/PhysicsWorld.*.spec.ts`
-  modules without losing coverage.
-- compilePinballTable.ts is refactored into a compiler directory with single-responsibility
-  modules.
-- No behavioral regressions in existing game functionality (launch, flip, drain, scoring).
-- All existing tests pass after decomposition (pdm run fe-test).
-- Component communication follows the Props/Events pattern without circular dependencies.
-- CSS styles are namespace-scoped under .fof-game-container to prevent global leakage.
-- No memory leaks detected during 60fps stability check (Chrome DevTools Memory tab).
+  - All Flunk-Out Frenzy frontend files are under the 500 LoC hard limit per repo rules.
+  - FlunkOutFrenzyView.vue is decomposed from 1109 lines into focused sub-components and composables.
+  - The Flunk-Out Frenzy physics spec surface is split into domain-specific `game/physics/__tests__/PhysicsWorld.*.spec.ts` modules without losing coverage.
+  - compilePinballTable.ts is refactored into a compiler directory with single-responsibility modules.
+  - No behavioral regressions in existing game functionality (launch, flip, drain, scoring).
+  - All existing tests pass after decomposition (pdm run fe-test).
+  - Component communication follows the Props/Events pattern without circular dependencies.
+  - CSS styles are namespace-scoped under .fof-game-container to prevent global leakage.
+  - No memory leaks detected during 60fps stability check (Chrome DevTools Memory tab).
 dependencies:
-- TASK-SKRIPT-25-06-12
+  - TASK-SKRIPT-25-06-12
 ---
 
 ## Context
+
 ### Problem
+
 Multiple Flunk-Out Frenzy frontend files violate the repo's hard file size limit
-(<400-500 LoC per `.codex/rules/010-foundational-principles.md` and
+(\<400-500 LoC per `.codex/rules/010-foundational-principles.md` and
 `.codex/rules/050-python-standards.md`):
 
-| File | Lines | Over Limit |
-|------|-------|------------|
-| `FlunkOutFrenzyView.vue` | 1109 | +609 |
-| `Flunk-Out Frenzy physics spec surface` | 1206 | +706 |
-| `compilePinballTable.ts` | 1019 | +519 |
-| `launcherChain3d.ts` | 856 | +356 |
-| `prototypeAlphaVpwDonorMap.ts` | 845 | +345 |
-| `PhysicsWorld.ts` | 743 | +243 |
-| `prototypeAlphaTableSpec.ts` | 739 | +239 |
+| File                                    | Lines | Over Limit |
+| --------------------------------------- | ----- | ---------- |
+| `FlunkOutFrenzyView.vue`                | 1109  | +609       |
+| `Flunk-Out Frenzy physics spec surface` | 1206  | +706       |
+| `compilePinballTable.ts`                | 1019  | +519       |
+| `launcherChain3d.ts`                    | 856   | +356       |
+| `prototypeAlphaVpwDonorMap.ts`          | 845   | +345       |
+| `PhysicsWorld.ts`                       | 743   | +243       |
+| `prototypeAlphaTableSpec.ts`            | 739   | +239       |
 
 These oversized files:
+
 - Violate the "Zero Tolerance for Vibe Coding" rule (no undocumented shortcuts)
 - Risk becoming monolithic "god modules" that hinder testability
 - Complicate future mechanics work (ST-25-05, ST-25-06)
 - Make code review and maintenance more difficult
+
 ### Risk assessment
-| Risk | Mitigation |
-|------|------------|
+
+| Risk                                    | Mitigation                                                                    |
+| --------------------------------------- | ----------------------------------------------------------------------------- |
 | Behavioral regression during file moves | Comprehensive test coverage before refactoring; no logic changes during moves |
-| Import path breakage | Update all relative imports; verify with TypeScript compiler |
-| Test coverage gaps | Ensure all original test cases are preserved across split files |
-| Style leakage after CSS extraction | Verify visual parity with before/after screenshots; namespace all CSS |
-| Prop-drilling in view decomposition | Props/events pattern enforced; max prop depth of 2; events bubble to parent |
-| Physics performance degradation | Delegation pattern keeps direct references; benchmark 60fps before/after |
-| Compiler contract drift | Strict TypeScript interfaces; runtime completeness assertion |
+| Import path breakage                    | Update all relative imports; verify with TypeScript compiler                  |
+| Test coverage gaps                      | Ensure all original test cases are preserved across split files               |
+| Style leakage after CSS extraction      | Verify visual parity with before/after screenshots; namespace all CSS         |
+| Prop-drilling in view decomposition     | Props/events pattern enforced; max prop depth of 2; events bubble to parent   |
+| Physics performance degradation         | Delegation pattern keeps direct references; benchmark 60fps before/after      |
+| Compiler contract drift                 | Strict TypeScript interfaces; runtime completeness assertion                  |
+
 ### Related documentation
+
 - `.codex/rules/010-foundational-principles.md` - File size limits and "no vibe coding"
 - `.codex/rules/050-python-standards.md` - Style and formatting rules
 - `.codex/rules/025-curated-apps.md` - Curated app architecture
@@ -72,24 +76,32 @@ These oversized files:
 - `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md` - Parent epic
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Story Contract Slice
+
 ### Goal
+
 Decompose all oversized Flunk-Out Frenzy modules into focused, single-responsibility
 files that comply with the 500 LoC hard limit while preserving all existing
 behavior and test coverage.
+
 ### Non-goals
+
 - No new game mechanics or features (pure refactoring)
 - No changes to the bootstrap contract or backend APIs
 - No visual redesign of the game shell
 - No changes to physics behavior or game balance
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Plan
+
 ### Implementation plan
+
 ### Phase 1: View Layer Decomposition
 
 Refactor `FlunkOutFrenzyView.vue` (1109 lines):
@@ -156,6 +168,7 @@ physics/
 ```
 
 Each test file:
+
 - Imports shared helpers from `physicsTestHelpers.ts`
 - Sets up its own isolated Rapier world instance
 - Runs independently (no test interdependencies)
@@ -260,7 +273,9 @@ class PhysicsWorld {
 - Handlers are testable in isolation by injecting mock world
 
 Performance requirement: No `requestAnimationFrame` jitter; maintain 60fps stable.
+
 ### Test plan
+
 Automated:
 
 ```bash
@@ -287,11 +302,13 @@ Manual/live:
 ### Performance & Memory Verification
 
 **60fps Stability Check:**
+
 - Open Chrome DevTools > Performance tab
 - Record 30 seconds of gameplay
 - Verify: No dropped frames, consistent 60fps, no long task warnings
 
 **Memory Leak Check:**
+
 - Open Chrome DevTools > Memory tab
 - Take heap snapshot before starting game
 - Play 3 complete games (launch, play, drain x3)
@@ -300,34 +317,45 @@ Manual/live:
 - Force GC (`performance.memory` if available) and confirm cleanup
 
 **CSS Leakage Check:**
+
 - Load game, then navigate to Skriptoteket home/catalog
 - Verify: No layout shifts, color overrides, or broken button styles
 - Check computed styles on main navigation buttons remain unchanged
+
 ### Rollback plan
+
 - Git revert the decomposition commits
 - Restore original oversized files from git history
 - Re-run tests to verify baseline behavior
 
 ## Implementation Steps
+
 The source record did not define a separate section for this package heading.
 
 ## Proof
+
 The source record did not define a separate section for this package heading.
 
 ## Validation
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
 ## Lessons Learned
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Implementation Review
+
 The source record did not define a separate section for this package heading.

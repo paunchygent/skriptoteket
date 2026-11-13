@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-35
 title: Launch SEO and search indexing readiness
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,23 +14,19 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: 'Skriptoteket can launch under the intended HuleEdu domain topology: `hule.education`
-  serves the HuleEdu landing layer, `api.hule.education` becomes the shared browser
-  auth/API edge, `skriptoteket.hule.education` remains the canonical public Skriptoteket
-  app host for its crawlable surfaces, and the current public pages gain valid crawler-facing
-  files, honest HTTP status semantics, route-level metadata, and operator-ready search
-  verification.'
+outcome: 'Skriptoteket can launch under the intended HuleEdu domain topology: `hule.education` serves the HuleEdu landing layer, `api.hule.education` becomes the shared browser auth/API edge, `skriptoteket.hule.education` remains the canonical public Skriptoteket app host for its crawlable surfaces, and the current public pages gain valid crawler-facing files, honest HTTP status semantics, route-level metadata, and operator-ready search verification.'
 retired_ids:
-- EPIC-35
+  - EPIC-35
 dependencies:
-- ADR-SKRIPT-0027
-- ADR-SKRIPT-0028
-- ADR-SKRIPT-0076
-- REF-SKRIPT-GENERAL-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08
-- REF-SKRIPT-RESEARCH-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08
+  - ADR-SKRIPT-0027
+  - ADR-SKRIPT-0028
+  - ADR-SKRIPT-0076
+  - REF-SKRIPT-GENERAL-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08
+  - REF-SKRIPT-RESEARCH-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08
 ---
 
 ## Scope
+
 - Consume the frozen launch topology from `ST-28-05` instead of treating
   `skriptoteket.hule.education`, `hule.education`, `api.hule.education`, and
   potential `www` variants as an SEO-owned decision space.
@@ -52,7 +48,9 @@ dependencies:
 - Document and execute the search-operator lane: Search Console / Bing
   verification, sitemap submission, launch-day checks, and post-deploy
   revalidation.
+
 ### Out of Scope
+
 - A broad marketing-site rewrite or a copywriting campaign beyond the minimum
   metadata and launch-surface discoverability required for indexing.
 - Opening authenticated or private teacher surfaces to public search indexing.
@@ -67,49 +65,58 @@ dependencies:
   this epic must stay compatible with them.
 
 ## Epic Contract
+
 The source record did not define a separate section for this package heading.
 
 ## ADR Coverage
+
 ### Decision Trees
+
 ### 1. Canonical host
 
-| Decision point | Path A | Path B | Current recommendation |
-|---|---|---|---|
-| Does `https://hule.education` become the HuleEdu landing page before launch? | Keep the apex as HuleEdu-owned, link to `https://skriptoteket.hule.education`, and keep Skriptoteket's own canonical app URLs on the subdomain | Keep the apex HuleEdu-owned and non-competing until the HuleEdu landing page is ready; do not promote the apex into the Skriptoteket app host | Path A |
-| Do we need a `www` variant for launch? | Add DNS, TLS coverage, and a permanent redirect to the canonical host | Leave `www` out of scope for launch and avoid introducing another public variant | Path B |
+| Decision point                                                               | Path A                                                                                                                                         | Path B                                                                                                                                        | Current recommendation |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Does `https://hule.education` become the HuleEdu landing page before launch? | Keep the apex as HuleEdu-owned, link to `https://skriptoteket.hule.education`, and keep Skriptoteket's own canonical app URLs on the subdomain | Keep the apex HuleEdu-owned and non-competing until the HuleEdu landing page is ready; do not promote the apex into the Skriptoteket app host | Path A                 |
+| Do we need a `www` variant for launch?                                       | Add DNS, TLS coverage, and a permanent redirect to the canonical host                                                                          | Leave `www` out of scope for launch and avoid introducing another public variant                                                              | Path B                 |
 
 ### 2. Crawl contract
 
-| Route class | HTTP contract | Search contract | Current recommendation |
-|---|---|---|---|
-| Public landing and public curated-app entry pages | `200 OK` with real metadata and self-canonical URL | Indexable and listed in the sitemap | Required now |
-| Authenticated or private teacher surfaces | Product-driven response semantics only | Excluded from sitemap and explicitly non-indexable where appropriate | Required now |
-| Malformed or non-existent URLs | Honest `404` or `410`, not SPA-shell `200` | Not indexable | Required now |
+| Route class                                       | HTTP contract                                      | Search contract                                                      | Current recommendation |
+| ------------------------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------- | ---------------------- |
+| Public landing and public curated-app entry pages | `200 OK` with real metadata and self-canonical URL | Indexable and listed in the sitemap                                  | Required now           |
+| Authenticated or private teacher surfaces         | Product-driven response semantics only             | Excluded from sitemap and explicitly non-indexable where appropriate | Required now           |
+| Malformed or non-existent URLs                    | Honest `404` or `410`, not SPA-shell `200`         | Not indexable                                                        | Required now           |
 
 ### 3. Rendering depth
 
-| Need | Implementation lane | When |
-|---|---|---|
-| Minimum viable launch indexing | Real crawler files, honest status semantics, and route-level head metadata | Now |
+| Need                                   | Implementation lane                                                                       | When                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------------------- |
+| Minimum viable launch indexing         | Real crawler files, honest status semantics, and route-level head metadata                | Now                              |
 | Stronger organic discoverability later | Public-page prerender or SSR plus structured data and broader crawlable surface expansion | After the minimum lane is stable |
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Stories
+
 ### Story Stack
+
 - [ST-35-01: Canonical public host and edge indexability decision package](../stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md)
 - [ST-35-02: Crawler surfaces and honest HTTP status semantics](../stories/story-35-02-crawler-surfaces-and-honest-http-status-semantics.md)
 - [ST-35-03: Public-route metadata, canonical, and indexing policy](../stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md)
 - [ST-35-04: Search Console, Bing, and launch-day SEO operations](../stories/st-skript-35-04-search-console-bing-and-launch-day-seo-operations.md)
 
 ## Epic Verification Plan
+
 The source record did not define a separate section for this package heading.
 
 ## Exceptions And Follow-Ups
+
 The source record did not define a separate section for this package heading.
 
 ## Risks
+
 - If the canonical host is not decided early, link equity and search-console
   ownership can split across the HuleEdu apex, shared API edge, and Skriptoteket
   subdomain surfaces.
@@ -126,6 +133,7 @@ The source record did not define a separate section for this package heading.
   churn.
 
 ## Notes
+
 - [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
   is the canonical evidence and analysis record for this epic.
 - [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
@@ -145,7 +153,9 @@ The source record did not define a separate section for this package heading.
 - `REV-EPIC-35` was approved on 2026-04-15. Implementation can now start with the ordered
   `ST-35-01` / `ST-35-02` slices, while production remains known-bad for crawler files and unknown
   route status semantics until those slices ship.
+
 ### Implementation Summary (as of 2026-04-15)
+
 - `ST-35-01` shipped via `PR-0267`: the Skriptoteket canonical public app host is now captured in
   `PUBLIC_APP_BASE_URL`, defaulting to `https://skriptoteket.hule.education`.
 - `ST-35-02` shipped via `PR-0267`: `/robots.txt` and `/sitemap.xml` are backend-owned crawler
@@ -162,10 +172,13 @@ The source record did not define a separate section for this package heading.
   console verification steps.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Epic Closeout Review
+
 The source record did not define a separate section for this package heading.

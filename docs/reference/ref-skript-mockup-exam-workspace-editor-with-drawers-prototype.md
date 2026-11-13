@@ -4,13 +4,12 @@ id: REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype
 title: Exam workspace editor with drawers prototype
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-13'
 status: draft
 reference_kind: mockup
-summary: Interactive prototype of the exam workspace as one editor with drawers, inline
-  import view, instructions and lettered sub-questions
+summary: Interactive prototype of the exam workspace as one editor with drawers, inline import view, instructions and lettered sub-questions
 ---
 
 ## Intent
@@ -26,12 +25,12 @@ their other appearance decisions still apply.
 
 Files live in `docs/mockups/exam-workspace-editor-drawers/`:
 
-| File | Role |
-| --- | --- |
-| `prototype.html` | The interactive prototype: markup, static Swedish example data, script and an inline Lucide sprite. |
-| `styles.css` | Shared layout styles. |
-| `tokens.css` | A copy of the huleedu-integrated 0.1.24 design tokens. |
-| `desktop-editor.png` | Desktop preview at 1440 x 900 with question 3 selected. |
+| File                 | Role                                                                                                |
+| -------------------- | --------------------------------------------------------------------------------------------------- |
+| `prototype.html`     | The interactive prototype: markup, static Swedish example data, script and an inline Lucide sprite. |
+| `styles.css`         | Shared layout styles.                                                                               |
+| `tokens.css`         | A copy of the huleedu-integrated 0.1.24 design tokens.                                              |
+| `desktop-editor.png` | Desktop preview at 1440 x 900 with question 3 selected.                                             |
 
 Serve `docs/mockups` and open `exam-workspace-editor-drawers/prototype.html`:
 

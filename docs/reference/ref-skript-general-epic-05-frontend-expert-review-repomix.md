@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-epic-05-frontend-expert-review-repomix
 title: EPIC-05 Frontend expert review (repomix)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-frontend-expert-review-epic-05
+  - REF-frontend-expert-review-epic-05
 summary: EPIC-05 Frontend expert review (repomix)
 ---
 

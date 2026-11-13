@@ -1,21 +1,18 @@
 ---
 type: reference
 id: REF-SKRIPT-RESEARCH-observability-correlation-trace-asgi-middleware-structlog-context-opentelemetry-spans-jaeger-loki-grafana
-title: 'Observability Correlation Trace: ASGI Middleware → Structlog Context → OpenTelemetry
-  Spans → Jaeger/Loki/Grafana'
+title: 'Observability Correlation Trace: ASGI Middleware → Structlog Context → OpenTelemetry Spans → Jaeger/Loki/Grafana'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
-summary: 'Observability Correlation Trace: ASGI Middleware → Structlog Context → OpenTelemetry
-  Spans → Jaeger/Loki/Grafana'
+summary: 'Observability Correlation Trace: ASGI Middleware → Structlog Context → OpenTelemetry Spans → Jaeger/Loki/Grafana'
 ---
 
 ## Research Purpose And Boundary
-
 
 Maps the complete correlation flow from HTTP request through the observability stack, showing how correlation IDs and trace context propagate through middleware, logging processors, OpenTelemetry spans, and infrastructure processing.
 
@@ -24,7 +21,6 @@ Maps the complete correlation flow from HTTP request through the observability s
 No separate evidence and sources is stated in the source.
 
 ### Source: Quick Index (Code + Docs)
-
 
 ### Web Middleware
 
@@ -38,10 +34,9 @@ No separate evidence and sources is stated in the source.
 - **Promtail Config**: `observability/promtail/promtail-config.yaml`
 - **Grafana Datasources**: `observability/grafana/provisioning/datasources/datasources.yaml`
 
----
+______________________________________________________________________
 
 ### Source: Execution Flows
-
 
 ### 1. HTTP Request Correlation Processing
 
@@ -118,30 +113,29 @@ Observability Infrastructure Processing
         └── Query logs by trace ID <-- 4d
 ```
 
----
+______________________________________________________________________
 
 ### Source: Key Locations
 
-
-| ID | Title | Path |
-| -- | ----- | ---- |
-| 1a | Extract Request Headers | `src/skriptoteket/web/middleware/correlation.py:46` |
-| 1b | Parse Correlation ID | `src/skriptoteket/web/middleware/correlation.py:47` |
-| 1c | Store in Request State | `src/skriptoteket/web/middleware/correlation.py:49` |
-| 1d | Clear Context | `src/skriptoteket/web/middleware/correlation.py:51` |
-| 1e | Bind to Structlog | `src/skriptoteket/web/middleware/correlation.py:52` |
-| 2a | Merge Context Variables | `src/skriptoteket/observability/logging.py:53` |
-| 2b | Extract Current Span | `src/skriptoteket/observability/logging.py:27` |
-| 2c | Add Trace ID | `src/skriptoteket/observability/logging.py:31` |
-| 2d | Add Span ID | `src/skriptoteket/observability/logging.py:32` |
-| 3a | Extract W3C Trace Context | `src/skriptoteket/web/middleware/tracing.py:56` |
-| 3b | Create Request Span | `src/skriptoteket/web/middleware/tracing.py:61` |
-| 3c | Enrich with Correlation | `src/skriptoteket/web/middleware/tracing.py:70` |
-| 3d | Inject Trace Headers | `src/skriptoteket/web/middleware/tracing.py:85` |
-| 4a | Extract Correlation in Promtail | `observability/promtail/promtail-config.yaml:74` |
-| 4b | Extract Trace Context | `observability/promtail/promtail-config.yaml:75` |
-| 4c | Grafana Trace Extraction | `observability/grafana/provisioning/datasources/datasources.yaml:33` |
-| 4d | Trace-to-Log Query | `observability/grafana/provisioning/datasources/datasources.yaml:53` |
+| ID  | Title                           | Path                                                                 |
+| --- | ------------------------------- | -------------------------------------------------------------------- |
+| 1a  | Extract Request Headers         | `src/skriptoteket/web/middleware/correlation.py:46`                  |
+| 1b  | Parse Correlation ID            | `src/skriptoteket/web/middleware/correlation.py:47`                  |
+| 1c  | Store in Request State          | `src/skriptoteket/web/middleware/correlation.py:49`                  |
+| 1d  | Clear Context                   | `src/skriptoteket/web/middleware/correlation.py:51`                  |
+| 1e  | Bind to Structlog               | `src/skriptoteket/web/middleware/correlation.py:52`                  |
+| 2a  | Merge Context Variables         | `src/skriptoteket/observability/logging.py:53`                       |
+| 2b  | Extract Current Span            | `src/skriptoteket/observability/logging.py:27`                       |
+| 2c  | Add Trace ID                    | `src/skriptoteket/observability/logging.py:31`                       |
+| 2d  | Add Span ID                     | `src/skriptoteket/observability/logging.py:32`                       |
+| 3a  | Extract W3C Trace Context       | `src/skriptoteket/web/middleware/tracing.py:56`                      |
+| 3b  | Create Request Span             | `src/skriptoteket/web/middleware/tracing.py:61`                      |
+| 3c  | Enrich with Correlation         | `src/skriptoteket/web/middleware/tracing.py:70`                      |
+| 3d  | Inject Trace Headers            | `src/skriptoteket/web/middleware/tracing.py:85`                      |
+| 4a  | Extract Correlation in Promtail | `observability/promtail/promtail-config.yaml:74`                     |
+| 4b  | Extract Trace Context           | `observability/promtail/promtail-config.yaml:75`                     |
+| 4c  | Grafana Trace Extraction        | `observability/grafana/provisioning/datasources/datasources.yaml:33` |
+| 4d  | Trace-to-Log Query              | `observability/grafana/provisioning/datasources/datasources.yaml:53` |
 
 ## Findings And Interpretation
 

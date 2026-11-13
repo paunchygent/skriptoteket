@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-09-06
-title: 'Structured misspellings: a deterministic producer gives every keyed gap its
-  automatic misspellings'
+title: 'Structured misspellings: a deterministic producer gives every keyed gap its automatic misspellings'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-15'
 status: done
 closeout_review:
@@ -18,9 +17,7 @@ closeout_review:
   approval_evidence: 'Pi ruthless-reviewer (gpt-6.1-sol) requested changes on 7d4ae4a5 and approved its repair; the under-four-characters rule 2647de47 was approved and merged as ebe212f1. Walk at cbe58ae1: a live gap key gained three spellings for substantivfras and none for KS or NF; Exam.net import 5339195 holds the keys and six spellings as accepted gap values. Records in Skriptoteket session 01a13c92-d70e-765f-ae36-b6583539e201 evidence/reviews/TASK-SKRIPT-39-09-06/ and evidence/walk/TASK-SKRIPT-39-09-06/walk-cbe58ae1.md.'
 task_kind: story
 acceptance_criteria:
-- A teacher keys an accepted answer in any gap and gets up to 3 realistic automatic
-  misspellings from the structured producer; DOCX conversion uses the same producer;
-  Exam.net imports them as accepted gap values
+  - A teacher keys an accepted answer in any gap and gets up to 3 realistic automatic misspellings from the structured producer; DOCX conversion uses the same producer; Exam.net imports them as accepted gap values
 story: ST-SKRIPT-39-09
 backlog_document_profile: contract-derived
 ---
@@ -102,8 +99,8 @@ per process; a lookup for one value stays within a few milliseconds.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | T1  | The producer ranks attested learner errors, then hunspell REP reversal, then keyboard typos; candidates pass the A10 filter and the first 3 per accepted value are kept (R15). |
-| T2  | The producer replaces the model's spelling candidates in DOCX conversion; one producer serves teacher-created and converted gaps (R16). |
-| T3  | Adding an accepted value through the gap popover adds its misspellings; a teacher-removed variant stays removed (R15, Q14). |
+| T2  | The producer replaces the model's spelling candidates in DOCX conversion; one producer serves teacher-created and converted gaps (R16).                                        |
+| T3  | Adding an accepted value through the gap popover adds its misspellings; a teacher-removed variant stays removed (R15, Q14).                                                    |

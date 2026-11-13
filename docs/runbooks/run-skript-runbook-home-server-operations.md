@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-home-server-operations
 title: 'Runbook: Home Server Operations'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-home-server
+  - RUN-home-server
 summary: 'Runbook: Home Server Operations'
 system: hemma.hule.education
 ---

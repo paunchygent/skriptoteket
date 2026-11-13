@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-04-01
 title: 'DOCX walking skeleton: import, native edit and create, save and reopen, export'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-05'
 status: done
 closeout_review:
@@ -15,8 +15,7 @@ closeout_review:
   approval_evidence: User approved the D5 live walk and the DOCX missing-key export block on 2026-10-10 after independent code reviews approved every merged change.
 task_kind: story
 acceptance_criteria:
-- A real DOCX source converts end to end through deterministic extraction, teacher
-  review, versioned Mina filer save and reopen, and on-demand QTI, PDF, and DOCX export
+  - A real DOCX source converts end to end through deterministic extraction, teacher review, versioned Mina filer save and reopen, and on-demand QTI, PDF, and DOCX export
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -58,10 +57,7 @@ validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 The walking skeleton is:
 
-`real DOCX upload -> deterministic extraction -> native exam document v1 ->
-confidence-gated LLM remainder and answer-key proposals -> teacher
-review/edit/create -> versioned Mina filer save -> reopen -> on-demand
-QTI/PDF/DOCX export`.
+`real DOCX upload -> deterministic extraction -> native exam document v1 -> confidence-gated LLM remainder and answer-key proposals -> teacher review/edit/create -> versioned Mina filer save -> reopen -> on-demand QTI/PDF/DOCX export`.
 
 State stays in the decided authorities: the native document persists in
 Mina filer; jobs, enrichment, lease, and correction sessions stay in
@@ -94,13 +90,13 @@ implementation. No extra polling layer or persistence authority is added.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --------------------- |
-| D1 | One genuine unchanged DOCX fixture is the mandatory walking-skeleton input. |
-| D2 | The native document lives in Mina filer; jobs, enrichment, lease, and correction sessions stay under PostgreSQL/UoW; storage internals are decided during implementation. |
-| D3 | QTI and PDF exports pass the existing fail-closed validators unchanged; the minimal DOCX writer ships with validation. |
-| D4 | Cleanup tasks and workspace review gates precede implementation. |
-| D5 | Production acceptance remains user-owned. |
+| ID  | Decided contract term                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | One genuine unchanged DOCX fixture is the mandatory walking-skeleton input.                                                                                               |
+| D2  | The native document lives in Mina filer; jobs, enrichment, lease, and correction sessions stay under PostgreSQL/UoW; storage internals are decided during implementation. |
+| D3  | QTI and PDF exports pass the existing fail-closed validators unchanged; the minimal DOCX writer ships with validation.                                                    |
+| D4  | Cleanup tasks and workspace review gates precede implementation.                                                                                                          |
+| D5  | Production acceptance remains user-owned.                                                                                                                                 |
 
 ## Closeout Evidence
 

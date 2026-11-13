@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base-PART-02
 title: AI Script Generation Knowledge Base — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base
 part: 2
@@ -216,7 +216,7 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
     }
 ```
 
----
+______________________________________________________________________
 
 ### 8. Felhantering
 
@@ -313,9 +313,9 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 
 **Skillnad mot notice-error:**
 
-| Metod | Status | Användning |
-|-------|--------|------------|
-| `raise ToolUserError(msg)` | `failed` | Avbryt körningen helt |
+| Metod                            | Status      | Användning                                              |
+| -------------------------------- | ----------- | ------------------------------------------------------- |
+| `raise ToolUserError(msg)`       | `failed`    | Avbryt körningen helt                                   |
 | Return med notice `level: error` | `succeeded` | Rapportera fel men fortsätt (t.ex. validera fler rader) |
 
 **Regler:**
@@ -324,20 +324,20 @@ def run_tool(input_dir: str, output_dir: str) -> dict:
 - Inga stacktraces, sökvägar eller hemligheter i meddelandet
 - Använd svenska, tydliga meddelanden
 
----
+______________________________________________________________________
 
 ### 9. Felmeddelanden och felsökning
 
 ### 9.1 Vanliga felmeddelanden
 
-| Meddelande | Orsak | Lösning |
-|------------|-------|---------|
-| `Runner contract violation: empty path` | Artefakt med tom sökväg | Kontrollera att alla filer har giltiga namn |
-| `Runner contract violation: absolute paths are not allowed` | Absolut sökväg i artefakt | Använd relativa sökvägar under output_dir |
-| `Runner contract violation: path traversal is not allowed` | `..` i sökväg | Ta bort path traversal |
-| `Runner contract violation: artifact paths must be under output/` | Artefakt utanför output/ | Skriv alla filer till output_dir |
-| `Runner at capacity; retry.` | För många samtidiga körningar | Vänta och försök igen |
-| `Entrypoint not found: run_tool` | Funktionen saknas | Definiera `def run_tool(input_dir, output_dir)` |
+| Meddelande                                                        | Orsak                         | Lösning                                         |
+| ----------------------------------------------------------------- | ----------------------------- | ----------------------------------------------- |
+| `Runner contract violation: empty path`                           | Artefakt med tom sökväg       | Kontrollera att alla filer har giltiga namn     |
+| `Runner contract violation: absolute paths are not allowed`       | Absolut sökväg i artefakt     | Använd relativa sökvägar under output_dir       |
+| `Runner contract violation: path traversal is not allowed`        | `..` i sökväg                 | Ta bort path traversal                          |
+| `Runner contract violation: artifact paths must be under output/` | Artefakt utanför output/      | Skriv alla filer till output_dir                |
+| `Runner at capacity; retry.`                                      | För många samtidiga körningar | Vänta och försök igen                           |
+| `Entrypoint not found: run_tool`                                  | Funktionen saknas             | Definiera `def run_tool(input_dir, output_dir)` |
 
 ### 9.2 Felsökning via loggar
 
@@ -365,7 +365,7 @@ python script.py /path/to/input_dir /tmp/output
 cat /tmp/output/result.json | python -m json.tool
 ```
 
----
+______________________________________________________________________
 
 ### 10. Checklista för skriptskapande
 

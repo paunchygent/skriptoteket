@@ -57,30 +57,30 @@ as the canonical evidence record.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md` | Upstream launch topology and cross-repo ownership matrix | 6 min |
-| `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md` | Live findings, repo findings, and the recommended launch path | 10 min |
-| `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md` | Epic scope, risks, decision trees, and story ordering | 8 min |
-| `docs/backlog/stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md` | Canonical host freeze and ops consequences | 5 min |
-| `docs/backlog/stories/story-35-02-crawler-surfaces-and-honest-http-status-semantics.md` | Crawler file and soft-404 truth gate | 5 min |
-| `docs/backlog/stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md` | Launch metadata and route-indexing scope | 5 min |
-| `docs/backlog/stories/story-35-04-search-console-bing-and-launch-day-seo-operations.md` | Operator ownership and submission workflow | 4 min |
-| `compose.prod.yaml` | Current production host anchoring | 3 min |
-| `src/skriptoteket/web/routes/spa_fallback.py` | Current edge behavior that causes the crawler defects | 3 min |
-| `frontend/apps/skriptoteket/index.html` | Current thin HTML shell baseline | 3 min |
+| File                                                                                               | Focus                                                         | Time   |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md`                 | Upstream launch topology and cross-repo ownership matrix      | 6 min  |
+| `docs/reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md`                        | Live findings, repo findings, and the recommended launch path | 10 min |
+| `docs/backlog/epics/epic-35-launch-seo-and-search-indexing-readiness.md`                           | Epic scope, risks, decision trees, and story ordering         | 8 min  |
+| `docs/backlog/stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md` | Canonical host freeze and ops consequences                    | 5 min  |
+| `docs/backlog/stories/story-35-02-crawler-surfaces-and-honest-http-status-semantics.md`            | Crawler file and soft-404 truth gate                          | 5 min  |
+| `docs/backlog/stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md`          | Launch metadata and route-indexing scope                      | 5 min  |
+| `docs/backlog/stories/story-35-04-search-console-bing-and-launch-day-seo-operations.md`            | Operator ownership and submission workflow                    | 4 min  |
+| `compose.prod.yaml`                                                                                | Current production host anchoring                             | 3 min  |
+| `src/skriptoteket/web/routes/spa_fallback.py`                                                      | Current edge behavior that causes the crawler defects         | 3 min  |
+| `frontend/apps/skriptoteket/index.html`                                                            | Current thin HTML shell baseline                              | 3 min  |
 
 **Total estimated time:** ~52 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Create `EPIC-35` as a dedicated launch SEO lane | Prevents domain, crawler, metadata, and operator work from fragmenting into ungoverned polish tasks | [ ] |
-| Consume the upstream topology from `EPIC-28` before deeper SEO work | Avoids building sitemap, metadata, and search-console ownership around the wrong product boundary | [ ] |
-| Treat crawler files and honest HTTP semantics as the first technical truth gate | Search indexing cannot be healthy if `/robots.txt`, `/sitemap.xml`, and unmatched URLs lie at the edge | [ ] |
-| Keep SSR/prerender as a follow-on decision rather than a day-one blocker | Lets the team secure minimum viable crawlability first without hiding technical defects behind a larger rendering rewrite | [ ] |
-| Include an explicit operator submission and verification story | Makes launch readiness measurable instead of anecdotal | [ ] |
+| Decision                                                                        | Rationale                                                                                                                 | Approve? |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Create `EPIC-35` as a dedicated launch SEO lane                                 | Prevents domain, crawler, metadata, and operator work from fragmenting into ungoverned polish tasks                       | [ ]      |
+| Consume the upstream topology from `EPIC-28` before deeper SEO work             | Avoids building sitemap, metadata, and search-console ownership around the wrong product boundary                         | [ ]      |
+| Treat crawler files and honest HTTP semantics as the first technical truth gate | Search indexing cannot be healthy if `/robots.txt`, `/sitemap.xml`, and unmatched URLs lie at the edge                    | [ ]      |
+| Keep SSR/prerender as a follow-on decision rather than a day-one blocker        | Lets the team secure minimum viable crawlability first without hiding technical defects behind a larger rendering rewrite | [ ]      |
+| Include an explicit operator submission and verification story                  | Makes launch readiness measurable instead of anecdotal                                                                    | [ ]      |
 
 ## Review Checklist
 
@@ -139,17 +139,17 @@ as the canonical evidence record.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REF-launch-seo-and-search-indexing-readiness-2026-04-08` | Added the evidence and analysis reference for the 2026-04-08 launch SEO assessment |
-| 2 | `EPIC-35` | Added the canonical launch SEO and indexing-readiness epic |
-| 3 | `ST-35-01` to `ST-35-04` | Added the bounded story scaffolds for host policy, crawler semantics, metadata, and search operations |
-| 4 | `REV-EPIC-35` | Opened the required retained review gate for the proposed epic package |
-| 5 | `ST-35-03` | Chose backend-served initial HTML as the launch-visible metadata contract and required backend plus hydration proof |
-| 6 | `ST-35-02` | Added the explicit server-side route-family matrix and proof requirements for crawler files, valid SPA routes, malformed public routes, and unknown routes |
-| 7 | `ST-35-04` | Assigned account-bound verification to product/deployment operators and added allowed verification methods, redacted evidence fields, blocked-state handling, and a post-deploy checklist |
-| 8 | `REF-launch-seo-and-search-indexing-readiness-2026-04-08` | Refreshed the canonical evidence record with the 2026-04-15 live re-check and official crawler-reference links |
-| 9 | `EPIC-35` | Updated the epic notes to record the April 15 changes-requested remediation before re-review |
+| Change | Artifact                                                  | Description                                                                                                                                                                               |
+| ------ | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REF-launch-seo-and-search-indexing-readiness-2026-04-08` | Added the evidence and analysis reference for the 2026-04-08 launch SEO assessment                                                                                                        |
+| 2      | `EPIC-35`                                                 | Added the canonical launch SEO and indexing-readiness epic                                                                                                                                |
+| 3      | `ST-35-01` to `ST-35-04`                                  | Added the bounded story scaffolds for host policy, crawler semantics, metadata, and search operations                                                                                     |
+| 4      | `REV-EPIC-35`                                             | Opened the required retained review gate for the proposed epic package                                                                                                                    |
+| 5      | `ST-35-03`                                                | Chose backend-served initial HTML as the launch-visible metadata contract and required backend plus hydration proof                                                                       |
+| 6      | `ST-35-02`                                                | Added the explicit server-side route-family matrix and proof requirements for crawler files, valid SPA routes, malformed public routes, and unknown routes                                |
+| 7      | `ST-35-04`                                                | Assigned account-bound verification to product/deployment operators and added allowed verification methods, redacted evidence fields, blocked-state handling, and a post-deploy checklist |
+| 8      | `REF-launch-seo-and-search-indexing-readiness-2026-04-08` | Refreshed the canonical evidence record with the 2026-04-15 live re-check and official crawler-reference links                                                                            |
+| 9      | `EPIC-35`                                                 | Updated the epic notes to record the April 15 changes-requested remediation before re-review                                                                                              |
 
 ## Approval Notes
 

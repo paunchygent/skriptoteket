@@ -4,13 +4,13 @@ id: REF-SKRIPT-PLAN-frontend-design-system-codemap-spa-planner-editor
 title: Frontend design-system codemap (SPA, planner, editor)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: plan
 retired_ids:
-- REF-frontend-design-system-codemap-2026-03-28
+  - REF-frontend-design-system-codemap-2026-03-28
 summary: Frontend design-system codemap (SPA, planner, editor)
 ---
 

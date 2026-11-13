@@ -4,18 +4,17 @@ id: REF-SKRIPT-PLAN-reference-editor-sandbox-preview-plan
 title: 'Reference: Editor sandbox preview plan'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: plan
 retired_ids:
-- REF-editor-sandbox-preview-plan
+  - REF-editor-sandbox-preview-plan
 summary: 'Reference: Editor sandbox preview plan'
 ---
 
 ## Outcome And Purpose
-
 
 - Acquire draft lock on editor load and refresh heartbeat.
 - Disable draft-head edits and sandbox actions when lock not owned.
@@ -27,18 +26,20 @@ summary: 'Reference: Editor sandbox preview plan'
 
 ## Planning Boundary
 
-
 ### Unit tests
+
 - Preview run: snapshot persistence, lock enforcement, returns snapshot_id.
 - Start-action requires snapshot_id and fails on expired snapshot.
 - Sandbox settings validate schema and values, correct context.
 - Draft lock acquisition, heartbeat refresh, conflict, force takeover.
 
 ### Integration
+
 - TTL cleanup for snapshots.
 - Lock enforcement on save + preview endpoints.
 
 ### Playwright (proposal)
+
 - Run unsaved code and verify outputs reflect the editor text.
 - Next-action uses snapshot after editing code.
 - Sandbox settings persist per user + draft head only.
@@ -63,8 +64,8 @@ No separate planning stop conditions is stated in the source.
 
 ### Source: Overview
 
-
 This plan defines the implementation approach for IDE-like editor sandbox behavior:
+
 - Run unsaved code and schemas in the sandbox (no forced save).
 - Guarantee multi-step runs use the same snapshot via snapshot_id.
 - Persist sandbox settings per user + draft head, sandbox-only.
@@ -75,23 +76,24 @@ proposed for the docs workflow and should be authored after review.
 
 ### Source: Locked Decisions (and dismissed options)
 
-
 ### Snapshot storage
+
 - Chosen: Dedicated DB table `sandbox_snapshots` with TTL cleanup.
 - Dismissed: In-memory cache (lost on restart). Reusing `tool_sessions`
   (semantic mismatch, no TTL lifecycle).
 
 ### Sandbox settings save payload
+
 - Chosen: Include `settings_schema` in sandbox settings resolve + save requests.
 - Dismissed: Require snapshot_id for settings (prevents saving before run).
   Persisted-schema-only (violates unsaved schema requirement).
 
 ### Next-actions context
+
 - Chosen: Use `sandbox:{snapshot_id}` for next_actions state + session files.
 - Dismissed: `sandbox:{draft_head_id}` (cross-talk between snapshots).
 
 ### Source: Draft head semantics
-
 
 - `draft_head_id` means the latest draft version id for the tool.
 - When a save creates a new draft head, the backend updates the existing lock
@@ -100,27 +102,26 @@ proposed for the docs workflow and should be authored after review.
 
 ### Source: Proposed ADRs (to be written after review)
 
-
-| ADR | Title | Scope |
-| --- | --- | --- |
-| ADR-0044 | Editor sandbox preview snapshots | Snapshot payload, TTL, snapshot_id for next_actions |
-| ADR-0045 | Sandbox-only settings contexts | Per-user + draft head settings isolation |
-| ADR-0046 | Draft head locks for editor concurrency | Lock acquisition, TTL, force takeover |
+| ADR      | Title                                   | Scope                                               |
+| -------- | --------------------------------------- | --------------------------------------------------- |
+| ADR-0044 | Editor sandbox preview snapshots        | Snapshot payload, TTL, snapshot_id for next_actions |
+| ADR-0045 | Sandbox-only settings contexts          | Per-user + draft head settings isolation            |
+| ADR-0046 | Draft head locks for editor concurrency | Lock acquisition, TTL, force takeover               |
 
 ### Source: Proposed Stories (to be written after review)
 
-
-| Story | Title | Summary |
-| --- | --- | --- |
-| ST-14-06 | Sandbox preview snapshots | Preview runs use unsaved code/schemas and return snapshot_id |
-| ST-14-07 | Draft head locks | Single editor lock with admin/superuser override |
-| ST-14-08 | Sandbox settings isolation | Settings saved per user + draft head, sandbox-only |
+| Story    | Title                      | Summary                                                      |
+| -------- | -------------------------- | ------------------------------------------------------------ |
+| ST-14-06 | Sandbox preview snapshots  | Preview runs use unsaved code/schemas and return snapshot_id |
+| ST-14-07 | Draft head locks           | Single editor lock with admin/superuser override             |
+| ST-14-08 | Sandbox settings isolation | Settings saved per user + draft head, sandbox-only           |
 
 ### Source: Data Model and Migration
 
-
 ### New tables
+
 - `sandbox_snapshots`
+
   - id (UUID PK)
   - tool_id (UUID, indexed)
   - draft_head_id (UUID, indexed)
@@ -134,6 +135,7 @@ proposed for the docs workflow and should be authored after review.
   - usage_instructions (text, nullable)
 
 - `draft_locks`
+
   - tool_id (UUID PK or unique)
   - draft_head_id (UUID)
   - locked_by_user_id (UUID)
@@ -142,14 +144,17 @@ proposed for the docs workflow and should be authored after review.
   - forced_by_user_id (UUID, nullable)
 
 ### Existing tables
+
 - `tool_runs`
   - add `snapshot_id` (UUID, nullable) to support run reload + action continuation
 
 ### TTL behavior
+
 - Draft lock TTL: 10 minutes with heartbeat every 60 seconds.
 - Sandbox snapshot TTL: 2 hours (cleanup job removes expired snapshots).
 
 ### Cleanup operations
+
 - Add a CLI maintenance command (e.g. `pdm run cleanup-sandbox-snapshots`) that
   deletes expired snapshot rows.
 - Run cleanup on a schedule (daily via cron in prod); log deleted counts.
@@ -157,21 +162,23 @@ proposed for the docs workflow and should be authored after review.
   the primary mechanism.
 
 ### Snapshot payload limits
+
 - Enforce maximum sizes for snapshot payload fields (entrypoint, source_code,
   settings_schema, input_schema) with clear validation errors.
 - Add config settings for limits to keep DB growth predictable.
 
 ### Source: Domain and Application Changes
 
-
 ### Domain helpers
+
 - `build_sandbox_preview_version(...)` to validate and normalize unsaved
   `entrypoint`, `source_code`, `settings_schema`, and `input_schema`.
 - `compute_sandbox_settings_session_context(draft_head_id, settings_schema)`
-  -> `sandbox-settings:{sha256(f"{draft_head_id}:{schema_hash}")[:32]}` (<=64 chars).
+  -> `sandbox-settings:{sha256(f"{draft_head_id}:{schema_hash}")[:32]}` (\<=64 chars).
 - `compute_sandbox_run_context(snapshot_id)` -> `sandbox:{snapshot_id}`.
 
 ### New protocols
+
 - `SandboxSnapshotRepositoryProtocol` with `create`, `get_by_id`,
   `delete_expired`.
 - `DraftLockRepositoryProtocol` with `get_for_tool`, `upsert`, `delete`.
@@ -179,6 +186,7 @@ proposed for the docs workflow and should be authored after review.
   `UpdateSandboxSettingsHandlerProtocol`.
 
 ### New handlers
+
 - `RunSandboxPreviewHandler`:
   - Enforce contributor+maintainer and draft lock.
   - Validate snapshot payload and persist with TTL.
@@ -194,6 +202,7 @@ proposed for the docs workflow and should be authored after review.
   resolve/save, and draft-head save endpoints (create draft + save draft).
 
 ### Lock handlers
+
 - `AcquireDraftLockHandler` and `ReleaseDraftLockHandler`:
   - Acquire or refresh lock if owned.
   - Return lock metadata for UI.
@@ -201,11 +210,12 @@ proposed for the docs workflow and should be authored after review.
 
 ### Source: API Changes
 
-
 ### Editor sandbox preview run (changed)
+
 `POST /api/v1/editor/tool-versions/{version_id}/run-sandbox`
 
 Multipart:
+
 - `snapshot` JSON string
   - `entrypoint`, `source_code`, `settings_schema`, `input_schema`,
     `usage_instructions`
@@ -213,61 +223,77 @@ Multipart:
 - `files` (optional)
 
 Response:
+
 - `run_id`, `status`, `started_at`, `state_rev?`, `snapshot_id`
 
 ### Sandbox start-action (changed)
+
 `POST /api/v1/editor/tool-versions/{version_id}/start-action`
 
 Body:
+
 - `action_id`, `input`, `expected_state_rev`, `snapshot_id`
 
 ### Sandbox session (changed)
+
 `GET /api/v1/editor/tool-versions/{version_id}/session`
 
 Query:
+
 - `snapshot_id` (optional; when present, uses sandbox:{snapshot_id})
 
 ### Sandbox settings (new)
+
 `POST /api/v1/editor/tool-versions/{version_id}/sandbox-settings/resolve`
 
 Body:
+
 - `settings_schema`
 
 Response:
+
 - ToolSettingsResponse + `draft_head_id`
 
 `PUT /api/v1/editor/tool-versions/{version_id}/sandbox-settings`
 
 Body:
+
 - `expected_state_rev`, `values`, `settings_schema`
 
 ### Draft lock (new)
+
 `POST /api/v1/editor/tools/{tool_id}/draft-lock`
 
 Body:
+
 - `draft_head_id`, `force?`
 
 Response:
+
 - `tool_id`, `draft_head_id`, `locked_by_user_id`, `expires_at`, `is_owner`
 
 `DELETE /api/v1/editor/tools/{tool_id}/draft-lock`
 
 Body:
+
 - `draft_head_id` (optional safety)
 
 ### Editor run details (changed)
+
 `GET /api/v1/editor/tool-runs/{run_id}`
 
 Response:
+
 - include `snapshot_id` when the run was created from a sandbox preview snapshot
 
 ### Editor boot response (changed)
+
 Add `draft_head_id` and `draft_lock` to editor boot payloads.
 
 ### Source: Reviewer File List (complete)
 
-
 Docs and ADRs:
+
 - `docs/reference/ref-editor-sandbox-preview-plan.md`
 - `docs/backlog/epics/epic-14-admin-tool-authoring.md`
 - `docs/backlog/stories/story-14-03-sandbox-next-actions-parity.md`
@@ -287,6 +313,7 @@ Docs and ADRs:
 - `docs/adr/adr-0046-draft-head-locks.md`
 
 Backend and domain:
+
 - `src/skriptoteket/web/api/v1/editor.py`
 - `src/skriptoteket/web/api/v1/tools.py`
 - `src/skriptoteket/web/editor_support.py`
@@ -309,6 +336,7 @@ Backend and domain:
 - `src/skriptoteket/di/scripting.py`
 
 Infrastructure:
+
 - `src/skriptoteket/infrastructure/db/models/tool_run.py`
 - `src/skriptoteket/infrastructure/db/models/tool_session.py`
 - `src/skriptoteket/infrastructure/repositories/tool_version_repository.py`
@@ -317,6 +345,7 @@ Infrastructure:
 - `alembic.ini`
 
 Frontend:
+
 - `frontend/apps/skriptoteket/src/components/editor/EditorWorkspacePanel.vue`
 - `frontend/apps/skriptoteket/src/components/editor/SandboxRunner.vue`
 - `frontend/apps/skriptoteket/src/composables/editor/useScriptEditor.ts`
@@ -329,6 +358,7 @@ Frontend:
 - `frontend/apps/skriptoteket/src/api/openapi.ts`
 
 Tests and scripts:
+
 - `tests/unit/application/scripting/handlers/test_tool_version_settings_handlers.py`
 - `tests/unit/application/scripting/handlers/` (new tests)
 - `scripts/_playwright_config.py`

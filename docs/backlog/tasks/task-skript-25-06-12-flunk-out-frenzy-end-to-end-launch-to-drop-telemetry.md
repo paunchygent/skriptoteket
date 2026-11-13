@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-25-06-12
-title: 'Flunk-Out Frenzy: end-to-end launch-to-drop telemetry contract and deterministic
-  trace matrix'
+title: 'Flunk-Out Frenzy: end-to-end launch-to-drop telemetry contract and deterministic trace matrix'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,40 +17,25 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given launcher behavior is now test-green but still sensitive at seams, when this
-  task is complete, then telemetry captures the full launch-to-drop path as deterministic,
-  step-indexed phase traces rather than point-in-time snapshots only.
-- Given gameplay-fidelity decisions must be evidence-backed, when this task is complete,
-  then each launch matrix case emits retained artifacts that explain the full causal
-  chain from `swplunger` rest to board-drop collision.
-- Given no-shortcuts and donor-seam invariants are non-negotiable, when this task
-  is complete, then telemetry/proof additions do not relax seam tolerance (`xy<=1`,
-  `z<=1`), do not alter endpoint-bridge authoring, do not add helper/freehand geometry,
-  and do not introduce synthetic launcher behavior.
-- Given semantic separation is hard-required, when this task is complete, then traces
-  keep `swplunger` feed/rest and `sw16` exit semantics explicit and independently
-  testable.
-- Given route-chain correctness is the seam contract, when this task is complete,
-  then artifacts and tests prove the path order `overhead -> endpoint-bridge -> descent
-  -> board handoff -> board drop` for qualifying launch cases.
-- Given this is an observability/proof slice, when this task is complete, then production
-  gameplay tuning/geometry edits are out of scope and any new behavior fix is blocked
-  until this telemetry contract is green and reviewed.
-- Given workflow requires auditable evidence, when this task is complete, then focused
-  command results plus live route-check outputs are recorded in `.codex/handoff.md`
-  with artifact paths.
+  - Given launcher behavior is now test-green but still sensitive at seams, when this task is complete, then telemetry captures the full launch-to-drop path as deterministic, step-indexed phase traces rather than point-in-time snapshots only.
+  - Given gameplay-fidelity decisions must be evidence-backed, when this task is complete, then each launch matrix case emits retained artifacts that explain the full causal chain from `swplunger` rest to board-drop collision.
+  - Given no-shortcuts and donor-seam invariants are non-negotiable, when this task is complete, then telemetry/proof additions do not relax seam tolerance (`xy<=1`, `z<=1`), do not alter endpoint-bridge authoring, do not add helper/freehand geometry, and do not introduce synthetic launcher behavior.
+  - Given semantic separation is hard-required, when this task is complete, then traces keep `swplunger` feed/rest and `sw16` exit semantics explicit and independently testable.
+  - Given route-chain correctness is the seam contract, when this task is complete, then artifacts and tests prove the path order `overhead -> endpoint-bridge -> descent -> board handoff -> board drop` for qualifying launch cases.
+  - Given this is an observability/proof slice, when this task is complete, then production gameplay tuning/geometry edits are out of scope and any new behavior fix is blocked until this telemetry contract is green and reviewed.
+  - Given workflow requires auditable evidence, when this task is complete, then focused command results plus live route-check outputs are recorded in `.codex/handoff.md` with artifact paths.
 ---
 
 ## Context
 
 Source: `docs/backlog/prs/pr-0209-flunk-out-frenzy-end-to-end-launch-to-drop-telemetry-contract.md`. Flunk-Out Frenzy: end-to-end launch-to-drop telemetry contract and deterministic trace matrix.
 
-Current proofs confirm pass/fail outcomes for launcher behavior, but we still lack one deterministic telemetry contract that explains the entire launch-to-drop chain in a single trace artifact. That gap makes it harder to diagnose future seam regressions quickly and unambiguously. Add an end-to-end, deterministic telemetry and artifact contract for the full launch-to-drop path, with focused tests that prove phase ordering, semantic correctness, and seam continuity visibility without changing gameplay behavior. - No launcher behavior tuning in this slice. - No donor geometry/path edits (`prototypeAlphaVpwDonorMap.ts`, `prototypeAlphaTableSpec.ts`). - No seam tolerance relaxation (`xy<=1`, `z<
+Current proofs confirm pass/fail outcomes for launcher behavior, but we still lack one deterministic telemetry contract that explains the entire launch-to-drop chain in a single trace artifact. That gap makes it harder to diagnose future seam regressions quickly and unambiguously. Add an end-to-end, deterministic telemetry and artifact contract for the full launch-to-drop path, with focused tests that prove phase ordering, semantic correctness, and seam continuity visibility without changing gameplay behavior. - No launcher behavior tuning in this slice. - No donor geometry/path edits (`prototypeAlphaVpwDonorMap.ts`, `prototypeAlphaTableSpec.ts`). - No seam tolerance relaxation (`xy<=1`, \`z\<
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-25-06-12 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -191,22 +175,27 @@ Each case summary must include:
 Phase transitions must be derived from typed source-of-truth fields, not ad hoc inference:
 
 - `handoff_to_board_step`:
+
   - first step where `ball_owner` transitions from `launcher_chain` to `main_world`
   - transition must be recorded from the `PhysicsWorld` board-handoff seam (`releaseToBoard` commit path)
   - `handoff_to_board_step` is `null` if no such transition occurs within the case observation budget
 
 - `first_board_collision_step`:
+
   - first post-handoff step where a new typed telemetry marker confirms ball contact with a non-sensor board collider in the main world
   - launcher-chain wall/guide contacts and sensor transitions must not count
   - `first_board_collision_step` is `null` if no qualifying contact occurs within board-drop observation budget
 
 - `board_drop_preimpact`:
+
   - steps after `handoff_to_board_step` and strictly before `first_board_collision_step`
 
 - `board_drop_postimpact`:
+
   - steps at and after `first_board_collision_step`
 
 Focused specs must assert:
+
 - `first_board_collision_step === null` before handoff
 - launcher-chain contacts do not classify as board-drop impact
 
@@ -233,24 +222,29 @@ No threshold, case-set, or schema relaxations allowed.
 Frozen per-case obligations:
 
 - `K-REST-STEADY`:
+
   - qualifying for full route/drop proof: `no`
   - required terminal expectations: no route chain required, `sw16_exit_observed=false`, `handoff_to_board_step=null`, `first_board_collision_step=null`
 
 - `K-SHORT-STEADY`:
+
   - qualifying for full route/drop proof: `no`
   - required terminal expectations: route/drop phases not required, `handoff_to_board_step` and `first_board_collision_step` may remain `null`
 
 - `K-MEDIUM-STEADY`:
+
   - qualifying for full route/drop proof: `yes`
   - required phase order includes: `route_overhead -> route_endpoint_bridge -> route_descent -> handoff_to_board -> board_drop_preimpact`
   - required outcomes: `sw16_exit_observed=true`, non-null `handoff_to_board_step`; `first_board_collision_step` may be non-null within board-drop budget
 
 - `K-FULL-STEADY`:
+
   - qualifying for full route/drop proof: `yes`
   - required phase order includes: `route_overhead -> route_endpoint_bridge -> route_descent -> handoff_to_board -> board_drop_preimpact`
   - required outcomes: `sw16_exit_observed=true`, non-null `handoff_to_board_step`, non-null `first_board_collision_step` within board-drop budget
 
 - `K-RELAUNCH-MEDIUM`:
+
   - qualifying for full route/drop proof: `yes`
   - required phase order includes full route/drop path for the second release window
   - required outcomes: at least one valid handoff/drop chain for relaunch phase, `sw16_exit_observed=true`
@@ -296,12 +290,14 @@ Forbidden artifact behavior:
 ### Test plan
 
 - Focused regression commands:
+
   - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/table/compilePinballTable.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.flippers.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.captureDevices.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.collisions.spec.ts src/components/apps/flunk-out-frenzy/game/physics/__tests__/PhysicsWorld.launcher.spec.ts src/components/apps/flunk-out-frenzy/game/core/GameRuntime.spec.ts src/components/apps/flunk-out-frenzy/game/input/KeyboardInputController.spec.ts`
   - `pdm run fe-type-check`
   - `pdm run fe-build`
   - `pdm run docs-validate`
 
 - New required trace-proof checks:
+
   - matrix artifacts generated and schema-valid
   - each case has non-empty step records
   - qualifying hold cases include full route chain and board-drop phases

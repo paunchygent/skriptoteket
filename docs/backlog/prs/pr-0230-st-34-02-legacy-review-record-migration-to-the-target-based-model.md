@@ -204,31 +204,37 @@ classifications, update this checklist in the same PR so the repo records why.
 ### `REV-EPIC-08` family
 
 - [x] [review-epic-08-ai-completion.md](../reviews/review-epic-08-ai-completion.md)
+
   - First-pass type: **Type A. Canonical epic review**
   - First-pass action: keep as the sole `REV-EPIC-08` record; rewrite only as needed to match the
     current canonical review shape.
 
 - [x] [review-st-08-24-ai-edit-ops-anchor-patch-v2.md](../reviews/review-st-08-24-ai-edit-ops-anchor-patch-v2.md)
+
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-08-24` as `REV-ST-08-24` and normalize to the modern review
     template.
 
 - [x] [review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md](../reviews/rev-skript-st-08-27-closeout-review-st-skript-08-27-editor-chat-virtual-file-context.md)
+
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-08-27` as `REV-ST-08-27` and normalize to the modern review
     template.
 
 - [x] [ref-pr-0031-edit-ops-patch-workflow-brief.md](../../reference/ref-pr-0031-edit-ops-patch-workflow-brief.md)
+
   - First-pass type: **Type F. Historical reference only**
   - First-pass action: preserve the historical patch-workflow brief as linked support material for
     `REV-PR-0031` instead of retiring it as an absorbed review record.
 
 - [x] [review-st-08-28-ai-chat-ops-response-capture-on-error.md](../reviews/review-st-08-28-ai-chat-ops-response-capture-on-error.md)
+
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-08-28` as `REV-ST-08-28` and normalize to the modern review
     template.
 
 - [x] [review-pr-0031-editor-ai-edit-ops-patch-only-alignment.md](../reviews/review-pr-0031-editor-ai-edit-ops-patch-only-alignment.md)
+
   - First-pass type: **Type C. Canonical PR review**
   - First-pass action: retarget to `PR-0031` as `REV-PR-0031` and normalize to the modern review
     template.
@@ -236,16 +242,19 @@ classifications, update this checklist in the same PR so the repo records why.
 ### `REV-EPIC-14` family
 
 - [x] [review-epic-14-editor-sandbox-preview.md](../reviews/review-epic-14-editor-sandbox-preview.md)
+
   - First-pass type: **Type A. Canonical epic review**
   - First-pass action: keep as the sole `REV-EPIC-14` record; rewrite only as needed to match the
     current canonical review shape.
 
 - [x] [review-st-14-35-tool-data-libraries.md](../reviews/review-st-14-35-tool-data-libraries.md)
+
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-14-35` as `REV-ST-14-35`, keeping `ST-14-36` only as
     supporting governed scope if that still reflects the real decision surface.
 
 - [x] [review-st-14-23-ui-contract-v2x-action-prefill.md](../reviews/review-st-14-23-ui-contract-v2x-action-prefill.md)
+
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-14-23` as `REV-ST-14-23` and normalize to the modern review
     template.
@@ -253,11 +262,13 @@ classifications, update this checklist in the same PR so the repo records why.
 ### `REV-EPIC-23` family
 
 - [x] [review-epic-23-group-seating-studio.md](../reviews/review-epic-23-group-seating-studio.md)
+
   - First-pass type: **Type A. Canonical epic review**
   - First-pass action: keep as the sole `REV-EPIC-23` record; rewrite only as needed to match the
     current canonical review shape.
 
 - [x] [review-st-23-06-group-seating-studio-draft-persistence.md](../reviews/review-st-23-06-group-seating-studio-draft-persistence.md)
+
   - First-pass type: **Type D. Canonicalized migrated legacy review**
   - First-pass action: retarget to one story-owned review surface, with `ST-23-06` as the current
     preferred first-pass anchor unless a closer read proves another primary target is more honest;
@@ -280,7 +291,9 @@ classifications, update this checklist in the same PR so the repo records why.
 
 1. Audit the remaining duplicate-id review families, starting with the current `REV-EPIC-08`,
    `REV-EPIC-14`, and `REV-EPIC-23` clusters.
+
 2. Decide, for each touched record, whether it should become:
+
    - an epic-target review doc
    - a story-target review doc
    - a PR-target review doc

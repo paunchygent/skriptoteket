@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-06-06
 title: 'Flunk-Out Frenzy: elevated donor rail travel and left-handoff mechanics'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
 readiness_review:
@@ -17,19 +17,10 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given elevated donor rails are currently render-first, when this task is complete,
-  then the launcher release path can enter a donor-backed multi-height physical carrier
-  graph and stay physically supported through upper-right to upper-left handoff.
-- Given donor path fidelity is required, when this task is complete, then carrier
-  anchors, observation-spine phases, and handoff seams are built from donor carriers
-  (`RampS3`, `RampS001`, `RampS002`, `RampS4`, and `Wall268`) with explicit source
-  provenance.
-- Given this slice must remove the remaining launch-path regression, when this task
-  is complete, then focused physics proof shows charged launch traverses the elevated
-  route and hands off leftward toward gameplay instead of immediate local bounce/fail.
-- Given anti-flattening rules are active, when this task is complete, then no local
-  freehand path is introduced; authored observation spines and carrier anchors stay
-  donor-derived.
+  - Given elevated donor rails are currently render-first, when this task is complete, then the launcher release path can enter a donor-backed multi-height physical carrier graph and stay physically supported through upper-right to upper-left handoff.
+  - Given donor path fidelity is required, when this task is complete, then carrier anchors, observation-spine phases, and handoff seams are built from donor carriers (`RampS3`, `RampS001`, `RampS002`, `RampS4`, and `Wall268`) with explicit source provenance.
+  - Given this slice must remove the remaining launch-path regression, when this task is complete, then focused physics proof shows charged launch traverses the elevated route and hands off leftward toward gameplay instead of immediate local bounce/fail.
+  - Given anti-flattening rules are active, when this task is complete, then no local freehand path is introduced; authored observation spines and carrier anchors stay donor-derived.
 ---
 
 ## Context

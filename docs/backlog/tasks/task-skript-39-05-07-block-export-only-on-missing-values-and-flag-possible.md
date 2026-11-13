@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-05-07
-title: Block export only on missing values and flag possible parsing issues only where
-  wording is lost
+title: Block export only on missing values and flag possible parsing issues only where wording is lost
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-13'
 status: done
 closeout_review:
@@ -18,9 +17,7 @@ closeout_review:
   approval_evidence: User closed 39-05-07 on 2026-10-13 and kept both export copy strings as implemented. Independent review approved 58dabe3f (retained evidence/reviews/TASK-SKRIPT-39-05-07/rereview-58dabe3f.md); D9 eval evidence/task-skript-39-05-07-d9-eval/README.md; staging walk on main ebc2a9c7 evidence/staging-walk-ebc2a9c7/README.md, all in session 01a13274-4a76-75e2-a17f-2e05fa66bd3a.
 task_kind: story
 acceptance_criteria:
-- An imported exam blocks export only on missing points, a missing answer key, an
-  unapproved AI key, the save rules or an unbuilt question, and printed (N p) markers
-  become points
+  - An imported exam blocks export only on missing points, a missing answer key, an unapproved AI key, the save rules or an unbuilt question, and printed (N p) markers become points
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -78,8 +75,7 @@ No new model call.
 
 ## Validation
 
-- Baseline before the change and the same run after it: `pdm run
-  exam-conversion-eval` over the 8 gold exams plus the 3 synthetic exams that
+- Baseline before the change and the same run after it: `pdm run exam-conversion-eval` over the 8 gold exams plus the 3 synthetic exams that
   print "(N p)". Record, per exam, how many items are `review_required`, by
   reason, and how many have no points. Needs the answer-key API key.
 - Adversarial unit tests: a choice question whose stem ends in "(1 p)" and a
@@ -102,14 +98,14 @@ No new model call.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Export is blocked only by missing points, a missing answer key, an unapproved AI key, the save rules, and an unbuilt question; `review_required` alone does not block export (plan D47). |
-| D2  | An unbuilt question (an item printed from source) blocks export until the teacher marks it reviewed (plan D47, D57). |
-| D3  | When the reply gives no points and the question's own text prints exactly one points marker, the import uses it as the points and removes the marker from the stem and title (plan D48). |
-| D4  | The left-out check flags a paragraph only when its wording, without points markers, numbering and answer or facit lines, is missing from the item (plan D49). |
+| ID  | Decided contract term                                                                                                                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Export is blocked only by missing points, a missing answer key, an unapproved AI key, the save rules, and an unbuilt question; `review_required` alone does not block export (plan D47).                               |
+| D2  | An unbuilt question (an item printed from source) blocks export until the teacher marks it reviewed (plan D47, D57).                                                                                                   |
+| D3  | When the reply gives no points and the question's own text prints exactly one points marker, the import uses it as the points and removes the marker from the stem and title (plan D48).                               |
+| D4  | The left-out check flags a paragraph only when its wording, without points markers, numbering and answer or facit lines, is missing from the item (plan D49).                                                          |
 | D5  | Only the model's review outcome, a type conflict without a kind, gapped material and the wording-based left-out check are possible parsing issues; they set `review_required` and do not block export (plan D50, D56). |
-| D6  | Points split from a section total are marked on the item as estimated, not as a review reason (plan D58). |
-| D7  | Type confidence is below the threshold only on a kept type conflict (plan D51). |
-| D8  | Import notes hold document-level notes only; item reasons are not copied into them (plan D52). |
-| D9  | The current-version eval over the gold and synthetic "(N p)" exams is this task's baseline and after-change check (plan D55). |
+| D6  | Points split from a section total are marked on the item as estimated, not as a review reason (plan D58).                                                                                                              |
+| D7  | Type confidence is below the threshold only on a kept type conflict (plan D51).                                                                                                                                        |
+| D8  | Import notes hold document-level notes only; item reasons are not copied into them (plan D52).                                                                                                                         |
+| D9  | The current-version eval over the gold and synthetic "(N p)" exams is this task's baseline and after-change check (plan D55).                                                                                          |

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-06-15
 title: 'Flunk-Out Frenzy: physical rail carrier semantics and architect guidance packet'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,32 +17,14 @@ closeout_review:
 story: ST-SKRIPT-25-06
 task_kind: story
 acceptance_criteria:
-- Given the current launcher overhead path still depends on authored travel routes
-  plus direct body writes, when this task is complete, then the repo contains an explicit
-  analysis of which launcher surfaces are physically real today, which are render-only
-  or proof-only, and where the current corridor cannot support truthful rail travel.
-- Given the next slice must be grounded in engine reality rather than aspiration,
-  when this task is complete, then the plan explicitly identifies which Rapier 3D
-  constraints, collider patterns, stability risks, CCD/substep concerns, and seam-continuity
-  limits must be satisfied before deterministic transport can be replaced by physical
-  carrier motion.
-- Given the lead architect needs a careful independent analysis rather than an open-ended
-  request for opinions, when this task is complete, then a targeted repomix package
-  and architect brief exist with the exact files, evidence, and questions needed to
-  advise on carrier semantics, heuristic boundaries, runtime responsibilities, and
-  verification strategy.
-- Given one independent architect pass has already produced concrete candidate recommendations,
-  when this task is complete, then the offline architect packet presents those recommendations
-  as explicit hypotheses to validate, modify, or reject instead of forcing a blind
-  first-principles rediscovery.
-- Given `PR-0215` already proved that removing shortcut energy changes live timing
-  and peak-speed signatures, when this task is complete, then the proposed physical-rail
-  follow-on defines production-ready success without weakening the truthful proof
-  surface or silently normalizing drift.
+  - Given the current launcher overhead path still depends on authored travel routes plus direct body writes, when this task is complete, then the repo contains an explicit analysis of which launcher surfaces are physically real today, which are render-only or proof-only, and where the current corridor cannot support truthful rail travel.
+  - Given the next slice must be grounded in engine reality rather than aspiration, when this task is complete, then the plan explicitly identifies which Rapier 3D constraints, collider patterns, stability risks, CCD/substep concerns, and seam-continuity limits must be satisfied before deterministic transport can be replaced by physical carrier motion.
+  - Given the lead architect needs a careful independent analysis rather than an open-ended request for opinions, when this task is complete, then a targeted repomix package and architect brief exist with the exact files, evidence, and questions needed to advise on carrier semantics, heuristic boundaries, runtime responsibilities, and verification strategy.
+  - Given one independent architect pass has already produced concrete candidate recommendations, when this task is complete, then the offline architect packet presents those recommendations as explicit hypotheses to validate, modify, or reject instead of forcing a blind first-principles rediscovery.
+  - Given `PR-0215` already proved that removing shortcut energy changes live timing and peak-speed signatures, when this task is complete, then the proposed physical-rail follow-on defines production-ready success without weakening the truthful proof surface or silently normalizing drift.
 ---
 
 ## Context
-
 
 `PR-0215` has already shown that removing shortcut speed promotion changes the
 observed launcher behavior in meaningful ways. The live route still completes,
@@ -67,7 +49,6 @@ of letting the next runtime changes become guesswork.
 
 ## Story Contract Slice
 
-
 Create the design contract and review packet for converting the launcher
 overhead route from deterministic transport into a real physical carrier/rail.
 
@@ -86,7 +67,6 @@ This slice should answer, in repo-grounded terms:
 No separate contract inputs is stated in the source.
 
 ## Plan
-
 
 ### Checkpoint A. Freeze the current evidence
 
@@ -144,7 +124,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - Docs/package validation:
   - `pdm run docs-validate`
 - Repomix packaging validation:
@@ -153,7 +132,6 @@ No separate implementation steps is stated in the source.
   - `pdm run python -m scripts.playwright_flunk_out_frenzy_launch_trace_parity_check --base-url http://127.0.0.1:5173 --artifact-dir .artifacts/flunk-out-frenzy-launch-to-drop`
 
 ## Validation
-
 
 The offline architect should not start from a blank slate. The packet should
 present the following as explicit candidate recommendations to validate,
@@ -164,6 +142,7 @@ modify, or reject:
 
 2. **Introduce explicit carrier semantics.**
    Candidate new types:
+
    - `wireformCarrier3D`
    - `wireformGuard3D`
    - `carrierReceiver3D`
@@ -193,7 +172,6 @@ modify, or reject:
 
 ## Stop Conditions
 
-
 This slice is documentation and review-packaging only.
 
 If the framing proves wrong:
@@ -213,7 +191,6 @@ No separate notes is stated in the source.
 
 ### Source: Non-goals
 
-
 - No further runtime behavior edits beyond the already-started `PR-0215`
   checkpoint.
 - No proof-contract weakening, baseline normalization, or telemetry softening.
@@ -223,7 +200,6 @@ No separate notes is stated in the source.
   answered explicitly.
 
 ### Source: What the analysis means in practice
-
 
 ### A. Map the current launcher-corridor physics surfaces
 
@@ -290,7 +266,6 @@ The output should identify not only what Rapier can do, but also which patterns
 would still be disguised transport even if they looked more "physical" in code.
 
 ### Source: Required design questions for the lead architect
-
 
 The architect handoff must request concrete guidance on:
 

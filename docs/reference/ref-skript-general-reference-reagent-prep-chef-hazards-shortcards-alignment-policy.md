@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-reagent-prep-chef-hazards-shortcards-alignment-
 title: 'Reference: Reagent Prep Chef — hazards ↔ shortcards alignment policy'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-reagent-prep-chef-hazard-shortcard-alignment-policy
+  - REF-reagent-prep-chef-hazard-shortcard-alignment-policy
 summary: 'Reference: Reagent Prep Chef — hazards ↔ shortcards alignment policy'
 ---
 

@@ -50,10 +50,10 @@ for architecture decisions (Lezer-based analysis, extension composition, state s
 
 ### Entrypoint Lint Rules
 
-| Rule ID | Severity | Swedish Message |
-|---------|----------|-----------------|
-| `ST_ENTRYPOINT_MISSING` | warning | Saknar startfunktion: `def run_tool(input_dir, output_dir)` |
-| `ST_ENTRYPOINT_SIGNATURE` | warning | Startfunktionen ska ta emot `input_dir` och `output_dir`. |
+| Rule ID                   | Severity | Swedish Message                                             |
+| ------------------------- | -------- | ----------------------------------------------------------- |
+| `ST_ENTRYPOINT_MISSING`   | warning  | Saknar startfunktion: `def run_tool(input_dir, output_dir)` |
+| `ST_ENTRYPOINT_SIGNATURE` | warning  | Startfunktionen ska ta emot `input_dir` och `output_dir`.   |
 
 Note: Entrypoint name is configurable per tool. Linting must use the currently configured entrypoint (default
 `run_tool`).

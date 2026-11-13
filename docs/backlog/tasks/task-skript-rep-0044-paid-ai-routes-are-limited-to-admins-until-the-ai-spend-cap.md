@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-REP-0044
-title: Paid AI routes are limited to admins until the AI spend cap and rate limits
-  ship
+title: Paid AI routes are limited to admins until the AI spend cap and rate limits ship
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: done
 closeout_review:
@@ -61,10 +60,10 @@ Stop and report to the parent if an AI call starts from a path with no web route
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                                                                                                                        |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | L1  | Every route that can start a paid LLM call (answer-key suggestions, AI DOCX conversion and item labelling, script-editor completion, chat, chat ops and edit ops) requires the admin or superuser role; any other signed-in user gets 403 before any LLM call or lease draw. |
-| L2  | One shared web-boundary dependency owns the rule and is the only AI role check; a test fails when a route reaching an LLM client lacks it. |
-| L3  | Non-admin users see AI-triggering controls disabled with the inline note "AI-funktionerna är tillfälligt bara tillgängliga för administratörer."; DOCX import in Öppna counts as an AI control; DigiExam import stays open. |
-| L4  | No unauthenticated route reaches an LLM; production switches stay unchanged. |
-| L5  | The gate is temporary and carries no setting; the AI spend cap and rate-limit work replaces it. |
+| L2  | One shared web-boundary dependency owns the rule and is the only AI role check; a test fails when a route reaching an LLM client lacks it.                                                                                                                                   |
+| L3  | Non-admin users see AI-triggering controls disabled with the inline note "AI-funktionerna är tillfälligt bara tillgängliga för administratörer."; DOCX import in Öppna counts as an AI control; DigiExam import stays open.                                                  |
+| L4  | No unauthenticated route reaches an LLM; production switches stay unchanged.                                                                                                                                                                                                 |
+| L5  | The gate is temporary and carries no setting; the AI spend cap and rate-limit work replaces it.                                                                                                                                                                              |

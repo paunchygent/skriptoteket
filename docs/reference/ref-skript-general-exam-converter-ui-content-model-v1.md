@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-exam-converter-ui-content-model-v1
 title: Exam Converter UI content model v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-exam-converter-ui-content-model-v1
+  - REF-exam-converter-ui-content-model-v1
 summary: Exam Converter UI content model v1
 ---
 

@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-runner-image-build-contract-smoke-test
 title: 'Runbook: Runner image build + contract smoke test'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-runner-image
+  - RUN-runner-image
 summary: 'Runbook: Runner image build + contract smoke test'
 system: skriptoteket-runner
 ---
@@ -32,8 +32,6 @@ Reference: `docs/reference/ref-ai-script-generation-kb.md`.
 
 ### Source: Procedures
 
-
-
 ## Expected Results
 
 The source does not provide a separate expected results section; no additional expected results is recorded.
@@ -42,8 +40,6 @@ The source does not provide a separate expected results section; no additional e
 
 ### Source: Troubleshooting
 
-
-
 ## Rollback
 
 The source does not provide a separate rollback section; no additional rollback is recorded.
@@ -51,6 +47,7 @@ The source does not provide a separate rollback section; no additional rollback 
 ### Source: When to use this runbook
 
 Use this runbook when you need to:
+
 - Rebuild or deploy a new `skriptoteket-runner` image (new libs, security updates, contract changes).
 - Debug tool runs that fail due to runner contract drift.
 - Validate app → runner contract changes (e.g. `SKRIPTOTEKET_INPUT_DIR` + `SKRIPTOTEKET_INPUT_MANIFEST`,
@@ -76,16 +73,19 @@ ssh hemma "cd ~/apps/skriptoteket && docker compose -f compose.prod.yaml --profi
 ### Source: 3) Smoke test the contract (local dev)
 
 1. Run quality gate:
+
 ```bash
 pdm run precommit-run
 ```
 
 2. If verifying memory injection end-to-end:
+
    - Ensure the backend and SPA are running (`pdm run dev` + `pdm run fe-dev`).
    - Save tool settings in the Tool Run view (⚙ Settings), then run the tool.
    - In the tool script, read `SKRIPTOTEKET_MEMORY_PATH` and access `memory["settings"]` (see `docs/reference/ref-ai-script-generation-kb.md`).
 
 3. If verifying multi-file input end-to-end:
+
    - Upload **multiple** files in the Tool Run view.
    - In the tool script, discover inputs via `SKRIPTOTEKET_INPUT_MANIFEST` and/or list files under
      `SKRIPTOTEKET_INPUT_DIR` (see `docs/reference/ref-ai-script-generation-kb.md`).

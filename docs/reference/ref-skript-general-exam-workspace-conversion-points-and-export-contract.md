@@ -4,13 +4,12 @@ id: REF-SKRIPT-GENERAL-exam-workspace-conversion-points-and-export-contract
 title: Exam workspace conversion, points and export contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-23'
 status: active
 reference_kind: general
-summary: 'Durable user rules for the exam workspace: conversion quality, printed points,
-  import cleanup, question labels, metadata, exports and notices'
+summary: 'Durable user rules for the exam workspace: conversion quality, printed points, import cleanup, question labels, metadata, exports and notices'
 ---
 
 ## Overview

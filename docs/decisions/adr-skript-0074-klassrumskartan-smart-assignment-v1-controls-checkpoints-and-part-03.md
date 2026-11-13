@@ -1,12 +1,11 @@
 ---
 type: adr
 id: ADR-SKRIPT-0074-PART-03
-title: Klassrumskartan Smart Assignment V1 Controls, Checkpoints, and Solver Boundaries
-  — part 03
+title: Klassrumskartan Smart Assignment V1 Controls, Checkpoints, and Solver Boundaries — part 03
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: ADR-SKRIPT-0074
 part: 3

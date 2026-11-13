@@ -1,22 +1,20 @@
 ---
 type: adr
 id: ADR-SKRIPT-0066
-title: Sir Convert-a-Lot v2 as canonical conversion engine (replace html-to-pdf-preview
-  tool)
+title: Sir Convert-a-Lot v2 as canonical conversion engine (replace html-to-pdf-preview tool)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0066
+  - ADR-0066
 ---
 
 ## Context
-
 
 Skriptoteket currently ships a production tool script `html-to-pdf-preview` (script bank entry
 `src/skriptoteket/script_bank/bank.py`) which:
@@ -31,7 +29,6 @@ We want a single, hardened, well-maintained conversion engine that downstream pr
 canonical: Sir Convert-a-Lot v2.
 
 ## Decision
-
 
 - Skriptoteket will implement a **first-class curated app** that provides a complete conversion
   UI and routes conversion execution to **Sir Convert-a-Lot v2**.
@@ -62,7 +59,6 @@ canonical: Sir Convert-a-Lot v2.
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 - Skriptoteket gains a stable, bespoke conversion UI surface under `/apps/:appId` that can evolve
   without abusing the dynamic tool-script lane.

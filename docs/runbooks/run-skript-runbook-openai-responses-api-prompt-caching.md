@@ -4,12 +4,12 @@ id: RUN-SKRIPT-runbook-openai-responses-api-prompt-caching
 title: 'Runbook: OpenAI Responses API + Prompt Caching'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 retired_ids:
-- RUN-openai-responses-api
+  - RUN-openai-responses-api
 summary: 'Runbook: OpenAI Responses API + Prompt Caching'
 system: skriptoteket
 ---

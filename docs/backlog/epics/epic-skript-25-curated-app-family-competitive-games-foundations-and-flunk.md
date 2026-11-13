@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-25
 title: 'Curated app family: competitive games foundations and Flunk-Out Frenzy'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,13 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play
-  a polished local browser-based experience inside the existing Skriptoteket SPA,
-  deepen the local runtime with richer pinball-like mechanics without collapsing architecture
-  boundaries, and retain the backend seams required to add lightweight global high
-  scores without rewriting the app contract.
+outcome: Signed-in users can open Flunk-Out Frenzy as a bespoke curated app, play a polished local browser-based experience inside the existing Skriptoteket SPA, deepen the local runtime with richer pinball-like mechanics without collapsing architecture boundaries, and retain the backend seams required to add lightweight global high scores without rewriting the app contract.
 retired_ids:
-- EPIC-25
+  - EPIC-25
 ---
 
 ## Scope

@@ -69,6 +69,7 @@ Ship the first ST-29-02 shell-compression slice as a focused frontend cut:
 ## Implementation plan
 
 1. Promote the shared sticky toolbar seam into the planner shell.
+
    - Move the `Grupper` / `Sittplatser` action row ownership into the shell layer so the toolbar
      becomes one detached shared row immediately below the compressed shell.
    - Keep workspace-specific actions distinct through slots/zones instead of inventing a new
@@ -76,6 +77,7 @@ Ship the first ST-29-02 shell-compression slice as a focused frontend cut:
    - Make the shared row sticky with a stable offset that does not fight the shell.
 
 2. Remove interstitial bands from grouping and seating.
+
    - Delete the full-width grouping/seating smart-rules summary strip from the area between toolbar
      and live surface.
    - Re-home compact awareness to toolbar-local context and move `Använd historik` into the seating
@@ -84,6 +86,7 @@ Ship the first ST-29-02 shell-compression slice as a focused frontend cut:
      over page-wide bands.
 
 3. Demote export feedback out of the workspace flow.
+
    - Use toast/inbox behavior for success and completed-export messaging with explicit `Mina filer`
      copy.
    - Keep progress/recovery/error states compact and local to the workspace toolbar if they need to
@@ -92,11 +95,13 @@ Ship the first ST-29-02 shell-compression slice as a focused frontend cut:
      success surface instead of remounting it as a new full-width band.
 
 4. Preserve the rules workspace posture.
+
    - Keep the `Regler` rail locally sticky.
    - Avoid reintroducing a new right-side or top-band composition that competes with the map.
    - Limit `Regler` work here to shell-compression compatibility, not a deeper composition rewrite.
 
 5. Prove the laptop composition.
+
    - Add focused component coverage for shell + toolbar placement and export-feedback behavior.
    - Re-run the existing local browser proofs and manual laptop checks against the real planner.
 
@@ -144,10 +149,10 @@ Current code seams that matter:
 ## PR-sized execution checklist
 
 - [ ] Move grouping/seating toolbar ownership into the shared planner shell without flattening
-      workspace-specific semantics
+  workspace-specific semantics
 - [ ] Make the shared toolbar sticky directly above the live workspace surface
 - [ ] Remove the grouping/seating full-width smart-rules summary strip from between toolbar and
-      surface
+  surface
 - [ ] Re-home `Använd historik` and compact rules awareness into non-band surfaces
 - [ ] Replace completed export success/ready bands with toast/inbox behavior and `Mina filer` copy
 - [ ] Fix the export success-band re-entry behavior for the same draft/workspace state

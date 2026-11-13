@@ -4,8 +4,8 @@ id: ST-SKRIPT-16-08
 title: 'Catalog cleanup: curated-apps-only filter + final EPIC-16 review'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,27 +16,21 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-16
 acceptance_criteria:
-- Given the flat /browse view, when loaded, then the 'Bläddra efter yrkesgrupp' entrypoint
-  link is removed from the page
-- Given the flat catalog, when the user toggles 'Enbart kurerade appar' (separate
-  master filter above results), then only curated apps are shown
-- Given the curated-apps-only filter, when it is active, then the UI shows a succinct
-  subtitle explaining the scope (e.g. 'Visar bara appar utan verktyg')
-- Given curated-apps-only is active, when the URL contains the filter flag, then the
-  checkbox is pre-selected on load
-- Given curated-apps-only is inactive, when the user clears filters, then the master
-  filter is also cleared
-- Given EPIC-16 stories ST-16-01..07, when final review is performed, then each story's
-  acceptance criteria are verified and results are recorded with any follow-ups
+  - Given the flat /browse view, when loaded, then the 'Bläddra efter yrkesgrupp' entrypoint link is removed from the page
+  - Given the flat catalog, when the user toggles 'Enbart kurerade appar' (separate master filter above results), then only curated apps are shown
+  - Given the curated-apps-only filter, when it is active, then the UI shows a succinct subtitle explaining the scope (e.g. 'Visar bara appar utan verktyg')
+  - Given curated-apps-only is active, when the URL contains the filter flag, then the checkbox is pre-selected on load
+  - Given curated-apps-only is inactive, when the user clears filters, then the master filter is also cleared
+  - Given EPIC-16 stories ST-16-01..07, when final review is performed, then each story's acceptance criteria are verified and results are recorded with any follow-ups
 retired_ids:
-- ST-16-08
+  - ST-16-08
 ---
 
 ## Context
 
 Source: `docs/backlog/stories/story-16-08-catalog-cleanup-and-review.md`. Catalog cleanup: curated-apps-only filter + final EPIC-16 review.
 
-ST-16-05 introduced a flat catalog view that supersedes the old "Bläddra efter yrkesgrupp" entrypoint. This cleanup story removes legacy affordances, adds a master filter for curated apps, and finishes with a full EPIC-16 review. - Placement: the "Enbart kurerade appar" checkbox sits **above the results list** (right column), separated from the profession/category facets to make it a distinct master filter. - Subtitle: short, explanatory text to clarify that curated apps are not standard tool-driven UI. ``` ┌─────────────────────────────────────────────────────────────┐ │ Katalog                                                     │ ├──────────────────────────────────────────────────────────
+ST-16-05 introduced a flat catalog view that supersedes the old "Bläddra efter yrkesgrupp" entrypoint. This cleanup story removes legacy affordances, adds a master filter for curated apps, and finishes with a full EPIC-16 review. - Placement: the "Enbart kurerade appar" checkbox sits **above the results list** (right column), separated from the profession/category facets to make it a distinct master filter. - Subtitle: short, explanatory text to clarify that curated apps are not standard tool-driven UI. \`\`\` ┌─────────────────────────────────────────────────────────────┐ │ Katalog │ ├──────────────────────────────────────────────────────────
 
 ## Epic Contract Slice
 
@@ -123,8 +117,8 @@ story removes legacy affordances, adds a master filter for curated apps, and fin
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                  | Type      | Status | Question/Assumption              | Recommendation/Decision                                                             | Source                               |
+| ------------------- | --------- | ------ | -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-ST-SKRIPT-16-08 | migration | closed | How is source meaning preserved? | Preserve the source story contract and current status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

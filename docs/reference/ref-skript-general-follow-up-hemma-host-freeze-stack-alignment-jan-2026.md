@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-follow-up-hemma-host-freeze-stack-alignment-jan-2026
 title: 'Follow-up: hemma host freeze stack alignment (Jan 2026)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-hemma-host-freeze-stack-alignment-2026-01-03
+  - REF-hemma-host-freeze-stack-alignment-2026-01-03
 summary: 'Follow-up: hemma host freeze stack alignment (Jan 2026)'
 ---
 
@@ -49,6 +49,7 @@ Note: AMD marks Ubuntu 24.04.3 support as preliminary when using the 24.04.2 ins
 supported but may still contain early-release regressions.
 
 ROCm system requirements footnote for Radeon PRO / Radeon GPUs (verbatim excerpt):
+
 > "only support Ubuntu 24.04.3, Ubuntu 22.04.5, RHEL 10.1, and RHEL 9.7."
 
 Source: ROCm system requirements (Linux), 2026-01-05.
@@ -119,23 +120,29 @@ The installed AMDGPU DKMS source under `/usr/src/amdgpu-6.16.6-2255209.24.04/amd
 
 ### Ordered remediation options (most likely to least likely to fix root cause)
 
-1) **Disable HIP workloads temporarily**
+1. **Disable HIP workloads temporarily**
+
    - Stop `llama-server` and `tabby` for 24-48h to isolate ROCm/HIP as the trigger.
    - If workload must remain, prefer llama.cpp Vulkan backend or reduce HIP-specific features.
 
-2) **Move to a newer 6.14 HWE point release**
+2. **Move to a newer 6.14 HWE point release**
+
    - If 6.14.0-38/39 is available, take it to pick up amdgpu/DCN backports that did not land in 6.14.0-37.
 
-3) **Align to a ROCm version explicitly supported by AMD for llama.cpp**
+3. **Align to a ROCm version explicitly supported by AMD for llama.cpp**
+
    - Consider ROCm 7.0.x or 6.4.x (per AMD's llama.cpp compatibility table) if the workload depends on HIP.
 
-4) **Disable display core on a headless server**
+4. **Disable display core on a headless server**
+
    - Use kernel param `amdgpu.dc=0` to bypass DCN, as a targeted mitigation for `optc401_disable_crtc` timeouts.
 
-5) **IOMMU mitigations (diagnostic only)**
+5. **IOMMU mitigations (diagnostic only)**
+
    - Test `iommu=pt` or `amd_iommu=off` if `AMD-Vi INVALID_DEVICE_REQUEST` events continue and above steps fail.
 
-6) **Hardware validation**
+6. **Hardware validation**
+
    - PSU, RAM, GPU seating, or PCIe slot checks only after the software/driver isolation steps.
 
 ### Suggested next evidence to collect

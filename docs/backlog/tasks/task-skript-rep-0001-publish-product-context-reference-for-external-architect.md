@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0001
 title: Publish product context reference for external architect agents
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -21,11 +21,9 @@ links:
   references:
     - REF-SKRIPT-GENERAL-product-context
 acceptance_criteria:
-- 'A governed reference publishes Skriptoteket''s durable product context: mission,
-  identity, current aim, non-goals, load-bearing decisions, constraints, and glossary.'
-- The reference states only current truth, links ADRs and PRDs instead of restating
-  them, and carries a last-reconciled marker.
-- Docs sync and docs validation pass for the new surfaces.
+  - 'A governed reference publishes Skriptoteket''s durable product context: mission, identity, current aim, non-goals, load-bearing decisions, constraints, and glossary.'
+  - The reference states only current truth, links ADRs and PRDs instead of restating them, and carries a last-reconciled marker.
+  - Docs sync and docs validation pass for the new surfaces.
 ---
 
 ## Context
@@ -52,14 +50,14 @@ frontend, or deploy changes. No escalation to an epic or story is required.
 Every material implementation choice must be closed by an accepted source before
 the task becomes ready.
 
-| ID      | Type   | Status | Question/Assumption                                     | Recommendation/Decision                                                                                                                                                                | Source                                        |
-| ------- | ------ | ------ | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| SPC-001 | scope  | closed | What does the reference cover?                          | One `general` reference at `docs/reference/ref-skript-general-product-context.md`: mission, identity, deployment constraints, glossary, routing, current aim, non-goals, load-bearing decisions, metadata-drift caveats, reconciliation rule. | User approval in session chat, 2026-07-31     |
-| SPC-002 | source | closed | Where do the facts come from?                           | Repository documentation (README, AGENTS.md, PRDs, ADRs, direction memos, backlog state, `.codex/handoff.md`) gathered by bounded read-only discovery; the single-operator constraint is owner-supplied and is labeled as such in the reference. | Retained discovery evidence, 2026-07-31       |
-| SPC-003 | links  | closed | How are related documents referenced?                   | Governing-task and key document relations use contract-owned `links` frontmatter; in-body citations use markdown links to repo-relative paths, not bare code spans.                     | Plan Document Review finding 3 remediation    |
-| SPC-004 | truth  | closed | How are unpublished or in-flight dependencies stated?   | Cross-repository documents not yet published at their canonical path are stated as pending drafts; EPIC-38 state is described per the current handoff (approved central review, user exception for PR-0417, slices gated on the PR-0418 migration). | Plan Document Review finding 2 remediation; `.codex/handoff.md`, 2026-07-31 |
-| SPC-005 | proof  | closed | What proves this prose-only change?                     | Validator proof: `pdm run docs-sync`, scoped `pdm run docs-validate` over the two new files, `git diff --check`. The pre-existing tree-wide `docs/mockups/INDEX.md` failure is owned by the PR-0418 migration and is out of scope.               | Proof-selection rules; Plan Document Review residual-risk note |
-| SPC-006 | gate   | closed | What gates publication?                                 | The reference stays `draft` and the task stays `proposed` until independent plan re-review returns `approved`; lifecycle transitions belong to their owners afterward.                   | Review-gates decision contract                 |
+| ID      | Type   | Status | Question/Assumption                                   | Recommendation/Decision                                                                                                                                                                                                                             | Source                                                                      |
+| ------- | ------ | ------ | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| SPC-001 | scope  | closed | What does the reference cover?                        | One `general` reference at `docs/reference/ref-skript-general-product-context.md`: mission, identity, deployment constraints, glossary, routing, current aim, non-goals, load-bearing decisions, metadata-drift caveats, reconciliation rule.       | User approval in session chat, 2026-07-31                                   |
+| SPC-002 | source | closed | Where do the facts come from?                         | Repository documentation (README, AGENTS.md, PRDs, ADRs, direction memos, backlog state, `.codex/handoff.md`) gathered by bounded read-only discovery; the single-operator constraint is owner-supplied and is labeled as such in the reference.    | Retained discovery evidence, 2026-07-31                                     |
+| SPC-003 | links  | closed | How are related documents referenced?                 | Governing-task and key document relations use contract-owned `links` frontmatter; in-body citations use markdown links to repo-relative paths, not bare code spans.                                                                                 | Plan Document Review finding 3 remediation                                  |
+| SPC-004 | truth  | closed | How are unpublished or in-flight dependencies stated? | Cross-repository documents not yet published at their canonical path are stated as pending drafts; EPIC-38 state is described per the current handoff (approved central review, user exception for PR-0417, slices gated on the PR-0418 migration). | Plan Document Review finding 2 remediation; `.codex/handoff.md`, 2026-07-31 |
+| SPC-005 | proof  | closed | What proves this prose-only change?                   | Validator proof: `pdm run docs-sync`, scoped `pdm run docs-validate` over the two new files, `git diff --check`. The pre-existing tree-wide `docs/mockups/INDEX.md` failure is owned by the PR-0418 migration and is out of scope.                  | Proof-selection rules; Plan Document Review residual-risk note              |
+| SPC-006 | gate   | closed | What gates publication?                               | The reference stays `draft` and the task stays `proposed` until independent plan re-review returns `approved`; lifecycle transitions belong to their owners afterward.                                                                              | Review-gates decision contract                                              |
 
 ## Plan
 

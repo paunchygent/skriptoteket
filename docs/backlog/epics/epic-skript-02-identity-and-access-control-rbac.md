@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-02
 title: Identity and access control (RBAC)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,11 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Users can authenticate, self-register, verify email, recover local-account
-  access, manage their profiles, and role checks reliably gate contributor/admin/superuser
-  capabilities.
+outcome: Users can authenticate, self-register, verify email, recover local-account access, manage their profiles, and role checks reliably gate contributor/admin/superuser capabilities.
 retired_ids:
-- EPIC-02
+  - EPIC-02
 ---
 
 ## Scope

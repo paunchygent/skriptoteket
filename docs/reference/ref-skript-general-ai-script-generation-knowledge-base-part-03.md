@@ -4,14 +4,14 @@ id: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base-PART-03
 title: AI Script Generation Knowledge Base — part 03
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-ai-script-generation-knowledge-base
 part: 3
 ---
 
----
+______________________________________________________________________
 
 ### 11. Snabbreferens: Contract v2 typer
 
@@ -57,7 +57,7 @@ NoticeLevel = Literal["info", "warning", "error"]
 }
 ```
 
----
+______________________________________________________________________
 
 ### 12. Fullständigt exempelskript
 
@@ -237,7 +237,7 @@ if __name__ == "__main__":
     print(json.dumps(result, indent=2, ensure_ascii=False))
 ```
 
----
+______________________________________________________________________
 
 ### 13. Frågor att ställa användaren
 

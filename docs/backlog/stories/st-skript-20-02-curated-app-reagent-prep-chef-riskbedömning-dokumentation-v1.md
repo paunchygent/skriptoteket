@@ -4,8 +4,8 @@ id: ST-SKRIPT-20-02
 title: 'Curated app: Reagent Prep Chef — Riskbedömning + dokumentation (v1)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,37 +16,20 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-20
 acceptance_criteria:
-- Given a teacher has computed a prep sheet, when the teacher opens the Riskbedömning
-  tab, then the UI shows a structured draft prefilled from the computed prep (formula,
-  molarity, volumes, instructions) plus a teacher-editable local context form.
-- Given the chemical is present in curated hazards data, when the risk draft is generated,
-  then the UI includes curated safety guidance (PPE/avfall/H-koder when available)
-  and an 'Öppna SDS' action.
-- Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna
-  SDS', then the SPA renders the SDS markdown served by the backend with no external
-  fetch and no direct vendor URLs.
-- Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna
-  PDF', then the backend returns an SDS PDF rendered from the markdown corpus (Skriptoteket-branded;
-  no vendor PDF served).
-- Given the SDS markdown is missing, when the teacher clicks 'Öppna SDS', then the
-  UI blocks the action with a clear 'SDS saknas' message.
-- Given the teacher fills required local context and confirms the checklist items,
-  when the teacher exports, then the backend generates a deterministic PDF risk assessment
-  document (no external API calls during export) and the SPA downloads it.
-- Given the teacher exports and chooses Save to Vault, when saving completes, then
-  a Vault file is created with source_kind=APP_EXPORT and the user receives a Vault
-  file reference.
-- Given the teacher returns later, when the app is opened, then the last risk assessment
-  draft can be restored from app-owned session state (tool_sessions) without data
-  loss (or the teacher can start a fresh draft).
-- Given the chemical is not present in curated hazards data, when a risk draft is
-  generated, then the risk assessment fails with an explicit error (no guessing/fallback).
+  - Given a teacher has computed a prep sheet, when the teacher opens the Riskbedömning tab, then the UI shows a structured draft prefilled from the computed prep (formula, molarity, volumes, instructions) plus a teacher-editable local context form.
+  - Given the chemical is present in curated hazards data, when the risk draft is generated, then the UI includes curated safety guidance (PPE/avfall/H-koder when available) and an 'Öppna SDS' action.
+  - Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna SDS', then the SPA renders the SDS markdown served by the backend with no external fetch and no direct vendor URLs.
+  - Given an SDS markdown exists for the current chemical, when the teacher clicks 'Öppna PDF', then the backend returns an SDS PDF rendered from the markdown corpus (Skriptoteket-branded; no vendor PDF served).
+  - Given the SDS markdown is missing, when the teacher clicks 'Öppna SDS', then the UI blocks the action with a clear 'SDS saknas' message.
+  - Given the teacher fills required local context and confirms the checklist items, when the teacher exports, then the backend generates a deterministic PDF risk assessment document (no external API calls during export) and the SPA downloads it.
+  - Given the teacher exports and chooses Save to Vault, when saving completes, then a Vault file is created with source_kind=APP_EXPORT and the user receives a Vault file reference.
+  - Given the teacher returns later, when the app is opened, then the last risk assessment draft can be restored from app-owned session state (tool_sessions) without data loss (or the teacher can start a fresh draft).
+  - Given the chemical is not present in curated hazards data, when a risk draft is generated, then the risk assessment fails with an explicit error (no guessing/fallback).
 retired_ids:
-- ST-20-02
+  - ST-20-02
 ---
 
 ## Context
-
 
 Teachers need to document risk assessments for chemical work. Reagent Prep Chef already produces deterministic, teacher-friendly prep sheets; this story adds a first-class riskbedömning flow that is tied to the exact concentration/volume/handling steps used.
 
@@ -77,7 +60,6 @@ No separate contract inputs is stated in the source.
 
 ## Live Verification Plan
 
-
 - Backend unit tests:
   - Risk template expansion, SDS availability flags, export validation.
   - Teacher confirmation state and required-context gating.
@@ -87,7 +69,6 @@ No separate contract inputs is stated in the source.
 
 ## Non-Goals
 
-
 - No runtime SDS fetching from external sources (SDS must be backend-hosted; ADR-0067).
 - No concentration-dependent CLP classification engine.
 - No chemistry heuristics / reaction prediction.
@@ -96,12 +77,10 @@ No separate contract inputs is stated in the source.
 
 ## Notes
 
-
 - Build on ST-20-01 output model and export patterns.
 - Follow the curated-app rule: bespoke UX + app-specific APIs; tool/runner infrastructure is internal-only.
 
 ### Source: Scope
-
 
 - Add a bespoke UX tab: Riskbedömning.
 - Generate a structured risk assessment draft from:
@@ -117,29 +96,32 @@ No separate contract inputs is stated in the source.
 
 ### Source: API contract (app-specific)
 
-
 New endpoints (exact routes):
 
 - `POST /api/v1/apps/chemistry.reagent_prep_chef/risk-assessment`
+
   - Input: prep request + optional context + expected_state_rev
   - Output: structured draft + warnings + state_rev
 
 - `POST /api/v1/apps/chemistry.reagent_prep_chef/export-risk-pdf`
+
   - Input: risk assessment draft
   - Output: `application/pdf` download
 
 - `POST /api/v1/apps/chemistry.reagent_prep_chef/save-risk-pdf`
+
   - Input: risk assessment draft + filename
   - Output: Vault file info
 
 - `GET /api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}`
+
   - Output: SDS PDF rendered from the repo-owned markdown corpus (no vendor PDF served).
 
 - `GET /api/v1/apps/chemistry.reagent_prep_chef/sds/{sds_ref}/markdown`
+
   - Output: SDS markdown payload served from repo-owned corpus (ADR-0067).
 
 ### Source: Data requirements
-
 
 Curated-only data. No guessing.
 
@@ -148,7 +130,6 @@ Curated-only data. No guessing.
 - Risk template catalog (repo-owned): a small set of generic lab risks and measures (no scoring engine).
 
 ### Source: PDF output requirements
-
 
 The PDF must include AFS-aligned documentation fields:
 
@@ -161,7 +142,6 @@ The PDF must include AFS-aligned documentation fields:
 - SDS reference and a note that the teacher must consult the full SDS.
 
 ### Source: Implementation status (as of 2026-03-04)
-
 
 This story is being re-scoped to align with ADR-0067 (markdown-first offline SDS corpus) and a teacher-first,
 maintainable Riskbedömning workflow.

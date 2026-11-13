@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-investigation-hemma-host-hard-hangs-jan-2026-PART-01
 title: 'Investigation: hemma host hard hangs (Jan 2026) — part 01'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-investigation-hemma-host-hard-hangs-jan-2026
 part: 1
@@ -18,8 +18,6 @@ The source does not provide a separate overview section; no additional overview 
 ## Facts And Semantics
 
 ### Source: Findings
-
-
 
 ### Source: Update (2026-01-13)
 
@@ -81,8 +79,6 @@ Collected from `dmidecode`, `lscpu`, and `lspci` on 2026-01-03.
   - 1× Seagate HDD 2 TB
 
 ### Source: Known/likely compatibility risks from this inventory
-
-
 
 ### Source: 1) Extremely old motherboard BIOS (2018)
 

@@ -4,13 +4,13 @@ id: REF-SKRIPT-RESEARCH-devops-skill-research
 title: DevOps Skill Research
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: research
 retired_ids:
-- REF-devops-skill-research
+  - REF-devops-skill-research
 summary: DevOps Skill Research
 ---
 
@@ -27,7 +27,7 @@ Skriptoteket reference.
 **Created:** 2025-12-17
 **Sources:** Runbooks, ADRs, Docker configs, CLI code, pyproject.toml
 
----
+______________________________________________________________________
 
 ## Evidence And Sources
 
@@ -89,14 +89,16 @@ ssh hemma-local        # Via 192.168.0.9 (local network, faster)
 ```
 
 **Critical:** Web container must be on BOTH networks:
+
 - `hule-network` for nginx-proxy to reach it
 - `skriptoteket_default` for database connectivity (dev only)
 
----
+______________________________________________________________________
 
 ### Source: 11. Architecture Decisions (from ADRs)
 
 ### Authentication (ADR-SKRIPT-0006, ADR-SKRIPT-0009)
+
 - Local admin-provisioned accounts with server-side sessions in PostgreSQL
 - No self-signup in v0.1
 - User model includes `external_id` and `auth_provider`; ADR-SKRIPT-0083 now realizes
@@ -104,41 +106,45 @@ ssh hemma-local        # Via 192.168.0.9 (local network, faster)
   ceremony
 
 ### Script Execution (ADR-SKRIPT-0013, ADR-SKRIPT-0016)
+
 - Sibling container model via docker.sock mount
 - Runner containers: non-root, capabilities dropped, pids-limit
 - Concurrency controlled by `RUNNER_MAX_CONCURRENCY`
 
 ### Storage (ADR-SKRIPT-0012)
+
 - Source code in PostgreSQL
 - Binary artifacts on filesystem at `ARTIFACTS_ROOT`
 - Retention policy via `prune-artifacts` CLI command
 
 ### Observability (ADR-SKRIPT-0018)
+
 - Structlog with JSON output in production
 - Correlation IDs via `X-Correlation-ID` header
 - Required log fields: `timestamp`, `level`, `event`, `service.name`, `deployment.environment`
 
----
+______________________________________________________________________
 
 ## Findings And Interpretation
 
 ### Source: 2. Docker Configuration: Dev vs Prod
 
-| Aspect | Development | Production |
-|--------|-------------|------------|
-| **Compose file** | `compose.yaml` + `compose.dev.yaml` | `compose.prod.yaml` |
-| **Database** | Local `skriptoteket-db-1` | Shared `shared-postgres` |
-| **Network** | `skriptoteket_default` + `hule-network` | `hule-network` only |
-| **Container name** | `skriptoteket_web` | `skriptoteket-web` |
-| **Port exposure** | `8000:8000` on localhost | Not exposed (behind proxy) |
-| **DB port** | `55432:5432` (debug access) | Not exposed |
-| **Docker socket** | Mounted (rw) | Mounted (ro) |
-| **Artifacts** | `./.artifacts` bind mount | `artifacts_data` named volume |
-| **Health check** | None | HTTP /health every 30s |
+| Aspect             | Development                             | Production                    |
+| ------------------ | --------------------------------------- | ----------------------------- |
+| **Compose file**   | `compose.yaml` + `compose.dev.yaml`     | `compose.prod.yaml`           |
+| **Database**       | Local `skriptoteket-db-1`               | Shared `shared-postgres`      |
+| **Network**        | `skriptoteket_default` + `hule-network` | `hule-network` only           |
+| **Container name** | `skriptoteket_web`                      | `skriptoteket-web`            |
+| **Port exposure**  | `8000:8000` on localhost                | Not exposed (behind proxy)    |
+| **DB port**        | `55432:5432` (debug access)             | Not exposed                   |
+| **Docker socket**  | Mounted (rw)                            | Mounted (ro)                  |
+| **Artifacts**      | `./.artifacts` bind mount               | `artifacts_data` named volume |
+| **Health check**   | None                                    | HTTP /health every 30s        |
 
 ### Environment Variables
 
 **Development (.env.example):**
+
 ```bash
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:55432/skriptoteket
 BOOTSTRAP_SUPERUSER_EMAIL=superuser@local.dev
@@ -150,13 +156,14 @@ LOG_FORMAT=console
 ```
 
 **Production (.env.example.prod):**
+
 ```bash
 SKRIPTOTEKET_DB_PASSWORD=change-me
 SECRET_KEY=generate-with-python-secrets-token-urlsafe-32
 LOG_FORMAT=json
 ```
 
----
+______________________________________________________________________
 
 ### Source: 3. CLI Commands Reference
 
@@ -232,7 +239,7 @@ pdm run artifacts-prune --retention-days 14
 pdm run artifacts-prune --dry-run
 ```
 
----
+______________________________________________________________________
 
 ### Source: 4. Deploy Procedures
 
@@ -273,7 +280,7 @@ ssh hemma "docker exec skriptoteket-web pdm run db-upgrade"
 ssh hemma "docker exec -it -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli bootstrap-superuser --email admin@hule.education"
 ```
 
----
+______________________________________________________________________
 
 ### Source: 5. Database Operations
 
@@ -311,7 +318,7 @@ ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"U
 ssh hemma "docker exec skriptoteket-db-1 psql -U postgres -d skriptoteket -c \"DELETE FROM sessions WHERE user_id = (SELECT id FROM users WHERE email = 'user@example.com');\""
 ```
 
----
+______________________________________________________________________
 
 ### Source: 6. SSL/Certificate Management
 
@@ -328,7 +335,7 @@ ssh hemma "cd ~/infrastructure && docker compose run --rm certbot renew"
 ssh hemma "docker exec nginx-proxy nginx -s reload"
 ```
 
----
+______________________________________________________________________
 
 ### Source: 7. DNS/DDNS (Namecheap)
 
@@ -356,7 +363,7 @@ ssh hemma "curl -s ifconfig.me"
 dig +short skriptoteket.hule.education @pdns1.registrar-servers.com
 ```
 
----
+______________________________________________________________________
 
 ### Source: 8. Log Viewing
 
@@ -382,7 +389,7 @@ curl -i -H "X-Correlation-ID: ${CID}" https://skriptoteket.hule.education/login
 ssh hemma "docker logs skriptoteket_web | rg '<correlation-id>'"
 ```
 
----
+______________________________________________________________________
 
 ### Source: 9. Troubleshooting Patterns
 
@@ -437,7 +444,7 @@ ssh hemma "docker system df"
 ssh hemma "docker system prune -f"
 ```
 
----
+______________________________________________________________________
 
 ### Source: 10. Quick Status Checks
 
@@ -452,26 +459,27 @@ ssh hemma "docker ps | grep -E 'skriptoteket|nginx|postgres'"
 ssh hemma "curl -s http://localhost:8000/health | jq"
 ```
 
----
+______________________________________________________________________
 
 ### Source: 12. Skill Branch Structure Decision
 
 Based on research, the following branch structure groups related operations naturally:
 
-| Branch | Content |
-|--------|---------|
-| `deploy.md` | Standard deploy, migrations, force recreate, rollback |
-| `database.md` | Connect, backup, restore, migrations, queries |
-| `users.md` | Bootstrap superuser, provision user, role changes |
-| `seed.md` | Script bank seeding, sync-code, sync-metadata |
-| `cli.md` | General CLI pattern, PYTHONPATH, available commands |
-| `security.md` | SSL certificates, expiry, renewal |
-| `network.md` | Docker networks, 502 troubleshooting |
-| `dns-provider.md` | Namecheap, ddclient, DNS verification |
-| `server-os.md` | SSH access, disk space, docker system |
-| `troubleshoot.md` | Error patterns (502, 307, 500), logs |
+| Branch            | Content                                               |
+| ----------------- | ----------------------------------------------------- |
+| `deploy.md`       | Standard deploy, migrations, force recreate, rollback |
+| `database.md`     | Connect, backup, restore, migrations, queries         |
+| `users.md`        | Bootstrap superuser, provision user, role changes     |
+| `seed.md`         | Script bank seeding, sync-code, sync-metadata         |
+| `cli.md`          | General CLI pattern, PYTHONPATH, available commands   |
+| `security.md`     | SSL certificates, expiry, renewal                     |
+| `network.md`      | Docker networks, 502 troubleshooting                  |
+| `dns-provider.md` | Namecheap, ddclient, DNS verification                 |
+| `server-os.md`    | SSH access, disk space, docker system                 |
+| `troubleshoot.md` | Error patterns (502, 307, 500), logs                  |
 
 **Rationale:**
+
 - Each branch is 50-100 lines (compact)
 - Related operations grouped together
 - No duplication (branches reference each other)

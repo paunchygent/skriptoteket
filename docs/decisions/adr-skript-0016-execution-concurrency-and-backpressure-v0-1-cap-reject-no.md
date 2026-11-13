@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0016
 title: 'Execution concurrency and backpressure (v0.1: cap + reject, no queue)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0016
+  - ADR-0016
 ---
 
 ## Context
-
 
 EPIC-04 runs tool scripts via sibling Docker runner containers (ADR-0013). The Docker SDK is synchronous, and each run
 consumes CPU, memory, and Docker daemon capacity.
@@ -29,7 +28,6 @@ Without an explicit concurrency policy, the API server can:
 The v0.1 scope explicitly avoids introducing a distributed task queue.
 
 ## Decision
-
 
 ### 1 Global concurrency cap (Settings-driven)
 
@@ -60,7 +58,6 @@ define scheduling, fairness, and retry semantics explicitly.
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 - The UI must handle “runner busy” responses and prompt the user to retry.
 - Capacity planning is explicit: operators set `RUNNER_MAX_CONCURRENCY` to fit host limits.

@@ -4,8 +4,8 @@ id: REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff-PART-01
 title: Skriptoteket help copy signoff — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REF-SKRIPT-GENERAL-skriptoteket-help-copy-signoff
 part: 1
@@ -56,35 +56,35 @@ Use these states per copy block:
 
 ### Route Topic Matrix
 
-| Route name | Topic id | Current state | Copy signoff state | Notes |
-|---|---|---:|---:|---|
-| `home` | `home` | Implemented | approved | Expand only if role-aware home copy changes. |
-| `auth-login`, `auth-callback` | `login` or new auth topic | Partial | approved | Align with HuleEdu-owned login ceremony. |
-| `register`, `forgot-password`, `reset-password`, `verify-email` | new lifecycle topic | Missing | approved | Explain lifecycle handoff without app-local auth wording. |
-| `auth-provisioning-required` | new provisioning topic | Missing | approved | Explain activation path and who to contact. |
-| `browse`, `browse-professions` | `browse_professions` | Partial | approved | Route map must cover both route names. |
-| `browse-categories` | `browse_categories` | Partial | approved | Keep category navigation short. |
-| `browse-tools` | `browse_tools` | Partial | approved | Explain apps vs tools without implementation detail. |
-| `tool-run` | `tools_run` | Partial | approved | Add input/file help and run-state expectations. |
-| `my-runs` | new runs list topic | Missing | approved | Explain history, statuses, and downloads. |
-| `my-runs-detail` | `tools_result` | Partial | approved | Explain result status, files, and recovery actions. |
-| `vault` | new vault topic | Missing | approved | Explain saved files, restore/delete, quota. |
-| `profile` | new profile topic | Missing | approved | Explain profile preferences and account links. |
-| `app-detail` | `apps_detail` plus app contexts | Partial | approved | Generic app help should remain a fallback. |
-| `public-app-detail` | `apps_detail` or public app topic | Missing | approved | Distinguish public guest capability from account-only features. |
-| Klassrumskartan overview | `planner_overview` | Implemented | approved | Generated from the approved getting-started guide. |
-| Klassrumskartan grouping | `planner_grouping` | Implemented | approved | Generated from the approved getting-started guide. |
-| Klassrumskartan seating | `planner_seating` | Implemented | approved | Generated from the approved getting-started guide. |
-| Klassrumskartan rules | `planner_rules` | Implemented | approved | Generated from the approved getting-started guide. |
-| `my-tools` | `my_tools` | Partial | approved | Explain maintainer responsibilities. |
-| `editor-hub` | new editor hub topic | Missing | approved | Explain where contributors start. |
-| `suggestion-new` | `suggestions_new` | Partial | approved | Include title, description, profession/category micro-help. |
-| `admin-suggestions`, `admin-suggestion-detail` | `admin_suggestions` | Partial | approved | Include decision statuses and rationale guidance. |
-| `admin-tools` | `admin_tools` | Partial | approved | Include publish/unpublish consequences. |
-| `admin-tool-editor`, `admin-tool-version-editor` | `admin_editor` | Partial | approved | Split overview/test/run-result guidance if needed. |
-| `admin-users`, `admin-user-detail` | new user admin topic | Missing | approved | Superuser-only, local role/projection wording must be clear. |
-| `forbidden` | new access topic | Missing | approved | Explain role/access mismatch without blame. |
-| `public-app-route-recovery`, `not-found` | new recovery topic | Missing | approved | Match route recovery copy and next actions. |
+| Route name                                                      | Topic id                          | Current state | Copy signoff state | Notes                                                           |
+| --------------------------------------------------------------- | --------------------------------- | ------------: | -----------------: | --------------------------------------------------------------- |
+| `home`                                                          | `home`                            |   Implemented |           approved | Expand only if role-aware home copy changes.                    |
+| `auth-login`, `auth-callback`                                   | `login` or new auth topic         |       Partial |           approved | Align with HuleEdu-owned login ceremony.                        |
+| `register`, `forgot-password`, `reset-password`, `verify-email` | new lifecycle topic               |       Missing |           approved | Explain lifecycle handoff without app-local auth wording.       |
+| `auth-provisioning-required`                                    | new provisioning topic            |       Missing |           approved | Explain activation path and who to contact.                     |
+| `browse`, `browse-professions`                                  | `browse_professions`              |       Partial |           approved | Route map must cover both route names.                          |
+| `browse-categories`                                             | `browse_categories`               |       Partial |           approved | Keep category navigation short.                                 |
+| `browse-tools`                                                  | `browse_tools`                    |       Partial |           approved | Explain apps vs tools without implementation detail.            |
+| `tool-run`                                                      | `tools_run`                       |       Partial |           approved | Add input/file help and run-state expectations.                 |
+| `my-runs`                                                       | new runs list topic               |       Missing |           approved | Explain history, statuses, and downloads.                       |
+| `my-runs-detail`                                                | `tools_result`                    |       Partial |           approved | Explain result status, files, and recovery actions.             |
+| `vault`                                                         | new vault topic                   |       Missing |           approved | Explain saved files, restore/delete, quota.                     |
+| `profile`                                                       | new profile topic                 |       Missing |           approved | Explain profile preferences and account links.                  |
+| `app-detail`                                                    | `apps_detail` plus app contexts   |       Partial |           approved | Generic app help should remain a fallback.                      |
+| `public-app-detail`                                             | `apps_detail` or public app topic |       Missing |           approved | Distinguish public guest capability from account-only features. |
+| Klassrumskartan overview                                        | `planner_overview`                |   Implemented |           approved | Generated from the approved getting-started guide.              |
+| Klassrumskartan grouping                                        | `planner_grouping`                |   Implemented |           approved | Generated from the approved getting-started guide.              |
+| Klassrumskartan seating                                         | `planner_seating`                 |   Implemented |           approved | Generated from the approved getting-started guide.              |
+| Klassrumskartan rules                                           | `planner_rules`                   |   Implemented |           approved | Generated from the approved getting-started guide.              |
+| `my-tools`                                                      | `my_tools`                        |       Partial |           approved | Explain maintainer responsibilities.                            |
+| `editor-hub`                                                    | new editor hub topic              |       Missing |           approved | Explain where contributors start.                               |
+| `suggestion-new`                                                | `suggestions_new`                 |       Partial |           approved | Include title, description, profession/category micro-help.     |
+| `admin-suggestions`, `admin-suggestion-detail`                  | `admin_suggestions`               |       Partial |           approved | Include decision statuses and rationale guidance.               |
+| `admin-tools`                                                   | `admin_tools`                     |       Partial |           approved | Include publish/unpublish consequences.                         |
+| `admin-tool-editor`, `admin-tool-version-editor`                | `admin_editor`                    |       Partial |           approved | Split overview/test/run-result guidance if needed.              |
+| `admin-users`, `admin-user-detail`                              | new user admin topic              |       Missing |           approved | Superuser-only, local role/projection wording must be clear.    |
+| `forbidden`                                                     | new access topic                  |       Missing |           approved | Explain role/access mismatch without blame.                     |
+| `public-app-route-recovery`, `not-found`                        | new recovery topic                |       Missing |           approved | Match route recovery copy and next actions.                     |
 
 ### Copy Blocks
 

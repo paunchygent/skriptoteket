@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-competitive-games-cross-cutting-delivery-progra
 title: 'Reference: Competitive games cross-cutting delivery programme'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-competitive-games-cross-cutting-programme
+  - REF-competitive-games-cross-cutting-programme
 summary: 'Reference: Competitive games cross-cutting delivery programme'
 ---
 

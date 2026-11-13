@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-37
 title: Backlog product-direction inventory and app surface realignment
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,11 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Skriptoteket has a truthful active backlog that preserves still-valuable
-  script/editor work, closes completed or superseded legacy tasks, and sequences the
-  next UI shell and app-presentation work around current teacher-facing product lanes.
+outcome: Skriptoteket has a truthful active backlog that preserves still-valuable script/editor work, closes completed or superseded legacy tasks, and sequences the next UI shell and app-presentation work around current teacher-facing product lanes.
 retired_ids:
-- EPIC-37
+  - EPIC-37
 ---
 
 ## Scope

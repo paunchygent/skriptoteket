@@ -4,8 +4,8 @@ id: ST-SKRIPT-22-01
 title: Textbook corpus cleanup pipeline and manual restoration workflow
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,25 +16,14 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-22
 acceptance_criteria:
-- Given textbook conversion artifacts exist, when the baseline is prepared, then immutable
-  raw artifacts + checksums + reconciled terminal job states are stored before cleanup
-  starts.
-- Given script cleanup runs, when output is generated, then only deterministic mechanical
-  transforms are applied and all ambiguous/semantic regions are emitted to a manual
-  restoration queue.
-- Given semantically important sections (tasks, answer keys, formulas, definitions),
-  when changes are made, then edits are manual and reversible with issue-scoped patch
-  metadata and a second-pass verifier.
-- Given a pristine corpus build is requested, when validators run, then section continuity,
-  task numbering, answer-key mapping, page-anchor integrity, and unresolved-critical-issue
-  checks all pass.
-- Given RAG packaging is generated, when chunks are emitted, then each chunk includes
-  stable provenance (page range, section path, content type, hash) suitable for PostgreSQL
-  vector indexing and auditability.
-- Given retrieval QA is executed against textbook tasks/answer keys, when quality
-  thresholds fail, then ingest promotion is blocked and unresolved issues remain explicit.
+  - Given textbook conversion artifacts exist, when the baseline is prepared, then immutable raw artifacts + checksums + reconciled terminal job states are stored before cleanup starts.
+  - Given script cleanup runs, when output is generated, then only deterministic mechanical transforms are applied and all ambiguous/semantic regions are emitted to a manual restoration queue.
+  - Given semantically important sections (tasks, answer keys, formulas, definitions), when changes are made, then edits are manual and reversible with issue-scoped patch metadata and a second-pass verifier.
+  - Given a pristine corpus build is requested, when validators run, then section continuity, task numbering, answer-key mapping, page-anchor integrity, and unresolved-critical-issue checks all pass.
+  - Given RAG packaging is generated, when chunks are emitted, then each chunk includes stable provenance (page range, section path, content type, hash) suitable for PostgreSQL vector indexing and auditability.
+  - Given retrieval QA is executed against textbook tasks/answer keys, when quality thresholds fail, then ingest promotion is blocked and unresolved issues remain explicit.
 retired_ids:
-- ST-22-01
+  - ST-22-01
 ---
 
 ## Context

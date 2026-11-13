@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0083
 title: Hule Education product identity realms for Skriptoteket login
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0083
+  - ADR-0083
 ---
 
 ## Context
-
 
 `PR-0253` retires Skriptoteket-local browser-session authority: Skriptoteket no
 longer owns a browser login form, browser session cookie, local CSRF authority,
@@ -34,7 +33,6 @@ should turn that direction into an implementation contract before `ST-28-04` /
 `PR-0254` is treated as the final cross-app proof.
 
 ## Decision
-
 
 Hule Education Gateway/Identity is the browser session and login ceremony authority for
 Skriptoteket, but it must support product identity realms.
@@ -61,14 +59,14 @@ For Skriptoteket, the accepted model is:
 
 The following terms are frozen for downstream stories and PRs:
 
-| Term | Meaning | Owner |
-|------|---------|-------|
-| Browser session | The umbrella Hule Education browser session and CSRF authority | Hule Education Gateway/Identity |
-| Product identity realm | Product account namespace selected for the active login | Hule Education Identity with product input from Skriptoteket |
-| Active app | The app that initiated or consumes the ceremony, currently `skriptoteket` | Hule Education Gateway plus downstream app validation |
-| Realm subject | Stable subject id inside one product identity realm | Hule Education Identity |
-| Skriptoteket projection | Local `User` / `UserProfile` record used by app APIs | Skriptoteket |
-| Skriptoteket RBAC | Contributor/admin/superuser authorization decision | Skriptoteket |
+| Term                    | Meaning                                                                   | Owner                                                        |
+| ----------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Browser session         | The umbrella Hule Education browser session and CSRF authority            | Hule Education Gateway/Identity                              |
+| Product identity realm  | Product account namespace selected for the active login                   | Hule Education Identity with product input from Skriptoteket |
+| Active app              | The app that initiated or consumes the ceremony, currently `skriptoteket` | Hule Education Gateway plus downstream app validation        |
+| Realm subject           | Stable subject id inside one product identity realm                       | Hule Education Identity                                      |
+| Skriptoteket projection | Local `User` / `UserProfile` record used by app APIs                      | Skriptoteket                                                 |
+| Skriptoteket RBAC       | Contributor/admin/superuser authorization decision                        | Skriptoteket                                                 |
 
 The first accepted realms are:
 
@@ -162,7 +160,6 @@ The following options are rejected:
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 `ST-28-04` / `PR-0254` must not certify a HuleEdu-school-only login path as the
 final Skriptoteket login proof. It should wait until this ADR is accepted and
