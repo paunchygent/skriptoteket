@@ -61,7 +61,7 @@ surface:
 ## Approved Design
 
 The approved mockup is retained under
-[MOCK-pr-0364-authenticated-home-work-apps-surface](../../mockups/pr-0364-authenticated-home-work-apps-surface/README.md).
+[MOCK-pr-0364-authenticated-home-work-apps-surface](../../reference/ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md).
 
 Canonical preview:
 [docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html](../../mockups/pr-0364-authenticated-home-work-apps-surface/index.html).

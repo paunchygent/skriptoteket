@@ -74,7 +74,7 @@ Define and implement the next toolbar hardening step for the planner-family desk
 ### Source: References
 
 - Retained review gate: [REV-PR-0229](../reviews/review-pr-0229-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
-- Parent story: [ST-SKRIPT-29-11](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+- Parent story: [ST-SKRIPT-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
 - Earlier toolbar hardening slice: [TASK-SKRIPT-29-11-01](pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md)
 - Shared shell follow-up baseline: [PR-0228](pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
 

@@ -20,7 +20,7 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Prerequisites
 
-- Superuser account exists (see [runbook-user-management.md](runbook-user-management.md))
+- Superuser account exists (see [runbook-user-management.md](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md))
 - Database migrations applied
 - Web container running
 
@@ -127,7 +127,7 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Prerequisites
 
-- Superuser account exists (see [runbook-user-management.md](runbook-user-management.md))
+- Superuser account exists (see [runbook-user-management.md](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md))
 - Database migrations applied
 - Web container running
 
@@ -266,7 +266,7 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Prerequisites
 
-- Superuser account exists (see [runbook-user-management.md](runbook-user-management.md))
+- Superuser account exists (see [runbook-user-management.md](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md))
 - Database migrations applied
 - Web container running
 

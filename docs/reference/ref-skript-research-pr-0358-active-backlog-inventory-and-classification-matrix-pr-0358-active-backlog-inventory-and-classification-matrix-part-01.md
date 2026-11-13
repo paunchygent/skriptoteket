@@ -371,7 +371,7 @@ is closed after this artifact is attached.
 
 | Item | Status | Parent | Classification | Evidence |
 |------|--------|--------|----------------|----------|
-| [EPIC-37](../backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | `proposed` | - | `keep-active` | K5 |
+| [EPIC-37](../backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md) | `proposed` | - | `keep-active` | K5 |
 | [PR-0358](../backlog/prs/pr-0358-st-37-01-active-backlog-inventory-and-classification-matrix.md) | `ready` | `ST-37-01` | `keep-active` | K5 |
 | [PR-0359](../backlog/prs/pr-0359-st-37-01-stale-state-repair-and-supersession-cleanup-batch.md) | `ready` | `ST-37-01` | `keep-active` | K5 |
 | [PR-0360](../backlog/prs/pr-0360-st-37-02-current-product-lane-and-sir-convert-boundary-reference.md) | `ready` | `ST-37-02` | `keep-active` | K5 |
@@ -380,6 +380,6 @@ is closed after this artifact is attached.
 | [ST-37-01](../backlog/stories/story-37-01-backlog-inventory-and-stale-state-repair.md) | `ready` | `EPIC-37` | `keep-active` | K5 |
 | [ST-37-02](../backlog/stories/story-37-02-current-product-lane-and-sir-convert-boundary-reset.md) | `ready` | `EPIC-37` | `keep-active` | K5 |
 | [ST-37-03](../backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md) | `blocked` | `EPIC-37` | `keep-active` | K5 |
-| [ST-37-04](../backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md) | `blocked` | `EPIC-37` | `keep-active` | K5 |
+| [ST-37-04](../backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md) | `blocked` | `EPIC-37` | `keep-active` | K5 |
 
 ### Conversion/Exam/Transcript/Document

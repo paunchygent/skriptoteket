@@ -47,10 +47,10 @@ keep chrome, helper copy, and continuity affordances subordinate to the main wor
 
 ## References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Grouping foundation: [ST-24-03](story-24-03-group-seating-studio-grouping-fundamentals-and-saved-groupings.md)
 - Seating foundation: [ST-24-04](story-24-04-group-seating-studio-seating-fundamentals-and-saved-arrangements.md)
 - Shared desktop composition baseline: [ST-29-03](story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Shell compression baseline: [ST-29-02](story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md)
 - Rule/feedback continuity follow-on: [ST-29-09](story-29-09-klassrumskartan-rule-visibility-and-tool-feedback-continuity.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)

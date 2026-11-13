@@ -98,7 +98,7 @@ instead of treating it as unfinished planner-layout implementation.
 - [PR-0226: ST-29-11 shared planner shell parity and grouping viewport-height stabilization](../prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md)
 - [PR-0227: ST-29-11 exact two-row grouping board height contract at desktop baseline](../prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md)
 - [PR-0228: ST-29-11 follow-up: desktop student-pool rail stickiness restoration](../prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md)
-- [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
+- [PR-0229: ST-29-11 follow-up: desktop-first planner toolbar breakpoint overflow escalation and undo/redo shortcut parity](../tasks/task-skript-29-11-02-st-29-11-follow-up-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md)
 - [PR-0281: ST-29-11 toolbar processing spinner and status-pill removal](../prs/pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
 - [PR-0282: ST-26-06 shared-link PDF download spinner contract](../prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md)
 - [PR-0286: ST-29-11 share/export affordance consolidation](../prs/pr-0286-st-29-11-share-export-affordance-consolidation.md)
@@ -196,11 +196,11 @@ instead of treating it as unfinished planner-layout implementation.
 
 ### References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Primitive foundation: [ST-29-01](story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md)
 - Workspace baseline already using the current primitives in practice: [ST-29-05](story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md)
-- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-frontend-design-system-codemap-2026-03-28.md)
-- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
+- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md)
+- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
 
 ## Decision And Assumption Ledger
 

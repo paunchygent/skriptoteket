@@ -16,7 +16,7 @@ docs-only packaging pass and duplicated the canonical app-presentation planning
 artifact under a different id/path.
 
 Use
-[REF-app-presentation-decomposition-and-naming-plan-v1](ref-app-presentation-decomposition-and-naming-plan-v1.md)
+[REF-app-presentation-decomposition-and-naming-plan-v1](ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md)
 for all `PR-0362`, `ST-37-04`, and follow-up implementation planning. The
 canonical plan now contains the lane matrix, docs impact, route/entrypoint
 impact, change-family classification, proof gates, and stop conditions that

@@ -223,7 +223,7 @@ neutral participation markers while diagnostics are missing, but it must not
 derive success, degraded, or failed states from duplicated geometry logic.
 
 The accepted diagnostic vocabulary is captured in
-[`REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10`](ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md).
+[`REF-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10`](ref-skript-general-klassrumskartan-solver-rule-diagnostics-contract-klassrumskartan-solver-rule-diagnostics-contract.md).
 The key refinement is that `Håll nära` needs both relation mode and seating
 context: across-table can be a successful close placement at a shared table,
 while row/bench layouts should prefer adjacent same-row pair placement and

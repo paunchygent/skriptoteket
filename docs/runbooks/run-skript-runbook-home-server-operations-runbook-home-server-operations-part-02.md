@@ -57,12 +57,12 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 ssh hemma "/snap/bin/docker exec -e PYTHONPATH=/app/src skriptoteket-web pdm run python -m skriptoteket.cli <command>"
 ```
 
-Architecture overview diagram: see [ref-home-server-architecture.md](../reference/ref-home-server-architecture.md).
+Architecture overview diagram: see [ref-home-server-architecture.md](../reference/ref-skript-general-reference-home-server-architecture-overview-reference-home-server-architecture-overview.md).
 
 ### nginx-proxy (service routing + hardening)
 
 Details for adding new services and edge hardening live in
-[ref-home-server-nginx-proxy.md](../reference/ref-home-server-nginx-proxy.md).
+[ref-home-server-nginx-proxy.md](../reference/ref-skript-general-reference-home-server-nginx-proxy-reference-home-server-nginx-proxy.md).
 
 ### Daily Ops
 
@@ -95,7 +95,7 @@ ssh hemma "sudo docker logs -f nginx-proxy"
 ssh hemma "sudo docker logs -f shared-postgres"
 ```
 
-Structured logs + correlation IDs: see [runbook-observability-logging.md](runbook-observability-logging.md).
+Structured logs + correlation IDs: see [runbook-observability-logging.md](run-skript-runbook-observability-logging-runbook-observability-logging.md).
 
 ### Worker Healthcheck
 

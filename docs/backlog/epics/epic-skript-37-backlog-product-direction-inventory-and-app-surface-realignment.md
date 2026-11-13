@@ -60,7 +60,7 @@ retired_ids:
 - [ST-37-01: Backlog inventory and stale-state repair](../stories/story-37-01-backlog-inventory-and-stale-state-repair.md)
 - [ST-37-02: Current product lane and Sir Convert boundary reset](../stories/story-37-02-current-product-lane-and-sir-convert-boundary-reset.md)
 - [ST-37-03: Service shell and dashboard UX realignment](../stories/story-37-03-service-shell-and-dashboard-ux-realignment.md)
-- [ST-37-04: App presentation decomposition and naming reset](../stories/story-37-04-app-presentation-decomposition-and-naming-reset.md)
+- [ST-37-04: App presentation decomposition and naming reset](../stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md)
 - [ST-37-05: Cross-app save/export file naming protocol](../stories/story-37-05-cross-app-save-export-file-naming-protocol.md)
 
 ### Risks
@@ -78,18 +78,18 @@ retired_ids:
 ### Dependencies
 
 - Product-direction reference:
-  [REF-current-product-direction-and-backlog-inventory-2026-06-17](../../reference/ref-current-product-direction-and-backlog-inventory-2026-06-17.md)
+  [REF-current-product-direction-and-backlog-inventory-2026-06-17](../../reference/ref-skript-research-current-product-direction-and-backlog-inventory-rules-current-product-direction-and-backlog-inventory-rules.md)
 - Current product lanes and Sir Convert boundary:
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
 - Retained review workflow:
-  [REF-review-workflow](../../reference/ref-review-workflow.md)
+  [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md)
 - Existing script/editor and SPA foundations:
-  [EPIC-11](epic-11-full-vue-spa-migration.md),
-  [EPIC-14](epic-14-admin-tool-authoring.md),
-  [EPIC-16](epic-16-catalog-discovery-and-personalization.md)
+  [EPIC-11](epic-skript-11-full-vue-vite-spa-migration.md),
+  [EPIC-14](epic-skript-14-admin-tool-authoring-draft-first-workflow.md),
+  [EPIC-16](epic-skript-16-catalog-discovery-and-personalization.md)
 - Current bespoke app lanes:
-  [EPIC-21](epic-21-curated-app-conversion-hub.md),
-  [EPIC-29](epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+  [EPIC-21](epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md),
+  [EPIC-29](epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 
 ### Review Gate
 
@@ -101,7 +101,7 @@ onward plus the ST-37-04 follow-up slices.
 ### Implementation Summary
 
 - `PR-0358` is done: the retained inventory artifact
-  [REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-pr-0358-active-backlog-inventory-2026-06-17.md)
+  [REF-pr-0358-active-backlog-inventory-2026-06-17](../../reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md)
   classifies 196 open backlog rows and defines the recommended first cleanup
   queue for `PR-0359`.
 - `ST-37-01` is done as of 2026-06-18: `PR-0359` applied the first reviewed
@@ -110,17 +110,17 @@ onward plus the ST-37-04 follow-up slices.
   The remaining epic work is the product-lane/boundary reference, service-shell
   UX realignment, and app-presentation decomposition.
 - `ST-37-02` is done as of 2026-06-18: `PR-0360` added
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
   as the durable product-lane and Sir Convert/Skriptoteket ownership doctrine.
   The remaining epic work is service-shell UX realignment and app-presentation
   decomposition after the approved epic review gate.
 - `PR-0361` is done as of 2026-06-18. It added
-  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md)
+  [REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md)
   and the route-visible implementation sequence `PR-0363` through `PR-0365`
   for conversion-lane deep links, authenticated home app-lane hierarchy, and
   authenticated shell navigation.
 - `PR-0362` is done as of 2026-06-18. It added
-  [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md),
+  [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md),
   which closes the planning baseline for lane names, descriptions, truthful
   entrypoints, proof gates, and follow-up sequencing for `Klassrumskartan`,
   `Audio Transcription`, `Exam Converter`, and future `Document Converter`.

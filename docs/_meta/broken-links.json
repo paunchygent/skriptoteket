@@ -1,0 +1,733 @@
+{
+  "schema_version": 1,
+  "links": [
+    {
+      "source": "docs/backlog/epics/epic-skript-02-identity-and-access-control-rbac.md",
+      "target": "../stories/story-02-02-admin-nomination-and-superuser-approval.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-02-identity-and-access-control-rbac.md",
+      "target": "../stories/story-02-02-admin-nomination-and-superuser-approval.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-02-identity-and-access-control-rbac.md",
+      "target": "../stories/story-02-02-admin-nomination-and-superuser-approval.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../../adr/adr-0055-tokenizer-backed-prompt-budgeting.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-04-catalog-help.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-05-results-and-downloads-help.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-06-contributor-help.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-07-admin-dashboard-help.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-08-editor-help-overview.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-09-editor-help-test-area.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md",
+      "target": "../stories/story-08-17-tabby-edit-suggestions-ab-testing.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-11-full-vue-vite-spa-migration.md",
+      "target": "../stories/story-11-26-huleedu-palette-token-refresh.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-22-tool-run-ux-progress-and-file-references.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-29-editor-pro-mode-combined-bundle-view.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-32-editor-cohesion-pass-input-selectors.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-33-script-bank-curation-and-group-generator.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-34-settings-suggestions-from-tool-runs.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-35-tool-datasets-crud-and-picker.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-14-admin-tool-authoring-draft-first-workflow.md",
+      "target": "../stories/story-14-37-ui-output-vega-lite.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-15-user-profile-settings.md",
+      "target": "../stories/story-15-02-avatar-upload.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-20-curated-app-reagent-prep-chef.md",
+      "target": "../stories/story-20-01-curated-app-reagent-prep-chef.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-20-curated-app-reagent-prep-chef.md",
+      "target": "../stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md",
+      "target": "../stories/story-21-01-curated-app-conversion-hub-v1.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-21-curated-app-conversion-hub-sir-convert-a-lot-v2.md",
+      "target": "../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md",
+      "target": "../stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md",
+      "target": "../stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-25-curated-app-family-competitive-games-foundations-and-flunk-out-frenzy.md",
+      "target": "../stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md",
+      "target": "../stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-26-klassrumskartan-explicit-exports-and-class-list-import.md",
+      "target": "../stories/story-26-04-klassrumskartan-grouping-pdf-export.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md",
+      "target": "../stories/story-27-04-klassrumskartan-smart-grouping-v1.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md",
+      "target": "../stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md",
+      "target": "../stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md",
+      "target": "../stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-33-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md",
+      "target": "../stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md"
+    },
+    {
+      "source": "docs/backlog/epics/epic-skript-37-backlog-product-direction-inventory-and-app-surface-realignment.md",
+      "target": "../stories/story-37-05-cross-app-save-export-file-naming-protocol.md"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0130-klassrumskartan-seating-toolbar-stabilization-export-cluster-alignment-and-responsive-proof.md",
+      "target": "../../../.codex/handoff.md"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0130-klassrumskartan-seating-toolbar-stabilization-export-cluster-alignment-and-responsive-proof.md",
+      "target": "../../../scripts/playwright_pr_0167_smart_grouping_cutover_check.py"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md",
+      "target": "../../../frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.spec.ts"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0224-st-29-11-desktop-first-planner-width-stability-and-shrink-to-fit-remediation.md",
+      "target": "pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0302-st-29-11-planner-toolbar-overflow-priority-regression.md",
+      "target": "pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md"
+    },
+    {
+      "source": "docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md",
+      "target": "pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md"
+    },
+    {
+      "source": "docs/backlog/sprints/sprint-2026-02-24-tool-data-libraries-v1.md",
+      "target": "../stories/story-14-35-tool-datasets-crud-and-picker.md"
+    },
+    {
+      "source": "docs/backlog/sprints/sprint-2026-05-12-tool-editor-runner-toolkit-and-intelligence.md",
+      "target": "../stories/story-08-17-tabby-edit-suggestions-ab-testing.md"
+    },
+    {
+      "source": "docs/backlog/sprints/sprint-2026-05-26-tool-interaction-dx-high-yield.md",
+      "target": "../stories/story-14-22-tool-run-ux-progress-and-file-references.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-27-09-klassrumskartan-fixed-seat-rules-and-classroom-view-first-rule-authoring.md",
+      "target": "../prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md",
+      "target": "../prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md",
+      "target": "../prs/pr-0294-st-29-12-shared-site-symbol-rollout-and-guardrails.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md",
+      "target": "story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md",
+      "target": "../prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md",
+      "target": "../prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cut-over-governance.md",
+      "target": "../prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-35-04-search-console-bing-and-launch-day-seo-operations.md",
+      "target": "../../../.codex/rules/080-home-server-deployment.md"
+    },
+    {
+      "source": "docs/backlog/stories/st-skript-37-04-app-presentation-decomposition-and-naming-reset.md",
+      "target": "../prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-07-07-retire-hybrid-dishka-fastapi-compatibility-layer-and-restore-supported-web-di.md",
+      "target": "../prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-07-07-retire-hybrid-dishka-fastapi-compatibility-layer-and-restore-supported-web-di.md",
+      "target": "../prs/pr-0163-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-07-07-retire-hybrid-dishka-fastapi-compatibility-layer-and-restore-supported-web-di.md",
+      "target": "../prs/pr-0164-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md",
+      "target": "../../../.codex/rules/045-huleedu-design-system.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md",
+      "target": "story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md",
+      "target": "../../../.codex/rules/045-huleedu-design-system.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-32-07-public-landing-entry-hierarchy-and-mockup-grounded-cta-cutover.md",
+      "target": "../../../.codex/rules/045-huleedu-design-system.md"
+    },
+    {
+      "source": "docs/backlog/stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md",
+      "target": "../../../.codex/rules/080-home-server-deployment.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-11-25-01-st-11-25-playwright-tree-normalization-under-scripts-playwright.md",
+      "target": "../../../.codex/rules/075-browser-automation.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md",
+      "target": "../../../.codex/rules/075-browser-automation.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-11-25-03-st-11-25-pilot-route-inventory-and-trace-baselines.md",
+      "target": "../../../.codex/rules/075-browser-automation.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-29-11-02-st-29-11-follow-up-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md",
+      "target": "pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-29-11-02-st-29-11-follow-up-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md",
+      "target": "pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0016-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md",
+      "target": "../../../.codex/rules/045-huleedu-design-system.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0016-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md",
+      "target": "../../../.codex/rules/075-browser-automation.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0016-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md",
+      "target": "pr-0116-klassrumskartan-room-template-editor-modularization-and-shared-room-scene.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0016-klassrumskartan-seat-drag-preview-and-room-editor-same-tool-toggle-removal.md",
+      "target": "pr-0128-klassrumskartan-grouping-and-seating-student-pool-split-pane-scrolling.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0019-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md",
+      "target": "pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0019-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md",
+      "target": "pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md"
+    },
+    {
+      "source": "docs/backlog/tasks/task-skript-rep-0020-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md",
+      "target": "pr-0163-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0035-script-editor-intelligence-architecture-codemirror-6.md",
+      "target": "../reference/ref-ai-script-generation-kb.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md",
+      "target": "../reference/ref-ai-script-generation-kb.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md",
+      "target": "adr-0035-script-editor-intelligence-architecture.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md",
+      "target": "adr-0051-chat-first-ai-editing.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md",
+      "target": "../runbooks/runbook-gpu-ai-workloads.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md",
+      "target": "adr-0035-script-editor-intelligence-architecture.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md",
+      "target": "adr-0043-ai-completion-integration.md"
+    },
+    {
+      "source": "docs/decisions/adr-skript-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md",
+      "target": "./adr-0011-huleedu-identity-federation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md",
+      "target": "../templates/template-review.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-general-product-context.md",
+      "target": "../adr/adr-0002-backend-fastapi.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0351-transcript-progress-and-export-workspace-ux-pr-0351-transcript-progress-and-export-workspace-ux.md",
+      "target": "index.html"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0351-transcript-progress-and-export-workspace-ux-pr-0351-transcript-progress-and-export-workspace-ux.md",
+      "target": "transcript-progress-export-direction.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md",
+      "target": "approved-c2-authenticated-home.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0364-authenticated-home-work-apps-surface-pr-0364-authenticated-home-work-apps-surface.md",
+      "target": "index.html"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0370-public-landing-authenticated-app-preview-pr-0370-public-landing-authenticated-app-preview.md",
+      "target": "approved-copy.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0370-public-landing-authenticated-app-preview-pr-0370-public-landing-authenticated-app-preview.md",
+      "target": "copy-requirements-review.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0370-public-landing-copy-requirements-review-pr-0370-public-landing-copy-requirements-review.md",
+      "target": "approved-copy.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0370-public-landing-copy-requirements-review-pr-0370-public-landing-copy-requirements-review.md",
+      "target": "approved-copy.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0370-public-landing-copy-requirements-review-pr-0370-public-landing-copy-requirements-review.md",
+      "target": "approved-copy.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0383-document-converter-mockup-and-copy-approval-pr-0383-document-converter-mockup-and-copy-approval.md",
+      "target": "html-css-mockup/index.html"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0406-answer-key-review-small-screen-flow-pr-0406-answer-key-review-small-screen-flow.md",
+      "target": "approved-small-screen-answer-key-review-v1.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0406-answer-key-review-small-screen-flow-pr-0406-answer-key-review-small-screen-flow.md",
+      "target": "index.html"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-pr-0406-answer-key-review-small-screen-flow-pr-0406-answer-key-review-small-screen-flow.md",
+      "target": "render.mjs"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-21-03-exam-converter-authenticated-progressive-review-st-21-03-exam-converter-authenticated-progressive-review.md",
+      "target": "exam-converter-authenticated-ai-facit-review-v1.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-21-03-exam-converter-authenticated-progressive-review-st-21-03-exam-converter-authenticated-progressive-review.md",
+      "target": "exam-converter-authenticated-progressive-review-v2.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-26-06-share-link-ux-and-page-renderer-direction-st-26-06-share-link-ux-and-page-renderer-direction.md",
+      "target": "share-popover-and-bottom-sheet-mockup.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-26-06-share-link-ux-and-page-renderer-direction-st-26-06-share-link-ux-and-page-renderer-direction.md",
+      "target": "shared-seating-page-spatial-map-mockup.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-29-11-share-export-affordance-consolidation-st-29-11-share-export-affordance-consolidation.md",
+      "target": "../../backlog/prs/pr-0301-st-29-11-overview-share-export-scope-rail-and-draft-confirmation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-29-11-share-export-affordance-consolidation-st-29-11-share-export-affordance-consolidation.md",
+      "target": "share-export-affordance-mockup.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-29-11-share-export-affordance-consolidation-st-29-11-share-export-affordance-consolidation.md",
+      "target": "share-export-scope-selector-alternatives-2026-05-05.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-mockup-st-29-small-screen-workspace-redesign-direction-st-29-small-screen-workspace-redesign-direction.md",
+      "target": "small-screen-workspaces-mode-sheet-mockup.png"
+    },
+    {
+      "source": "docs/reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md",
+      "target": "../backlog/prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/epics/epic-02-identity-and-access-control.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/epics/epic-15-user-profile-and-settings.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/epics/epic-19-runner-io-and-file-references-foundations.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/epics/epic-31-flappy-birds-curated-app.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0004-sandbox-transient-settings-input-multi-enum-clear-settings.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0005-contract-v2-help-template-update.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0010-editor-save-restore-ux-clarity.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0022-editor-chat-virtual-file-context-retention.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0024-action-payload-skriptoteket-action-docs-prompt-alignment.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0037-editor-ai-edit-ops-tolerant-diff-matching.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0061-story-003c-thin-adapter-parity-and-scientific-pdf-workload-validation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0065-conversion-hub-spa-ui-batch-and-preview.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0072-reagent-prep-chef-risk-texts-from-hazards-sds-aligned.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0077-textbook-corpus-rag-packaging-and-postgresql-vector-ingest-contract.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0134-klassrumskartan-class-list-import-parsing-heuristics-and-preview-model.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0138-seating-export-single-canonical-sir-convert-v2-key-and-runtime-wiring.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0160-st-29-08-shared-custom-tooltip-primitive-and-dense-tool-adoption.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0162-st-07-07-public-http-dishka-adapter-and-observability-cutover.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0163-st-07-07-http-route-dependency-cutover-off-hybrid-dishka-inject.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0164-st-07-07-websocket-cutover-hybrid-compat-retirement-and-production-proof.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0192-flunk-out-frenzy-flipper-contact-model-and-explicit-launcher-state.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0194-flunk-out-frenzy-ramps-gates-and-field-zone-semantics.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0206-flunk-out-frenzy-plunger-strike-root-cause-proof-and-telemetry-contract.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0241-st-11-25-playwright-tree-normalization.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0244-st-11-25-pilot-route-inventory-and-trace-baselines.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0274-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0294-st-29-12-shared-site-symbol-rollout-and-guardrails.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0295-st-11-26-huleedu-palette-token-refresh.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/prs/pr-0357-st-21-10-public-exam-converter-source-only-alignment.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-02-02-admin-nomination-and-superuser-approval.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-06-16-backend-srp-refactor-god-modules.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-04-catalog-help.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-05-results-and-downloads-help.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-06-contributor-help.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-07-admin-dashboard-help.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-08-editor-help-overview.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-09-editor-help-test-area.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-08-17-tabby-edit-suggestions-ab-testing.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-09-05-content-security-policy-spa.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-09-07-public-edge-app-runtime-hardening.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-09-08-hemma-edge-observability-and-host-lockdown.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-11-26-huleedu-palette-token-refresh.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-22-tool-run-ux-progress-and-file-references.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-29-editor-pro-mode-combined-bundle-view.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-32-editor-cohesion-pass-input-selectors.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-33-script-bank-curation-and-group-generator.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-34-settings-suggestions-from-tool-runs.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-35-tool-datasets-crud-and-picker.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-14-37-ui-output-vega-lite.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-15-02-avatar-upload.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-16-08-catalog-cleanup-and-review.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-20-01-curated-app-reagent-prep-chef.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-20-03-curated-app-reagent-prep-chef-sds-corpus.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-21-01-curated-app-conversion-hub-v1.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md"
+    },
+    {
+      "source": "docs/reference/ref-skript-research-pr-0358-active-backlog-inventory-and-classification-matrix-pr-0358-active-backlog-inventory-and-classification-matrix-part-02.md",
+      "target": "../backlog/stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md"
+    },
+    {
+      "source": "docs/runbooks/run-skript-runbook-ai-code-completion-services-runbook-ai-code-completion-services.md",
+      "target": "runbook-gpu-ai-workloads.md"
+    },
+    {
+      "source": "docs/runbooks/run-skript-runbook-home-server-operations-runbook-home-server-operations-part-02.md",
+      "target": "../reference/ref-home-server-cli-tools.md"
+    },
+    {
+      "source": "docs/runbooks/run-skript-runbook-home-server-operations-runbook-home-server-operations-part-03.md",
+      "target": "runbook-script-bank-seeding-home-server.md"
+    },
+    {
+      "source": "docs/runbooks/run-skript-runbook-home-server-operations-runbook-home-server-operations-part-03.md",
+      "target": "runbook-script-bank-seeding-home-server.md"
+    }
+  ]
+}

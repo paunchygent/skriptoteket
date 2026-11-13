@@ -24,7 +24,7 @@ catch common errors that would fail at runtime in the Docker sandbox.
 
 ## Technical Decisions
 
-See [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md).
+See [ADR-0035: Script editor intelligence architecture](../../decisions/adr-skript-0035-script-editor-intelligence-architecture-codemirror-6.md).
 
 Implementation note: extend the existing intelligence bundle (`skriptoteketIntelligence.ts`) and keep editor wiring as-is
 (loaded via `useSkriptoteketIntelligenceExtensions.ts` and passed through `CodeMirrorEditor.vue` `extensions`).

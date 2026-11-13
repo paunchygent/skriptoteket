@@ -155,8 +155,8 @@ in ADR-0052, and the chat-first UX/protocol is defined in ADR-0051.
 
 - [ADR-0043: AI-assisted inline completions](adr-0043-ai-completion-integration.md) - Application layer design
 - [ADR-0035: Script editor intelligence](adr-0035-script-editor-intelligence-architecture.md) - CodeMirror architecture
-- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-08-contextual-help-and-onboarding.md)
+- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md)
 - [ST-08-14: AI inline completions](../backlog/stories/story-08-14-ai-inline-completions.md)
 - [Runbook: GPU AI Workloads](../runbooks/runbook-gpu-ai-workloads.md)
-- [Runbook: Tabby + CodeMirror](../runbooks/runbook-tabby-codemirror.md)
+- [Runbook: Tabby + CodeMirror](../runbooks/run-skript-runbook-ai-code-completion-services-runbook-ai-code-completion-services.md)
 - [Qwen3-Coder-30B-A3B model](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)

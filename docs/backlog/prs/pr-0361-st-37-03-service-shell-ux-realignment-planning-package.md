@@ -44,7 +44,7 @@ Create the implementation-ready service-shell redesign plan and PR sequence.
 
 1. Read the cleaned backlog state from `ST-37-01`.
 2. Read the current product-lane reference from `ST-37-02`:
-   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md).
+   [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
 3. Reconcile existing UI epic/story direction with the desired main service
    shell.
 4. Create or update PR-sized implementation slices for the dashboard redesign,
@@ -53,7 +53,7 @@ Create the implementation-ready service-shell redesign plan and PR sequence.
 ## Implementation Summary
 
 Completed on 2026-06-18. The durable planning output is
-[REF-service-shell-ux-realignment-plan-v1](../../reference/ref-service-shell-ux-realignment-plan-v1.md).
+[REF-service-shell-ux-realignment-plan-v1](../../reference/ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md).
 It records current code reality, closed decisions, options, assumptions,
 recommendations, stop conditions, and the route-visible proof gates for the
 future service-shell implementation sequence.

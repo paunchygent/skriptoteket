@@ -72,12 +72,12 @@ The source does not provide a separate adr coverage section; no additional adr c
 
 ### Source: References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Primitive foundation: [ST-29-01](story-29-01-klassrumskartan-canonical-operation-symbols-and-planner-control-primitives.md)
-- Primitive tightening prerequisite: [ST-29-11](story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+- Primitive tightening prerequisite: [ST-29-11](st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
 - Tooltip enhancement follow-on: [ST-29-08](story-29-08-klassrumskartan-shared-custom-tooltip-system-and-global-hover-contract.md)
-- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
-- Symbol inventory contract: [REF-symbol-semantics-inventory-and-decision-contract-2026-05-04](../../reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md)
+- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
+- Symbol inventory contract: [REF-symbol-semantics-inventory-and-decision-contract-2026-05-04](../../reference/ref-skript-decisions-symbol-semantics-inventory-and-decision-contract-symbol-semantics-inventory-and-decision-contract.md)
 - Symbol inventory mockup bundle: [MOCK-st-29-12-symbol-inventory](../../mockups/st-29-12-symbol-inventory/README.md)
 
 ## Live Verification Plan

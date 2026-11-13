@@ -162,7 +162,7 @@ backend state.
 ## References
 
 - Parent primitive story:
-  [ST-29-11](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+  [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
 - Prior dense busy-feedback slice:
   [PR-0281](pr-0281-st-29-11-toolbar-processing-spinner-and-status-pill-removal.md)
 - Current toolbar distribution slice:

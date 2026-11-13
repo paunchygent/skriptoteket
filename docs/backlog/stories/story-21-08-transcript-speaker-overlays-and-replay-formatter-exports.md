@@ -164,7 +164,7 @@ product-owned export state boundary rather than restoring browser replay
 orchestration.
 
 `PR-0360` / `ST-37-02` adds
-[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+[REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
 as the durable product-lane boundary reference. For the transcript lane, Sir
 Convert owns STT, diarization, formatter replay, and returned artifacts;
 Skriptoteket owns saved transcript state, speaker overlays, teacher-facing

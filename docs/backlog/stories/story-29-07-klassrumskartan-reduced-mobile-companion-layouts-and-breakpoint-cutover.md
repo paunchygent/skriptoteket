@@ -40,6 +40,6 @@ This story defines the responsive cutover after the desktop workspace has alread
 
 ## References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Responsive baseline ADR: [ADR-0020](../../adr/adr-0020-responsive-mobile-adaptation.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Responsive baseline ADR: [ADR-0020](../../decisions/adr-skript-0020-responsive-mobile-adaptation-strategy.md)

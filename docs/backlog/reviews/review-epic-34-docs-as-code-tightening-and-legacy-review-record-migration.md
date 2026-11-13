@@ -38,7 +38,7 @@ Approve `EPIC-34` as the dedicated docs-as-code tightening lane with two explici
 - `ST-34-01` backfills the already-implemented review-workflow cutover and sprint-doc retirement.
 - `ST-34-02` owns the remaining migration of legacy duplicate review-id families via `PR-0230`.
 
-Keep [REF-review-workflow](../../reference/ref-review-workflow.md) as the governing retained-review
+Keep [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md) as the governing retained-review
 reference and [REF-sprint-planning-workflow](../../reference/ref-sprint-planning-workflow.md) as
 the canonical record of sprint retirement.
 

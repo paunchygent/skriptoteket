@@ -164,7 +164,7 @@ export, or solver changes.
 ## References
 
 - Parent primitive story:
-  [ST-29-11](../stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+  [ST-29-11](../stories/st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
 - Prior toolbar hardening:
   [PR-0225](pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md)
 - Smart settings persistence:

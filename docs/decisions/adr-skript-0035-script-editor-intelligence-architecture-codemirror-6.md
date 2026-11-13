@@ -62,7 +62,7 @@ Reviewed in ST-08-10 technical design review:
 - Tooltip styling may need a dedicated theme/CSS hook to match Skriptoteket’s brutalist UI (default CM6 tooltip is acceptable for MVP)
 ### References
 - [ST-08-10: Script editor intelligence](../backlog/stories/story-08-10-script-editor-intelligence.md)
-- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-08-contextual-help-and-onboarding.md)
+- [EPIC-08: Contextual help and onboarding](../backlog/epics/epic-skript-08-contextual-help-hj-lp-and-onboarding.md)
 - [ref-ai-script-generation-kb.md](../reference/ref-ai-script-generation-kb.md) - Source of truth for lint rules
 
 ## Decision

@@ -28,7 +28,7 @@ ship independently.
 
 ## Technical Decisions
 
-See [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)
+See [ADR-0035: Script editor intelligence architecture](../../decisions/adr-skript-0035-script-editor-intelligence-architecture-codemirror-6.md)
 for architecture decisions (Lezer-based analysis, extension composition, state sharing).
 
 ## Scope

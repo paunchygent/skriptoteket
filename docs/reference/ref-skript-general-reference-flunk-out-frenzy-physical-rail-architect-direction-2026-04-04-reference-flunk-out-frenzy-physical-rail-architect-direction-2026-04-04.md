@@ -26,16 +26,16 @@ and [PR-0214](../backlog/prs/pr-0214-flunk-out-frenzy-launch-trace-operational-s
 
 It is the architectural source of truth for the physical-rail follow-on after:
 
-- [PR-0212](../backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
+- [PR-0212](../backlog/tasks/task-skript-25-06-13-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
   identified the shortcut classes and truth-gate breaches
-- [PR-0215](../backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md)
+- [PR-0215](../backlog/tasks/task-skript-25-06-14-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment-part-01.md)
   showed that removing shortcut energy materially changes live timing and peak
   speed
-- [PR-0216](../backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md)
+- [PR-0216](../backlog/tasks/task-skript-25-06-15-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md)
   prepared the design-and-review packet for the physical carrier model
 
 This document complements, and does not replace,
-[ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md](./ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md).
+[ref-curated-app-flunk-out-frenzy-architecture-and-foundational-code.md](ref-skript-general-reference-competitive-games-curated-apps-and-flunk-out-frenzy-reference-competitive-games-curated-apps-and-flunk-out-frenzy.md).
 
 ### Source: Summary
 
@@ -190,8 +190,8 @@ added there.
   - blocked from production acceptance until the counter is driven to `0`
 
 This keeps the repo aligned with the terminal-only bounded-heuristic direction
-set by [PR-0212](../backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
-and [PR-0215](../backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md).
+set by [PR-0212](../backlog/tasks/task-skript-25-06-13-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
+and [PR-0215](../backlog/tasks/task-skript-25-06-14-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment-part-01.md).
 
 ### Source: Forbidden
 
@@ -204,7 +204,7 @@ and [PR-0215](../backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-
 - Any proof-layer insertion of phases/events that were not directly observed
 
 These remain the exact shortcut classes identified as breaches in
-[PR-0212](../backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md).
+[PR-0212](../backlog/tasks/task-skript-25-06-13-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md).
 
 ### Source: 4. Rapier-specific implementation risks
 
@@ -396,8 +396,8 @@ treat any non-zero correction count as a blocker.
 **Accept.**
 
 This remains a hard rule. It is exactly the runtime shortcut class called out
-by [PR-0212](../backlog/prs/pr-0212-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
-and [PR-0215](../backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md).
+by [PR-0212](../backlog/tasks/task-skript-25-06-13-flunk-out-frenzy-launcher-shortcut-breach-inventory-and-truth-gate-audit.md)
+and [PR-0215](../backlog/tasks/task-skript-25-06-14-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment-part-01.md).
 
 ### Source: 6. Keep the separate launcher Rapier 3D seam only if it owns the entire elevated route through one late board handoff.
 

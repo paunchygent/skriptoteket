@@ -86,7 +86,7 @@ Host hemma-local-root
 ### SSH Hardening + Fail2ban
 
 Security hardening (sshd settings, Fail2ban jails, nginx-proxy probe jail) is documented in
-[ref-home-server-security-hardening.md](../reference/ref-home-server-security-hardening.md).
+[ref-home-server-security-hardening.md](../reference/ref-skript-general-reference-home-server-security-hardening-reference-home-server-security-hardening.md).
 
 ### Health-Gated Hardware Watchdog (Primary Recovery Path)
 

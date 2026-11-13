@@ -99,7 +99,7 @@ dependencies:
 - [PR-0254: ST-28-04 cross-app auth cutover smoke and runbook proof](../prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md)
 - [PR-0263: ST-28-04 loopback origin parity for auth cutover closeout](../prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md)
 - [PR-0264: ST-28-10 auth outcome observability for HuleEdu cutover](../prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md)
-- [PR-0272: ST-28-04 HuleEdu internal identity header spelling remediation](../prs/pr-0272-st-28-04-huleedu-internal-identity-header-spelling-remediation.md)
+- [PR-0272: ST-28-04 HuleEdu internal identity header spelling remediation](../tasks/task-skript-rep-0022-st-28-04-huleedu-internal-identity-header-spelling-remediation.md)
 - [PR-0280: ST-28-04 Hemma reboot auth-edge startup readiness contract](../prs/pr-0280-st-28-04-hemma-reboot-auth-edge-startup-readiness-contract.md)
 
 ## Dependencies
@@ -141,7 +141,7 @@ dependencies:
   accounts. One-off legacy linking can be planned later, but it is not a prerequisite for launch
   proof.
 - The cross-repo launch topology and upstream edge ownership are now recorded in
-  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
+  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md).
 
 ## Implementation Summary (as of 2026-04-15)
 

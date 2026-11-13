@@ -21,7 +21,7 @@ summary: Service shell UX realignment plan
 - `EPIC-37` is active and `REV-EPIC-37` is approved.
 - `ST-37-01` repaired stale backlog state through `PR-0358` and `PR-0359`.
 - `ST-37-02` created
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-current-product-lanes-and-sir-convert-boundary-v1.md).
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
 - The current teacher-facing lanes are `Klassrumskartan`, `Audio Transcription`, `Exam Converter`, and `Document Converter` as the approved
   document-conversion product lane. `Document Converter` still needs a
   truthful route target before runtime implementation can link it.

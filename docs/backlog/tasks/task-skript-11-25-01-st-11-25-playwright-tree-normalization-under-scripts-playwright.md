@@ -155,7 +155,7 @@ new audit-specific logic yet.
 
 ### References
 
-- Story parent: [ST-11-25](../stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md)
+- Story parent: [ST-11-25](../stories/st-skript-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Review gate:
   [REV-ST-11-25](../reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Browser automation rule:

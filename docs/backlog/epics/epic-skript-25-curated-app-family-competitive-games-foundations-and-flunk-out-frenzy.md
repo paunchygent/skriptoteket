@@ -64,7 +64,7 @@ retired_ids:
 - [ ] [ST-25-03: Competitive play lightweight score submission and typed leaderboards](../stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md)
 - [ ] [ST-25-04: Competitive play lightweight leaderboard hardening and ruleset scoping](../stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md)
 - [ ] [ST-25-05: Flunk-Out Frenzy mechanics-port foundation](../stories/story-25-05-flunk-out-frenzy-mechanics-port-foundation.md)
-- [ ] [ST-25-06: Flunk-Out Frenzy VPW donor topology and table-spec rebuild](../stories/story-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md)
+- [ ] [ST-25-06: Flunk-Out Frenzy VPW donor topology and table-spec rebuild](../stories/st-skript-25-06-flunk-out-frenzy-vpw-donor-topology-and-table-spec-rebuild.md)
 
 ### Notes
 

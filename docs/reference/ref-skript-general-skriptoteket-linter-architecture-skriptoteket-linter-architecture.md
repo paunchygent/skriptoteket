@@ -18,9 +18,9 @@ summary: Skriptoteket Linter Architecture
 
 ### Source: Overview
 
-**Context:** [Review: Linter Architecture Refactor](../backlog/reviews/review-epic-06-linter-architecture-refactor.md) | [ADR-0048](../adr/adr-0048-linter-context-and-data-flow.md)
+**Context:** [Review: Linter Architecture Refactor](../backlog/reviews/review-epic-06-linter-architecture-refactor.md) | [ADR-0048](../decisions/adr-skript-0048-linter-context-and-data-flow-context-rule-visitor.md)
 
-Related: [CodeMirror integration reference](./ref-codemirror-integration.md)
+Related: [CodeMirror integration reference](ref-skript-general-codemirror-integration-reference-skriptoteket-spa-codemirror-integration-reference-skriptoteket-spa.md)
 
 This document defines the target architecture for the Skriptoteket Python Linter (client-side in the browser). The goal is to move from ad-hoc AST traversal to a structured, testable, and deterministic "Context-Rule-Visitor" pattern.
 

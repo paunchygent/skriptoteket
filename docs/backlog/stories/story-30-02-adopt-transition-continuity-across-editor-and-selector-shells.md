@@ -36,5 +36,5 @@ mixing continuity patterns.
 ## References
 
 - Epic parent: [EPIC-30](../epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md)
-- Transition ADR: [ADR-0077](../../adr/adr-0077-same-shell-transition-continuity.md)
-- Transition reference: [REF-frontend-transition-continuity-v1](../../reference/ref-frontend-transition-continuity-v1.md)
+- Transition ADR: [ADR-0077](../../decisions/adr-skript-0077-same-shell-transition-continuity-for-selector-driven-workspaces.md)
+- Transition reference: [REF-frontend-transition-continuity-v1](../../reference/ref-skript-research-frontend-transition-continuity-pattern-and-adoption-inventory-v1-frontend-transition-continuity-pattern-and-adoption-inventory-v1.md)

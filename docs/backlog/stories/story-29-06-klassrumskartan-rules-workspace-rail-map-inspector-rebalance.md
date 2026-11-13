@@ -44,9 +44,9 @@ must feel like a valid rules-first workspace state rather than like leftover fal
 
 ## References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Rules-workspace baseline: [ST-27-07](story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)
 - Shared workspace primitives baseline: [ST-29-03](story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Workspace gating baseline: [ST-29-10](story-29-10-klassrumskartan-first-run-workspace-gating-and-prerequisite-guidance.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Shared control language: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Shared control language: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)

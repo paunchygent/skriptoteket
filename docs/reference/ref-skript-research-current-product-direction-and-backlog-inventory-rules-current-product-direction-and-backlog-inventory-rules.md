@@ -25,7 +25,7 @@ stories, and PR-sized tasks remain productive.
 
 For durable product-lane and Sir Convert/Skriptoteket ownership doctrine after
 the initial inventory, use
-[REF-current-product-lanes-and-sir-convert-boundary-v1](ref-current-product-lanes-and-sir-convert-boundary-v1.md).
+[REF-current-product-lanes-and-sir-convert-boundary-v1](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md).
 
 ### Current Product Center
 

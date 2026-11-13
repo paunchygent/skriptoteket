@@ -54,7 +54,7 @@ implementation.
    Conversion Hub copy after `PR-0364` and `PR-0365`.
 2. [x] Align authenticated home cards, authenticated navigation labels, lane
    headings, tabs, and nearby helper copy to
-   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-app-presentation-decomposition-and-naming-plan-v1.md).
+   [REF-app-presentation-decomposition-and-naming-plan-v1](../../reference/ref-skript-plan-app-presentation-decomposition-and-naming-plan-app-presentation-decomposition-and-naming-plan.md).
 3. [x] Keep Document Converter planned-only wording until a truthful route
    exists.
 4. [x] Leave registry/bootstrap metadata untouched for `PR-0367`.

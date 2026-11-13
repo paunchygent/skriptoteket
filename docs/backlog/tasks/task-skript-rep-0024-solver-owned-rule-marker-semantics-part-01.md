@@ -240,7 +240,7 @@ unambiguous.
 
 Add an additive diagnostics contract to the Smart seating result when the team
 needs visible fulfillment truth. The governing reference is
-[`REF-SKRIPT-GENERAL-klassrumskartan-solver-rule-diagnostics-contract`](../../reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md).
+[`REF-SKRIPT-GENERAL-klassrumskartan-solver-rule-diagnostics-contract`](../../reference/ref-skript-general-klassrumskartan-solver-rule-diagnostics-contract-klassrumskartan-solver-rule-diagnostics-contract.md).
 
 - rule id or stable rule key
 - affected student ids and seat ids
@@ -357,7 +357,7 @@ Ruthless review on 2026-05-10 requested changes. `TASK-SKRIPT-REP-0024` was bloc
   under light rule pressure
 
 See
-[`REV-SKRIPT-TASK-REP-0024-CLOSEOUT`](../reviews/review-pr-0314-solver-owned-rule-marker-semantics.md).
+[`REV-SKRIPT-TASK-REP-0024-CLOSEOUT`](../reviews/rev-skript-task-rep-0024-closeout-review-pr-0314-solver-owned-rule-marker-semantics-part-01.md).
 
 ### Source: Review Remediation
 

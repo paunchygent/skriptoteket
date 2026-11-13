@@ -150,4 +150,4 @@ The selector and empty-state copy already provide enough guidance:
 - Rules-workspace baseline:
   [PR-0155](pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md)
 - Workspace doctrine:
-  [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+  [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)

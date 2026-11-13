@@ -68,7 +68,7 @@ Klassrumskartan obvious before the visitor is asked to create an account or log 
 - Epic parent:
   [EPIC-32](../epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md)
 - Public curated-app boundary:
-  [ADR-0079](../../adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
 - Current auth-adaptive home surface:
   [ST-11-21](story-11-21-unified-landing-page.md)
 - Shipped public Klassrumskartan baseline:

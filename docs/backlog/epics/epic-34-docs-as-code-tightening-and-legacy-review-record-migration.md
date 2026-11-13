@@ -25,7 +25,7 @@ dependencies:
   records into canonical target-based review docs or explicit historical references.
 - Repair index entries, crosslinks, and backlog references so active docs no longer imply bundled
   epic-ledger review gates or live sprint-led planning.
-- Keep [REF-review-workflow](../../reference/ref-review-workflow.md) as the governing retained
+- Keep [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md) as the governing retained
   review reference attached to this epic and its stories.
 
 ## Out of Scope
@@ -54,7 +54,7 @@ dependencies:
 
 - This epic is intentionally backfilled after the current docs-as-code tightening already landed in
   the review workflow reference, rule, template, docs contract, validator, and handoff.
-- [REF-review-workflow](../../reference/ref-review-workflow.md) is the governing retained-review
+- [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md) is the governing retained-review
   reference for this epic and both child stories.
 - `ST-34-01` records the current shipped baseline. `ST-34-02` owned the remaining historical review
   migration and index cleanup lane and is now complete via `PR-0230`.

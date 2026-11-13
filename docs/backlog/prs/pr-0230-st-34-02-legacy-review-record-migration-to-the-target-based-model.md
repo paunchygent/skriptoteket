@@ -213,7 +213,7 @@ classifications, update this checklist in the same PR so the repo records why.
   - First-pass action: retarget to `ST-08-24` as `REV-ST-08-24` and normalize to the modern review
     template.
 
-- [x] [review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md](../reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)
+- [x] [review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md](../reviews/rev-skript-st-08-27-closeout-review-st-08-27-editor-chat-virtual-file-context-retention-tokenizers.md)
   - First-pass type: **Type B. Canonical story review**
   - First-pass action: retarget to `ST-08-27` as `REV-ST-08-27` and normalize to the modern review
     template.
@@ -307,14 +307,14 @@ classifications, update this checklist in the same PR so the repo records why.
 1. Update `docs/index.md` so it points to the migrated review docs.
 2. Update touched backlog docs and `.codex/handoff.md` so active planning notes stop implying the
    older bundled-review shape.
-3. Keep [REF-review-workflow](../../reference/ref-review-workflow.md) as the governing migration
+3. Keep [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md) as the governing migration
    reference throughout the slice.
 
 ### Checkpoint D. Validate the contract
 
 1. Run `pdm run docs-validate`.
 2. Spot-check the migrated records against the primary-target rules in
-   [REF-review-workflow](../../reference/ref-review-workflow.md).
+   [REF-review-workflow](../../reference/ref-skript-decisions-review-workflow-for-backlog-items-and-retained-decision-records-review-workflow-for-backlog-items-and-retained-decision-records.md).
 
 ## Test plan
 

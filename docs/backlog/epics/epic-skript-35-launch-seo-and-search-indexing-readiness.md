@@ -101,7 +101,7 @@ The source record did not define a separate section for this package heading.
 - [ST-35-01: Canonical public host and edge indexability decision package](../stories/story-35-01-canonical-public-host-and-edge-indexability-decision-package.md)
 - [ST-35-02: Crawler surfaces and honest HTTP status semantics](../stories/story-35-02-crawler-surfaces-and-honest-http-status-semantics.md)
 - [ST-35-03: Public-route metadata, canonical, and indexing policy](../stories/story-35-03-public-route-metadata-canonical-and-indexing-policy.md)
-- [ST-35-04: Search Console, Bing, and launch-day SEO operations](../stories/story-35-04-search-console-bing-and-launch-day-seo-operations.md)
+- [ST-35-04: Search Console, Bing, and launch-day SEO operations](../stories/st-skript-35-04-search-console-bing-and-launch-day-seo-operations.md)
 
 ## Epic Verification Plan
 The source record did not define a separate section for this package heading.
@@ -126,9 +126,9 @@ The source record did not define a separate section for this package heading.
   churn.
 
 ## Notes
-- [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md)
+- [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
   is the canonical evidence and analysis record for this epic.
-- [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+- [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
   now governs the upstream launch topology that this epic consumes.
 - The current intended platform shape is: `hule.education` = HuleEdu landing,
   `api.hule.education` = HuleEdu gateway/session edge, `skriptoteket.hule.education`

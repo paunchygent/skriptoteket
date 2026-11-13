@@ -208,7 +208,7 @@ the browser touch-arbitration proof path. The remediation below was approved
 and deployed, but later real-device iPhone testing found that the simplified
 phone maps still do not visibly zoom even though the room-template builder does.
 That post-deploy gap is tracked as
-[`PR-0313`](pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md).
+[`PR-0313`](../tasks/task-skript-27-09-03-shared-phone-classroom-map-real-device-pinch-remediation.md).
 
 - Extended `useRoomViewportZoom` with direct scale and zoom-factor APIs while
   preserving existing stepped zoom and fit-reset behavior.

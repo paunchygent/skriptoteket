@@ -69,8 +69,8 @@ This story removes the seam fully instead of merely hiding the drawer UI.
 
 ## References
 
-- Epic parent: [EPIC-27](../epics/epic-27-klassrumskartan-smart-assignment-v1.md)
-- Smart-assignment ADR: [ADR-0074](../../adr/adr-0074-klassrumskartan-smart-assignment-v1.md)
+- Epic parent: [EPIC-27](../epics/epic-skript-27-klassrumskartan-smart-assignment-v1.md)
+- Smart-assignment ADR: [ADR-0074](../../decisions/adr-skript-0074-klassrumskartan-smart-assignment-v1-controls-checkpoints-and-solver-boundaries-part-01.md)
 - Contract-reset baseline: [ST-27-01](story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md)
 - Session-lane baseline: [ST-27-06](story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md)
 - Rules-workspace baseline: [ST-27-07](story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md)

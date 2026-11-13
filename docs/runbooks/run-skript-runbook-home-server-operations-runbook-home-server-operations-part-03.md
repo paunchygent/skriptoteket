@@ -157,12 +157,12 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ex
 
 Then follow:
 
-- [runbook-user-management.md](runbook-user-management.md) (bootstrap superuser / provision)
+- [runbook-user-management.md](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md) (bootstrap superuser / provision)
 - [runbook-script-bank-seeding-home-server.md](runbook-script-bank-seeding-home-server.md) (seed script bank)
 
 ### User Management
 
-See [runbook-user-management.md](runbook-user-management.md) for details.
+See [runbook-user-management.md](run-skript-runbook-user-and-local-role-management-runbook-user-and-local-role-management.md) for details.
 
 ### Script Bank Seeding
 

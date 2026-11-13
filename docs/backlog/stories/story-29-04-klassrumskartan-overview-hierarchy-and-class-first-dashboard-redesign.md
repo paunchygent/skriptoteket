@@ -40,9 +40,9 @@ action hierarchy than the earlier equal-weight card presentation.
 
 ## References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
 - Overview-first baseline: [ST-24-07](story-24-07-group-seating-studio-overview-first-workspace-management.md)
 - Related task slice: [PR-0127](../prs/pr-0127-klassrumskartan-overview-roster-preview-overflow-and-fixed-height-scrolling.md)
 - Related task slice: [PR-0131](../prs/pr-0131-klassrumskartan-overview-button-hierarchy-and-destructive-action-de-emphasis.md)
 - Related task slice: [PR-0132](../prs/pr-0132-klassrumskartan-resume-history-affordance-normalization-and-planner-control-polish.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)

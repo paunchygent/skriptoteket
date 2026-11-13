@@ -57,9 +57,9 @@ No separate ADR coverage was recorded in the source snapshot.
 
 ### Source: References
 
-- Epic parent: [EPIC-SKRIPT-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
-- Control-language reference: [REF-SKRIPT-GENERAL-shared-tool-control-language-and-primitive-matrix-v1](../../reference/ref-shared-tool-control-language-v1.md)
-- Workspace doctrine: [REF-SKRIPT-GENERAL-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Epic parent: [EPIC-SKRIPT-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Control-language reference: [REF-SKRIPT-GENERAL-shared-tool-control-language-and-primitive-matrix-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
+- Workspace doctrine: [REF-SKRIPT-GENERAL-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
 - Shared primitive baseline: [PR-0157](../prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md)
 
 ## Live Verification Plan

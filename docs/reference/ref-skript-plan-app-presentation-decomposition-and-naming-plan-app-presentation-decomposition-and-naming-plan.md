@@ -18,7 +18,7 @@ summary: App presentation decomposition and naming plan
 
 Source: `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`. App presentation decomposition and naming plan.
 
-This reference is the durable output of `PR-0362` / `ST-37-04`. It turns the current product-lane doctrine and service-shell plan into a PR-sized implementation sequence for app names, descriptions, entrypoints, and future decomposition work. This package makes no code, route, registry, backend/API, Sir Convert, HuleEdu, QTI, DOCX, public-capability, or Document Converter implementation changes. Those changes remain gated by later reviewed PR slices. - `EPIC-37` is active and `REV-EPIC-37` is approved. - `ST-37-04` owns app-presentation decomposition and naming. - `PR-0360` added [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+This reference is the durable output of `PR-0362` / `ST-37-04`. It turns the current product-lane doctrine and service-shell plan into a PR-sized implementation sequence for app names, descriptions, entrypoints, and future decomposition work. This package makes no code, route, registry, backend/API, Sir Convert, HuleEdu, QTI, DOCX, public-capability, or Document Converter implementation changes. Those changes remain gated by later reviewed PR slices. - `EPIC-37` is active and `REV-EPIC-37` is approved. - `ST-37-04` owns app-presentation decomposition and naming. - `PR-0360` added [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
 
 ## Planning Boundary
 
@@ -58,11 +58,11 @@ Those changes remain gated by later reviewed PR slices.
 - `EPIC-37` is active and `REV-EPIC-37` is approved.
 - `ST-37-04` owns app-presentation decomposition and naming.
 - `PR-0360` added
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-current-product-lanes-and-sir-convert-boundary-v1.md),
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md),
   which remains the authority for native-state versus heavy-conversion
   ownership.
 - `PR-0361` added
-  [REF-service-shell-ux-realignment-plan-v1](ref-service-shell-ux-realignment-plan-v1.md)
+  [REF-service-shell-ux-realignment-plan-v1](ref-skript-plan-service-shell-ux-realignment-plan-service-shell-ux-realignment-plan.md)
   and created the route-visible shell sequence `PR-0363` through `PR-0365`.
 
 ### Current Code Reality

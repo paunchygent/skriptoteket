@@ -52,7 +52,7 @@ Approve `EPIC-35` as the dedicated downstream Skriptoteket launch SEO lane with 
 3. `ST-35-03` adds explicit public-route metadata and indexing policy.
 4. `ST-35-04` closes the operator loop with search-console verification and launch checks.
 
-Keep [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md)
+Keep [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
 as the canonical evidence record.
 
 ## Artifacts to Review

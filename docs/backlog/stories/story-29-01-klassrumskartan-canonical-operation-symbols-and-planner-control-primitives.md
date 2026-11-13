@@ -48,15 +48,15 @@ assets are now present in the repo and underpin the current desktop-first Klassr
 - [PR-0156: ST-29-01 control-language freeze, primitive contract, and frontend codemap](../prs/pr-0156-st-29-01-control-language-freeze-primitive-contract-and-fe-codemap.md) — `done`
 - [PR-0157: ST-29-01 shared dense-tool primitives and canonical symbol assets](../prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md) — `done`
 - [PR-0158: ST-29-01 seating workspace adoption of shared dense-tool primitives](../prs/pr-0158-st-29-01-seating-workspace-adoption-of-shared-dense-tool-primitives.md) — `canceled`
-- Follow-on story: [ST-29-11: Shared site/app dense-control primitive tightening](story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md)
+- Follow-on story: [ST-29-11: Shared site/app dense-control primitive tightening](st-skript-29-11-klassrumskartan-shared-site-app-dense-control-primitive-tightening.md)
 - Follow-on story: [ST-29-12: Canonical symbol language and discoverability contract completion](story-29-12-klassrumskartan-canonical-symbol-language-and-discoverability-contract-completion.md)
 
 ## References
 
-- Epic parent: [EPIC-29](../epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md)
-- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-shared-tool-control-language-v1.md)
-- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-frontend-design-system-codemap-2026-03-28.md)
-- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
-- Product direction: [REF-group-seating-studio-product-direction-2026-03-21](../../reference/ref-group-seating-studio-product-direction-2026-03-21.md)
+- Epic parent: [EPIC-29](../epics/epic-skript-29-klassrumskartan-desktop-first-workspace-overhaul.md)
+- Shared control matrix: [REF-shared-tool-control-language-v1](../../reference/ref-skript-general-shared-tool-control-language-and-primitive-matrix-v1-shared-tool-control-language-and-primitive-matrix-v1-part-01.md)
+- Frontend codemap: [REF-frontend-design-system-codemap-2026-03-28](../../reference/ref-skript-plan-frontend-design-system-codemap-spa-planner-editor-frontend-design-system-codemap-spa-planner-editor.md)
+- Workspace doctrine: [REF-klassrumskartan-workspace-ui-doctrine-2026-03-28](../../reference/ref-skript-general-klassrumskartan-workspace-ui-doctrine-2026-03-28-klassrumskartan-workspace-ui-doctrine-2026-03-28.md)
+- Product direction: [REF-group-seating-studio-product-direction-2026-03-21](../../reference/ref-skript-general-klassrumskartan-product-direction-2026-03-21-klassrumskartan-product-direction-2026-03-21.md)
 - Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)
 - Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)

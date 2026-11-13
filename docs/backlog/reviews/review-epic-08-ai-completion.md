@@ -41,9 +41,9 @@ AI-powered completions.
 - **Triggers**: Debounced auto-trigger (1500ms) + manual trigger (Alt+\)
 - **Provider-agnostic**: Works with Ollama (local), OpenRouter, OpenAI
 
-See [ADR-0043](../../adr/adr-0043-ai-completion-integration.md) for architecture.
-See [ADR-0051](../../adr/adr-0051-chat-first-ai-editing.md) for chat-first editing decisions.
-See [ADR-0052](../../adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md) for prompt budgeting + KB fragment decisions.
+See [ADR-0043](../../decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md) for architecture.
+See [ADR-0051](../../decisions/adr-skript-0051-chat-first-ai-editing-structured-crud-ops-diff-preview-apply-undo.md) for chat-first editing decisions.
+See [ADR-0052](../../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments-for-ai-editor-features.md) for prompt budgeting + KB fragment decisions.
 
 ## Artifacts to Review
 

@@ -58,10 +58,10 @@ provider-side blocker before the `PR-0251` consumer implementation slice.
 - Epic parent:
   [EPIC-28](../epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md)
 - Cross-repo topology reference:
-  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
 - Browser-session target:
-  [ADR-0076](../../adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md)
+  [ADR-0076](../../decisions/adr-skript-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md)
 - Readiness intake:
   [PR-0250](../prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md)
 - Downstream launch SEO epic:
-  [EPIC-35](../epics/epic-35-launch-seo-and-search-indexing-readiness.md)
+  [EPIC-35](../epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md)

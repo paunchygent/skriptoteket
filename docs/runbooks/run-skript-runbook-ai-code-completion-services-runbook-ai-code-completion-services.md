@@ -19,7 +19,7 @@ system: hemma.hule.education
 Operations runbook for AI code completion services (llama.cpp + Tabby) on hemma.hule.education.
 
 For architecture, models, and integration details, see
-[ref-ai-completion-architecture.md](../reference/ref-ai-completion-architecture.md).
+[ref-ai-completion-architecture.md](../reference/ref-skript-general-ai-completion-architecture-technical-specification-ai-completion-architecture-technical-specification-part-01.md).
 
 ---
 ### Services Overview
@@ -209,8 +209,8 @@ model_name = "Devstral-Small-2-24B"
 
 ---
 ### References
-- [ref-ai-completion-architecture.md](../reference/ref-ai-completion-architecture.md) - Architecture and integration
-- [ADR-0050](../adr/adr-0050-self-hosted-llm-infrastructure.md) - Infrastructure decisions
+- [ref-ai-completion-architecture.md](../reference/ref-skript-general-ai-completion-architecture-technical-specification-ai-completion-architecture-technical-specification-part-01.md) - Architecture and integration
+- [ADR-0050](../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md) - Infrastructure decisions
 - [runbook-gpu-ai-workloads.md](runbook-gpu-ai-workloads.md) - GPU operations
 
 ## Preconditions

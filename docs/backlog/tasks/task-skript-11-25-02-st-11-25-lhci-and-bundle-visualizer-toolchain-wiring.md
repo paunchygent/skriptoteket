@@ -56,7 +56,7 @@ Add only the standard measurement toolchain and its command surface:
 
 ### Source: References
 
-- Story parent: [ST-11-25](../stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md)
+- Story parent: [ST-11-25](../stories/st-skript-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - Review gate:
   [REV-ST-11-25](../reviews/review-st-11-25-spa-route-load-performance-and-network-isolation-audit.md)
 - SPA hosting baseline: [ST-11-03](../stories/story-11-03-spa-hosting-fastapi-integration.md)

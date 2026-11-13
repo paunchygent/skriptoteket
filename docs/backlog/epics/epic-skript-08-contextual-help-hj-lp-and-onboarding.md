@@ -48,13 +48,13 @@ The source record did not define a separate section for this package heading.
 
 ## ADR Coverage
 ### ADRs
-- [ADR-0035: Script editor intelligence architecture](../../adr/adr-0035-script-editor-intelligence-architecture.md)
-- [ADR-0036: Tool usage instructions architecture](../../adr/adr-0036-tool-usage-instructions.md)
-- [ADR-0043: AI completion integration](../../adr/adr-0043-ai-completion-integration.md)
-- [ADR-0050: Self-hosted LLM infrastructure](../../adr/adr-0050-self-hosted-llm-infrastructure.md)
-- [ADR-0051: Chat-first AI editing](../../adr/adr-0051-chat-first-ai-editing.md)
-- [ADR-0052: LLM prompt budgeting + KB fragments](../../adr/adr-0052-llm-prompt-budgets-and-kb-fragments.md)
-- [ADR-0054: Editor chat virtual file context (hidden snapshots)](../../adr/adr-0054-editor-chat-virtual-file-context.md)
+- [ADR-0035: Script editor intelligence architecture](../../decisions/adr-skript-0035-script-editor-intelligence-architecture-codemirror-6.md)
+- [ADR-0036: Tool usage instructions architecture](../../decisions/adr-skript-0036-tool-usage-instructions-architecture.md)
+- [ADR-0043: AI completion integration](../../decisions/adr-skript-0043-ai-assisted-inline-completions-for-script-editor.md)
+- [ADR-0050: Self-hosted LLM infrastructure](../../decisions/adr-skript-0050-self-hosted-llm-infrastructure-for-ai-code-completion.md)
+- [ADR-0051: Chat-first AI editing](../../decisions/adr-skript-0051-chat-first-ai-editing-structured-crud-ops-diff-preview-apply-undo.md)
+- [ADR-0052: LLM prompt budgeting + KB fragments](../../decisions/adr-skript-0052-llm-prompt-budgeting-kb-fragments-for-ai-editor-features.md)
+- [ADR-0054: Editor chat virtual file context (hidden snapshots)](../../decisions/adr-skript-0054-editor-chat-virtual-file-context-hidden-snapshots.md)
 - [ADR-0055: Tokenizer-backed prompt budgeting (GPT-5 + devstral)](../../adr/adr-0055-tokenizer-backed-prompt-budgeting.md)
 
 ## Contract Inputs
@@ -87,7 +87,7 @@ The source record did not define a separate section for this package heading.
 - [ST-08-24: AI edit ops v2: anchor/patch-based targets + apply](../stories/story-08-24-ai-edit-ops-anchor-patch-v2.md)
 - [ST-08-25: AI: GPT-5 provider cleanup](../stories/story-08-25-ai-provider-gpt5-cleanup.md)
 - [ST-08-26: AI: chat/chat-ops provider failover](../stories/story-08-26-ai-chat-provider-failover.md)
-- [ST-08-27: Research: editor chat virtual file context retention + tokenizer budgets](../stories/story-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)
+- [ST-08-27: Research: editor chat virtual file context retention + tokenizer budgets](../stories/st-skript-08-27-research-editor-chat-virtual-file-context-retention-tokenizer-budgets.md)
 - [ST-08-28: AI: platform-only full model response capture on failures](../stories/story-08-28-ai-chat-ops-response-capture-on-error.md)
 - [ST-08-29: AI edit ops: patch_lines encoding for patch ops (avoid parse_failed)](../stories/story-08-29-ai-edit-ops-patch-lines-encoding.md)
 - [ST-08-30: AI: inline completion failover + per-user completion provider selection](../stories/story-08-30-ai-completion-failover-and-model-selection.md)
@@ -95,7 +95,7 @@ The source record did not define a separate section for this package heading.
 - [ST-08-32: AI: inline completion harness (gpt-5-nano logic validation)](../stories/story-08-32-ai-inline-completion-harness.md)
 - [ST-08-33: AI: inline completion normalization + 32-token caps](../stories/story-08-33-ai-inline-completion-normalization-and-caps.md)
 - [ST-08-34: Klassrumskartan contextual help (overview + workspace modes)](../stories/story-08-34-klassrumskartan-contextual-help.md)
-- [ST-08-35: Help completion: route coverage, behavior hardening, and copy signoff](../stories/story-08-35-help-completion-route-coverage-and-copy-signoff.md)
+- [ST-08-35: Help completion: route coverage, behavior hardening, and copy signoff](../stories/st-skript-08-35-help-completion-route-coverage-behavior-hardening-and-copy-signoff.md)
 
 ## Epic Verification Plan
 The source record did not define a separate section for this package heading.
@@ -149,4 +149,4 @@ The source record did not define a separate section for this package heading.
 
 ## Epic Closeout Review
 ### Reviews
-- [Review: ST-08-27 editor chat virtual file context retention + tokenizers](../reviews/review-st-08-27-editor-chat-virtual-file-context-retention-and-tokenizers.md)
+- [Review: ST-08-27 editor chat virtual file context retention + tokenizers](../reviews/rev-skript-st-08-27-closeout-review-st-08-27-editor-chat-virtual-file-context-retention-tokenizers.md)

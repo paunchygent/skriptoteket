@@ -163,7 +163,7 @@ The source record did not define a separate section for this package heading.
 - [ST-SKRIPT-14-34: Settings suggestions from tool runs](../stories/story-14-34-settings-suggestions-from-tool-runs.md)
 - [ST-SKRIPT-14-35: Tool datasets: per-user CRUD + picker](../stories/story-14-35-tool-datasets-crud-and-picker.md)
 - [ST-14-36: User file vault: reusable uploads + picker](../stories/story-14-36-user-file-vault-and-picker.md)
-- [ST-SKRIPT-14-39: Cloudflare R2-backed Mina filer storage migration](../stories/story-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md)
+- [ST-SKRIPT-14-39: Cloudflare R2-backed Mina filer storage migration](../stories/st-skript-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md)
 
 Note: File-ref pickers (ST-14-24) and the vault picker (ST-14-36) must support default vault file refs in tool
 settings and action prefill (preselect when available; show validation error when missing).

@@ -88,7 +88,7 @@ work.
 
 - [PR-0296](../prs/pr-0296-st-27-09-fixed-seat-rule-contract-and-classroom-view-default.md):
   contract, backlog, and decision-memo alignment.
-- [PR-0297](../prs/pr-0297-st-27-09-fixed-seat-rule-persistence-and-solver-seeding.md):
+- [PR-0297](../tasks/task-skript-27-09-01-st-27-09-fixed-seat-rule-persistence-and-solver-seeding.md):
   backend fixed-seat persistence, validation, and score-aware solver seeding.
 - [PR-0298](../prs/pr-0298-st-27-09-fixed-seat-tool-and-classroom-view-first-rules-ux.md):
   frontend classroom-view default, `Fast plats` tool prompt, markers, and proof.

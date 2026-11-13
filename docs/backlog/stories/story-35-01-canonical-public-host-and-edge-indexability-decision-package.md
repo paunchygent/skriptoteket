@@ -56,13 +56,13 @@ placeholder expectation is stale.
 ## References
 
 - Epic parent:
-  [EPIC-35](../epics/epic-35-launch-seo-and-search-indexing-readiness.md)
+  [EPIC-35](../epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md)
 - Upstream topology gate:
   [ST-28-05](story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md)
 - Cross-repo topology reference:
-  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
+  [REF-huleedu-launch-surface-and-shared-auth-topology-2026-04-08](../../reference/ref-skript-general-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08-reference-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md)
 - Evidence and analysis:
-  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md)
+  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
 - Production host wiring:
   [compose.prod.yaml](../../../compose.prod.yaml)
 - Hemma deploy rule:

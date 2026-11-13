@@ -25,7 +25,7 @@ acceptance_criteria:
 
 `pdm run fe-test -- --run src/views/apps/components/PlannerRosterOverviewPanel.spec.ts`
 fails because the spec mounts
-[PlannerRosterOverviewPanel.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerRosterOverviewPanel.vue)
+[PlannerRosterOverviewPanel.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerDesktopRosterOverviewSection.vue)
 without `showActions`, yet still expects the action footer to render.
 
 That expectation became stale when `PR-0223` added overview capability gating:
@@ -40,7 +40,7 @@ create/edit workflow remains unchanged:
 
 - [PR-0137](pr-0137-klassrumskartan-class-list-import-remediation-example-corpus-and-overview-reconciliation.md)
   moved import into the `Ny klasslista` / `Redigera` workflow.
-- [PR-0175](pr-0175-klassrumskartan-class-list-import-dropzone-in-create-edit-modal.md)
+- [PR-0175](../tasks/task-skript-26-02-04-klassrumskartan-class-list-import-drag-and-drop-drop-zone-in-create-edit-modal.md)
   kept the drag/drop import affordance inside that same modal.
 
 This failure is therefore assessed as a stale isolated spec, not a user-facing
@@ -72,7 +72,7 @@ without reopening the settled import boundary.
 ## Implementation summary (2026-04-07)
 
 - Updated
-  [PlannerRosterOverviewPanel.spec.ts](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerRosterOverviewPanel.spec.ts)
+  [PlannerRosterOverviewPanel.spec.ts](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerDesktopRosterOverviewSection.spec.ts)
   so the visible-footer assertion passes `showActions: true` explicitly instead
   of relying on the absent-boolean case.
 - Added focused negative coverage that proves the shared roster overview panel

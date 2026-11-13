@@ -81,9 +81,9 @@ needs predictable snippets, canonicalization, and indexing behavior.
 ## References
 
 - Epic parent:
-  [EPIC-35](../epics/epic-35-launch-seo-and-search-indexing-readiness.md)
+  [EPIC-35](../epics/epic-skript-35-launch-seo-and-search-indexing-readiness.md)
 - Evidence and analysis:
-  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-launch-seo-and-search-indexing-readiness-2026-04-08.md)
+  [REF-launch-seo-and-search-indexing-readiness-2026-04-08](../../reference/ref-skript-research-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08-reference-launch-seo-and-search-indexing-readiness-assessment-2026-04-08.md)
 - Current SPA shell:
   [frontend/apps/skriptoteket/index.html](../../../frontend/apps/skriptoteket/index.html)
 - Current public landing:

@@ -118,8 +118,8 @@ reviewable first consumer: Klassrumskartan.
 - Epic parent:
   [EPIC-32](../epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md)
 - Public curated-app access boundary:
-  [ADR-0079](../../adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
+  [ADR-0079](../../decisions/adr-skript-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md)
 - Klassrumskartan guest Smart parity boundary:
-  [ADR-0080](../../adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md)
+  [ADR-0080](../../decisions/adr-skript-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md)
 - Authenticated upgrade foundation:
   [ST-32-05](story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md)

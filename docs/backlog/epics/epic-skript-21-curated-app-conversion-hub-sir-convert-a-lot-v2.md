@@ -67,7 +67,7 @@ The source record did not define a separate section for this package heading.
 
 - ADR-0066 (this epic's conversion strategy decision)
 - Current product lanes and Sir Convert/Skriptoteket ownership boundary:
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
 - Existing curated apps platform: ADR-0022, ADR-0023, ADR-0024
 - Public curated-app access and abuse-control authority: ADR-0079, ADR-0085,
   ST-32-03
@@ -106,14 +106,14 @@ The source record did not define a separate section for this package heading.
 
 - [ ] 1. [ST-21-01: Curated app: Conversion Hub (v1)](../stories/story-21-01-curated-app-conversion-hub-v1.md) (canceled 2026-10-28)
 - [ ] 2. [ST-21-02: Migration: retire html-to-pdf-preview + update tests](../stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md)
-- [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md) (canceled 2026-10-28)
-- [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md) (canceled 2026-10-28)
+- [ ] 3. [ST-21-03: Exam converter public and authenticated artifact lanes](../stories/st-skript-21-03-exam-converter-public-and-authenticated-artifact-lanes.md) (canceled 2026-10-28)
+- [ ] 4. [ST-21-04: Exam Converter durable teacher correction sessions](../stories/st-skript-21-04-exam-converter-durable-teacher-correction-sessions.md) (canceled 2026-10-28)
 - [x] 5. [ST-21-05: Conversion Hub transcript intake and diarization controls](../stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md)
 - [x] 6. [ST-21-06: Transcript job lifecycle through HuleEdu Gateway](../stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md)
 - [x] 7. [ST-21-07: Durable transcript saves and JSON-first downstream formatting](../stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md)
 - [x] 8. [ST-21-08: Transcript speaker overlays and replay formatter exports](../stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md)
 - [x] 9. [ST-21-09: Conversion Hub remote inference proof trust lane](../stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md)
-- [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md) (canceled)
+- [ ] 10. [ST-21-10: Exam Converter source-only intake and export-owned formats](../stories/st-skript-21-10-exam-converter-source-only-intake-and-export-owned-formats.md) (canceled)
 - [x] 11. [ST-21-11: Cross-repo compact answer-key review state production proof](../stories/story-21-11-cross-repo-compact-answer-key-review-state-production-proof.md)
 
 ## Verification
@@ -312,7 +312,7 @@ The source record did not define a separate section for this package heading.
   source-only intake and export-owned format UX slice, and `PR-0357` is the
   separate governed public-lane cleanup follow-up.
 - `PR-0360` / `ST-37-02` added
-  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md)
+  [REF-current-product-lanes-and-sir-convert-boundary-v1](../../reference/ref-skript-general-current-product-lanes-and-sir-convert-boundary-current-product-lanes-and-sir-convert-boundary.md)
   on 2026-06-18. Future `EPIC-21` cleanup should treat broad "Conversion Hub"
   language as technical/historical unless it is explicitly describing the
   compatibility shell. Teacher-facing planning should use the separate Exam
