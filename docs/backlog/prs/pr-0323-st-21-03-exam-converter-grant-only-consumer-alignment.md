@@ -66,8 +66,7 @@ cross-repo contract before rerunning the PR-0322 live proof:
 - Do not verify Sir Convert's public grant signature in Skriptoteket.
 - Do not expose raw grants, read leases, Sir Convert API keys, HuleEdu assertion
   secrets, or direct upstream URLs to browser-visible responses.
-- Do not expand the public lane beyond `digiexam_dxe ->
-  examnet_migration_bundle`.
+- Do not expand the public lane beyond `digiexam_dxe -> examnet_migration_bundle`.
 - Do not rerun PR-0322 live proof until focused local consumer tests pass.
 
 ## Implementation Summary

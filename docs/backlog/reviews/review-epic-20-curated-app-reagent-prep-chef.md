@@ -38,25 +38,25 @@ Teachers need a fast, reliable prep sheet with explicit safety posture and minim
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/reference/ref-curated-app-reagent-prep-chef.md` | UX + safety posture + math outline | 12 min |
-| `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md` | Scope + risks | 4 min |
-| `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md` | Testable acceptance criteria | 5 min |
-| `docs/adr/adr-0022-tool-ui-contract-v2.md` | Output/action/state constraints | 6 min |
-| `docs/adr/adr-0023-curated-apps-registry-and-execution.md` | Execution path + catalog integration | 6 min |
-| `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md` | State persistence semantics | 8 min |
+| File                                                                | Focus                                | Time   |
+| ------------------------------------------------------------------- | ------------------------------------ | ------ |
+| `docs/reference/ref-curated-app-reagent-prep-chef.md`               | UX + safety posture + math outline   | 12 min |
+| `docs/backlog/epics/epic-20-curated-app-reagent-prep-chef.md`       | Scope + risks                        | 4 min  |
+| `docs/backlog/stories/story-20-01-curated-app-reagent-prep-chef.md` | Testable acceptance criteria         | 5 min  |
+| `docs/adr/adr-0022-tool-ui-contract-v2.md`                          | Output/action/state constraints      | 6 min  |
+| `docs/adr/adr-0023-curated-apps-registry-and-execution.md`          | Execution path + catalog integration | 6 min  |
+| `docs/adr/adr-0024-tool-sessions-and-ui-payload-persistence.md`     | State persistence semantics          | 8 min  |
 
 **Total estimated time:** ~41 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| UI policy: `bespoke_required` vs `generic_ok` | Avoid dead routes while still enforcing bespoke UX where required | [ ] |
-| Curated-only hazards (no heuristics) | Avoid false confidence | [ ] |
-| Formula mass dependency choice (e.g. `molmass`) | Robust parsing vs build size | [ ] |
-| Export format (PDF artifact) | Printability + consistent sharing | [ ] |
+| Decision                                        | Rationale                                                         | Approve? |
+| ----------------------------------------------- | ----------------------------------------------------------------- | -------- |
+| UI policy: `bespoke_required` vs `generic_ok`   | Avoid dead routes while still enforcing bespoke UX where required | [ ]      |
+| Curated-only hazards (no heuristics)            | Avoid false confidence                                            | [ ]      |
+| Formula mass dependency choice (e.g. `molmass`) | Robust parsing vs build size                                      | [ ]      |
+| Export format (PDF artifact)                    | Printability + consistent sharing                                 | [ ]      |
 
 ## Review Checklist
 
@@ -88,6 +88,6 @@ Keep the app-specific UX and the safety fallback contract explicit so the review
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Kept the curated-app proposal in canonical review shape while leaving the core EPIC-20 decisions pending. |
+| Change | Artifact      | Description                                                                                               |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Kept the curated-app proposal in canonical review shape while leaving the core EPIC-20 decisions pending. |

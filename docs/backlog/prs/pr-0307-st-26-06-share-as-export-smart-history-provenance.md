@@ -64,6 +64,7 @@ weakening the public guest boundary:
 ## Implementation plan
 
 1. Extend checkpoint provenance.
+
    - Add a source-kind field to seating and grouping checkpoint contracts.
    - Keep `source_export_job_id` for existing export provenance.
    - Add optional `source_share_artifact_id` for authenticated share provenance.
@@ -71,21 +72,25 @@ weakening the public guest boundary:
      boundaries.
 
 2. Extract a checkpoint recorder.
+
    - Move dedupe and create logic out of export finalizers into a small
      application service shared by export finalizers and authenticated share
      handlers.
    - Keep repositories behind existing checkpoint protocols.
 
 3. Wire authenticated share creation.
+
    - After successful owner-scoped share artifact creation, record the
      corresponding seating/grouping checkpoint from the same hydrated workspace.
    - Keep public guest share handlers unchanged for history.
 
 4. Preserve export behavior.
+
    - Update PDF/XLSX finalizers to call the recorder with export-job provenance.
    - Do not create duplicate checkpoints for unchanged normalized assignments.
 
 5. Lock with tests.
+
    - Focused application tests for seating/grouping share checkpoint creation
      and dedupe.
    - Regression test that public guest share creation does not call checkpoint

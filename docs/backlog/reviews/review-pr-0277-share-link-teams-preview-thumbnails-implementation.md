@@ -52,30 +52,30 @@ opened URL remains the HTML/CSS share page.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md` | Contract, implementation state, proof obligations | 8 min |
-| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md` | Parent acceptance criteria and closeout state | 5 min |
-| `migrations/versions/f8a2c6d4e9b1_add_share_preview_assets.py` | Preview asset schema and cascade behavior | 8 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/share_artifacts.py` | Authenticated create/backfill/preview application flow | 12 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_shares.py` | Public guest preview generation and transaction boundary | 8 min |
+| File                                                                                            | Focus                                                          | Time   |
+| ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`                      | Contract, implementation state, proof obligations              | 8 min  |
+| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md`       | Parent acceptance criteria and closeout state                  | 5 min  |
+| `migrations/versions/f8a2c6d4e9b1_add_share_preview_assets.py`                                  | Preview asset schema and cascade behavior                      | 8 min  |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/share_artifacts.py`       | Authenticated create/backfill/preview application flow         | 12 min |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_shares.py`         | Public guest preview generation and transaction boundary       | 8 min  |
 | `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_preview_renderer.py` | Playwright adapter timeout, viewport, fitting, and concurrency | 12 min |
-| `src/skriptoteket/web/routes/classroom_planner_share_pages.py` | Active-only image route and metadata injection | 12 min |
-| `src/skriptoteket/infrastructure/repositories/classroom_planner_share_artifacts.py` | Atomic create, lifecycle, stale/backfill repository behavior | 12 min |
-| `Dockerfile`, `pyproject.toml`, `pdm.lock` | Production Playwright/Chromium runtime setup | 8 min |
-| Focused tests under `tests/unit` and `tests/integration` | Coverage for lifecycle, metadata, routes, and persistence | 15 min |
+| `src/skriptoteket/web/routes/classroom_planner_share_pages.py`                                  | Active-only image route and metadata injection                 | 12 min |
+| `src/skriptoteket/infrastructure/repositories/classroom_planner_share_artifacts.py`             | Atomic create, lifecycle, stale/backfill repository behavior   | 12 min |
+| `Dockerfile`, `pyproject.toml`, `pdm.lock`                                                      | Production Playwright/Chromium runtime setup                   | 8 min  |
+| Focused tests under `tests/unit` and `tests/integration`                                        | Coverage for lifecycle, metadata, routes, and persistence      | 15 min |
 
 **Total estimated time:** ~100 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Store preview PNG bytes in PostgreSQL | Matches the approved `PR-0277` contract and keeps lifecycle tied to share artifacts | [ ] |
-| Generate previews before share persistence | New share creation must fail cleanly with no committed share/preview rows if rendering fails | [ ] |
-| Serve preview bytes only after active share resolution | Revoked, expired, missing, and purged shares must not leak retained thumbnails | [ ] |
-| Keep JSON-LD to the exact `CreativeWork` allowlist | Avoids machine-readable roster, person, coordinate, placement, and group leakage | [ ] |
-| Require BuildKit Chromium smoke and fresh Teams proof before done | Local tests do not prove the production browser runtime or Teams cache behavior | [ ] |
+| Decision                                                          | Rationale                                                                                    | Approve? |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------- |
+| Store preview PNG bytes in PostgreSQL                             | Matches the approved `PR-0277` contract and keeps lifecycle tied to share artifacts          | [ ]      |
+| Generate previews before share persistence                        | New share creation must fail cleanly with no committed share/preview rows if rendering fails | [ ]      |
+| Serve preview bytes only after active share resolution            | Revoked, expired, missing, and purged shares must not leak retained thumbnails               | [ ]      |
+| Keep JSON-LD to the exact `CreativeWork` allowlist                | Avoids machine-readable roster, person, coordinate, placement, and group leakage             | [ ]      |
+| Require BuildKit Chromium smoke and fresh Teams proof before done | Local tests do not prove the production browser runtime or Teams cache behavior              | [ ]      |
 
 ## Review Checklist
 
@@ -153,8 +153,8 @@ Pending review. Known proof gap before approval:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0277`, `ST-26-07`, `EPIC-26` | Recorded local implementation state and outstanding proof before done. |
-| 2 | `.codex/handoff.md` | Added current implementation state, verification, and next closeout steps. |
-| 3 | `REV-PR-0277` | Created this retained post-implementation review request. |
+| Change | Artifact                         | Description                                                                |
+| ------ | -------------------------------- | -------------------------------------------------------------------------- |
+| 1      | `PR-0277`, `ST-26-07`, `EPIC-26` | Recorded local implementation state and outstanding proof before done.     |
+| 2      | `.codex/handoff.md`              | Added current implementation state, verification, and next closeout steps. |
+| 3      | `REV-PR-0277`                    | Created this retained post-implementation review request.                  |

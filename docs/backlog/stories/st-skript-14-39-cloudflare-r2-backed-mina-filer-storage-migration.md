@@ -4,8 +4,8 @@ id: ST-SKRIPT-14-39
 title: Cloudflare R2-backed Mina filer storage migration
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,20 +18,12 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-14
 acceptance_criteria:
-- Given the migration is approved, when implementation begins, then ADR-0088 states
-  that Skriptoteket consumes the validated HuleEdu File Service contract for object
-  lifecycle and does not implement a direct R2 adapter in this tranche.
-- Given a vault file is migrated, when the owner lists, downloads, restores, or uses
-  it through a `vault:*` FileRef, then the protected route behavior matches the existing
-  `Mina filer` contract without exposing object keys or signed URLs.
-- Given Document Converter receives ordered saved-file `source_refs`, when migrated
-  files are selected, then the backend loads bytes server-side from owner-scoped vault
-  refs, preserves order, and fails the whole batch for invalid refs.
-- Given migration proof is produced, when cutover is requested, then the manifest
-  includes record ids, opaque File Service object references, sizes, SHA-256 checksums,
-  lifecycle state, and rollback instructions.
+  - Given the migration is approved, when implementation begins, then ADR-0088 states that Skriptoteket consumes the validated HuleEdu File Service contract for object lifecycle and does not implement a direct R2 adapter in this tranche.
+  - Given a vault file is migrated, when the owner lists, downloads, restores, or uses it through a `vault:*` FileRef, then the protected route behavior matches the existing `Mina filer` contract without exposing object keys or signed URLs.
+  - Given Document Converter receives ordered saved-file `source_refs`, when migrated files are selected, then the backend loads bytes server-side from owner-scoped vault refs, preserves order, and fails the whole batch for invalid refs.
+  - Given migration proof is produced, when cutover is requested, then the manifest includes record ids, opaque File Service object references, sizes, SHA-256 checksums, lifecycle state, and rollback instructions.
 retired_ids:
-- ST-14-39
+  - ST-14-39
 ---
 
 ## Context

@@ -43,28 +43,28 @@ advisory accept/edit actions as the mockup's primary/secondary detail controls.
 
 ## Artifacts to Review
 
-| Artifact | Focus |
-|---|---|
-| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md` | Updated acceptance, especially keyed closed-response versus open-ended no-key state |
-| `docs/reference/ref-exam-converter-ui-content-model-v1.md` | UI content model and small/desktop mockup authority |
-| `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` and `index.html`/`styles.css` | Small-screen exact copy, state, and button treatment |
-| `docs/mockups/pr-0406-answer-key-review-desktop/README.md` and `index.html`/`styles.css` | Desktop layout, detail actions, and symbolic navigation authority |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/digiexamIrQuestionReviewProjection.ts` | Open-ended follow-up non-actionability and keyed review type classification |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.ts` | Compact review-state mapping for open-ended versus keyed items |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts` | Adapter proof for Lucktext keyed review and open-ended exclusion |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Mounted UI proof for free-text manual-key and unsupported-type regressions |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterAdvisoryAnswerKeyPanel.vue` | Advisory `Acceptera`/`Ändra` controls |
-| `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json` | Fresh browser/PNG proof after the free-text and button-treatment remediation |
-| `docs/backlog/reviews/review-pr-0408-exam-converter-design-proof-helper-remediation.md` | Separate proof-helper approval boundary |
+| Artifact                                                                                                         | Focus                                                                               |
+| ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md`                   | Updated acceptance, especially keyed closed-response versus open-ended no-key state |
+| `docs/reference/ref-exam-converter-ui-content-model-v1.md`                                                       | UI content model and small/desktop mockup authority                                 |
+| `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` and `index.html`/`styles.css`                    | Small-screen exact copy, state, and button treatment                                |
+| `docs/mockups/pr-0406-answer-key-review-desktop/README.md` and `index.html`/`styles.css`                         | Desktop layout, detail actions, and symbolic navigation authority                   |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/digiexamIrQuestionReviewProjection.ts`   | Open-ended follow-up non-actionability and keyed review type classification         |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.ts`          | Compact review-state mapping for open-ended versus keyed items                      |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts`     | Adapter proof for Lucktext keyed review and open-ended exclusion                    |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`                        | Mounted UI proof for free-text manual-key and unsupported-type regressions          |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterAdvisoryAnswerKeyPanel.vue` | Advisory `Acceptera`/`Ändra` controls                                               |
+| `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`                         | Fresh browser/PNG proof after the free-text and button-treatment remediation        |
+| `docs/backlog/reviews/review-pr-0408-exam-converter-design-proof-helper-remediation.md`                          | Separate proof-helper approval boundary                                             |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|---|---|---|
-| Treat open-ended/free-text rows as non-gated for answer-key review. | PR-0408 now explicitly says these rows must not ask for facit, show warning status, or block `Kontrollera facit`. | Yes |
-| Keep Lucktext/gap-fill/open-cloze keyed and actionable. | The latest contract clarifies that keyed closed-response review includes Lucktext/gap-fill/open-cloze, while only open-ended/free-text is excluded. | Yes |
-| Use local mockup-style primary/secondary detail controls for advisory accept/edit. | The mockup source defines `Acceptera`/`Ändra` as local primary/secondary controls, not the app's shadowed CTA primitive. | Yes |
-| Require fresh visual proof after the parent patch before final closeout. | The retained proof manifest postdates the free-text and button-treatment remediation and captures desktop plus phone surfaces; the Task 374/PR-0408 rereview now adds automated proof for the production post-accept sibling-candidate replay failure. | Yes |
+| Decision                                                                           | Rationale                                                                                                                                                                                                                                              | Approve? |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Treat open-ended/free-text rows as non-gated for answer-key review.                | PR-0408 now explicitly says these rows must not ask for facit, show warning status, or block `Kontrollera facit`.                                                                                                                                      | Yes      |
+| Keep Lucktext/gap-fill/open-cloze keyed and actionable.                            | The latest contract clarifies that keyed closed-response review includes Lucktext/gap-fill/open-cloze, while only open-ended/free-text is excluded.                                                                                                    | Yes      |
+| Use local mockup-style primary/secondary detail controls for advisory accept/edit. | The mockup source defines `Acceptera`/`Ändra` as local primary/secondary controls, not the app's shadowed CTA primitive.                                                                                                                               | Yes      |
+| Require fresh visual proof after the parent patch before final closeout.           | The retained proof manifest postdates the free-text and button-treatment remediation and captures desktop plus phone surfaces; the Task 374/PR-0408 rereview now adds automated proof for the production post-accept sibling-candidate replay failure. | Yes      |
 
 ## Review Checklist
 
@@ -120,17 +120,17 @@ production browser proofs both passed for PR-0408 product closeout.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| `/opt/homebrew/bin/pdm run fe-test -- --run src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Passed locally, 22 tests. |
-| `/opt/homebrew/bin/pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts` | Reported passed after latest parent patch, 31 tests. |
-| `/opt/homebrew/bin/pdm run fe-type-check` | Reported passed after latest parent patch. |
-| `/opt/homebrew/bin/pdm run fe-lint` | Reported passed after latest parent patch. |
-| `/opt/homebrew/bin/pdm run fe-build` | Reported passed after latest parent patch with existing Vite dynamic/static import and large-chunk warnings. |
-| `/opt/homebrew/bin/pdm run docs-validate` | Reported passed after latest parent patch. |
-| `/opt/homebrew/bin/pdm run handoff-validate` | Reported passed after latest parent patch. |
-| `git diff --check` | Reported passed after latest parent patch. |
-| `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json` | Passed; desktop `Frågor`/`Filer`/`Rapport`, phone list/detail/files/report screenshots, and all captured viewports report no horizontal overflow. |
+| Command or evidence                                                                                                                                                                                                                                              | Result                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/opt/homebrew/bin/pdm run fe-test -- --run src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`                                                                        | Passed locally, 22 tests.                                                                                                                         |
+| `/opt/homebrew/bin/pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/ExamConverterAuthenticatedAiPrefillDurableSlice.spec.ts` | Reported passed after latest parent patch, 31 tests.                                                                                              |
+| `/opt/homebrew/bin/pdm run fe-type-check`                                                                                                                                                                                                                        | Reported passed after latest parent patch.                                                                                                        |
+| `/opt/homebrew/bin/pdm run fe-lint`                                                                                                                                                                                                                              | Reported passed after latest parent patch.                                                                                                        |
+| `/opt/homebrew/bin/pdm run fe-build`                                                                                                                                                                                                                             | Reported passed after latest parent patch with existing Vite dynamic/static import and large-chunk warnings.                                      |
+| `/opt/homebrew/bin/pdm run docs-validate`                                                                                                                                                                                                                        | Reported passed after latest parent patch.                                                                                                        |
+| `/opt/homebrew/bin/pdm run handoff-validate`                                                                                                                                                                                                                     | Reported passed after latest parent patch.                                                                                                        |
+| `git diff --check`                                                                                                                                                                                                                                               | Reported passed after latest parent patch.                                                                                                        |
+| `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`                                                                                                                                                                         | Passed; desktop `Frågor`/`Filer`/`Rapport`, phone list/detail/files/report screenshots, and all captured viewports report no horizontal overflow. |
 
 ### Residual Risk
 
@@ -141,10 +141,10 @@ production browser proofs both passed for PR-0408 product closeout.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|---|---|---|
-| 1 | `REV-PR-0408` | Retained independent review recorded for PR-0408 frontend design implementation alignment with decision `approved` for code. |
-| 2 | `REV-PR-0408` | Added fresh browser/PNG proof closeout evidence from `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`. |
+| Change | Artifact      | Description                                                                                                                                    |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0408` | Retained independent review recorded for PR-0408 frontend design implementation alignment with decision `approved` for code.                   |
+| 2      | `REV-PR-0408` | Added fresh browser/PNG proof closeout evidence from `.artifacts/pr-0408-exam-converter-design-proof/20260629T174933Z/manifest.redacted.json`. |
 
 ## Review Pass 2
 

@@ -42,22 +42,22 @@ Keep `PR-0254` as the final operator proof, but gate it behind HuleEdu
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md` | Final smoke contract | 10 min |
-| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Parent story expectations | 5 min |
-| `PR-0260` through `PR-0262` | Prerequisite proof lanes | 10 min |
+| File                                                                                          | Focus                     | Time   |
+| --------------------------------------------------------------------------------------------- | ------------------------- | ------ |
+| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`         | Final smoke contract      | 10 min |
+| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Parent story expectations | 5 min  |
+| `PR-0260` through `PR-0262`                                                                   | Prerequisite proof lanes  | 10 min |
 
 **Total estimated time:** ~25 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Gate final proof behind bootstrap/lifecycle slices | Avoid certifying a partial login-only path | [x] |
-| Keep HuleEdu and Skriptoteket repo responsibilities separate | Provider identity lifecycle and consumer projection roles are different contracts | [x] |
-| Require direct-action link proof | Deliberate clicks and email links must land on the requested action page, not a generic HuleEdu page | [x] |
-| Require sanitized operator evidence | Final proof should be auditable without leaking secrets | [x] |
+| Decision                                                     | Rationale                                                                                            | Approve? |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | -------- |
+| Gate final proof behind bootstrap/lifecycle slices           | Avoid certifying a partial login-only path                                                           | [x]      |
+| Keep HuleEdu and Skriptoteket repo responsibilities separate | Provider identity lifecycle and consumer projection roles are different contracts                    | [x]      |
+| Require direct-action link proof                             | Deliberate clicks and email links must land on the requested action page, not a generic HuleEdu page | [x]      |
+| Require sanitized operator evidence                          | Final proof should be auditable without leaking secrets                                              | [x]      |
 
 ## Review Checklist
 
@@ -95,10 +95,10 @@ implementation/review lanes.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0254` | Retained review gate for final cross-app proof |
-| 2 | `REV-PR-0254` | Approved after confirming the final proof remains gated behind HuleEdu `TASK-0325` through `TASK-0327` and Skriptoteket `PR-0260` through `PR-0262` |
+| Change | Artifact      | Description                                                                                                                                         |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0254`     | Retained review gate for final cross-app proof                                                                                                      |
+| 2      | `REV-PR-0254` | Approved after confirming the final proof remains gated behind HuleEdu `TASK-0325` through `TASK-0327` and Skriptoteket `PR-0260` through `PR-0262` |
 
 ## Dependency Update 2026-04-13
 

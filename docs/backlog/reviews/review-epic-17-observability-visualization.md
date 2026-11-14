@@ -44,27 +44,27 @@ Operators cannot effectively monitor Skriptoteket health:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/epics/epic-17-observability-visualization-and-operations.md` | Scope in/out, risks | 3 min |
-| `docs/backlog/stories/story-17-01-grafana-datasource-verification.md` | Verification criteria | 2 min |
-| `docs/backlog/stories/story-17-02-http-metrics-dashboard.md` | Panel definitions, queries | 3 min |
-| `docs/backlog/stories/story-17-03-prometheus-alerting-rules.md` | Rule definitions, thresholds | 4 min |
-| `docs/backlog/stories/story-17-04-jaeger-public-access.md` | Security implications | 2 min |
-| `docs/backlog/stories/story-17-05-runbook-verification.md` | Runbook completeness | 2 min |
-| `docs/backlog/stories/story-17-06-user-session-metrics.md` | Metrics design, instrumentation | 3 min |
+| File                                                                       | Focus                           | Time  |
+| -------------------------------------------------------------------------- | ------------------------------- | ----- |
+| `docs/backlog/epics/epic-17-observability-visualization-and-operations.md` | Scope in/out, risks             | 3 min |
+| `docs/backlog/stories/story-17-01-grafana-datasource-verification.md`      | Verification criteria           | 2 min |
+| `docs/backlog/stories/story-17-02-http-metrics-dashboard.md`               | Panel definitions, queries      | 3 min |
+| `docs/backlog/stories/story-17-03-prometheus-alerting-rules.md`            | Rule definitions, thresholds    | 4 min |
+| `docs/backlog/stories/story-17-04-jaeger-public-access.md`                 | Security implications           | 2 min |
+| `docs/backlog/stories/story-17-05-runbook-verification.md`                 | Runbook completeness            | 2 min |
+| `docs/backlog/stories/story-17-06-user-session-metrics.md`                 | Metrics design, instrumentation | 3 min |
 
 **Total estimated time:** ~19 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| No Alertmanager | Keep scope minimal; alerts visible in Prometheus UI; notifications deferred | [ ] |
-| Jaeger without auth | Traces are internal operational data; add auth if abuse detected | [ ] |
-| 500MB session files threshold | Matches cleanup TTL behavior; prevents disk pressure | [ ] |
-| P99 latency > 2s as warning | Generous threshold for initial deployment; tune based on observation | [ ] |
-| Compute active sessions at scrape time | Avoids maintaining separate state; simpler implementation | [ ] |
+| Decision                               | Rationale                                                                   | Approve? |
+| -------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| No Alertmanager                        | Keep scope minimal; alerts visible in Prometheus UI; notifications deferred | [ ]      |
+| Jaeger without auth                    | Traces are internal operational data; add auth if abuse detected            | [ ]      |
+| 500MB session files threshold          | Matches cleanup TTL behavior; prevents disk pressure                        | [ ]      |
+| P99 latency > 2s as warning            | Generous threshold for initial deployment; tune based on observation        | [ ]      |
+| Compute active sessions at scrape time | Avoids maintaining separate state; simpler implementation                   | [ ]      |
 
 ## Review Checklist
 
@@ -74,7 +74,7 @@ Operators cannot effectively monitor Skriptoteket health:
 - [ ] Jaeger public access security is acceptable
 - [ ] Risks are identified with mitigations
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -99,11 +99,11 @@ Keep the runbook updates and access-pattern notes in the same review trail so th
 - [ ] P99 latency > 2s as warning
 - [ ] Compute active sessions at scrape time
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Replaced template placeholders with a concrete pending-review observability scope. |
-| 2 | EPIC-17 | Kept the dashboard, alerting, and access decisions visible without implying approval. |
+| Change | Artifact      | Description                                                                           |
+| ------ | ------------- | ------------------------------------------------------------------------------------- |
+| 1      | Review record | Replaced template placeholders with a concrete pending-review observability scope.    |
+| 2      | EPIC-17       | Kept the dashboard, alerting, and access decisions visible without implying approval. |

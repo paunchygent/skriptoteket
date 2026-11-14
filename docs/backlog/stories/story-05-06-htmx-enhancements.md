@@ -26,7 +26,9 @@ Enhancing the user experience with HTMX-driven interactions, loading states, and
 ## Implementation Notes (2025-12-15)
 
 ### Toast Partial
+
 Created `src/skriptoteket/web/templates/partials/toast.html` with:
+
 - Single-toast OOB swap pattern: `hx-swap-oob="innerHTML:#toast-container"` (replaces, no stacking)
 - Success (navy) and error (burgundy) variants
 - Auto-dismiss default 12 seconds via JS in `src/skriptoteket/web/static/js/app.js`
@@ -34,13 +36,16 @@ Created `src/skriptoteket/web/templates/partials/toast.html` with:
 - ARIA attributes for accessibility
 
 ### Loading Spinners
+
 CSS already exists in app.css:
+
 - `.huleedu-spinner` - base spinner animation
 - `.huleedu-spinner-sm` - small variant for buttons
 - `.huleedu-spinner-light` - light variant for dark backgrounds
 - `.htmx-indicator` - hidden by default, shown during htmx requests
 
 ### Usage Pattern
+
 ```html
 <button type="submit" class="huleedu-btn huleedu-btn-navy" hx-post="/action">
   <span class="htmx-indicator huleedu-spinner huleedu-spinner-sm huleedu-spinner-light"></span>
@@ -49,6 +54,7 @@ CSS already exists in app.css:
 ```
 
 Backend returns toast via OOB swap:
+
 ```python
 if is_hx_request(request):
     return templates.TemplateResponse(

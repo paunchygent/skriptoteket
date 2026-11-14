@@ -4,8 +4,8 @@ id: TASK-SKRIPT-11-26-01
 title: ST-11-26 HuleEdu palette token refresh
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,32 +17,19 @@ closeout_review:
 story: ST-SKRIPT-11-26
 task_kind: story
 acceptance_criteria:
-- Shared CSS tokens define the HuleEdu working palette and semantic aliases for brand,
-  text, borders, action, buttons, and light canvas surfaces.
-- The Tailwind 4 theme bridge exposes paper, terracotta, action, and critical utilities
-  without removing legacy burgundy compatibility.
-- Shared button, focus, selected-state, and link primitives use the Verdigris action
-  channel where they are functional UI, not warning/destructive UI.
-- Shared destructive primitives use critical/error-family tokens, while transient
-  failure toasts use terracotta because they are not critical blocking states.
-- Shared dense buttons, rails, toggles, segmented controls, and share/export action
-  buttons use the action channel for active/selected/primary control states instead
-  of structural navy.
-- Filled selected selectors keep light selected text for nested labels and disabled
-  selected states; navy text must not sit on Verdigris fill.
-- Canvas is treated as the unified base surface; broad white-on-canvas panel stacks
-  are avoided in favor of translucent panel surfaces and light row/object highlights.
-- Modal, dialog, popover, drawer, and sheet shells use an opaque canvas-toned modal
-  token instead of translucent panel tokens, while form fields and deliberate object
-  previews may remain white.
-- Secondary share/link actions use Verdigris outline/text hierarchy and link symbols,
-  while filled Verdigris is reserved for true primary CTA or selected/active state.
-- Design-system docs/rules document the palette split and deprecate new usage of generic
-  burgundy for functional action roles.
+  - Shared CSS tokens define the HuleEdu working palette and semantic aliases for brand, text, borders, action, buttons, and light canvas surfaces.
+  - The Tailwind 4 theme bridge exposes paper, terracotta, action, and critical utilities without removing legacy burgundy compatibility.
+  - Shared button, focus, selected-state, and link primitives use the Verdigris action channel where they are functional UI, not warning/destructive UI.
+  - Shared destructive primitives use critical/error-family tokens, while transient failure toasts use terracotta because they are not critical blocking states.
+  - Shared dense buttons, rails, toggles, segmented controls, and share/export action buttons use the action channel for active/selected/primary control states instead of structural navy.
+  - Filled selected selectors keep light selected text for nested labels and disabled selected states; navy text must not sit on Verdigris fill.
+  - Canvas is treated as the unified base surface; broad white-on-canvas panel stacks are avoided in favor of translucent panel surfaces and light row/object highlights.
+  - Modal, dialog, popover, drawer, and sheet shells use an opaque canvas-toned modal token instead of translucent panel tokens, while form fields and deliberate object previews may remain white.
+  - Secondary share/link actions use Verdigris outline/text hierarchy and link symbols, while filled Verdigris is reserved for true primary CTA or selected/active state.
+  - Design-system docs/rules document the palette split and deprecate new usage of generic burgundy for functional action roles.
 ---
 
 ## Context
-
 
 The previous token set used `burgundy` for too many unrelated meanings: brand
 warmth, primary CTA, selected states, focus, and destructive/critical actions.
@@ -54,7 +41,6 @@ try to become more product-oriented.
 | source | semantic | carried_forward | Source material is retained in the sections above. | source |
 
 ## Story Contract Slice
-
 
 Introduce the agreed HuleEdu working palette as shared tokens and wire the first
 semantic pass through the SPA bridge and shared primitives:
@@ -72,7 +58,6 @@ semantic pass through the SPA bridge and shared primitives:
 No separate contract inputs is stated in the source.
 
 ## Plan
-
 
 1. Update the canonical token CSS with palette tokens, semantic aliases, opacity
    variants, and compatibility aliases.
@@ -98,7 +83,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 - `pdm run docs-validate`
 - `pdm run fe-type-check`
 - `pdm run fe-lint`
@@ -110,7 +94,6 @@ No separate implementation steps is stated in the source.
 No separate validation is stated in the source.
 
 ## Stop Conditions
-
 
 Revert the token, bridge, primitive, and documentation changes together. Because
 legacy `burgundy` compatibility remains, rollback is limited to the token refresh
@@ -125,7 +108,6 @@ No separate lessons learned is stated in the source.
 No separate notes is stated in the source.
 
 ### Source: Non-goals
-
 
 - Removing the deprecated `burgundy` compatibility alias or rewriting historical docs/mockups.
 - Redesigning individual Klassrumskartan screens or editor layouts.

@@ -61,30 +61,30 @@ Create one proposed ADR plus one proposed epic and story package that:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Platform boundary, access profiles, current app matrix | 10 min |
-| `docs/backlog/epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md` | Scope, out-of-scope, sequence | 8 min |
-| `docs/backlog/stories/story-32-01-curated-app-public-access-profiles-and-current-app-matrix.md` | Per-app classification and default posture | 5 min |
-| `docs/backlog/stories/story-32-02-dedicated-public-curated-app-host-and-bootstrap-boundary.md` | Public route/bootstrap seam | 5 min |
-| `docs/backlog/stories/story-32-03-public-curated-app-api-namespace-and-anonymous-abuse-controls.md` | Public API boundary and abuse controls | 6 min |
-| `docs/backlog/stories/story-32-04-browser-owned-guest-state-profiles-and-snapshot-contracts.md` | Browser-authoritative guest-state rules | 6 min |
-| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md` | Upgrade/import policy and conflict handling | 6 min |
-| `docs/backlog/stories/story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md` | Klassrumskartan first-consumer scope and regression boundaries | 6 min |
+| File                                                                                                        | Focus                                                          | Time   |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------ |
+| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`                        | Platform boundary, access profiles, current app matrix         | 10 min |
+| `docs/backlog/epics/epic-32-public-curated-app-access-foundation-and-klassrumskartan-demo.md`               | Scope, out-of-scope, sequence                                  | 8 min  |
+| `docs/backlog/stories/story-32-01-curated-app-public-access-profiles-and-current-app-matrix.md`             | Per-app classification and default posture                     | 5 min  |
+| `docs/backlog/stories/story-32-02-dedicated-public-curated-app-host-and-bootstrap-boundary.md`              | Public route/bootstrap seam                                    | 5 min  |
+| `docs/backlog/stories/story-32-03-public-curated-app-api-namespace-and-anonymous-abuse-controls.md`         | Public API boundary and abuse controls                         | 6 min  |
+| `docs/backlog/stories/story-32-04-browser-owned-guest-state-profiles-and-snapshot-contracts.md`             | Browser-authoritative guest-state rules                        | 6 min  |
+| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md`      | Upgrade/import policy and conflict handling                    | 6 min  |
+| `docs/backlog/stories/story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md` | Klassrumskartan first-consumer scope and regression boundaries | 6 min  |
 
 **Total estimated time:** ~52 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Public curated-app access is governed by explicit access profiles, not by `min_role` alone | Prevents “`Role.USER` means anonymous” drift and keeps public posture opt-in | [ ] |
-| Keep `/apps/:appId`, `GET /api/v1/apps/{app_id}`, and existing `/api/v1/apps/{app_id}/...` seams authenticated | Avoids mixed privilege rules inside owner-scoped handlers and makes review clearer | [ ] |
-| Public curated apps must use parallel public entry and API seams | Preserves a clean privilege boundary and reduces auth-bypass risk | [ ] |
-| Browser-owned guest state is authoritative for public browser profiles | Matches Klassrumskartan's requirements and avoids guest PII in durable account tables | [ ] |
-| Guest export stays direct-download and Vault/MyFiles-free | Keeps guest history/export honest without leaking authenticated artifact semantics into public mode | [ ] |
-| Guest-to-account migration is prompt-based on first authenticated session, not automatic on registration | Aligns with the current no-cookie registration model and avoids hidden state re-homing | [ ] |
-| Conversion Hub remains authenticated-only in the initial matrix | Anonymous upload/conversion abuse and cost make it a bad first public candidate | [ ] |
+| Decision                                                                                                       | Rationale                                                                                           | Approve? |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------- |
+| Public curated-app access is governed by explicit access profiles, not by `min_role` alone                     | Prevents “`Role.USER` means anonymous” drift and keeps public posture opt-in                        | [ ]      |
+| Keep `/apps/:appId`, `GET /api/v1/apps/{app_id}`, and existing `/api/v1/apps/{app_id}/...` seams authenticated | Avoids mixed privilege rules inside owner-scoped handlers and makes review clearer                  | [ ]      |
+| Public curated apps must use parallel public entry and API seams                                               | Preserves a clean privilege boundary and reduces auth-bypass risk                                   | [ ]      |
+| Browser-owned guest state is authoritative for public browser profiles                                         | Matches Klassrumskartan's requirements and avoids guest PII in durable account tables               | [ ]      |
+| Guest export stays direct-download and Vault/MyFiles-free                                                      | Keeps guest history/export honest without leaking authenticated artifact semantics into public mode | [ ]      |
+| Guest-to-account migration is prompt-based on first authenticated session, not automatic on registration       | Aligns with the current no-cookie registration model and avoids hidden state re-homing              | [ ]      |
+| Conversion Hub remains authenticated-only in the initial matrix                                                | Anonymous upload/conversion abuse and cost make it a bad first public candidate                     | [ ]      |
 
 ## Review Checklist
 
@@ -120,15 +120,15 @@ Create one proposed ADR plus one proposed epic and story package that:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0079 | Defined reusable public curated-app access profiles, boundary rules, and initial app matrix |
-| 2 | EPIC-32 | Scoped the platform foundation plus Klassrumskartan-first-adopter outcome |
-| 3 | ST-32-01..06 | Drafted the story package for app matrix, public seams, guest state, upgrade policy, and Klassrumskartan adoption |
-| 4 | ADR-0079, ST-32-01, EPIC-32 | Split current vs future app classification and locked the registry as canonical public-profile source of truth |
-| 5 | ST-32-03 | Added the cookie-agnostic guest authority model and split `public_helper_*` vs `authenticated_upgrade_*` observability families |
-| 6 | ST-32-04, ST-32-05 | Added snapshot schema/id/fingerprint requirements plus explicit draft/checkpoint conflict rules |
-| 7 | ST-32-06 | Promoted smart rules to an explicit guest capability with persistence and upgrade semantics |
+| Change | Artifact                    | Description                                                                                                                     |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | ADR-0079                    | Defined reusable public curated-app access profiles, boundary rules, and initial app matrix                                     |
+| 2      | EPIC-32                     | Scoped the platform foundation plus Klassrumskartan-first-adopter outcome                                                       |
+| 3      | ST-32-01..06                | Drafted the story package for app matrix, public seams, guest state, upgrade policy, and Klassrumskartan adoption               |
+| 4      | ADR-0079, ST-32-01, EPIC-32 | Split current vs future app classification and locked the registry as canonical public-profile source of truth                  |
+| 5      | ST-32-03                    | Added the cookie-agnostic guest authority model and split `public_helper_*` vs `authenticated_upgrade_*` observability families |
+| 6      | ST-32-04, ST-32-05          | Added snapshot schema/id/fingerprint requirements plus explicit draft/checkpoint conflict rules                                 |
+| 7      | ST-32-06                    | Promoted smart rules to an explicit guest capability with persistence and upgrade semantics                                     |
 
 ## Approval Notes
 

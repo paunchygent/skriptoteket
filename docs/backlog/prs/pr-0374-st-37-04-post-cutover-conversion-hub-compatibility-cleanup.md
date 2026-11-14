@@ -155,10 +155,10 @@ canonical query-free routes, and Document Converter remains inert.
 
 ## Validation
 
-| Command | Outcome |
-|---------|---------|
+| Command                                                                                                                                                                                                                                                 | Outcome                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `pdm run fe-test -- --run src/router/routes.spec.ts src/App.spec.ts src/views/apps/ExamConverterAuthenticatedView.modeRoute.spec.ts src/views/apps/conversionHubModeRoute.spec.ts src/views/HomeView.spec.ts src/components/layout/AuthSidebar.spec.ts` | Red before production cleanup: failed because `mode=transcript` still rendered the transcript host. Green after cleanup: passed, 35 tests. |
-| `pdm run fe-type-check` | Passed. |
-| `pdm run fe-lint` | Passed. |
-| `pdm run test tests/unit/scripts/test_playwright_script_surface.py` | Passed, 3 tests. |
-| `pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink --base-url http://localhost:5173` | Passed; artifact `.artifacts/playwright-pr-0368-presentation-identity-split/20260622T221450Z/`. |
+| `pdm run fe-type-check`                                                                                                                                                                                                                                 | Passed.                                                                                                                                    |
+| `pdm run fe-lint`                                                                                                                                                                                                                                       | Passed.                                                                                                                                    |
+| `pdm run test tests/unit/scripts/test_playwright_script_surface.py`                                                                                                                                                                                     | Passed, 3 tests.                                                                                                                           |
+| `pdm run python -m scripts.playwright_pr_0363_conversion_mode_deeplink --base-url http://localhost:5173`                                                                                                                                                | Passed; artifact `.artifacts/playwright-pr-0368-presentation-identity-split/20260622T221450Z/`.                                            |

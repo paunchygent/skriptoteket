@@ -4,8 +4,8 @@ id: TASK-SKRIPT-08-35-01
 title: 'ST-08-35: help completion route coverage and copy signoff'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,28 +17,16 @@ closeout_review:
 story: ST-SKRIPT-08-35
 task_kind: story
 acceptance_criteria:
-- Given help copy needs product-owner approval, when this slice starts, then `docs/reference/ref-skriptoteket-help-copy-signoff.md`
-  is created or updated with the route/topic copy plan before any production topic
-  wording is changed.
-- Given the route table in `frontend/apps/skriptoteket/src/router/routes.ts`, when
-  tests run, then every named route is covered by the help topic catalog or explicitly
-  documented as intentionally using a generic fallback.
-- Given the help drawer is opened from authenticated and unauthenticated chrome, when
-  Escape, backdrop click, route changes, and opener focus restoration are tested,
-  then behavior is deterministic and accessible.
-- Given role-specific navigation, when the help index renders under user, contributor,
-  admin, and superuser roles, then topics match available surfaces and do not expose
-  unavailable admin/contributor entries.
-- Given the first approved copy batch exists, when topic components are updated, then
-  implemented Swedish copy matches the approved reference without ad hoc wording changes.
-- Given the help drawer is a secondary reading surface, when it renders, then it uses
-  a calm design-system off-white surface and nested help-index link lists use borders/dividers
-  without their own brutal shadows.
-- Given field-level help is added, when suggestion, tool-run, admin-decision, and
-  editor fields need explanations, then they share one reusable micro-help component/pattern.
+  - Given help copy needs product-owner approval, when this slice starts, then `docs/reference/ref-skriptoteket-help-copy-signoff.md` is created or updated with the route/topic copy plan before any production topic wording is changed.
+  - Given the route table in `frontend/apps/skriptoteket/src/router/routes.ts`, when tests run, then every named route is covered by the help topic catalog or explicitly documented as intentionally using a generic fallback.
+  - Given the help drawer is opened from authenticated and unauthenticated chrome, when Escape, backdrop click, route changes, and opener focus restoration are tested, then behavior is deterministic and accessible.
+  - Given role-specific navigation, when the help index renders under user, contributor, admin, and superuser roles, then topics match available surfaces and do not expose unavailable admin/contributor entries.
+  - Given the first approved copy batch exists, when topic components are updated, then implemented Swedish copy matches the approved reference without ad hoc wording changes.
+  - Given the help drawer is a secondary reading surface, when it renders, then it uses a calm design-system off-white surface and nested help-index link lists use borders/dividers without their own brutal shadows.
+  - Given field-level help is added, when suggestion, tool-run, admin-decision, and editor fields need explanations, then they share one reusable micro-help component/pattern.
 dependencies:
-- EPIC-SKRIPT-08
-- ST-SKRIPT-08-35
+  - EPIC-SKRIPT-08
+  - ST-SKRIPT-08-35
 ---
 
 ## Context
@@ -81,12 +69,14 @@ The source does not record separate contract inputs.
 ### Source: Implementation Plan
 
 1. **Copy signoff reference first**
+
    - Update `docs/reference/ref-skriptoteket-help-copy-signoff.md` with the
      first batch of exact Swedish drawer copy and field micro-help.
    - Mark each block `draft`, `approved`, `revise`, or `superseded`.
    - Stop before production wording changes if the first batch is not approved.
 
 2. **Help topic catalog**
+
    - Add a catalog module, for example
      `frontend/apps/skriptoteket/src/components/help/helpTopicCatalog.ts`.
    - Move topic metadata into the catalog: topic id, title, route names, index
@@ -97,6 +87,7 @@ The source does not record separate contract inputs.
      `router/routes.ts`.
 
 3. **Drawer behavior hardening**
+
    - Add deterministic Escape handling.
    - Restore focus to the opener when the drawer closes.
    - Decide and test the non-modal drawer behavior for outside click/focus and
@@ -107,6 +98,7 @@ The source does not record separate contract inputs.
    - Keep `Teleport` and async topics; no new dependency is needed.
 
 4. **Approved topic coverage**
+
    - Add or expand topics only after the relevant copy block is approved.
    - First batch should cover auth lifecycle/provisioning, catalog/tool
      run/result, profile, vault, my runs, suggestions, admin suggestions/tools,
@@ -115,12 +107,14 @@ The source does not record separate contract inputs.
      such as Klassrumskartan.
 
 5. **Micro-help pattern**
+
    - Extract a reusable field-level help popover or disclosure component.
    - Migrate `SuggestionNewView` description help first.
    - Add approved micro-help to tool run file inputs, suggestion title/body,
      admin decision rationale, and editor fields.
 
 6. **Docs cleanup**
+
    - Update EPIC-SKRIPT-08 to list ST-SKRIPT-08-35 as the active SPA help completion story.
    - Leave historical ST-SKRIPT-08-04 through ST-SKRIPT-08-09 docs intact unless a separate
      docs cleanup slice explicitly supersedes them.

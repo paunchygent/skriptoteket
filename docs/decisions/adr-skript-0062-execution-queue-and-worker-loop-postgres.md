@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0062
 title: Execution queue and worker loop (Postgres)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0062
+  - ADR-0062
 ---
 
 ## Context

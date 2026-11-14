@@ -45,25 +45,25 @@ bundle.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md` | Decision boundary | 10 min |
-| `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md` | Implementation authority | 10 min |
-| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md` | Parent story scope | 5 min |
-| `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md` | Adjacent contract map | 10 min |
+| File                                                                                                                     | Focus                     | Time   |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------- | ------ |
+| `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md`                                          | Decision boundary         | 10 min |
+| `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md`                          | Implementation authority  | 10 min |
+| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`                             | Parent story scope        | 5 min  |
+| `docs/reference/ref-exam-converter-reviewed-ai-facit-contract-map-pr-0331.md`                                            | Adjacent contract map     | 10 min |
 | `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md` | Upstream overlay contract | 10 min |
 
 **Total estimated time:** ~45 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Corrections are overlays, not source IR mutation | Preserves parser provenance and keeps rendering authority in Sir Convert | [x] |
-| Browser-local edits never unlock downloads | Prevents fake success and stale local readiness | [x] |
-| Returned effective IR/artifact evidence is authoritative | Keeps UI state downstream of the producer bundle | [x] |
-| Teacher-edited AI suggestions use reviewed-completion lineage | Correct provenance split when source binding and item-shape rules are exact | [x] |
-| Teacher-authored corrections use non-advisory overlay fields | Correct separation for Task 333-supported non-matching correction families | [x] |
+| Decision                                                      | Rationale                                                                   | Approve? |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| Corrections are overlays, not source IR mutation              | Preserves parser provenance and keeps rendering authority in Sir Convert    | [x]      |
+| Browser-local edits never unlock downloads                    | Prevents fake success and stale local readiness                             | [x]      |
+| Returned effective IR/artifact evidence is authoritative      | Keeps UI state downstream of the producer bundle                            | [x]      |
+| Teacher-edited AI suggestions use reviewed-completion lineage | Correct provenance split when source binding and item-shape rules are exact | [x]      |
+| Teacher-authored corrections use non-advisory overlay fields  | Correct separation for Task 333-supported non-matching correction families  | [x]      |
 
 ## Review Checklist
 
@@ -200,19 +200,19 @@ Decision approvals:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0332` | Initial retained review created with `changes_requested`. |
-| 2 | `ADR-0086` | Remediation added the source-binding invariant, fail-before-rendering rule, overlay capability matrix, rejection semantics, and artifact proof/leakage contract. |
-| 3 | `PR-0332` | Remediation added acceptance criteria for binding, candidate rejection semantics, capability-matrix inheritance, artifact proof, and forbidden leakage. |
-| 4 | `ADR-0086`, `PR-0332` | Re-review remediation classified points/scoring correction as upstream-required and removed points from the implementable correction promise until a dedicated source-bound points/scoring overlay exists. |
-| 5 | `REV-PR-0332` | Re-review retained `changes_requested` because point correction remains promised but not classified as supported, blocked, or upstream-required. |
-| 6 | `ADR-0086`, `PR-0332`, `REV-PR-0332` | User clarification recorded points/scoring as a small Sir Convert producer-owned Task 322 immediately before `PR-0332`, with Skriptoteket point editing blocked until the producer DTO and proof land. |
-| 7 | `REV-PR-0332` | Re-review approved the corrected ADR/PR contract while keeping `PR-0332` implementation blocked until Sir Convert Task 322 lands. |
-| 8 | `PR-0332`, `REV-PR-0332`, `sirConvertOpenapi.d.ts` | Sir Convert Task 322 landed, Skriptoteket regenerated the generated Sir Convert DTOs, and the consumer preflight now proves `point_correction` plus `effective_point_correction` are present before point-editing implementation starts. |
-| 9 | `ADR-0087`, `ST-21-04`, `PR-0332`, `REV-PR-0332` | Durable correction-session persistence was moved out of `PR-0332` into `ADR-0087` and `ST-21-04`. `PR-0332` must not implement or claim persisted teacher-correction truth. |
-| 10 | `PR-0332`, `REV-PR-0332` | Closeout re-review approved the non-durable unified-correction consumer/projection slice. |
-| 11 | `ADR-0087`, `ST-21-04` | User-lead accepted `ADR-0087`; ordered durable-session implementation now belongs to `PR-0333` through `PR-0337`. |
+| Change | Artifact                                           | Description                                                                                                                                                                                                                              |
+| ------ | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0332`                                      | Initial retained review created with `changes_requested`.                                                                                                                                                                                |
+| 2      | `ADR-0086`                                         | Remediation added the source-binding invariant, fail-before-rendering rule, overlay capability matrix, rejection semantics, and artifact proof/leakage contract.                                                                         |
+| 3      | `PR-0332`                                          | Remediation added acceptance criteria for binding, candidate rejection semantics, capability-matrix inheritance, artifact proof, and forbidden leakage.                                                                                  |
+| 4      | `ADR-0086`, `PR-0332`                              | Re-review remediation classified points/scoring correction as upstream-required and removed points from the implementable correction promise until a dedicated source-bound points/scoring overlay exists.                               |
+| 5      | `REV-PR-0332`                                      | Re-review retained `changes_requested` because point correction remains promised but not classified as supported, blocked, or upstream-required.                                                                                         |
+| 6      | `ADR-0086`, `PR-0332`, `REV-PR-0332`               | User clarification recorded points/scoring as a small Sir Convert producer-owned Task 322 immediately before `PR-0332`, with Skriptoteket point editing blocked until the producer DTO and proof land.                                   |
+| 7      | `REV-PR-0332`                                      | Re-review approved the corrected ADR/PR contract while keeping `PR-0332` implementation blocked until Sir Convert Task 322 lands.                                                                                                        |
+| 8      | `PR-0332`, `REV-PR-0332`, `sirConvertOpenapi.d.ts` | Sir Convert Task 322 landed, Skriptoteket regenerated the generated Sir Convert DTOs, and the consumer preflight now proves `point_correction` plus `effective_point_correction` are present before point-editing implementation starts. |
+| 9      | `ADR-0087`, `ST-21-04`, `PR-0332`, `REV-PR-0332`   | Durable correction-session persistence was moved out of `PR-0332` into `ADR-0087` and `ST-21-04`. `PR-0332` must not implement or claim persisted teacher-correction truth.                                                              |
+| 10     | `PR-0332`, `REV-PR-0332`                           | Closeout re-review approved the non-durable unified-correction consumer/projection slice.                                                                                                                                                |
+| 11     | `ADR-0087`, `ST-21-04`                             | User-lead accepted `ADR-0087`; ordered durable-session implementation now belongs to `PR-0333` through `PR-0337`.                                                                                                                        |
 
 ### 2026-05-18 Implementation-Contract Audit
 

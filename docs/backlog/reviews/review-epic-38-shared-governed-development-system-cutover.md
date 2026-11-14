@@ -67,10 +67,10 @@ dependencies and task-level admission facts.
 - [x] The local spine derives only from closed ST-SKILL-08-06 decisions.
 - [x] The direct-main exception is exact and expires after worktree proof.
 - [x] Terminal backlog remains historical and every governed source is
-      dispositioned.
+  dispositioned.
 - [x] Current and historical validation have one noncompeting owner each.
 - [x] Only PR-0417 is the first executable local slice under the approved
-      central authority.
+  central authority.
 
 ## Review Feedback
 

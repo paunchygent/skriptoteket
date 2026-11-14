@@ -28,14 +28,15 @@ presentation is visually too strong (shadow/border highlight) and breaks cohesio
 
 ## Goal
 
-1) Introduce a shared segmented toggle component with an animated navy selection fill.
+1. Introduce a shared segmented toggle component with an animated navy selection fill.
 
-2) Use the shared component in:
+2. Use the shared component in:
+
 - Editor workspace mode selector (Källkod/Diff/Metadata/Testkör)
 - Tool run file picker mode selector (Ladda upp/Välj sparade)
 
-3) Redesign the file picker upload action to be an integrated field-row control (no shadow, no border-highlight
-button), applied consistently in both tool runs and the editor sandbox run panel.
+3. Redesign the file picker upload action to be an integrated field-row control (no shadow, no border-highlight
+   button), applied consistently in both tool runs and the editor sandbox run panel.
 
 ## Non-goals
 
@@ -55,7 +56,8 @@ button), applied consistently in both tool runs and the editor sandbox run panel
 
 ## Implementation plan
 
-1) Add shared segmented toggle:
+1. Add shared segmented toggle:
+
 - New component: `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
 - API:
   - `modelValue: string`
@@ -65,7 +67,8 @@ button), applied consistently in both tool runs and the editor sandbox run panel
   - Container renders options as buttons with `aria-pressed`.
   - A single absolutely-positioned background element measures the active button rect and animates (prefers-reduced-motion respected).
 
-2) Refactor editor mode selector to use the shared component:
+2. Refactor editor mode selector to use the shared component:
+
 - Update `frontend/apps/skriptoteket/src/components/editor/EditorWorkspaceModeSelector.vue` to be a small wrapper around
   `UiSegmentedToggle`.
 - Preserve existing behavior:
@@ -75,12 +78,14 @@ button), applied consistently in both tool runs and the editor sandbox run panel
   - Always render as a single row (4 segments).
   - Render full-width within the editor header right column to match the workflow button row width.
 
-3) Update file picker to use the shared component for Upload vs Saved:
+3. Update file picker to use the shared component for Upload vs Saved:
+
 - Update `frontend/apps/skriptoteket/src/components/tool-run/ToolFileFieldPicker.vue`:
   - Replace the current two-button group with `UiSegmentedToggle` using values `upload` and `refs`.
   - Keep subtle rounding.
 
-4) Replace the file picker “button” with an integrated row control:
+4. Replace the file picker “button” with an integrated row control:
+
 - In upload mode in `ToolFileFieldPicker.vue`, replace the `btn-ghost`-styled label with:
   - A full-height label that behaves like inline text/link inside the field row (underline + hue change).
   - Disabled state: reduced opacity + no pointer events.

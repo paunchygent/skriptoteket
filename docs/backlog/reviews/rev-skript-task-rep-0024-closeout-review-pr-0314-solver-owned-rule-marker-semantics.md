@@ -4,8 +4,8 @@ id: REV-SKRIPT-TASK-REP-0024-CLOSEOUT
 title: 'Review: PR-0314 solver-owned rule marker semantics'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: changes_requested
 decided_at: '2026-05-10'

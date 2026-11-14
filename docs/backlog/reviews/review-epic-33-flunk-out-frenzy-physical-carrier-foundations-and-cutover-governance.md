@@ -53,30 +53,30 @@ of physical cut-over work. The package should:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md` | Ground-truth architecture direction and constraints | 10 min |
-| `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md` | Architect-guidance packet scope and how it feeds the new lane | 6 min |
-| `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md` | Whether runtime remediation is now correctly narrowed and sequenced | 6 min |
-| `docs/backlog/epics/epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md` | New prerequisite epic scope and risks | 6 min |
-| `docs/backlog/stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md` | Acceptance criteria and blocking rules for the foundation lane | 6 min |
-| `docs/backlog/prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md` | Schema/ownership slice boundaries | 5 min |
-| `docs/backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md` | Compiler/collider foundation slice boundaries | 5 min |
-| `docs/backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md` | Observer/governance slice boundaries and `PR-0214` alignment | 5 min |
-| `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md` | Whether the stale cut-over lane is truly blocked/re-scoped | 4 min |
-| `docs/backlog/prs/pr-0202-flunk-out-frenzy-full-board-donor-3d-carrier-mapping-and-elevated-rails.md` | Whether donor-overhead work is prevented from bypassing launcher-world ownership rules | 4 min |
-| `docs/backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md` | Whether transport-era assumptions are removed from future cut-over mechanics | 4 min |
+| File                                                                                                                             | Focus                                                                                  | Time   |
+| -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ------ |
+| `docs/reference/ref-flunk-out-frenzy-physical-rail-architect-direction-2026-04-04.md`                                            | Ground-truth architecture direction and constraints                                    | 10 min |
+| `docs/backlog/prs/pr-0216-flunk-out-frenzy-physical-rail-carrier-semantics-and-architect-guidance-packet.md`                     | Architect-guidance packet scope and how it feeds the new lane                          | 6 min  |
+| `docs/backlog/prs/pr-0215-flunk-out-frenzy-launcher-runtime-shortcut-remediation-and-physical-truth-alignment.md`                | Whether runtime remediation is now correctly narrowed and sequenced                    | 6 min  |
+| `docs/backlog/epics/epic-33-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`                             | New prerequisite epic scope and risks                                                  | 6 min  |
+| `docs/backlog/stories/story-33-01-flunk-out-frenzy-physical-carrier-foundations-and-cutover-governance.md`                       | Acceptance criteria and blocking rules for the foundation lane                         | 6 min  |
+| `docs/backlog/prs/pr-0217-flunk-out-frenzy-carrier-role-schema-observation-spine-contract-and-launcher-world-ownership-rules.md` | Schema/ownership slice boundaries                                                      | 5 min  |
+| `docs/backlog/prs/pr-0218-flunk-out-frenzy-launcher-world-carrier-compiler-and-donor-overhead-collider-foundation.md`            | Compiler/collider foundation slice boundaries                                          | 5 min  |
+| `docs/backlog/prs/pr-0219-flunk-out-frenzy-physical-carrier-observer-shadow-mode-and-cutover-readiness-gate.md`                  | Observer/governance slice boundaries and `PR-0214` alignment                           | 5 min  |
+| `docs/backlog/prs/pr-0200-flunk-out-frenzy-launcher-release-path-and-donor-wall-face-representation.md`                          | Whether the stale cut-over lane is truly blocked/re-scoped                             | 4 min  |
+| `docs/backlog/prs/pr-0202-flunk-out-frenzy-full-board-donor-3d-carrier-mapping-and-elevated-rails.md`                            | Whether donor-overhead work is prevented from bypassing launcher-world ownership rules | 4 min  |
+| `docs/backlog/prs/pr-0203-flunk-out-frenzy-elevated-rail-travel-and-left-handoff-mechanics.md`                                   | Whether transport-era assumptions are removed from future cut-over mechanics           | 4 min  |
 
 **Total estimated time:** ~61 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Physical cut-over work must be blocked behind a new foundation lane | Prevents runtime code from inventing missing carrier semantics | [ ] |
-| `travelRoutes` must become observation/proof spines, not transport owners | Aligns future implementation with the architect reference and with the truth-gate lessons from `PR-0212` through `PR-0215` | [ ] |
-| Launcher-world ownership and donor collider foundation must be established before transport deletion | Prevents cross-world causality and render-only donor geometry from hiding inside runtime heuristics | [ ] |
-| `PR-0214` stays strict during migration | Keeps drift and proof mismatches visible instead of normalizing them away | [ ] |
+| Decision                                                                                             | Rationale                                                                                                                  | Approve? |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Physical cut-over work must be blocked behind a new foundation lane                                  | Prevents runtime code from inventing missing carrier semantics                                                             | [ ]      |
+| `travelRoutes` must become observation/proof spines, not transport owners                            | Aligns future implementation with the architect reference and with the truth-gate lessons from `PR-0212` through `PR-0215` | [ ]      |
+| Launcher-world ownership and donor collider foundation must be established before transport deletion | Prevents cross-world causality and render-only donor geometry from hiding inside runtime heuristics                        | [ ]      |
+| `PR-0214` stays strict during migration                                                              | Keeps drift and proof mismatches visible instead of normalizing them away                                                  | [ ]      |
 
 ## Review Checklist
 
@@ -112,12 +112,12 @@ of physical cut-over work. The package should:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0215` | Tightened the runtime slice to a bounded honesty checkpoint rather than a physical-carrier implementation vehicle |
-| 2 | `EPIC-33` / `ST-33-01` | Added the new foundation-first epic and story that must land before physical cut-over resumes |
-| 3 | `PR-0217` / `PR-0218` / `PR-0219` | Added the new schema/compiler/observer foundation PR sequence |
-| 4 | `PR-0200` / `PR-0202` / `PR-0203` | Blocked or re-scoped stale route-driven cut-over tasks to align with the architect reference |
+| Change | Artifact                          | Description                                                                                                       |
+| ------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0215`                         | Tightened the runtime slice to a bounded honesty checkpoint rather than a physical-carrier implementation vehicle |
+| 2      | `EPIC-33` / `ST-33-01`            | Added the new foundation-first epic and story that must land before physical cut-over resumes                     |
+| 3      | `PR-0217` / `PR-0218` / `PR-0219` | Added the new schema/compiler/observer foundation PR sequence                                                     |
+| 4      | `PR-0200` / `PR-0202` / `PR-0203` | Blocked or re-scoped stale route-driven cut-over tasks to align with the architect reference                      |
 
 ## Approval Notes
 

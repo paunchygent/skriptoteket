@@ -40,25 +40,25 @@ than `policy.roles`.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                                          | Focus                                              | Time   |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ------ |
 | `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md` | Remediation scope, acceptance criteria, proof plan | 15 min |
-| `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md` | Original findings and proof requirements | 8 min |
-| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md` | Gateway-owned browser auth boundary | 5 min |
-| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md` | App-local continuation boundary | 5 min |
-| `frontend/apps/skriptoteket/src/stores/auth.ts` and `frontend/apps/skriptoteket/src/api/sharedAuth.ts` | Current local role/user id consumers | 8 min |
+| `docs/backlog/reviews/review-pr-0251-app-local-bootstrap-continuation.md`                                     | Original findings and proof requirements           | 8 min  |
+| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`                               | Gateway-owned browser auth boundary                | 5 min  |
+| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`                                    | App-local continuation boundary                    | 5 min  |
+| `frontend/apps/skriptoteket/src/stores/auth.ts` and `frontend/apps/skriptoteket/src/api/sharedAuth.ts`        | Current local role/user id consumers               | 8 min  |
 
 **Total estimated time:** ~41 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Remediate `PR-0251` through a dedicated `PR-0255` slice | Keeps the original cutover lane focused while making the review blockers explicit | [x] |
-| Require HuleEdu request context instead of local session-cookie auth for app continuation | Matches ADR-0076 and ADR-0082 | [x] |
-| Move local RBAC off HuleEdu provider roles | Preserves Skriptoteket-local authorization ownership | [x] |
-| Freeze the continuation projection as `local_user` plus matching `profile` | Preserves local user id, role, profile identity, and ownership comparisons | [x] |
-| Consume concrete `InternalIdentityContextV1` headers and verification rules | Makes the gateway trust boundary implementable and fail-closed | [x] |
+| Decision                                                                                  | Rationale                                                                         | Approve? |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------- |
+| Remediate `PR-0251` through a dedicated `PR-0255` slice                                   | Keeps the original cutover lane focused while making the review blockers explicit | [x]      |
+| Require HuleEdu request context instead of local session-cookie auth for app continuation | Matches ADR-0076 and ADR-0082                                                     | [x]      |
+| Move local RBAC off HuleEdu provider roles                                                | Preserves Skriptoteket-local authorization ownership                              | [x]      |
+| Freeze the continuation projection as `local_user` plus matching `profile`                | Preserves local user id, role, profile identity, and ownership comparisons        | [x]      |
+| Consume concrete `InternalIdentityContextV1` headers and verification rules               | Makes the gateway trust boundary implementable and fail-closed                    | [x]      |
 
 ## Review Checklist
 
@@ -201,9 +201,9 @@ None. `PR-0255` is approved for implementation.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0255` | Reviewed the proposed remediation response against `REV-PR-0251`, `ADR-0076`, and `ADR-0082` |
-| 2 | `PR-0255` | Requested clarification before implementation for local user projection shape, gateway context verification, and live proof |
-| 3 | `PR-0255` | Revised remediation plan to freeze local projection shape, gateway verification contract, and live proof expectations |
-| 4 | `REV-PR-0255` | Approved the revised remediation plan for implementation |
+| Change | Artifact      | Description                                                                                                                 |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0255` | Reviewed the proposed remediation response against `REV-PR-0251`, `ADR-0076`, and `ADR-0082`                                |
+| 2      | `PR-0255`     | Requested clarification before implementation for local user projection shape, gateway context verification, and live proof |
+| 3      | `PR-0255`     | Revised remediation plan to freeze local projection shape, gateway verification contract, and live proof expectations       |
+| 4      | `REV-PR-0255` | Approved the revised remediation plan for implementation                                                                    |

@@ -4,8 +4,8 @@ id: ST-SKRIPT-37-05
 title: Cross-app save/export file naming protocol
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,27 +16,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-37
 acceptance_criteria:
-- Given curated apps create downloads and `Mina filer` records, when a default filename
-  is generated, then it uses source provenance, teacher-facing output purpose, and
-  a version or timestamp signal without duplicating extensions.
-- Given a teacher downloads or saves a generated output, when the workflow supports
-  naming, then the teacher can edit the filename stem while the system owns extension
-  and content-type consistency.
-- Given a teacher has a saved file in `Mina filer`, when they rename it, then the
-  record name changes without mutating bytes, source references, hashes, or content-type
-  truth.
-- Given some outputs are app-owned and others are producer-replay-owned, when save/export
-  naming is implemented, then shared core contracts stay cohesive while app adapters
-  declare only necessary authority differences.
-- Given Audio Transcription, Exam Converter, Document Converter, and later curated
-  apps need file actions, when implementation PRs are created, then they reuse shared
-  backend/frontend naming and save primitives rather than duplicating app-specific
-  flows.
+  - Given curated apps create downloads and `Mina filer` records, when a default filename is generated, then it uses source provenance, teacher-facing output purpose, and a version or timestamp signal without duplicating extensions.
+  - Given a teacher downloads or saves a generated output, when the workflow supports naming, then the teacher can edit the filename stem while the system owns extension and content-type consistency.
+  - Given a teacher has a saved file in `Mina filer`, when they rename it, then the record name changes without mutating bytes, source references, hashes, or content-type truth.
+  - Given some outputs are app-owned and others are producer-replay-owned, when save/export naming is implemented, then shared core contracts stay cohesive while app adapters declare only necessary authority differences.
+  - Given Audio Transcription, Exam Converter, Document Converter, and later curated apps need file actions, when implementation PRs are created, then they reuse shared backend/frontend naming and save primitives rather than duplicating app-specific flows.
 retired_ids:
-- ST-37-05
+  - ST-37-05
 dependencies:
-- ST-SKRIPT-37-04
-- REF-SKRIPT-GENERAL-current-product-lanes-and-sir-convert-boundary
+  - ST-SKRIPT-37-04
+  - REF-SKRIPT-GENERAL-current-product-lanes-and-sir-convert-boundary
 ---
 
 ## Context

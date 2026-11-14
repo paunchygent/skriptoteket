@@ -4,8 +4,8 @@ id: ST-SKRIPT-14-22
 title: 'Tool run UX: conventions for progress + input file references'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,21 +16,13 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-14
 acceptance_criteria:
-- Given a tool sets progress metadata in state using a documented convention, when
-  the UI renders the run, then it shows a compact progress indicator (e.g. step X
-  of Y, optional label).
-- Given progress metadata is absent or invalid, when the UI renders the run, then
-  it does not show a progress UI and does not error.
-- Given a run has uploaded input files, when the UI renders actions, then it exposes
-  a 'Files available' view (names + copyable references) so authors/users can reference
-  them in subsequent steps.
-- Given the 'Files available' view is shown, then it must not expose filesystem paths;
-  only file names/references are shown.
-- Given the conventions are implemented, then they are documented for tool authors
-  (including how to store file selections in state and how the runner/toolkit resolves
-  references to paths).
+  - Given a tool sets progress metadata in state using a documented convention, when the UI renders the run, then it shows a compact progress indicator (e.g. step X of Y, optional label).
+  - Given progress metadata is absent or invalid, when the UI renders the run, then it does not show a progress UI and does not error.
+  - Given a run has uploaded input files, when the UI renders actions, then it exposes a 'Files available' view (names + copyable references) so authors/users can reference them in subsequent steps.
+  - Given the 'Files available' view is shown, then it must not expose filesystem paths; only file names/references are shown.
+  - Given the conventions are implemented, then they are documented for tool authors (including how to store file selections in state and how the runner/toolkit resolves references to paths).
 retired_ids:
-- ST-14-22
+  - ST-14-22
 ---
 
 ## Context

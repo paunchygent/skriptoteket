@@ -42,28 +42,28 @@ recorder path.
 
 ## Artifacts to Review
 
-| File | Focus |
-|------|-------|
-| `docs/backlog/prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md` | Scope, acceptance criteria, test plan |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/authenticated_shares.py` | Authenticated share checkpoint callback |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/checkpoint_recorders.py` | Shared checkpoint build/dedupe logic |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/checkpoints.py` | Seating checkpoint provenance contract |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/grouping_checkpoints.py` | Grouping checkpoint provenance contract |
-| `src/skriptoteket/infrastructure/repositories/classroom_planner_seating_export_checkpoints.py` | Seating checkpoint persistence mapper |
-| `src/skriptoteket/infrastructure/repositories/classroom_planner_grouping_export_checkpoints.py` | Grouping checkpoint persistence mapper |
-| `migrations/versions/f2a7c9d4e6b8_add_share_checkpoint_provenance.py` | Provenance schema migration |
-| `tests/unit/application/apps/classroom_planner/test_authenticated_shares.py` | Authenticated share checkpoint proof |
-| `tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py` | Seating mapper proof |
-| `tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py` | Grouping mapper proof |
+| File                                                                                            | Focus                                   |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `docs/backlog/prs/pr-0307-st-26-06-share-as-export-smart-history-provenance.md`                 | Scope, acceptance criteria, test plan   |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/authenticated_shares.py`  | Authenticated share checkpoint callback |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/checkpoint_recorders.py`  | Shared checkpoint build/dedupe logic    |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/checkpoints.py`                         | Seating checkpoint provenance contract  |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/grouping_checkpoints.py`                | Grouping checkpoint provenance contract |
+| `src/skriptoteket/infrastructure/repositories/classroom_planner_seating_export_checkpoints.py`  | Seating checkpoint persistence mapper   |
+| `src/skriptoteket/infrastructure/repositories/classroom_planner_grouping_export_checkpoints.py` | Grouping checkpoint persistence mapper  |
+| `migrations/versions/f2a7c9d4e6b8_add_share_checkpoint_provenance.py`                           | Provenance schema migration             |
+| `tests/unit/application/apps/classroom_planner/test_authenticated_shares.py`                    | Authenticated share checkpoint proof    |
+| `tests/unit/infrastructure/repositories/test_classroom_planner_seating_export_checkpoints.py`   | Seating mapper proof                    |
+| `tests/unit/infrastructure/repositories/test_classroom_planner_grouping_export_checkpoints.py`  | Grouping mapper proof                   |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Add explicit checkpoint source provenance | Needed so export jobs and authenticated shares can both produce Smart-history rows without conflating source identity | [x] |
-| Share recorder is authenticated-only | Keeps public guest shares outside owner/account-backed Smart history | [x] |
-| Reuse one recorder for export and share checkpoint dedupe | Preserves existing dedupe behavior while allowing share-created checkpoints | [x] |
-| Close only with green repository mapper proof | The changed persisted provenance fields are read through the checkpoint repositories | [x] |
+| Decision                                                  | Rationale                                                                                                             | Approve? |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- | -------- |
+| Add explicit checkpoint source provenance                 | Needed so export jobs and authenticated shares can both produce Smart-history rows without conflating source identity | [x]      |
+| Share recorder is authenticated-only                      | Keeps public guest shares outside owner/account-backed Smart history                                                  | [x]      |
+| Reuse one recorder for export and share checkpoint dedupe | Preserves existing dedupe behavior while allowing share-created checkpoints                                           | [x]      |
+| Close only with green repository mapper proof             | The changed persisted provenance fields are read through the checkpoint repositories                                  | [x]      |
 
 ## Review Checklist
 

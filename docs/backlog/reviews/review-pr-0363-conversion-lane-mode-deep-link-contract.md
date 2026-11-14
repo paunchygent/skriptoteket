@@ -53,29 +53,29 @@ changes into the already-planned follow-up sequence.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0363-st-37-03-conversion-lane-mode-deep-link-contract.md` | Governing scope, acceptance criteria, implementation steps, and proof gates | 20 min |
-| `docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md` | Dependency state and claimed unblock status | 5 min |
-| `docs/backlog/reviews/review-pr-0362-app-presentation-decomposition-and-naming-package.md` | Independent approval of the dependency package | 5 min |
-| `docs/reference/ref-service-shell-ux-realignment-plan-v1.md` | Upstream shell-sequencing authority for `PR-0363` | 8 min |
-| `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md` | Native-state versus heavy-conversion boundary | 8 min |
-| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md` | Naming/decomposition authority and follow-up split | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue` | Current local-mode reality and fixture boundary | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue` | Current mode type ownership and tab behavior | 5 min |
-| `frontend/apps/skriptoteket/src/router/routes.ts` | Existing authenticated/public route surfaces and fixture routes | 8 min |
-| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts` | Current host registry boundary that must stay unchanged | 5 min |
+| File                                                                                       | Focus                                                                       | Time   |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0363-st-37-03-conversion-lane-mode-deep-link-contract.md`             | Governing scope, acceptance criteria, implementation steps, and proof gates | 20 min |
+| `docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md`   | Dependency state and claimed unblock status                                 | 5 min  |
+| `docs/backlog/reviews/review-pr-0362-app-presentation-decomposition-and-naming-package.md` | Independent approval of the dependency package                              | 5 min  |
+| `docs/reference/ref-service-shell-ux-realignment-plan-v1.md`                               | Upstream shell-sequencing authority for `PR-0363`                           | 8 min  |
+| `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md`                  | Native-state versus heavy-conversion boundary                               | 8 min  |
+| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`                  | Naming/decomposition authority and follow-up split                          | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`             | Current local-mode reality and fixture boundary                             | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/ConversionHubModeTabs.vue`                      | Current mode type ownership and tab behavior                                | 5 min  |
+| `frontend/apps/skriptoteket/src/router/routes.ts`                                          | Existing authenticated/public route surfaces and fixture routes             | 8 min  |
+| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts`                           | Current host registry boundary that must stay unchanged                     | 5 min  |
 
 **Total estimated time:** ~84 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the contract on the existing authenticated `/apps/documents.conversion_hub` route via `?mode=exam|transcript` | This gives truthful direct shell entrypoints without pre-empting the later route/app-id decomposition decision | [x] |
-| Default absent or invalid `mode` query state to exam without URL rewrite | This preserves legacy compatibility while failing closed against unsupported aliases, arrays, or empty values | [x] |
-| Keep route records, registry metadata, public routes, backend/API, Sir Convert, HuleEdu, QTI, and DOCX out of scope | Those surfaces belong to later reviewed follow-up slices and are explicitly forbidden here | [x] |
-| Require fixture truthfulness and HuleEdu-authenticated browser proof | The change is route-visible on a protected host, so truthful fixture handling and live proof are mandatory | [x] |
+| Decision                                                                                                            | Rationale                                                                                                     | Approve?                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Keep the contract on the existing authenticated `/apps/documents.conversion_hub` route via \`?mode=exam             | transcript\`                                                                                                  | This gives truthful direct shell entrypoints without pre-empting the later route/app-id decomposition decision |
+| Default absent or invalid `mode` query state to exam without URL rewrite                                            | This preserves legacy compatibility while failing closed against unsupported aliases, arrays, or empty values | [x]                                                                                                            |
+| Keep route records, registry metadata, public routes, backend/API, Sir Convert, HuleEdu, QTI, and DOCX out of scope | Those surfaces belong to later reviewed follow-up slices and are explicitly forbidden here                    | [x]                                                                                                            |
+| Require fixture truthfulness and HuleEdu-authenticated browser proof                                                | The change is route-visible on a protected host, so truthful fixture handling and live proof are mandatory    | [x]                                                                                                            |
 
 ## Review Checklist
 
@@ -333,14 +333,14 @@ Planning review: no findings.
 - Historical planning validation:
   - `pdm run docs-validate`: passed.
   - `git diff --check`: passed.
-  Current re-review validation is listed in the 2026-06-19 re-review section
-  above.
+    Current re-review validation is listed in the 2026-06-19 re-review section
+    above.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0363` | Added the retained pre-implementation review, recorded dependency satisfaction for `PR-0362`, and approved the bounded `mode` deep-link contract |
-| 2 | `REV-PR-0363` | Added the implementation review pass, reran focused frontend checks, and moved the current decision to `changes_requested` because the required authenticated browser proof is still missing |
-| 3 | `REV-PR-0363` | Added the implementer proof addendum with Docker-service runtime evidence and requested independent re-review without self-approval |
-| 4 | `REV-PR-0363` | Completed the independent re-review, verified the retained authenticated browser proof and runtime breadcrumbs, reran the focused validation gates, and approved the implementation |
+| Change | Artifact      | Description                                                                                                                                                                                  |
+| ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0363` | Added the retained pre-implementation review, recorded dependency satisfaction for `PR-0362`, and approved the bounded `mode` deep-link contract                                             |
+| 2      | `REV-PR-0363` | Added the implementation review pass, reran focused frontend checks, and moved the current decision to `changes_requested` because the required authenticated browser proof is still missing |
+| 3      | `REV-PR-0363` | Added the implementer proof addendum with Docker-service runtime evidence and requested independent re-review without self-approval                                                          |
+| 4      | `REV-PR-0363` | Completed the independent re-review, verified the retained authenticated browser proof and runtime breadcrumbs, reran the focused validation gates, and approved the implementation          |

@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0082
 title: App-local bootstrap continuation on HuleEdu-owned session
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0082
+  - ADR-0082
 ---
 
 ## Context

@@ -4,19 +4,19 @@ id: ADR-SKRIPT-0068
 title: 'Textbook corpus: pristine cleanup and RAG ingest governance'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 links:
   governing:
-  - EPIC-SKRIPT-22
-  - ST-SKRIPT-22-01
-  - TASK-SKRIPT-22-01-01
+    - EPIC-SKRIPT-22
+    - ST-SKRIPT-22-01
+    - TASK-SKRIPT-22-01-01
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0068
+  - ADR-0068
 ---
 
 ## Context

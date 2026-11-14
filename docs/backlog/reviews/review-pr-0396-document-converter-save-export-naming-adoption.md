@@ -41,29 +41,29 @@ repeated saves.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md` | Governing scope and acceptance criteria | 5 min |
-| `docs/reference/ref-file-naming-save-export-protocol-v1.md` | Shared filename protocol authority | 5 min |
-| `src/skriptoteket/application/curated_apps/document_converter_file_naming.py` | Backend filename authority and validation | 10 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub.py` | Single-file protected API contract | 5 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_project_previews.py` | Project-preview protected API contract | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue` | Route-visible filename editing flow | 10 min |
-| `tests/unit/application/curated_apps/handlers/test_document_converter_naming_adoption.py` | Application-level proof | 10 min |
-| `tests/unit/web/conversion_hub/test_apps_document_converter_api.py` | Single-file API proof | 5 min |
-| `tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py` | Project-preview API proof | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/*.spec.ts` | Route-visible UI proof | 10 min |
+| File                                                                                      | Focus                                     | Time   |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md`     | Governing scope and acceptance criteria   | 5 min  |
+| `docs/reference/ref-file-naming-save-export-protocol-v1.md`                               | Shared filename protocol authority        | 5 min  |
+| `src/skriptoteket/application/curated_apps/document_converter_file_naming.py`             | Backend filename authority and validation | 10 min |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub.py`                                      | Single-file protected API contract        | 5 min  |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_project_previews.py`  | Project-preview protected API contract    | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`  | Route-visible filename editing flow       | 10 min |
+| `tests/unit/application/curated_apps/handlers/test_document_converter_naming_adoption.py` | Application-level proof                   | 10 min |
+| `tests/unit/web/conversion_hub/test_apps_document_converter_api.py`                       | Single-file API proof                     | 5 min  |
+| `tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py`       | Project-preview API proof                 | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/*.spec.ts`                  | Route-visible UI proof                    | 10 min |
 
 **Total estimated time:** ~70 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep backend/API as the final filename authority | Matches ST-37-05 and avoids browser-owned filename truth | [x] |
-| Reuse separate labels for single-file and project-preview outputs | Matches the reviewed protocol vocabulary | [x] |
-| Use repeat-save disambiguation instead of update-in-place saves | Matches the default shared collision policy | [x] |
-| Accept the current proof as sufficient for the new `filename_stem` flow | Public and route-visible proof now covers the contract | [x] |
+| Decision                                                                | Rationale                                                | Approve? |
+| ----------------------------------------------------------------------- | -------------------------------------------------------- | -------- |
+| Keep backend/API as the final filename authority                        | Matches ST-37-05 and avoids browser-owned filename truth | [x]      |
+| Reuse separate labels for single-file and project-preview outputs       | Matches the reviewed protocol vocabulary                 | [x]      |
+| Use repeat-save disambiguation instead of update-in-place saves         | Matches the default shared collision policy              | [x]      |
+| Accept the current proof as sufficient for the new `filename_stem` flow | Public and route-visible proof now covers the contract   | [x]      |
 
 ## Review Checklist
 
@@ -179,13 +179,13 @@ No blocking findings remain.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0396` | Created the retained PR review record for the working-tree PR-0396 implementation. |
-| 2 | `REV-PR-0396` | Recorded public-API proof gaps for the new `filename_stem` contract. |
-| 3 | `REV-PR-0396` | Recorded route-visible UI proof gaps for the editable filename field. |
-| 4 | `REV-PR-0396` | Re-reviewed Aristotle's second-pass test updates and confirmed both findings are resolved. |
-| 5 | `REV-PR-0396` | Flipped the retained review decision to `approved`. |
+| Change | Artifact      | Description                                                                                |
+| ------ | ------------- | ------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0396` | Created the retained PR review record for the working-tree PR-0396 implementation.         |
+| 2      | `REV-PR-0396` | Recorded public-API proof gaps for the new `filename_stem` contract.                       |
+| 3      | `REV-PR-0396` | Recorded route-visible UI proof gaps for the editable filename field.                      |
+| 4      | `REV-PR-0396` | Re-reviewed Aristotle's second-pass test updates and confirmed both findings are resolved. |
+| 5      | `REV-PR-0396` | Flipped the retained review decision to `approved`.                                        |
 
 ## Verification
 

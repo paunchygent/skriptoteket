@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0034
 title: Self-registration and HuleEdu-aligned user profiles
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0034
+  - ADR-0034
 ---
 
 ## Context
-
 
 Skriptoteket currently uses admin-provisioned accounts only (ADR-0009). Users cannot self-register, and the identity model
 lacks profile fields (name, display preferences) and security controls (brute-force protection).
@@ -28,7 +27,6 @@ To prepare for future HuleEdu integration (ADR-0011) and enable a standalone Skr
 4. **Brute-force protection** - Account lockout after failed login attempts
 
 ## Decision
-
 
 ### 1. Extend the identity model (HuleEdu-aligned)
 
@@ -98,7 +96,6 @@ Existing `provision-user` CLI and handler remain unchanged. Admin-provisioned ac
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 - Users can self-register and manage their own profiles
 - Identity model aligns with HuleEdu for future federation

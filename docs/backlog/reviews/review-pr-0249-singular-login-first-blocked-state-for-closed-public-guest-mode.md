@@ -42,26 +42,26 @@ Approve `PR-0249` only after it:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                                   | Focus                                        | Time   |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------- | ------ |
 | `docs/backlog/prs/pr-0249-st-32-05-singular-login-first-blocked-state-for-closed-public-guest-mode.md` | Acceptance criteria, seams, and proof burden | 12 min |
-| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md` | Parent story alignment | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts` | Controller bootstrap truth | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue` | Duplicate blocked-panel rendering seam | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts` | Controller/shell proof | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts` | View/action proof | 6 min |
-| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts` | Public-host route/action proof | 5 min |
+| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md` | Parent story alignment                       | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`                      | Controller bootstrap truth                   | 8 min  |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.vue`                      | Duplicate blocked-panel rendering seam       | 8 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts`              | Controller/shell proof                       | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts`                  | View/action proof                            | 6 min  |
+| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts`                                       | Public-host route/action proof               | 5 min  |
 
 **Total estimated time:** ~50 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Reconcile controller + view seams together | Prevents a one-surface cosmetic fix that leaves the other truth-path alive | [ ] |
-| Make `/auth/login` and `/register` explicit contract targets | Prevents visually correct but behaviorally wrong auth actions | [ ] |
-| Require shell, view, and public-host proof | The route/action contract spans more than one spec surface | [ ] |
-| Keep this slice frontend-only and policy-preserving | The one-time browser closure policy is already decided in `PR-0246` | [ ] |
+| Decision                                                     | Rationale                                                                  | Approve? |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------- | -------- |
+| Reconcile controller + view seams together                   | Prevents a one-surface cosmetic fix that leaves the other truth-path alive | [ ]      |
+| Make `/auth/login` and `/register` explicit contract targets | Prevents visually correct but behaviorally wrong auth actions              | [ ]      |
+| Require shell, view, and public-host proof                   | The route/action contract spans more than one spec surface                 | [ ]      |
+| Keep this slice frontend-only and policy-preserving          | The one-time browser closure policy is already decided in `PR-0246`        | [ ]      |
 
 ## Review Checklist
 

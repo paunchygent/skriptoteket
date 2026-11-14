@@ -40,11 +40,11 @@ override.
 
 ## Implementation plan
 
-1) Create draft lock storage and lock endpoints.
-2) Add lock metadata to editor boot responses.
-3) Enforce lock ownership in save and sandbox endpoints.
-4) Update lock on draft head advancement during saves.
-5) Add UI read-only mode, lock status display, and force-take action.
+1. Create draft lock storage and lock endpoints.
+2. Add lock metadata to editor boot responses.
+3. Enforce lock ownership in save and sandbox endpoints.
+4. Update lock on draft head advancement during saves.
+5. Add UI read-only mode, lock status display, and force-take action.
 
 ## Test plan
 

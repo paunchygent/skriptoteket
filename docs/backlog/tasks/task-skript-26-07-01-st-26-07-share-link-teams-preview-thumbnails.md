@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-07-01
 title: ST-26-07 share-link Teams preview thumbnails
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,37 +17,22 @@ closeout_review:
 story: ST-SKRIPT-26-07
 task_kind: story
 acceptance_criteria:
-- Given authenticated or public guest seating share creation succeeds, when the artifact
-  is persisted, then a 1200x630 link-preview image is generated from the immutable
-  rendered seating HTML/CSS and the full classroom map is visible in the image.
-- Given authenticated or public guest grouping share creation succeeds, when the artifact
-  is persisted, then a 1200x630 link-preview image is generated from the immutable
-  rendered grouping HTML/CSS and the grouping cards are visible in the image.
-- Given any active share page is fetched, when a crawler reads the head, then the
-  page includes escaped `og:title`, `og:description`, `og:type`, `og:site_name`, `og:url`,
-  `og:image`, `og:image:secure_url`, `og:image:type`, `og:image:width`, `og:image:height`,
-  `og:image:alt`, Twitter large-card tags, and conservative schema.org JSON-LD.
-- Given a crawler fetches the preview image URL, when the share is active, then it
-  receives a public image response without authentication, owner-scoped APIs, secrets,
-  token hashes, revoke secrets, or SPA fallback.
-- Given a share is revoked, expired, purged, or missing, when the preview image URL
-  is fetched, then the route returns deterministic unavailable semantics and does
-  not leak a retained thumbnail.
-- Given active shares created before this slice exist, when the rollout runs, then
-  active unrevoked grouping and seating shares receive preview metadata/images via
-  the `backfill-classroom-share-previews` command.
-- Given hostile class, room, group, fixture, or student text exists, when metadata
-  and preview-image generation run, then HTML, Open Graph, JSON-LD, URL, and image-alt
-  contexts are escaped or bounded and covered by tests.
-- Given the feature is verified, when a never-before-posted production or production-like
-  share URL is posted in Microsoft Teams, then Teams renders the generated preview
-  thumbnail rather than only a text-only card.
+  - Given authenticated or public guest seating share creation succeeds, when the artifact is persisted, then a 1200x630 link-preview image is generated from the immutable rendered seating HTML/CSS and the full classroom map is visible in the image.
+  - Given authenticated or public guest grouping share creation succeeds, when the artifact is persisted, then a 1200x630 link-preview image is generated from the immutable rendered grouping HTML/CSS and the grouping cards are visible in the image.
+  - Given any active share page is fetched, when a crawler reads the head, then the page includes escaped `og:title`, `og:description`, `og:type`, `og:site_name`, `og:url`, `og:image`, `og:image:secure_url`, `og:image:type`, `og:image:width`, `og:image:height`, `og:image:alt`, Twitter large-card tags, and conservative schema.org JSON-LD.
+  - Given a crawler fetches the preview image URL, when the share is active, then it receives a public image response without authentication, owner-scoped APIs, secrets, token hashes, revoke secrets, or SPA fallback.
+  - Given a share is revoked, expired, purged, or missing, when the preview image URL is fetched, then the route returns deterministic unavailable semantics and does not leak a retained thumbnail.
+  - Given active shares created before this slice exist, when the rollout runs, then active unrevoked grouping and seating shares receive preview metadata/images via the `backfill-classroom-share-previews` command.
+  - Given hostile class, room, group, fixture, or student text exists, when metadata and preview-image generation run, then HTML, Open Graph, JSON-LD, URL, and image-alt contexts are escaped or bounded and covered by tests.
+  - Given the feature is verified, when a never-before-posted production or production-like share URL is posted in Microsoft Teams, then Teams renders the generated preview thumbnail rather than only a text-only card.
 dependencies:
-- ST-SKRIPT-26-06
+  - ST-SKRIPT-26-06
 ---
 
 ## Context
+
 ### Problem
+
 Share pages are good HTML/CSS artifacts once opened, but Microsoft Teams link
 previews are unreliable without a fetchable preview image and fuller crawler
 metadata. A one-off production diagnostic using a real `SA24D`/`G20` seating
@@ -56,14 +41,19 @@ adds complete Open Graph/Twitter/schema.org metadata and points `og:image` at a
 PNG thumbnail generated from the rendered share page.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Story Contract Slice
+
 ### Goal
+
 Make renderer-derived link-preview thumbnails a supported feature of all active
 Klassrumskartan grouping and seating share links while preserving the existing
 public-by-token HTML/CSS share artifact contract.
+
 ### Non-goals
+
 - No Teams app, bot, message extension, or Adaptive Card integration.
 - No live draft sharing or collaborative editing.
 - No replacement of the HTML/CSS share page with an image-only artifact.
@@ -73,86 +63,91 @@ public-by-token HTML/CSS share artifact contract.
   logged-in user to render previews.
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Plan
+
 ### Implementation plan
-1. Add a share-preview asset contract for immutable generated thumbnails:
-   - table: `classroom_planner_share_preview_assets`
-   - columns: `share_id` primary key / `ON DELETE CASCADE` foreign key to
-     `classroom_planner_share_artifacts.id`, `content_type`, `width`,
-     `height`, `image_bytes`, `preview_content_hash`,
-     `source_content_hash`, `presentation_hash`, `renderer_version`,
-     `generated_at`, and `updated_at`
-   - one preview asset per share artifact; `content_type` is `image/png`,
-     `width=1200`, and `height=630` for this slice
-   - `preview_content_hash` is the SHA-256 hash of `image_bytes`
-   - `source_content_hash` must equal the share artifact `content_hash` used
-     to produce the thumbnail
-   - `presentation_hash` and `renderer_version` must match the share artifact
-     so old thumbnails can be identified after renderer changes
-2. Add the public image route
-   `GET /share/classroom/{public_token}/preview.png`, with optional
-   `?v=<preview_content_hash>` in generated metadata URLs. The route resolves
-   by token hash, checks active/not-revoked/not-expired state, and returns the
-   PNG only for active shares. Missing, revoked, expired, or purged shares must
-   not return retained image bytes.
-3. Add `ClassroomPlannerSharePreviewRendererProtocol` and a Playwright-backed
-   infrastructure adapter. The adapter accepts rendered share HTML/CSS plus the
-   share kind, renders with a 1200x630 viewport, returns PNG bytes, and has no
-   dependency on SPA hydration, owner APIs, cookies, or a browser user session.
-4. Define runtime limits:
-   - hard timeout: 8 seconds per thumbnail render
-   - bounded concurrency: default `CLASSROOM_SHARE_PREVIEW_MAX_CONCURRENCY=2`
-     in the web process
-   - failure semantics: if preview generation fails during new share creation,
-     the share create request fails with a controlled service-unavailable
-     domain error and no share artifact/preview asset row is committed
-   - backfill failure semantics: the backfill command records the failed share
-     id and continues unless `--fail-fast` is supplied
-5. Update production runtime dependencies deliberately:
-   - move/add the Playwright Python package to the production dependency set or
-     an explicitly installed production group
-   - install the Chromium browser binary and required OS dependencies in the
-     BuildKit Dockerfile path
-   - add a production-like Docker smoke proving the web container can render a
-     fixture share thumbnail through the adapter
-6. Generate thumbnails from the already-rendered share HTML/CSS after share
-   render succeeds and before the share create response is considered complete.
-   Use the same rendered artifact for authenticated and public guest shares.
-7. Make seating thumbnail capture full classroom geometry rather than the
-   visible browser viewport. Make grouping thumbnail capture the complete
-   grouping presentation or a deterministic top-level card composition.
-8. Extend share-page head metadata to include the full crawler/social preview
-   contract, including absolute `og:url` and `og:image` URLs derived from
-   `PUBLIC_APP_BASE_URL`. Use versioned/hash-based `og:image` URLs so new
-   thumbnails get a distinct fetch URL when the preview bytes change.
-9. Use exactly this JSON-LD shape:
-   - `@context: "https://schema.org"`
-   - `@type: "CreativeWork"`
-   - `name`
-   - `description`
-   - `url`
-   - `image`
-   - `thumbnailUrl`
-   - `inLanguage: "sv-SE"`
-   - `dateCreated`
-   - `isPartOf: {"@type": "WebSite", "name": "Skriptoteket"}`
-   - `provider: {"@type": "Organization", "name": "Skriptoteket"}`
-   Do not include student/member arrays, `Person` objects, `about`,
-   `mentions`, `hasPart`, seat coordinates, placement relationships, group
-   memberships, roster JSON, or hidden source payloads in JSON-LD.
+
+01. Add a share-preview asset contract for immutable generated thumbnails:
+    - table: `classroom_planner_share_preview_assets`
+    - columns: `share_id` primary key / `ON DELETE CASCADE` foreign key to
+      `classroom_planner_share_artifacts.id`, `content_type`, `width`,
+      `height`, `image_bytes`, `preview_content_hash`,
+      `source_content_hash`, `presentation_hash`, `renderer_version`,
+      `generated_at`, and `updated_at`
+    - one preview asset per share artifact; `content_type` is `image/png`,
+      `width=1200`, and `height=630` for this slice
+    - `preview_content_hash` is the SHA-256 hash of `image_bytes`
+    - `source_content_hash` must equal the share artifact `content_hash` used
+      to produce the thumbnail
+    - `presentation_hash` and `renderer_version` must match the share artifact
+      so old thumbnails can be identified after renderer changes
+02. Add the public image route
+    `GET /share/classroom/{public_token}/preview.png`, with optional
+    `?v=<preview_content_hash>` in generated metadata URLs. The route resolves
+    by token hash, checks active/not-revoked/not-expired state, and returns the
+    PNG only for active shares. Missing, revoked, expired, or purged shares must
+    not return retained image bytes.
+03. Add `ClassroomPlannerSharePreviewRendererProtocol` and a Playwright-backed
+    infrastructure adapter. The adapter accepts rendered share HTML/CSS plus the
+    share kind, renders with a 1200x630 viewport, returns PNG bytes, and has no
+    dependency on SPA hydration, owner APIs, cookies, or a browser user session.
+04. Define runtime limits:
+    - hard timeout: 8 seconds per thumbnail render
+    - bounded concurrency: default `CLASSROOM_SHARE_PREVIEW_MAX_CONCURRENCY=2`
+      in the web process
+    - failure semantics: if preview generation fails during new share creation,
+      the share create request fails with a controlled service-unavailable
+      domain error and no share artifact/preview asset row is committed
+    - backfill failure semantics: the backfill command records the failed share
+      id and continues unless `--fail-fast` is supplied
+05. Update production runtime dependencies deliberately:
+    - move/add the Playwright Python package to the production dependency set or
+      an explicitly installed production group
+    - install the Chromium browser binary and required OS dependencies in the
+      BuildKit Dockerfile path
+    - add a production-like Docker smoke proving the web container can render a
+      fixture share thumbnail through the adapter
+06. Generate thumbnails from the already-rendered share HTML/CSS after share
+    render succeeds and before the share create response is considered complete.
+    Use the same rendered artifact for authenticated and public guest shares.
+07. Make seating thumbnail capture full classroom geometry rather than the
+    visible browser viewport. Make grouping thumbnail capture the complete
+    grouping presentation or a deterministic top-level card composition.
+08. Extend share-page head metadata to include the full crawler/social preview
+    contract, including absolute `og:url` and `og:image` URLs derived from
+    `PUBLIC_APP_BASE_URL`. Use versioned/hash-based `og:image` URLs so new
+    thumbnails get a distinct fetch URL when the preview bytes change.
+09. Use exactly this JSON-LD shape:
+    - `@context: "https://schema.org"`
+    - `@type: "CreativeWork"`
+    - `name`
+    - `description`
+    - `url`
+    - `image`
+    - `thumbnailUrl`
+    - `inLanguage: "sv-SE"`
+    - `dateCreated`
+    - `isPartOf: {"@type": "WebSite", "name": "Skriptoteket"}`
+    - `provider: {"@type": "Organization", "name": "Skriptoteket"}`
+      Do not include student/member arrays, `Person` objects, `about`,
+      `mentions`, `hasPart`, seat coordinates, placement relationships, group
+      memberships, roster JSON, or hidden source payloads in JSON-LD.
 10. Add `pdm run backfill-classroom-share-previews` for active pre-existing
-   shares. The command must generate preview rows only for active, unrevoked,
-   unexpired grouping and seating shares whose `source_content_hash` is absent
-   or stale. Keep revoked, expired, or purged shares unavailable.
+    shares. The command must generate preview rows only for active, unrevoked,
+    unexpired grouping and seating shares whose `source_content_hash` is absent
+    or stale. Keep revoked, expired, or purged shares unavailable.
 11. Keep purge/lifecycle behavior aligned so share HTML/CSS and preview assets
-   are removed or made inaccessible together.
+    are removed or made inaccessible together.
 12. Document Teams cache expectations in the implementation notes: Microsoft
-   documents Teams link unfurling results as cached for 30 minutes, so manual
-   proof must use a never-before-posted URL and old Teams messages may not
-   refresh immediately after backfill or regenerated thumbnails.
+    documents Teams link unfurling results as cached for 30 minutes, so manual
+    proof must use a never-before-posted URL and old Teams messages may not
+    refresh immediately after backfill or regenerated thumbnails.
+
 ### Test plan
+
 - Renderer/metadata unit tests for seating and grouping share HTML:
   complete OG/Twitter/schema.org tags, escaped hostile text, canonical URL,
   image dimensions, no token hashes, no revoke secrets, and no owner ids.
@@ -178,14 +173,18 @@ The source record did not define a separate section for this package heading.
 - Focused backend tests for the touched share renderer/routes.
 - `pdm run docs-validate`
 - `git diff --check`
+
 ### Rollback plan
+
 Disable thumbnail generation and omit `og:image` metadata for newly created
 shares while leaving existing HTML/CSS share pages and token read routes
 available. If generated preview assets are stored separately, purge or detach
 only those assets without revoking the underlying share artifacts.
 
 ## Implementation Steps
+
 ### Implementation State (2026-05-02)
+
 Implemented and deployed to Hemma production at commit
 `2bae81a615a169aa70e916695cfaf467f5dbc96a`, pending retained
 post-implementation review and fresh Teams unfurl proof before this PR is
@@ -237,9 +236,7 @@ Verification run:
 - `pdm run hemma-deploy-share-previews`
   - Remote log:
     `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260502-122221.log`
-  - Output included: `Backfill classroom share previews complete: scanned=3
-    generated=3 failed=0 failed_share_ids=`, `container-playwright-smoke: ok
-    size=1200x630 bytes=15141`, and web health `200`.
+  - Output included: `Backfill classroom share previews complete: scanned=3 generated=3 failed=0 failed_share_ids=`, `container-playwright-smoke: ok size=1200x630 bytes=15141`, and web health `200`.
 - Production public metadata proof against the fresh production link returned
   `200`, OG/Twitter/JSON-LD metadata, and an `image/png` preview at
   1200x630 with `preview.png?v=sha256:...`.
@@ -250,22 +247,29 @@ Outstanding proof:
   or production-like share URL after deployment/backfill.
 
 ## Proof
+
 The source record did not define a separate section for this package heading.
 
 ## Validation
+
 The source record did not define a separate section for this package heading.
 
 ## Stop Conditions
+
 The source record did not define a separate section for this package heading.
 
 ## Lessons Learned
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Implementation Review
+
 The source record did not define a separate section for this package heading.

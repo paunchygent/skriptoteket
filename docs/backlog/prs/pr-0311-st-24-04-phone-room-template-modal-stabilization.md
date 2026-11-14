@@ -116,41 +116,41 @@ Implementation guidance:
 
 ## Implementation Plan
 
-1. Add focused tests for the phone modal footer and save validation before
-   changing behavior.
-2. Update the modal footer so edit mode uses compact button text:
-   - `Radera`
-   - `Avbryt`
-   - `Spara`
-3. Add icon support using the repo's existing icon surface or Lucide-backed
-   shared icons already used by Klassrumskartan controls.
-4. Keep the sticky footer deterministic on first render:
-   - footer is inside the modal panel
-   - modal body owns scrolling
-   - footer does not depend on a post-render layout pass to become visible
-   - safe-area bottom padding is included on phone
-5. Add a save attempt path even when the name is missing:
-   - do not silently no-op
-   - show field-level copy such as `Ge klassrummet ett namn innan du sparar.`
-   - scroll/focus the classroom-name input
-   - do not duplicate this field validation in the dismissible modal-level
-     system message
-   - keep backend submit blocked until local validation passes
-6. Align the classroom-name panel by fixing the phone sidebar/content column
-   spacing. Do not add per-field margins that diverge from the rest of the
-   modal panels.
-7. Detect touch/no-hover interaction for the builder:
-   - either suppress ghost rendering through a prop/class when
-     `(hover: none)` / coarse pointer applies
-   - or clear hover state immediately after touch/click placement
-   - do not remove desktop hover/focus ghost behavior
-8. Add tests for touch placement:
-   - first tap creates one real seat
-   - no ghost seat remains visible after placement
-   - second tap removes the real seat only because that is the existing
-     same-seat toggle rule
-9. Add phone proof that wall-attached fixtures remain attached to the modal room
-   boundary and that the sticky footer does not cover the editable grid.
+01. Add focused tests for the phone modal footer and save validation before
+    changing behavior.
+02. Update the modal footer so edit mode uses compact button text:
+    - `Radera`
+    - `Avbryt`
+    - `Spara`
+03. Add icon support using the repo's existing icon surface or Lucide-backed
+    shared icons already used by Klassrumskartan controls.
+04. Keep the sticky footer deterministic on first render:
+    - footer is inside the modal panel
+    - modal body owns scrolling
+    - footer does not depend on a post-render layout pass to become visible
+    - safe-area bottom padding is included on phone
+05. Add a save attempt path even when the name is missing:
+    - do not silently no-op
+    - show field-level copy such as `Ge klassrummet ett namn innan du sparar.`
+    - scroll/focus the classroom-name input
+    - do not duplicate this field validation in the dismissible modal-level
+      system message
+    - keep backend submit blocked until local validation passes
+06. Align the classroom-name panel by fixing the phone sidebar/content column
+    spacing. Do not add per-field margins that diverge from the rest of the
+    modal panels.
+07. Detect touch/no-hover interaction for the builder:
+    - either suppress ghost rendering through a prop/class when
+      `(hover: none)` / coarse pointer applies
+    - or clear hover state immediately after touch/click placement
+    - do not remove desktop hover/focus ghost behavior
+08. Add tests for touch placement:
+    - first tap creates one real seat
+    - no ghost seat remains visible after placement
+    - second tap removes the real seat only because that is the existing
+      same-seat toggle rule
+09. Add phone proof that wall-attached fixtures remain attached to the modal room
+    boundary and that the sticky footer does not cover the editable grid.
 10. Run phone and desktop browser proof.
 
 ## UX Copy Lock

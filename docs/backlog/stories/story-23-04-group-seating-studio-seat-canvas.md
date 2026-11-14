@@ -14,11 +14,13 @@ acceptance_criteria:
 ---
 
 ## Context
+
 The Seat Assignment axis. Operates entirely independently of Group assignments.
 
 ## Implementation Plan
 
 ### [ ] PR 1: Seat Collision & Grid View
+
 - **Intent**: Map a physical room and allow drag-and-drop of individual seats.
 - **Code Choice**: Build `RoomCanvas.vue`. Intercept `vue-draggable-plus` drops to trigger a `swapSeatAssignments(studentId, targetSeatId)` state reducer. Use normalized `seatAssignmentsByStudentId` mapped to `seatsById`.
 

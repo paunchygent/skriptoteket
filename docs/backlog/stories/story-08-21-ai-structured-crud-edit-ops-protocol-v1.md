@@ -40,33 +40,33 @@ applied in a controlled way.
 
 - Targets are intentionally limited in v1 to keep edits deterministic and
   safe: whole document, current selection, or
-    cursor insertion.
+  cursor insertion.
+
 - More advanced targeting (multi-range edits, pattern/anchor-based edits,
   protected regions) is deferred to follow-ups.
 
 - This story assumes the editor provides the LLM with a set of named **virtual
   files** (separate logical documents) so
-    the assistant can “see both” code + schemas while respecting boundaries. The
+  the assistant can “see both” code + schemas while respecting boundaries. The
   UI may still present a combined “Pro mode”
-    buffer, but edit operations should target virtual files explicitly to keep
-    edits safe and predictable.
+  buffer, but edit operations should target virtual files explicitly to keep
+  edits safe and predictable.
+
   - Canonical names match the diff viewer map in ST-14-17 to keep preview/
     apply consistent.
 
 - Response envelope should include both `assistant_message` (for the chat
   transcript) and `ops[]` (for preview/apply).
+
 - Safe-fail rule: invalid JSON/schema, truncation (`finish_reason=length`), or
   over-budget responses must return
-    `ops=[]` (no partial apply).
+  `ops=[]` (no partial apply).
 
 See also:
 
-- Chat drawer UX (producer of requests): `docs/backlog/stories/story-08-20-
-editor-ai-chat-drawer-mvp.md`
-- Diff preview/apply (consumer of response): `docs/backlog/stories/story-08-
-22-editor-ai-diff-preview-apply-undo.md`
-- Canonical virtual file ids: `docs/backlog/stories/story-14-17-editor-
-version-diff-view.md`
+- Chat drawer UX (producer of requests): `docs/backlog/stories/story-08-20- editor-ai-chat-drawer-mvp.md`
+- Diff preview/apply (consumer of response): `docs/backlog/stories/story-08- 22-editor-ai-diff-preview-apply-undo.md`
+- Canonical virtual file ids: `docs/backlog/stories/story-14-17-editor- version-diff-view.md`
 
 ## Protocol contract (v1)
 
@@ -93,11 +93,11 @@ These ids are canonical across:
 - `message` (string; the user’s newest request)
 - `active_file` (one of the canonical virtual file ids)
 - `selection` (optional) and/or `cursor` (optional), so v1 targeting is well-
-defined:
+  defined:
   - selection: `{ from: int, to: int }` in the active file
   - cursor: `{ pos: int }` in the active file
 - `virtual_files`: a map containing the full current text for each canonical
-virtual file id
+  virtual file id
 
 Conversation context:
 
@@ -117,5 +117,5 @@ Backend returns:
 
 - `base_fingerprints[virtual_file_id]` MUST be computed as `sha256` over the
   exact UTF-8 bytes of
-    `virtual_files[virtual_file_id]` as used during proposal generation.
+  `virtual_files[virtual_file_id]` as used during proposal generation.
 - No normalization (no trimming, no newline conversion).

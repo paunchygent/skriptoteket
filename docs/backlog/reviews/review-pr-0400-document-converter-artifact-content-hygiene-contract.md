@@ -58,14 +58,14 @@ bytes and fail closed when a declared local image resource has no uploaded bytes
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md` | Accepted policy decisions, scope, proof claims | 20 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` plus dependency reviews for `PR-0385`, `PR-0398`, `PR-0399`, `PR-0403` | Parent story and adjacent approved behavior | 25 min |
-| `src/skriptoteket/application/curated_apps/document_converter_artifact_hygiene.py` | Narrow fail-closed artifact marker guard | 20 min |
-| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_document_converter.py` and `src/skriptoteket/application/curated_apps/handlers/document_converter_project_previews.py` | Download/save guard placement | 25 min |
-| `src/skriptoteket/infrastructure/documents/document_converter_project_previews.py` | Missing-image policy and real uploaded asset fetch behavior | 30 min |
-| Focused backend tests under `tests/unit/application/curated_apps/handlers/`, `tests/unit/infrastructure/documents/`, and `tests/unit/web/conversion_hub/` | Behavioral proof quality and coverage | 30 min |
+| File                                                                                                                                                                                      | Focus                                                       | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md`                                                                                               | Accepted policy decisions, scope, proof claims              | 20 min |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` plus dependency reviews for `PR-0385`, `PR-0398`, `PR-0399`, `PR-0403`                              | Parent story and adjacent approved behavior                 | 25 min |
+| `src/skriptoteket/application/curated_apps/document_converter_artifact_hygiene.py`                                                                                                        | Narrow fail-closed artifact marker guard                    | 20 min |
+| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_document_converter.py` and `src/skriptoteket/application/curated_apps/handlers/document_converter_project_previews.py` | Download/save guard placement                               | 25 min |
+| `src/skriptoteket/infrastructure/documents/document_converter_project_previews.py`                                                                                                        | Missing-image policy and real uploaded asset fetch behavior | 30 min |
+| Focused backend tests under `tests/unit/application/curated_apps/handlers/`, `tests/unit/infrastructure/documents/`, and `tests/unit/web/conversion_hub/`                                 | Behavioral proof quality and coverage                       | 30 min |
 
 **Total estimated time:** ~2.5 hours
 
@@ -86,13 +86,13 @@ bytes and fail closed when a declared local image resource has no uploaded bytes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Missing declared local HTML/CSS project images fail closed. | Prevents fabricated placeholder content from becoming source-looking artifact content. | [x] |
-| Undeclared uploaded image bytes are not used. | Preserves the `PR-0382` manifest-declared project contract. | [x] |
-| Skriptoteket rejects known dirty terminal markers instead of scrubbing them. | Keeps upstream Sir Convert cleanliness visible and avoids a broad tolerant sanitizer. | [x] |
-| `/artifact/partial` stays non-teacher-facing in Skriptoteket. | Partial/checkpoint artifacts are diagnostic unless a future sanitized export contract exists. | [x] |
-| PDF image recovery remains out of scope and planned under `PR-0401`. | Real image recovery needs a governed recovery manifest/byte contract. | [x] |
+| Decision                                                                     | Rationale                                                                                     | Approve? |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| Missing declared local HTML/CSS project images fail closed.                  | Prevents fabricated placeholder content from becoming source-looking artifact content.        | [x]      |
+| Undeclared uploaded image bytes are not used.                                | Preserves the `PR-0382` manifest-declared project contract.                                   | [x]      |
+| Skriptoteket rejects known dirty terminal markers instead of scrubbing them. | Keeps upstream Sir Convert cleanliness visible and avoids a broad tolerant sanitizer.         | [x]      |
+| `/artifact/partial` stays non-teacher-facing in Skriptoteket.                | Partial/checkpoint artifacts are diagnostic unless a future sanitized export contract exists. | [x]      |
+| PDF image recovery remains out of scope and planned under `PR-0401`.         | Real image recovery needs a governed recovery manifest/byte contract.                         | [x]      |
 
 ## Review Checklist
 
@@ -102,7 +102,7 @@ bytes and fail closed when a declared local image resource has no uploaded bytes
 - [x] Real uploaded image bytes still resolve through the project asset fetcher.
 - [x] Undeclared upload bytes remain rejected by manifest validation.
 - [x] Dirty terminal artifacts fail before Document Converter download/save and
-      project-preview download/save.
+  project-preview download/save.
 - [x] The guard is narrow and fail-closed, not a broad scrubber.
 - [x] `PR-0401` carries the PDF image-recovery follow-up.
 - [x] Tests prove behavior at renderer, application-handler, and API boundaries.
@@ -203,6 +203,6 @@ No replacement command execution is claimed.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0400` | Created the retained independent review record for PR-0400. |
+| Change | Artifact      | Description                                                 |
+| ------ | ------------- | ----------------------------------------------------------- |
+| 1      | `REV-PR-0400` | Created the retained independent review record for PR-0400. |

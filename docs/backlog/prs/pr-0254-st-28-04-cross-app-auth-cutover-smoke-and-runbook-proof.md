@@ -81,74 +81,74 @@ the Skriptoteket product identity realm behavior defined by `ADR-0083`.
 
 ## Implementation Plan
 
-1. Treat `PR-0254` as the final cross-process certification for this chain:
-   `Skriptoteket SPA -> HuleEdu Gateway auth entry -> HuleEdu login UI/session ->`
-   `Gateway-proxied /api request -> Gateway-signed InternalIdentityContextV1 ->`
-   `Skriptoteket app-continuation -> local identity_projection -> local User.role/RBAC ->`
-   `CSRF-protected write -> shared logout invalidation`.
-2. Add an artifact preflight before browser launch. Validate the retained artifacts are present,
-   `status=ok`, aligned on `app=skriptoteket` and
-   `product_identity_realm=skriptoteket_standalone`, and safe to summarize without retaining raw
-   subject, email, token, cookie, CSRF, signed-header, JWT, or signature material:
-   - HuleEdu `TASK-0326` subject export proof
-   - HuleEdu `TASK-0327` lifecycle proof
-   - Skriptoteket `PR-0261` direct-action/probe manifest
-   - Skriptoteket `PR-0262` lifecycle/projection/role manifest
-3. Consume accepted `ADR-0083`, the completed `ST-28-07` through remediated `ST-28-09`
-   login/projection contracts, HuleEdu `TASK-0325` local shared-auth Gateway semantics,
-   HuleEdu `TASK-0326` proof identity subject export, HuleEdu `TASK-0327` real lifecycle proof,
-   and Skriptoteket `PR-0261`/`PR-0262` retained evidence.
-4. Configure local proof so Skriptoteket uses:
-   - `VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080`
-   - `VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login`
-   - host-run Vite: `VITE_DEV_PROXY_TARGET=http://localhost:8080`
-   - normal Docker frontend service: `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080`
-     on `hule-network`, so existing Vite `/api` proxy traffic enters the HuleEdu Gateway
-     local-only `ANY /api/{path:path}` proxy
-   - normal Docker frontend service:
-     `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000`, so public
-     `/api/v1/public/...` and backend static assets remain directly served by Skriptoteket
-     without a HuleEdu browser session
-   - 127 proof equivalents:
-     `VITE_HULEEDU_AUTH_BASE_URL=http://127.0.0.1:8080`,
-     `VITE_HULEEDU_AUTH_ENTRY_URL=http://127.0.0.1:8080/auth/login`, and
-     `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8080`
-   - HuleEdu provider config from `TASK-0325`:
-     `API_GATEWAY_SKRIPTOTEKET_PROXY_ENABLED=true`,
-     `API_GATEWAY_SKRIPTOTEKET_PROXY_PREFIX=/api`, and
-     `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`
-   - a local-only Gateway public signing key mounted or exported for backend verification
-5. Update the existing Skriptoteket realm-aware auth-cutover Playwright smoke:
-   `pdm run pr-0254-auth-cutover`.
-6. Prove public Klassrumskartan remains public before login: public bootstrap returns `200` and no
-   auth/session error appears.
-7. Prove auth entry is browser-navigable and points to Gateway `/auth/login`, never
-   `/v1/auth/login`, with `app=skriptoteket`,
-   `product_identity_realm=skriptoteket_standalone`, allowed `return_to`, and safe `next`.
-8. Prove HuleEdu login/session is the browser authority: the browser lands on HuleEdu login UI
-   `:5174`, submits controlled proof credentials, receives HuleEdu-owned session/CSRF state, and
-   does not create a local Skriptoteket browser session cookie.
-9. Prove callback resumes the intended protected route, using `/editor` so the proof observes local
-   contributor authorization rather than only authentication.
+01. Treat `PR-0254` as the final cross-process certification for this chain:
+    `Skriptoteket SPA -> HuleEdu Gateway auth entry -> HuleEdu login UI/session ->`
+    `Gateway-proxied /api request -> Gateway-signed InternalIdentityContextV1 ->`
+    `Skriptoteket app-continuation -> local identity_projection -> local User.role/RBAC ->`
+    `CSRF-protected write -> shared logout invalidation`.
+02. Add an artifact preflight before browser launch. Validate the retained artifacts are present,
+    `status=ok`, aligned on `app=skriptoteket` and
+    `product_identity_realm=skriptoteket_standalone`, and safe to summarize without retaining raw
+    subject, email, token, cookie, CSRF, signed-header, JWT, or signature material:
+    - HuleEdu `TASK-0326` subject export proof
+    - HuleEdu `TASK-0327` lifecycle proof
+    - Skriptoteket `PR-0261` direct-action/probe manifest
+    - Skriptoteket `PR-0262` lifecycle/projection/role manifest
+03. Consume accepted `ADR-0083`, the completed `ST-28-07` through remediated `ST-28-09`
+    login/projection contracts, HuleEdu `TASK-0325` local shared-auth Gateway semantics,
+    HuleEdu `TASK-0326` proof identity subject export, HuleEdu `TASK-0327` real lifecycle proof,
+    and Skriptoteket `PR-0261`/`PR-0262` retained evidence.
+04. Configure local proof so Skriptoteket uses:
+    - `VITE_HULEEDU_AUTH_BASE_URL=http://localhost:8080`
+    - `VITE_HULEEDU_AUTH_ENTRY_URL=http://localhost:8080/auth/login`
+    - host-run Vite: `VITE_DEV_PROXY_TARGET=http://localhost:8080`
+    - normal Docker frontend service: `VITE_DEV_PROXY_TARGET=http://huleedu_api_gateway_service:8080`
+      on `hule-network`, so existing Vite `/api` proxy traffic enters the HuleEdu Gateway
+      local-only `ANY /api/{path:path}` proxy
+    - normal Docker frontend service:
+      `VITE_DEV_BACKEND_PROXY_TARGET=http://skriptoteket_web:8000`, so public
+      `/api/v1/public/...` and backend static assets remain directly served by Skriptoteket
+      without a HuleEdu browser session
+    - 127 proof equivalents:
+      `VITE_HULEEDU_AUTH_BASE_URL=http://127.0.0.1:8080`,
+      `VITE_HULEEDU_AUTH_ENTRY_URL=http://127.0.0.1:8080/auth/login`, and
+      `VITE_DEV_PROXY_TARGET=http://127.0.0.1:8080`
+    - HuleEdu provider config from `TASK-0325`:
+      `API_GATEWAY_SKRIPTOTEKET_PROXY_ENABLED=true`,
+      `API_GATEWAY_SKRIPTOTEKET_PROXY_PREFIX=/api`, and
+      `API_GATEWAY_SKRIPTOTEKET_BACKEND_URL=http://skriptoteket-web:8000`
+    - a local-only Gateway public signing key mounted or exported for backend verification
+05. Update the existing Skriptoteket realm-aware auth-cutover Playwright smoke:
+    `pdm run pr-0254-auth-cutover`.
+06. Prove public Klassrumskartan remains public before login: public bootstrap returns `200` and no
+    auth/session error appears.
+07. Prove auth entry is browser-navigable and points to Gateway `/auth/login`, never
+    `/v1/auth/login`, with `app=skriptoteket`,
+    `product_identity_realm=skriptoteket_standalone`, allowed `return_to`, and safe `next`.
+08. Prove HuleEdu login/session is the browser authority: the browser lands on HuleEdu login UI
+    `:5174`, submits controlled proof credentials, receives HuleEdu-owned session/CSRF state, and
+    does not create a local Skriptoteket browser session cookie.
+09. Prove callback resumes the intended protected route, using `/editor` so the proof observes local
+    contributor authorization rather than only authentication.
 10. Prove protected `/api/v1/profile/app-continuation` and `/api/v1/profile/ai-settings` travel
-   through Gateway `/api`, with retained evidence limited to route names, statuses, and sanitized
-   accepted-context summaries.
+    through Gateway `/api`, with retained evidence limited to route names, statuses, and sanitized
+    accepted-context summaries.
 11. Prove local projection and RBAC are observed: app-continuation returns a local user, the local
-   role matches the `PR-0260` role matrix as retained by `PR-0262`, provider roles/grants remain
-   metadata, and contributor access opens `/editor`. Admin/superuser coverage is either explicit
-   in the same smoke or recorded as a matrix extension/blocker.
+    role matches the `PR-0260` role matrix as retained by `PR-0262`, provider roles/grants remain
+    metadata, and contributor access opens `/editor`. Admin/superuser coverage is either explicit
+    in the same smoke or recorded as a matrix extension/blocker.
 12. Prove CSRF-protected write semantics through Gateway with a safe profile AI-settings update:
-   missing CSRF is rejected before or at Gateway, then shared CSRF is fetched and the write
-   succeeds. Retain only status summaries and route names.
+    missing CSRF is rejected before or at Gateway, then shared CSRF is fetched and the write
+    succeeds. Retain only status summaries and route names.
 13. Prove shared logout invalidation: logout from Skriptoteket, refresh the protected route, confirm
-   signed-out/auth-entry behavior, confirm HuleEdu `/v1/auth/session` is unauthenticated, and
-   confirm no old Skriptoteket local session revives the user.
+    signed-out/auth-entry behavior, confirm HuleEdu `/v1/auth/session` is unauthenticated, and
+    confirm no old Skriptoteket local session revives the user.
 14. Prove both the canonical `localhost` lane and the separate `127.0.0.1` lane, because browser
-   cookies and origins are host-scoped and close-out requires both loopback lanes green.
+    cookies and origins are host-scoped and close-out requires both loopback lanes green.
 15. Write `manifest.redacted.json` instead of `proof.json`; do not retain `body_prefix` or raw
-   observed URLs.
+    observed URLs.
 16. Update the operator runbook with exact commands, required hosts, expected artifacts, identity
-   realm coverage, metrics/logs to inspect, and failure triage.
+    realm coverage, metrics/logs to inspect, and failure triage.
 17. Record the HuleEdu teacher smoke evidence that pairs with the Skriptoteket proof.
 
 ## Test Plan

@@ -41,28 +41,28 @@ as the HTML/CSS share page.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md` | Parent story and readiness state | 8 min |
-| `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md` | Asset model, renderer runtime, metadata, proof obligations | 18 min |
-| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | Epic scope and risk alignment | 6 min |
-| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md` | Existing share-link privacy and export boundary | 6 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py` | Current share HTML metadata source | 6 min |
-| `src/skriptoteket/web/routes/classroom_planner_share_pages.py` | Current public token read route and lifecycle checks | 6 min |
-| `src/skriptoteket/infrastructure/db/models/classroom_planner_share_artifact.py` | Current persisted share artifact fields | 6 min |
+| File                                                                                      | Focus                                                      | Time   |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md` | Parent story and readiness state                           | 8 min  |
+| `docs/backlog/prs/pr-0277-st-26-07-share-link-teams-preview-thumbnails.md`                | Asset model, renderer runtime, metadata, proof obligations | 18 min |
+| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`    | Epic scope and risk alignment                              | 6 min  |
+| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md`     | Existing share-link privacy and export boundary            | 6 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py`   | Current share HTML metadata source                         | 6 min  |
+| `src/skriptoteket/web/routes/classroom_planner_share_pages.py`                            | Current public token read route and lifecycle checks       | 6 min  |
+| `src/skriptoteket/infrastructure/db/models/classroom_planner_share_artifact.py`           | Current persisted share artifact fields                    | 6 min  |
 
 **Total estimated time:** ~56 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the opened share URL as HTML/CSS | Preserves `ST-26-06`; the image is only for link unfurling | [x] |
-| Require renderer-derived preview images for seating and grouping | The production diagnostic proved Teams uses the preview image reliably | [x] |
-| Store preview assets in a first-class share-preview table | Avoids inventing persistence semantics inside implementation | [x] |
-| Use a bounded Playwright-backed adapter behind a protocol | Needed because thumbnail generation depends on browser screenshot runtime | [x] |
-| Use versioned image URLs and never-posted URLs for proof | Teams link unfurl results are cached for 30 minutes | [x] |
-| Allow only conservative `CreativeWork` JSON-LD fields | Prevents machine-readable roster, placement, or grouping leakage | [x] |
+| Decision                                                         | Rationale                                                                 | Approve? |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------- | -------- |
+| Keep the opened share URL as HTML/CSS                            | Preserves `ST-26-06`; the image is only for link unfurling                | [x]      |
+| Require renderer-derived preview images for seating and grouping | The production diagnostic proved Teams uses the preview image reliably    | [x]      |
+| Store preview assets in a first-class share-preview table        | Avoids inventing persistence semantics inside implementation              | [x]      |
+| Use a bounded Playwright-backed adapter behind a protocol        | Needed because thumbnail generation depends on browser screenshot runtime | [x]      |
+| Use versioned image URLs and never-posted URLs for proof         | Teams link unfurl results are cached for 30 minutes                       | [x]      |
+| Allow only conservative `CreativeWork` JSON-LD fields            | Prevents machine-readable roster, placement, or grouping leakage          | [x]      |
 
 ## Review Checklist
 
@@ -200,10 +200,10 @@ implementation.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ST-26-07` | Status changed to `blocked`, review pointer added, and runtime/persistence notes tightened. |
-| 2 | `PR-0277` | Status changed to `blocked`; exact preview table, route, renderer protocol, runtime limits, Docker proof, backfill command, Teams cache proof, and JSON-LD allowlist added. |
-| 3 | `docs/index.md` | Review record added to the docs doorway. |
-| 4 | `REV-ST-26-07` | Re-reviewed remediation, closed the five substantive findings, and retained `changes_requested` only for independent approval. |
-| 5 | `REV-ST-26-07`, `ST-26-07`, `PR-0277` | Recorded independent approval and moved the story/task to ready. |
+| Change | Artifact                              | Description                                                                                                                                                                 |
+| ------ | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `ST-26-07`                            | Status changed to `blocked`, review pointer added, and runtime/persistence notes tightened.                                                                                 |
+| 2      | `PR-0277`                             | Status changed to `blocked`; exact preview table, route, renderer protocol, runtime limits, Docker proof, backfill command, Teams cache proof, and JSON-LD allowlist added. |
+| 3      | `docs/index.md`                       | Review record added to the docs doorway.                                                                                                                                    |
+| 4      | `REV-ST-26-07`                        | Re-reviewed remediation, closed the five substantive findings, and retained `changes_requested` only for independent approval.                                              |
+| 5      | `REV-ST-26-07`, `ST-26-07`, `PR-0277` | Recorded independent approval and moved the story/task to ready.                                                                                                            |

@@ -36,23 +36,23 @@ developers.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md` | Acceptance criteria + capture flow | 5 min |
-| `docs/adr/adr-0051-chat-first-ai-editing.md` | Error capture and correlation contract | 5 min |
-| `src/skriptoteket/infrastructure/llm/capture_store.py` | Capture storage implementation | 10 min |
-| `src/skriptoteket/application/editor/edit_ops_preview_handler.py` | Error-path integration | 10 min |
+| File                                                                        | Focus                                  | Time   |
+| --------------------------------------------------------------------------- | -------------------------------------- | ------ |
+| `docs/backlog/stories/story-08-28-ai-chat-ops-response-capture-on-error.md` | Acceptance criteria + capture flow     | 5 min  |
+| `docs/adr/adr-0051-chat-first-ai-editing.md`                                | Error capture and correlation contract | 5 min  |
+| `src/skriptoteket/infrastructure/llm/capture_store.py`                      | Capture storage implementation         | 10 min |
+| `src/skriptoteket/application/editor/edit_ops_preview_handler.py`           | Error-path integration                 | 10 min |
 
 **Total estimated time:** ~30 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Capture on error for all users when enabled | Data collection for alpha debugging | ✅ |
-| Store captures on disk (artifact storage) | Simple, low-risk, no DB migration | ✅ |
-| No API/UI retrieval | Prevent tool developer access; keep surface area minimal | ✅ |
-| Correlation id is the capture id | Stable id already propagated to clients/logs | ✅ |
+| Decision                                    | Rationale                                                | Approve? |
+| ------------------------------------------- | -------------------------------------------------------- | -------- |
+| Capture on error for all users when enabled | Data collection for alpha debugging                      | ✅       |
+| Store captures on disk (artifact storage)   | Simple, low-risk, no DB migration                        | ✅       |
+| No API/UI retrieval                         | Prevent tool developer access; keep surface area minimal | ✅       |
+| Correlation id is the capture id            | Stable id already propagated to clients/logs             | ✅       |
 
 ## Review Checklist
 
@@ -61,7 +61,7 @@ developers.
 - [x] No API/UI retrieval path is exposed
 - [x] Retention/TTL behavior is explicitly documented
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -71,6 +71,6 @@ developers.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-28` target-based story review record. |
+| Change | Artifact      | Description                                                                                                                  |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-28` target-based story review record. |

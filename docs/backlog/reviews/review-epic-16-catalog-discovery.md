@@ -66,25 +66,25 @@ There's also **no way to bookmark tools** — every session starts fresh.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0041-user-favorites-and-tool-bookmarking.md` | API contract, table design, invariants | 5 min |
-| `docs/adr/adr-0042-flat-catalog-with-label-filtering.md` | Filter logic, query params, search approach | 5 min |
-| `docs/backlog/epics/epic-16-catalog-discovery-and-personalization.md` | Scope in/out, risks | 3 min |
-| `docs/backlog/stories/story-16-*.md` | Acceptance criteria, file paths | 10 min |
+| File                                                                  | Focus                                       | Time   |
+| --------------------------------------------------------------------- | ------------------------------------------- | ------ |
+| `docs/adr/adr-0041-user-favorites-and-tool-bookmarking.md`            | API contract, table design, invariants      | 5 min  |
+| `docs/adr/adr-0042-flat-catalog-with-label-filtering.md`              | Filter logic, query params, search approach | 5 min  |
+| `docs/backlog/epics/epic-16-catalog-discovery-and-personalization.md` | Scope in/out, risks                         | 3 min  |
+| `docs/backlog/stories/story-16-*.md`                                  | Acceptance criteria, file paths             | 10 min |
 
 **Total estimated time:** ~25 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Filter semantics (OR within facet, AND across facets) | Keeps discovery broad while still allowing narrowing | [x] |
-| Server-side favorites (not localStorage) | Cross-device sync via existing auth | [x] |
-| ILIKE search (not full-text) | Simple, sufficient for ~100 tools | [x] |
-| Flat view as default `/browse` | Faster discovery than 3-click hierarchy | [ ] |
-| Curated apps remain hierarchical-only | Keeps flat browse about tools; curated apps stay discoverable via `/browse/professions/...` | [ ] |
-| Hide empty sections on home | Less clutter when user has no favorites/recent | [x] |
+| Decision                                              | Rationale                                                                                   | Approve? |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| Filter semantics (OR within facet, AND across facets) | Keeps discovery broad while still allowing narrowing                                        | [x]      |
+| Server-side favorites (not localStorage)              | Cross-device sync via existing auth                                                         | [x]      |
+| ILIKE search (not full-text)                          | Simple, sufficient for ~100 tools                                                           | [x]      |
+| Flat view as default `/browse`                        | Faster discovery than 3-click hierarchy                                                     | [ ]      |
+| Curated apps remain hierarchical-only                 | Keeps flat browse about tools; curated apps stay discoverable via `/browse/professions/...` | [ ]      |
+| Hide empty sections on home                           | Less clutter when user has no favorites/recent                                              | [x]      |
 
 ## Review Checklist
 
@@ -97,7 +97,7 @@ There's also **no way to bookmark tools** — every session starts fresh.
 - [x] Risks are identified with reasonable mitigations
 - [ ] Curated apps definition + scope is agreed
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -131,16 +131,16 @@ Remaining open item to confirm before final approval:
 - [ ] Curated apps remain hierarchical-only
 - [x] Hide empty sections
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| Clarified filter semantics | `docs/adr/adr-0042-flat-catalog-with-label-filtering.md` | Defined OR-within-facet + AND-across-facets, added unknown-slug behavior, added explicit hierarchical entrypoint route + link requirement |
-| Reconciled flat catalog story | `docs/backlog/stories/story-16-03-flat-catalog-api-with-filtering.md` | Fixed cross-facet AC, clarified unknown-slug behavior, removed bearer-token language |
-| Reconciled favorites ADR to repo patterns | `docs/adr/adr-0041-user-favorites-and-tool-bookmarking.md` | Switched to Pydantic domain model, documented CSRF + `limit` for listing favorites, narrowed `is_favorite` scope to in-epic endpoints |
-| Reconciled favorites API story | `docs/backlog/stories/story-16-02-favorites-api-endpoints.md` | Added CSRF expectations, added `limit` support, clarified “published only” listings |
-| Clarified recent-tools scope + typing | `docs/backlog/stories/story-16-04-recently-used-tools-api.md` | Explicitly excluded curated apps; fixed repo method to return `(tool_id, last_used_at)` |
-| Preserved hierarchical discoverability | `docs/backlog/stories/story-16-05-flat-catalog-vue-view.md` | Added `/browse/professions` entrypoint + breadcrumb update requirement; added “browse by profession” link + `favorites=true` UI-only filter AC |
-| Corrected HomeView story | `docs/backlog/stories/story-16-07-home-view-favorites-and-recent.md` | Fixed tool-run route, clarified integration into existing role-based dashboard, resolved “Visa alla” as `/browse?favorites=true` |
+| Change                                    | Artifact                                                              | Description                                                                                                                                    |
+| ----------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Clarified filter semantics                | `docs/adr/adr-0042-flat-catalog-with-label-filtering.md`              | Defined OR-within-facet + AND-across-facets, added unknown-slug behavior, added explicit hierarchical entrypoint route + link requirement      |
+| Reconciled flat catalog story             | `docs/backlog/stories/story-16-03-flat-catalog-api-with-filtering.md` | Fixed cross-facet AC, clarified unknown-slug behavior, removed bearer-token language                                                           |
+| Reconciled favorites ADR to repo patterns | `docs/adr/adr-0041-user-favorites-and-tool-bookmarking.md`            | Switched to Pydantic domain model, documented CSRF + `limit` for listing favorites, narrowed `is_favorite` scope to in-epic endpoints          |
+| Reconciled favorites API story            | `docs/backlog/stories/story-16-02-favorites-api-endpoints.md`         | Added CSRF expectations, added `limit` support, clarified “published only” listings                                                            |
+| Clarified recent-tools scope + typing     | `docs/backlog/stories/story-16-04-recently-used-tools-api.md`         | Explicitly excluded curated apps; fixed repo method to return `(tool_id, last_used_at)`                                                        |
+| Preserved hierarchical discoverability    | `docs/backlog/stories/story-16-05-flat-catalog-vue-view.md`           | Added `/browse/professions` entrypoint + breadcrumb update requirement; added “browse by profession” link + `favorites=true` UI-only filter AC |
+| Corrected HomeView story                  | `docs/backlog/stories/story-16-07-home-view-favorites-and-recent.md`  | Fixed tool-run route, clarified integration into existing role-based dashboard, resolved “Visa alla” as `/browse?favorites=true`               |

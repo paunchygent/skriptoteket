@@ -79,32 +79,32 @@ HuleEdu-session cutover work consumes.
 
 ## Implementation plan
 
-1. Define one canonical page-based auth-entry route and view at `/auth/login`.
-2. Replace signed-out landing-shell and public-entry `Logga in` affordances so they navigate to the
-   auth-entry page instead of opening the shared in-place modal.
-3. Move redirect preservation onto the explicit `/auth/login?next=...` route contract so
-   destination intent survives refreshes, top-level redirects, and future external auth ceremonies
-   more cleanly than the current modal-state approach.
-4. Sanitize and normalize the `next` contract in one shared place:
-   - allow only same-origin absolute app paths
-   - reject auth-entry loops and malformed values
-   - default to the safe authenticated home destination when no valid target remains
-5. Keep current local auth fully working through the new page while making the handoff contract
-   compatible with a HuleEdu-owned product-realm ceremony.
-6. Preserve any still-needed richer app-specific route state only as a supplemental layer on top of
-   the route-level destination contract, not as the sole redirect truth.
-7. Keep `/auth/login` as the only auth-entry route and let exact `/login` fall through normal SPA
-   recovery/not-found behavior instead of acting as an auth alias.
-8. Audit current signed-out entry surfaces and unify them onto the new pattern:
-   - `/`
-   - `/public/apps/classroom.group-seating-studio`
-   - `/register`
-   - `/forgot-password`
-   - `/reset-password`
-   - `/verify-email`
-   - any remaining signed-out auth interruption entry points touched by the SPA shell
-9. Extract or reuse the existing local-password login form logic so the new auth-entry page remains
-   the only signed-out auth-entry model and does not fork validation/recovery behavior.
+01. Define one canonical page-based auth-entry route and view at `/auth/login`.
+02. Replace signed-out landing-shell and public-entry `Logga in` affordances so they navigate to the
+    auth-entry page instead of opening the shared in-place modal.
+03. Move redirect preservation onto the explicit `/auth/login?next=...` route contract so
+    destination intent survives refreshes, top-level redirects, and future external auth ceremonies
+    more cleanly than the current modal-state approach.
+04. Sanitize and normalize the `next` contract in one shared place:
+    - allow only same-origin absolute app paths
+    - reject auth-entry loops and malformed values
+    - default to the safe authenticated home destination when no valid target remains
+05. Keep current local auth fully working through the new page while making the handoff contract
+    compatible with a HuleEdu-owned product-realm ceremony.
+06. Preserve any still-needed richer app-specific route state only as a supplemental layer on top of
+    the route-level destination contract, not as the sole redirect truth.
+07. Keep `/auth/login` as the only auth-entry route and let exact `/login` fall through normal SPA
+    recovery/not-found behavior instead of acting as an auth alias.
+08. Audit current signed-out entry surfaces and unify them onto the new pattern:
+    - `/`
+    - `/public/apps/classroom.group-seating-studio`
+    - `/register`
+    - `/forgot-password`
+    - `/reset-password`
+    - `/verify-email`
+    - any remaining signed-out auth interruption entry points touched by the SPA shell
+09. Extract or reuse the existing local-password login form logic so the new auth-entry page remains
+    the only signed-out auth-entry model and does not fork validation/recovery behavior.
 10. Add focused router/view/auth tests plus a live browser proof for entry, redirect, and return
     behavior.
 

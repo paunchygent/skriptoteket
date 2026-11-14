@@ -45,33 +45,33 @@ HuleEdu `ST-01-09`.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0343-st-21-07-durable-transcript-json-save-boundary.md` | PR scope, acceptance, verification | 10 min |
-| `docs/backlog/stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md` | Parent story scope and formatter block | 8 min |
-| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Epic status and transcript lane constraints | 5 min |
-| `src/skriptoteket/application/curated_apps/conversion_hub_transcript_saves.py` | Typed save/readback contracts | 8 min |
-| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_saves.py` | Owner checks, provenance validation, UoW boundary | 15 min |
-| `src/skriptoteket/infrastructure/repositories/conversion_hub_saved_transcripts.py` | Owner-scoped repository queries, no commits | 10 min |
-| `src/skriptoteket/infrastructure/db/models/conversion_hub_saved_transcript.py` | DB model shape and indexes | 8 min |
-| `migrations/versions/c4e8f0a2d6b9_add_conversion_hub_saved_transcripts.py` | Migration shape and rollback | 10 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py` | Router thinness, auth, no postponed annotations | 8 min |
-| `src/skriptoteket/di/curated_apps.py` | Dishka provider registration | 5 min |
-| `frontend/apps/skriptoteket/src/api/conversionHubTranscriptSaves.ts` | Save request builder and raw JSON preservation | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/*` | Unsaved/saved copy and save affordance | 10 min |
-| PR-0343 tests under `tests/unit`, `tests/integration`, and frontend specs | Behavioral proof quality | 20 min |
+| File                                                                                                | Focus                                             | Time   |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0343-st-21-07-durable-transcript-json-save-boundary.md`                        | PR scope, acceptance, verification                | 10 min |
+| `docs/backlog/stories/story-21-07-durable-transcript-saves-and-json-first-downstream-formatting.md` | Parent story scope and formatter block            | 8 min  |
+| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                                          | Epic status and transcript lane constraints       | 5 min  |
+| `src/skriptoteket/application/curated_apps/conversion_hub_transcript_saves.py`                      | Typed save/readback contracts                     | 8 min  |
+| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_transcript_saves.py`             | Owner checks, provenance validation, UoW boundary | 15 min |
+| `src/skriptoteket/infrastructure/repositories/conversion_hub_saved_transcripts.py`                  | Owner-scoped repository queries, no commits       | 10 min |
+| `src/skriptoteket/infrastructure/db/models/conversion_hub_saved_transcript.py`                      | DB model shape and indexes                        | 8 min  |
+| `migrations/versions/c4e8f0a2d6b9_add_conversion_hub_saved_transcripts.py`                          | Migration shape and rollback                      | 10 min |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py`                               | Router thinness, auth, no postponed annotations   | 8 min  |
+| `src/skriptoteket/di/curated_apps.py`                                                               | Dishka provider registration                      | 5 min  |
+| `frontend/apps/skriptoteket/src/api/conversionHubTranscriptSaves.ts`                                | Save request builder and raw JSON preservation    | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/*`                             | Unsaved/saved copy and save affordance            | 10 min |
+| PR-0343 tests under `tests/unit`, `tests/integration`, and frontend specs                           | Behavioral proof quality                          | 20 min |
 
 **Total estimated time:** ~2 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a typed saved-transcript aggregate instead of Vault/file fallback | The saved JSON is first-class product transcript truth, not a formatter artifact or generic file workaround. | [x] |
-| Persist owner, local job, upstream job, artifact key, schema, language, diarization, speaker, generated, and correlation provenance | Meets ST-21-07 and PR-0343 durability and traceability requirements without preserving source audio. | [x] |
-| Read saved transcripts through `get_by_owner_and_id` at the repository query boundary | Prevents load-by-id then app-layer filtering for transcript JSON readback. | [x] |
-| Keep TXT, Markdown, VTT, and SRT formatters out of PR-0343 | PR-0343 intentionally shipped no formatter/export behavior. The then-current Story 54 blocker is now superseded by accepted Sir Convert Task 358; ST-21-08 owns the follow-up. | [x] |
-| Preserve raw frontend canonical JSON when available | Prevents lossy client re-normalization before durable save. | [x] |
+| Decision                                                                                                                            | Rationale                                                                                                                                                                      | Approve? |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Use a typed saved-transcript aggregate instead of Vault/file fallback                                                               | The saved JSON is first-class product transcript truth, not a formatter artifact or generic file workaround.                                                                   | [x]      |
+| Persist owner, local job, upstream job, artifact key, schema, language, diarization, speaker, generated, and correlation provenance | Meets ST-21-07 and PR-0343 durability and traceability requirements without preserving source audio.                                                                           | [x]      |
+| Read saved transcripts through `get_by_owner_and_id` at the repository query boundary                                               | Prevents load-by-id then app-layer filtering for transcript JSON readback.                                                                                                     | [x]      |
+| Keep TXT, Markdown, VTT, and SRT formatters out of PR-0343                                                                          | PR-0343 intentionally shipped no formatter/export behavior. The then-current Story 54 blocker is now superseded by accepted Sir Convert Task 358; ST-21-08 owns the follow-up. | [x]      |
+| Preserve raw frontend canonical JSON when available                                                                                 | Prevents lossy client re-normalization before durable save.                                                                                                                    | [x]      |
 
 ## Review Checklist
 
@@ -180,7 +180,7 @@ Results:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0343` | Created this retained independent review record with approved verdict and reviewer-side verification evidence. |
-| 2 | Implementation | No production code changes were made by this reviewer. |
+| Change | Artifact       | Description                                                                                                    |
+| ------ | -------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0343`  | Created this retained independent review record with approved verdict and reviewer-side verification evidence. |
+| 2      | Implementation | No production code changes were made by this reviewer.                                                         |

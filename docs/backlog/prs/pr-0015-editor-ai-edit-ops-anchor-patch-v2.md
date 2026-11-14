@@ -37,25 +37,30 @@ preview + apply. Maintain existing v1 behavior for explicit selection/cursor edi
 
 ## Implementation plan
 
-1) **Contracts + OpenAPI**
+1. **Contracts + OpenAPI**
+
    - Extend edit-ops schema to add `patch` ops and `anchor` targets.
    - Define anchor payload fields and validation rules in API models + protocols.
    - Regenerate `frontend/apps/skriptoteket/src/api/openapi.d.ts`.
 
-2) **Prompt + parsing**
+2. **Prompt + parsing**
+
    - Add a new chat-ops prompt template (v2) that instructs patch/anchor outputs when no selection/cursor is present.
    - Update the handler to validate patch/anchor outputs and safe-fail on invalid payloads.
 
-3) **Frontend apply pipeline**
+3. **Frontend apply pipeline**
+
    - Extend `applyEditOpsToVirtualFiles` to apply patch/anchor ops deterministically.
    - Use strict patch application (all hunks must match) and explicit anchor matching (single match only).
    - Keep atomic apply + undo behavior from ST-08-22.
 
-4) **Preview + UX guardrails**
+4. **Preview + UX guardrails**
+
    - Preview uses the same apply helper as apply.
    - If patch/anchor application fails, surface a clear error and offer Regenerate.
 
-5) **Tests**
+5. **Tests**
+
    - Unit tests for patch/anchor application helper (success, mismatch, ambiguity).
    - Update edit-ops handler tests for patch/anchor validation and safe-fail behavior.
 

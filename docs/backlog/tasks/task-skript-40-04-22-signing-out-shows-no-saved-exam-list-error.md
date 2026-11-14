@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-04-22
 title: Signing out shows no saved-exam list error
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-21'
 status: done
 closeout_review:
@@ -17,8 +17,7 @@ closeout_review:
   approval_evidence: 'The user closed the task on 2026-10-21 ("Close it", relayed by the Mac orchestrator) after Pi ruthless-reviewer 4156e084 approved repair 7b6f17a7 with no findings (retained root 01a15f58-90ab-7006-b41e-b9d7ee5a13fc, evidence/results/4156e084-7626-4159-82c0-9e6ec84f3453.json), merge 469cbaa7 verified by the full suite on main d9fab7e2 run on Hemma, and the Mac staging walk A at 4b321fa1 that passed (Mac .artifacts/staging-walk-l1c-4b321fa1/walk-record.md).'
 task_kind: story
 acceptance_criteria:
-- After a teacher signs out, the landing page shows no 'Det gick inte att hämta dina
-  sparade prov.' toast and the browser sends no exam workspace list request
+  - After a teacher signs out, the landing page shows no 'Det gick inte att hämta dina sparade prov.' toast and the browser sends no exam workspace list request
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -54,11 +53,11 @@ One sign-out from the exam workspace in a real browser on staging, with no list 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                                                                              |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | D1  | The fix is in the shell: the signed-out frame does not render a route that needs sign-in. The saved-list and unreadable-list error toasts stay as they are for real list failures. |
-| D2  | The same rule covers a session that expires on a protected page, which reaches the same remount before the shell sends the teacher to sign-in. |
-| D3  | The order in `onLogout` stays: sign out first, then go to the landing page, so a failed sign-out keeps the teacher on the page. |
+| D2  | The same rule covers a session that expires on a protected page, which reaches the same remount before the shell sends the teacher to sign-in.                                     |
+| D3  | The order in `onLogout` stays: sign out first, then go to the landing page, so a failed sign-out keeps the teacher on the page.                                                    |
 
 ## Progress
 

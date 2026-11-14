@@ -42,7 +42,7 @@ character, and the backend can’t recover any ops.
    - `EditOpsPatchOp.patch` → `EditOpsPatchOp.patch_lines`
    - `EditorEditOpsPatchOp.patch` → `EditorEditOpsPatchOp.patch_lines`
 3. Reconstruct the unified diff string from `patch_lines` at the preview/apply boundary (before calling the diff applier).
-4. Harden fenced-block extraction to avoid truncation when patch content contains ``` inside JSON strings.
+4. Harden fenced-block extraction to avoid truncation when patch content contains \`\`\` inside JSON strings.
 5. Regenerate OpenAPI types and update any frontend code that assumes `patch`.
 6. Update unit tests to use `patch_lines` everywhere.
 

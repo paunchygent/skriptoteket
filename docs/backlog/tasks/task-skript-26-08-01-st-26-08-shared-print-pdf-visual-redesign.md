@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-08-01
 title: ST-26-08 shared print PDF visual redesign
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -19,33 +19,14 @@ closeout_review:
 story: ST-SKRIPT-26-08
 task_kind: story
 acceptance_criteria:
-- 'Given grouping PDFs are generated from the workspace export path, when the first
-  page is rendered to PNG, then the body visually follows the current shared grouping
-  link: large serif title, `Skapad`, two-column group cards, low-ink circular numbered
-  member markers, restrained strong borders, and A4 portrait sizing.'
-- Given grouping PDFs are generated from the shared-link download path, when compared
-  to the workspace grouping PDF proof, then both paths use the same print-owned grouping
-  renderer behavior and do not fork into separate visual implementations.
-- 'Given seating PDFs are generated from the workspace export path, when the first
-  page is rendered to PNG, then the body visually follows the current shared seating
-  link: spatial classroom map, low-ink wall and bench fixtures, larger circular seats,
-  centered labels, no floor tile grid, A3 landscape sizing, and classroom content
-  using as much printable area as possible.'
-- Given seating PDFs are generated from the shared-link download path, when compared
-  to the workspace seating PDF proof, then both paths use the same print-owned seating
-  renderer behavior and do not fork into separate visual implementations.
-- Given a shared-link PDF download is requested, when the renderer is invoked, then
-  it continues to reconstruct from immutable `presentation_payload` and delegate through
-  export-owned print contracts rather than responsive browser HTML.
-- Given the redesigned PDFs are rendered, when their first-page PNGs are inspected,
-  then the visible Klassrumskartan/Skriptoteket logo remains present and the compact
-  print header does not consume excessive page space.
-- Given PDF output is produced, when text extraction or visual inspection is performed,
-  then PDFs do not contain share-page action chrome such as `Ladda ner PDF` controls
-  or public-app attribution links.
-- Given renderer tests run, when hostile display names or long labels are present,
-  then escaping, label containment, and no-script/no-browser-printing assumptions
-  remain covered.
+  - 'Given grouping PDFs are generated from the workspace export path, when the first page is rendered to PNG, then the body visually follows the current shared grouping link: large serif title, `Skapad`, two-column group cards, low-ink circular numbered member markers, restrained strong borders, and A4 portrait sizing.'
+  - Given grouping PDFs are generated from the shared-link download path, when compared to the workspace grouping PDF proof, then both paths use the same print-owned grouping renderer behavior and do not fork into separate visual implementations.
+  - 'Given seating PDFs are generated from the workspace export path, when the first page is rendered to PNG, then the body visually follows the current shared seating link: spatial classroom map, low-ink wall and bench fixtures, larger circular seats, centered labels, no floor tile grid, A3 landscape sizing, and classroom content using as much printable area as possible.'
+  - Given seating PDFs are generated from the shared-link download path, when compared to the workspace seating PDF proof, then both paths use the same print-owned seating renderer behavior and do not fork into separate visual implementations.
+  - Given a shared-link PDF download is requested, when the renderer is invoked, then it continues to reconstruct from immutable `presentation_payload` and delegate through export-owned print contracts rather than responsive browser HTML.
+  - Given the redesigned PDFs are rendered, when their first-page PNGs are inspected, then the visible Klassrumskartan/Skriptoteket logo remains present and the compact print header does not consume excessive page space.
+  - Given PDF output is produced, when text extraction or visual inspection is performed, then PDFs do not contain share-page action chrome such as `Ladda ner PDF` controls or public-app attribution links.
+  - Given renderer tests run, when hostile display names or long labels are present, then escaping, label containment, and no-script/no-browser-printing assumptions remain covered.
 ---
 
 ## Context
@@ -90,6 +71,7 @@ print-native, branded, and free of web-only action chrome.
 
 1. **Refactor existing export PDF renderers to adopt share-link visual language
    directly.**
+
    - Pros: Smallest structural change; keeps current renderer ownership easy to
      review.
    - Cons: Risks copying share visual rules into multiple print renderers and
@@ -97,6 +79,7 @@ print-native, branded, and free of web-only action chrome.
 
 2. **Extract shared print-scene/card primitives used by both export PDF and
    share PDF paths.** Recommended if the implementation can stay small.
+
    - Pros: Matches the current contract: shared-link PDFs already delegate to
      export-owned print renderers, and common print helpers can keep workspace
      and share downloads visually aligned.
@@ -105,6 +88,7 @@ print-native, branded, and free of web-only action chrome.
 
 3. **Keep export renderers separate but add strict parity tests and visual
    proof.**
+
    - Pros: Lowest abstraction risk.
    - Cons: Accepts duplicated visual implementations and relies on tests/proof
      to catch future drift.

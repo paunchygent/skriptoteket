@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0040
 title: Profile page view/edit mode separation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0040
+  - ADR-0040
 ---
 
 ## Context
@@ -32,8 +32,6 @@ The redesign requires choosing an edit interaction pattern and making decisions 
 
 ### Source: Decision
 
-
-
 ## Non-Decisions
 
 The source does not provide a separate non-decisions section; no additional non-decisions is recorded.
@@ -43,6 +41,7 @@ The source does not provide a separate non-decisions section; no additional non-
 ### Source: Consequences
 
 **Benefits**:
+
 - Clear separation between viewing and editing
 - Reduced cognitive load (one task at a time)
 - Smaller, focused components (all under LOC limits)
@@ -50,17 +49,20 @@ The source does not provide a separate non-decisions section; no additional non-
 - Consistent with brutalist design (clear visual hierarchy)
 
 **Tradeoffs**:
+
 - More component files to maintain
 - Slightly more complex state coordination in parent
 - Transitions may feel slower than instant form display
 
 **Follow-ups**:
+
 - ST-15-02: Avatar upload implementation
 - Future: Consider app settings page for locale and other preferences
 
 ### Source: 1) Inline Expansion Pattern (not Drawer)
 
 When users click "Edit" on a profile section:
+
 - The section expands in-place to show the edit form
 - Other sections collapse or dim to reduce visual noise
 - Only one section is editable at a time
@@ -70,6 +72,7 @@ When users click "Edit" on a profile section:
 ### Source: 2) Initials-Based Avatar (Upload Deferred)
 
 Display user initials in a colored circle:
+
 ```
 ┌─────────┐
 │   OS    │  (from "Olof Sjödin")
@@ -77,6 +80,7 @@ Display user initials in a colored circle:
 ```
 
 Avatar upload is explicitly deferred to a follow-up story (ST-15-02) because:
+
 - Requires new backend work (storage, image processing, new API endpoint)
 - Adds complexity that would expand the current story scope
 - Initials provide adequate visual identity for MVP
@@ -100,6 +104,7 @@ ProfileView.vue (<200 LOC)         # Orchestrator only
 ```
 
 State management:
+
 - Parent owns `editingSection: 'personal' | 'email' | 'password' | null`
 - Each edit component owns its own form state
 - Transitions use Vue's `<Transition>` with smooth opacity/transform

@@ -63,6 +63,7 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
 ## Implementation plan
 
 1. Lock the review findings in frontend tests first.
+
    - Prove smart-rule hydration failure does not become a planner-wide save blocker.
    - Prove smart-rule dirty/conflict/error state neither PATCHes nor blocks undo/redo.
    - Prove abandon explicitly protects or explicitly discards class-wide smart-rule edits.
@@ -74,6 +75,7 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
    - Prove smart-rule UI resets come from transition policy, not save/load acknowledgement paths.
 
 2. Split planner orchestration into explicit contracts.
+
    - Create a thin session controller as the only source of truth for active session token,
      draft ID, and roster ID.
    - Reduce `useClassroomState.ts` to a composition/adapter surface only.
@@ -88,12 +90,14 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
    - Keep smart-rule authoring UI state in a separate bucket.
 
 3. Replace the shared planner save contract.
+
    - Delete planner-wide `flushPendingSave()`.
    - Delete planner-global persistence truth via one save status/message.
    - Use one debounce timer per lane.
    - Keep hydration-failure state distinct from persistence-failure state in the smart-rule lane.
 
 4. Implement the explicit transition matrix.
+
    - `loadWorkspace`: draft-first, fail-safe, clear old smart rules immediately, disable smart-rule
      authoring until current-roster rules hydrate.
    - `undo` / `redo`: draft-lane-only flush behavior.
@@ -106,6 +110,7 @@ Replace the shared planner persistence contract with an explicit, ownership-hone
    - overview return / route exit: explicit lane policies with no acknowledgement-driven UI resets.
 
 5. Move the route shell onto explicit transition APIs.
+
    - Replace generic “flush pending save” guard logic with transition-specific lane orchestration.
    - Keep overview return and exit usable when smart-rule hydration failed but no dirty smart-rule
      persistence exists.

@@ -57,31 +57,31 @@ contract regression that made persisted decisions non-effective.
 
 ## Artifacts to Review
 
-| File | Focus | Result |
-|------|-------|--------|
-| `docs/backlog/prs/pr-0333-st-21-04-correction-session-backend-aggregate-and-persistence.md` | PR authority and acceptance criteria | Approved |
-| `docs/adr/adr-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md` | Durable-session invariants | Approved |
-| `src/skriptoteket/domain/curated_apps/exam_converter_correction_sessions.py` | Current-set conflicts and replay ordering | Approved |
-| `tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py` | Aggregate proof | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionReplay.ts` | Complete persisted set sent to Sir Convert apply | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionIntentBuilders.ts` | Accepted-vs-edited advisory provenance | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | UI proof that `review_decision` reaches apply | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts` | Replay proof for `candidate_suppression` | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue` | Per-question AI-seeded save wiring | Changes requested |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterManualAnswerKeyEditor.vue` | AI-seeded editor save event | Changes requested |
-| `scripts/playwright_pr_0337_correction_session_live.py` | Live proof path for saving one AI-seeded key | Changes requested |
+| File                                                                                                            | Focus                                            | Result            |
+| --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------- |
+| `docs/backlog/prs/pr-0333-st-21-04-correction-session-backend-aggregate-and-persistence.md`                     | PR authority and acceptance criteria             | Approved          |
+| `docs/adr/adr-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md`                          | Durable-session invariants                       | Approved          |
+| `src/skriptoteket/domain/curated_apps/exam_converter_correction_sessions.py`                                    | Current-set conflicts and replay ordering        | Approved          |
+| `tests/unit/domain/curated_apps/test_exam_converter_correction_sessions.py`                                     | Aggregate proof                                  | Approved          |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionReplay.ts`             | Complete persisted set sent to Sir Convert apply | Approved          |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionIntentBuilders.ts`     | Accepted-vs-edited advisory provenance           | Approved          |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`                       | UI proof that `review_decision` reaches apply    | Approved          |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterCorrectionSessionReplay.spec.ts`                        | Replay proof for `candidate_suppression`         | Approved          |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`                                  | Per-question AI-seeded save wiring               | Changes requested |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterManualAnswerKeyEditor.vue` | AI-seeded editor save event                      | Changes requested |
+| `scripts/playwright_pr_0337_correction_session_live.py`                                                         | Live proof path for saving one AI-seeded key     | Changes requested |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Skriptoteket owns durable correction-session persistence | Matches `ADR-0087`; Sir Convert remains stateless apply authority | [x] |
-| `candidate_suppression` and `review_decision` are submitted during replay | Persisted decisions must affect producer-derived projection/export truth | [x] |
-| Answer-key and `review_decision` intents conflict for the same item family | Prevents contradictory current-set truth before replay/export | [x] |
-| Accepted unchanged advisory suggestions keep `accepted_advisory_candidate` provenance | Avoids hiding accepted-vs-edited teacher provenance | [x] |
-| Per-question AI-seeded save preserves the intended AI-key workflow | Required for the actual teacher UI path and PR-0337 live proof | [ ] |
-| UI separates AI review, teacher editing, and replayed effective state | Prevents copy/status controls from explaining contradictory state | [ ] |
-| Browser state is draft-only until durable readback and replay prove truth | Preserves the central `ADR-0087` invariant | [ ] |
+| Decision                                                                              | Rationale                                                                | Approve? |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------- |
+| Skriptoteket owns durable correction-session persistence                              | Matches `ADR-0087`; Sir Convert remains stateless apply authority        | [x]      |
+| `candidate_suppression` and `review_decision` are submitted during replay             | Persisted decisions must affect producer-derived projection/export truth | [x]      |
+| Answer-key and `review_decision` intents conflict for the same item family            | Prevents contradictory current-set truth before replay/export            | [x]      |
+| Accepted unchanged advisory suggestions keep `accepted_advisory_candidate` provenance | Avoids hiding accepted-vs-edited teacher provenance                      | [x]      |
+| Per-question AI-seeded save preserves the intended AI-key workflow                    | Required for the actual teacher UI path and PR-0337 live proof           | [ ]      |
+| UI separates AI review, teacher editing, and replayed effective state                 | Prevents copy/status controls from explaining contradictory state        | [ ]      |
+| Browser state is draft-only until durable readback and replay prove truth             | Preserves the central `ADR-0087` invariant                               | [ ]      |
 
 ## Review Checklist
 
@@ -196,9 +196,9 @@ candidate suppression in the complete Sir Convert apply set.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0333` | Retained re-review created after direct blocker verification. |
-| 2 | `REV-PR-0333` | Verdict corrected to `changes_requested` after identifying that the per-question AI-seeded save path still bypasses the AI review-decision workflow. |
-| 3 | `REV-PR-0333` | User's UI/contract findings retained as active blockers: mixed state concepts, browser-local truth leakage, insufficient workflow proof, and UX papering over contract confusion. |
-| 4 | `PR-0338` | The durable UI remediation rewrote the stale reviewed-AI action path into AI-prefilled editor saves with durable provenance, replay-gated advancement, and replay-reference-gated file actions. |
+| Change | Artifact      | Description                                                                                                                                                                                     |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0333` | Retained re-review created after direct blocker verification.                                                                                                                                   |
+| 2      | `REV-PR-0333` | Verdict corrected to `changes_requested` after identifying that the per-question AI-seeded save path still bypasses the AI review-decision workflow.                                            |
+| 3      | `REV-PR-0333` | User's UI/contract findings retained as active blockers: mixed state concepts, browser-local truth leakage, insufficient workflow proof, and UX papering over contract confusion.               |
+| 4      | `PR-0338`     | The durable UI remediation rewrote the stale reviewed-AI action path into AI-prefilled editor saves with durable provenance, replay-gated advancement, and replay-reference-gated file actions. |

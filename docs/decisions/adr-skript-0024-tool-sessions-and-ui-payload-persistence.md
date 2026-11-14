@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0024
 title: Tool sessions and UI payload persistence
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0024
+  - ADR-0024
 ---
 
 ## Context
-
 
 Tool UI contract v2 (ADR-0022) introduces:
 
@@ -30,7 +29,6 @@ We need a persistence model that:
 - is concurrency-safe (multi-tab, double-submit)
 
 ## Decision
-
 
 ### 1) Introduce `tool_sessions`
 
@@ -143,7 +141,6 @@ No separate non-decisions is stated in the source.
 
 ## Consequences
 
-
 ### Benefits
 
 - Enables multi-turn tools with explicit, auditable state changes.
@@ -159,7 +156,6 @@ No separate non-decisions is stated in the source.
   renders vega_lite outputs (security/performance risk).
 
 ### Source: API shape (minimal, sketch)
-
 
 These endpoints are intentionally small so they can back the full SPA (ADR-0027) and any remaining legacy UI during migration.
 
@@ -236,7 +232,6 @@ Response (example):
 
 ### Source: UI policy profiles (default vs curated)
 
-
 Normalization is policy-driven to support:
 
 - strict safety/UX constraints for user-authored tools (default)
@@ -285,7 +280,6 @@ Curated policy is not “unlimited”; it remains capped to protect DB size and 
 
 ### Source: Validation rules (initial allowlists + caps)
 
-
 The application validates and normalizes all UI-relevant payloads before storage:
 
 - Allowed output kinds and action field kinds are enforced by policy profile.
@@ -315,7 +309,6 @@ explaining what was blocked and why.
 
 ### Source: Deterministic UI payload normalizer (sketch)
 
-
 Normalization must be deterministic and unit-testable. Inputs to normalization:
 
 1. Raw execution result (runner contract v2 or curated app contract v2)
@@ -336,7 +329,6 @@ High-level algorithm:
 5. Produce a canonical `ui_payload` that SSR and SPA can render byte-for-byte consistently.
 
 ### Source: Protocol seams (protocol-first DI)
-
 
 To keep the design protocol-first and unit-testable, introduce these seams:
 

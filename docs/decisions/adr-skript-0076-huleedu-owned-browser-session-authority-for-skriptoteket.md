@@ -4,17 +4,18 @@ id: ADR-SKRIPT-0076
 title: HuleEdu-owned browser session authority for Skriptoteket
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0076
+  - ADR-0076
 ---
 
 ## Context
+
 Skriptoteket already has the stronger browser-session model that the future shared SaaS surface
 needs:
 
@@ -40,6 +41,7 @@ That is the wrong long-term shape. The cutover target must preserve Skriptoteket
 semantics while moving auth ownership upward into HuleEdu-owned Gateway and Identity.
 
 ## Decision
+
 ### 1. Browser auth ownership
 
 Skriptoteket SHALL adopt a hard-break browser auth contract owned by HuleEdu:
@@ -119,9 +121,11 @@ The following options are explicitly rejected:
 - an app-local Skriptoteket auth bridge that keeps browser auth ownership outside HuleEdu Gateway
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 - This is a hard break, not a compatibility bridge.
 - HuleEdu must move upward to the stronger cookie-session + CSRF model before Skriptoteket can cut
   over cleanly.

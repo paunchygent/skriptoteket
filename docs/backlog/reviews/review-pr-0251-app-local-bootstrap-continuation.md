@@ -60,24 +60,24 @@ Approve `ADR-0082` as the governing direction for `PR-0251`:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md` | Decision boundary and rejected options | 8 min |
-| `docs/backlog/prs/pr-0251-st-28-01-session-bootstrap-api-client-cutover.md` | PR scope, acceptance criteria, and remaining work | 5 min |
-| `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md` | Parent story expectations | 4 min |
-| `frontend/apps/skriptoteket/src/stores/auth.ts` | Current frontend bootstrap orchestration | 4 min |
-| `src/skriptoteket/web/api/v1/editor/completions.py` and sibling editor AI routes | Session-carried AI preference dependencies | 5 min |
+| File                                                                                                         | Focus                                             | Time  |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- | ----- |
+| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`                                   | Decision boundary and rejected options            | 8 min |
+| `docs/backlog/prs/pr-0251-st-28-01-session-bootstrap-api-client-cutover.md`                                  | PR scope, acceptance criteria, and remaining work | 5 min |
+| `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md` | Parent story expectations                         | 4 min |
+| `frontend/apps/skriptoteket/src/stores/auth.ts`                                                              | Current frontend bootstrap orchestration          | 4 min |
+| `src/skriptoteket/web/api/v1/editor/completions.py` and sibling editor AI routes                             | Session-carried AI preference dependencies        | 5 min |
 
 **Total estimated time:** ~26 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a separate app-local continuation after HuleEdu session bootstrap | Preserves rich app state without making Skriptoteket a browser auth authority | [x] |
-| Keep AI preferences on `UserProfile`, not local browser sessions | AI consent is app profile state, not session authority | [x] |
-| Replace editor AI route dependency on local `Session` preference fields | Enables `PR-0253` to remove local browser session ownership cleanly | [x] |
-| Fail closed for remote-AI affordances when app AI bootstrap is missing | Preserves remote-provider consent and safety guardrails | [x] |
+| Decision                                                                | Rationale                                                                     | Approve? |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------- |
+| Use a separate app-local continuation after HuleEdu session bootstrap   | Preserves rich app state without making Skriptoteket a browser auth authority | [x]      |
+| Keep AI preferences on `UserProfile`, not local browser sessions        | AI consent is app profile state, not session authority                        | [x]      |
+| Replace editor AI route dependency on local `Session` preference fields | Enables `PR-0253` to remove local browser session ownership cleanly           | [x]      |
+| Fail closed for remote-AI affordances when app AI bootstrap is missing  | Preserves remote-provider consent and safety guardrails                       | [x]      |
 
 ## Review Checklist
 
@@ -241,8 +241,7 @@ approves below:
 - The route verifies HuleEdu `InternalIdentityContextV1` headers using the concrete
   `X-Huledu-Identity-*` transport, detached RS256 signature, issuer/audience, payload version,
   required fields, TTL, and clock-skew rules.
-- The local projection resolves existing users by `(auth_provider=huleedu,
-  external_id=<context.sub>)`, fails closed when missing, and creates only a safe default profile
+- The local projection resolves existing users by `(auth_provider=huleedu, external_id=<context.sub>)`, fails closed when missing, and creates only a safe default profile
   for an already resolved local user.
 - The continuation response carries `local_user`, matching `profile`, `ai_policy`,
   `allow_remote_fallback`, and `inline_completion_provider`.
@@ -326,12 +325,12 @@ None. The previous implementation findings are resolved:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ADR-0082` | Drafted the app-local bootstrap continuation decision for `PR-0251` |
-| 2 | `PR-0251` | Linked the proposed ADR and retained review gate |
-| 3 | `REV-PR-0251` | Reviewed `ADR-0082` against `ADR-0076`, current frontend bootstrap state, and editor AI `Session` preference dependencies |
-| 4 | `ADR-0082` | Accepted the app-local continuation boundary as the governing direction for the remaining `PR-0251` implementation |
-| 5 | `REV-PR-0251` | Recorded the retained implementation review and requested changes for HuleEdu request-context resolution plus local role projection |
-| 6 | `PR-0255` | Implemented the HuleEdu request-context continuation and local projection remediation |
-| 7 | `REV-PR-0251` | Approved the retained implementation re-review after the `PR-0255` remediation fixes |
+| Change | Artifact      | Description                                                                                                                         |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `ADR-0082`    | Drafted the app-local bootstrap continuation decision for `PR-0251`                                                                 |
+| 2      | `PR-0251`     | Linked the proposed ADR and retained review gate                                                                                    |
+| 3      | `REV-PR-0251` | Reviewed `ADR-0082` against `ADR-0076`, current frontend bootstrap state, and editor AI `Session` preference dependencies           |
+| 4      | `ADR-0082`    | Accepted the app-local continuation boundary as the governing direction for the remaining `PR-0251` implementation                  |
+| 5      | `REV-PR-0251` | Recorded the retained implementation review and requested changes for HuleEdu request-context resolution plus local role projection |
+| 6      | `PR-0255`     | Implemented the HuleEdu request-context continuation and local projection remediation                                               |
+| 7      | `REV-PR-0251` | Approved the retained implementation re-review after the `PR-0255` remediation fixes                                                |

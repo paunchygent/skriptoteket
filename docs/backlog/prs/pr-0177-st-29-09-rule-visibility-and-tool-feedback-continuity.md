@@ -48,21 +48,25 @@ Ship one small UI continuity slice that:
 ## Implementation plan
 
 1. Seating toolbar cleanup
+
    - Remove the active-rule count pill from `PlannerSeatingWorkspaceToolbar.vue`.
    - Keep `Smart`, `Regler`, and `Använd historik` unchanged.
 
 2. Classroom editor tool-feedback alignment
+
    - Update `RoomTemplateEditorSidebar.vue` so the tool palette uses the shared active/idle choice
      language and a local active-tool feedback surface.
    - Keep the editor modal bounded; do not add new drawers, banners, or status pills.
 
 3. Student-bar rule visibility
+
    - Reuse the existing smart-rule marker presentation helpers.
    - Pass rule-marker data into the grouping student pool and grouped student cards so markers stay
      visible after assignment.
    - Preserve the current seating student-pool marker semantics.
 
 4. Verification
+
    - Add focused Vitest coverage for the room-editor tool palette and grouped-student marker
      continuity.
    - Run a live local browser check at `http://127.0.0.1:5173`.

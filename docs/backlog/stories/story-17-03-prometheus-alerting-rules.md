@@ -72,12 +72,14 @@ groups:
 Create: `observability/prometheus/rules/skriptoteket-alerts.yml`
 
 Modify: `observability/prometheus/prometheus.yml`
+
 ```yaml
 rule_files:
   - "/etc/prometheus/rules/*.yml"
 ```
 
 Modify: `compose.observability.yaml`
+
 ```yaml
 prometheus:
   volumes:

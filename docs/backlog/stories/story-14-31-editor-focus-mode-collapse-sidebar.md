@@ -28,8 +28,7 @@ editor work where width matters.
 
 See also:
 
-- Compare/full-width diff ergonomics: `docs/backlog/stories/story-14-18-
-editor-review-navigation-and-compare.md`
+- Compare/full-width diff ergonomics: `docs/backlog/stories/story-14-18- editor-review-navigation-and-compare.md`
 - AI chat drawer uses the same right-side drawer surface + benefits from
   width: `docs/backlog/stories/story-08-20-editor-ai-chat-drawer-mvp.md`
 
@@ -40,16 +39,16 @@ editor-review-navigation-and-compare.md`
 - Implement as a global layout state in `AuthLayout.vue`, persisted in local
   storage.
   - Persistence MUST be keyed by `user_id` (focus mode is global across
-authenticated pages, not per-tool).
+    authenticated pages, not per-tool).
   - Recommended key format: `skriptoteket:layout:focus_mode:<user_id>` with
-value `0|1`.
+    value `0|1`.
   - On logout, in-memory state clears naturally; on login, load the logged-in
-user’s value.
+    user’s value.
 - Provide an explicit toggle in the editor UI (most important) and optionally
   also in the top bar for discoverability.
 - When collapsed:
   - Hide the desktop sidebar and remove the desktop `margin-left` reserved
-space.
+    space.
   - Keep a persistent, obvious exit control (“Avsluta fokusläge”) in the top
     bar so the user can always exit Focus mode.
   - Show a toast on enable: “Fokusläge aktiverat”.

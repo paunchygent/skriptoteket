@@ -28,13 +28,13 @@ This dashboard provides visibility into request traffic, error rates, and latenc
 
 ## Panels
 
-| Panel | Type | Query |
-|-------|------|-------|
-| Request Rate | Time series | `rate(skriptoteket_http_requests_total[5m])` by endpoint |
-| Error Rate | Gauge | `rate(skriptoteket_http_requests_total{status_code=~"4..\|5.."}[5m]) / rate(skriptoteket_http_requests_total[5m])` |
-| Latency P50/P95/P99 | Time series | `histogram_quantile(0.99, rate(skriptoteket_http_request_duration_seconds_bucket[5m]))` |
-| Status Code Distribution | Stacked bar | by status_code |
-| Top Endpoints | Table | sorted by request count |
+| Panel                    | Type        | Query                                                                                                              |
+| ------------------------ | ----------- | ------------------------------------------------------------------------------------------------------------------ |
+| Request Rate             | Time series | `rate(skriptoteket_http_requests_total[5m])` by endpoint                                                           |
+| Error Rate               | Gauge       | `rate(skriptoteket_http_requests_total{status_code=~"4..\|5.."}[5m]) / rate(skriptoteket_http_requests_total[5m])` |
+| Latency P50/P95/P99      | Time series | `histogram_quantile(0.99, rate(skriptoteket_http_request_duration_seconds_bucket[5m]))`                            |
+| Status Code Distribution | Stacked bar | by status_code                                                                                                     |
+| Top Endpoints            | Table       | sorted by request count                                                                                            |
 
 ## Files
 

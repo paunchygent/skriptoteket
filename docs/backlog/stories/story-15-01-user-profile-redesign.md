@@ -27,15 +27,17 @@ acceptance_criteria:
 **Current State**: `ProfileView.vue` (398 lines) is a single-mode form with three sections (personal info, email, password) that feels cluttered and doesn't follow good UX separation principles.
 
 **Target State**: A clean profile page with:
+
 1. **View Mode**: Read-only presentation of user data
 2. **Edit Mode**: Focused editing experience (one section at a time via inline expansion)
 3. **Visual hierarchy** following brutalist design principles
 
----
+______________________________________________________________________
 
 ## Required Reading (Before Starting)
 
 ### Architecture & Rules
+
 1. **`.codex/rules/000-rule-index.md`** - Master index of all project rules
 2. **`.codex/rules/011-frontend-architecture.md`** - Vue 3 SPA architecture patterns
 3. **`.codex/rules/012-frontend-components.md`** - Component conventions
@@ -43,25 +45,27 @@ acceptance_criteria:
 5. **`docs/adr/adr-0040-profile-view-edit-separation.md`** - Profile UX decisions
 
 ### Design System
+
 6. **`frontend/apps/skriptoteket/src/assets/main.css`** - Design tokens and Tailwind 4 `@theme inline` configuration
 7. **`frontend/apps/skriptoteket/src/components/ui/`** - Existing UI primitives
 
 ### Current Implementation
+
 8. **`frontend/apps/skriptoteket/src/views/ProfileView.vue`** - Current profile page (398 lines)
 9. **`frontend/apps/skriptoteket/src/stores/user.ts`** - User state management
 
----
+______________________________________________________________________
 
 ## Design Decisions (ADR-0040)
 
-| Decision | Choice |
-|----------|--------|
-| Edit pattern | Inline expansion (section expands in-place, others dim) |
-| Avatar | Initials-based placeholder (upload deferred to ST-15-02) |
-| Password location | Same page as a section |
-| Locale | Keep on profile page for now |
+| Decision          | Choice                                                   |
+| ----------------- | -------------------------------------------------------- |
+| Edit pattern      | Inline expansion (section expands in-place, others dim)  |
+| Avatar            | Initials-based placeholder (upload deferred to ST-15-02) |
+| Password location | Same page as a section                                   |
+| Locale            | Keep on profile page for now                             |
 
----
+______________________________________________________________________
 
 ## Design System Overview
 
@@ -82,6 +86,7 @@ acceptance_criteria:
 ### Brutalist Design Principles
 
 1. **Hard shadows** - No blur, no soft gradients
+
    ```css
    box-shadow: 4px 4px 0 var(--color-navy);
    ```
@@ -91,6 +96,7 @@ acceptance_criteria:
 3. **Grid-based layouts** - Systematic spacing using `gap-4`, `gap-6`
 
 4. **Typography hierarchy**:
+
    - `text-2xl font-bold` for page titles
    - `text-lg font-semibold` for section headers
    - `text-base` for body text
@@ -123,12 +129,14 @@ acceptance_criteria:
 </div>
 ```
 
----
+______________________________________________________________________
 
 ## Feedback Patterns
 
 ### Toast (Transient Success/Info)
+
 Use for non-blocking confirmations:
+
 ```typescript
 import { useToast } from '@/composables/useToast'
 
@@ -137,7 +145,9 @@ showSuccess('Profile updated successfully')
 ```
 
 ### SystemMessage (Blocking Errors)
+
 Use for errors requiring user attention:
+
 ```vue
 <SystemMessage
   v-if="error"
@@ -146,7 +156,7 @@ Use for errors requiring user attention:
 />
 ```
 
----
+______________________________________________________________________
 
 ## Component Architecture
 
@@ -193,13 +203,14 @@ src/components/profile/
 - Other sections collapse/dim
 - Focused, single-task editing
 
----
+______________________________________________________________________
 
 ## State Management
 
 ### User Store (`stores/user.ts`)
 
 The user store already provides:
+
 ```typescript
 const userStore = useUserStore()
 
@@ -215,6 +226,7 @@ await userStore.updateProfile(profileData)
 ### Local Form State
 
 Use `ref()` for form state, not direct store mutation:
+
 ```typescript
 const formData = ref({
   firstName: userStore.user?.profile?.firstName ?? '',
@@ -229,29 +241,30 @@ async function savePersonalInfo() {
 }
 ```
 
----
+______________________________________________________________________
 
 ## API Endpoints
 
 Current backend endpoints (no changes needed):
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/api/v1/me` | Fetch current user + profile |
-| PATCH | `/api/v1/me/profile` | Update profile fields |
-| POST | `/api/v1/me/email` | Request email change |
-| POST | `/api/v1/me/password` | Change password |
+| Method | Endpoint              | Purpose                      |
+| ------ | --------------------- | ---------------------------- |
+| GET    | `/api/v1/me`          | Fetch current user + profile |
+| PATCH  | `/api/v1/me/profile`  | Update profile fields        |
+| POST   | `/api/v1/me/email`    | Request email change         |
+| POST   | `/api/v1/me/password` | Change password              |
 
----
+______________________________________________________________________
 
 ## Handoff Requirements
 
 Upon completion, update:
+
 1. **`.codex/handoff.md`** - Add profile redesign to completed work
 2. **Create PR** with before/after screenshots
 3. **Update this story** with implementation notes
 
----
+______________________________________________________________________
 
 ## References
 

@@ -56,28 +56,28 @@ as successful transcript JSON.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md` | Governing scope and live-proof follow-up | 5 min |
-| `docs/backlog/reviews/review-pr-0342-transcript-intake-and-gateway-lifecycle-client.md` | Prior retained review and approved blockers | 5 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts` | Canonical diarization false-success rejection | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts` | Canonical `used_mode` test proof | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` | UI edge regression proof | 5 min |
-| `.artifacts/transcript-live-gateway-proof/20260611T003730Z/` | English live proof after `31bd0ce0` | 10 min |
-| `.artifacts/transcript-live-gateway-proof/20260611T003748Z/` | Swedish live proof after `31bd0ce0` | 10 min |
-| `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260611-003417.log` | Deployment revision and smoke evidence | 5 min |
+| File                                                                                    | Focus                                         | Time   |
+| --------------------------------------------------------------------------------------- | --------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md`   | Governing scope and live-proof follow-up      | 5 min  |
+| `docs/backlog/reviews/review-pr-0342-transcript-intake-and-gateway-lifecycle-client.md` | Prior retained review and approved blockers   | 5 min  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts`             | Canonical diarization false-success rejection | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts`         | Canonical `used_mode` test proof              | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`         | UI edge regression proof                      | 5 min  |
+| `.artifacts/transcript-live-gateway-proof/20260611T003730Z/`                            | English live proof after `31bd0ce0`           | 10 min |
+| `.artifacts/transcript-live-gateway-proof/20260611T003748Z/`                            | Swedish live proof after `31bd0ce0`           | 10 min |
+| `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260611-003417.log`       | Deployment revision and smoke evidence        | 5 min  |
 
 **Total estimated time:** ~60 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Accept result envelope/runtime metadata remediation | Parser requires `audio_to_transcript_bundle_v2`, rejecting non-transcript pipelines instead of accepting generic successful results. | [x] |
-| Accept artifact manifest remediation | Parser accepts available `transcript_json` and unavailable formatter artifacts only when unavailable entries carry `unavailable_code`. | [x] |
-| Accept canonical top-level segment remediation | Parser accepts top-level `segments` and `segment_id`, matching the live artifacts. | [x] |
-| Accept false-success rejection as complete for the reviewed producer shape | Parser now reads canonical `diarization.used_mode` and rejects `diarization_unavailable`; focused spec covers that shape. | [x] |
-| Accept live product proof as final PR-0342 proof | Deployed revision `31bd0ce0b5ae0bdb9568d3d260d093fd3b5cab9c` produced English and Swedish successful UI + Gateway + `transcript_json` evidence. | [x] |
+| Decision                                                                   | Rationale                                                                                                                                       | Approve? |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Accept result envelope/runtime metadata remediation                        | Parser requires `audio_to_transcript_bundle_v2`, rejecting non-transcript pipelines instead of accepting generic successful results.            | [x]      |
+| Accept artifact manifest remediation                                       | Parser accepts available `transcript_json` and unavailable formatter artifacts only when unavailable entries carry `unavailable_code`.          | [x]      |
+| Accept canonical top-level segment remediation                             | Parser accepts top-level `segments` and `segment_id`, matching the live artifacts.                                                              | [x]      |
+| Accept false-success rejection as complete for the reviewed producer shape | Parser now reads canonical `diarization.used_mode` and rejects `diarization_unavailable`; focused spec covers that shape.                       | [x]      |
+| Accept live product proof as final PR-0342 proof                           | Deployed revision `31bd0ce0b5ae0bdb9568d3d260d093fd3b5cab9c` produced English and Swedish successful UI + Gateway + `transcript_json` evidence. | [x]      |
 
 ## Review Checklist
 
@@ -191,6 +191,6 @@ fixtures without weakening false-success rejection.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `review-transcript-gateway-live-proof-remediation.md` | Updated retained review from `changes_requested` to `approved` after verifying the canonical `used_mode` fix, deployed proof, and focused gates. |
+| Change | Artifact                                              | Description                                                                                                                                      |
+| ------ | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `review-transcript-gateway-live-proof-remediation.md` | Updated retained review from `changes_requested` to `approved` after verifying the canonical `used_mode` fix, deployed proof, and focused gates. |

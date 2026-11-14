@@ -43,23 +43,23 @@ Extract cohesive modules to restore SRP boundaries while keeping the public comp
 
 ## Proposed refactor order (minimize churn)
 
-1) **Extract pure helpers first (no behavior change)**
+1. **Extract pure helpers first (no behavior change)**
 
    - New file(s) for timestamp/TTL helpers, labels, and fingerprinting.
    - Keep all existing unit tests passing throughout.
 
-2) **Extract persistence primitives**
+2. **Extract persistence primitives**
 
    - New module for “head” persistence (load/save/clear + TTL purge).
    - New module for checkpoints (list/create/trim/clear + pinned vs auto policy).
    - Both modules remain thin wrappers over `editorPersistence.ts` so the IndexedDB schema stays centralized.
 
-3) **Extract restore-candidate policy**
+3. **Extract restore-candidate policy**
 
    - Move “restore candidate lifecycle” + “stash on first edit” rules into a dedicated module.
    - Keep the orchestration in `useEditorWorkingCopy.ts`, but delegate decisions + side effects.
 
-4) **Keep useEditorWorkingCopy as the orchestrator**
+4. **Keep useEditorWorkingCopy as the orchestrator**
 
    - `useEditorWorkingCopy.ts` becomes the “wiring” file: connects editor buffers, persistence modules, and notifications.
    - Avoid moving exports/types unless required; keep return shape and function names intact.
@@ -80,7 +80,7 @@ Extract cohesive modules to restore SRP boundaries while keeping the public comp
 
 - Extracted fingerprint helpers: `frontend/apps/skriptoteket/src/composables/editor/editorWorkingCopyFingerprint.ts`
 - Extracted checkpoint management: `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopyCheckpoints.ts`
-- Slimmed orchestrator (kept API stable; <500 LOC): `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
+- Slimmed orchestrator (kept API stable; \<500 LOC): `frontend/apps/skriptoteket/src/composables/editor/useEditorWorkingCopy.ts`
 
 ## Verification (done)
 

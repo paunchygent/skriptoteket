@@ -80,9 +80,7 @@ that said conversion controls should appear before local file upload.
   layout.
 - Red-first proof: after updating
   `scripts/_document_converter_single_file_proof.py` to require source-first
-  compact geometry, `pdm run python -m scripts.authenticated_home_work_apps
-  --base-url http://localhost:5173 --artifact-root
-  .artifacts/authenticated-home-work-apps --timeout-seconds 120` failed with
+  compact geometry, `pdm run python -m scripts.authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/authenticated-home-work-apps --timeout-seconds 120` failed with
   `Document Converter compact file upload is not before conversion controls.`
 - Implemented the compact CSS order change in
   `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterWorkspace.css`
@@ -99,9 +97,7 @@ that said conversion controls should appear before local file upload.
 - `pdm run handoff-validate` -> passed.
 - `git diff --check` -> passed.
 - Authenticated browser proof:
-  `pdm run python -m scripts.authenticated_home_work_apps --base-url
-  http://localhost:5173 --artifact-root .artifacts/authenticated-home-work-apps
-  --timeout-seconds 120` -> passed with retained artifacts at
+  `pdm run python -m scripts.authenticated_home_work_apps --base-url http://localhost:5173 --artifact-root .artifacts/authenticated-home-work-apps --timeout-seconds 120` -> passed with retained artifacts at
   `.artifacts/authenticated-home-work-apps/20260627T172303Z/`. An earlier
   post-fix attempt hit HuleEdu login rate limiting before route inspection; the
   rerun after the rate-limit window passed.

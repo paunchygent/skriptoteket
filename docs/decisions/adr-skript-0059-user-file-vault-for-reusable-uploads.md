@@ -4,21 +4,23 @@ id: ADR-SKRIPT-0059
 title: User file vault for reusable uploads
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0059
+  - ADR-0059
 ---
 
 ## Context
+
 Users often re-upload the same input files. We already store run artifacts and session files, but there is no
 user-scoped library for reusable inputs, and the runner remains network-isolated.
 
 ## Decision
+
 - Add a user file vault with explicit save/delete controls.
 - Persist file metadata in a new table (e.g., `user_files`) keyed by `(user_id, file_id)` with name, size, source, and
   storage path; enforce size caps and retention rules.
@@ -32,9 +34,11 @@ user-scoped library for reusable inputs, and the runner remains network-isolated
 - Vault access is strictly per-user unless a future sharing model is introduced.
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 - Reduces repeated uploads and enables workflows that reuse common inputs.
 - Adds storage and lifecycle management responsibilities (retention, deletion, quotas), including copying artifacts
   into the vault storage namespace and running a purge job for soft-deleted files.

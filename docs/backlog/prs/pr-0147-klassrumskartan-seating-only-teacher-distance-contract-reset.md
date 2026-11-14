@@ -62,6 +62,7 @@ ownership reset to roster-global smart rules is tracked separately in `PR-0151`.
 ## Implementation plan
 
 1. Red phase: lock the renamed contract in tests first.
+
    - Update API tests to expect `seating_preferences[].near_teacher` and to reject the old
      `smart_preferences[].support_seat` payload.
    - Update repository/history tests to expect renamed workspace collections and snapshot keys.
@@ -71,30 +72,35 @@ ownership reset to roster-global smart rules is tracked separately in `PR-0151`.
      load/autosave.
 
 2. Domain and application rename.
+
    - Replace `StudentSmartPreference` with `StudentSeatingPreference`.
    - Replace `smart_preferences` collections with `seating_preferences`.
    - Replace `support_seat` with `near_teacher`.
    - Keep the concept explicitly seating-only; grouping must not consume it as a shared rule.
 
 3. API contract reset.
+
    - Rename DTOs and request/response fields to the new seating-only names.
    - Keep `extra="forbid"` and the no-shims posture so old payloads fail loudly.
    - Ensure PATCH handling, workspace serialization, and resumable/load flows all round-trip the
      new contract.
 
 4. Persistence and history rename.
+
    - Rename ORM model/table/column usage to seating-only names.
    - Rename repository load/save/history snapshot keys so the bounded undo/redo stack remains
      aligned with the new contract.
    - Preserve the existing relational structure and per-draft uniqueness semantics.
 
 5. Forward migration.
+
    - Add a new Alembic revision after the current head.
    - Create the renamed seating-preference table/column contract and drop the old smart-preference
      table as part of the continued burn-and-rebuild posture.
    - Do not add a compatibility bridge for old rows.
 
 6. Thin frontend contract sync only.
+
    - Update the frontend types/store load-save layer so the current notes-only planner does not
      clobber the renamed backend field before the later visual rule-authoring slice lands.
    - Do not add new smart-rule UI in this PR.

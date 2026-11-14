@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-06
 title: Quality and test coverage
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,14 +14,12 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Automated tests provide high confidence in critical flows; overall coverage
-  >80% and high-risk modules exceed >80%.
+outcome: Automated tests provide high confidence in critical flows; overall coverage >80% and high-risk modules exceed >80%.
 retired_ids:
-- EPIC-06
+  - EPIC-06
 ---
 
 ## Scope
-
 
 - Raise automated test coverage to meet the targets in `.codex/rules/070-testing-standards.md`.
 - Add focused **integration tests** for repository behavior (CRUD, ordering, not-found paths).
@@ -41,7 +39,6 @@ No separate adr coverage is stated in the source.
 No separate contract inputs is stated in the source.
 
 ## Stories
-
 
 - ST-06-01: Improve test coverage for Admin Scripting and Docker Runner
 - ST-06-02: Improve test coverage for PostgreSQL repositories (ToolRun + suggestions + tools)
@@ -63,7 +60,6 @@ No separate contract inputs is stated in the source.
 No separate epic verification plan is stated in the source.
 
 ## Exceptions And Follow-Ups
-
 
 - Prefer protocol-mocked unit tests for application/domain code; use testcontainers only where behavior requires a real DB.
 - Keep tests deterministic; avoid time-based flakiness and fragile HTML assertions.

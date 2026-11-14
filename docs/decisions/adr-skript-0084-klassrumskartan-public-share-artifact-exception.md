@@ -4,23 +4,24 @@ id: ADR-SKRIPT-0084
 title: Klassrumskartan public share artifact exception
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - ADR-SKRIPT-0079
-  - ADR-SKRIPT-0080
-  - EPIC-SKRIPT-26
-  - ST-SKRIPT-26-06
+    - ADR-SKRIPT-0079
+    - ADR-SKRIPT-0080
+    - EPIC-SKRIPT-26
+    - ST-SKRIPT-26-06
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0084
+  - ADR-0084
 ---
 
 ## Context
+
 `ADR-0079` keeps public curated-app guest state browser-owned before login. It
 allows stateless helper work, direct rendering, and transient buffers, and it
 explicitly keeps guest export direct-download and Vault/MyFiles-free.
@@ -32,6 +33,7 @@ public guest lane would create durable anonymous server-side artifacts with
 text.
 
 ## Decision
+
 This ADR authorizes one narrow exception to `ADR-0079`: Klassrumskartan public
 guests may publish immutable, anonymous share artifacts only through dedicated
 public helper creation routes and only for the `Dela länk` export variant.
@@ -68,9 +70,11 @@ The exception contract is:
   operator path.
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 - `PR-0273` can start once its remaining planning and dependency gates are
   green, and must implement this accepted exception without widening it.
 - Public guest share storage needs share-specific rate limits, payload and

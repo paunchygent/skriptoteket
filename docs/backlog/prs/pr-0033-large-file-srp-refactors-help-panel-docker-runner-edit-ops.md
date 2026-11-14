@@ -32,7 +32,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 
 ## Goal
 
-- Reduce the in-scope hotspots to <500 LOC via cohesive modularization (SRP-compliant, not “extract a helper and move on”).
+- Reduce the in-scope hotspots to \<500 LOC via cohesive modularization (SRP-compliant, not “extract a helper and move on”).
 - Improve performance where it matters:
   - Reduce baseline SPA bundle by lazy-loading the Help UI (and/or its topics).
   - Reduce redundant work in the Docker runner execution path.
@@ -117,7 +117,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 1. Extract dashboard data fetching (`/api/v1/my-runs`, `/api/v1/my-tools`, `/api/v1/admin/tools`, favorites, recents) into a composable with explicit loading/error state.
 2. Extract “create draft tool” modal state + submission into a composable or a dedicated component.
 3. Keep route-level concerns in the view (auth gating + navigation), but move most state machines out.
-4. Ensure `HomeView.vue` is <500 LOC and the behavior matches before/after (same API calls, same toasts, same navigation).
+4. Ensure `HomeView.vue` is \<500 LOC and the behavior matches before/after (same API calls, same toasts, same navigation).
 
 **Files likely to be touched**
 
@@ -146,7 +146,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 1. Extract route/role derivations, orchestration logic, and cross-composable wiring into a single composable.
 2. Keep “leaf” behavior where it belongs (existing composables), but centralize page-level coordination (watchers, mode toggles).
 3. Keep template stable; avoid renaming props/slots in shared components unless needed.
-4. Ensure `ScriptEditorView.vue` is <500 LOC and the editor still works end-to-end (required live check).
+4. Ensure `ScriptEditorView.vue` is \<500 LOC and the editor still works end-to-end (required live check).
 
 **Files likely to be touched**
 
@@ -215,7 +215,7 @@ This PR aims to address the highest-impact hotspots and create a prioritized inv
 
 **Suggested module layout (example)**
 
-- `src/skriptoteket/application/editor/edit_ops_handler.py` (thin orchestrator; <500 LOC)
+- `src/skriptoteket/application/editor/edit_ops_handler.py` (thin orchestrator; \<500 LOC)
 - `src/skriptoteket/application/editor/edit_ops/constants.py` (messages, TTL, small pure constants)
 - `src/skriptoteket/application/editor/edit_ops/persistence.py` (UoW ops: create turns/messages, update status)
 - `src/skriptoteket/application/editor/edit_ops/budgeting.py` (budget application + preflight fit checks)
@@ -296,9 +296,9 @@ Items marked **(generated/binary)** are not candidates for SRP refactor.
 
 ### P2 (next; high value follow-ups, likely separate PRs)
 
-7. `frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts` (581) — editor AI chat client state machine
-8. `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts` (578) — edit-ops client orchestration
-9. `src/skriptoteket/application/editor/edit_ops_preview_handler.py` (503) — preview + apply handler in one file
+07. `frontend/apps/skriptoteket/src/composables/editor/useEditorChat.ts` (581) — editor AI chat client state machine
+08. `frontend/apps/skriptoteket/src/composables/editor/useEditorEditOps.ts` (578) — edit-ops client orchestration
+09. `src/skriptoteket/application/editor/edit_ops_preview_handler.py` (503) — preview + apply handler in one file
 10. `src/skriptoteket/protocols/llm.py` (643) — mixed Pydantic DTOs + protocols; candidate for split by concern
 11. `src/skriptoteket/web/api/v1/editor/models.py` (572) — large API surface; candidate for split by endpoint area
 

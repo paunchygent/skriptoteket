@@ -8,6 +8,7 @@ description: Use when authoring or refactoring Skriptoteket Flunk-Out Frenzy pin
 Author Skriptoteket pinball boards from geometry, not sketches.
 
 Hard rules:
+
 - Never hand-draw board rails, walls, lanes, or guide lines as arbitrary point clouds.
 - Start from canonical playfield grammar: top arch, outer walls, shooter lane, outlanes, inlanes, center drain, slings, flipper pivots.
 - Define metrics first: board size, lane widths, drain width, pivot spread, arch radius, wall insets, lower-third exits.
@@ -29,10 +30,11 @@ Hard rules:
 - If a board still "looks sketched," stop tuning numbers and move one level higher in abstraction.
 
 Workflow:
+
 1. Declare board metrics and canonical regions.
-1. If using a donor table, inventory the donor object's native geometry and semantics before mapping.
-1. Generate rails and guides from primitives.
-1. Extend the authored and compiled representation whenever donor semantics exceed the current model, including donor-shaped lane regions and launcher corridors.
-1. Compile generated rails and explicit device semantics into the runtime plan.
-1. Render the same generated geometry and semantic footprints in the underlay or debug view.
-1. Only after the board and donor semantics read correctly should mechanics tuning resume.
+2. If using a donor table, inventory the donor object's native geometry and semantics before mapping.
+3. Generate rails and guides from primitives.
+4. Extend the authored and compiled representation whenever donor semantics exceed the current model, including donor-shaped lane regions and launcher corridors.
+5. Compile generated rails and explicit device semantics into the runtime plan.
+6. Render the same generated geometry and semantic footprints in the underlay or debug view.
+7. Only after the board and donor semantics read correctly should mechanics tuning resume.

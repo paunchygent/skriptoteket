@@ -73,13 +73,13 @@ Use the sandbox settings resolve/save endpoints from ST-14-08
 
 ### Frontend (SandboxRunner UI)
 
-1) Parse and surface settings schema
+1. Parse and surface settings schema
 
 - In `EditorWorkspacePanel.vue`, parse `settingsSchemaText` into `parsedSettingsSchema` (JSON array).
 - Show an inline parse error when invalid (parity with input_schema).
 - Pass `parsedSettingsSchema` and `settingsSchemaError` into `SandboxRunner.vue`.
 
-2) Render settings panel
+2. Render settings panel
 
 - In `SandboxRunner.vue`, reuse `ToolRunSettingsPanel.vue`.
 - Add a settings toggle button similar to `ToolRunView`.
@@ -89,7 +89,7 @@ Use the sandbox settings resolve/save endpoints from ST-14-08
   - save with `expected_state_rev`
 - Allow settings save for valid schemas, even when other editor fields are unsaved.
 
-3) Apply settings to sandbox preview runs
+3. Apply settings to sandbox preview runs
 
 - Sandbox preview runs read the sandbox settings via `SKRIPTOTEKET_MEMORY_PATH`.
 

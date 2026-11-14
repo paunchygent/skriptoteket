@@ -33,7 +33,7 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
 
 ### Backend
 
-1) Add session file storage service
+1. Add session file storage service
 
    - Protocol: `SessionFileStorageProtocol`
    - Implementation: `LocalSessionFileStorage` (filesystem-based)
@@ -41,7 +41,7 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
    - MUST track `last_accessed_at` for TTL cleanup (touch on get / injection into a run).
    - MUST use a filesystem-safe encoding for `context` when mapping session keys to storage paths (ADR-0039).
 
-2) Extend initial run flow
+2. Extend initial run flow
 
    - If the run includes uploaded files: clear any existing session files for `(tool_id, user_id, context)` and store
      the new uploads to session storage.
@@ -54,20 +54,20 @@ to `tool_sessions` when it returns `next_actions`, otherwise the first action ru
    - Future: add explicit initial-run flags to opt in to reuse/clear (`session_files_mode`, `session_context`);
      see ST-12-07.
 
-3) Extend action run flow
+3. Extend action run flow
 
    - In `start_action` / `start_sandbox_action`, fetch session files for the matching `(tool_id, user_id, context)`.
    - Execute the action run with a single input snapshot containing:
      - the persisted session files
    - This is snapshot semantics: session files are copied into the run’s `/work/input/` (not mounted writable).
 
-4) Runner contract (no new extension)
+4. Runner contract (no new extension)
 
    - Reuse the existing multi-file contract (ADR-0031 / ST-12-01): the runner places all `input_files` in
      `/work/input/` and sets `SKRIPTOTEKET_INPUT_MANIFEST` accordingly.
    - Tools MUST detect action runs via `SKRIPTOTEKET_ACTION` (not by looking for a synthetic input file).
 
-5) Cleanup (job owned by ST-12-06)
+5. Cleanup (job owned by ST-12-06)
 
    - Expose `cleanup_expired()` in the storage service and keep TTL metadata updated.
    - CLI commands, scheduling, metrics, and runbook are implemented in ST-12-06.

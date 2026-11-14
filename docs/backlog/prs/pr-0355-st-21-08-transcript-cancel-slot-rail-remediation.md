@@ -36,8 +36,7 @@ Keep cancellation as one direct action:
 - show `Avbryt` in the same slot while transcription runs;
 - remove the square icon so the control no longer looks like a checkbox.
 - update the empty workspace upload copy to address the teacher's intent
-  directly: `Ladda upp en ljudfil eller en video som du vill ha
-  transkriberad`.
+  directly: `Ladda upp en ljudfil eller en video som du vill ha transkriberad`.
 
 ## Non-goals
 

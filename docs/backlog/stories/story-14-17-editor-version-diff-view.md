@@ -31,12 +31,9 @@ Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 See also:
 
-- Compare routing + deep links: `docs/backlog/stories/story-14-18-editor-
-review-navigation-and-compare.md`
-- Working copy restore diff: `docs/backlog/stories/story-14-30-editor-working-
-copy-persistence-indexeddb.md`
-- AI diff preview: `docs/backlog/stories/story-08-22-editor-ai-diff-preview-
-apply-undo.md`
+- Compare routing + deep links: `docs/backlog/stories/story-14-18-editor- review-navigation-and-compare.md`
+- Working copy restore diff: `docs/backlog/stories/story-14-30-editor-working- copy-persistence-indexeddb.md`
+- AI diff preview: `docs/backlog/stories/story-08-22-editor-ai-diff-preview- apply-undo.md`
 
 ## Implementation decisions
 
@@ -56,7 +53,7 @@ apply-undo.md`
   - `input_schema.json` → `input_schema`
   - `usage_instructions.md` → `usage_instructions`
   - **Canonicality:** these virtual file ids are the single source of truth
-  for:
+    for:
     - ST-14-18 `field=` deep links
     - ST-08-21 edit-ops `target_file`
     - ST-08-22 diff preview tabs
@@ -65,5 +62,5 @@ apply-undo.md`
   - `after.txt` (full “after” snapshot)
   - `changes.patch` (unified patch / git-style diff)
     - Patch MUST use stable pseudo-paths derived from the virtual file id
-  (e.g. `a/tool.py` → `b/tool.py`).
+      (e.g. `a/tool.py` → `b/tool.py`).
     - Patch SHOULD be LF-normalized and include a trailing newline.

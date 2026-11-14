@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-38
 title: Shared governed development system cutover
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: done
 readiness_review:
@@ -20,11 +20,9 @@ closeout_review:
   decided_at: '2026-08-01T01:02:48+02:00'
   approval_protocol: agent-overseer:approved-review-closeout
   approval_evidence: .orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md
-outcome: Skriptoteket uses the central repository-governance package and common Docs-as-Code
-  contract while terminal backlog remains historical and product behavior remains
-  locally owned.
+outcome: Skriptoteket uses the central repository-governance package and common Docs-as-Code contract while terminal backlog remains historical and product behavior remains locally owned.
 retired_ids:
-- EPIC-38
+  - EPIC-38
 ---
 
 ## Scope
@@ -69,9 +67,9 @@ No separate ADR coverage was recorded in the source snapshot.
 
 ## Epic Verification Plan
 
-| Gate | Verification Result | Evidence | Owner | Follow-up / Exception |
-| --- | --- | --- | --- | --- |
-| Complete Skriptoteket governed-development consumer cutover | verified | `.orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md` | ST-SKRIPT-38-01 | None |
+| Gate                                                        | Verification Result | Evidence                                                                                                                          | Owner           | Follow-up / Exception |
+| ----------------------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------- | --------------------- |
+| Complete Skriptoteket governed-development consumer cutover | verified            | `.orchestration/context/tasks/TASK-SKRIPT-REP-0006/reviews/spec-verifier/verify-st-skript-38-01-epic-skript-38-cutover/review.md` | ST-SKRIPT-38-01 | None                  |
 
 ## Exceptions And Follow-Ups
 

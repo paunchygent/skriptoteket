@@ -48,28 +48,28 @@ selected server-owned artifact through scoped Skriptoteket endpoints.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md` | Scope, stop conditions, claimed proof, copy and route activation contract | 20 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/copy-approval/swedish-copy-v4.md` | Locked Swedish copy, icon, and output-choice constraints | 20 min |
-| `frontend/apps/skriptoteket/src/router/routes.ts`, `frontend/apps/skriptoteket/src/router/routes.spec.ts`, `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`, `frontend/apps/skriptoteket/src/views/HomeView.spec.ts` | Route ordering, auth meta, home-card activation | 20 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`, `useDocumentConverterProjectPreview.ts`, `documentConverterProjectPreviewApi.ts`, `documentConverterProjectFiles.ts` | Route-visible workspace truthfulness, preview/download/save/discard behavior, local file-state handling | 60 min |
-| `frontend/apps/skriptoteket/src/components/ui/UiSegmentedTileToggle.vue`, `frontend/apps/skriptoteket/src/components/ui/UiSegmentedTileToggle.spec.ts` | Shared control extraction versus drift | 20 min |
-| `frontend/apps/skriptoteket/src/components/icons/*.vue`, `frontend/apps/skriptoteket/src/components/icons/index.ts` | Canonical icon-wrapper compliance | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter/browserDownload.ts`, nearby transcript/exam/classroom surfaces | Cross-app reuse and duplication audit | 30 min |
-| `scripts/authenticated_home_work_apps.py`, `.artifacts/authenticated-home-work-apps/20260625T190452Z/*` | Retained shared-auth proof truthfulness and layout/copy review | 25 min |
+| File                                                                                                                                                                                                                                 | Focus                                                                                                   | Time   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`                                                                                                                                           | Scope, stop conditions, claimed proof, copy and route activation contract                               | 20 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/copy-approval/swedish-copy-v4.md`                                                                                                                                  | Locked Swedish copy, icon, and output-choice constraints                                                | 20 min |
+| `frontend/apps/skriptoteket/src/router/routes.ts`, `frontend/apps/skriptoteket/src/router/routes.spec.ts`, `frontend/apps/skriptoteket/src/components/home/homeWorkApps.ts`, `frontend/apps/skriptoteket/src/views/HomeView.spec.ts` | Route ordering, auth meta, home-card activation                                                         | 20 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`, `useDocumentConverterProjectPreview.ts`, `documentConverterProjectPreviewApi.ts`, `documentConverterProjectFiles.ts`                       | Route-visible workspace truthfulness, preview/download/save/discard behavior, local file-state handling | 60 min |
+| `frontend/apps/skriptoteket/src/components/ui/UiSegmentedTileToggle.vue`, `frontend/apps/skriptoteket/src/components/ui/UiSegmentedTileToggle.spec.ts`                                                                               | Shared control extraction versus drift                                                                  | 20 min |
+| `frontend/apps/skriptoteket/src/components/icons/*.vue`, `frontend/apps/skriptoteket/src/components/icons/index.ts`                                                                                                                  | Canonical icon-wrapper compliance                                                                       | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter/browserDownload.ts`, nearby transcript/exam/classroom surfaces                                                                                                             | Cross-app reuse and duplication audit                                                                   | 30 min |
+| `scripts/authenticated_home_work_apps.py`, `.artifacts/authenticated-home-work-apps/20260625T190452Z/*`                                                                                                                              | Retained shared-auth proof truthfulness and layout/copy review                                          | 25 min |
 
 **Total estimated time:** ~3.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the route-specific project-preview API under Skriptoteket-owned `/api/v1/apps/documents.conversion_hub/document-converter/...` endpoints. | Preserves the no-Sir-Convert-from-browser contract and keeps artifact authority server-owned. | [x] |
-| Reuse shared UI primitives and icon wrappers before adding app-local styling. | Prevents immediate cross-app segmented-control and icon drift. | [x] |
-| Expose only `Enskilda PDF-filer` and `Kombinerad PDF` in the visible UI. | Copy lock explicitly removes visible `both`/`Båda`. | [x] |
-| Ship only truthful preview controls and failure recovery. | Route-visible MVP cannot present fake preview/navigation affordances. | [x] |
-| Keep the app header scoped to the app, not duplicate product-shell branding. | The surrounding authenticated shell already brands Skriptoteket. | [x] |
+| Decision                                                                                                                                       | Rationale                                                                                     | Approve? |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| Keep the route-specific project-preview API under Skriptoteket-owned `/api/v1/apps/documents.conversion_hub/document-converter/...` endpoints. | Preserves the no-Sir-Convert-from-browser contract and keeps artifact authority server-owned. | [x]      |
+| Reuse shared UI primitives and icon wrappers before adding app-local styling.                                                                  | Prevents immediate cross-app segmented-control and icon drift.                                | [x]      |
+| Expose only `Enskilda PDF-filer` and `Kombinerad PDF` in the visible UI.                                                                       | Copy lock explicitly removes visible `both`/`Båda`.                                           | [x]      |
+| Ship only truthful preview controls and failure recovery.                                                                                      | Route-visible MVP cannot present fake preview/navigation affordances.                         | [x]      |
+| Keep the app header scoped to the app, not duplicate product-shell branding.                                                                   | The surrounding authenticated shell already brands Skriptoteket.                              | [x]      |
 
 ## Review Checklist
 
@@ -192,10 +192,10 @@ No remaining blocking findings were identified in the repaired scope.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0384` | Created the retained independent review record for the route-visible Document Converter MVP implementation. |
-| 2 | `REV-PR-0384` | Recorded four findings covering preview truthfulness, refresh recovery, local file-state validation, and duplicated shell branding. |
-| 3 | `REV-PR-0384` | Captured the cross-app reuse audit, distinguishing immediate extraction wins from acceptable local duplication and separate follow-up candidates. |
-| 4 | `REV-PR-0384` | Added implementation repair notes and focused validation evidence for the accepted findings while leaving the independent verdict pending re-review. |
-| 5 | `REV-PR-0384` | Re-reviewed the repair pass, reran focused frontend/docs gates, and approved the slice with no remaining blockers. |
+| Change | Artifact      | Description                                                                                                                                          |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0384` | Created the retained independent review record for the route-visible Document Converter MVP implementation.                                          |
+| 2      | `REV-PR-0384` | Recorded four findings covering preview truthfulness, refresh recovery, local file-state validation, and duplicated shell branding.                  |
+| 3      | `REV-PR-0384` | Captured the cross-app reuse audit, distinguishing immediate extraction wins from acceptable local duplication and separate follow-up candidates.    |
+| 4      | `REV-PR-0384` | Added implementation repair notes and focused validation evidence for the accepted findings while leaving the independent verdict pending re-review. |
+| 5      | `REV-PR-0384` | Re-reviewed the repair pass, reran focused frontend/docs gates, and approved the slice with no remaining blockers.                                   |

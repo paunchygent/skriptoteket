@@ -35,24 +35,24 @@ cross-app epic that starts with an inventory/adoption-plan story before editor r
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0077-same-shell-transition-continuity.md` | Decision quality and scope boundary | 6 min |
-| `docs/reference/ref-frontend-transition-continuity-v1.md` | Practical implementation pattern and inventory accuracy | 8 min |
-| `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md` | Cross-app scope and pacing | 5 min |
-| `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md` | Acceptance criteria and rollout expectations | 4 min |
-| `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md` | First slice boundaries | 3 min |
+| File                                                                                                       | Focus                                                   | Time  |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ----- |
+| `docs/adr/adr-0077-same-shell-transition-continuity.md`                                                    | Decision quality and scope boundary                     | 6 min |
+| `docs/reference/ref-frontend-transition-continuity-v1.md`                                                  | Practical implementation pattern and inventory accuracy | 8 min |
+| `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`                    | Cross-app scope and pacing                              | 5 min |
+| `docs/backlog/stories/story-30-01-frontend-transition-continuity-inventory-and-canonical-adoption-plan.md` | Acceptance criteria and rollout expectations            | 4 min |
+| `docs/backlog/prs/pr-0165-st-30-01-transition-continuity-decision-inventory-and-adoption-plan.md`          | First slice boundaries                                  | 3 min |
 
 **Total estimated time:** ~26 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Same-shell selector continuity becomes a shared frontend standard | Prevent planner/editor drift and repeated blank-gap regressions | [ ] |
-| Retained outgoing surface plus overlap crossfade is the canonical technique | This is the only pattern that solved the user-visible planner bug cleanly | [ ] |
-| The editor workspace selector is the first adoption target | It is the highest-value remaining stable-shell selector surface | [ ] |
-| Smaller selector shells stay behind the editor in rollout priority | Keeps the highest-value UX seam from being delayed by low-risk cleanup | [ ] |
+| Decision                                                                    | Rationale                                                                 | Approve? |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------- |
+| Same-shell selector continuity becomes a shared frontend standard           | Prevent planner/editor drift and repeated blank-gap regressions           | [ ]      |
+| Retained outgoing surface plus overlap crossfade is the canonical technique | This is the only pattern that solved the user-visible planner bug cleanly | [ ]      |
+| The editor workspace selector is the first adoption target                  | It is the highest-value remaining stable-shell selector surface           | [ ]      |
+| Smaller selector shells stay behind the editor in rollout priority          | Keeps the highest-value UX seam from being delayed by low-risk cleanup    | [ ]      |
 
 ## Review Checklist
 
@@ -62,7 +62,7 @@ cross-app epic that starts with an inventory/adoption-plan story before editor r
 - [x] Story acceptance criteria are testable and sequencing is explicit
 - [x] Risks and adoption order are reasonable
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -85,13 +85,13 @@ cross-app epic that starts with an inventory/adoption-plan story before editor r
 - [x] The editor workspace selector is the first adoption target
 - [x] Smaller selector shells stay behind the editor in rollout priority
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ADR-0077` | Added the same-shell transition continuity decision and explicit scope boundaries |
-| 2 | `REF-frontend-transition-continuity-v1` | Added the canonical pattern, adoption inventory, and rollout order |
-| 3 | `EPIC-30`, `ST-30-01`, `PR-0165` | Created the cross-app backlog package for phased adoption |
-| 4 | `REV-EPIC-30` | Approved the transition-continuity package so implementation can proceed |
+| Change | Artifact                                | Description                                                                       |
+| ------ | --------------------------------------- | --------------------------------------------------------------------------------- |
+| 1      | `ADR-0077`                              | Added the same-shell transition continuity decision and explicit scope boundaries |
+| 2      | `REF-frontend-transition-continuity-v1` | Added the canonical pattern, adoption inventory, and rollout order                |
+| 3      | `EPIC-30`, `ST-30-01`, `PR-0165`        | Created the cross-app backlog package for phased adoption                         |
+| 4      | `REV-EPIC-30`                           | Approved the transition-continuity package so implementation can proceed          |

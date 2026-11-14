@@ -68,12 +68,14 @@ Freeze one desktop-first grouping sizing contract that is both:
 
 3. The desktop group-card floor is `234px` `min-height`.
    The contract is:
+
    - row 1 card floor: `234px`
    - inter-row gap: `12px`
    - row 2 card floor: `234px`
 
 4. The empty/default desktop 4-card proof case must total exactly `480px`.
    The contract is:
+
    - row 1 card floor: `234px`
    - inter-row gap: `12px`
    - row 2 card floor: `234px`
@@ -101,12 +103,14 @@ Freeze one desktop-first grouping sizing contract that is both:
 ## Implementation plan
 
 1. Freeze the default desktop board-row math in:
+
    - `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts`
    - `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/GroupCard.vue`
 
 2. Convert the current board behavior from a pure lane-level minimum-height
    floor into:
+
    - a persistent desktop group-card `min-height` floor
    - an exact empty/default desktop board proof contract
 

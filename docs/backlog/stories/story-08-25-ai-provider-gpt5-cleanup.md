@@ -25,8 +25,8 @@ dependencies:
 
 We have two competing edit surfaces:
 
-- Legacy “edit suggestion” (single replacement text) over `POST /api/v1/editor/edits` (LLM_EDIT_* profile).
-- Chat-first edit ops (ADR-0051) over `POST /api/v1/editor/edit-ops` (LLM_CHAT_OPS_* profile).
+- Legacy “edit suggestion” (single replacement text) over `POST /api/v1/editor/edits` (LLM_EDIT\_\* profile).
+- Chat-first edit ops (ADR-0051) over `POST /api/v1/editor/edit-ops` (LLM_CHAT_OPS\_\* profile).
 
 The edit suggestion UI component is not wired into the SPA routes, and the legacy endpoint creates confusion.
 At the same time, we want a tiered OpenAI setup using GPT-5 models with `reasoning_effort` and

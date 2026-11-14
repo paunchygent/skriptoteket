@@ -4,8 +4,8 @@ id: ST-SKRIPT-27-04
 title: Klassrumskartan — Smart grouping v1
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,69 +16,30 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-27
 acceptance_criteria:
-- Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`,
-  then grouping remains the current random reshuffle behavior.
-- Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then
-  the planner requests a backend-owned smart grouping result that reuses the same
-  relation model as smart seating.
-- Given smart grouping runs for one fixed group count, when the backend returns a
-  candidate, then final group sizes stay within the only feasible even distribution
-  so no group differs by more than one student from another.
-- Given the grouping toolbar renders, when active smart rules are already visible
-  through `Regler` and student markers, then no separate active-rule count pill is
-  shown in `Grupper`.
-- Given the teacher reruns `Slumpa` in `Grupper` with `Smart` still `on`, when multiple
-  good rule-respecting grouping candidates exist, then the backend prefers a materially
-  different valid result over repeating the current assignment hash.
-- Given the teacher authors `Keep apart` or `Keep near` in the shared `Regler` workspace,
-  when they create one rule, then they can commit one visible cluster covering two
-  or more students rather than being restricted to pair-only relations.
-- Given one grouping `Keep near` cluster exists, when smart grouping runs, then it
-  tries to keep those students in the same group whenever the current group structure
-  and stronger rules allow it.
-- Given one grouping `Keep apart` cluster exists, when smart grouping runs, then it
-  tries to spread those students across different groups whenever possible and otherwise
-  maximizes spread rather than failing hard.
-- Given the teacher tries to place one student into multiple visible relationship
-  clusters, when they attempt to commit the later grouping relation rule, then V1
-  blocks overlapping `Keep apart` / `Keep near` cluster membership.
-- Given the teacher works in `Grupper`, when the grouping toolbar renders, then the
-  compact class selector sits in the command row near export instead of taking over
-  a separate context band.
-- Given the teacher opens Smart-inställningar in `Grupper`, when they inspect the
-  drawer, then `Historik`, `Klassrum`, and `Sittschemat` are tuned there rather than
-  in first-row toolbar chrome.
-- Given the teacher scans the grouping toolbar, when Smart-related controls render,
-  then no abstract helper label such as `Klassrumsstöd` is shown.
-- Given `Närmare läraren` is a seating-only rule, when smart grouping runs, then grouping
-  does not expose or consume that teacher-distance preference as though it were a
-  shared cross-mode control.
-- Given `Klassrum` is selected and `Sittschemat` is enabled in Smart-inställningar,
-  when an active seating draft exists for the same class, then smart grouping uses
-  seat-topology distance to prefer spatially compact groups and penalizes same-group
-  spread quadratically beyond a local elastic radius without treating that seating
-  input as history.
-- Given `Klassrum` is selected and `Sittschemat` is enabled but no active seating
-  draft exists, when eligible seating checkpoints exist, then smart grouping may consume
-  those checkpoints as fallback compactness input without treating them as grouping
-  history.
-- Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating
-  context exists, when smart grouping runs, then the planner falls back honestly to
-  rules plus any enabled history lane and tells the teacher that no seating-based
-  classroom signal was available for that run.
-- Given `Use history` is enabled, when smart grouping evaluates prior outcomes, then
-  grouping history only handles anti-repeat rotation, stays label-insensitive, and
-  penalizes exact or near-repeat student co-memberships rather than raw group ids.
-- Given `Use history` is enabled but no eligible grouping checkpoints exist for the
-  requested grouping history inputs, when the teacher runs smart grouping, then the
-  planner applies a smart grouping result without history, reports `used_history=false`,
-  and does not treat seating compactness, draft state, or local guest state as grouping
-  history.
+  - Given the teacher is in `Grupper` and `Smart` is `off`, when they use `Slumpa`, then grouping remains the current random reshuffle behavior.
+  - Given the teacher is in `Grupper` and `Smart` is `on`, when they use `Slumpa`, then the planner requests a backend-owned smart grouping result that reuses the same relation model as smart seating.
+  - Given smart grouping runs for one fixed group count, when the backend returns a candidate, then final group sizes stay within the only feasible even distribution so no group differs by more than one student from another.
+  - Given the grouping toolbar renders, when active smart rules are already visible through `Regler` and student markers, then no separate active-rule count pill is shown in `Grupper`.
+  - Given the teacher reruns `Slumpa` in `Grupper` with `Smart` still `on`, when multiple good rule-respecting grouping candidates exist, then the backend prefers a materially different valid result over repeating the current assignment hash.
+  - Given the teacher authors `Keep apart` or `Keep near` in the shared `Regler` workspace, when they create one rule, then they can commit one visible cluster covering two or more students rather than being restricted to pair-only relations.
+  - Given one grouping `Keep near` cluster exists, when smart grouping runs, then it tries to keep those students in the same group whenever the current group structure and stronger rules allow it.
+  - Given one grouping `Keep apart` cluster exists, when smart grouping runs, then it tries to spread those students across different groups whenever possible and otherwise maximizes spread rather than failing hard.
+  - Given the teacher tries to place one student into multiple visible relationship clusters, when they attempt to commit the later grouping relation rule, then V1 blocks overlapping `Keep apart` / `Keep near` cluster membership.
+  - Given the teacher works in `Grupper`, when the grouping toolbar renders, then the compact class selector sits in the command row near export instead of taking over a separate context band.
+  - Given the teacher opens Smart-inställningar in `Grupper`, when they inspect the drawer, then `Historik`, `Klassrum`, and `Sittschemat` are tuned there rather than in first-row toolbar chrome.
+  - Given the teacher scans the grouping toolbar, when Smart-related controls render, then no abstract helper label such as `Klassrumsstöd` is shown.
+  - Given `Närmare läraren` is a seating-only rule, when smart grouping runs, then grouping does not expose or consume that teacher-distance preference as though it were a shared cross-mode control.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled in Smart-inställningar, when an active seating draft exists for the same class, then smart grouping uses seat-topology distance to prefer spatially compact groups and penalizes same-group spread quadratically beyond a local elastic radius without treating that seating input as history.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled but no active seating draft exists, when eligible seating checkpoints exist, then smart grouping may consume those checkpoints as fallback compactness input without treating them as grouping history.
+  - Given `Klassrum` is selected and `Sittschemat` is enabled but no usable seating context exists, when smart grouping runs, then the planner falls back honestly to rules plus any enabled history lane and tells the teacher that no seating-based classroom signal was available for that run.
+  - Given `Use history` is enabled, when smart grouping evaluates prior outcomes, then grouping history only handles anti-repeat rotation, stays label-insensitive, and penalizes exact or near-repeat student co-memberships rather than raw group ids.
+  - Given `Use history` is enabled but no eligible grouping checkpoints exist for the requested grouping history inputs, when the teacher runs smart grouping, then the planner applies a smart grouping result without history, reports `used_history=false`, and does not treat seating compactness, draft state, or local guest state as grouping history.
 retired_ids:
-- ST-27-04
+  - ST-27-04
 ---
 
 ## Context
+
 Grouping should benefit from the same underlying relation model as seating, but the teacher also
 needs three lanes to stay honest:
 
@@ -88,21 +49,27 @@ needs three lanes to stay honest:
 - `Use history` handles grouping anti-repeat rotation only
 
 ## Epic Contract Slice
+
 The source record did not define a separate section for this package heading.
 
 ## ADR Coverage
+
 The source record did not define a separate section for this package heading.
 
 ## Contract Inputs
+
 The source record did not define a separate section for this package heading.
 
 ## Live Verification Plan
+
 The source record did not define a separate section for this package heading.
 
 ## Non-Goals
+
 The source record did not define a separate section for this package heading.
 
 ## Notes
+
 - Keep the grouping smart flow separate from seating even when they share backend primitives.
 - The grouping toolbar should stay compact and organized:
   - one single-row command strip on desktop
@@ -158,10 +125,13 @@ The source record did not define a separate section for this package heading.
   checkpoint-only source rule intact.
 
 ## Decision And Assumption Ledger
+
 The source record did not define a separate section for this package heading.
 
 ## Plan Document Review
+
 The source record did not define a separate section for this package heading.
 
 ## Story Closeout Review
+
 The source record did not define a separate section for this package heading.

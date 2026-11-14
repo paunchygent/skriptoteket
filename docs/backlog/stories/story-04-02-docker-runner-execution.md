@@ -101,11 +101,14 @@ Define a stable, versioned contract for how the runner returns results to the ap
 - See ADR-0015 for the canonical contract and compatibility rules.
 
 - Runner writes a single JSON file at `/work/result.json` with:
+
   - `status`: `succeeded|failed|timed_out`
   - `html_output`: HTML string (may be empty on failure)
   - `error_summary`: short string for end-user/admin display (no raw tracebacks)
   - `artifacts`: list of `{ "path": "output/...", "bytes": <int> }` (paths are relative to `/work`)
+
 - The app stores:
+
   - `stdout`/`stderr` captured from container logs (truncated to caps)
   - `html_output` and `error_summary` from `result.json` (truncated to caps)
   - `artifacts_manifest` generated from the extracted `/work/output` directory and the `artifacts` list

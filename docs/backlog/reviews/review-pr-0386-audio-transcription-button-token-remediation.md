@@ -45,27 +45,27 @@ export states can be reviewed without mutating production behavior.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md` | Scope, acceptance criteria, claimed proof, stop conditions | 20 min |
-| `docs/backlog/prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md` | Governing visual-token decision | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.vue` | Start/cancel/reset command-button styling, copy, emitted behavior | 20 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptFormatterExportPanel.vue` | Selected-format selector styling versus neutral download/save controls | 20 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/transcriptCommandButtonClasses.ts` | Scope, typing, and hidden-design-system audit | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptUiInspectionView.vue` and `frontend/apps/skriptoteket/src/router/routes.ts` | Dev/test fixture truthfulness, auth gating, non-production boundary | 25 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`, `TranscriptFormatterExportPanel.spec.ts`, `TranscriptWorkspaceShell.spec.ts`, `ConversionHubTranscriptHost.spec.ts`, `src/router/routes.spec.ts` | Regression-proof quality and contract coverage | 30 min |
-| `.artifacts/pr-0386-transcript-button-token-proof/20260625T201832Z/` | Intake/running/completed visual proof and DOM class evidence | 20 min |
+| File                                                                                                                                                                                                                                                        | Focus                                                                  | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0386-st-37-04-audio-transcription-button-token-remediation.md`                                                                                                                                                                         | Scope, acceptance criteria, claimed proof, stop conditions             | 20 min |
+| `docs/backlog/prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md`                                                                                                                                                                  | Governing visual-token decision                                        | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.vue`                                                                                                                                                       | Start/cancel/reset command-button styling, copy, emitted behavior      | 20 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptFormatterExportPanel.vue`                                                                                                                                                    | Selected-format selector styling versus neutral download/save controls | 20 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/transcriptCommandButtonClasses.ts`                                                                                                                                                     | Scope, typing, and hidden-design-system audit                          | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptUiInspectionView.vue` and `frontend/apps/skriptoteket/src/router/routes.ts`                                                                                                  | Dev/test fixture truthfulness, auth gating, non-production boundary    | 25 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts`, `TranscriptFormatterExportPanel.spec.ts`, `TranscriptWorkspaceShell.spec.ts`, `ConversionHubTranscriptHost.spec.ts`, `src/router/routes.spec.ts` | Regression-proof quality and contract coverage                         | 30 min |
+| `.artifacts/pr-0386-transcript-button-token-proof/20260625T201832Z/`                                                                                                                                                                                        | Intake/running/completed visual proof and DOM class evidence           | 20 min |
 
 **Total estimated time:** ~2.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep ordinary transcript operating buttons on route-local neutral token surfaces instead of shared CTA primitives. | Fixes the governed drift without rewriting the shared design system or leaking planner-specific button recipes into the transcript lane. | [x] |
-| Keep selector controls visually selected with explicit fill while command buttons stay neutral. | Matches the `PR-0383` compact curated-app token decision and avoids ambiguous state. | [x] |
-| Allow the new helper only as a narrow route-local class constant, not a second design system. | The helper is scoped to transcript operating controls and does not preserve any retired button contract or introduce a broader compatibility alias. | [x] |
-| Accept the authenticated dev/test fixture route as proof support only because it stays gated behind `requiresAuth` and `DEV`/`test` mode. | Preserves the approved HuleEdu browser-session entry mechanics and keeps the proof surface out of production bundles. | [x] |
+| Decision                                                                                                                                  | Rationale                                                                                                                                           | Approve? |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep ordinary transcript operating buttons on route-local neutral token surfaces instead of shared CTA primitives.                        | Fixes the governed drift without rewriting the shared design system or leaking planner-specific button recipes into the transcript lane.            | [x]      |
+| Keep selector controls visually selected with explicit fill while command buttons stay neutral.                                           | Matches the `PR-0383` compact curated-app token decision and avoids ambiguous state.                                                                | [x]      |
+| Allow the new helper only as a narrow route-local class constant, not a second design system.                                             | The helper is scoped to transcript operating controls and does not preserve any retired button contract or introduce a broader compatibility alias. | [x]      |
+| Accept the authenticated dev/test fixture route as proof support only because it stays gated behind `requiresAuth` and `DEV`/`test` mode. | Preserves the approved HuleEdu browser-session entry mechanics and keeps the proof surface out of production bundles.                               | [x]      |
 
 ## Review Checklist
 
@@ -133,7 +133,7 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0386` | Created the retained independent review record for PR-0386. |
-| 2 | `REV-PR-0386` | Recorded the bounded review scope, independent verification evidence, and approved verdict. |
+| Change | Artifact      | Description                                                                                 |
+| ------ | ------------- | ------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0386` | Created the retained independent review record for PR-0386.                                 |
+| 2      | `REV-PR-0386` | Recorded the bounded review scope, independent verification evidence, and approved verdict. |

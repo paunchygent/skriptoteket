@@ -67,29 +67,29 @@ for those guarantees.
 
 ## Implementation plan
 
-1. Keep Story `ST-26-02` and this PR doc as the governing slice, expanding the task to include the
-   reviewer follow-ups, the overlay bug, and the class-list workflow UX correction.
-2. Make the PDF extraction execution policy safe for the default repo environment by configuration or
-   a repo-approved fallback policy, then prove the default local lane without requiring an ad hoc
-   remote Sir Convert base-url override.
-3. Thread the request correlation ID through `import_preview` -> handler -> extractor protocol ->
-   extractor implementation -> Sir Convert client so submit/poll/download logs stay traceable.
-4. Extend the extractor/parsing path to support the provided legacy `.xls` sample and to avoid empty
-   previews for common delimited name rows without an explicit numeric index while still inferring
-   the class name.
-5. Repair the frontend modal/overlay state machine so parsing completion leaves the preview fully
-   interactive, teachers can confirm-save without being clicked out of the workflow, and save errors
-   remain visible in-place.
-6. Rework the roster create/edit UX so `Ny klasslista` opens a class-list workflow with a prominent
-   in-context `Importera från fil` action, accepted Skola24 file types are clearly communicated, and
-   `Redigera klass` exposes the same import affordance inside edit mode rather than depending on a
-   separate overview-row button.
-7. Reconcile the created roster into the overview shell via the normal roster upsert path instead of
-   reopening blank create mode, and keep import available as an afterthought inside edit mode.
-8. Add focused regression tests that read the real example files from
-   `data/class_list_example_inputs/`, assert suggested class name plus parsed student count, and
-   cover correlation propagation plus the safe/default PDF job configuration.
-9. Replace or repair the broken import integration tests so they run under the repo's actual fixtures.
+01. Keep Story `ST-26-02` and this PR doc as the governing slice, expanding the task to include the
+    reviewer follow-ups, the overlay bug, and the class-list workflow UX correction.
+02. Make the PDF extraction execution policy safe for the default repo environment by configuration or
+    a repo-approved fallback policy, then prove the default local lane without requiring an ad hoc
+    remote Sir Convert base-url override.
+03. Thread the request correlation ID through `import_preview` -> handler -> extractor protocol ->
+    extractor implementation -> Sir Convert client so submit/poll/download logs stay traceable.
+04. Extend the extractor/parsing path to support the provided legacy `.xls` sample and to avoid empty
+    previews for common delimited name rows without an explicit numeric index while still inferring
+    the class name.
+05. Repair the frontend modal/overlay state machine so parsing completion leaves the preview fully
+    interactive, teachers can confirm-save without being clicked out of the workflow, and save errors
+    remain visible in-place.
+06. Rework the roster create/edit UX so `Ny klasslista` opens a class-list workflow with a prominent
+    in-context `Importera från fil` action, accepted Skola24 file types are clearly communicated, and
+    `Redigera klass` exposes the same import affordance inside edit mode rather than depending on a
+    separate overview-row button.
+07. Reconcile the created roster into the overview shell via the normal roster upsert path instead of
+    reopening blank create mode, and keep import available as an afterthought inside edit mode.
+08. Add focused regression tests that read the real example files from
+    `data/class_list_example_inputs/`, assert suggested class name plus parsed student count, and
+    cover correlation propagation plus the safe/default PDF job configuration.
+09. Replace or repair the broken import integration tests so they run under the repo's actual fixtures.
 10. Add a Playwright proof that exercises every supported file under `data/class_list_example_inputs/`
     end to end, covering upload -> parse -> preview -> save -> imported roster visible/selected.
 

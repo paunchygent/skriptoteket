@@ -64,36 +64,36 @@ browser-held revoke-secret model.
 
 ## Implementation Plan
 
-1. Add public helper endpoints:
-   - `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/share`
-   - `POST /api/v1/public/apps/classroom.group-seating-studio/seating/share`
-2. Reuse public export snapshot materialization and strict expected-revision
-   validation; create no artifact when the revision guard fails.
-3. Reuse the share artifact storage/read route from `PR-0274`, with
-   `owner_user_id = null`, `source = public_guest`, and `expires_at` no later
-   than `created_at + 60 days`.
-4. Generate a browser-held revoke secret for public guest shares and store only
-   its hash server-side.
-5. Let the browser pass the previous revoke secret for the same guest
-   snapshot/draft kind so the server can revoke/supersede the older guest link.
-6. Store latest public guest share metadata locally in the browser per snapshot
-   plus draft kind.
-7. Add a narrow public guest revoke helper that accepts the current
-   `public_path` plus browser-held `revoke_secret`, hashes both values
-   server-side, revokes only the matching active `public_guest` artifact, and
-   ignores ambient cookies or account identity.
-8. Add guest export-menu UI for `Dela länk`, copy-link feedback, expiry
-   messaging, and newest-link replacement behavior.
-9. Wire the public share popover to the browser-owned active share artifact:
-   created links appear immediately, copy uses the same row affordance as the
-   authenticated popover, remove/revoke calls the public helper, and successful
-   removal clears the row instead of showing an archive of dead links.
+01. Add public helper endpoints:
+    - `POST /api/v1/public/apps/classroom.group-seating-studio/grouping/share`
+    - `POST /api/v1/public/apps/classroom.group-seating-studio/seating/share`
+02. Reuse public export snapshot materialization and strict expected-revision
+    validation; create no artifact when the revision guard fails.
+03. Reuse the share artifact storage/read route from `PR-0274`, with
+    `owner_user_id = null`, `source = public_guest`, and `expires_at` no later
+    than `created_at + 60 days`.
+04. Generate a browser-held revoke secret for public guest shares and store only
+    its hash server-side.
+05. Let the browser pass the previous revoke secret for the same guest
+    snapshot/draft kind so the server can revoke/supersede the older guest link.
+06. Store latest public guest share metadata locally in the browser per snapshot
+    plus draft kind.
+07. Add a narrow public guest revoke helper that accepts the current
+    `public_path` plus browser-held `revoke_secret`, hashes both values
+    server-side, revokes only the matching active `public_guest` artifact, and
+    ignores ambient cookies or account identity.
+08. Add guest export-menu UI for `Dela länk`, copy-link feedback, expiry
+    messaging, and newest-link replacement behavior.
+09. Wire the public share popover to the browser-owned active share artifact:
+    created links appear immediately, copy uses the same row affordance as the
+    authenticated popover, remove/revoke calls the public helper, and successful
+    removal clears the row instead of showing an archive of dead links.
 10. Add client operation ids or idempotency keys so retries, double-clicks, and
-   two-tab races do not create contradictory "newest link" state.
+    two-tab races do not create contradictory "newest link" state.
 11. Model previous-link supersede as an atomic conditional update keyed by
-   previous token hash plus revoke-secret hash. Invalid previous secrets should
-   not block new share creation, but must be logged through redacted reason
-   codes and must not claim the older link was revoked.
+    previous token hash plus revoke-secret hash. Invalid previous secrets should
+    not block new share creation, but must be logged through redacted reason
+    codes and must not claim the older link was revoked.
 12. Add share-specific abuse-control settings and repository constraints:
     - maximum request bytes
     - maximum rendered artifact bytes
@@ -103,7 +103,7 @@ browser-held revoke-secret model.
     - expired-row purge command or scheduled operator path
     - metrics/log counters that avoid raw class, room, group, or student values
 13. Ensure public helper logging/metrics use `public_helper_*` reason codes and
-   do not retain raw student payloads.
+    do not retain raw student payloads.
 14. Render from the canonical validated presentation model created by the
     export/snapshot materialization path. Persist renderer version,
     presentation schema version, presentation hash or immutable provenance, and

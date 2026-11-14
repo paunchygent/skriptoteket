@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0057
 title: Settings suggestions from tool runs
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0057
+  - ADR-0057
 ---
 
 ## Context

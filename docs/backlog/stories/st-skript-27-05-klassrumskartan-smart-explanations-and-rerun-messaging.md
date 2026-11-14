@@ -4,8 +4,8 @@ id: ST-SKRIPT-27-05
 title: Klassrumskartan — Smart explanations and rerun messaging
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,35 +16,17 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-27
 acceptance_criteria:
-- Given a teacher has run smart seating or smart grouping, when the result is shown,
-  then the UI presents a short teacher-language explanation rather than raw scores,
-  weights, or debug output.
-- Given the teacher wants another smart result after a smart run, when `Smart` remains
-  enabled and they use `Slumpa` again, then the UI keeps that same primary action
-  instead of introducing a separate alternate-result button.
-- Given the teacher reruns smart `Slumpa` but the valid search space is genuinely
-  narrow, when the planner cannot find a materially different strong candidate, then
-  it may show one short teacher-facing message that the current rules leave little
-  room for variation.
-- Given no eligible checkpoints exist while `Use history` is selected, when the teacher
-  runs smart seating or smart grouping, then the planner applies a smart result without
-  history, returns `used_history=false`, and shows the normal smart-run feedback instead
-  of a warning or blocked run.
-- Given eligible export/share checkpoints exist while `Use history` is selected, when
-  smart seating or smart grouping runs for the matching roster/context, then the planner
-  loads the checkpoint-history window, returns `used_history=true`, and keeps the
-  history-aware solver behavior covered.
-- Given no eligible checkpoints exist while `Use history` is selected, when smart
-  assignment soft-degrades to no-history mode, then draft autosave, undo/redo state,
-  history-drawer drafts, abandoned drafts, and public guest local state are not used
-  as history substitutes.
-- Given the solver cannot satisfy every rule, when the best available result is shown,
-  then the teacher sees one short best-effort message and not a solver-jargon error
-  surface.
+  - Given a teacher has run smart seating or smart grouping, when the result is shown, then the UI presents a short teacher-language explanation rather than raw scores, weights, or debug output.
+  - Given the teacher wants another smart result after a smart run, when `Smart` remains enabled and they use `Slumpa` again, then the UI keeps that same primary action instead of introducing a separate alternate-result button.
+  - Given the teacher reruns smart `Slumpa` but the valid search space is genuinely narrow, when the planner cannot find a materially different strong candidate, then it may show one short teacher-facing message that the current rules leave little room for variation.
+  - Given no eligible checkpoints exist while `Use history` is selected, when the teacher runs smart seating or smart grouping, then the planner applies a smart result without history, returns `used_history=false`, and shows the normal smart-run feedback instead of a warning or blocked run.
+  - Given eligible export/share checkpoints exist while `Use history` is selected, when smart seating or smart grouping runs for the matching roster/context, then the planner loads the checkpoint-history window, returns `used_history=true`, and keeps the history-aware solver behavior covered.
+  - Given no eligible checkpoints exist while `Use history` is selected, when smart assignment soft-degrades to no-history mode, then draft autosave, undo/redo state, history-drawer drafts, abandoned drafts, and public guest local state are not used as history substitutes.
+  - Given the solver cannot satisfy every rule, when the best available result is shown, then the teacher sees one short best-effort message and not a solver-jargon error surface.
 retired_ids:
-- ST-27-05
+  - ST-27-05
 dependencies:
-- ST-SKRIPT-27-04
+  - ST-SKRIPT-27-04
 ---
 
 ## Context

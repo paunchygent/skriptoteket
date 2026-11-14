@@ -14,9 +14,11 @@ acceptance_criteria:
 ---
 
 ## Context
+
 The core planner (ST-23-03/04) was unusable because there was no UI to create the prerequisite data (Rosters and Room Templates). This story provides the entry points for teachers to populate their library.
 
 ## Implementation Details
+
 - **Simplification**: Removed redundant lesson modes ('standard', 'test', 'lab') in favor of the two core functional variants.
 - **Roster Builder**: Implemented bulk-paste parsing logic in `CreateRosterModal.vue`.
 - **Room Builder**: Implemented a spatial toggle-grid in `CreateRoomTemplateModal.vue`.

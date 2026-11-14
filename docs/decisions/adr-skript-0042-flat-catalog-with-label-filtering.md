@@ -4,18 +4,17 @@ id: ADR-SKRIPT-0042
 title: Flat catalog with label filtering
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0042
+  - ADR-0042
 ---
 
 ## Context
-
 
 The current catalog navigation follows a hierarchical model:
 
@@ -35,7 +34,6 @@ This requires 3 clicks to reach any tool. Users cannot:
 Teachers often know roughly what they're looking for but not the exact category. The hierarchical model forces them to guess the right path.
 
 ## Decision
-
 
 ### 1. Flat view as primary experience
 
@@ -71,11 +69,11 @@ Rationale: Teachers exploring the catalog benefit from broader results. Narrowin
 GET /api/v1/catalog/tools?professions=larare,skolkurator&categories=svenska,matematik&q=ord
 ```
 
-| Parameter | Format | Logic |
-|-----------|--------|-------|
+| Parameter     | Format                | Logic                                        |
+| ------------- | --------------------- | -------------------------------------------- |
 | `professions` | Comma-separated slugs | OR within professions; AND with other facets |
-| `categories` | Comma-separated slugs | OR within categories; AND with other facets |
-| `q` | Search term | AND constraint; ILIKE on title + summary |
+| `categories`  | Comma-separated slugs | OR within categories; AND with other facets  |
+| `q`           | Search term           | AND constraint; ILIKE on title + summary     |
 
 All parameters are optional. With no parameters, returns all published tools.
 
@@ -164,7 +162,6 @@ No separate non-decisions is stated in the source.
 
 ## Consequences
 
-
 ### Positive
 
 - Teachers can see all tools immediately
@@ -195,7 +192,6 @@ Frontend:
 - New hierarchical entrypoint route: `/browse/professions` (preserves curated apps discoverability)
 
 ### Source: Related
-
 
 - ADR-0041: User favorites and tool bookmarking (is_favorite in response)
 - ADR-0003: Script taxonomy (professions and categories model)

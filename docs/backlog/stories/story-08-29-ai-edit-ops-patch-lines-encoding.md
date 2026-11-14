@@ -36,7 +36,7 @@ Each unified-diff line becomes a separate JSON string element, eliminating the n
 - Protocol + API schema: patch ops use `patch_lines` (`src/skriptoteket/protocols/llm.py`,
   `src/skriptoteket/web/api/v1/editor/models.py`).
 - Preview/apply: reconstruct unified diff from `patch_lines` before apply (`src/skriptoteket/application/editor/edit_ops_preview_handler.py`).
-- Parser hardening: fenced extraction is line-anchored to avoid truncation when patch content contains ``` (`src/skriptoteket/application/editor/edit_ops_payload_parser.py`).
+- Parser hardening: fenced extraction is line-anchored to avoid truncation when patch content contains \`\`\` (`src/skriptoteket/application/editor/edit_ops_payload_parser.py`).
 - Frontend OpenAPI types regenerated (`frontend/apps/skriptoteket/openapi.json`,
   `frontend/apps/skriptoteket/src/api/openapi.d.ts`).
 

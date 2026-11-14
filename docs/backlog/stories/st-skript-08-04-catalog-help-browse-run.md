@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-04
 title: Catalog help (browse + run)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,14 +16,11 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given browse pages, when opening help, then it explains how to navigate yrke → kategori
-  → verktyg
-- Given a tool run page, when opening help, then it explains how to upload a file
-  and run the tool
-- Given the file upload control, when opening field help, then it explains what kind
-  of file is expected in plain Swedish
+  - Given browse pages, when opening help, then it explains how to navigate yrke → kategori → verktyg
+  - Given a tool run page, when opening help, then it explains how to upload a file and run the tool
+  - Given the file upload control, when opening field help, then it explains what kind of file is expected in plain Swedish
 retired_ids:
-- ST-08-04
+  - ST-08-04
 ---
 
 ## Context

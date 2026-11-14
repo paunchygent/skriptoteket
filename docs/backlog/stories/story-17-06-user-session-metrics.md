@@ -21,11 +21,11 @@ Operators need visibility into user activity to understand usage patterns and de
 
 ## Metrics to Add
 
-| Metric | Type | Labels | Description |
-|--------|------|--------|-------------|
-| `skriptoteket_active_sessions` | Gauge | - | Current count of active user sessions |
-| `skriptoteket_logins_total` | Counter | status | Login attempts (success/failure) |
-| `skriptoteket_users_by_role` | Gauge | role | Active users by role (user/contributor/admin/superuser) |
+| Metric                         | Type    | Labels | Description                                             |
+| ------------------------------ | ------- | ------ | ------------------------------------------------------- |
+| `skriptoteket_active_sessions` | Gauge   | -      | Current count of active user sessions                   |
+| `skriptoteket_logins_total`    | Counter | status | Login attempts (success/failure)                        |
+| `skriptoteket_users_by_role`   | Gauge   | role   | Active users by role (user/contributor/admin/superuser) |
 
 ## Implementation
 
@@ -69,6 +69,7 @@ Add to HTTP metrics dashboard or create dedicated user activity dashboard:
 ## Files
 
 Modify:
+
 - `src/skriptoteket/observability/metrics.py` (add metrics)
 - `src/skriptoteket/web/routes/auth.py` or login handler (instrument logins)
 - `src/skriptoteket/web/routes/observability.py` (compute active sessions at scrape time)

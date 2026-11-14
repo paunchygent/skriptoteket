@@ -39,13 +39,16 @@ surfaces, with `UiSegmentedToggle` as the main cross-app contract seam.
 ## Implementation plan
 
 1. Complete the segmented-toggle contract.
+
    - Tighten `UiSegmentedToggle.vue` semantics and consumer expectations where needed.
 
 2. Prove editor adoption.
+
    - Align `EditorWorkspaceToolbar.vue` and `EditorToolMenu.vue` with the tightened primitive
      contract from `PR-0195`.
 
 3. Prove site/app adoption beyond planner and editor.
+
    - Revisit current `UiSegmentedToggle` consumers such as vault/tool-run surfaces so they use the
      component through one stable contract instead of local interpretation drift.
 

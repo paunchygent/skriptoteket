@@ -8,15 +8,7 @@ created: 2026-04-07
 updated: 2026-04-07
 stories:
   - "ST-32-05"
-tags:
-  [
-    "backend",
-    "klassrumskartan",
-    "guest-upgrade",
-    "import-policy",
-    "remediation",
-    "regression-hardening",
-  ]
+tags: ["backend", "klassrumskartan", "guest-upgrade", "import-policy", "remediation", "regression-hardening"]
 dependencies:
   - "ADR-0079"
   - "ST-32-04"
@@ -86,6 +78,7 @@ the already approved route shape, import policy, and guest/public separation.
 ## Implementation plan
 
 1. Lock the failing seam in tests before code changes.
+
    - Add a focused application-level regression that reproduces the current
      false-positive template reuse path with at least one unrelated existing
      template plus one guest seating/template payload.
@@ -96,6 +89,7 @@ the already approved route shape, import policy, and guest/public separation.
      not only through created-template paths.
 
 2. Replace the template reuse predicate with a canonical exact-match check.
+
    - Compare the guest template against actual existing server template
      geometry/fixtures/grid content instead of comparing the guest template to a
      mutated copy of itself.
@@ -103,6 +97,7 @@ the already approved route shape, import policy, and guest/public separation.
      otherwise continue with the existing non-destructive policy.
 
 3. Harden seat remapping on reused templates.
+
    - Move the coordinate-key logic into one small helper so seat remap behavior
      is deterministic and testable.
    - Detect missing or ambiguous coordinate matches explicitly and convert them
@@ -112,6 +107,7 @@ the already approved route shape, import policy, and guest/public separation.
      authenticated guest-upgrade collaborators.
 
 4. Re-prove the live authenticated seam on non-toy data.
+
    - Re-run the authenticated route/prompt proof with the real local `SA24D`
      roster and `G20` classroom fixtures when available.
    - If those exact fixtures are unavailable in the active lane, create one

@@ -50,9 +50,9 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Execution plan (suggested)
 
-1) Specify the contract extension + server normalization rules (incl. budgets).
-2) Extend API models + stored `ui_payload` schema typing (backwards compatible).
-3) Implement SPA rendering + runner integration for the new fields.
+1. Specify the contract extension + server normalization rules (incl. budgets).
+2. Extend API models + stored `ui_payload` schema typing (backwards compatible).
+3. Implement SPA rendering + runner integration for the new fields.
 
 ## Demo checklist
 

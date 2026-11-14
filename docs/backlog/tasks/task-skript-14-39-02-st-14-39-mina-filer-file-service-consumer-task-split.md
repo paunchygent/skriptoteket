@@ -4,8 +4,8 @@ id: TASK-SKRIPT-14-39-02
 title: ST-SKRIPT-14-39 Mina filer File Service consumer task split
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: in_progress
 readiness_review:
@@ -17,17 +17,11 @@ closeout_review:
 story: ST-SKRIPT-14-39
 task_kind: story
 acceptance_criteria:
-- The slice records that Skriptoteket is a HuleEdu File Service consumer for `Mina
-  filer` object lifecycle and must not implement a direct R2 adapter or Upload v2
-  consumer fallback.
-- The slice records that the product-neutral HuleEdu File Service object-file API
-  is a producer prerequisite before runtime consumer implementation can close.
-- The slice creates bounded follow-up PR tasks for Skriptoteket metadata/schema, File
-  Service client adapter plus protected route proof, and migration/cutover safety.
-- The slice keeps production env sync, object copy, destructive cleanup, raw R2 identity
-  exposure, and non-`Mina filer` surfaces out of scope.
-- The slice updates the story and ADR discovery surfaces so future agents find the
-  task split without relying on chat history.
+  - The slice records that Skriptoteket is a HuleEdu File Service consumer for `Mina filer` object lifecycle and must not implement a direct R2 adapter or Upload v2 consumer fallback.
+  - The slice records that the product-neutral HuleEdu File Service object-file API is a producer prerequisite before runtime consumer implementation can close.
+  - The slice creates bounded follow-up PR tasks for Skriptoteket metadata/schema, File Service client adapter plus protected route proof, and migration/cutover safety.
+  - The slice keeps production env sync, object copy, destructive cleanup, raw R2 identity exposure, and non-`Mina filer` surfaces out of scope.
+  - The slice updates the story and ADR discovery surfaces so future agents find the task split without relying on chat history.
 ---
 
 ## Context
@@ -72,12 +66,12 @@ The source does not provide a separate plan section; no additional plan is recor
 
 ### Source: Task Split
 
-| Slice | Status | Owns | Blocked by |
-|---|---|---|---|
-| HuleEdu product-neutral File Service object-file API | external prerequisite | Producer endpoints and fields for namespace-aware user files | HuleEdu-owned task not tracked in this repo |
-| `PR-0413` | blocked | Skriptoteket catalog metadata, migration columns, lifecycle mirror, and fail-closed repository/domain contract | Product-neutral File Service reference shape |
-| `PR-0414` | blocked | HuleEdu File Service client adapter behind `VaultStorageProtocol`, protected route proof, and Document Converter saved-source reads | HuleEdu producer API and `PR-0413` |
-| `PR-0415` | blocked | Migration dry-run, dual-read, cutover, rollback, and destructive-cleanup gates | `PR-0413`, `PR-0414`, and explicit cutover approval |
+| Slice                                                | Status                | Owns                                                                                                                                | Blocked by                                          |
+| ---------------------------------------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| HuleEdu product-neutral File Service object-file API | external prerequisite | Producer endpoints and fields for namespace-aware user files                                                                        | HuleEdu-owned task not tracked in this repo         |
+| `PR-0413`                                            | blocked               | Skriptoteket catalog metadata, migration columns, lifecycle mirror, and fail-closed repository/domain contract                      | Product-neutral File Service reference shape        |
+| `PR-0414`                                            | blocked               | HuleEdu File Service client adapter behind `VaultStorageProtocol`, protected route proof, and Document Converter saved-source reads | HuleEdu producer API and `PR-0413`                  |
+| `PR-0415`                                            | blocked               | Migration dry-run, dual-read, cutover, rollback, and destructive-cleanup gates                                                      | `PR-0413`, `PR-0414`, and explicit cutover approval |
 
 `PR-0413`, `PR-0414`, and `PR-0415` are created by this slice as local
 Skriptoteket work packages. The HuleEdu producer task must be created and
@@ -126,8 +120,6 @@ The source does not provide a separate lessons learned section; no additional le
 The source does not provide a separate notes section; no additional notes is recorded.
 
 ### Source: PR-0412: ST-14-39 Mina Filer File Service Consumer Task Split
-
-
 
 ### Source: Problem
 

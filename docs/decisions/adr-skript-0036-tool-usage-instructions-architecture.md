@@ -4,17 +4,17 @@ id: ADR-SKRIPT-0036
 title: Tool usage instructions architecture
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 links:
   governing:
-  - EPIC-SKRIPT-08
+    - EPIC-SKRIPT-08
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0036
+  - ADR-0036
 ---
 
 ## Context
@@ -45,16 +45,17 @@ class ToolVersion(BaseModel):
 ```
 
 **Why ToolVersion (not Tool):**
+
 - Instructions may need updates when code changes
 - Version-level allows instructions to evolve with the script
 - Follows existing pattern where `settings_schema` lives on ToolVersion
 
 ### 2. Separate concerns
 
-| Field | Purpose | Where displayed |
-|-------|---------|-----------------|
-| `Tool.summary` | Brief description (1-2 sentences) | Browse lists, search results |
-| `ToolVersion.usage_instructions` | Detailed how-to guide (markdown) | ToolRunView only |
+| Field                            | Purpose                           | Where displayed              |
+| -------------------------------- | --------------------------------- | ---------------------------- |
+| `Tool.summary`                   | Brief description (1-2 sentences) | Browse lists, search results |
+| `ToolVersion.usage_instructions` | Detailed how-to guide (markdown)  | ToolRunView only             |
 
 ### 3. Add markdown rendering to frontend
 

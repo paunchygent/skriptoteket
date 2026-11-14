@@ -47,17 +47,17 @@ Write `/work/request.json` (UTF-8 JSON) containing at minimum:
 
 ## Implementation plan
 
-1) Runner/container I/O
+1. Runner/container I/O
 
 - Inject `request.json` into `/work/` alongside `script.py` and `memory.json`.
 - Stop setting env vars for `inputs/action/manifest` in the Docker runner.
 
-2) Runner toolkit
+2. Runner toolkit
 
 - Update `runner/skriptoteket_toolkit.py` so the public helpers read from `/work/request.json`.
 - Keep predictable defaults (missing/malformed JSON must not crash tools; return `{}` / `None`).
 
-3) Script bank + templates
+3. Script bank + templates
 
 - Update all in-repo scripts + starter templates to stop reading env vars and use the toolkit.
 

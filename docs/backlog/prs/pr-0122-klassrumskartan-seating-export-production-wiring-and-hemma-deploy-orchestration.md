@@ -79,20 +79,24 @@ checked dependency of Skriptoteket deployment/bring-up.
 ### Option 1: Skriptoteket-side deploy wrapper orchestrates both services
 
 Pros:
+
 - One operator command from the Skriptoteket repo satisfies the practical
   "bring up Skriptoteket" requirement.
 - Keeps service ownership separate while still making the dependency explicit.
 - Fastest path to a reliable Hemma deploy story.
 
 Cons:
+
 - Skriptoteket deploy logic reaches into another service repo/runtime.
 
 ### Option 2: Shared Hemma orchestration outside both repos
 
 Pros:
+
 - Cleaner long-term infra ownership if more services join the dependency graph.
 
 Cons:
+
 - Slower to land and less repo-local.
 - Weaker discoverability for Skriptoteket operators right now.
 

@@ -4,8 +4,8 @@ id: ST-SKRIPT-09-05
 title: Content-Security-Policy for Vue/Vite SPA
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,16 +16,13 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-09
 acceptance_criteria:
-- Given HTTPS responses, when headers are inspected, then CSP is present and enforced.
-- Given CSP report-only mode, when core SPA flows are exercised, then no new violations
-  appear.
-- Given the editor uses CodeMirror, when editing tools, then no CSP violations occur.
-- Given external assets are required, when pages render, then they load without CSP
-  errors.
-- Given API and websocket usage, when CSP is enforced, then only expected origins
-  are allowed.
+  - Given HTTPS responses, when headers are inspected, then CSP is present and enforced.
+  - Given CSP report-only mode, when core SPA flows are exercised, then no new violations appear.
+  - Given the editor uses CodeMirror, when editing tools, then no CSP violations occur.
+  - Given external assets are required, when pages render, then they load without CSP errors.
+  - Given API and websocket usage, when CSP is enforced, then only expected origins are allowed.
 retired_ids:
-- ST-09-05
+  - ST-09-05
 ---
 
 ## Context
@@ -72,17 +69,20 @@ so CSP must be scoped to the actual Vite build output and runtime behavior.
 
 ### Proposed approach
 
-1) Inventory
+1. Inventory
+
    - Enumerate all script/style/font/image/connect/worker sources used in prod.
    - Confirm whether CodeMirror or other UI code injects inline styles.
 
-2) Draft CSP
+2. Draft CSP
+
    - Start with a strict baseline (default-src 'self').
    - Allow only required sources for script-src, style-src, img-src, font-src, connect-src,
      frame-ancestors, worker-src, and object-src.
    - Avoid 'unsafe-inline' for scripts; only allow for styles if required by CodeMirror.
 
-3) Rollout
+3. Rollout
+
    - Enable CSP in report-only mode first.
    - Exercise critical flows (browse, run tool, editor, admin) and capture violations.
    - Iterate until report-only is clean, then enforce.

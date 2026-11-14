@@ -4,8 +4,8 @@ id: ST-SKRIPT-26-06
 title: Klassrumskartan shareable HTML/CSS export links
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,41 +16,18 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-26
 acceptance_criteria:
-- Given a teacher or guest has a current grouping or seating draft, when they open
-  the existing export menu, then `Dela länk` is available as an export action beside
-  PDF/Excel rather than as a separate workflow.
-- Given `Dela länk` is triggered, when pending draft or smart-rule changes exist,
-  then the same export-preparation persistence contract as PDF/Excel runs before the
-  share artifact is created.
-- Given a share link is created, when anyone opens the link without signing in, then
-  they see an immutable responsive HTML/CSS presentation of the grouping or seating
-  plan without editor controls, owner-scoped identifiers, app APIs, or live draft
-  state.
-- Given the share page may be posted in Microsoft Teams, Google Classroom, or an LMS
-  forum, when the URL is previewed or opened, then the page has stable title/description
-  metadata, readable responsive layout, and print-friendly CSS.
-- Given an authenticated teacher creates a share link, when the artifact is stored,
-  then it is durable, owned by that teacher, listable, copyable, and revocable without
-  default expiry.
-- Given a public guest creates a share link, when the public helper accepts the browser-owned
-  snapshot, then it creates a public artifact with an expiry no later than 60 days
-  and no owner-scoped persistence or authenticated API fallthrough.
-- Given a public guest creates a newer share link for the same guest grouping or seating
-  draft, when the browser still holds the previous revoke secret, then the previous
-  guest share is revoked or superseded so the newest link is the active shared version.
-- Given a share URL contains a readable slug, when the slug is missing or stale, then
-  the unguessable token still resolves the artifact and the slug is never used as
-  authorization.
-- Given share pages may contain class, room, group, or student display names, when
-  the route renders metadata or crawler responses, then it is excluded from sitemap
-  coverage, uses `noindex,nofollow`, escapes all preview metadata, and defines cache
-  behavior for active, revoked, expired, and missing-token responses.
-- Given public guest share persistence is governed by the accepted `ADR-SKRIPT-0084`
-  exception, when the public guest slice is implemented, then it follows the accepted
-  renderer-provenance, TTL-ceiling, creation-route, read-route, purge, and no-upgrade-import
-  constraints.
+  - Given a teacher or guest has a current grouping or seating draft, when they open the existing export menu, then `Dela länk` is available as an export action beside PDF/Excel rather than as a separate workflow.
+  - Given `Dela länk` is triggered, when pending draft or smart-rule changes exist, then the same export-preparation persistence contract as PDF/Excel runs before the share artifact is created.
+  - Given a share link is created, when anyone opens the link without signing in, then they see an immutable responsive HTML/CSS presentation of the grouping or seating plan without editor controls, owner-scoped identifiers, app APIs, or live draft state.
+  - Given the share page may be posted in Microsoft Teams, Google Classroom, or an LMS forum, when the URL is previewed or opened, then the page has stable title/description metadata, readable responsive layout, and print-friendly CSS.
+  - Given an authenticated teacher creates a share link, when the artifact is stored, then it is durable, owned by that teacher, listable, copyable, and revocable without default expiry.
+  - Given a public guest creates a share link, when the public helper accepts the browser-owned snapshot, then it creates a public artifact with an expiry no later than 60 days and no owner-scoped persistence or authenticated API fallthrough.
+  - Given a public guest creates a newer share link for the same guest grouping or seating draft, when the browser still holds the previous revoke secret, then the previous guest share is revoked or superseded so the newest link is the active shared version.
+  - Given a share URL contains a readable slug, when the slug is missing or stale, then the unguessable token still resolves the artifact and the slug is never used as authorization.
+  - Given share pages may contain class, room, group, or student display names, when the route renders metadata or crawler responses, then it is excluded from sitemap coverage, uses `noindex,nofollow`, escapes all preview metadata, and defines cache behavior for active, revoked, expired, and missing-token responses.
+  - Given public guest share persistence is governed by the accepted `ADR-SKRIPT-0084` exception, when the public guest slice is implemented, then it follows the accepted renderer-provenance, TTL-ceiling, creation-route, read-route, purge, and no-upgrade-import constraints.
 retired_ids:
-- ST-26-06
+  - ST-26-06
 ---
 
 ## Context
@@ -159,8 +136,7 @@ The source does not provide a separate non-goals section; no additional non-goal
     Hemma as `b7bc5d9d`. The deploy log
     `/home/paunchygent/apps/skriptoteket/.artifacts/hemma-deploy-20260503-121524.log`
     shows web/worker rebuild, migrations, and local seating export smoke passed.
-    The production backfill command returned `scanned=0 generated=0 refreshed=0
-    failed=0`, confirming no active stale seating preview rows remained after
+    The production backfill command returned `scanned=0 generated=0 refreshed=0 failed=0`, confirming no active stale seating preview rows remained after
     deploy, and production health returned healthy.
   - `PR-0282` is closed after `REV-PR-0282` re-review approved the shared-link
     `Ladda ner PDF` busy lifecycle remediation. The implemented slice aligns
@@ -206,8 +182,7 @@ The source does not provide a separate non-goals section; no additional non-goal
     fails closed for invalid wall fixtures, tests a valid top whiteboard above
     the floor band, and refreshes visual proof with `wall_side=TOP`.
 - Reopened `PR-0276` follow-up:
-  - Share-page headers for both seating and grouping must show `Skapad:
-    YYYY-MM-DD`, add a PDF download action in the top-right header area, and
+  - Share-page headers for both seating and grouping must show `Skapad: YYYY-MM-DD`, add a PDF download action in the top-right header area, and
     add the `Skapad av Klassrumskartan` public-app attribution link. Seating
     pages must no longer show `Delad sittschema - endast för visning.`.
   - The PDF action must render immutable seating shares as a single A3

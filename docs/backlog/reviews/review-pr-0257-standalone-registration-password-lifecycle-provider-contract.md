@@ -50,28 +50,28 @@ published a retained contract and proof for:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0257-st-28-08-standalone-registration-password-lifecycle-provider-contract.md` | New ST-28-08 provider-gate PR package | 15 min |
-| `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md` | Story acceptance and blocked status | 8 min |
-| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md` | Standalone realm and lifecycle ownership contract | 10 min |
-| `docs/backlog/prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md` | Approved login ceremony precedent | 8 min |
-| HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md` | Retained provider endpoint list and missing lifecycle ceremony | 8 min |
-| HuleEdu `services/api_gateway_service/routers/auth_routes.py` | Gateway browser auth proxy route list | 5 min |
-| HuleEdu `services/api_gateway_service/routers/auth_ceremony_routes.py` | Existing login-only browser ceremony | 5 min |
-| HuleEdu `services/identity_service/api/schemas.py` | Direct lifecycle API schemas and missing app/realm/return fields | 8 min |
+| File                                                                                                       | Focus                                                            | Time   |
+| ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0257-st-28-08-standalone-registration-password-lifecycle-provider-contract.md`        | New ST-28-08 provider-gate PR package                            | 15 min |
+| `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md`          | Story acceptance and blocked status                              | 8 min  |
+| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`                       | Standalone realm and lifecycle ownership contract                | 10 min |
+| `docs/backlog/prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md` | Approved login ceremony precedent                                | 8 min  |
+| HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md`                             | Retained provider endpoint list and missing lifecycle ceremony   | 8 min  |
+| HuleEdu `services/api_gateway_service/routers/auth_routes.py`                                              | Gateway browser auth proxy route list                            | 5 min  |
+| HuleEdu `services/api_gateway_service/routers/auth_ceremony_routes.py`                                     | Existing login-only browser ceremony                             | 5 min  |
+| HuleEdu `services/identity_service/api/schemas.py`                                                         | Direct lifecycle API schemas and missing app/realm/return fields | 8 min  |
 
 **Total estimated time:** ~67 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Create `PR-0257` as the next `ST-28-08` package | Gives standalone lifecycle work a reviewable owner | [x] |
-| Keep the PR blocked until HuleEdu publishes lifecycle ceremonies | Prevents implementing against direct Identity Service APIs | [x] |
-| Require app/realm/return semantics for all lifecycle paths | Preserves `ADR-0083` and the `PR-0256` ceremony contract | [x] |
-| Reject local browser auth endpoint revival | Preserves `PR-0253` hard-retirement | [x] |
-| Defer projection provisioning until lifecycle outputs are sufficient | Keeps `ST-28-09` as the projection owner | [x] |
+| Decision                                                             | Rationale                                                  | Approve? |
+| -------------------------------------------------------------------- | ---------------------------------------------------------- | -------- |
+| Create `PR-0257` as the next `ST-28-08` package                      | Gives standalone lifecycle work a reviewable owner         | [x]      |
+| Keep the PR blocked until HuleEdu publishes lifecycle ceremonies     | Prevents implementing against direct Identity Service APIs | [x]      |
+| Require app/realm/return semantics for all lifecycle paths           | Preserves `ADR-0083` and the `PR-0256` ceremony contract   | [x]      |
+| Reject local browser auth endpoint revival                           | Preserves `PR-0253` hard-retirement                        | [x]      |
+| Defer projection provisioning until lifecycle outputs are sufficient | Keeps `ST-28-09` as the projection owner                   | [x]      |
 
 ## Review Checklist
 
@@ -182,11 +182,11 @@ HuleEdu `TASK-0318` closed the provider blocker at commit `cff626aa`:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0257` | Added the next ST-28-08 PR package as a provider-contract gate |
-| 2 | `REV-PR-0257` | Recorded retained `changes_requested` review findings against missing provider lifecycle contract |
-| 3 | `ST-28-08` | Kept blocked and added explicit provider-gate dependencies |
-| 4 | `EPIC-28` | Updated sequencing so PR-0257 precedes ST-28-09 and PR-0254 |
-| 5 | HuleEdu `TASK-0318` | Closed the provider lifecycle blocker with retained public proof |
-| 6 | `PR-0257` | Implemented the Skriptoteket consumer lifecycle handoff surfaces |
+| Change | Artifact            | Description                                                                                       |
+| ------ | ------------------- | ------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0257`           | Added the next ST-28-08 PR package as a provider-contract gate                                    |
+| 2      | `REV-PR-0257`       | Recorded retained `changes_requested` review findings against missing provider lifecycle contract |
+| 3      | `ST-28-08`          | Kept blocked and added explicit provider-gate dependencies                                        |
+| 4      | `EPIC-28`           | Updated sequencing so PR-0257 precedes ST-28-09 and PR-0254                                       |
+| 5      | HuleEdu `TASK-0318` | Closed the provider lifecycle blocker with retained public proof                                  |
+| 6      | `PR-0257`           | Implemented the Skriptoteket consumer lifecycle handoff surfaces                                  |

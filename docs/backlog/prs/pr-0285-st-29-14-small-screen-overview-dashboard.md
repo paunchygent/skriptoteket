@@ -128,34 +128,34 @@ classroom second, `Dela` reachable for links and files, management subordinate.
 
 ## Implementation Plan
 
-1. Start from the current `PlannerClassWorkspace.vue` overview shell and keep
-   desktop/laptop behavior unchanged.
-2. Add a phone-specific overview composition path that activates only below the
-   full desktop-composition range established by `EPIC-29`.
-3. Keep existing class/classroom selection and modal events as the source of
-   truth. The reduced view should rearrange presentation, not fork behavior.
-4. Replace the default phone body stack with compact sections for:
-   - active class and saved/status context
-   - class-list preview and class selector
-   - classroom selector plus name/place count
-   - compact `Dela` reachability when share or file-export state is available
-5. Decide explicitly whether the first implementation can reuse existing
-   `PlannerRosterOverviewPanel` / `PlannerTemplateOverviewPanel` through
-   responsive variants or whether a thin `PlannerSmallScreenOverviewDashboard`
-   component is cleaner under SRP and file-size limits.
-6. If `Dela` needs overview-level state that is not currently passed into
-   `PlannerClassWorkspace.vue`, extend only the presentation-safe distribution
-   summary props/events needed for a compact row. Do not split links and files
-   into separate small-screen rows, do not change share/export lifecycle
-   semantics, and do not move share creation or file export into a hidden
-   overview workflow unless that is explicitly accepted in the implementation
-   review.
-7. Preserve `ST-29-10` prerequisite copy and disabled mode reasons exactly.
-8. Use CSS-owned layout and token-driven styles. Do not add measured viewport
-   sizing, JS breakpoint duplication, or Tailwind default palette colors.
-9. Add focused component tests for phone overview scan order, reduced class and
-   classroom sections, no unchanged desktop panel stack at phone width,
-   prerequisite states, and desktop preservation.
+01. Start from the current `PlannerClassWorkspace.vue` overview shell and keep
+    desktop/laptop behavior unchanged.
+02. Add a phone-specific overview composition path that activates only below the
+    full desktop-composition range established by `EPIC-29`.
+03. Keep existing class/classroom selection and modal events as the source of
+    truth. The reduced view should rearrange presentation, not fork behavior.
+04. Replace the default phone body stack with compact sections for:
+    - active class and saved/status context
+    - class-list preview and class selector
+    - classroom selector plus name/place count
+    - compact `Dela` reachability when share or file-export state is available
+05. Decide explicitly whether the first implementation can reuse existing
+    `PlannerRosterOverviewPanel` / `PlannerTemplateOverviewPanel` through
+    responsive variants or whether a thin `PlannerSmallScreenOverviewDashboard`
+    component is cleaner under SRP and file-size limits.
+06. If `Dela` needs overview-level state that is not currently passed into
+    `PlannerClassWorkspace.vue`, extend only the presentation-safe distribution
+    summary props/events needed for a compact row. Do not split links and files
+    into separate small-screen rows, do not change share/export lifecycle
+    semantics, and do not move share creation or file export into a hidden
+    overview workflow unless that is explicitly accepted in the implementation
+    review.
+07. Preserve `ST-29-10` prerequisite copy and disabled mode reasons exactly.
+08. Use CSS-owned layout and token-driven styles. Do not add measured viewport
+    sizing, JS breakpoint duplication, or Tailwind default palette colors.
+09. Add focused component tests for phone overview scan order, reduced class and
+    classroom sections, no unchanged desktop panel stack at phone width,
+    prerequisite states, and desktop preservation.
 10. Add live browser proof for `phone`, `tablet`, `laptop`, and `desktop`.
     Phone proof must include a screenshot compared qualitatively against the
     mockup's `Översikt` panel.

@@ -58,36 +58,36 @@ re-coupling it through one shared save contract.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md` | Locked product decisions and repo conflicts | 6 min |
-| `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md` | Controls, checkpoints, persistence, solver boundaries | 8 min |
-| `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md` | Scope in/out and sequencing | 6 min |
-| `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md` | Contract reset and deletion posture | 5 min |
-| `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md` | History source and dedupe policy | 5 min |
-| `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics | 6 min |
-| `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md` | Seating smart lane | 5 min |
-| `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md` | Dedicated rules workspace and task-pane summary cut-over | 6 min |
-| `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md` | Grouping smart lane, classroom-aware compactness, and history split | 5 min |
-| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Explanation and rerun-messaging UX | 4 min |
-| `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Implementation-ready remediation design task | 6 min |
-| `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md` | Implementation-ready dedicated rules workspace design task | 6 min |
+| File                                                                                                          | Focus                                                               | Time  |
+| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----- |
+| `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`                          | Locked product decisions and repo conflicts                         | 6 min |
+| `docs/adr/adr-0074-klassrumskartan-smart-assignment-v1.md`                                                    | Controls, checkpoints, persistence, solver boundaries               | 8 min |
+| `docs/backlog/epics/epic-27-klassrumskartan-smart-assignment-v1.md`                                           | Scope in/out and sequencing                                         | 6 min |
+| `docs/backlog/stories/story-27-01-klassrumskartan-smart-assignment-contract-reset-and-control-model.md`       | Contract reset and deletion posture                                 | 5 min |
+| `docs/backlog/stories/story-27-02-klassrumskartan-export-checkpoints-for-smart-history.md`                    | History source and dedupe policy                                    | 5 min |
+| `docs/backlog/stories/story-27-06-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md` | Frontend session shape and transition semantics                     | 6 min |
+| `docs/backlog/stories/story-27-03-klassrumskartan-smart-seating-v1.md`                                        | Seating smart lane                                                  | 5 min |
+| `docs/backlog/stories/story-27-07-klassrumskartan-rules-workspace-and-dual-map-authoring.md`                  | Dedicated rules workspace and task-pane summary cut-over            | 6 min |
+| `docs/backlog/stories/story-27-04-klassrumskartan-smart-grouping-v1.md`                                       | Grouping smart lane, classroom-aware compactness, and history split | 5 min |
+| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md`                | Explanation and rerun-messaging UX                                  | 4 min |
+| `docs/backlog/prs/pr-0152-klassrumskartan-planner-session-lanes-and-transition-matrix-remediation.md`         | Implementation-ready remediation design task                        | 6 min |
+| `docs/backlog/prs/pr-0155-klassrumskartan-rules-workspace-dual-map-authoring-and-summary-cutover.md`          | Implementation-ready dedicated rules workspace design task          | 6 min |
 
 **Total estimated time:** ~68 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle | Preserves a low-button surface while keeping smart behavior explicit | [ ] |
-| Use a dedicated `Regler` workspace plus compact task-pane summaries instead of drawer-first per-student editing | Matches the teacher's whole-class mental model without bloating `Sittplatser`/`Grupper` | [ ] |
-| Use export-backed checkpoints only, with assignment-hash dedupe | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity | [ ] |
-| Delete old visible planner metadata semantics without migration | Cleaner reset than mixing incompatible teacher models; no real users exist yet | [ ] |
-| Keep smart grouping and smart seating in the same epic, but with separate mode toggles | Matches the shared hidden relation model while preserving separate teacher tasks | [ ] |
-| Keep classroom-aware grouping separate from history and expose it through `Klassrum` + `Sittschemat` in Smart-inställningar | Preserves clear teacher intent without turning history into a hidden room-awareness switch | [ ] |
-| Soft-degrade history-enabled first runs with no eligible checkpoints | Prevents error-like first-run feedback while keeping draft history ineligible | [ ] |
-| Treat later grouping checkpoints as the primary grouping-history lane | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source | [ ] |
-| Mirror roster-global vs draft-local ownership in the frontend session shape | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ] |
+| Decision                                                                                                                    | Rationale                                                                                             | Approve? |
+| --------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------- |
+| Keep `Slumpa` as the main action and add a small per-mode `Smart` toggle                                                    | Preserves a low-button surface while keeping smart behavior explicit                                  | [ ]      |
+| Use a dedicated `Regler` workspace plus compact task-pane summaries instead of drawer-first per-student editing             | Matches the teacher's whole-class mental model without bloating `Sittplatser`/`Grupper`               | [ ]      |
+| Use export-backed checkpoints only, with assignment-hash dedupe                                                             | Aligns history input with current PRD/ADR direction and avoids raw-draft ambiguity                    | [ ]      |
+| Delete old visible planner metadata semantics without migration                                                             | Cleaner reset than mixing incompatible teacher models; no real users exist yet                        | [ ]      |
+| Keep smart grouping and smart seating in the same epic, but with separate mode toggles                                      | Matches the shared hidden relation model while preserving separate teacher tasks                      | [ ]      |
+| Keep classroom-aware grouping separate from history and expose it through `Klassrum` + `Sittschemat` in Smart-inställningar | Preserves clear teacher intent without turning history into a hidden room-awareness switch            | [ ]      |
+| Soft-degrade history-enabled first runs with no eligible checkpoints                                                        | Prevents error-like first-run feedback while keeping draft history ineligible                         | [ ]      |
+| Treat later grouping checkpoints as the primary grouping-history lane                                                       | Keeps grouping mode-specific while still allowing seating checkpoints as a secondary source           | [ ]      |
+| Mirror roster-global vs draft-local ownership in the frontend session shape                                                 | Prevents one shared planner save contract from reintroducing the same transition bugs under new names | [ ]      |
 
 ## Review Checklist
 
@@ -202,10 +202,10 @@ to `active`, `ADR-0074` may move to `accepted`, and `ST-27-01` may move to
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0074 | Drafted the smart-assignment contract reset around small controls, export checkpoints, and backend authority |
-| 2 | EPIC-27 | Drafted the smart-assignment epic with explicit scope, out-of-scope, and story chain |
-| 3 | ST-27-01..05 | Drafted the story package for contract reset, checkpoints, seating, grouping, and explanation UX |
-| 4 | ST-27-06, PR-0152 | Added the frontend session-remediation slice so later smart seating/grouping work inherits explicit lane-owned transition semantics |
-| 5 | ST-27-07, PR-0155 | Added the dedicated rules workspace cut-over so later smart seating/grouping UI does not accrete around seating/grouping drawers |
+| Change | Artifact          | Description                                                                                                                         |
+| ------ | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | ADR-0074          | Drafted the smart-assignment contract reset around small controls, export checkpoints, and backend authority                        |
+| 2      | EPIC-27           | Drafted the smart-assignment epic with explicit scope, out-of-scope, and story chain                                                |
+| 3      | ST-27-01..05      | Drafted the story package for contract reset, checkpoints, seating, grouping, and explanation UX                                    |
+| 4      | ST-27-06, PR-0152 | Added the frontend session-remediation slice so later smart seating/grouping work inherits explicit lane-owned transition semantics |
+| 5      | ST-27-07, PR-0155 | Added the dedicated rules workspace cut-over so later smart seating/grouping UI does not accrete around seating/grouping drawers    |

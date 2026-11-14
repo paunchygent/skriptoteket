@@ -41,45 +41,45 @@ backlog surfaces.
 
 ## Artifacts to Review
 
-| File | Focus |
-|------|-------|
-| `docs/backlog/prs/pr-0318-st-21-03-authenticated-exam-converter-huleedu-sir-convert-edge.md` | Scope, acceptance criteria, verification |
-| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md` | Parent story and route-boundary ordering |
-| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Epic ownership and status summary |
-| `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/tasks/task-0561-cut-skriptoteket-artifact-bundle-adapter-to-huleedu-sir-convert-edge.md` | HuleEdu Gateway cutover contract |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md` | Downstream artifact-bundle contract |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/urls.ts` | Browser base URL resolution |
-| `frontend/apps/skriptoteket/vite.config.ts` | Local `/sir-convert` proxy target |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/jobSpec.ts` | Multipart JobSpec shape |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.ts` | Idempotency and correlation construction |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` | Submit/read/list/download transport |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/parsers.ts` | Result and artifact-manifest validation |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.spec.ts` | Consumer proof coverage |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.spec.ts` | Request-context proof coverage |
+| File                                                                                                                                            | Focus                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `docs/backlog/prs/pr-0318-st-21-03-authenticated-exam-converter-huleedu-sir-convert-edge.md`                                                    | Scope, acceptance criteria, verification |
+| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`                                                    | Parent story and route-boundary ordering |
+| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                                                                                      | Epic ownership and status summary        |
+| `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/tasks/task-0561-cut-skriptoteket-artifact-bundle-adapter-to-huleedu-sir-convert-edge.md` | HuleEdu Gateway cutover contract         |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md`                        | Downstream artifact-bundle contract      |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/urls.ts`                                                                                  | Browser base URL resolution              |
+| `frontend/apps/skriptoteket/vite.config.ts`                                                                                                     | Local `/sir-convert` proxy target        |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/jobSpec.ts`                                                                               | Multipart JobSpec shape                  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.ts`                                                                        | Idempotency and correlation construction |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`                                                                                | Submit/read/list/download transport      |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/parsers.ts`                                                                               | Result and artifact-manifest validation  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.spec.ts`                                                                           | Consumer proof coverage                  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.spec.ts`                                                                   | Request-context proof coverage           |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use browser `/sir-convert/v2/convert/...` instead of direct Sir Convert hosts | Matches HuleEdu-owned product edge and keeps service credentials server-side | [x] |
-| Build only the governed `digiexam_dxe -> examnet_migration_bundle` multipart request | Prevents Skriptoteket from parsing `.dxe` or inventing conversion semantics | [x] |
-| Preserve one correlation ID across submit/read/download/save metadata | Required for teacher-action traceability and cross-service debugging | [x] |
-| Treat blocked/manual-follow-up artifact metadata as contract data | UI must not flatten blocked bundle outcomes into vague transport failures | [x] |
+| Decision                                                                             | Rationale                                                                    | Approve? |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- | -------- |
+| Use browser `/sir-convert/v2/convert/...` instead of direct Sir Convert hosts        | Matches HuleEdu-owned product edge and keeps service credentials server-side | [x]      |
+| Build only the governed `digiexam_dxe -> examnet_migration_bundle` multipart request | Prevents Skriptoteket from parsing `.dxe` or inventing conversion semantics  | [x]      |
+| Preserve one correlation ID across submit/read/download/save metadata                | Required for teacher-action traceability and cross-service debugging         | [x]      |
+| Treat blocked/manual-follow-up artifact metadata as contract data                    | UI must not flatten blocked bundle outcomes into vague transport failures    | [x]      |
 
 ## Review Checklist
 
 - [x] Scope is bounded to the authenticated adapter slice.
 - [x] Multipart part names and JobSpec route key match the Sir Convert
-      contract.
+  contract.
 - [x] Browser requests do not send `X-API-Key` in the focused tests.
 - [x] Focused request-context and transport tests pass.
 - [x] Production bundle grep found no direct service credential or reserved
-      service-host strings.
+  service-host strings.
 - [x] Configured browser base URLs fail closed for direct service hosts.
 - [x] Local dev `/sir-convert` proof uses the HuleEdu Gateway equivalent by
-      default.
+  default.
 - [x] Parser validation requires `blocker_code` for blocked/failed/not
-      implemented artifact entries.
+  implemented artifact entries.
 
 ## Review Feedback
 

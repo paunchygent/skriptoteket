@@ -204,8 +204,7 @@ Completed in this slice:
      `artifact_reference`, on `ExamAuthoringCorrectionTargetReadinessRowV1`
      only when the replay-created target is the downloadable/saveable
      authority. HuleEdu Gateway should pass that reference through unchanged,
-     and Skriptoteket should only map it into `file.artifactActionReference =
-     { authority: "replay_result", artifactKey }`. Until that exists,
+     and Skriptoteket should only map it into `file.artifactActionReference = { authority: "replay_result", artifactKey }`. Until that exists,
      corrected file actions stay disabled. This preserves the strict authority
      boundary and lets `PR-0337` prove the disabled state honestly.
    - Option B: introduce Skriptoteket-owned replay artifact storage in a later

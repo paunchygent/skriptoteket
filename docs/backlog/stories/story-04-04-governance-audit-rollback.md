@@ -35,12 +35,12 @@ This story implements the governance layer. We follow ADR-0005: Admins manage th
 
 ## Permission Matrix
 
-| Action | Contributor | Admin | Superuser |
-|--------|-------------|-------|-----------|
-| Create draft | Y (own) | Y | Y |
-| Submit for review | Y (own) | Y | Y |
-| Publish | - | **Y** | Y |
-| Rollback | - | - | **Y** |
+| Action            | Contributor | Admin | Superuser |
+| ----------------- | ----------- | ----- | --------- |
+| Create draft      | Y (own)     | Y     | Y         |
+| Submit for review | Y (own)     | Y     | Y         |
+| Publish           | -           | **Y** | Y         |
+| Rollback          | -           | -     | **Y**     |
 
 ## Rollback Flow
 

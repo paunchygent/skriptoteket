@@ -49,6 +49,7 @@ curl -sI https://skriptoteket.hule.education/login | grep -iE 'strict|x-frame|x-
 ```
 
 Expected output:
+
 ```
 strict-transport-security: max-age=31536000; includeSubDomains
 x-frame-options: DENY

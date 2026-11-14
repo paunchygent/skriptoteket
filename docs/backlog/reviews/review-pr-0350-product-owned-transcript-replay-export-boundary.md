@@ -42,25 +42,25 @@ actions.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0350-st-21-08-product-owned-transcript-replay-export-boundary.md` | Scope and acceptance | 5 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py` | Product export API boundary | 10 min |
-| `src/skriptoteket/application/curated_apps/` | Export handler, producer protocol use, persistence flow | 20 min |
-| `frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterExports.ts` | Browser records product export intent and reads product state | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` | Direct browser replay methods are not exposed | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/` | Product status rendering | 10 min |
-| `tests/` and frontend specs | Behavioral proof and old saga cleanup | 20 min |
+| File                                                                                   | Focus                                                         | Time   |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0350-st-21-08-product-owned-transcript-replay-export-boundary.md` | Scope and acceptance                                          | 5 min  |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub_transcript_saves.py`                  | Product export API boundary                                   | 10 min |
+| `src/skriptoteket/application/curated_apps/`                                           | Export handler, producer protocol use, persistence flow       | 20 min |
+| `frontend/apps/skriptoteket/src/api/conversionHubTranscriptFormatterExports.ts`        | Browser records product export intent and reads product state | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`                       | Direct browser replay methods are not exposed                 | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/`                 | Product status rendering                                      | 10 min |
+| `tests/` and frontend specs                                                            | Behavioral proof and old saga cleanup                         | 20 min |
 
 **Total estimated time:** ~75 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Consume only the accepted task-363 producer contract server-side | Keeps Sir Convert as artifact producer and Skriptoteket as product owner | [x] |
-| Remove browser submit/poll/download/base64/complete replay orchestration | Eliminates the P0 architecture violation from PR-0349 review | [x] |
-| Persist explicit export state for pending/failure/success | Prevents silent foreground waits and supports durable product UX | [x] |
+| Decision                                                                 | Rationale                                                                | Approve? |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------ | -------- |
+| Consume only the accepted task-363 producer contract server-side         | Keeps Sir Convert as artifact producer and Skriptoteket as product owner | [x]      |
+| Remove browser submit/poll/download/base64/complete replay orchestration | Eliminates the P0 architecture violation from PR-0349 review             | [x]      |
+| Persist explicit export state for pending/failure/success                | Prevents silent foreground waits and supports durable product UX         | [x]      |
 
 ## Review Checklist
 
@@ -174,11 +174,11 @@ they are fixed in code and in focused tests:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Backend export boundary | Added product-owned POST/GET formatter export handlers and producer protocol/client consumption for task-363. |
-| 2 | Frontend export state | Replaced the browser saga with Skriptoteket product endpoint calls and Swedish pending/success/failure/retry UI state. |
-| 3 | Cleanup and proof | Removed direct replay Gateway client/tests, regenerated OpenAPI types, and updated PR-0349 proof scripts to wait on `/formatter-exports`. |
-| 4 | Producer failure mapping | Mapped `httpx` transport/timeouts/protocol request errors into product failed export state through `DomainError`. |
-| 5 | Export-state persistence | Added `conversion_hub_transcript_formatter_export_states` migration/model/repository for requested artifact intent. |
-| 6 | Running refresh UI | Made `running` exports manually refreshable through `/formatter-exports` without reintroducing browser producer ownership. |
+| Change | Artifact                 | Description                                                                                                                               |
+| ------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | Backend export boundary  | Added product-owned POST/GET formatter export handlers and producer protocol/client consumption for task-363.                             |
+| 2      | Frontend export state    | Replaced the browser saga with Skriptoteket product endpoint calls and Swedish pending/success/failure/retry UI state.                    |
+| 3      | Cleanup and proof        | Removed direct replay Gateway client/tests, regenerated OpenAPI types, and updated PR-0349 proof scripts to wait on `/formatter-exports`. |
+| 4      | Producer failure mapping | Mapped `httpx` transport/timeouts/protocol request errors into product failed export state through `DomainError`.                         |
+| 5      | Export-state persistence | Added `conversion_hub_transcript_formatter_export_states` migration/model/repository for requested artifact intent.                       |
+| 6      | Running refresh UI       | Made `running` exports manually refreshable through `/formatter-exports` without reintroducing browser producer ownership.                |

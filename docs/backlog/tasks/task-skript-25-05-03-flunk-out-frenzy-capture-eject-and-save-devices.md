@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-05-03
 title: 'Flunk-Out Frenzy: capture, eject, and save devices'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,16 +17,10 @@ closeout_review:
 story: ST-SKRIPT-25-05
 task_kind: story
 acceptance_criteria:
-- Typed table and compiled-plan definitions exist for capture and save devices (kickout/hole/sink
-  + kickback/save-post), and invalid authored data fails fast at compile time.
-- The physics boundary represents capture, hold, eject, and save behavior through
-  deterministic semantic machine events (`ball-captured`, `ball-ejected`, `ball-saved`)
-  without leaking Rapier internals.
-- 'Ball lifecycle invariants hold under capture and save flows: one active ball, no
-  duplicate drains/ejects for the same contact window, and stable restart/game-over
-  reset behavior.'
-- The rules layer reacts to capture/save events through bounded helper modules and
-  keeps `RuleEngine.ts` as orchestration rather than a monolithic controller.
+  - Typed table and compiled-plan definitions exist for capture and save devices (kickout/hole/sink + kickback/save-post), and invalid authored data fails fast at compile time.
+  - The physics boundary represents capture, hold, eject, and save behavior through deterministic semantic machine events (`ball-captured`, `ball-ejected`, `ball-saved`) without leaking Rapier internals.
+  - 'Ball lifecycle invariants hold under capture and save flows: one active ball, no duplicate drains/ejects for the same contact window, and stable restart/game-over reset behavior.'
+  - The rules layer reacts to capture/save events through bounded helper modules and keeps `RuleEngine.ts` as orchestration rather than a monolithic controller.
 ---
 
 ## Context
@@ -132,8 +126,6 @@ mention capture/eject/save, but the authored-table -> compiler -> physics
 path is not fully checkpointed for deterministic behavior.
 
 ### Source: Implementation plan by checkpoint
-
-
 
 ### Source: Checkpoint A (`PR-0193a`): contracts + compiler wiring
 

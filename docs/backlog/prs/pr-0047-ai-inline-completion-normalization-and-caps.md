@@ -23,8 +23,8 @@ acceptance_criteria:
 
 Inline completions must be small and insert-ready. We currently see two classes of failures:
 
-1) **Echo/duplication**: the model repeats large parts of the prefix/suffix, producing noisy insertions.
-2) **Truncation handling**: OpenAI Responses can return `finish_reason=length` / `finish_reason=incomplete` while
+1. **Echo/duplication**: the model repeats large parts of the prefix/suffix, producing noisy insertions.
+2. **Truncation handling**: OpenAI Responses can return `finish_reason=length` / `finish_reason=incomplete` while
    still providing useful partial output. Discarding these responses yields “no ghost text”.
 
 ## Goal

@@ -212,51 +212,51 @@ normalized answer payload and lineage.
 
 ## Implementation Plan
 
-1. Reproduce the failure path in a focused frontend/runtime test before
-   changing behavior:
-   - advisory report has at least one valid vision-backed `gap_fill` candidate;
-   - the advisory manifest has `effective_ir_json` unavailable or
-     `not_requested`;
-   - target readiness still blocks missing answer keys; and
-   - the UI must present the reviewed handoff action instead of leaving the
-     state as terminal missing-facit.
-2. Audit `ExamConverterAuthenticatedView.vue` and
-   `ExamConverterWorkspaceShell.vue` event wiring so the reviewed apply action
-   is visible and reachable whenever `reviewedCompletionOverlay` is available.
-3. Audit `useExamConverterAiFacitReview.ts` for gap-fill parity:
-   - accept unchanged must work for `kind=gap_fill`;
-   - accept-all must include valid supported gap-fill candidates;
-   - edit-before-accept may remain choice-only unless a narrower gap editor is
-     approved; and
-   - left/manual decisions must be excluded from the overlay.
-4. Audit the overlay payload against the generated OpenAPI type and Sir
-   Convert Task 306 contract. If required lineage is missing in the current
-   builder, add it in a small reviewed-overlay module instead of widening the
-   view component.
-5. Audit `useExamConverterAuthenticatedRuntime.ts`, `jobSpec.ts`,
-   `client.ts`, and `requestContext.ts` to prove the second submit sends:
-   - `completion_mode=local_llm_apply_missing_machine_marked_with_review`;
-   - `digiexam_ingestion_overlay` multipart file named
-     `digiexam-ingestion-overlay.json`;
-   - `ingestion_overlay_policy=apply_teacher_overlay`; and
-   - idempotency that changes with the reviewed overlay payload but remains
-     stable for duplicate clicks of the same apply action.
-6. After the reviewed apply job finishes, ensure artifact loading uses the
-   second job id/correlation id and refreshes the projection from the second
-   bundle. Do not keep file/readiness state from the first advisory bundle.
-7. Add UI state that clearly distinguishes:
-   - advisory candidates waiting for teacher review;
-   - accepted/edited suggestions waiting to be submitted;
-   - reviewed apply job running;
-   - reviewed apply succeeded with producer-ready files; and
-   - reviewed apply failed or remains blocked with producer reason codes.
-8. Extend the internal-browser fixture lane if needed with a state matching the
-   live bug: valid AI-facit candidates exist, but target readiness still blocks
-   until `Skapa filer` performs the apply pass.
-9. Rerun the live authenticated proof through HuleEdu Gateway as
-   `paunchygent@gmail.com` and retain sanitized evidence. The proof must show
-   two distinct Sir Convert jobs when teacher review is applied: advisory first,
-   reviewed apply second.
+01. Reproduce the failure path in a focused frontend/runtime test before
+    changing behavior:
+    - advisory report has at least one valid vision-backed `gap_fill` candidate;
+    - the advisory manifest has `effective_ir_json` unavailable or
+      `not_requested`;
+    - target readiness still blocks missing answer keys; and
+    - the UI must present the reviewed handoff action instead of leaving the
+      state as terminal missing-facit.
+02. Audit `ExamConverterAuthenticatedView.vue` and
+    `ExamConverterWorkspaceShell.vue` event wiring so the reviewed apply action
+    is visible and reachable whenever `reviewedCompletionOverlay` is available.
+03. Audit `useExamConverterAiFacitReview.ts` for gap-fill parity:
+    - accept unchanged must work for `kind=gap_fill`;
+    - accept-all must include valid supported gap-fill candidates;
+    - edit-before-accept may remain choice-only unless a narrower gap editor is
+      approved; and
+    - left/manual decisions must be excluded from the overlay.
+04. Audit the overlay payload against the generated OpenAPI type and Sir
+    Convert Task 306 contract. If required lineage is missing in the current
+    builder, add it in a small reviewed-overlay module instead of widening the
+    view component.
+05. Audit `useExamConverterAuthenticatedRuntime.ts`, `jobSpec.ts`,
+    `client.ts`, and `requestContext.ts` to prove the second submit sends:
+    - `completion_mode=local_llm_apply_missing_machine_marked_with_review`;
+    - `digiexam_ingestion_overlay` multipart file named
+      `digiexam-ingestion-overlay.json`;
+    - `ingestion_overlay_policy=apply_teacher_overlay`; and
+    - idempotency that changes with the reviewed overlay payload but remains
+      stable for duplicate clicks of the same apply action.
+06. After the reviewed apply job finishes, ensure artifact loading uses the
+    second job id/correlation id and refreshes the projection from the second
+    bundle. Do not keep file/readiness state from the first advisory bundle.
+07. Add UI state that clearly distinguishes:
+    - advisory candidates waiting for teacher review;
+    - accepted/edited suggestions waiting to be submitted;
+    - reviewed apply job running;
+    - reviewed apply succeeded with producer-ready files; and
+    - reviewed apply failed or remains blocked with producer reason codes.
+08. Extend the internal-browser fixture lane if needed with a state matching the
+    live bug: valid AI-facit candidates exist, but target readiness still blocks
+    until `Skapa filer` performs the apply pass.
+09. Rerun the live authenticated proof through HuleEdu Gateway as
+    `paunchygent@gmail.com` and retain sanitized evidence. The proof must show
+    two distinct Sir Convert jobs when teacher review is applied: advisory first,
+    reviewed apply second.
 10. Update `PR-0324`, `PR-0329`, `ST-21-03`, `docs/index.md`, and
     `.codex/handoff.md` with the final evidence and the next proof status.
 

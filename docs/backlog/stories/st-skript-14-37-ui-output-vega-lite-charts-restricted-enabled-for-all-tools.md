@@ -4,8 +4,8 @@ id: ST-SKRIPT-14-37
 title: 'UI output: vega_lite charts (restricted, enabled for all tools)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,23 +17,15 @@ closeout_review:
 epic: EPIC-SKRIPT-14
 links:
   decisions:
-  - ADR-SKRIPT-0022
-  - ADR-SKRIPT-0024
+    - ADR-SKRIPT-0022
+    - ADR-SKRIPT-0024
 acceptance_criteria:
-- Given a tool run returns a vega_lite output with inline data and within caps, when
-  viewing run results in the SPA, then the platform renders the chart.
-- Given a tool run returns a vega_lite output that violates restrictions (remote data,
-  caps, composition), when normalizing ui_payload, then the platform deterministically
-  drops the vega_lite output and adds an actionable system notice explaining what
-  was blocked.
-- Given a tool run is executed in production context by an end user, when the tool
-  returns vega_lite outputs, then the outputs are accepted (policy-enabled) and rendered
-  under the same restrictions as sandbox.
-- Given a run is replayed from stored ui_payload, when rendering outputs, then vega_lite
-  behavior is deterministic (same normalized spec renders the same chart or the same
-  system notice).
+  - Given a tool run returns a vega_lite output with inline data and within caps, when viewing run results in the SPA, then the platform renders the chart.
+  - Given a tool run returns a vega_lite output that violates restrictions (remote data, caps, composition), when normalizing ui_payload, then the platform deterministically drops the vega_lite output and adds an actionable system notice explaining what was blocked.
+  - Given a tool run is executed in production context by an end user, when the tool returns vega_lite outputs, then the outputs are accepted (policy-enabled) and rendered under the same restrictions as sandbox.
+  - Given a run is replayed from stored ui_payload, when rendering outputs, then vega_lite behavior is deterministic (same normalized spec renders the same chart or the same system notice).
 retired_ids:
-- ST-14-37
+  - ST-14-37
 ---
 
 ## Context

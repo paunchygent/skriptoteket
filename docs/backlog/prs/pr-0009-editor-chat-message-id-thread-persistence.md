@@ -37,21 +37,26 @@ for UX/load shedding (not correctness).
 
 ## Implementation plan
 
-1) **Message identity**
+1. **Message identity**
+
    - Add `message_id` and `in_reply_to` fields to persisted chat messages.
    - Serialize to JSON-safe values (UUID as string).
 
-2) **Conflict retry**
+2. **Conflict retry**
+
    - On `state_rev` conflict while persisting the user message, retry with a fresh read and merged thread.
 
-3) **Assistant insertion**
+3. **Assistant insertion**
+
    - Persist assistant output by inserting after the matching user `message_id`, not “must be last”.
 
-4) **Best-effort guard**
+4. **Best-effort guard**
+
    - Add a per-process in-flight guard that returns 409 with Swedish copy if a request is already streaming for the same
      `{user_id, tool_id}`.
 
-5) **Tests**
+5. **Tests**
+
    - Update handler unit tests to include message_id/in_reply_to.
    - Add concurrency tests for conflict retry and assistant insertion order.
 

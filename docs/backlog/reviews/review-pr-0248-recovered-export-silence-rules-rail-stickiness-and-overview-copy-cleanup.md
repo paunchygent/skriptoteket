@@ -43,26 +43,26 @@ Approve `PR-0248` only after it:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md` | Acceptance criteria, proof burden, and scope boundaries | 12 min |
-| `docs/backlog/stories/story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md` | Parent story alignment | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportFlow.ts` | Shared recovered-success seam | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.spec.ts` | Grouping proof obligations | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.spec.ts` | Seating proof obligations | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.vue` | Rules-rail layout seam | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue` | No-class heading seam | 4 min |
+| File                                                                                                                    | Focus                                                   | Time   |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0248-st-29-02-recovered-export-silence-rules-rail-stickiness-and-overview-copy-cleanup.md`         | Acceptance criteria, proof burden, and scope boundaries | 12 min |
+| `docs/backlog/stories/story-29-02-klassrumskartan-workspace-shell-compression-and-low-value-feedback-band-reduction.md` | Parent story alignment                                  | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerExportFlow.ts`                                               | Shared recovered-success seam                           | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/useGroupingExportFlow.spec.ts`                                               | Grouping proof obligations                              | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useSeatingExportFlow.spec.ts`                                                | Seating proof obligations                               | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.vue`                                    | Rules-rail layout seam                                  | 4 min  |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue`                                        | No-class heading seam                                   | 4 min  |
 
 **Total estimated time:** ~47 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Silent historical succeeded exports on workspace re-entry | Old success should not replay as fresh action feedback | [x] |
-| Preserve one-time success toast for recovered in-flight exports that finish after restore | Recovery continuity is still user-visible truth when completion happens later | [x] |
-| Name the shared export-flow seam and spec proof explicitly | Prevents a shallow toast-only implementation | [x] |
-| Keep `Regler` rail and overview cleanup in this same bounded planner slice | These are adjacent presentation-truth fixes with shared shell ownership | [x] |
+| Decision                                                                                  | Rationale                                                                     | Approve? |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | -------- |
+| Silent historical succeeded exports on workspace re-entry                                 | Old success should not replay as fresh action feedback                        | [x]      |
+| Preserve one-time success toast for recovered in-flight exports that finish after restore | Recovery continuity is still user-visible truth when completion happens later | [x]      |
+| Name the shared export-flow seam and spec proof explicitly                                | Prevents a shallow toast-only implementation                                  | [x]      |
+| Keep `Regler` rail and overview cleanup in this same bounded planner slice                | These are adjacent presentation-truth fixes with shared shell ownership       | [x]      |
 
 ## Review Checklist
 

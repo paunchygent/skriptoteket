@@ -4,8 +4,8 @@ id: TASK-SKRIPT-14-39-01
 title: ST-14-39 Mina filer R2 storage migration planning
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,19 +17,11 @@ closeout_review:
 story: ST-SKRIPT-14-39
 task_kind: story
 acceptance_criteria:
-- The accepted package states that Skriptoteket consumes HuleEdu File Service for
-  object lifecycle in this tranche and does not implement a direct R2 adapter.
-- The accepted package preserves Skriptoteket `Mina filer` catalog/list authority
-  for v1 while treating HuleEdu File Service list as optional until a later catalog-authority
-  tranche.
-- The accepted package defines exact File Service settings, secret-source labels,
-  Docker service/readiness requirements, migration manifest fields, checksum proof,
-  dual-read window, cutover gate, rollback gate, delete safety, and redaction rules.
-- The accepted package defines red-first tests for save, list, download, owner denial,
-  missing object, checksum mismatch, delete/restore, purge eligibility, and Document
-  Converter ordered saved-source batches.
-- The accepted package defines exact live shared-auth proof and production `.env`
-  sync order without committing credential values.
+  - The accepted package states that Skriptoteket consumes HuleEdu File Service for object lifecycle in this tranche and does not implement a direct R2 adapter.
+  - The accepted package preserves Skriptoteket `Mina filer` catalog/list authority for v1 while treating HuleEdu File Service list as optional until a later catalog-authority tranche.
+  - The accepted package defines exact File Service settings, secret-source labels, Docker service/readiness requirements, migration manifest fields, checksum proof, dual-read window, cutover gate, rollback gate, delete safety, and redaction rules.
+  - The accepted package defines red-first tests for save, list, download, owner denial, missing object, checksum mismatch, delete/restore, purge eligibility, and Document Converter ordered saved-source batches.
+  - The accepted package defines exact live shared-auth proof and production `.env` sync order without committing credential values.
 ---
 
 ## Context
@@ -40,8 +32,8 @@ Moving `Mina filer` bytes to Cloudflare R2 is not just a boto3 endpoint change. 
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-14-39-01 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice

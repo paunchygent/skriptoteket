@@ -41,8 +41,8 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Execution plan (suggested)
 
-1) Define and document a minimal progress convention (e.g., `state.progress = { current, total, label? }`) and render it.
-2) Expose a “Files available” panel derived from the known input manifest, using names/references (no filesystem paths).
+1. Define and document a minimal progress convention (e.g., `state.progress = { current, total, label? }`) and render it.
+2. Expose a “Files available” panel derived from the known input manifest, using names/references (no filesystem paths).
 
 ## Demo checklist
 

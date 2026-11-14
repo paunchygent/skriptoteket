@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-15
 title: User Profile & Settings
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,17 +14,16 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Users can view and edit their profile with clear view/edit separation, brutalist
-  design, and mobile responsiveness.
+outcome: Users can view and edit their profile with clear view/edit separation, brutalist design, and mobile responsiveness.
 retired_ids:
-- EPIC-15
+  - EPIC-15
 ---
 
 ## Scope
 
 Source: `docs/backlog/epics/epic-15-user-profile-and-settings.md`. User Profile & Settings.
 
-- Profile page redesign with view/edit mode separation (inline expansion pattern). - Initials-based avatar display with placeholder for future upload feature. - Personal info editing (first name, last name, display name, locale). - Email change flow (validated against current email). - Password change flow (current password, new password with confirmation). - Brutalist design following HuleEdu design tokens (navy, burgundy, canvas). - Mobile-responsive layout. - Avatar upload (deferred to ST-15-02). - App-wide settings page (locale remains on profile for now). - Two-factor authentication / security settings page. - Profile visibility / privacy settings. - [ST-15-01: User Profile Page Redesig
+- Profile page redesign with view/edit mode separation (inline expansion pattern). - Initials-based avatar display with placeholder for future upload feature. - Personal info editing (first name, last name, display name, locale). - Email change flow (validated against current email). - Password change flow (current password, new password with confirmation). - Brutalist design following HuleEdu design tokens (navy, burgundy, canvas). - Mobile-responsive layout. - Avatar upload (deferred to ST-15-02). - App-wide settings page (locale remains on profile for now). - Two-factor authentication / security settings page. - Profile visibility / privacy settings. - \[ST-15-01: User Profile Page Redesig
 
 ## Epic Contract
 
@@ -93,8 +92,8 @@ Relationship drift or terminal ancestry must be resolved by the parent manifest 
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                 | Type      | Status | Question/Assumption              | Recommendation/Decision                                                        | Source                               |
+| ------------------ | --------- | ------ | -------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------ |
 | MIG-EPIC-SKRIPT-15 | migration | closed | How is source meaning preserved? | Preserve the source outcome and current contract while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

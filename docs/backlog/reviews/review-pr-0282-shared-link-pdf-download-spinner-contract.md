@@ -42,25 +42,25 @@ without changing architecture.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md` | Scope, acceptance, evidence claims | 8 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_download_action_renderer.py` | Static action CSS, markup, and controller lifecycle | 15 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py` | Share document integration boundary | 5 min |
-| `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_pdf_download_controller.py` | Test strength and missing recovery assertions | 8 min |
-| `.artifacts/pr-0282-share-pdf-spinner-proof/proof.json` | Browser proof claims for busy state and duplicate activation | 6 min |
-| `.artifacts/pr-0282-live-route-proof/manifest.json` | Live-route proof claims for backend-generated download | 6 min |
+| File                                                                                                    | Focus                                                        | Time   |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0282-st-26-06-shared-link-pdf-download-spinner-contract.md`                        | Scope, acceptance, evidence claims                           | 8 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_download_action_renderer.py` | Static action CSS, markup, and controller lifecycle          | 15 min |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py`                 | Share document integration boundary                          | 5 min  |
+| `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_pdf_download_controller.py`   | Test strength and missing recovery assertions                | 8 min  |
+| `.artifacts/pr-0282-share-pdf-spinner-proof/proof.json`                                                 | Browser proof claims for busy state and duplicate activation | 6 min  |
+| `.artifacts/pr-0282-live-route-proof/manifest.json`                                                     | Live-route proof claims for backend-generated download       | 6 min  |
 
 **Total estimated time:** ~48 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the tiny static public-share controller boundary | The slice must still avoid Vue hydration, API polling, token logging, and share/PDF semantic changes. | [x] |
-| Keep in-button busy feedback with reserved spinner geometry | The geometry and duplicate-activation goals are aligned with `PR-0281`. | [x] |
-| Treat browser download completion as observable from page JavaScript | Ordinary anchor downloads do not provide a reliable page-visible completion event. | [ ] |
-| Accept proof that only records busy state plus one download event | The proof does not assert recovery after successful browser handoff. | [ ] |
+| Decision                                                             | Rationale                                                                                             | Approve? |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------- |
+| Keep the tiny static public-share controller boundary                | The slice must still avoid Vue hydration, API polling, token logging, and share/PDF semantic changes. | [x]      |
+| Keep in-button busy feedback with reserved spinner geometry          | The geometry and duplicate-activation goals are aligned with `PR-0281`.                               | [x]      |
+| Treat browser download completion as observable from page JavaScript | Ordinary anchor downloads do not provide a reliable page-visible completion event.                    | [ ]      |
+| Accept proof that only records busy state plus one download event    | The proof does not assert recovery after successful browser handoff.                                  | [ ]      |
 
 ## Review Checklist
 
@@ -192,11 +192,11 @@ git diff --check
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0282` | Created retained implementation review with `changes_requested` status for the PDF download busy lifecycle gap. |
-| 2 | `PR-0282` | Reopened the PR slice from done to in-progress and linked the retained review gate. |
-| 3 | `share_download_action_renderer.py` | Replaced the completion-looking timeout lifecycle with a short browser-handoff guard and retained lifecycle/focus cleanup as fallback recovery. |
-| 4 | `scripts/prove_pr_0282_share_pdf_download_handoff.py` | Added retained Playwright proof for post-download-event idle recovery, restored `href`, cleared busy attributes, duplicate suppression, and stable geometry. |
-| 5 | `PR-0282` / `ST-26-06` / `ST-29-11` / `.codex/handoff.md` | Updated governed docs to request re-review without claiming approval. |
-| 6 | `REV-PR-0282` / `PR-0282` | Re-reviewed remediation, approved the retained review gate, and closed the PR slice. |
+| Change | Artifact                                                  | Description                                                                                                                                                  |
+| ------ | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0282`                                             | Created retained implementation review with `changes_requested` status for the PDF download busy lifecycle gap.                                              |
+| 2      | `PR-0282`                                                 | Reopened the PR slice from done to in-progress and linked the retained review gate.                                                                          |
+| 3      | `share_download_action_renderer.py`                       | Replaced the completion-looking timeout lifecycle with a short browser-handoff guard and retained lifecycle/focus cleanup as fallback recovery.              |
+| 4      | `scripts/prove_pr_0282_share_pdf_download_handoff.py`     | Added retained Playwright proof for post-download-event idle recovery, restored `href`, cleared busy attributes, duplicate suppression, and stable geometry. |
+| 5      | `PR-0282` / `ST-26-06` / `ST-29-11` / `.codex/handoff.md` | Updated governed docs to request re-review without claiming approval.                                                                                        |
+| 6      | `REV-PR-0282` / `PR-0282`                                 | Re-reviewed remediation, approved the retained review gate, and closed the PR slice.                                                                         |

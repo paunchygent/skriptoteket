@@ -34,33 +34,33 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md` | Sir Convert-a-Lot service-boundary context | 5 min |
-| `docs/adr/adr-0071-group-seating-studio-fundamentals-workflow-and-saved-artifacts.md` | Draft vs export artifact contract | 6 min |
-| `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md` | Export/history/smart-placement boundaries | 5 min |
-| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | Scope and sequencing | 8 min |
-| `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md` | First story acceptance criteria | 5 min |
-| `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md` | Import scope boundary | 5 min |
-| `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md` | Seating spreadsheet artifact shape | 4 min |
-| `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md` | Grouping print artifact semantics | 4 min |
-| `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md` | Grouping spreadsheet artifact shape | 4 min |
-| `docs/backlog/prs/pr-0118-klassrumskartan-seating-export-contract-and-standalone-poster-scene-model.md` | Contract and renderer decomposition | 5 min |
-| `docs/backlog/prs/pr-0119-klassrumskartan-seating-pdf-poster-renderer-and-artifact-delivery.md` | Artifact rendering scope | 5 min |
-| `docs/backlog/prs/pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md` | Teacher flow and proof strategy | 4 min |
+| File                                                                                                            | Focus                                      | Time  |
+| --------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ----- |
+| `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`                                      | Sir Convert-a-Lot service-boundary context | 5 min |
+| `docs/adr/adr-0071-group-seating-studio-fundamentals-workflow-and-saved-artifacts.md`                           | Draft vs export artifact contract          | 6 min |
+| `docs/adr/adr-0072-group-seating-studio-class-first-workspace-and-draft-kinds.md`                               | Export/history/smart-placement boundaries  | 5 min |
+| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`                          | Scope and sequencing                       | 8 min |
+| `docs/backlog/stories/story-26-01-klassrumskartan-seating-pdf-poster-export-with-standalone-renderer.md`        | First story acceptance criteria            | 5 min |
+| `docs/backlog/stories/story-26-02-klassrumskartan-class-list-import-from-file-with-preview-and-confirmation.md` | Import scope boundary                      | 5 min |
+| `docs/backlog/stories/story-26-03-klassrumskartan-seating-xlsx-export.md`                                       | Seating spreadsheet artifact shape         | 4 min |
+| `docs/backlog/stories/story-26-04-klassrumskartan-grouping-pdf-export.md`                                       | Grouping print artifact semantics          | 4 min |
+| `docs/backlog/stories/story-26-05-klassrumskartan-grouping-xlsx-export.md`                                      | Grouping spreadsheet artifact shape        | 4 min |
+| `docs/backlog/prs/pr-0118-klassrumskartan-seating-export-contract-and-standalone-poster-scene-model.md`         | Contract and renderer decomposition        | 5 min |
+| `docs/backlog/prs/pr-0119-klassrumskartan-seating-pdf-poster-renderer-and-artifact-delivery.md`                 | Artifact rendering scope                   | 5 min |
+| `docs/backlog/prs/pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md`              | Teacher flow and proof strategy            | 4 min |
 
 **Total estimated time:** ~56 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| New epic instead of extending EPIC-24 | EPIC-24 is closed and explicitly deferred export generation to later work | [ ] |
-| Seating export sequence before grouping export | Seating has the clearest whiteboard-print teacher use case and is the preferred future checkpoint source | [ ] |
-| Standalone seating poster renderer | Prevent export quality from being constrained by current planner DOM/CSS limitations | [ ] |
-| First PDF layout is `pretty_brutalist_poster` | Prioritize high-contrast readability with light branding and no metadata clutter | [ ] |
-| Import stays preview-first and bounded | Keep roster ingestion useful without expanding into metadata enrichment or smart-planning prep | [ ] |
-| Keep Klassrumskartan-owned artifacts local | Remove unnecessary distributed complexity from renderer-owned teacher artifacts while keeping Sir Convert for general conversion and parsing | [ ] |
+| Decision                                       | Rationale                                                                                                                                    | Approve? |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| New epic instead of extending EPIC-24          | EPIC-24 is closed and explicitly deferred export generation to later work                                                                    | [ ]      |
+| Seating export sequence before grouping export | Seating has the clearest whiteboard-print teacher use case and is the preferred future checkpoint source                                     | [ ]      |
+| Standalone seating poster renderer             | Prevent export quality from being constrained by current planner DOM/CSS limitations                                                         | [ ]      |
+| First PDF layout is `pretty_brutalist_poster`  | Prioritize high-contrast readability with light branding and no metadata clutter                                                             | [ ]      |
+| Import stays preview-first and bounded         | Keep roster ingestion useful without expanding into metadata enrichment or smart-planning prep                                               | [ ]      |
+| Keep Klassrumskartan-owned artifacts local     | Remove unnecessary distributed complexity from renderer-owned teacher artifacts while keeping Sir Convert for general conversion and parsing | [ ]      |
 
 ## Review Checklist
 
@@ -95,13 +95,13 @@ Create a new export-first epic instead of extending EPIC-24. The first story int
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `EPIC-26`, `ST-26-02`, `REV-EPIC-26` | Removed `ADR-0066` as a hard dependency so EPIC-26 can become actionable without waiting on a broader unresolved ADR. |
-| 2 | `ST-26-02`, `ST-26-04` | Trimmed false hard dependencies so sequencing preference does not masquerade as a contract prerequisite. |
-| 3 | `REV-EPIC-26`, `ST-26-03`, `ST-26-04`, `ST-26-05` | Added later stories to the review surface and tightened export artifact-shape acceptance criteria for reviewable `ready` status. |
-| 4 | `EPIC-26`, `ST-26-01` to `ST-26-05`, `REV-EPIC-26` | Clarified the current export/import planning split: Klassrumskartan-owned artifacts stay local in Skriptoteket, while Sir Convert-a-Lot remains the preferred service boundary for parsing and general conversion workloads. |
-| 5 | `ST-26-01`, `PR-0118`, `PR-0119` | Locked the planning contract for seating export around explicit `seatingDraftId`, export-specific HTML/CSS as the canonical intermediate source, deterministic `first name + last initial` poster labels, and required room markers including windows and benches/tables where present. |
+| Change | Artifact                                           | Description                                                                                                                                                                                                                                                                             |
+| ------ | -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `EPIC-26`, `ST-26-02`, `REV-EPIC-26`               | Removed `ADR-0066` as a hard dependency so EPIC-26 can become actionable without waiting on a broader unresolved ADR.                                                                                                                                                                   |
+| 2      | `ST-26-02`, `ST-26-04`                             | Trimmed false hard dependencies so sequencing preference does not masquerade as a contract prerequisite.                                                                                                                                                                                |
+| 3      | `REV-EPIC-26`, `ST-26-03`, `ST-26-04`, `ST-26-05`  | Added later stories to the review surface and tightened export artifact-shape acceptance criteria for reviewable `ready` status.                                                                                                                                                        |
+| 4      | `EPIC-26`, `ST-26-01` to `ST-26-05`, `REV-EPIC-26` | Clarified the current export/import planning split: Klassrumskartan-owned artifacts stay local in Skriptoteket, while Sir Convert-a-Lot remains the preferred service boundary for parsing and general conversion workloads.                                                            |
+| 5      | `ST-26-01`, `PR-0118`, `PR-0119`                   | Locked the planning contract for seating export around explicit `seatingDraftId`, export-specific HTML/CSS as the canonical intermediate source, deterministic `first name + last initial` poster labels, and required room markers including windows and benches/tables where present. |
 
 ## Post-Approval Refinements
 

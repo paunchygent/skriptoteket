@@ -24,6 +24,7 @@ acceptance_criteria:
 ---
 
 ## Context
+
 This story defines grouping as its own class-scoped teacher task: build groups, name them
 meaningfully, and keep the active grouping draft recoverable through autosave and in-workspace
 undo/redo without implying that seating and grouping are one combined workflow.

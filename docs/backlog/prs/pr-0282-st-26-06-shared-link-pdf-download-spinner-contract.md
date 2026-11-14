@@ -194,8 +194,7 @@ Implementation requirements:
   `pr-0282-browser-proof: ok artifacts=.artifacts/pr-0282-share-pdf-spinner-proof`.
   The proof generated grouping/seating share pages at desktop and mobile widths,
   clicked `Ladda ner PDF`, observed a real browser download event, verified the
-  spinner became visible with `aria-busy="true"` and `aria-label="Förbereder
-  PDF"`, and proved action x-position and width stayed unchanged.
+  spinner became visible with `aria-busy="true"` and `aria-label="Förbereder PDF"`, and proved action x-position and width stayed unchanged.
 - Closeout gates passed: `pdm run lint`, `pdm run typecheck`,
   `pdm run docs-validate`, `pdm run handoff-validate`, and `git diff --check`.
 - Add-on pending: canonical disabled/busy state and duplicate-activation

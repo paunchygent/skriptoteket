@@ -37,25 +37,25 @@ This duplicates capabilities, hardcodes an interaction flow, and blurs the produ
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md` | Decision clarity + consequences | 8 min |
-| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Scope in/out + ordering | 6 min |
-| `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md` | Acceptance criteria + UX/testability | 6 min |
-| `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md` | Migration plan + test updates | 6 min |
+| File                                                                                         | Focus                                              | Time  |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----- |
+| `docs/adr/adr-0066-sir-convert-a-lot-v2-as-canonical-conversion-engine.md`                   | Decision clarity + consequences                    | 8 min |
+| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                                   | Scope in/out + ordering                            | 6 min |
+| `docs/backlog/stories/story-21-01-curated-app-conversion-hub-v1.md`                          | Acceptance criteria + UX/testability               | 6 min |
+| `docs/backlog/stories/story-21-02-migrate-off-html-to-pdf-preview-and-retire-tool.md`        | Migration plan + test updates                      | 6 min |
 | `docs/backlog/prs/pr-0148-conversion-hub-local-job-ledger-owned-status-download-boundary.md` | Local ownership/auth boundary + transport contract | 8 min |
 
 **Total estimated time:** ~34 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Curated app is canonical conversion UI (no tool-script fallback) | Avoid duplicate conversion lanes and legacy slop | [ ] |
-| Batch conversion = N independent v2 jobs (per-file status) | Keeps semantics simple and UI-friendly | [ ] |
-| Preview = normal v2 job producing normal PDF artifact | Avoid special preview engine/routes | [ ] |
-| Conversion Hub owns local job ids and proxy download auth | Keep ownership/auth in Skriptoteket instead of upstream job ids | [ ] |
-| Same-host Sir Convert transport prefers Unix socket over internal HTTPS | Cleaner trusted-network contract and less operational slop | [ ] |
+| Decision                                                                | Rationale                                                       | Approve? |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------- | -------- |
+| Curated app is canonical conversion UI (no tool-script fallback)        | Avoid duplicate conversion lanes and legacy slop                | [ ]      |
+| Batch conversion = N independent v2 jobs (per-file status)              | Keeps semantics simple and UI-friendly                          | [ ]      |
+| Preview = normal v2 job producing normal PDF artifact                   | Avoid special preview engine/routes                             | [ ]      |
+| Conversion Hub owns local job ids and proxy download auth               | Keep ownership/auth in Skriptoteket instead of upstream job ids | [ ]      |
+| Same-host Sir Convert transport prefers Unix socket over internal HTTPS | Cleaner trusted-network contract and less operational slop      | [ ]      |
 
 ## Review Checklist
 
@@ -88,6 +88,6 @@ Keep the batch/preview story slices small enough that the curated app stays revi
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Preserved the conversion-hub proposal in canonical review shape while keeping the review pending. |
+| Change | Artifact      | Description                                                                                       |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Preserved the conversion-hub proposal in canonical review shape while keeping the review pending. |

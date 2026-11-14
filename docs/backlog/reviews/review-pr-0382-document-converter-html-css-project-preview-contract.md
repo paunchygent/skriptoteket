@@ -46,30 +46,30 @@ only through server-owned preview/artifact identifiers.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md` | Scope, stop conditions, TTL contract, verification claims | 20 min |
-| `docs/backlog/prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md` | Prior accepted producer/artifact authority contract | 10 min |
-| `docs/backlog/reviews/review-pr-0381-document-converter-local-heavy-producer-and-batch-contract.md` | Prior review constraints and repair expectations | 10 min |
-| `src/skriptoteket/application/curated_apps/document_converter_projects.py` | Manifest, PDF controls, preview response models | 20 min |
-| `src/skriptoteket/application/curated_apps/handlers/document_converter_project_previews.py` | Render/status/download/save/discard/cleanup orchestration | 25 min |
-| `src/skriptoteket/infrastructure/documents/document_converter_project_previews.py` | Asset sandbox, PDF merge, filesystem preview storage, cleanup semantics | 35 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_project_previews.py` | Thin router contract and OpenAPI surface | 20 min |
-| `src/skriptoteket/protocols/document_converter.py`, `src/skriptoteket/di/curated_apps.py`, `src/skriptoteket/web/router.py` | Protocol-first DI, route wiring, cleanup reachability | 20 min |
-| `tests/unit/application/curated_apps/test_document_converter_project_manifest.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py`, `tests/unit/infrastructure/documents/test_document_converter_project_previews.py`, `tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py` | Focused manifest/render/sandbox/API proof | 30 min |
-| `frontend/apps/skriptoteket/src/api/openapi.d.ts` | Generated frontend contract truthfulness | 10 min |
+| File                                                                                                                                                                                                                                                                                                                                                  | Focus                                                                   | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0382-st-37-04-document-converter-html-css-project-preview-contract.md`                                                                                                                                                                                                                                                           | Scope, stop conditions, TTL contract, verification claims               | 20 min |
+| `docs/backlog/prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md`                                                                                                                                                                                                                                                     | Prior accepted producer/artifact authority contract                     | 10 min |
+| `docs/backlog/reviews/review-pr-0381-document-converter-local-heavy-producer-and-batch-contract.md`                                                                                                                                                                                                                                                   | Prior review constraints and repair expectations                        | 10 min |
+| `src/skriptoteket/application/curated_apps/document_converter_projects.py`                                                                                                                                                                                                                                                                            | Manifest, PDF controls, preview response models                         | 20 min |
+| `src/skriptoteket/application/curated_apps/handlers/document_converter_project_previews.py`                                                                                                                                                                                                                                                           | Render/status/download/save/discard/cleanup orchestration               | 25 min |
+| `src/skriptoteket/infrastructure/documents/document_converter_project_previews.py`                                                                                                                                                                                                                                                                    | Asset sandbox, PDF merge, filesystem preview storage, cleanup semantics | 35 min |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_project_previews.py`                                                                                                                                                                                                                                                              | Thin router contract and OpenAPI surface                                | 20 min |
+| `src/skriptoteket/protocols/document_converter.py`, `src/skriptoteket/di/curated_apps.py`, `src/skriptoteket/web/router.py`                                                                                                                                                                                                                           | Protocol-first DI, route wiring, cleanup reachability                   | 20 min |
+| `tests/unit/application/curated_apps/test_document_converter_project_manifest.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_project_previews.py`, `tests/unit/infrastructure/documents/test_document_converter_project_previews.py`, `tests/unit/web/conversion_hub/test_apps_document_converter_project_preview_api.py` | Focused manifest/render/sandbox/API proof                               | 30 min |
+| `frontend/apps/skriptoteket/src/api/openapi.d.ts`                                                                                                                                                                                                                                                                                                     | Generated frontend contract truthfulness                                | 10 min |
 
 **Total estimated time:** ~3.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `/apps/document-converter` inactive. | Mockup/copy approval still gates route-visible UI. | [x] |
-| Keep linked assets constrained to bare filenames inside `project:///`. | Prevents path traversal, URL fetches, and browser filesystem authority. | [x] |
-| Keep save/download authority on `{preview_id, artifact_id}` only. | Preserves server-owned preview storage and Vault save authority. | [x] |
-| Claim a real 24-hour temporary-artifact TTL. | Product contract requires actual cleanup behavior, not metadata-only expiry. | [x] |
-| Publish the preview-download route as an accurate binary API contract. | OpenAPI is the frontend contract and must not lie about response media type. | [x] |
+| Decision                                                               | Rationale                                                                    | Approve? |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------- |
+| Keep `/apps/document-converter` inactive.                              | Mockup/copy approval still gates route-visible UI.                           | [x]      |
+| Keep linked assets constrained to bare filenames inside `project:///`. | Prevents path traversal, URL fetches, and browser filesystem authority.      | [x]      |
+| Keep save/download authority on `{preview_id, artifact_id}` only.      | Preserves server-owned preview storage and Vault save authority.             | [x]      |
+| Claim a real 24-hour temporary-artifact TTL.                           | Product contract requires actual cleanup behavior, not metadata-only expiry. | [x]      |
+| Publish the preview-download route as an accurate binary API contract. | OpenAPI is the frontend contract and must not lie about response media type. | [x]      |
 
 ## Review Checklist
 
@@ -146,9 +146,9 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0382` | Created the retained independent review record with findings and a `changes_requested` decision. |
-| 2 | `PR-0382` | Reviewed the route-inactive preview contract, asset sandbox, preview storage semantics, generated API types, and focused tests. |
-| 3 | `PR-0382` | Repair pass added the cleanup command, rollback-safe preview store, malformed/orphan cleanup, and binary OpenAPI/types for preview downloads. |
-| 4 | `REV-PR-0382` | Re-reviewed the repair pass, reran focused/regression proof, and approved the slice. |
+| Change | Artifact      | Description                                                                                                                                   |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0382` | Created the retained independent review record with findings and a `changes_requested` decision.                                              |
+| 2      | `PR-0382`     | Reviewed the route-inactive preview contract, asset sandbox, preview storage semantics, generated API types, and focused tests.               |
+| 3      | `PR-0382`     | Repair pass added the cleanup command, rollback-safe preview store, malformed/orphan cleanup, and binary OpenAPI/types for preview downloads. |
+| 4      | `REV-PR-0382` | Re-reviewed the repair pass, reran focused/regression proof, and approved the slice.                                                          |

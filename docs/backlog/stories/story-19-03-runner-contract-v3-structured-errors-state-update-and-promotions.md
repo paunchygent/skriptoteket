@@ -52,19 +52,19 @@ Vault persistence is explicitly user-initiated (ADR-0059 / ST-14-36) and must no
 
 ## Implementation plan
 
-1) Runner (`runner/_runner.py`)
+1. Runner (`runner/_runner.py`)
 
 - Write `contract_version: 3` and emit `state_update` instead of `state`.
 - Emit structured `error` alongside `error_summary` on failure.
 
-2) Backend parsing + normalization
+2. Backend parsing + normalization
 
 - Add a v3 parser + Pydantic models and delete v2 parsing after cutover.
 - Apply `state_update` semantics consistently in:
   - synchronous handlers (initial runs + actions)
   - queued worker finalization
 
-3) Promotions integration
+3. Promotions integration
 
 - Wire promotion requests from `result.json` into the promotion primitives from ST-19-02.
 - Strict failure invariant: if a run returned next actions but promotion/state persistence fails, fail the run and do not

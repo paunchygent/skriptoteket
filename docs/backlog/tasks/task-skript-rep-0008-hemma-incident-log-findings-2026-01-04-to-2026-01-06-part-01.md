@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0008-PART-01
 title: Hemma incident log findings (2026-01-04 to 2026-01-06) — part 01
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: TASK-SKRIPT-REP-0008
 part: 1
@@ -49,8 +49,8 @@ new patterns and crash windows, in a single PR record.
 
 ### Source: Implementation plan
 
-1) Keep this PR as the consolidated source for the Jan 4–6 incident findings.
-2) Use these findings to guide the next diagnostic or mitigation experiment.
+1. Keep this PR as the consolidated source for the Jan 4–6 incident findings.
+2. Use these findings to guide the next diagnostic or mitigation experiment.
 
 ### Implementation Steps
 
@@ -251,8 +251,7 @@ and boot logs.
   healthy (perf auto).
 - **Persisting:** `amdgpu [drm] REG_WAIT timeout ... optc401_disable_crtc` at
   2026-01-06 11:10:54.
-- **Persisting:** `amdgpu: SMU driver if version not matched` and `[drm] Cannot
-  find any crtc or sizes` (headless display core).
+- **Persisting:** `amdgpu: SMU driver if version not matched` and `[drm] Cannot find any crtc or sizes` (headless display core).
 - **Not observed:** `amdgpu-force-active` I/O errors, AMD-Vi
   `INVALID_DEVICE_REQUEST`, or MCE hardware errors (only
   `MCE: In-kernel MCE decoding enabled`).
@@ -335,10 +334,10 @@ Rebooted back to the default HWE kernel after the 6.8 failure.
 
 ### Current plan (strict alignment)
 
-1) **Reimage to Ubuntu 24.04.2 LTS** (headless autoinstall).
-2) **Install AMD 25.30.1 + ROCm 7.1.1** using AMD’s Noble installer commands.
-3) **Verify** GPU health and boot logs (amdgpu/IOMMU/MCE/reg_wait).
-4) **Restore** configs + services from the backup snapshot.
+1. **Reimage to Ubuntu 24.04.2 LTS** (headless autoinstall).
+2. **Install AMD 25.30.1 + ROCm 7.1.1** using AMD’s Noble installer commands.
+3. **Verify** GPU health and boot logs (amdgpu/IOMMU/MCE/reg_wait).
+4. **Restore** configs + services from the backup snapshot.
 
 ### Restore progress (2026-01-06 to 2026-01-07, ongoing)
 
@@ -376,8 +375,8 @@ Rebooted back to the default HWE kernel after the 6.8 failure.
 
 ### Autoinstall boot instructions (headless)
 
-1) Boot the **Ubuntu 24.04.2 Server ISO** via USB or console.
-2) At GRUB, press `e` and append one of:
+1. Boot the **Ubuntu 24.04.2 Server ISO** via USB or console.
+2. At GRUB, press `e` and append one of:
 
 ```
 autoinstall ds=nocloud

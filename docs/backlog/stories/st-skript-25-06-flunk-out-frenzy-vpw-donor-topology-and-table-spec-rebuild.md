@@ -4,8 +4,8 @@ id: ST-SKRIPT-25-06
 title: Flunk-Out Frenzy VPW donor topology and table-spec rebuild
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,27 +16,14 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-25
 acceptance_criteria:
-- Given repeated board-shape failures from locally-invented geometry, when this story
-  is complete, then Flunk-Out Frenzy has a checked-in donor map artifact that captures
-  the VPW whole-board boundary grammar and the parts we intentionally borrow.
-- Given the compiled pinball-table runtime is now the stable seam, when this story
-  is complete, then `prototypeAlphaTableSpec.ts` is rebuilt from the donor topology
-  while the compiler, rules, and runtime contracts stay intact.
-- Given donor geometry fidelity and donor device-semantic fidelity are separate risks,
-  when this story is complete, then topology cutover and semantic-representation follow-up
-  stay explicit in linked tasks instead of being blurred together.
-- Given donor lanes and launcher corridors are shaped board regions rather than local
-  bounding boxes, when this story is complete, then all remaining lane flattening
-  seams and `laneBounds` shortcuts are either replaced with donor-shaped lane-region
-  semantics or kept open as explicit linked follow-up debt.
-- Given future mechanics slices depend on a sane board, when this story is complete,
-  then the donor-based board can be inspected manually in-browser before `PR-0193`
-  through `PR-0195` continue.
-- Given this corrective work will span sessions, when the story is updated, then the
-  linked PR task and `.codex/handoff.md` keep the current donor-integration progress
-  explicit.
+  - Given repeated board-shape failures from locally-invented geometry, when this story is complete, then Flunk-Out Frenzy has a checked-in donor map artifact that captures the VPW whole-board boundary grammar and the parts we intentionally borrow.
+  - Given the compiled pinball-table runtime is now the stable seam, when this story is complete, then `prototypeAlphaTableSpec.ts` is rebuilt from the donor topology while the compiler, rules, and runtime contracts stay intact.
+  - Given donor geometry fidelity and donor device-semantic fidelity are separate risks, when this story is complete, then topology cutover and semantic-representation follow-up stay explicit in linked tasks instead of being blurred together.
+  - Given donor lanes and launcher corridors are shaped board regions rather than local bounding boxes, when this story is complete, then all remaining lane flattening seams and `laneBounds` shortcuts are either replaced with donor-shaped lane-region semantics or kept open as explicit linked follow-up debt.
+  - Given future mechanics slices depend on a sane board, when this story is complete, then the donor-based board can be inspected manually in-browser before `PR-0193` through `PR-0195` continue.
+  - Given this corrective work will span sessions, when the story is updated, then the linked PR task and `.codex/handoff.md` keep the current donor-integration progress explicit.
 retired_ids:
-- ST-25-06
+  - ST-25-06
 ---
 
 ## Context

@@ -42,23 +42,23 @@ projection/provisioning side effects.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0261-st-28-12-login-register-reset-affordance-and-redirect-contract.md` | Scope and redirect contract | 10 min |
-| `docs/backlog/stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md` | Parent story expectations | 5 min |
-| HuleEdu `TASK-0327` | Provider lifecycle prerequisite | 5 min |
+| File                                                                                         | Focus                           | Time   |
+| -------------------------------------------------------------------------------------------- | ------------------------------- | ------ |
+| `docs/backlog/prs/pr-0261-st-28-12-login-register-reset-affordance-and-redirect-contract.md` | Scope and redirect contract     | 10 min |
+| `docs/backlog/stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md`         | Parent story expectations       | 5 min  |
+| HuleEdu `TASK-0327`                                                                          | Provider lifecycle prerequisite | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| HuleEdu remains lifecycle authority | Avoid restoring local auth ownership | [x] |
-| Links land on direct action pages | Deliberate clicks should not make users pass through a generic HuleEdu stopover | [x] |
-| Visible copy uses user tasks | Users do not need to understand realms or projections | [x] |
-| All auth URLs keep safe continuation | Prevent hostile or looping return paths | [x] |
-| Consumer probe is no-side-effect and sanitized | HuleEdu needs live signed-context proof without exposing raw token/header material or mutating local users | [x] |
+| Decision                                       | Rationale                                                                                                  | Approve? |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------- |
+| HuleEdu remains lifecycle authority            | Avoid restoring local auth ownership                                                                       | [x]      |
+| Links land on direct action pages              | Deliberate clicks should not make users pass through a generic HuleEdu stopover                            | [x]      |
+| Visible copy uses user tasks                   | Users do not need to understand realms or projections                                                      | [x]      |
+| All auth URLs keep safe continuation           | Prevent hostile or looping return paths                                                                    | [x]      |
+| Consumer probe is no-side-effect and sanitized | HuleEdu needs live signed-context proof without exposing raw token/header material or mutating local users | [x]      |
 
 ## Review Checklist
 
@@ -146,16 +146,16 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0261` | Initial review-ready auth-entry slice |
-| 2 | `ST-28-12` / `PR-0261` | Marked the story and PR blocked until HuleEdu `REV-TASK-0327-01` approves the provider lifecycle route matrix |
-| 3 | `PR-0261` | Added a concrete consumer action matrix for login, registration, password-reset request, password-reset completion, and email verification |
-| 4 | `PR-0261` | Froze required `app`, `product_identity_realm`, `return_to`, safe `next`, token, and first-interactive-page rules for each action |
-| 5 | `PR-0261` | Added exact focused Vitest command, `fe-type-check`, `fe-lint`, docs/diff gates, expected `pr-0261-auth-action-matrix` live proof command, and sanitized artifact directory |
-| 6 | `PR-0261` / `ST-28-12` | Replaced the old "wait until HuleEdu TASK-0327 is done" block with the accepted provider-contract gate: `REV-TASK-0327-01` is approved, `TASK-0327` remains in progress until the Skriptoteket probe route exists and HuleEdu reruns final live apply |
-| 7 | `PR-0261` | Added the hidden no-side-effect consumer probe route contract for sanitized decoded `InternalIdentityContextV1` claim proof through the HuleEdu Gateway proxy |
-| 8 | `PR-0261` | Required direct external action anchors and auto-handoff compatibility lifecycle routes so local Skriptoteket pages are not the first interactive action page |
+| Change | Artifact               | Description                                                                                                                                                                                                                                           |
+| ------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0261`              | Initial review-ready auth-entry slice                                                                                                                                                                                                                 |
+| 2      | `ST-28-12` / `PR-0261` | Marked the story and PR blocked until HuleEdu `REV-TASK-0327-01` approves the provider lifecycle route matrix                                                                                                                                         |
+| 3      | `PR-0261`              | Added a concrete consumer action matrix for login, registration, password-reset request, password-reset completion, and email verification                                                                                                            |
+| 4      | `PR-0261`              | Froze required `app`, `product_identity_realm`, `return_to`, safe `next`, token, and first-interactive-page rules for each action                                                                                                                     |
+| 5      | `PR-0261`              | Added exact focused Vitest command, `fe-type-check`, `fe-lint`, docs/diff gates, expected `pr-0261-auth-action-matrix` live proof command, and sanitized artifact directory                                                                           |
+| 6      | `PR-0261` / `ST-28-12` | Replaced the old "wait until HuleEdu TASK-0327 is done" block with the accepted provider-contract gate: `REV-TASK-0327-01` is approved, `TASK-0327` remains in progress until the Skriptoteket probe route exists and HuleEdu reruns final live apply |
+| 7      | `PR-0261`              | Added the hidden no-side-effect consumer probe route contract for sanitized decoded `InternalIdentityContextV1` claim proof through the HuleEdu Gateway proxy                                                                                         |
+| 8      | `PR-0261`              | Required direct external action anchors and auto-handoff compatibility lifecycle routes so local Skriptoteket pages are not the first interactive action page                                                                                         |
 
 ## Approval 2026-04-13
 

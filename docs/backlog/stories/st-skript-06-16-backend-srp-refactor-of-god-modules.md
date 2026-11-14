@@ -4,8 +4,8 @@ id: ST-SKRIPT-06-16
 title: Backend SRP refactor of god modules
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,16 +16,13 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-06
 acceptance_criteria:
-- Targeted backend modules are split into smaller units (generally <=400–500 LOC)
-  with clear single responsibilities.
-- 'DDD/Clean boundaries are preserved: domain stays pure, web stays thin, infra implements
-  protocols.'
-- Protocol-first DI remains intact; repositories still avoid committing and UoW owns
-  transactions.
-- Existing behavior is preserved and covered by updated/added tests.
-- Docs and module entrypoints are updated to reflect the new structure.
+  - Targeted backend modules are split into smaller units (generally <=400–500 LOC) with clear single responsibilities.
+  - 'DDD/Clean boundaries are preserved: domain stays pure, web stays thin, infra implements protocols.'
+  - Protocol-first DI remains intact; repositories still avoid committing and UoW owns transactions.
+  - Existing behavior is preserved and covered by updated/added tests.
+  - Docs and module entrypoints are updated to reflect the new structure.
 retired_ids:
-- ST-06-16
+  - ST-06-16
 ---
 
 ## Context
@@ -71,8 +68,8 @@ We need a clean refactor pass that prioritizes clarity and SRP over minimizing c
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                  | Type      | Status | Question/Assumption              | Recommendation/Decision                                                             | Source                               |
+| ------------------- | --------- | ------ | -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-ST-SKRIPT-06-16 | migration | closed | How is source meaning preserved? | Preserve the source story contract and current status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Plan Document Review

@@ -4,21 +4,21 @@ id: ADR-SKRIPT-0021
 title: HTTP security headers via nginx reverse proxy
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0021
+  - ADR-0021
 ---
 
 ## Context
 
 Source: `docs/adr/adr-0021-http-security-headers.md`. HTTP security headers via nginx reverse proxy.
 
-The Skriptoteket application serves web pages over HTTPS but lacks standard HTTP security headers. These headers protect against common web vulnerabilities (clickjacking, MIME-sniffing, protocol downgrade attacks). ADR-0009 mentions "baseline security" requirements but doesn't enumerate specific headers. Add HTTP security headers at the **nginx reverse proxy** level, not in the FastAPI application. | Header | Value | Purpose | |--------|-------|---------| | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS for 1 year | | `X-Frame-Options` | `DENY` | Prevent clickjacking | | `X-Content-Type-Options` | `nosniff` | Prevent MIME-sniffing | | `Referrer-Policy` | `s
+The Skriptoteket application serves web pages over HTTPS but lacks standard HTTP security headers. These headers protect against common web vulnerabilities (clickjacking, MIME-sniffing, protocol downgrade attacks). ADR-0009 mentions "baseline security" requirements but doesn't enumerate specific headers. Add HTTP security headers at the **nginx reverse proxy** level, not in the FastAPI application. | Header | Value | Purpose | |--------|-------|---------| | `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS for 1 year | | `X-Frame-Options` | `DENY` | Prevent clickjacking | | `X-Content-Type-Options` | `nosniff` | Prevent MIME-sniffing | | `Referrer-Policy` | \`s
 
 ## Decision
 
@@ -44,17 +44,18 @@ Add HTTP security headers at the **nginx reverse proxy** level, not in the FastA
 
 ### Headers to Add
 
-| Header | Value | Purpose |
-|--------|-------|---------|
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Force HTTPS for 1 year |
-| `X-Frame-Options` | `DENY` | Prevent clickjacking |
-| `X-Content-Type-Options` | `nosniff` | Prevent MIME-sniffing |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Limit referrer leakage |
-| `Permissions-Policy` | `geolocation=(), camera=(), microphone=()` | Disable unused browser features |
+| Header                      | Value                                      | Purpose                         |
+| --------------------------- | ------------------------------------------ | ------------------------------- |
+| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains`      | Force HTTPS for 1 year          |
+| `X-Frame-Options`           | `DENY`                                     | Prevent clickjacking            |
+| `X-Content-Type-Options`    | `nosniff`                                  | Prevent MIME-sniffing           |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`          | Limit referrer leakage          |
+| `Permissions-Policy`        | `geolocation=(), camera=(), microphone=()` | Disable unused browser features |
 
 ### Deferred: Content-Security-Policy
 
 CSP is deferred to a future phase. It requires careful tuning for:
+
 - HTMX inline event handlers
 - CodeMirror dynamic styles
 - Google Fonts external resources
@@ -65,11 +66,11 @@ Incorrect CSP silently breaks functionality.
 
 ### Header Ownership Model
 
-| Header Type | Owner | Direction |
-|-------------|-------|-----------|
-| Security headers (HSTS, X-Frame, etc.) | nginx | Response outbound |
+| Header Type                                        | Owner          | Direction                       |
+| -------------------------------------------------- | -------------- | ------------------------------- |
+| Security headers (HSTS, X-Frame, etc.)             | nginx          | Response outbound               |
 | Correlation headers (X-Correlation-ID, X-Trace-ID) | App middleware | Request inbound + response echo |
-| Proxy headers (X-Real-IP, X-Forwarded-For) | nginx | Request passthrough |
+| Proxy headers (X-Real-IP, X-Forwarded-For)         | nginx          | Request passthrough             |
 
 ### Benefits of nginx Enforcement
 

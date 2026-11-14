@@ -35,6 +35,7 @@ testkör-delarna tar för mycket plats och saknar kompakt, konsekvent layout.
 ## Goal
 
 Skapa en tydlig, IDE-liknande mode-struktur:
+
 - Fyra fasta lägen: **Källkod**, **Diff**, **Metadata**, **Testkör**.
 - Chatten (Kodskrivarassisten) är en separat drawer som kan vara öppen i alla lägen.
 - Fokusläge är ett globalt toggle i top bar.
@@ -48,29 +49,36 @@ Skapa en tydlig, IDE-liknande mode-struktur:
 
 ## Implementation plan
 
-1) **Mode-toggles i toolbar**
+1. **Mode-toggles i toolbar**
+
    - Ersätt nuvarande jämför-knapp med "Diff"-toggle.
    - Lägg till Metadata-, Testkör- och Källkod-lägen i samma fasta grupp.
 
-2) **Kodskrivarassistent**
+2. **Kodskrivarassistent**
+
    - Byt namn/copy i toolbar och drawer.
    - Chatten öppnas default vid editor-load.
 
-3) **Fokusläge**
+3. **Fokusläge**
+
    - Flytta toggle till top bar och håll den på fast position.
 
-4) **Metadata-läge**
+4. **Metadata-läge**
+
    - Visa Verktygsinfo, Sökord (taxonomy rename), Instruktioner och Behörigheter i ett samlat läge.
 
-5) **Schema-paneler (källkodsläget)**
+5. **Schema-paneler (källkodsläget)**
+
    - Indata- och Inställningsschema sida vid sida, kollapsbara, Indata till vänster.
    - Flytta preset- och hjälptips till tooltips (inga beskrivningar under dropdowns).
 
-6) **Testkör som läge**
+6. **Testkör som läge**
+
    - Flytta Testkör kod till eget läge (inte del av källkodsflödet).
    - Flytta hjälptips under dropdowns till tooltips.
 
-7) **UI-justeringar**
+7. **UI-justeringar**
+
    - Knapphierarki och spacing hålls kompakt och konsekvent med IDE-känsla.
    - Alla lägen fyller viewport-höjden utan layout-hopp.
    - Titel/sammanfattning/slug flyttas in i huvudytan som kompakt kontextrad.

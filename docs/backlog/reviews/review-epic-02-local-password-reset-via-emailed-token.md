@@ -38,24 +38,24 @@ teacher-facing self-service product and it leaves the auth stack without a stand
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0078-local-password-reset-via-emailed-token.md` | Token lifecycle, session revocation, and local-only boundary | 8 min |
-| `docs/backlog/epics/epic-02-identity-and-access-control.md` | Epic scope alignment and auth-doc drift cleanup | 4 min |
+| File                                                                         | Focus                                                                | Time  |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----- |
+| `docs/adr/adr-0078-local-password-reset-via-emailed-token.md`                | Token lifecycle, session revocation, and local-only boundary         | 8 min |
+| `docs/backlog/epics/epic-02-identity-and-access-control.md`                  | Epic scope alignment and auth-doc drift cleanup                      | 4 min |
 | `docs/backlog/stories/story-02-07-local-password-reset-via-emailed-token.md` | Acceptance criteria, slice boundaries, and verification expectations | 5 min |
-| `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md` | Implementation sequencing and non-goals | 5 min |
+| `docs/backlog/prs/pr-0172-local-password-reset-via-emailed-token.md`         | Implementation sequencing and non-goals                              | 5 min |
 
 **Total estimated time:** ~22 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a dedicated `password_reset_tokens` table instead of a generic shared email-action token table | Keeps semantics explicit and lowers implementation risk for the first recovery slice | [x] |
-| Return generic success from `forgot-password` for unknown, inactive, unverified, and federated accounts | Prevents account-state disclosure at the public request endpoint | [x] |
-| Revoke all active sessions and clear lockout state after successful reset | Makes reset a clear recovery/security boundary instead of just a hash swap | [x] |
-| Restrict the flow to `AuthProvider.LOCAL` accounts | Preserves the future HuleEdu identity boundary and avoids a hidden dual-auth fallback | [x] |
-| Require explicit login after reset instead of auto-login | Keeps the recovery flow simple and avoids adding a new anonymous-to-session elevation path | [x] |
+| Decision                                                                                                | Rationale                                                                                  | Approve? |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------- |
+| Use a dedicated `password_reset_tokens` table instead of a generic shared email-action token table      | Keeps semantics explicit and lowers implementation risk for the first recovery slice       | [x]      |
+| Return generic success from `forgot-password` for unknown, inactive, unverified, and federated accounts | Prevents account-state disclosure at the public request endpoint                           | [x]      |
+| Revoke all active sessions and clear lockout state after successful reset                               | Makes reset a clear recovery/security boundary instead of just a hash swap                 | [x]      |
+| Restrict the flow to `AuthProvider.LOCAL` accounts                                                      | Preserves the future HuleEdu identity boundary and avoids a hidden dual-auth fallback      | [x]      |
+| Require explicit login after reset instead of auto-login                                                | Keeps the recovery flow simple and avoids adding a new anonymous-to-session elevation path | [x]      |
 
 ## Review Checklist
 
@@ -90,13 +90,13 @@ teacher-facing self-service product and it leaves the auth stack without a stand
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0078 | Drafted the local password-reset contract and security posture |
-| 2 | EPIC-02 | Updated the identity epic scope and story list for password recovery |
-| 3 | ST-02-07 / PR-0172 | Drafted the implementation slice and execution plan |
-| 4 | ADR-0078 / ST-02-07 / PR-0172 | Added the one-active-token issuance invariant and invalidation of older pending tokens on new request |
-| 5 | ADR-0078 / ST-02-07 / PR-0172 | Defined the public throttling contract: application-owned 60-second normalized-email cooldown plus edge/ingress IP abuse protection |
-| 6 | ADR-0078 / ST-02-07 / PR-0172 | Locked down exact `forgot-password` and `reset-password` HTTP statuses, bodies, and reset error codes |
-| 7 | ADR-0078 / ST-02-07 / PR-0172 | Strengthened verification to prove hashed token lookup, second-request invalidation, and multi-session revocation |
-| 8 | ADR-0078 / ST-02-07 / PR-0172 | Made the reset-token-at-rest decision explicit: store `token_hash`, not plaintext tokens |
+| Change | Artifact                      | Description                                                                                                                         |
+| ------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | ADR-0078                      | Drafted the local password-reset contract and security posture                                                                      |
+| 2      | EPIC-02                       | Updated the identity epic scope and story list for password recovery                                                                |
+| 3      | ST-02-07 / PR-0172            | Drafted the implementation slice and execution plan                                                                                 |
+| 4      | ADR-0078 / ST-02-07 / PR-0172 | Added the one-active-token issuance invariant and invalidation of older pending tokens on new request                               |
+| 5      | ADR-0078 / ST-02-07 / PR-0172 | Defined the public throttling contract: application-owned 60-second normalized-email cooldown plus edge/ingress IP abuse protection |
+| 6      | ADR-0078 / ST-02-07 / PR-0172 | Locked down exact `forgot-password` and `reset-password` HTTP statuses, bodies, and reset error codes                               |
+| 7      | ADR-0078 / ST-02-07 / PR-0172 | Strengthened verification to prove hashed token lookup, second-request invalidation, and multi-session revocation                   |
+| 8      | ADR-0078 / ST-02-07 / PR-0172 | Made the reset-token-at-rest decision explicit: store `token_hash`, not plaintext tokens                                            |

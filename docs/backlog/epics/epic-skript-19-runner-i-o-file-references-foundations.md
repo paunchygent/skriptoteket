@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-19
 title: Runner I/O + file references foundations
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,11 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Runner-based tools use a single request envelope and first-class file references
-  (run/session/vault) with explicit state semantics and structured errors, enabling
-  robust multi-step workflows and future vault reuse without path leakage.
+outcome: Runner-based tools use a single request envelope and first-class file references (run/session/vault) with explicit state semantics and structured errors, enabling robust multi-step workflows and future vault reuse without path leakage.
 retired_ids:
-- EPIC-19
+  - EPIC-19
 ---
 
 ## Scope

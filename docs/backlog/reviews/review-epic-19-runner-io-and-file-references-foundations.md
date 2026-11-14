@@ -43,27 +43,27 @@ Runner-based tools currently rely on multiple env-var JSON payloads and implicit
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0063-runner-request-envelope-v1.md` | Request envelope + cutover rules | 8 min |
-| `docs/adr/adr-0064-file-references-and-resolver.md` | FileRef encoding + resolver responsibilities | 10 min |
-| `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md` | Contract v3 + promotion semantics | 10 min |
-| `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md` | Scope boundaries + invariants | 5 min |
-| `docs/backlog/stories/story-19-01-runner-request-envelope.md` | Testable AC + schema | 5 min |
-| `docs/backlog/stories/story-19-02-file-refs-resolver-and-promotion.md` | Resolver + promotion plumbing AC | 5 min |
-| `docs/backlog/stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md` | Failure invariants + v3 parsing | 5 min |
-| `docs/backlog/stories/story-14-24-ui-contract-file-references.md` | No-parallel-plumbing alignment | 3 min |
-| `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md` | No-parallel-plumbing alignment | 3 min |
+| File                                                                                                   | Focus                                        | Time   |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------- | ------ |
+| `docs/adr/adr-0063-runner-request-envelope-v1.md`                                                      | Request envelope + cutover rules             | 8 min  |
+| `docs/adr/adr-0064-file-references-and-resolver.md`                                                    | FileRef encoding + resolver responsibilities | 10 min |
+| `docs/adr/adr-0065-runner-contract-v3-state-update-errors-and-session-promotions.md`                   | Contract v3 + promotion semantics            | 10 min |
+| `docs/backlog/epics/epic-19-runner-io-and-file-references-foundations.md`                              | Scope boundaries + invariants                | 5 min  |
+| `docs/backlog/stories/story-19-01-runner-request-envelope.md`                                          | Testable AC + schema                         | 5 min  |
+| `docs/backlog/stories/story-19-02-file-refs-resolver-and-promotion.md`                                 | Resolver + promotion plumbing AC             | 5 min  |
+| `docs/backlog/stories/story-19-03-runner-contract-v3-structured-errors-state-update-and-promotions.md` | Failure invariants + v3 parsing              | 5 min  |
+| `docs/backlog/stories/story-14-24-ui-contract-file-references.md`                                      | No-parallel-plumbing alignment               | 3 min  |
+| `docs/backlog/stories/story-14-36-user-file-vault-and-picker.md`                                       | No-parallel-plumbing alignment               | 3 min  |
 
 **Total estimated time:** ~54 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| FileRef encoding: string prefixes (`session:*`, `vault:*`) | Best DX/UX round-tripping for tools + action forms | [x] |
-| Promotion semantics: tool-requested session promotions; vault user-initiated | Enables workflows without auto-persisting user data | [x] |
-| Cutover: hard cut to request envelope + contract v3 (no shims) | Avoids parallel mechanisms; aligns with repo policy | [x] |
+| Decision                                                                     | Rationale                                           | Approve? |
+| ---------------------------------------------------------------------------- | --------------------------------------------------- | -------- |
+| FileRef encoding: string prefixes (`session:*`, `vault:*`)                   | Best DX/UX round-tripping for tools + action forms  | [x]      |
+| Promotion semantics: tool-requested session promotions; vault user-initiated | Enables workflows without auto-persisting user data | [x]      |
+| Cutover: hard cut to request envelope + contract v3 (no shims)               | Avoids parallel mechanisms; aligns with repo policy | [x]      |
 
 ## Review Checklist
 
@@ -73,7 +73,7 @@ Runner-based tools currently rely on multiple env-var JSON payloads and implicit
 - [x] Implementation aligns with codebase patterns
 - [x] Risks are identified with mitigations
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -95,12 +95,12 @@ None.
 - [x] Promotion semantics (session tool-requestable; vault user-initiated)
 - [x] Hard cut to request envelope + contract v3
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | EPIC-19 + ST-19-* | Added DX gold standard invariants and clarified hybrid promotion semantics |
-| 2 | ADR-0024/0031/0039 | Aligned payload/manifest transport references to the request envelope |
-| 3 | ST-14-24/14-36 | Tightened “no parallel mechanisms” alignment with FileRef foundations |
+| Change | Artifact           | Description                                                                |
+| ------ | ------------------ | -------------------------------------------------------------------------- |
+| 1      | EPIC-19 + ST-19-\* | Added DX gold standard invariants and clarified hybrid promotion semantics |
+| 2      | ADR-0024/0031/0039 | Aligned payload/manifest transport references to the request envelope      |
+| 3      | ST-14-24/14-36     | Tightened “no parallel mechanisms” alignment with FileRef foundations      |

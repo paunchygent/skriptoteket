@@ -19,5 +19,5 @@ Note: publishing script *versions* (ToolVersion state transitions + runner execu
 ## Dependencies
 
 - EPIC-02 (identity and RBAC).
-- EPIC-04 (dynamic tool scripts), if enforcing \"published implies runnable\" via `tools.active_version_id`.
+- EPIC-04 (dynamic tool scripts), if enforcing "published implies runnable" via `tools.active_version_id`.
 - ADR-0005 (role hierarchy) and ADR-0006 (identity/authorization).

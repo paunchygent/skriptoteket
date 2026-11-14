@@ -39,24 +39,24 @@ rather than copy-paste targets.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0409-dev-tooling-command-surface-alignment-mediation.md` | Scope, acceptance criteria, non-goals, red-first proof, and cross-repo mediation decision | 15 min |
-| `docs/backlog/prs/pr-0266-dev-tooling-script-surface-consolidation.md` | Existing Skriptoteket dev/observability command-surface boundary | 5 min |
-| `pyproject.toml` | Current Skriptoteket command surface | 5 min |
-| Sibling repo `pyproject.toml` docs command surfaces | Cross-repo factual check for `docs-sync`/`docs-validate` split | 5 min |
-| `ruthless-code-review`, `agent-docs-governance` and `docs/reference/ref-review-workflow.md` | Target-based retained review compliance | 10 min |
+| File                                                                                        | Focus                                                                                     | Time   |
+| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0409-dev-tooling-command-surface-alignment-mediation.md`               | Scope, acceptance criteria, non-goals, red-first proof, and cross-repo mediation decision | 15 min |
+| `docs/backlog/prs/pr-0266-dev-tooling-script-surface-consolidation.md`                      | Existing Skriptoteket dev/observability command-surface boundary                          | 5 min  |
+| `pyproject.toml`                                                                            | Current Skriptoteket command surface                                                      | 5 min  |
+| Sibling repo `pyproject.toml` docs command surfaces                                         | Cross-repo factual check for `docs-sync`/`docs-validate` split                            | 5 min  |
+| `ruthless-code-review`, `agent-docs-governance` and `docs/reference/ref-review-workflow.md` | Target-based retained review compliance                                                   | 10 min |
 
 **Total estimated time:** ~40 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Do not add a no-op `docs-sync` alias. | Lines 44-46, 50, and 99-105 require generated-doc ownership or an explicit exception, which blocks the forbidden alias shape. | Yes |
-| Keep `docs-sync` mutating and `docs-validate` read-only. | Lines 82-88 and 114-126 preserve the sibling-repo contract and make freshness validation a read-only proof target. | Yes |
-| Preserve repo-specific command differences. | Lines 52-55, 90-92, and 108-112 keep product proof, Docker, Hemma, and sibling-repo polish out of the first Skriptoteket implementation. | Yes |
-| Require red-first and closeout evidence before implementation review. | Lines 114-135 identify current command drift, focused command/freshness tests, and the docs/handoff/diff gates needed for a later implementation. | Yes |
+| Decision                                                              | Rationale                                                                                                                                         | Approve? |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Do not add a no-op `docs-sync` alias.                                 | Lines 44-46, 50, and 99-105 require generated-doc ownership or an explicit exception, which blocks the forbidden alias shape.                     | Yes      |
+| Keep `docs-sync` mutating and `docs-validate` read-only.              | Lines 82-88 and 114-126 preserve the sibling-repo contract and make freshness validation a read-only proof target.                                | Yes      |
+| Preserve repo-specific command differences.                           | Lines 52-55, 90-92, and 108-112 keep product proof, Docker, Hemma, and sibling-repo polish out of the first Skriptoteket implementation.          | Yes      |
+| Require red-first and closeout evidence before implementation review. | Lines 114-135 identify current command drift, focused command/freshness tests, and the docs/handoff/diff gates needed for a later implementation. | Yes      |
 
 ## Review Checklist
 
@@ -105,6 +105,6 @@ No blocking findings.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0409` | Created retained review artifact with approved decision and no required changes. |
+| Change | Artifact  | Description                                                                      |
+| ------ | --------- | -------------------------------------------------------------------------------- |
+| 1      | `PR-0409` | Created retained review artifact with approved decision and no required changes. |

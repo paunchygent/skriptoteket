@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0088
 title: Cloudflare R2 storage boundary for Mina filer and FileRefs
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0088
+  - ADR-0088
 ---
 
 ## Context
@@ -158,27 +158,27 @@ the File Service client adapter and protected proof, and `PR-0415` for
 migration/cutover safety. The product-neutral HuleEdu File Service object-file
 API remains an external producer prerequisite before runtime consumer closeout.
 
-1. What exact File Service endpoints and request/response fields does the
-   Skriptoteket client consume for init, finalize, metadata/head, download,
-   delete, and checksum verification?
-2. Which storage columns must be added to `user_vault_files`: File Service
-   object reference, content type, size, SHA-256, lifecycle state, migration
-   batch id, finalized timestamp, and delete/purge state?
-3. How does Skriptoteket soft delete and restore map to File Service lifecycle:
-   bytes retained during restore window, final purge calling File Service
-   delete, and catalog state updated from File Service response?
-4. What is the migration process: dry-run inventory, init/copy/finalize through
-   File Service, checksum compare, dual-read, cutover, local rollback, and
-   post-cutover cleanup?
-5. Which surfaces migrate after `Mina filer`, if any: session files, Document
-   Converter artifacts, previews, runner artifacts, or transcript blobs?
-6. Which transient surfaces intentionally remain local filesystem storage?
-7. How are File Service finalize success and Skriptoteket database-commit
-   failure reconciled without orphaning objects or exposing missing records?
-8. What exact live proof closes the migration: save, list, download, Document
+01. What exact File Service endpoints and request/response fields does the
+    Skriptoteket client consume for init, finalize, metadata/head, download,
+    delete, and checksum verification?
+02. Which storage columns must be added to `user_vault_files`: File Service
+    object reference, content type, size, SHA-256, lifecycle state, migration
+    batch id, finalized timestamp, and delete/purge state?
+03. How does Skriptoteket soft delete and restore map to File Service lifecycle:
+    bytes retained during restore window, final purge calling File Service
+    delete, and catalog state updated from File Service response?
+04. What is the migration process: dry-run inventory, init/copy/finalize through
+    File Service, checksum compare, dual-read, cutover, local rollback, and
+    post-cutover cleanup?
+05. Which surfaces migrate after `Mina filer`, if any: session files, Document
+    Converter artifacts, previews, runner artifacts, or transcript blobs?
+06. Which transient surfaces intentionally remain local filesystem storage?
+07. How are File Service finalize success and Skriptoteket database-commit
+    failure reconciled without orphaning objects or exposing missing records?
+08. What exact live proof closes the migration: save, list, download, Document
     Converter saved-source batch, delete, restore, missing-object failure, and
     cross-owner denial?
-9. What is the production `.env` sync order across Skriptoteket, HuleEdu, and
+09. What is the production `.env` sync order across Skriptoteket, HuleEdu, and
     Sir Convert, and how are secret names documented without committing values?
 10. Which metrics, logs, and alerts prove File Service/R2 health without
     exposing object keys, tokens, signed URLs, or teacher file names?

@@ -42,38 +42,38 @@ Review `PR-0228` as one structural shell contract:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md` | Current intended contract and frozen decisions | 5 min |
-| `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md` | Canonical shared desktop-composition ownership | 4 min |
-| `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md` | Shipped grouping/seating composition expectations | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue` | Planner route shell height/frame ownership | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` | Shared authenticated planner shell | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue` | Guest shell parity | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue` | Shared pane shell and current measured-height seam | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts` | Breakpoint and overflow contract tokens | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue` | Grouping lane composition | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue` | Seating lane composition | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue` | Rail header/list scroll behavior | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue` | Board-lane interaction with overflow ownership | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue` | Seating canvas overflow expectations | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts` | Grouping layout regression coverage | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts` | Seating layout regression coverage | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts` | Shared shell assertions | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` | Guest shared-shell assertions | 4 min |
-| `scripts/playwright_pr_0227_group_board_height_contract_check.py` | Current live proof lane and its blind spots | 5 min |
+| File                                                                                                    | Focus                                              | Time  |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----- |
+| `docs/backlog/prs/pr-0228-st-29-11-follow-up-desktop-student-pool-rail-stickiness-restoration.md`       | Current intended contract and frozen decisions     | 5 min |
+| `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md`   | Canonical shared desktop-composition ownership     | 4 min |
+| `docs/backlog/stories/story-29-05-klassrumskartan-grouping-and-seating-desktop-workspace-overhaul.md`   | Shipped grouping/seating composition expectations  | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerView.vue`                                    | Planner route shell height/frame ownership         | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`                        | Shared authenticated planner shell                 | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`                     | Guest shell parity                                 | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceModeSurface.vue`                  | Shared pane shell and current measured-height seam | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts`                                   | Breakpoint and overflow contract tokens            | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`                 | Grouping lane composition                          | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.vue`                  | Seating lane composition                           | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue`                           | Rail header/list scroll behavior                   | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue`                                   | Board-lane interaction with overflow ownership     | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/RoomCanvas.vue`                                   | Seating canvas overflow expectations               | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.smart-rules.spec.ts` | Grouping layout regression coverage                | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspacePane.smart-rules.spec.ts`  | Seating layout regression coverage                 | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`                    | Shared shell assertions                            | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`                 | Guest shared-shell assertions                      | 4 min |
+| `scripts/playwright_pr_0227_group_board_height_contract_check.py`                                       | Current live proof lane and its blind spots        | 5 min |
 
 **Total estimated time:** ~76 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `PR-0228` as a bounded `ST-29-11` follow-up | This is shell hardening, not a workspace-redesign restart | [x] |
-| Keep the CSS-owned page/workspace scroll model | The earlier measured bounded-pane seam was the wrong baseline | [x] |
-| Close the slice after reconciling the retained review/proof obligations | Better implementation baseline is only enough once the proof boundary is explicit | [x] |
-| Treat auth-only real-data proof plus focused guest/auth shell specs as sufficient for closure | The shared shell contract is already exercised in focused guest/auth specs even though the retained live browser lane is auth-only | [x] |
-| Mark `PR-0228` done now | The retained review and backlog contract are now aligned to the actual proof surface | [x] |
+| Decision                                                                                      | Rationale                                                                                                                          | Approve? |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep `PR-0228` as a bounded `ST-29-11` follow-up                                              | This is shell hardening, not a workspace-redesign restart                                                                          | [x]      |
+| Keep the CSS-owned page/workspace scroll model                                                | The earlier measured bounded-pane seam was the wrong baseline                                                                      | [x]      |
+| Close the slice after reconciling the retained review/proof obligations                       | Better implementation baseline is only enough once the proof boundary is explicit                                                  | [x]      |
+| Treat auth-only real-data proof plus focused guest/auth shell specs as sufficient for closure | The shared shell contract is already exercised in focused guest/auth specs even though the retained live browser lane is auth-only | [x]      |
+| Mark `PR-0228` done now                                                                       | The retained review and backlog contract are now aligned to the actual proof surface                                               | [x]      |
 
 ## Review Checklist
 
@@ -177,13 +177,13 @@ trail:
 ### Decision Approvals
 
 - [x] `PR-0228` remains a valid bounded `ST-29-11` follow-up rather than a full workspace-redesign
-      restart.
+  restart.
 - [x] The current CSS-owned page/workspace scroll implementation is a healthier baseline than the
-      previously rejected bounded-pane model.
+  previously rejected bounded-pane model.
 - [x] The retained docs/review trail is now aligned enough to mark `PR-0228` done without another
-      closure decision.
+  closure decision.
 - [x] The current auth-only real-data proof plus focused guest/auth shell specs are sufficient to
-      satisfy the written guest/auth parity expectation for this bounded slice.
+  satisfy the written guest/auth parity expectation for this bounded slice.
 - [x] `PR-0228` may move to `done` today.
 
 ## Changes Made

@@ -42,28 +42,28 @@ as a retained artifact adapter.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md` | Authority, non-goals, proof expectations | 10 min |
+| File                                                                                                                                                                                | Focus                                                                               | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md`                                                                                      | Authority, non-goals, proof expectations                                            | 10 min |
 | `AGENTS.md`, `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`, `staging-walk` (Skriptoteket reference), `docs/runbooks/runbook-agent-browser-automation.md` | Current Python, auth and browser-proof guidance; retained Playwright helper context | 15 min |
-| `scripts/_playwright_auth.py` | Shared auth default strictness and opt-in backoff integration | 25 min |
-| `scripts/_playwright_auth_rate_limit.py` | RATE_LIMIT parsing, bounded waits, credential redaction | 20 min |
-| `scripts/_exam_converter_design_proof.py` | Reusable domain proof helper and behavior assertions | 20 min |
-| `.artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py` | Thin retained adapter only | 5 min |
-| `tests/unit/scripts/test_playwright_auth_recovery.py` | Auth recovery/backoff/redaction proof | 15 min |
-| `tests/unit/scripts/test_playwright_script_surface.py` | Script-surface hygiene and adapter delegation | 10 min |
+| `scripts/_playwright_auth.py`                                                                                                                                                       | Shared auth default strictness and opt-in backoff integration                       | 25 min |
+| `scripts/_playwright_auth_rate_limit.py`                                                                                                                                            | RATE_LIMIT parsing, bounded waits, credential redaction                             | 20 min |
+| `scripts/_exam_converter_design_proof.py`                                                                                                                                           | Reusable domain proof helper and behavior assertions                                | 20 min |
+| `.artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py`                                                                                              | Thin retained adapter only                                                          | 5 min  |
+| `tests/unit/scripts/test_playwright_auth_recovery.py`                                                                                                                               | Auth recovery/backoff/redaction proof                                               | 15 min |
+| `tests/unit/scripts/test_playwright_script_surface.py`                                                                                                                              | Script-surface hygiene and adapter delegation                                       | 10 min |
 
 **Total estimated time:** ~120 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep backoff opt-in on `login_via_auth_entry()` with strict default behavior. | Existing shared-auth callers should not silently retry HuleEdu login unless a proof explicitly opts in. | Yes |
-| Sanitize login failure bodies before surfacing RATE_LIMIT diagnostics. | Login failures can contain submitted credentials in server details or exception text. | Yes |
-| Put reusable Exam Converter proof behavior in an underscored domain helper. | Matches the repo browser-automation rule: entrypoints are proofs, helpers own shared flows. | Yes |
-| Keep the PR-numbered artifact command as a thin adapter. | Retained artifact reproducibility is preserved without creating a new permanent `scripts/playwright_pr_0408*` surface. | Yes |
-| Assert route-owned UI states and overflow instead of only checking that a helper was invoked. | The live proof remains useful for the PR-0408 desktop/phone design surfaces. | Yes |
+| Decision                                                                                      | Rationale                                                                                                              | Approve? |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep backoff opt-in on `login_via_auth_entry()` with strict default behavior.                 | Existing shared-auth callers should not silently retry HuleEdu login unless a proof explicitly opts in.                | Yes      |
+| Sanitize login failure bodies before surfacing RATE_LIMIT diagnostics.                        | Login failures can contain submitted credentials in server details or exception text.                                  | Yes      |
+| Put reusable Exam Converter proof behavior in an underscored domain helper.                   | Matches the repo browser-automation rule: entrypoints are proofs, helpers own shared flows.                            | Yes      |
+| Keep the PR-numbered artifact command as a thin adapter.                                      | Retained artifact reproducibility is preserved without creating a new permanent `scripts/playwright_pr_0408*` surface. | Yes      |
+| Assert route-owned UI states and overflow instead of only checking that a helper was invoked. | The live proof remains useful for the PR-0408 desktop/phone design surfaces.                                           | Yes      |
 
 ## Review Checklist
 
@@ -93,13 +93,13 @@ the reviewed scope.
 
 ### Verification
 
-| Command or evidence | Result |
-|---------------------|--------|
-| `pdm run test tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_playwright_script_surface.py` | Passed locally, 13 tests. |
-| `pdm run python -m py_compile scripts/_playwright_auth.py scripts/_playwright_auth_rate_limit.py scripts/_exam_converter_design_proof.py .artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py` | Passed locally. |
-| `git diff --check -- scripts/_playwright_auth.py tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_playwright_script_surface.py` | Passed locally for tracked reviewed diffs. |
-| `.artifacts/pr-0408-exam-converter-design-proof/20260629T165724Z/manifest.redacted.json` | Status `ok`; desktop and phone captures present; overflow checks all `ok`; no credential/email hits found in the reviewed artifact manifests. |
-| Overseer-provided live command `pdm run python .artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py` | Reported passed with artifact `.artifacts/pr-0408-exam-converter-design-proof/20260629T165724Z`. Not rerun in review to avoid consuming extra HuleEdu login attempts. |
+| Command or evidence                                                                                                                                                                                                            | Result                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pdm run test tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_playwright_script_surface.py`                                                                                                        | Passed locally, 13 tests.                                                                                                                                             |
+| `pdm run python -m py_compile scripts/_playwright_auth.py scripts/_playwright_auth_rate_limit.py scripts/_exam_converter_design_proof.py .artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py` | Passed locally.                                                                                                                                                       |
+| `git diff --check -- scripts/_playwright_auth.py tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_playwright_script_surface.py`                                                                     | Passed locally for tracked reviewed diffs.                                                                                                                            |
+| `.artifacts/pr-0408-exam-converter-design-proof/20260629T165724Z/manifest.redacted.json`                                                                                                                                       | Status `ok`; desktop and phone captures present; overflow checks all `ok`; no credential/email hits found in the reviewed artifact manifests.                         |
+| Overseer-provided live command `pdm run python .artifacts/pr-0408-exam-converter-design-proof/proof_pr0408_exam_converter_design.py`                                                                                           | Reported passed with artifact `.artifacts/pr-0408-exam-converter-design-proof/20260629T165724Z`. Not rerun in review to avoid consuming extra HuleEdu login attempts. |
 
 ### Residual Risk / Test Gaps
 
@@ -126,6 +126,6 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0408` | Independent retained review recorded for the PR-0408 proof-helper remediation with decision `approved`. |
+| Change | Artifact      | Description                                                                                             |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0408` | Independent retained review recorded for the PR-0408 proof-helper remediation with decision `approved`. |

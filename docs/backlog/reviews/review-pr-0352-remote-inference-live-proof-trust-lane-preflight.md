@@ -41,25 +41,25 @@ matching public signer/verifier fingerprints.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0352-st-21-09-remote-inference-live-proof-trust-lane-preflight.md` | Scope, acceptance, evidence | 10 min |
-| `docs/backlog/stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md` | Parent story and hosted runtime boundary | 5 min |
-| `scripts/_sir_convert_trust_lane_preflight.py` | Preflight semantics, redaction, typing, maintainability | 25 min |
-| `scripts/playwright_pr_0349_transcript_parity_live.py` | Hook placement before media copy/job submit | 15 min |
-| `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py` | Behavioral proof and redaction coverage | 15 min |
-| Adjacent script tests and validators | Regression proof | 10 min |
+| File                                                                                    | Focus                                                   | Time   |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0352-st-21-09-remote-inference-live-proof-trust-lane-preflight.md` | Scope, acceptance, evidence                             | 10 min |
+| `docs/backlog/stories/story-21-09-conversion-hub-remote-inference-proof-trust-lane.md`  | Parent story and hosted runtime boundary                | 5 min  |
+| `scripts/_sir_convert_trust_lane_preflight.py`                                          | Preflight semantics, redaction, typing, maintainability | 25 min |
+| `scripts/playwright_pr_0349_transcript_parity_live.py`                                  | Hook placement before media copy/job submit             | 15 min |
+| `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py`                           | Behavioral proof and redaction coverage                 | 15 min |
+| Adjacent script tests and validators                                                    | Regression proof                                        | 10 min |
 
 **Total estimated time:** ~80 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Preflight before media copy | Proves the blocker happens before upload/job creation. | [x] |
-| Remote hosted runtime remains default | Avoids making local model/runtime hosting a prerequisite. | [x] |
-| Mixed tunnel requires opt-in plus fingerprint agreement | Keeps debugging possible without silent incoherent defaults. | [x] |
-| Failure summaries are redacted public metadata only | Retained artifacts must not leak secrets, transcript text, or media content. | [x] |
+| Decision                                                | Rationale                                                                    | Approve? |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------- | -------- |
+| Preflight before media copy                             | Proves the blocker happens before upload/job creation.                       | [x]      |
+| Remote hosted runtime remains default                   | Avoids making local model/runtime hosting a prerequisite.                    | [x]      |
+| Mixed tunnel requires opt-in plus fingerprint agreement | Keeps debugging possible without silent incoherent defaults.                 | [x]      |
+| Failure summaries are redacted public metadata only     | Retained artifacts must not leak secrets, transcript text, or media content. | [x]      |
 
 ## Review Checklist
 
@@ -489,9 +489,9 @@ Pending.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0352` | Added implementation summary, red-first evidence, and validation evidence. |
-| 2 | `scripts/_sir_convert_trust_lane_preflight.py` | Added browser-free proof-lane preflight helper. |
-| 3 | `scripts/playwright_pr_0349_transcript_parity_live.py` | Runs preflight before media copy and browser launch. |
-| 4 | `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py` | Adds focused trust-lane preflight tests. |
+| Change | Artifact                                                      | Description                                                                |
+| ------ | ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 1      | `PR-0352`                                                     | Added implementation summary, red-first evidence, and validation evidence. |
+| 2      | `scripts/_sir_convert_trust_lane_preflight.py`                | Added browser-free proof-lane preflight helper.                            |
+| 3      | `scripts/playwright_pr_0349_transcript_parity_live.py`        | Runs preflight before media copy and browser launch.                       |
+| 4      | `tests/unit/scripts/test_sir_convert_trust_lane_preflight.py` | Adds focused trust-lane preflight tests.                                   |

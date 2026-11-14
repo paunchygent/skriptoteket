@@ -6,14 +6,7 @@ status: deprecated
 owners: "Codex"
 created: 2026-05-17
 topic: "exam-converter-reviewed-ai-facit-contract"
-links:
-  [
-    "EPIC-21",
-    "ST-21-03",
-    "PR-0331",
-    "PR-0329",
-    "REF-exam-converter-ui-content-model-v1",
-  ]
+links: ["EPIC-21", "ST-21-03", "PR-0331", "PR-0329", "REF-exam-converter-ui-content-model-v1"]
 ---
 
 # Exam Converter Reviewed AI-Facit Contract Map For PR-0331
@@ -40,22 +33,22 @@ This is an engineering plumbing reference, not a layout/design artifact.
 
 Observed sequence from the 2026-05-17 user evidence:
 
-1. Teacher uploads a `.dxe` source and starts conversion with PDF and QTI
-   targets selected.
-2. Skriptoteket submits advisory completion mode:
-   `local_llm_suggest_missing_machine_marked`.
-3. Sir Convert returns source IR, migration manifest, target readiness, and an
-   `answer_key_completion_report` with AI-suggested keys.
-4. Skriptoteket shows AI-facit review, bulk selection, and reviewed apply
-   actions close together.
-5. Teacher selects all valid AI-facit suggestions.
-6. Skriptoteket stores local accepted decisions for valid candidates but does
-   not send anything yet.
-7. Teacher submits reviewed apply. In the current cleaned-up UI this is
-   `Skapa filer med facit`; older evidence used less precise labels.
-8. Skriptoteket submits a second job in reviewed apply mode with a
-   `reviewed_completion_answer_key` overlay.
-9. Teacher later sees Files and/or current-state approval affordances.
+01. Teacher uploads a `.dxe` source and starts conversion with PDF and QTI
+    targets selected.
+02. Skriptoteket submits advisory completion mode:
+    `local_llm_suggest_missing_machine_marked`.
+03. Sir Convert returns source IR, migration manifest, target readiness, and an
+    `answer_key_completion_report` with AI-suggested keys.
+04. Skriptoteket shows AI-facit review, bulk selection, and reviewed apply
+    actions close together.
+05. Teacher selects all valid AI-facit suggestions.
+06. Skriptoteket stores local accepted decisions for valid candidates but does
+    not send anything yet.
+07. Teacher submits reviewed apply. In the current cleaned-up UI this is
+    `Skapa filer med facit`; older evidence used less precise labels.
+08. Skriptoteket submits a second job in reviewed apply mode with a
+    `reviewed_completion_answer_key` overlay.
+09. Teacher later sees Files and/or current-state approval affordances.
 10. Teacher submits the current-state export path and downloads artifacts.
 11. Downloaded PDF/QTI output lacks the reviewed keys. The PDF also contains
     internal fallback text:
@@ -201,17 +194,17 @@ by `digiexam_migration_bundle_builder.py`.
 
 The high-level order is:
 
-1. Parse the uploaded `.dxe` into source parser output.
-2. Build immutable `DigiExamIntermediateExam` source IR.
-3. Write `ir_json`.
-4. Build `migration_manifest` and source fingerprints.
-5. Resolve requested targets and completion mode.
-6. If an ingestion overlay exists, parse and apply it to an effective renderer
-   exam.
-7. If renderer input changed, emit `effective_ir_json`.
-8. Optionally write answer-key completion reports according to completion
-   mode.
-9. Render Exam.net PDF from the effective exam.
+01. Parse the uploaded `.dxe` into source parser output.
+02. Build immutable `DigiExamIntermediateExam` source IR.
+03. Write `ir_json`.
+04. Build `migration_manifest` and source fingerprints.
+05. Resolve requested targets and completion mode.
+06. If an ingestion overlay exists, parse and apply it to an effective renderer
+    exam.
+07. If renderer input changed, emit `effective_ir_json`.
+08. Optionally write answer-key completion reports according to completion
+    mode.
+09. Render Exam.net PDF from the effective exam.
 10. Build QTI package from the effective exam.
 11. Build target readiness from the effective exam and target artifacts.
 12. Write final artifact manifest.
@@ -363,17 +356,17 @@ Therefore `PR-0331` must distinguish:
 
 Implementation should prove each boundary separately:
 
-| Boundary | Required evidence |
-|---|---|
-| Advisory report -> UI candidates | Candidate count, item IDs, payload kind, validation state, candidate digest. |
-| Bulk AI-facit selection -> local decisions | Accepted decision count equals usable candidate count unless a prior explicit decision exists. |
-| Local decisions -> overlay | Overlay item count, item IDs, source binding, reviewed-completion payload, lineage digest. |
-| Overlay submit -> Sir Convert job | Multipart overlay present, job spec apply mode, overlay policy, non-replayed job ID/correlation where expected. |
-| Sir Convert overlay -> effective IR | `ingestion_overlay_report.accepted_entries` includes `reviewed_completion_answer_key`; `effective_ir_json.items[].effective_answer_key` contains reviewed/teacher-provided keys. |
-| Effective IR -> Skriptoteket projection | Rows with effective keys no longer show `Facit` missing; accepted-current-state overlay is not offered for those items as if they were still source-missing. |
-| Post-apply UI -> subsequent actions | Switching tabs/files does not reset AI decisions; any later create/export path either preserves reviewed keys or is blocked/explained. |
-| Effective exam -> PDF/QTI | Downloaded artifacts contain expected key semantics for choice, matching, and gapped/open-cloze items; PDF gapped-item free-text rendering still includes accepted key values. |
-| Artifact copy | No internal fallback diagnostics appear in teacher-facing artifacts. |
+| Boundary                                   | Required evidence                                                                                                                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Advisory report -> UI candidates           | Candidate count, item IDs, payload kind, validation state, candidate digest.                                                                                                     |
+| Bulk AI-facit selection -> local decisions | Accepted decision count equals usable candidate count unless a prior explicit decision exists.                                                                                   |
+| Local decisions -> overlay                 | Overlay item count, item IDs, source binding, reviewed-completion payload, lineage digest.                                                                                       |
+| Overlay submit -> Sir Convert job          | Multipart overlay present, job spec apply mode, overlay policy, non-replayed job ID/correlation where expected.                                                                  |
+| Sir Convert overlay -> effective IR        | `ingestion_overlay_report.accepted_entries` includes `reviewed_completion_answer_key`; `effective_ir_json.items[].effective_answer_key` contains reviewed/teacher-provided keys. |
+| Effective IR -> Skriptoteket projection    | Rows with effective keys no longer show `Facit` missing; accepted-current-state overlay is not offered for those items as if they were still source-missing.                     |
+| Post-apply UI -> subsequent actions        | Switching tabs/files does not reset AI decisions; any later create/export path either preserves reviewed keys or is blocked/explained.                                           |
+| Effective exam -> PDF/QTI                  | Downloaded artifacts contain expected key semantics for choice, matching, and gapped/open-cloze items; PDF gapped-item free-text rendering still includes accepted key values.   |
+| Artifact copy                              | No internal fallback diagnostics appear in teacher-facing artifacts.                                                                                                             |
 
 ## Immediate Implementation Target
 

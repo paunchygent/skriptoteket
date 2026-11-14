@@ -54,27 +54,27 @@ Approve `ST-11-25` as the planning gate for a structured route-load audit:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md` | Route matrix, evidence package, and scope boundaries | 8 min |
-| `docs/backlog/epics/epic-11-full-vue-spa-migration.md` | Epic fit and post-cutover follow-up placement | 4 min |
-| `frontend/apps/skriptoteket/src/router/routes.ts` | Representative route matrix coverage | 4 min |
-| `frontend/apps/skriptoteket/src/stores/auth.ts` | Shared bootstrap/auth cost questions the audit must classify correctly | 4 min |
-| `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts` | Dashboard fan-out baseline candidate | 4 min |
-| `frontend/apps/skriptoteket/src/composables/useCatalogFilters.ts` | Catalog fetch/payload boundary candidate | 4 min |
-| `frontend/apps/skriptoteket/src/views/useCuratedAppHost.ts` | Curated-app host bootstrap boundary candidate | 3 min |
+| File                                                                                         | Focus                                                                  | Time  |
+| -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----- |
+| `docs/backlog/stories/story-11-25-spa-route-load-performance-and-network-isolation-audit.md` | Route matrix, evidence package, and scope boundaries                   | 8 min |
+| `docs/backlog/epics/epic-11-full-vue-spa-migration.md`                                       | Epic fit and post-cutover follow-up placement                          | 4 min |
+| `frontend/apps/skriptoteket/src/router/routes.ts`                                            | Representative route matrix coverage                                   | 4 min |
+| `frontend/apps/skriptoteket/src/stores/auth.ts`                                              | Shared bootstrap/auth cost questions the audit must classify correctly | 4 min |
+| `frontend/apps/skriptoteket/src/composables/home/useHomeDashboard.ts`                        | Dashboard fan-out baseline candidate                                   | 4 min |
+| `frontend/apps/skriptoteket/src/composables/useCatalogFilters.ts`                            | Catalog fetch/payload boundary candidate                               | 4 min |
+| `frontend/apps/skriptoteket/src/views/useCuratedAppHost.ts`                                  | Curated-app host bootstrap boundary candidate                          | 3 min |
 
 **Total estimated time:** ~31 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a production-style built SPA as the baseline runtime | Avoids misleading HMR and dev-only overhead in reported numbers | [ ] |
-| Audit a fixed representative route matrix instead of chasing the whole app at once | Keeps the first pass comparable and reviewable | [ ] |
-| Separate shared bootstrap traffic from route-owned waste | Prevents correct auth/session costs from being mislabeled as route regressions | [ ] |
-| Record evidence per route instead of relying on one global score | Makes cleanup slices concrete and bounded | [ ] |
-| Derive budgets only after the baseline exists | Avoids arbitrary thresholds and premature optimization theater | [ ] |
+| Decision                                                                           | Rationale                                                                      | Approve? |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
+| Use a production-style built SPA as the baseline runtime                           | Avoids misleading HMR and dev-only overhead in reported numbers                | [ ]      |
+| Audit a fixed representative route matrix instead of chasing the whole app at once | Keeps the first pass comparable and reviewable                                 | [ ]      |
+| Separate shared bootstrap traffic from route-owned waste                           | Prevents correct auth/session costs from being mislabeled as route regressions | [ ]      |
+| Record evidence per route instead of relying on one global score                   | Makes cleanup slices concrete and bounded                                      | [ ]      |
+| Derive budgets only after the baseline exists                                      | Avoids arbitrary thresholds and premature optimization theater                 | [ ]      |
 
 ## Review Checklist
 
@@ -108,7 +108,7 @@ Approve `ST-11-25` as the planning gate for a structured route-load audit:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ST-11-25` | Created the retained story package for a frontend route-load and network-isolation audit. |
-| 2 | `REV-ST-11-25` | Created the story review gate so the audit contract can be approved before implementation work begins. |
+| Change | Artifact       | Description                                                                                            |
+| ------ | -------------- | ------------------------------------------------------------------------------------------------------ |
+| 1      | `ST-11-25`     | Created the retained story package for a frontend route-load and network-isolation audit.              |
+| 2      | `REV-ST-11-25` | Created the story review gate so the audit contract can be approved before implementation work begins. |

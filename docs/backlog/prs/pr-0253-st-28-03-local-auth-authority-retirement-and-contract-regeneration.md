@@ -97,51 +97,51 @@ The temporary direction for this PR is:
 Before code changes, add the following working artifacts to the task implementation notes,
 retained review response, or a governed follow-up doc:
 
-| Artifact | Required columns / fields | Blocks |
-|----------|---------------------------|--------|
-| Route inventory | route file, method/path, current guard, target guard, browser-facing, mutating, public/guest-adjacent, proof owner, allowlist rationale if retained | Guard codemods and CSRF removal |
-| Browser API edge contract | selected edge (`api.hule.education` app API base URL or formal same-origin gateway/proxy `/api`), local-dev behavior, production behavior, identity-context injector owner, proof route(s), frontend env/config owner | Backend signed-context enforcement |
-| Auth ceremony target matrix | old route/action, target HuleEdu URL/action or retired UX, owner, expected status/error behavior, old-link handling, test owner | Frontend route deletion/redirects |
-| Provisioning policy | source of trusted provisioning claims or non-browser provisioning path, missing-projection backend behavior, missing-projection UX, follow-up owner if HuleEdu must add claims | Local register/password deletion |
-| Supported script allowlist | active `pyproject.toml` command, helper module, auth dependency, keep/update/retire decision, proof command | Script helper cleanup |
-| Session cleanup checklist | handler/model/repository/DI/migration/metric/test/doc item, owner, delete/refactor decision, downgrade/data-loss posture | Session table drop |
+| Artifact                    | Required columns / fields                                                                                                                                                                                             | Blocks                             |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Route inventory             | route file, method/path, current guard, target guard, browser-facing, mutating, public/guest-adjacent, proof owner, allowlist rationale if retained                                                                   | Guard codemods and CSRF removal    |
+| Browser API edge contract   | selected edge (`api.hule.education` app API base URL or formal same-origin gateway/proxy `/api`), local-dev behavior, production behavior, identity-context injector owner, proof route(s), frontend env/config owner | Backend signed-context enforcement |
+| Auth ceremony target matrix | old route/action, target HuleEdu URL/action or retired UX, owner, expected status/error behavior, old-link handling, test owner                                                                                       | Frontend route deletion/redirects  |
+| Provisioning policy         | source of trusted provisioning claims or non-browser provisioning path, missing-projection backend behavior, missing-projection UX, follow-up owner if HuleEdu must add claims                                        | Local register/password deletion   |
+| Supported script allowlist  | active `pyproject.toml` command, helper module, auth dependency, keep/update/retire decision, proof command                                                                                                           | Script helper cleanup              |
+| Session cleanup checklist   | handler/model/repository/DI/migration/metric/test/doc item, owner, delete/refactor decision, downgrade/data-loss posture                                                                                              | Session table drop                 |
 
 ## Implementation Plan
 
-1. **Keep the retained review response current.** Preserve the approved `REV-PR-0253` constraints
-   while adding the route/edge/ceremony/provisioning/session decisions and docs-validation evidence
-   during implementation.
-2. **Freeze the browser API edge contract.** Choose exactly one authenticated app API transport:
-   a configured HuleEdu Gateway app API base URL, or a formal same-origin `/api` gateway/proxy that
-   injects signed downstream context. Browser code must never set `X-Huledu-Identity-*`.
-3. **Build the route inventory before import changes.** Classify every `require_user_api`,
-   `require_contributor_api`, `require_admin_api`, `require_superuser_api`, `require_session_api`,
-   and `require_csrf_token` consumer before rewiring. Include `/api/v1/me`, editor, curated apps,
-   vault, suggestions, admin, and `web/routes/interactive_tools.py`.
-4. **Define the canonical app-auth dependency surface.** Add or finalize
-   `require_app_user_projection_api()`, `require_app_user_api()`, role wrappers, and
-   `require_app_ai_preferences()` so handlers can keep app-local user/profile semantics while
-   depending on signed HuleEdu gateway context.
-5. **Replace CSRF wording with trust-boundary enforcement.** Mutating app routes should require the
-   canonical signed-context dependencies, not local-session CSRF comparison. Update
-   `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
-   so future work does not reintroduce
-   `require_csrf_token` for browser app writes.
-6. **Settle provisioning before deleting local registration/password paths.** Either record a
-   HuleEdu provider follow-up for signed provisioning claims or keep a non-browser
-   admin/import/local-user provisioning path. Missing projection must fail closed and never create a
-   local user from `sub` alone.
-7. **Replace the frontend auth ceremony explicitly.** Replace `auth.login()` with a Hule
-   Education inloggning handoff adapter, make logout call `sharedAuthUrl("/v1/auth/logout")`, and
-   remove or redirect register/forgot/reset/verify/resend surfaces according to the ceremony target
-   matrix.
-8. **Migrate route cohorts from the inventory.** Rewire browser-facing protected routes to the new
-   app dependencies; retain only explicit internal/non-browser authorization paths with rationale.
-   Add a static test that fails on old guard imports outside the allowlist.
-9. **Delete/refactor session infrastructure only after references are gone.** Cover login/logout
-   handlers, current-user provider, reset-password session revocation, AI session syncing,
-   active-session metric, `SessionModel`, repository/DI binding, migration imports/schema
-   assertions, and the sessions table. Keep `ToolSessionRepositoryProtocol` untouched.
+01. **Keep the retained review response current.** Preserve the approved `REV-PR-0253` constraints
+    while adding the route/edge/ceremony/provisioning/session decisions and docs-validation evidence
+    during implementation.
+02. **Freeze the browser API edge contract.** Choose exactly one authenticated app API transport:
+    a configured HuleEdu Gateway app API base URL, or a formal same-origin `/api` gateway/proxy that
+    injects signed downstream context. Browser code must never set `X-Huledu-Identity-*`.
+03. **Build the route inventory before import changes.** Classify every `require_user_api`,
+    `require_contributor_api`, `require_admin_api`, `require_superuser_api`, `require_session_api`,
+    and `require_csrf_token` consumer before rewiring. Include `/api/v1/me`, editor, curated apps,
+    vault, suggestions, admin, and `web/routes/interactive_tools.py`.
+04. **Define the canonical app-auth dependency surface.** Add or finalize
+    `require_app_user_projection_api()`, `require_app_user_api()`, role wrappers, and
+    `require_app_ai_preferences()` so handlers can keep app-local user/profile semantics while
+    depending on signed HuleEdu gateway context.
+05. **Replace CSRF wording with trust-boundary enforcement.** Mutating app routes should require the
+    canonical signed-context dependencies, not local-session CSRF comparison. Update
+    `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
+    so future work does not reintroduce
+    `require_csrf_token` for browser app writes.
+06. **Settle provisioning before deleting local registration/password paths.** Either record a
+    HuleEdu provider follow-up for signed provisioning claims or keep a non-browser
+    admin/import/local-user provisioning path. Missing projection must fail closed and never create a
+    local user from `sub` alone.
+07. **Replace the frontend auth ceremony explicitly.** Replace `auth.login()` with a Hule
+    Education inloggning handoff adapter, make logout call `sharedAuthUrl("/v1/auth/logout")`, and
+    remove or redirect register/forgot/reset/verify/resend surfaces according to the ceremony target
+    matrix.
+08. **Migrate route cohorts from the inventory.** Rewire browser-facing protected routes to the new
+    app dependencies; retain only explicit internal/non-browser authorization paths with rationale.
+    Add a static test that fails on old guard imports outside the allowlist.
+09. **Delete/refactor session infrastructure only after references are gone.** Cover login/logout
+    handlers, current-user provider, reset-password session revocation, AI session syncing,
+    active-session metric, `SessionModel`, repository/DI binding, migration imports/schema
+    assertions, and the sessions table. Keep `ToolSessionRepositoryProtocol` untouched.
 10. **Regenerate and harden contracts.** Regenerate OpenAPI/frontend types and add broad no-zombie
     tests proving local browser-auth paths and schemas are absent:
     login/logout/me/csrf/register/register-validate/resend-verification/verify-email/
@@ -207,14 +207,14 @@ The reviewer-owned checklist in `REV-PR-0253` is closed and the retained review 
 
 ### Route Inventory Outcome
 
-| Cohort | Route files / method-path scope | Previous guard | Target guard | Browser-facing | Mutating | Proof owner |
-|--------|--------------------------------|----------------|--------------|----------------|----------|-------------|
-| Current user/profile | `api/v1/me.py`, `api/v1/profile.py` (`GET`, `PATCH`) | `require_user_api`, local CSRF for writes | `require_app_user_api`, `require_app_user_projection_api` | yes | profile writes | unit + live PR-0253 proof |
-| Catalog/tool usage | `api/v1/catalog.py`, `api/v1/tools.py`, `api/v1/favorites.py`, `api/v1/my_runs.py`, `api/v1/vault.py` | `require_user_api`, local CSRF for writes | `require_app_user_api` | yes | mixed | static old-guard ban |
-| Contributor/editor | `api/v1/editor/**` (`boot`, `chat`, `completions`, `drafts`, `edit_ops`, `locks`, `runs`, `sandbox*`, `schema_validation`, `workflow`) | `require_contributor_api`, role wrappers, local CSRF for writes | `require_app_contributor_api`, `require_app_admin_api`, `require_app_superuser_api`, `require_app_ai_preferences` | yes | mixed | static old-guard ban + signed-context dependency tests |
-| Admin/user management | `api/v1/admin_tools.py`, `api/v1/admin_users.py`, editor taxonomy/metadata/maintainers/workflow admin paths | `require_admin_api`, `require_superuser_api`, local CSRF for writes | `require_app_admin_api`, `require_app_superuser_api` | yes | mixed | static old-guard ban |
-| Curated apps | `api/v1/apps*.py`, classroom planner modules, Reagent Prep Chef, Conversion Hub, Flunk Out Frenzy | `require_user_api`, local CSRF for writes | `require_app_user_api` | yes | mixed | static old-guard ban |
-| HTML interactive tools | `web/routes/interactive_tools.py` | `require_user_api`, local CSRF for writes | `require_app_user_api` | yes | mixed | static old-guard ban |
+| Cohort                 | Route files / method-path scope                                                                                                        | Previous guard                                                      | Target guard                                                                                                      | Browser-facing | Mutating       | Proof owner                                            |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------- | -------------- | ------------------------------------------------------ |
+| Current user/profile   | `api/v1/me.py`, `api/v1/profile.py` (`GET`, `PATCH`)                                                                                   | `require_user_api`, local CSRF for writes                           | `require_app_user_api`, `require_app_user_projection_api`                                                         | yes            | profile writes | unit + live PR-0253 proof                              |
+| Catalog/tool usage     | `api/v1/catalog.py`, `api/v1/tools.py`, `api/v1/favorites.py`, `api/v1/my_runs.py`, `api/v1/vault.py`                                  | `require_user_api`, local CSRF for writes                           | `require_app_user_api`                                                                                            | yes            | mixed          | static old-guard ban                                   |
+| Contributor/editor     | `api/v1/editor/**` (`boot`, `chat`, `completions`, `drafts`, `edit_ops`, `locks`, `runs`, `sandbox*`, `schema_validation`, `workflow`) | `require_contributor_api`, role wrappers, local CSRF for writes     | `require_app_contributor_api`, `require_app_admin_api`, `require_app_superuser_api`, `require_app_ai_preferences` | yes            | mixed          | static old-guard ban + signed-context dependency tests |
+| Admin/user management  | `api/v1/admin_tools.py`, `api/v1/admin_users.py`, editor taxonomy/metadata/maintainers/workflow admin paths                            | `require_admin_api`, `require_superuser_api`, local CSRF for writes | `require_app_admin_api`, `require_app_superuser_api`                                                              | yes            | mixed          | static old-guard ban                                   |
+| Curated apps           | `api/v1/apps*.py`, classroom planner modules, Reagent Prep Chef, Conversion Hub, Flunk Out Frenzy                                      | `require_user_api`, local CSRF for writes                           | `require_app_user_api`                                                                                            | yes            | mixed          | static old-guard ban                                   |
+| HTML interactive tools | `web/routes/interactive_tools.py`                                                                                                      | `require_user_api`, local CSRF for writes                           | `require_app_user_api`                                                                                            | yes            | mixed          | static old-guard ban                                   |
 
 There is no retained browser-route allowlist for the retired local guard family. The static
 contract test fails on `require_user_api`, `require_contributor_api`, `require_admin_api`,
@@ -241,14 +241,14 @@ the HuleEdu shared edge/gateway proof instead of reintroducing local password-fo
 
 ### Ceremony Target Matrix
 
-| Public route/action | Target | Owner | Old-link behavior | Proof |
-|---------------------|--------|-------|-------------------|-------|
-| `/auth/login` | Browser-navigable Hule Education inloggning ceremony from `VITE_HULEEDU_AUTH_ENTRY_URL`, defaulting to `https://api.hule.education/auth/login?app=skriptoteket&next=...` | Hule Education Gateway / Identity | preserved `next` becomes absolute return URL; anchors must not target POST-only `/v1/auth/login` unless that path is explicitly proven browser-navigable | `AuthLoginPanel.spec.ts`, `sharedAuth.spec.ts`, live PR-0253 proof |
-| logout action | HuleEdu `/v1/auth/logout` | HuleEdu Gateway | local state clears on `204`/`401` | `auth.spec.ts` |
-| `/register` | retired/local-provisioning-required UX until Hule Education-hosted Skriptoteket realm registration is designed | Skriptoteket product + Hule Education Identity follow-up | no local submit; does not imply Skriptoteket standalone identity is removed | route/component tests + static no local auth calls |
-| `/forgot-password` | retired/local-provisioning-required UX | Skriptoteket | no local reset request | route/component tests + static no local auth calls |
-| `/reset-password` | retired/local-provisioning-required UX | Skriptoteket | no token reset submit | route/component tests + static no local auth calls |
-| `/verify-email` / resend | retired/local-provisioning-required UX | Skriptoteket | no local verify/resend submit | route/component tests + static no local auth calls |
+| Public route/action      | Target                                                                                                                                                                   | Owner                                                    | Old-link behavior                                                                                                                                        | Proof                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `/auth/login`            | Browser-navigable Hule Education inloggning ceremony from `VITE_HULEEDU_AUTH_ENTRY_URL`, defaulting to `https://api.hule.education/auth/login?app=skriptoteket&next=...` | Hule Education Gateway / Identity                        | preserved `next` becomes absolute return URL; anchors must not target POST-only `/v1/auth/login` unless that path is explicitly proven browser-navigable | `AuthLoginPanel.spec.ts`, `sharedAuth.spec.ts`, live PR-0253 proof |
+| logout action            | HuleEdu `/v1/auth/logout`                                                                                                                                                | HuleEdu Gateway                                          | local state clears on `204`/`401`                                                                                                                        | `auth.spec.ts`                                                     |
+| `/register`              | retired/local-provisioning-required UX until Hule Education-hosted Skriptoteket realm registration is designed                                                           | Skriptoteket product + Hule Education Identity follow-up | no local submit; does not imply Skriptoteket standalone identity is removed                                                                              | route/component tests + static no local auth calls                 |
+| `/forgot-password`       | retired/local-provisioning-required UX                                                                                                                                   | Skriptoteket                                             | no local reset request                                                                                                                                   | route/component tests + static no local auth calls                 |
+| `/reset-password`        | retired/local-provisioning-required UX                                                                                                                                   | Skriptoteket                                             | no token reset submit                                                                                                                                    | route/component tests + static no local auth calls                 |
+| `/verify-email` / resend | retired/local-provisioning-required UX                                                                                                                                   | Skriptoteket                                             | no local verify/resend submit                                                                                                                            | route/component tests + static no local auth calls                 |
 
 ### Provisioning And RBAC
 

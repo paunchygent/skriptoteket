@@ -18,6 +18,7 @@ acceptance_criteria:
 ---
 
 ## Context
+
 This story restores trust in Klassrumskartan by making the landing page a clean asset-management and launch surface. It deliberately keeps planning semantics out of the first interaction.
 
 ## Notes

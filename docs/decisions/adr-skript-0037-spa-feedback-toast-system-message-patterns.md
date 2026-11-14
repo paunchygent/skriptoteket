@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0037
 title: 'SPA feedback: toast + system message patterns'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0037
+  - ADR-0037
 ---
 
 ## Context

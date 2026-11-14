@@ -41,27 +41,27 @@ the HuleEdu Gateway unified Sir Convert apply edge for projection and export.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md` | Durable-session decision boundary | 15 min |
-| `docs/backlog/stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md` | Story gate and candidate task chain | 10 min |
-| `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md` | Existing source-bound correction invariant | 10 min |
-| `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md` | Non-durable correction overlay slice boundary | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts` | Current producer-issued correction source-state vocabulary | 10 min |
+| File                                                                                            | Focus                                                      | Time   |
+| ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| `docs/adr/adr-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md`          | Durable-session decision boundary                          | 15 min |
+| `docs/backlog/stories/story-21-04-exam-converter-durable-teacher-correction-sessions.md`        | Story gate and candidate task chain                        | 10 min |
+| `docs/adr/adr-0086-exam-converter-teacher-owned-correction-overlay-boundary.md`                 | Existing source-bound correction invariant                 | 10 min |
+| `docs/backlog/prs/pr-0332-st-21-03-exam-converter-teacher-owned-correction-overlay-contract.md` | Non-durable correction overlay slice boundary              | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertOpenapi.d.ts`                                     | Current producer-issued correction source-state vocabulary | 10 min |
 
 **Total estimated time:** ~55 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Skriptoteket owns durable authenticated correction-session truth | Correct product aggregate boundary for reload/navigation stability | [x] |
-| Sir Convert remains stateless and applies submitted correction batches | Preserves producer/application separation and avoids hidden upstream persistence claims | [x] |
-| Browser state is draft/focus only | Prevents local state from masquerading as applied or durable truth | [x] |
-| Matching correction remains blocked until Sir Convert Task 332 and a later approved slice | Keeps unsupported matching producer state out of the current durable contract | [x] |
-| The correction-session aggregate has complete active-set semantics | Required before implementation; now defined through current-set invariants | [x] |
-| Review decisions and candidate suppression have explicit durable ownership | Required before reload/export can be trusted; now persisted in this aggregate | [x] |
-| Persisted binding material matches the exact producer-issued source-state contract | Required to avoid replay safety drift; now tied to producer-issued `source_binding` fields | [x] |
+| Decision                                                                                  | Rationale                                                                                  | Approve? |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------- |
+| Skriptoteket owns durable authenticated correction-session truth                          | Correct product aggregate boundary for reload/navigation stability                         | [x]      |
+| Sir Convert remains stateless and applies submitted correction batches                    | Preserves producer/application separation and avoids hidden upstream persistence claims    | [x]      |
+| Browser state is draft/focus only                                                         | Prevents local state from masquerading as applied or durable truth                         | [x]      |
+| Matching correction remains blocked until Sir Convert Task 332 and a later approved slice | Keeps unsupported matching producer state out of the current durable contract              | [x]      |
+| The correction-session aggregate has complete active-set semantics                        | Required before implementation; now defined through current-set invariants                 | [x]      |
+| Review decisions and candidate suppression have explicit durable ownership                | Required before reload/export can be trusted; now persisted in this aggregate              | [x]      |
+| Persisted binding material matches the exact producer-issued source-state contract        | Required to avoid replay safety drift; now tied to producer-issued `source_binding` fields | [x]      |
 
 ## Review Checklist
 
@@ -194,10 +194,10 @@ task creation gate is now satisfied.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-ST-21-04` | Initial retained review created with `changes_requested`. |
-| 2 | `ADR-0087` | Added current-set aggregate invariants, unified correction-kind ownership, exact source-binding persistence, and proof obligations. |
-| 3 | `ST-21-04` | Aligned story scope, acceptance criteria, and candidate task chain with the ADR remediation. |
-| 4 | `REV-ST-21-04` | Re-review approved the remediated ADR/story contract before later user-lead acceptance. |
-| 5 | `ADR-0087`, `ST-21-04` | User-lead accepted `ADR-0087`, satisfying the gate for ordered `ST-21-04` implementation PR task creation. |
+| Change | Artifact               | Description                                                                                                                         |
+| ------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-ST-21-04`         | Initial retained review created with `changes_requested`.                                                                           |
+| 2      | `ADR-0087`             | Added current-set aggregate invariants, unified correction-kind ownership, exact source-binding persistence, and proof obligations. |
+| 3      | `ST-21-04`             | Aligned story scope, acceptance criteria, and candidate task chain with the ADR remediation.                                        |
+| 4      | `REV-ST-21-04`         | Re-review approved the remediated ADR/story contract before later user-lead acceptance.                                             |
+| 5      | `ADR-0087`, `ST-21-04` | User-lead accepted `ADR-0087`, satisfying the gate for ordered `ST-21-04` implementation PR task creation.                          |

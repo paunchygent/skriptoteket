@@ -4,24 +4,22 @@ id: ADR-SKRIPT-0058
 title: 'Tool datasets: per-user library + runner injection'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0058
+  - ADR-0058
 ---
 
 ## Context
-
 
 Tools need reusable, user-specific lists (class rosters, group sets, templates). Today we only have a single settings
 dict per tool, which is not suitable for CRUD-style datasets.
 
 ## Decision
-
 
 - Add a per-user dataset library scoped to a tool.
 - Persist datasets in a new table (e.g., `tool_datasets`) keyed by `(tool_id, user_id, name)` with JSON payload + size
@@ -38,7 +36,6 @@ dict per tool, which is not suitable for CRUD-style datasets.
 No separate non-decisions is stated in the source.
 
 ## Consequences
-
 
 - Enables roster reuse without file re-uploads and supports multi-run flows like group generation.
 - Requires new persistence, API, and UI surfaces plus validation/size caps.

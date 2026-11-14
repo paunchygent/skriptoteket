@@ -8,15 +8,7 @@ created: 2026-04-08
 updated: 2026-04-30
 stories:
   - "ST-32-05"
-tags:
-  [
-    "frontend",
-    "klassrumskartan",
-    "guest-upgrade",
-    "import-policy",
-    "remediation",
-    "ui-reconciliation",
-  ]
+tags: ["frontend", "klassrumskartan", "guest-upgrade", "import-policy", "remediation", "ui-reconciliation"]
 dependencies:
   - "ADR-0079"
   - "ST-32-04"

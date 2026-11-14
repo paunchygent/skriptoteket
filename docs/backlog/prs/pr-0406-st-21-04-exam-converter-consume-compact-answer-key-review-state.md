@@ -106,192 +106,191 @@ desktop scan-and-detail layout.
 
 ## Implementation Plan
 
-1. Regenerate or update the Sir Convert Gateway types after Task 373 exports the
-   new projection.
-1. Add a typed parser/adapter for the compact projection response or named
-   artifact.
-1. Replace local list-state inference in the Exam Converter review projection
-   with the Sir Convert projection where present.
-1. Preserve local draft state only as draft UI; do not use it to unlock files,
-   report completion, or reviewed-state claims.
-1. Keep correction-session persistence and replay orchestration intact:
-   teacher input still becomes source-bound correction intents, and saved state
-   becomes authoritative only after readback plus Sir Convert replay/projection.
-1. Build the small-screen Exam Converter as a dedicated task flow, not as a
-   squeezed or stacked copy of the desktop two-column workspace:
-   - the question list, selected item editor, files view, and report view are
-     mutually exclusive surfaces on narrow viewports;
-   - selected item detail opens as a full-width detail surface or sheet from
-     the question list;
-   - the files view renders file rows/actions only, never a selected-question
-     editor or singular question summary above the files;
-   - the report view renders report content only, with navigation back to the
-     review flow;
-   - the top review/action band and tabs fit the viewport without horizontal
-     overflow.
-1. Update the mobile/small-screen question list and detail copy to use compact
-   labels with fixed, non-clipping row/card geometry:
-   - pending advisory: `Granska` with the approved `IconAi` / `Sparkles`
-     affordance;
-   - reviewed/complete: `Klart` with checkmark only;
-   - teacher-owned modified: `Ändrat` or `Klart`, no AI marker;
-   - current validation problem: `Kontrollera` plus a short reason.
-1. Update report and files views so file readiness remains driven by Sir
-   Convert target readiness and replay artifact references, not question-list
-   review state.
-1. Remove pre-conversion target-file/source-format choice from the authenticated
-   Exam Converter workflow rail. For the current DXE converter path, request the
-   supported PDF and QTI outputs automatically and expose teacher download/save
-   choice only in `Filer` after review persistence and artifact readiness.
-1. Update the desktop result band and review-detail controls:
-   - projection-backed review uses `Kontrollera facit`, a compact review count,
-     and `Granska frågorna som saknar rätt svar eller facitsvar.`;
-   - `Konverteringen av provet lyckades delvis` is not the primary
-     projection-backed review message;
-   - `Ändra` opens the normal answer-key editing surface in the selected detail
-     pane, with `Spara facit` for teacher-owned edits and bounded
-     `Tidigare förslag` provenance detail where an advisory seed exists;
-   - symbolic Lucide previous/next controls remain available in the detail
-     pane without visible word labels;
-   - accepting or saving a key waits for backend-confirmed readback/replay
-     projection before auto-advancing to the next actionable item.
+01. Regenerate or update the Sir Convert Gateway types after Task 373 exports the
+    new projection.
+02. Add a typed parser/adapter for the compact projection response or named
+    artifact.
+03. Replace local list-state inference in the Exam Converter review projection
+    with the Sir Convert projection where present.
+04. Preserve local draft state only as draft UI; do not use it to unlock files,
+    report completion, or reviewed-state claims.
+05. Keep correction-session persistence and replay orchestration intact:
+    teacher input still becomes source-bound correction intents, and saved state
+    becomes authoritative only after readback plus Sir Convert replay/projection.
+06. Build the small-screen Exam Converter as a dedicated task flow, not as a
+    squeezed or stacked copy of the desktop two-column workspace:
+    - the question list, selected item editor, files view, and report view are
+      mutually exclusive surfaces on narrow viewports;
+    - selected item detail opens as a full-width detail surface or sheet from
+      the question list;
+    - the files view renders file rows/actions only, never a selected-question
+      editor or singular question summary above the files;
+    - the report view renders report content only, with navigation back to the
+      review flow;
+    - the top review/action band and tabs fit the viewport without horizontal
+      overflow.
+07. Update the mobile/small-screen question list and detail copy to use compact
+    labels with fixed, non-clipping row/card geometry:
+    - pending advisory: `Granska` with the approved `IconAi` / `Sparkles`
+      affordance;
+    - reviewed/complete: `Klart` with checkmark only;
+    - teacher-owned modified: `Ändrat` or `Klart`, no AI marker;
+    - current validation problem: `Kontrollera` plus a short reason.
+08. Update report and files views so file readiness remains driven by Sir
+    Convert target readiness and replay artifact references, not question-list
+    review state.
+09. Remove pre-conversion target-file/source-format choice from the authenticated
+    Exam Converter workflow rail. For the current DXE converter path, request the
+    supported PDF and QTI outputs automatically and expose teacher download/save
+    choice only in `Filer` after review persistence and artifact readiness.
+10. Update the desktop result band and review-detail controls:
+    - projection-backed review uses `Kontrollera facit`, a compact review count,
+      and `Granska frågorna som saknar rätt svar eller facitsvar.`;
+    - `Konverteringen av provet lyckades delvis` is not the primary
+      projection-backed review message;
+    - `Ändra` opens the normal answer-key editing surface in the selected detail
+      pane, with `Spara facit` for teacher-owned edits and bounded
+      `Tidigare förslag` provenance detail where an advisory seed exists;
+    - symbolic Lucide previous/next controls remain available in the detail
+      pane without visible word labels;
+    - accepting or saving a key waits for backend-confirmed readback/replay
+      projection before auto-advancing to the next actionable item.
 
 ## Closed Consumer Decisions
 
-1. Projection transport.
-   - Decision: consume both producer surfaces from Task 373. Use the named
-     `answer_key_review_state_report` artifact for first-pass bundle review and
-     the top-level correction-apply `answer_key_review_state` field for
-     immediate replay UI.
-   - Constraint: do not add a second local inference path when either producer
-     surface is missing or invalid; fail closed instead.
-1. Exact semantic enum names.
-   - Decision: map producer `review_state` codes
-     `review_required`, `review_complete`, `teacher_modified`, and
-     `validation_required` to Skriptoteket presentation state.
-   - Decision: consume producer `current_key_origin` codes `none`,
-     `source_provided`, `reviewed_advisory`, `teacher_authored`,
-     `teacher_edited_advisory`, and `mixed`.
-   - Decision: consume producer reason codes including
-     `source_answer_key_present`, `advisory_candidate_pending`,
-     `reviewed_advisory_accepted`, `teacher_answer_key_present`,
-     `teacher_edited_advisory_candidate`, `manual_answer_key_required`,
-     `no_correct_choice_selected`, `required_gap_accepted_values_missing`,
-     `unsupported_item_type`, `unsupported_target_shape`,
-     `target_validation_failed`, `provider_unavailable`,
-     `correction_rejected`, `stale_source_state`,
-     `replay_artifact_unavailable`, and `matching_source_state_unavailable`.
-   - Constraint: generated TypeScript type names and exact schema component
-     names are implementation details to bind after Task 373 exports OpenAPI;
-     the semantic codes above are already closed.
-1. `Ändrat` versus `Klart` in the list.
-   - Decision: `teacher_modified` with `current_key_origin =
-     teacher_edited_advisory` maps to a teacher-owned modified state. The list
-     may show `Ändrat` for orientation, but report/export completion treats the
-     item as complete once Sir Convert returns a valid teacher-owned key.
-   - Constraint: no AI current-key marker appears after teacher-owned edits.
-     If the UI cannot safely distinguish the orientation state, it must render
-     plain complete state rather than invent AI provenance.
-1. Provenance detail.
-   - Decision: consume only Task 373's bounded `provenance_detail` object for
-     any `Tidigare förslag` style disclosure. Do not consume or model a generic
-     `history` event stream.
-   - Rationale: provenance detail is optional detail/audit context. It must not
-     create a second review state machine, explain current truth through legacy
-     lineage, or affect list labels, report completion, or file readiness.
-1. Public lane behavior.
-   - Decision: PR-0406 is authenticated-only. Public anonymous compact-report
-     consumption is out of scope even if Task 373 can emit a public-safe report.
-   - Constraint: any public consumption needs a later governed public-grant
-     consumer task.
-1. Saved local intent versus producer projection conflict.
-   - Decision: show saved correction intent as local saved/readback input only
-     when Sir Convert replay is stale or unavailable.
-   - Constraint: do not show fresh `Klart`, report completion, file readiness,
-     or export/save enablement until replay projection and target readiness
-     succeed.
-1. Small-screen layout contract.
-   - Decision: mobile/small-screen Exam Converter uses a bespoke
-     task-oriented flow, not responsive stacking of the desktop workbench.
-     Question list, item detail, report, and files are separate narrow-viewport
-     surfaces.
-   - Decision: the files surface must not carry question-detail context. It
-     shows generated files and file actions only, with filenames wrapping or
-     truncating safely and format/action affordances kept visible.
-   - Constraint: no small-screen implementation may rely on horizontal
-     clipping, hidden right panes, squeezed tables, or off-canvas desktop
-     columns as the primary user path.
-1. Small-screen mockup and copy approval.
-   - Decision: use
-     `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` as the
-     approved exact mockup and language authority for PR-0406 small-screen
-     answer-key review.
-   - Decision: the canonical generated preview and `index.html` source encode
-     the final approved small-screen layout and copy. Treat them as decision
-     material, not inspiration.
-   - Decision: validation issues use concrete missing-key language such as
-     `Inget rätt svar valt`, `Välj minst ett rätt svar`, or `Saknar facitsvar`.
-   - Decision: manual validation repair uses `Spara facit`; keep it disabled
-     until a valid key/value exists.
-   - Decision: `Acceptera` is reserved for accepting a pending AI suggestion
-     unchanged. A second click must not convert unchanged AI provenance into a
-     teacher-authored key.
-1. Symbol contract.
-   - Decision: PR-0406 small-screen review symbols must follow
-     `docs/reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md`
-     and the symbol table in
-     `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`.
-   - Decision: pending AI suggestions and AI detail use `IconAi` /
-     `Sparkles`, reviewed/selected state uses `IconCheck` / `Check`,
-     teacher-owned changed state uses `IconEdit` / `PencilLine`, and current
-     validation problems use `IconWarning` / `AlertTriangle`.
-   - Constraint: do not introduce feature-local direct `Bot`, `CheckCircle2`,
-     or `XCircle` imports for the PR-0406 state projection. Existing Exam
-     Converter drift must be corrected as part of the consumer implementation
-     where these states are touched.
-1. Desktop layout and result-band contract.
-   - Decision: desktop keeps the workbench advantage: left workflow rail,
-     central question table, and one selected-question detail pane for the
-     active `Frågor` mode.
-   - Decision: the pre-conversion workflow rail does not expose PDF/QTI target
-     checkboxes or source-format choices. The source upload determines source
-     handling, and supported PDF/QTI outputs are requested automatically for the
-     current DXE converter path.
-   - Decision: `Filer` and `Rapport` remain exclusive inspection modes on
-     desktop as well. They must not carry a selected-question detail pane or a
-     singular question summary above their mode content.
-   - Decision: teacher choice over generated outputs happens in `Filer` after
-     review persistence and target readiness, by downloading or saving each
-     generated file.
-   - Decision: when compact review state exists, the desktop result band uses
-     actionable review framing instead of coarse conversion-result language:
-     `Kontrollera facit`, a compact count such as `6 att granska`, and
-     `Granska frågorna som saknar rätt svar eller facitsvar.`
-   - Constraint: export-ready copy such as `Filerna kan sparas eller hämtas`
-     may appear only when Sir Convert target readiness and replay artifact
-     references authorize the file actions. The answer-key review projection
-     alone must not unlock downloads or saves.
-   - Constraint: if the compact projection is expected but missing or invalid,
-     fail closed with review unavailable/blocked copy rather than falling back
-     to local `Klart` inference or the old partial-conversion framing.
-1. Desktop detail navigation and persistence behavior.
-   - Decision: desktop detail panes get sticky symbolic previous/next
-     navigation controls using Lucide `ChevronLeft` and `ChevronRight` or
-     approved wrappers for those local navigation controls.
-   - Decision: previous/next controls use accessible labels and optional
-     tooltips, but no persistent visible `Föregående` / `Nästa` text.
-   - Decision: `Acceptera` and `Spara facit` are persistence actions, not
-     navigation actions. `Acceptera` is only for accepting a pending advisory
-     suggestion unchanged; `Spara facit` is for manual selection, manual
-     editing, and validation repair.
-   - Decision: `Ändra` opens the normal selected-question answer-key editor in
-     the detail pane. The editor may show bounded `Tidigare förslag` provenance
-     detail, but it does not create a second AI-specific editing workflow.
-   - Decision: after `Acceptera` or valid `Spara facit`, the UI must wait for
-     backend-confirmed persistence/readback and Sir Convert replay projection
-     before automatically advancing to the next actionable item.
-   - Constraint: do not advance optimistically on click, and do not auto-advance
-     to a non-actionable next row merely because it is numerically next.
+01. Projection transport.
+    - Decision: consume both producer surfaces from Task 373. Use the named
+      `answer_key_review_state_report` artifact for first-pass bundle review and
+      the top-level correction-apply `answer_key_review_state` field for
+      immediate replay UI.
+    - Constraint: do not add a second local inference path when either producer
+      surface is missing or invalid; fail closed instead.
+02. Exact semantic enum names.
+    - Decision: map producer `review_state` codes
+      `review_required`, `review_complete`, `teacher_modified`, and
+      `validation_required` to Skriptoteket presentation state.
+    - Decision: consume producer `current_key_origin` codes `none`,
+      `source_provided`, `reviewed_advisory`, `teacher_authored`,
+      `teacher_edited_advisory`, and `mixed`.
+    - Decision: consume producer reason codes including
+      `source_answer_key_present`, `advisory_candidate_pending`,
+      `reviewed_advisory_accepted`, `teacher_answer_key_present`,
+      `teacher_edited_advisory_candidate`, `manual_answer_key_required`,
+      `no_correct_choice_selected`, `required_gap_accepted_values_missing`,
+      `unsupported_item_type`, `unsupported_target_shape`,
+      `target_validation_failed`, `provider_unavailable`,
+      `correction_rejected`, `stale_source_state`,
+      `replay_artifact_unavailable`, and `matching_source_state_unavailable`.
+    - Constraint: generated TypeScript type names and exact schema component
+      names are implementation details to bind after Task 373 exports OpenAPI;
+      the semantic codes above are already closed.
+03. `Ändrat` versus `Klart` in the list.
+    - Decision: `teacher_modified` with `current_key_origin = teacher_edited_advisory` maps to a teacher-owned modified state. The list
+      may show `Ändrat` for orientation, but report/export completion treats the
+      item as complete once Sir Convert returns a valid teacher-owned key.
+    - Constraint: no AI current-key marker appears after teacher-owned edits.
+      If the UI cannot safely distinguish the orientation state, it must render
+      plain complete state rather than invent AI provenance.
+04. Provenance detail.
+    - Decision: consume only Task 373's bounded `provenance_detail` object for
+      any `Tidigare förslag` style disclosure. Do not consume or model a generic
+      `history` event stream.
+    - Rationale: provenance detail is optional detail/audit context. It must not
+      create a second review state machine, explain current truth through legacy
+      lineage, or affect list labels, report completion, or file readiness.
+05. Public lane behavior.
+    - Decision: PR-0406 is authenticated-only. Public anonymous compact-report
+      consumption is out of scope even if Task 373 can emit a public-safe report.
+    - Constraint: any public consumption needs a later governed public-grant
+      consumer task.
+06. Saved local intent versus producer projection conflict.
+    - Decision: show saved correction intent as local saved/readback input only
+      when Sir Convert replay is stale or unavailable.
+    - Constraint: do not show fresh `Klart`, report completion, file readiness,
+      or export/save enablement until replay projection and target readiness
+      succeed.
+07. Small-screen layout contract.
+    - Decision: mobile/small-screen Exam Converter uses a bespoke
+      task-oriented flow, not responsive stacking of the desktop workbench.
+      Question list, item detail, report, and files are separate narrow-viewport
+      surfaces.
+    - Decision: the files surface must not carry question-detail context. It
+      shows generated files and file actions only, with filenames wrapping or
+      truncating safely and format/action affordances kept visible.
+    - Constraint: no small-screen implementation may rely on horizontal
+      clipping, hidden right panes, squeezed tables, or off-canvas desktop
+      columns as the primary user path.
+08. Small-screen mockup and copy approval.
+    - Decision: use
+      `docs/mockups/pr-0406-answer-key-review-small-screen/README.md` as the
+      approved exact mockup and language authority for PR-0406 small-screen
+      answer-key review.
+    - Decision: the canonical generated preview and `index.html` source encode
+      the final approved small-screen layout and copy. Treat them as decision
+      material, not inspiration.
+    - Decision: validation issues use concrete missing-key language such as
+      `Inget rätt svar valt`, `Välj minst ett rätt svar`, or `Saknar facitsvar`.
+    - Decision: manual validation repair uses `Spara facit`; keep it disabled
+      until a valid key/value exists.
+    - Decision: `Acceptera` is reserved for accepting a pending AI suggestion
+      unchanged. A second click must not convert unchanged AI provenance into a
+      teacher-authored key.
+09. Symbol contract.
+    - Decision: PR-0406 small-screen review symbols must follow
+      `docs/reference/ref-symbol-semantics-inventory-and-decision-contract-2026-05-04.md`
+      and the symbol table in
+      `docs/mockups/pr-0406-answer-key-review-small-screen/README.md`.
+    - Decision: pending AI suggestions and AI detail use `IconAi` /
+      `Sparkles`, reviewed/selected state uses `IconCheck` / `Check`,
+      teacher-owned changed state uses `IconEdit` / `PencilLine`, and current
+      validation problems use `IconWarning` / `AlertTriangle`.
+    - Constraint: do not introduce feature-local direct `Bot`, `CheckCircle2`,
+      or `XCircle` imports for the PR-0406 state projection. Existing Exam
+      Converter drift must be corrected as part of the consumer implementation
+      where these states are touched.
+10. Desktop layout and result-band contract.
+    - Decision: desktop keeps the workbench advantage: left workflow rail,
+      central question table, and one selected-question detail pane for the
+      active `Frågor` mode.
+    - Decision: the pre-conversion workflow rail does not expose PDF/QTI target
+      checkboxes or source-format choices. The source upload determines source
+      handling, and supported PDF/QTI outputs are requested automatically for the
+      current DXE converter path.
+    - Decision: `Filer` and `Rapport` remain exclusive inspection modes on
+      desktop as well. They must not carry a selected-question detail pane or a
+      singular question summary above their mode content.
+    - Decision: teacher choice over generated outputs happens in `Filer` after
+      review persistence and target readiness, by downloading or saving each
+      generated file.
+    - Decision: when compact review state exists, the desktop result band uses
+      actionable review framing instead of coarse conversion-result language:
+      `Kontrollera facit`, a compact count such as `6 att granska`, and
+      `Granska frågorna som saknar rätt svar eller facitsvar.`
+    - Constraint: export-ready copy such as `Filerna kan sparas eller hämtas`
+      may appear only when Sir Convert target readiness and replay artifact
+      references authorize the file actions. The answer-key review projection
+      alone must not unlock downloads or saves.
+    - Constraint: if the compact projection is expected but missing or invalid,
+      fail closed with review unavailable/blocked copy rather than falling back
+      to local `Klart` inference or the old partial-conversion framing.
+11. Desktop detail navigation and persistence behavior.
+    - Decision: desktop detail panes get sticky symbolic previous/next
+      navigation controls using Lucide `ChevronLeft` and `ChevronRight` or
+      approved wrappers for those local navigation controls.
+    - Decision: previous/next controls use accessible labels and optional
+      tooltips, but no persistent visible `Föregående` / `Nästa` text.
+    - Decision: `Acceptera` and `Spara facit` are persistence actions, not
+      navigation actions. `Acceptera` is only for accepting a pending advisory
+      suggestion unchanged; `Spara facit` is for manual selection, manual
+      editing, and validation repair.
+    - Decision: `Ändra` opens the normal selected-question answer-key editor in
+      the detail pane. The editor may show bounded `Tidigare förslag` provenance
+      detail, but it does not create a second AI-specific editing workflow.
+    - Decision: after `Acceptera` or valid `Spara facit`, the UI must wait for
+      backend-confirmed persistence/readback and Sir Convert replay projection
+      before automatically advancing to the next actionable item.
+    - Constraint: do not advance optimistically on click, and do not auto-advance
+      to a non-actionable next row merely because it is numerically next.
 
 ## Implementation Dependencies
 

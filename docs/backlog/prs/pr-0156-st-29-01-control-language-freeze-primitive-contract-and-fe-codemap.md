@@ -42,6 +42,7 @@ Make the first implementation lane for `ST-29-01` concrete before any UI code ch
 ## Implementation plan
 
 1. Publish the codemap.
+
    - Add one reference doc that maps the full frontend design-system surface:
      - docs-as-code governance
      - stack + workspace entrypoints
@@ -53,6 +54,7 @@ Make the first implementation lane for `ST-29-01` concrete before any UI code ch
      - current structural gap: no dedicated `frontend/packages/huleedu-ui` package yet
 
 2. Freeze the implementation lane.
+
    - Add three PR-sized backlog docs for `ST-29-01`.
    - Keep the sequence explicit:
      - docs/rules/codemap foundation
@@ -60,11 +62,13 @@ Make the first implementation lane for `ST-29-01` concrete before any UI code ch
      - first proving-ground adoption in `Sittplatser`
 
 3. Repair stale shared skill guidance.
+
    - Update the shared docs/planning skill text so it defers to the local repository’s
      `AGENTS.md`, `docs/index.md`, and actual command set instead of assuming HuleEdu-specific paths
      that do not exist here.
 
 4. Wire the docs together.
+
    - Update `ST-29-01` references.
    - Update `docs/index.md`.
 

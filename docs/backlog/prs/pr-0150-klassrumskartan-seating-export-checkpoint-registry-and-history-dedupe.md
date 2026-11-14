@@ -62,16 +62,19 @@ teacher-approved export history honestly:
 ## Implementation plan
 
 1. Lock checkpoint semantics in tests first.
+
    - Add unit coverage for normalized seating assignment hashing.
    - Prove that seated assignments plus unplaced students affect the hash.
    - Prove that export presentation/layout details do not affect the hash.
 
 2. Lock lifecycle behavior in application tests.
+
    - Successful seating export completion creates one eligible checkpoint.
    - Repeated identical seating export completion does not create a duplicate checkpoint.
    - Autosave/undo/redo/abandon flows do not create checkpoints.
 
 3. Introduce the checkpoint domain/persistence boundary.
+
    - Add a seating checkpoint model/value shape that stores:
      - roster identity
      - optional source-draft provenance only if needed for audit/debug
@@ -83,12 +86,14 @@ teacher-approved export history honestly:
    - Keep checkpoint persistence separate from roster-global smart-rule persistence.
 
 4. Add persistence + migration support.
+
    - Add an ORM model and Alembic revision for seating checkpoints.
    - Add schema assertions and migration idempotency coverage.
    - Keep the initial retention posture simple and append-only unless a repo-wide retention rule
      forces something stricter.
 
 5. Wire checkpoint creation to successful seating export completion only.
+
    - Hook checkpoint recording into the export-success path, not export request acceptance.
    - Keep the export path idempotent with respect to unchanged seating state.
 

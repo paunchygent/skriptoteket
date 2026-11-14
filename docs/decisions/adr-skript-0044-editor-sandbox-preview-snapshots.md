@@ -4,17 +4,17 @@ id: ADR-SKRIPT-0044
 title: Editor sandbox preview snapshots
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - EPIC-SKRIPT-14
+    - EPIC-SKRIPT-14
 deciders:
-- lead-developer
+  - lead-developer
 retired_ids:
-- ADR-0044
+  - ADR-0044
 ---
 
 ## Context

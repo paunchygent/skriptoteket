@@ -44,12 +44,12 @@ Ship the first version of reusable, per-user tool data: datasets (structured lis
 
 ## Execution plan
 
-1) Define persistence models + repositories (datasets + vault files).
-2) Implement API endpoints + validation (CRUD + list).
-3) Build tool run UI pickers (datasets + vault files) with clear empty states.
-4) Runner integration: inject selected dataset into memory and stage vault files as inputs.
-5) Add explicit "save artifact to vault" actions in run results.
-6) Implement soft delete + restore + retention purge for vault files.
+1. Define persistence models + repositories (datasets + vault files).
+2. Implement API endpoints + validation (CRUD + list).
+3. Build tool run UI pickers (datasets + vault files) with clear empty states.
+4. Runner integration: inject selected dataset into memory and stage vault files as inputs.
+5. Add explicit "save artifact to vault" actions in run results.
+6. Implement soft delete + restore + retention purge for vault files.
 
 ## Demo checklist
 

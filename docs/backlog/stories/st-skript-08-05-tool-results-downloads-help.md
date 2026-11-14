@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-05
 title: Tool results + downloads help
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,12 +16,10 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given a result page, when opening help, then it explains status, result preview,
-  and downloadable files
-- Given an error result, when opening help, then it explains what the user can do
-  next (try again or contact maintainer/admin) without technical jargon
+  - Given a result page, when opening help, then it explains status, result preview, and downloadable files
+  - Given an error result, when opening help, then it explains what the user can do next (try again or contact maintainer/admin) without technical jargon
 retired_ids:
-- ST-08-05
+  - ST-08-05
 ---
 
 ## Context

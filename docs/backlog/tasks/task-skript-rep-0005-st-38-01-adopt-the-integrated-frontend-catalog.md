@@ -44,15 +44,15 @@ Docker, backend, deployment, auth, and observability remain unchanged.
 
 ## Decision And Assumption Ledger
 
-| ID     | Status | Decision | Evidence |
-| ------ | ------ | -------- | -------- |
-| FC-001 | closed | The workspace is `frontend/pnpm-workspace.yaml`; dependency manifests are `frontend/package.json` and `frontend/apps/skriptoteket/package.json`; the consumer lock is `frontend/pnpm-lock.yaml`. | Consumer Explorer |
-| FC-002 | closed | All 17 app dependency names already match the central catalog and will use `catalog:`. The central synchronizer owns only its reserved workspace block. | Central and consumer Explorers |
-| FC-003 | closed | Store the shared resource metadata contract at `frontend/apps/skriptoteket/src/design-system/huleedu-integrated/` and copy only `manifest.json`, `manifest.schema.json`, and `package.json`. | HuleEdu consumer pattern and user direction |
-| FC-004 | closed | Skriptoteket continues to own its app manifest, lockfile, product source, styles, and components. Divergent product resource files are not overwritten. | Consumer digest comparison |
-| FC-005 | closed | No catalog exceptions are required. | Exact dependency-name comparison |
-| FC-006 | closed | The accepted lock change is only catalog adoption closure; the expected material resolution change is the Vue Vite plugin aligning with central authority. | Lockfile comparison |
-| FC-007 | closed | Proof uses central sync/read-only validation, metadata equality, frozen PNPM install, frontend typecheck, focused resource-component Vitest, build, docs validation, and diff hygiene. | User-approved bounded proof |
+| ID     | Status | Decision                                                                                                                                                                                         | Evidence                                    |
+| ------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| FC-001 | closed | The workspace is `frontend/pnpm-workspace.yaml`; dependency manifests are `frontend/package.json` and `frontend/apps/skriptoteket/package.json`; the consumer lock is `frontend/pnpm-lock.yaml`. | Consumer Explorer                           |
+| FC-002 | closed | All 17 app dependency names already match the central catalog and will use `catalog:`. The central synchronizer owns only its reserved workspace block.                                          | Central and consumer Explorers              |
+| FC-003 | closed | Store the shared resource metadata contract at `frontend/apps/skriptoteket/src/design-system/huleedu-integrated/` and copy only `manifest.json`, `manifest.schema.json`, and `package.json`.     | HuleEdu consumer pattern and user direction |
+| FC-004 | closed | Skriptoteket continues to own its app manifest, lockfile, product source, styles, and components. Divergent product resource files are not overwritten.                                          | Consumer digest comparison                  |
+| FC-005 | closed | No catalog exceptions are required.                                                                                                                                                              | Exact dependency-name comparison            |
+| FC-006 | closed | The accepted lock change is only catalog adoption closure; the expected material resolution change is the Vue Vite plugin aligning with central authority.                                       | Lockfile comparison                         |
+| FC-007 | closed | Proof uses central sync/read-only validation, metadata equality, frozen PNPM install, frontend typecheck, focused resource-component Vitest, build, docs validation, and diff hygiene.           | User-approved bounded proof                 |
 
 ## Plan
 

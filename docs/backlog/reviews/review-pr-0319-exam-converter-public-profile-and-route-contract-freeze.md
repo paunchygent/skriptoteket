@@ -45,35 +45,35 @@ matching SPA route shell at
 
 ## Artifacts to Review
 
-| File | Focus |
-|------|-------|
-| `docs/backlog/prs/pr-0319-st-21-03-exam-converter-public-profile-and-route-contract-freeze.md` | Scope, non-goals, acceptance criteria, verification |
-| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md` | Public/authenticated lane split and PR ordering |
-| `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md` | Scoped public exception authority |
-| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Accepted public app boundary being amended |
-| `src/skriptoteket/domain/curated_apps/models.py` | Scoped capability contract and helper semantics |
-| `src/skriptoteket/infrastructure/curated_apps/registry.py` | Conversion Hub registry profile |
-| `src/skriptoteket/web/api/v1/public_apps.py` | Public bootstrap and scoped capability response |
-| `src/skriptoteket/web/api/v1/public_apps_support.py` | Fail-closed public helper checks |
-| `frontend/apps/skriptoteket/src/router/routes.ts` | Scoped public SPA namespace |
-| `frontend/apps/skriptoteket/src/views/PublicAppHostView.vue` | Public bootstrap loading and credential-omitting client |
-| `frontend/apps/skriptoteket/src/api/client.ts` | Public API credential behavior |
-| `tests/unit/domain/curated_apps/test_models.py` | Domain capability proof |
-| `tests/unit/infrastructure/curated_apps/test_registry.py` | Registry profile proof |
-| `tests/unit/web/test_public_apps_api_routes.py` | Scoped bootstrap and fail-closed proof |
-| `frontend/apps/skriptoteket/src/api/client.spec.ts` | Public fetch credential proof |
-| `frontend/apps/skriptoteket/src/router/routes.spec.ts` | Scoped SPA route proof |
-| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts` | Public host shell proof |
+| File                                                                                           | Focus                                                   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `docs/backlog/prs/pr-0319-st-21-03-exam-converter-public-profile-and-route-contract-freeze.md` | Scope, non-goals, acceptance criteria, verification     |
+| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`   | Public/authenticated lane split and PR ordering         |
+| `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`           | Scoped public exception authority                       |
+| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`           | Accepted public app boundary being amended              |
+| `src/skriptoteket/domain/curated_apps/models.py`                                               | Scoped capability contract and helper semantics         |
+| `src/skriptoteket/infrastructure/curated_apps/registry.py`                                     | Conversion Hub registry profile                         |
+| `src/skriptoteket/web/api/v1/public_apps.py`                                                   | Public bootstrap and scoped capability response         |
+| `src/skriptoteket/web/api/v1/public_apps_support.py`                                           | Fail-closed public helper checks                        |
+| `frontend/apps/skriptoteket/src/router/routes.ts`                                              | Scoped public SPA namespace                             |
+| `frontend/apps/skriptoteket/src/views/PublicAppHostView.vue`                                   | Public bootstrap loading and credential-omitting client |
+| `frontend/apps/skriptoteket/src/api/client.ts`                                                 | Public API credential behavior                          |
+| `tests/unit/domain/curated_apps/test_models.py`                                                | Domain capability proof                                 |
+| `tests/unit/infrastructure/curated_apps/test_registry.py`                                      | Registry profile proof                                  |
+| `tests/unit/web/test_public_apps_api_routes.py`                                                | Scoped bootstrap and fail-closed proof                  |
+| `frontend/apps/skriptoteket/src/api/client.spec.ts`                                            | Public fetch credential proof                           |
+| `frontend/apps/skriptoteket/src/router/routes.spec.ts`                                         | Scoped SPA route proof                                  |
+| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts`                               | Public host shell proof                                 |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Add scoped public capabilities instead of changing the app-wide profile | Prevents all Conversion Hub surfaces from becoming public | [x] |
-| Keep `/api/v1/public/apps/documents.conversion_hub` fail-closed | Avoids general public route discovery for authenticated Conversion Hub | [x] |
-| Return contract-only metadata for `/exam-converter` | Freezes the public runtime taxonomy without shipping upload/poll/download behavior | [x] |
-| Use credential-omitting public bootstrap fetches | Keeps public helper namespaces cookie-agnostic even with ambient account cookies | [x] |
-| Leave actual public conversion runtime to a later slice | Keeps abuse controls and transient artifact state reviewable before compute opens | [x] |
+| Decision                                                                | Rationale                                                                          | Approve? |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Add scoped public capabilities instead of changing the app-wide profile | Prevents all Conversion Hub surfaces from becoming public                          | [x]      |
+| Keep `/api/v1/public/apps/documents.conversion_hub` fail-closed         | Avoids general public route discovery for authenticated Conversion Hub             | [x]      |
+| Return contract-only metadata for `/exam-converter`                     | Freezes the public runtime taxonomy without shipping upload/poll/download behavior | [x]      |
+| Use credential-omitting public bootstrap fetches                        | Keeps public helper namespaces cookie-agnostic even with ambient account cookies   | [x]      |
+| Leave actual public conversion runtime to a later slice                 | Keeps abuse controls and transient artifact state reviewable before compute opens  | [x]      |
 
 ## Review Checklist
 
@@ -85,11 +85,11 @@ matching SPA route shell at
 - [x] The scoped public API route has no auth, session, or CSRF dependency.
 - [x] Public SPA bootstrap uses `credentials: "omit"`.
 - [x] No runtime public conversion submission, polling, artifact generation, or
-      artifact download route shipped in this slice.
+  artifact download route shipped in this slice.
 - [x] Frontend and backend route ordering does not shadow existing public
-      Klassrumskartan helper routes.
+  Klassrumskartan helper routes.
 - [x] Current FastAPI and Vue Router docs were checked for route-order and
-      dynamic-segment behavior while reviewing the route shape.
+  dynamic-segment behavior while reviewing the route shape.
 
 ## Review Feedback
 
@@ -132,6 +132,6 @@ at the actual upload/poll/download routes.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0319` | Approved the scoped public profile and route-contract freeze after verifying code, docs, tests, route behavior, and live public route probes. |
+| Change | Artifact  | Description                                                                                                                                   |
+| ------ | --------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0319` | Approved the scoped public profile and route-contract freeze after verifying code, docs, tests, route behavior, and live public route probes. |

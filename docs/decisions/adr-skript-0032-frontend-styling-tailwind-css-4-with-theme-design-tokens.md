@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0032
 title: 'Frontend styling: Tailwind CSS 4 with @theme design tokens'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0032
+  - ADR-0032
 ---
 
 ## Context

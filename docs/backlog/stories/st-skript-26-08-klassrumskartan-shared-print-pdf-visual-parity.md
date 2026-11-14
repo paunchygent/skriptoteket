@@ -4,8 +4,8 @@ id: ST-SKRIPT-26-08
 title: Klassrumskartan shared print PDF visual parity
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,27 +16,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-26
 acceptance_criteria:
-- Given a teacher exports seating from the authenticated workspace, when the PDF is
-  generated, then the A3 landscape artifact visually inherits from the approved shared
-  seating render while remaining a print-native, low-ink PDF.
-- Given a teacher exports grouping from the authenticated workspace, when the PDF
-  is generated, then the A4 portrait artifact visually inherits from the approved
-  shared grouping render while remaining a print-native, low-ink PDF.
-- Given a seating or grouping share link is active, when `Ladda ner PDF` is used,
-  then the downloaded PDF uses the same print-owned renderer behavior as the corresponding
-  workspace export path.
-- Given a share-link PDF is rendered, when the artifact is loaded, then it renders
-  from immutable `presentation_payload` and never from responsive browser HTML, JavaScript,
-  screenshots, or page-printing.
-- Given the PDF body adopts the share-page visual language, when rendered PNG proof
-  is inspected, then the compact PDF header still shows visible Klassrumskartan/Skriptoteket
-  branding and does not include share-page action chrome.
+  - Given a teacher exports seating from the authenticated workspace, when the PDF is generated, then the A3 landscape artifact visually inherits from the approved shared seating render while remaining a print-native, low-ink PDF.
+  - Given a teacher exports grouping from the authenticated workspace, when the PDF is generated, then the A4 portrait artifact visually inherits from the approved shared grouping render while remaining a print-native, low-ink PDF.
+  - Given a seating or grouping share link is active, when `Ladda ner PDF` is used, then the downloaded PDF uses the same print-owned renderer behavior as the corresponding workspace export path.
+  - Given a share-link PDF is rendered, when the artifact is loaded, then it renders from immutable `presentation_payload` and never from responsive browser HTML, JavaScript, screenshots, or page-printing.
+  - Given the PDF body adopts the share-page visual language, when rendered PNG proof is inspected, then the compact PDF header still shows visible Klassrumskartan/Skriptoteket branding and does not include share-page action chrome.
 retired_ids:
-- ST-26-08
+  - ST-26-08
 ---
 
 ## Context
-
 
 `PR-0276` made share links feel like real published artifacts: grouping pages
 use large serif titles, clean card grids, restrained borders, and circular
@@ -72,7 +61,6 @@ No separate non-goals is stated in the source.
 
 ## Notes
 
-
 - Grouping PDFs should keep `A4` portrait and adopt the shared grouping
   language: large serif title, `Skapad`, clean two-column group cards, numbered
   member markers without reversed dark fills, and strong but restrained
@@ -104,7 +92,6 @@ No separate non-goals is stated in the source.
   visibility, and header-size sanity.
 
 ### Source: Visual Direction
-
 
 Use these approved product screenshots as the north star:
 

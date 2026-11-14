@@ -63,23 +63,30 @@ general conversion workloads while declaring only one public capability:
 
 2. Keep `documents.conversion_hub.public_access_profile` as
    `authenticated_only` and add only the `exam_converter` scoped capability.
+
 3. Add registry/domain helpers that distinguish app-wide public access from
    scoped public capabilities, such as `supports_public_capability(scope)`, so
    `supports_public_access` does not silently become true for all Conversion Hub
    surfaces.
+
 4. Update public bootstrap/support contracts so `documents.conversion_hub`
    can be exposed only for the `exam_converter` scope and only with public-safe
    capability metadata.
+
 5. Freeze the route namespace for the later runtime slice:
+
    - frontend public lane:
      `/public/apps/documents.conversion_hub/exam-converter`
    - backend public namespace:
      `/api/v1/public/apps/documents.conversion_hub/exam-converter/...`
+
 6. Document the public helper taxonomy for the later runtime slice:
    MIME/type validation, upload-size caps, request-time budgets, concurrency
    limits, rate limits, structured reason codes, short artifact TTLs,
    correlation-id display, and privacy-safe telemetry.
+
 7. Add focused tests proving:
+
    - general Conversion Hub remains authenticated-only;
    - `exam_converter` is the only public capability exposed for
      `documents.conversion_hub`;
@@ -115,8 +122,7 @@ general conversion workloads while declaring only one public capability:
   the app-wide `public_access_profile`.
 - Updated the registry so `documents.conversion_hub` remains
   `authenticated_only` for general access and declares only
-  `public_capabilities: [{ scope: "exam_converter", profile:
-  "public_browser_runtime" }]`.
+  `public_capabilities: [{ scope: "exam_converter", profile: "public_browser_runtime" }]`.
 - Added the scoped public bootstrap endpoint
   `/api/v1/public/apps/documents.conversion_hub/exam-converter`; it returns
   contract metadata only: public route/API namespace, upload MIME/suffix caps,

@@ -57,11 +57,11 @@ boundary explicit:
 ### 1. Audit the remaining real-canvas test paths
 
 - [x] Identify exactly which Flunk-Out specs still trigger real Pixi/canvas
-      initialization or canvas context lookup.
+  initialization or canvas context lookup.
 - [x] Confirm whether the warning comes from:
-      - runtime creation paths that still fall through to `PixiRenderer.create`
-      - shared test setup
-      - import-time side effects
+  \- runtime creation paths that still fall through to `PixiRenderer.create`
+  \- shared test setup
+  \- import-time side effects
 
 Suggested solution:
 
@@ -79,12 +79,12 @@ Actual result:
 ### 2. Tighten renderer boundaries in unit tests
 
 - [x] Ensure all Flunk-Out unit/component specs that do not explicitly test
-      real renderer behavior use fake `RuntimeRenderer` or injected
-      `runtimeFactory` seams.
+  real renderer behavior use fake `RuntimeRenderer` or injected
+  `runtimeFactory` seams.
 - [x] Remove any remaining accidental dependency on Pixi boot from:
-      - `GameRuntime.spec.ts`
-      - host/view specs
-      - future feature-local test helpers
+  \- `GameRuntime.spec.ts`
+  \- host/view specs
+  \- future feature-local test helpers
 - [x] Keep the runtime/renderer contract protocol-first.
 
 Suggested solution:
@@ -102,13 +102,13 @@ Actual result:
 ### 3. Add a minimal canvas-context shim only if still needed
 
 - [x] If warnings remain after boundary cleanup, add a minimal
-      `HTMLCanvasElement.prototype.getContext` shim in
-      `frontend/apps/skriptoteket/src/test/setup.ts`.
+  `HTMLCanvasElement.prototype.getContext` shim in
+  `frontend/apps/skriptoteket/src/test/setup.ts`.
 - [x] Keep the shim intentionally narrow:
-      - enough to silence jsdom capability noise
-      - not rich enough to mask real renderer mistakes
+  \- enough to silence jsdom capability noise
+  \- not rich enough to mask real renderer mistakes
 - [x] Document why the shim exists and when it should not be used as a reason to
-      boot real Pixi in unit tests.
+  boot real Pixi in unit tests.
 
 Suggested solution:
 
@@ -124,7 +124,7 @@ Actual result:
 ### 4. Preserve browser-level renderer truth
 
 - [x] Keep at least one live/browser verification step proving the real route
-      still boots the runtime canvas correctly after the cleanup.
+  still boots the runtime canvas correctly after the cleanup.
 - [x] Record the browser proof in `.codex/handoff.md`.
 
 Suggested solution:

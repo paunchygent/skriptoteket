@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0023
 title: ST-28-04 local auth-edge bootstrap preflight
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,46 +18,17 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Given Skriptoteket local browser login is HuleEdu-owned, when a developer runs authenticated
-  live proof locally, then the proof first verifies the required HuleEdu auth-edge
-  services instead of calling the retired `POST /api/v1/auth/login` endpoint.
-- Given `.env` contains `BOOTSTRAP_SUPERUSER_EMAIL` and `BOOTSTRAP_SUPERUSER_PASSWORD`,
-  when authenticated local browser proof runs, then HuleEdu login accepts those credentials
-  and Skriptoteket resolves the resulting Gateway-signed context to a local projected
-  `superuser`.
-- Given local dev credentials must be durable across the HuleEdu provider and Skriptoteket
-  consumer stacks, when the local `.env` files and examples are reconciled, then both
-  repos use `superuser@local.dev` / `superuser-password` as the single browser-bootstrap
-  superuser account for local-only proof.
-- 'Given role-specific proof needs more than the superuser bootstrap account, when
-  the auth-edge proof matrix is prepared, then HuleEdu exports and Skriptoteket consumes
-  deterministic local proof identities for every active Skriptoteket RBAC tier: `user`,
-  `contributor`, `admin`, and `superuser`.'
-- Given HuleEdu owns credential truth, when the preflight evaluates the bootstrap
-  identity, then it never verifies the `.env` password against Skriptoteket's local
-  password hash and never treats a Skriptoteket-local password user as browser-login
-  authority.
-- Given Skriptoteket owns app-local authorization truth, when app-continuation resolves
-  the signed context, then the proof verifies `active_app=skriptoteket`, accepted
-  product realm plus `realm_subject_id`, an `identity_projections` mapping, active
-  verified local user state, and local `role=superuser`.
-- Given the bootstrap email already exists as a Skriptoteket-local password-owner
-  user without the required HuleEdu projection, when preflight runs, then it fails
-  closed with `bootstrap_identity_conflict` and instructs the operator to run governed
-  subject-export/projection bootstrap or reset the local dev DB.
-- Given local proof must cover both loopback origins, when closeout runs, then the
-  retained auth-cutover proof covers both `localhost:5173 -> localhost:8080 -> localhost:5174
-  -> localhost:5173` and `127.0.0.1:5173 -> 127.0.0.1:8080 -> 127.0.0.1:5174 -> 127.0.0.1:5173`.
-- Given the HuleEdu local auth edge is missing, not on `hule-network`, not using the
-  trusted Gateway signing key, or not seeded with the `.env` bootstrap credentials,
-  when preflight runs, then it fails closed with an operator-readable diagnostic and
-  does not suggest local Skriptoteket password login.
-- Given public Skriptoteket routes do not require HuleEdu auth, when the new preflight
-  is absent or fails, then public/share proofs remain allowed and the docs distinguish
-  them from authenticated/protected live proofs.
-- Given the implementation changes command surfaces or local proof docs, when closeout
-  runs, then README/runbook/skill references and `.codex/handoff.md` no longer contain
-  runnable-looking stale local login recipes.
+  - Given Skriptoteket local browser login is HuleEdu-owned, when a developer runs authenticated live proof locally, then the proof first verifies the required HuleEdu auth-edge services instead of calling the retired `POST /api/v1/auth/login` endpoint.
+  - Given `.env` contains `BOOTSTRAP_SUPERUSER_EMAIL` and `BOOTSTRAP_SUPERUSER_PASSWORD`, when authenticated local browser proof runs, then HuleEdu login accepts those credentials and Skriptoteket resolves the resulting Gateway-signed context to a local projected `superuser`.
+  - Given local dev credentials must be durable across the HuleEdu provider and Skriptoteket consumer stacks, when the local `.env` files and examples are reconciled, then both repos use `superuser@local.dev` / `superuser-password` as the single browser-bootstrap superuser account for local-only proof.
+  - 'Given role-specific proof needs more than the superuser bootstrap account, when the auth-edge proof matrix is prepared, then HuleEdu exports and Skriptoteket consumes deterministic local proof identities for every active Skriptoteket RBAC tier: `user`, `contributor`, `admin`, and `superuser`.'
+  - Given HuleEdu owns credential truth, when the preflight evaluates the bootstrap identity, then it never verifies the `.env` password against Skriptoteket's local password hash and never treats a Skriptoteket-local password user as browser-login authority.
+  - Given Skriptoteket owns app-local authorization truth, when app-continuation resolves the signed context, then the proof verifies `active_app=skriptoteket`, accepted product realm plus `realm_subject_id`, an `identity_projections` mapping, active verified local user state, and local `role=superuser`.
+  - Given the bootstrap email already exists as a Skriptoteket-local password-owner user without the required HuleEdu projection, when preflight runs, then it fails closed with `bootstrap_identity_conflict` and instructs the operator to run governed subject-export/projection bootstrap or reset the local dev DB.
+  - Given local proof must cover both loopback origins, when closeout runs, then the retained auth-cutover proof covers both `localhost:5173 -> localhost:8080 -> localhost:5174 -> localhost:5173` and `127.0.0.1:5173 -> 127.0.0.1:8080 -> 127.0.0.1:5174 -> 127.0.0.1:5173`.
+  - Given the HuleEdu local auth edge is missing, not on `hule-network`, not using the trusted Gateway signing key, or not seeded with the `.env` bootstrap credentials, when preflight runs, then it fails closed with an operator-readable diagnostic and does not suggest local Skriptoteket password login.
+  - Given public Skriptoteket routes do not require HuleEdu auth, when the new preflight is absent or fails, then public/share proofs remain allowed and the docs distinguish them from authenticated/protected live proofs.
+  - Given the implementation changes command surfaces or local proof docs, when closeout runs, then README/runbook/skill references and `.codex/handoff.md` no longer contain runnable-looking stale local login recipes.
 ---
 
 ## Context
@@ -65,7 +36,6 @@ acceptance_criteria:
 ## Impact And Escalation
 
 The source task is repository-scoped; impact and escalation remain bounded by the retained source contract.
-
 
 ### Problem
 
@@ -102,12 +72,12 @@ legacy local user, or treat a local password hash as browser proof.
 
 The local development identity set should be deterministic and human-usable:
 
-| Purpose | Stable account key | Email | Password source | Skriptoteket role |
-|---------|--------------------|-------|-----------------|-------------------|
-| Browser-bootstrap and RBAC superuser | `skriptoteket-proof-superuser` | `superuser@local.dev` | `BOOTSTRAP_SUPERUSER_PASSWORD=superuser-password` | `superuser` |
-| RBAC proof user | `skriptoteket-proof-user` | `skriptoteket-proof-user@local.dev` | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `user` |
-| RBAC proof contributor | `skriptoteket-proof-contributor` | `skriptoteket-proof-contributor@local.dev` | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `contributor` |
-| RBAC proof admin | `skriptoteket-proof-admin` | `skriptoteket-proof-admin@local.dev` | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `admin` |
+| Purpose                              | Stable account key               | Email                                      | Password source                                                                             | Skriptoteket role |
+| ------------------------------------ | -------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------- | ----------------- |
+| Browser-bootstrap and RBAC superuser | `skriptoteket-proof-superuser`   | `superuser@local.dev`                      | `BOOTSTRAP_SUPERUSER_PASSWORD=superuser-password`                                           | `superuser`       |
+| RBAC proof user                      | `skriptoteket-proof-user`        | `skriptoteket-proof-user@local.dev`        | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `user`            |
+| RBAC proof contributor               | `skriptoteket-proof-contributor` | `skriptoteket-proof-contributor@local.dev` | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `contributor`     |
+| RBAC proof admin                     | `skriptoteket-proof-admin`       | `skriptoteket-proof-admin@local.dev`       | Provider-owned proof-account secret, local default may reuse `BOOTSTRAP_SUPERUSER_PASSWORD` | `admin`           |
 
 HuleEdu must remain the source of truth for these credentials and exported
 realm subjects. Skriptoteket must consume a sanitized HuleEdu subject export and

@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0046
 title: Draft head locks for editor concurrency
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0046
+  - ADR-0046
 ---
 
 ## Context

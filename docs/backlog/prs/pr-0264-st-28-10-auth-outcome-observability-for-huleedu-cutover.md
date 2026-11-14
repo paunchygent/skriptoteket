@@ -75,16 +75,16 @@ auth/session ownership back into Skriptoteket.
 
 ## Ownership Split
 
-| Outcome family | Owner | This PR scope |
-|----------------|-------|---------------|
-| Browser session valid/invalid | HuleEdu Gateway/Identity | Document handoff/correlation only |
-| Product realm ceremony selection | HuleEdu Gateway/Identity | Document handoff; count only unsupported/missing realm after signed context reaches Skriptoteket |
-| Provider lifecycle and continuation | HuleEdu Gateway/Identity | Document handoff; preserve consumer-side proof interpretation |
-| Signed internal identity verification | Skriptoteket | Add sanitized logs/metrics |
-| App continuation/projection resolution | Skriptoteket | Add sanitized logs/metrics |
-| Provisioning-required/linking-required outcomes | Skriptoteket | Add sanitized logs/metrics |
-| Local `User.role` RBAC decisions | Skriptoteket | Add sanitized logs/metrics |
-| CSRF/logout failures | HuleEdu Gateway/session authority, with Skriptoteket writes as consumers | Document split and record only app-side reached outcomes |
+| Outcome family                                  | Owner                                                                    | This PR scope                                                                                    |
+| ----------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Browser session valid/invalid                   | HuleEdu Gateway/Identity                                                 | Document handoff/correlation only                                                                |
+| Product realm ceremony selection                | HuleEdu Gateway/Identity                                                 | Document handoff; count only unsupported/missing realm after signed context reaches Skriptoteket |
+| Provider lifecycle and continuation             | HuleEdu Gateway/Identity                                                 | Document handoff; preserve consumer-side proof interpretation                                    |
+| Signed internal identity verification           | Skriptoteket                                                             | Add sanitized logs/metrics                                                                       |
+| App continuation/projection resolution          | Skriptoteket                                                             | Add sanitized logs/metrics                                                                       |
+| Provisioning-required/linking-required outcomes | Skriptoteket                                                             | Add sanitized logs/metrics                                                                       |
+| Local `User.role` RBAC decisions                | Skriptoteket                                                             | Add sanitized logs/metrics                                                                       |
+| CSRF/logout failures                            | HuleEdu Gateway/session authority, with Skriptoteket writes as consumers | Document split and record only app-side reached outcomes                                         |
 
 ## Proposed Signal Contract
 
@@ -95,21 +95,21 @@ that keeps the auth dependencies small and testable.
 
 Candidate metric families:
 
-| Metric | Type | Bounded labels |
-|--------|------|----------------|
-| `skriptoteket_auth_context_verifications_total` | Counter | `outcome`, `reason` |
-| `skriptoteket_auth_projection_outcomes_total` | Counter | `realm`, `outcome`, `reason` |
-| `skriptoteket_auth_rbac_decisions_total` | Counter | `decision`, `required_role`, `actual_role`, `route_family` |
+| Metric                                          | Type    | Bounded labels                                             |
+| ----------------------------------------------- | ------- | ---------------------------------------------------------- |
+| `skriptoteket_auth_context_verifications_total` | Counter | `outcome`, `reason`                                        |
+| `skriptoteket_auth_projection_outcomes_total`   | Counter | `realm`, `outcome`, `reason`                               |
+| `skriptoteket_auth_rbac_decisions_total`        | Counter | `decision`, `required_role`, `actual_role`, `route_family` |
 
 Candidate structured log events:
 
-| Event | Level | Fields |
-|-------|-------|--------|
-| `auth.internal_identity.verified` | info | `outcome`, `reason`, `correlation_id` |
-| `auth.internal_identity.rejected` | warning | `outcome`, `reason`, `correlation_id` |
-| `auth.projection.resolved` | info | `realm`, `outcome`, `reason`, `correlation_id` |
-| `auth.projection.rejected` | warning | `realm`, `outcome`, `reason`, `correlation_id` |
-| `auth.rbac.denied` | warning | `required_role`, `actual_role`, `route_family`, `correlation_id` |
+| Event                             | Level   | Fields                                                           |
+| --------------------------------- | ------- | ---------------------------------------------------------------- |
+| `auth.internal_identity.verified` | info    | `outcome`, `reason`, `correlation_id`                            |
+| `auth.internal_identity.rejected` | warning | `outcome`, `reason`, `correlation_id`                            |
+| `auth.projection.resolved`        | info    | `realm`, `outcome`, `reason`, `correlation_id`                   |
+| `auth.projection.rejected`        | warning | `realm`, `outcome`, `reason`, `correlation_id`                   |
+| `auth.rbac.denied`                | warning | `required_role`, `actual_role`, `route_family`, `correlation_id` |
 
 Allowed values must be enums or otherwise bounded. `reason` must come from existing `DomainError`
 details or explicit constants, then be normalized into a bounded allowlist.
@@ -214,21 +214,13 @@ Implemented on 2026-04-15 after `REV-PR-0264` approval.
 
 Verification:
 
-- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
-  tests/unit/web/test_profile_app_continuation_api.py
-  tests/unit/web/test_profile_app_continuation_context_api.py
-  tests/unit/web/test_observability_routes.py
-  tests/unit/web/test_error_handler_middleware.py` (pass; 48 tests).
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_profile_app_continuation_context_api.py tests/unit/web/test_observability_routes.py tests/unit/web/test_error_handler_middleware.py` (pass; 48 tests).
 - `pdm run pytest -q tests/unit/observability` (pass; 49 tests).
 - `pdm run ruff check ...` on the touched implementation/test files (pass).
 - `pdm run docs-validate` (pass).
 - `pdm run typecheck` (pass).
 - `pdm run lint` (pass).
-- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py
-  tests/unit/web/test_error_handler_middleware.py tests/unit/web/test_profile_app_continuation_api.py
-  tests/unit/web/test_editor_inline_completion_api.py
-  tests/unit/web/test_editor_edit_ops_preview_apply_api.py
-  tests/unit/application/scripting/handlers/test_draft_lock_handler.py` (pass; 38 tests).
+- `pdm run pytest -q tests/unit/observability/test_auth_outcomes.py tests/unit/web/test_error_handler_middleware.py tests/unit/web/test_profile_app_continuation_api.py tests/unit/web/test_editor_inline_completion_api.py tests/unit/web/test_editor_edit_ops_preview_apply_api.py tests/unit/application/scripting/handlers/test_draft_lock_handler.py` (pass; 38 tests).
 - `pdm run pytest -q tests/unit/web -x` (pass; 294 tests).
 - `git diff --check` (pass).
 - `pdm run pr-0254-auth-cutover --include-127-lane --require-127-lane` (pass; retained

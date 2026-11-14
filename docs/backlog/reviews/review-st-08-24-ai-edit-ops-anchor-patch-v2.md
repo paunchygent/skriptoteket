@@ -34,25 +34,25 @@ This undermines trust in the chat assistant and does not match expected coding-a
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0051-chat-first-ai-editing.md` | v2 contract additions + guardrails | 8 min |
-| `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md` | acceptance criteria + scope | 5 min |
-| `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md` | story list + scope alignment | 3 min |
-| `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md` | implementation slice | 3 min |
-| `docs/backlog/prs/pr-0016-editor-ai-edit-ops-v2-hardening.md` | hardening slice | 3 min |
+| File                                                              | Focus                              | Time  |
+| ----------------------------------------------------------------- | ---------------------------------- | ----- |
+| `docs/adr/adr-0051-chat-first-ai-editing.md`                      | v2 contract additions + guardrails | 8 min |
+| `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md` | acceptance criteria + scope        | 5 min |
+| `docs/backlog/epics/epic-08-contextual-help-and-onboarding.md`    | story list + scope alignment       | 3 min |
+| `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md`  | implementation slice               | 3 min |
+| `docs/backlog/prs/pr-0016-editor-ai-edit-ops-v2-hardening.md`     | hardening slice                    | 3 min |
 
 **Total estimated time:** ~22 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Adopt patch ops (unified diff) as the primary v2 targeting mode | Deterministic apply without cursor reliance | [x] |
-| Support anchor targets for insert/replace/delete | Enables “insert after/before this text” without offsets | [x] |
-| Define v2 triggering + request semantics (explicit vs implicit selection/cursor) | Prevents v2 never engaging; avoids cursor-less insert failures | [x] |
-| Use an AI-specific diff preview UI (reuse diff engine only) | Avoids noisy version-review UI and outdated design patterns | [x] |
-| Controlled backend fuzz ladder (0→whitespace-tolerant→1→2) + safe-fail + regenerate | Fewer regen loops while staying bounded and reviewable | [x] |
+| Decision                                                                            | Rationale                                                      | Approve? |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------- |
+| Adopt patch ops (unified diff) as the primary v2 targeting mode                     | Deterministic apply without cursor reliance                    | [x]      |
+| Support anchor targets for insert/replace/delete                                    | Enables “insert after/before this text” without offsets        | [x]      |
+| Define v2 triggering + request semantics (explicit vs implicit selection/cursor)    | Prevents v2 never engaging; avoids cursor-less insert failures | [x]      |
+| Use an AI-specific diff preview UI (reuse diff engine only)                         | Avoids noisy version-review UI and outdated design patterns    | [x]      |
+| Controlled backend fuzz ladder (0→whitespace-tolerant→1→2) + safe-fail + regenerate | Fewer regen loops while staying bounded and reviewable         | [x]      |
 
 ## Review Checklist
 
@@ -61,7 +61,7 @@ This undermines trust in the chat assistant and does not match expected coding-a
 - [x] Scope stays within EPIC-08 goals
 - [x] Risks are identified with mitigations
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -71,17 +71,20 @@ This undermines trust in the chat assistant and does not match expected coding-a
 
 ### Required Changes (resolved)
 
-1) **Clarify v2 trigger + request semantics (must be unambiguous and testable)**
+1. **Clarify v2 trigger + request semantics (must be unambiguous and testable)**
+
    - Frontend now treats “explicit cursor” as a TTL-gated user interaction; when not explicit it omits both `selection`
      and `cursor` (so v2 reliably triggers).
    - When a selection exists, the frontend includes both `selection` and `cursor` (cursor defaults to selection end).
 
-2) **Define v2 JSON shapes**
+2. **Define v2 JSON shapes**
+
    - Patch op: schema validates shape; backend sanitizes headers and rejects multi-file diffs; apply uses bounded fuzz
      ladder.
    - Anchor target: strict single-match resolution with user-actionable errors for missing/ambiguous anchors.
 
-3) **AI diff preview UX must be purpose-built**
+3. **AI diff preview UX must be purpose-built**
+
    - AI proposals render in an AI-specific diff surface (reuse diff engine only; no version-review chrome).
 
 ### Suggestions (Optional)
@@ -97,14 +100,14 @@ This undermines trust in the chat assistant and does not match expected coding-a
 - [x] AI diff preview uses AI-specific UI
 - [x] Controlled fuzz ladder + safe-fail
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0051 | Clarified v2 trigger semantics and patch/anchor contract boundaries. |
-| 2 | ST-08-24 | Acceptance criteria updated/validated against implemented v2 behavior. |
-| 3 | Backend | Patch/anchor ops supported; backend preview/apply endpoints; bounded fuzz ladder; safe-fail error mapping. |
-| 4 | Frontend | Explicit cursor TTL; omit cursor/selection when implicit; AI-specific diff preview UI + regenerate path. |
-| 5 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-24` target-based review record. |
+| Change | Artifact      | Description                                                                                                            |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 1      | ADR-0051      | Clarified v2 trigger semantics and patch/anchor contract boundaries.                                                   |
+| 2      | ST-08-24      | Acceptance criteria updated/validated against implemented v2 behavior.                                                 |
+| 3      | Backend       | Patch/anchor ops supported; backend preview/apply endpoints; bounded fuzz ladder; safe-fail error mapping.             |
+| 4      | Frontend      | Explicit cursor TTL; omit cursor/selection when implicit; AI-specific diff preview UI + regenerate path.               |
+| 5      | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-ST-08-24` target-based review record. |

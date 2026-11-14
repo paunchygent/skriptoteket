@@ -21,6 +21,7 @@ acceptance_criteria:
 ---
 
 ## Context
+
 The teacher's real mental model is class-first. They do not normally think in terms of choosing a
 class and a classroom as equal launch objects. They think in terms of opening a class, then
 continuing or starting seating/grouping work inside that class.

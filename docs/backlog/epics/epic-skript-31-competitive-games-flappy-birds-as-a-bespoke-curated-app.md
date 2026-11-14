@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-31
 title: 'Competitive games: Flappy Birds as a bespoke curated app'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 readiness_review:
@@ -14,13 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Signed-in users can open `games.flappy_birds` as a bespoke curated app inside
-  the existing Skriptoteket SPA, play a polished browser-owned Flappy Birds session
-  with authored difficulty, bird selection, and app-specific shell UX, and post scores
-  to lightweight backend-owned personal/global leaderboards scoped by `app_version`
-  and `ruleset_id`.
+outcome: Signed-in users can open `games.flappy_birds` as a bespoke curated app inside the existing Skriptoteket SPA, play a polished browser-owned Flappy Birds session with authored difficulty, bird selection, and app-specific shell UX, and post scores to lightweight backend-owned personal/global leaderboards scoped by `app_version` and `ruleset_id`.
 retired_ids:
-- EPIC-31
+  - EPIC-31
 ---
 
 ## Scope

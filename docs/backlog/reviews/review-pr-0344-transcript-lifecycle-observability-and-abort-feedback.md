@@ -71,26 +71,26 @@ Out-of-scope implementation intentionally not reviewed for approval here:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0344-st-21-08-transcript-lifecycle-observability-and-abort-feedback.md` | PR scope, acceptance, verification | 10 min |
-| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story contract and non-goals | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptTypes.ts` | Strict progress types and phase enums | 8 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts` | Fail-closed parsing and contract drift handling | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.ts` | Polling, cancel state transitions, race safety | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.vue` | Teacher-facing progress and abort copy | 10 min |
-| Transcript Vitest specs listed in Scope | Behavioral proof quality | 15 min |
+| File                                                                                                 | Focus                                           | Time   |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0344-st-21-08-transcript-lifecycle-observability-and-abort-feedback.md`         | PR scope, acceptance, verification              | 10 min |
+| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md`       | Parent story contract and non-goals             | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptTypes.ts`                            | Strict progress types and phase enums           | 8 min  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts`                          | Fail-closed parsing and contract drift handling | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/useTranscriptGatewayRuntime.ts` | Polling, cancel state transitions, race safety  | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.vue`   | Teacher-facing progress and abort copy          | 10 min |
+| Transcript Vitest specs listed in Scope                                                              | Behavioral proof quality                        | 15 min |
 
 **Total estimated time:** ~1.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Replace `audioProgress` consumption with one typed `progress` snapshot | Matches the governed PR scope and removes loose progress access from the UI. | [x] |
-| Keep raw upstream phase names out of teacher-facing UI copy | Prevents internal stage leakage and matches the copy rules. | [x] |
-| Accept cancel only after Gateway returns a canceled job | This is the core abort truthfulness contract for PR-0344. | [x] |
-| Fail closed on malformed Gateway progress | The PR explicitly claims a strict progress contract with no loose typing. | [x] |
+| Decision                                                               | Rationale                                                                    | Approve? |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- | -------- |
+| Replace `audioProgress` consumption with one typed `progress` snapshot | Matches the governed PR scope and removes loose progress access from the UI. | [x]      |
+| Keep raw upstream phase names out of teacher-facing UI copy            | Prevents internal stage leakage and matches the copy rules.                  | [x]      |
+| Accept cancel only after Gateway returns a canceled job                | This is the core abort truthfulness contract for PR-0344.                    | [x]      |
+| Fail closed on malformed Gateway progress                              | The PR explicitly claims a strict progress contract with no loose typing.    | [x]      |
 
 ## Review Checklist
 
@@ -178,7 +178,7 @@ Resolved prior findings:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0344` | Updated the retained review record after fix verification and marked the PR approved on re-review. |
-| 2 | Implementation | No production code changes were made by this reviewer. |
+| Change | Artifact       | Description                                                                                        |
+| ------ | -------------- | -------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0344`  | Updated the retained review record after fix verification and marked the PR approved on re-review. |
+| 2      | Implementation | No production code changes were made by this reviewer.                                             |

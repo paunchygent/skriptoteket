@@ -59,7 +59,7 @@ All decisions below are confirmed. Rejected alternatives are removed to keep thi
 - Remote AI providers must never be called unless:
   - admin policy allows it (`AI_REMOTE_PROVIDERS_ENABLED=true`), and
   - the user explicitly opted in (`profile.allow_remote_fallback=true`; NULL counts as deny),
-  regardless of what the client sends.
+    regardless of what the client sends.
 
 **Assumptions**
 
@@ -86,7 +86,7 @@ All decisions below are confirmed. Rejected alternatives are removed to keep thi
 
 - When failing over from provider A → provider B, we must recompute:
   - token counter, system prompt, and budgeted prefix/suffix for provider B’s model.
-  This should match how chat/edit-ops handles provider changes.
+    This should match how chat/edit-ops handles provider changes.
 
 **Assumptions**
 
@@ -220,7 +220,7 @@ Performance note:
 - Implement session-level cached fields for editor AI hot paths:
   - `sessions.allow_remote_fallback` (nullable boolean; NULL = unset/deny)
   - `sessions.inline_completion_provider` (nullable string; NULL = unset)
-  Keep them in sync at login and when `/profile/ai-settings` is updated.
+    Keep them in sync at login and when `/profile/ai-settings` is updated.
 
 ### Phase 2 — Failover hardening (model-aware recompute)
 

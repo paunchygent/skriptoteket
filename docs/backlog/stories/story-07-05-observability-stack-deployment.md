@@ -39,5 +39,5 @@ Reference: `docs/reference/reports/ref-external-observability-integration.md`.
 - `observability/promtail/promtail-config.yaml` (new)
 - `observability/grafana/provisioning/datasources/datasources.yaml` (new)
 - `compose.prod.yaml` (modified - add tracing env vars)
-- `pyproject.toml` (modified - add obs-* scripts)
+- `pyproject.toml` (modified - add obs-\* scripts)
 - `docs/runbooks/runbook-observability.md` (modified)

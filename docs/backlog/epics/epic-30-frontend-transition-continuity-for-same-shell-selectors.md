@@ -7,17 +7,7 @@ owners: "agents"
 created: 2026-03-29
 updated: 2026-06-18
 outcome: "Teachers and authors experience selector-driven same-shell transitions as seamless continuity instead of blank fades or shell jump cuts across planner, editor, and other dense SPA workspaces."
-dependencies:
-  [
-    "ADR-0027",
-    "ADR-0029",
-    "ADR-0037",
-    "ADR-0077",
-    "EPIC-29",
-    "REF-frontend-transition-continuity-v1",
-    "REF-frontend-design-system-codemap-2026-03-28",
-    "REF-tool-editor-framework-codemap",
-  ]
+dependencies: ["ADR-0027", "ADR-0029", "ADR-0037", "ADR-0077", "EPIC-29", "REF-frontend-transition-continuity-v1", "REF-frontend-design-system-codemap-2026-03-28", "REF-tool-editor-framework-codemap"]
 ---
 
 ## Scope

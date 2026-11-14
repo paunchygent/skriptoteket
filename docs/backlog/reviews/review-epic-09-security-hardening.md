@@ -44,22 +44,22 @@ Architecture is captured in ADR-0053; decision support is in the research report
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0053-production-security-perimeter-and-vpn-gating.md` | Requirements, options, open decisions | 5 min |
-| `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md` | Tradeoffs + rollout steps | 10 min |
-| `docs/backlog/stories/story-09-04-production-perimeter-hardening-v2.md` | Acceptance criteria + verification | 5 min |
+| File                                                                                | Focus                                 | Time   |
+| ----------------------------------------------------------------------------------- | ------------------------------------- | ------ |
+| `docs/adr/adr-0053-production-security-perimeter-and-vpn-gating.md`                 | Requirements, options, open decisions | 5 min  |
+| `docs/reference/reports/ref-security-perimeter-vpn-gating-ssh-and-observability.md` | Tradeoffs + rollout steps             | 10 min |
+| `docs/backlog/stories/story-09-04-production-perimeter-hardening-v2.md`             | Acceptance criteria + verification    | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| SSH should be VPN-only (close public port 22) | Removes most SSH bot traffic + reduces attack surface | [ ] |
-| VPN tech choice (Tailscale vs WireGuard) | Tradeoff between UX/ops and control/self-hosting | [ ] |
-| Observability should be VPN-only (Grafana/Prometheus/Jaeger) | Reduces probing while keeping remote browser access | [ ] |
-| Break-glass plan required before rollout | Avoids accidental lockout; preserves “no monitor required” ops | [ ] |
+| Decision                                                     | Rationale                                                      | Approve? |
+| ------------------------------------------------------------ | -------------------------------------------------------------- | -------- |
+| SSH should be VPN-only (close public port 22)                | Removes most SSH bot traffic + reduces attack surface          | [ ]      |
+| VPN tech choice (Tailscale vs WireGuard)                     | Tradeoff between UX/ops and control/self-hosting               | [ ]      |
+| Observability should be VPN-only (Grafana/Prometheus/Jaeger) | Reduces probing while keeping remote browser access            | [ ]      |
+| Break-glass plan required before rollout                     | Avoids accidental lockout; preserves “no monitor required” ops | [ ]      |
 
 ## Review Checklist
 
@@ -68,7 +68,7 @@ Architecture is captured in ADR-0053; decision support is in the research report
 - [ ] Risks and mitigations are explicit (especially lockout risk)
 - [ ] Follow-up stories are testable and appropriately scoped
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -91,11 +91,11 @@ Keep the break-glass recovery steps in the same document so lockout risk stays v
 - [ ] Observability behind VPN
 - [ ] Break-glass plan
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Replaced template placeholders with an explicit pending-review perimeter decision surface. |
-| 2 | ADR-0053 | Kept the VPN gating question, rollout risks, and recovery posture visible for review. |
+| Change | Artifact      | Description                                                                                |
+| ------ | ------------- | ------------------------------------------------------------------------------------------ |
+| 1      | Review record | Replaced template placeholders with an explicit pending-review perimeter decision surface. |
+| 2      | ADR-0053      | Kept the VPN gating question, rollout risks, and recovery posture visible for review.      |

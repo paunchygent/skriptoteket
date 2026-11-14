@@ -41,17 +41,20 @@ Relaterat arbete finns i `docs/backlog/prs/pr-0028-editor-focus-mode-and-ai-draw
 
 ## Implementation plan
 
-1) UX copy
+1. UX copy
+
 - Uppdatera tom chatt-intro (assistant empty-state).
 - Uppdatera chat textarea placeholder i chat-läget.
 
-2) Template/prompt polish
+2. Template/prompt polish
+
 - Uppdatera startmallen så den visar både första körning (`SKRIPTOTEKET_INPUTS`) och uppföljning
   (`SKRIPTOTEKET_ACTION`) med ett fungerande `next_actions`-exempel.
 - Ta bort interna referenser till “Contract v2” från systemprompter, men behåll samma placeholder-innehåll och
   constraints i sak.
 
-3) Smooth typing (frontend progressive reveal)
+3. Smooth typing (frontend progressive reveal)
+
 - Rendera assistant text med jämn reveal-hastighet och subtil fade-in för ny text.
 - Gäller både SSE-chat (delta) och edit-ops (assistentmeddelande i en klump).
 

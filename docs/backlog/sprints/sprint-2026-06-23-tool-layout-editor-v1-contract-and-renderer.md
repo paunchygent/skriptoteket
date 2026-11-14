@@ -50,13 +50,13 @@ Reference context:
 
 ## Execution plan (suggested)
 
-1) Backend: add a new output kind `layout_editor_v1` and normalize/limit its payload like JSON outputs.
-2) Frontend: add a layout editor renderer component that:
+1. Backend: add a new output kind `layout_editor_v1` and normalize/limit its payload like JSON outputs.
+2. Frontend: add a layout editor renderer component that:
    - shows room objects + desk groups + slots
    - supports palette + prefab placement/editing for room objects/furniture (snap to grid/edges, no overlap, swap-by-convention)
    - supports click-to-select slot and assign/unassign/swap students
    - keeps local edits and submits an “apply changes” action back to the tool
-3) Add a small demo tool (script bank or curated app) to exercise the flow end-to-end.
+3. Add a small demo tool (script bank or curated app) to exercise the flow end-to-end.
 
 ## Demo checklist
 

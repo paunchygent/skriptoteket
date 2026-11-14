@@ -25,11 +25,11 @@ The SSR editor exposes maintainer management routes in
 
 ### Backend API
 
-| Endpoint | Method | Role | Action |
-|----------|--------|------|--------|
-| `/api/v1/editor/tools/{tool_id}/maintainers` | GET | admin+ | List current maintainers |
-| `/api/v1/editor/tools/{tool_id}/maintainers` | POST | admin+ | Add maintainer by email |
-| `/api/v1/editor/tools/{tool_id}/maintainers/{user_id}` | DELETE | admin+ | Remove maintainer |
+| Endpoint                                               | Method | Role   | Action                   |
+| ------------------------------------------------------ | ------ | ------ | ------------------------ |
+| `/api/v1/editor/tools/{tool_id}/maintainers`           | GET    | admin+ | List current maintainers |
+| `/api/v1/editor/tools/{tool_id}/maintainers`           | POST   | admin+ | Add maintainer by email  |
+| `/api/v1/editor/tools/{tool_id}/maintainers/{user_id}` | DELETE | admin+ | Remove maintainer        |
 
 - Reuse handlers + commands:
   - `ListMaintainersHandlerProtocol` / `ListMaintainersQuery`

@@ -52,8 +52,8 @@ across inline completions, chat, and chat-ops.
 4. Introduce a config guard for extended retention:
    - `LLM_PROMPT_CACHE_RETENTION_MODE=in_memory|24h` (default: `in_memory`)
    - `LLM_PROMPT_CACHE_EXTENDED_ALLOWED=true|false` (default: `true`)
-   The code only sends `prompt_cache_retention=24h`
-   when the guard is enabled and cost parity is explicitly confirmed in config.
+     The code only sends `prompt_cache_retention=24h`
+     when the guard is enabled and cost parity is explicitly confirmed in config.
 5. Apply the same payload gating across inline completions, chat streaming, and chat-ops.
 6. Add a log line when `LLM_PROMPT_CACHE_RETENTION_MODE=24h` but
    `LLM_PROMPT_CACHE_EXTENDED_ALLOWED=false` to explain suppression.

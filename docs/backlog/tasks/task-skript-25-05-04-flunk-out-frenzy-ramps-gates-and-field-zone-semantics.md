@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-05-04
 title: 'Flunk-Out Frenzy: ramps, gates, and field-zone semantics'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,12 +17,9 @@ closeout_review:
 story: ST-SKRIPT-25-05
 task_kind: story
 acceptance_criteria:
-- Typed table definitions exist for authored ramps, gates, and field-zone style path
-  semantics needed by the expanded local table.
-- The physics layer can model ramp and gate transitions inside Rapier without porting
-  the donor repo's custom broadphase or edge manager.
-- Ramp, gate, and path-transition events are exposed as semantic machine events that
-  future objective rules can consume.
+  - Typed table definitions exist for authored ramps, gates, and field-zone style path semantics needed by the expanded local table.
+  - The physics layer can model ramp and gate transitions inside Rapier without porting the donor repo's custom broadphase or edge manager.
+  - Ramp, gate, and path-transition events are exposed as semantic machine events that future objective rules can consume.
 ---
 
 ## Context

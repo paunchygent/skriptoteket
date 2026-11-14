@@ -4,21 +4,22 @@ id: ADR-SKRIPT-0067
 title: 'Reagent Prep Chef SDS: markdown-first offline corpus'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - EPIC-SKRIPT-20
-  - ST-SKRIPT-20-02
+    - EPIC-SKRIPT-20
+    - ST-SKRIPT-20-02
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0067
+  - ADR-0067
 ---
 
 ## Context
+
 Reagent Prep Chef needs an SDS fallback that is:
 
 - **Offline** and backend-hosted (no direct external vendor URLs in the SPA).
@@ -33,6 +34,7 @@ ambiguity).
 For this product, **SDS documents themselves** (curated markdown) are the most valuable and durable artifact.
 
 ## Decision
+
 ### 1) Use a repo-owned SDS corpus with markdown as the source of truth
 
 - The canonical SDS content is stored as **markdown** under:
@@ -60,9 +62,11 @@ For this product, **SDS documents themselves** (curated markdown) are the most v
   - `data/reagent_prep_chef/sds/gaps.md`
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 - **Backend simplification:** remove PubChem/SDS fetch + cache + derived-signal code paths.
 - **Frontend simplification:** “Öppna SDS” uses markdown content (rendered in-app) and does not depend on PDFs.
 - **Maintenance posture:** correctness is achieved by curation, not heuristics.

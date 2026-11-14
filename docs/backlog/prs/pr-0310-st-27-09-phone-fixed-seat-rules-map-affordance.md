@@ -154,8 +154,7 @@ Decompose the copy into these cases:
   physical place.
 - `applied_rule_compromise`: Smart applied, but one or more soft relationship
   rules could not be fully satisfied.
-- `blocked_hard_rule`: Smart did not apply because a hard rule such as `Fast
-  plats` was invalid, duplicated, or impossible for the active room.
+- `blocked_hard_rule`: Smart did not apply because a hard rule such as `Fast plats` was invalid, duplicated, or impossible for the active room.
 
 The current copy `Smart placering klar med bästa möjliga kompromiss.` is too
 opaque and sounds stronger than the implementation can guarantee. Preferred
@@ -268,27 +267,27 @@ with direct touch semantics:
 
 ## Implementation Plan
 
-1. Add focused phone tests that currently fail because `Fast plats` on phone has
-   no seat-map affordance.
-2. In `PlannerRulesWorkspacePane.vue`, keep the existing phone rule rows and
-   student selection for relationship tools.
-3. When the active phone tool is `fixed_seat` and a classroom template exists,
-   render a subordinate classroom-seat map surface.
-4. Wire the phone map to the same pending fixed-seat state:
-   - selected student: `pendingFixedSeatStudentId`
-   - selected seat: `pendingFixedSeatSeatId`
-   - commit: `commitPendingFixedSeatRule`
-   - existing rules: `activeFixedSeatRules`
-5. Show a compact pending summary before save, for example:
-   - `Elev: Vilma Ossner`
-   - `Plats: Plats 12`
-6. Make `Spara regel` available for fixed-seat rules only when both student and
-   seat are selected.
-7. If no classroom exists, keep `Fast plats` blocked with short Swedish recovery
-   copy rather than an empty map.
-8. Keep desktop rules workspace untouched except for shared helper extraction if
-   needed to keep `PlannerRulesWorkspacePane.vue` below the file-size target.
-9. Add browser proof for phone `Fast plats` authoring plus desktop preservation.
+01. Add focused phone tests that currently fail because `Fast plats` on phone has
+    no seat-map affordance.
+02. In `PlannerRulesWorkspacePane.vue`, keep the existing phone rule rows and
+    student selection for relationship tools.
+03. When the active phone tool is `fixed_seat` and a classroom template exists,
+    render a subordinate classroom-seat map surface.
+04. Wire the phone map to the same pending fixed-seat state:
+    - selected student: `pendingFixedSeatStudentId`
+    - selected seat: `pendingFixedSeatSeatId`
+    - commit: `commitPendingFixedSeatRule`
+    - existing rules: `activeFixedSeatRules`
+05. Show a compact pending summary before save, for example:
+    - `Elev: Vilma Ossner`
+    - `Plats: Plats 12`
+06. Make `Spara regel` available for fixed-seat rules only when both student and
+    seat are selected.
+07. If no classroom exists, keep `Fast plats` blocked with short Swedish recovery
+    copy rather than an empty map.
+08. Keep desktop rules workspace untouched except for shared helper extraction if
+    needed to keep `PlannerRulesWorkspacePane.vue` below the file-size target.
+09. Add browser proof for phone `Fast plats` authoring plus desktop preservation.
 10. Add a small smart-run feedback mapper so toast text is selected from
     explicit outcome categories rather than raw backend phrasing.
 11. Add backend/domain diagnostics only as far as needed to distinguish

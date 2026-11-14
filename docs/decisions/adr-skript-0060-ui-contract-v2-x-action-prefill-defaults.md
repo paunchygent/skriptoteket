@@ -4,21 +4,21 @@ id: ADR-SKRIPT-0060
 title: 'UI contract v2.x: action prefill defaults'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - ADR-SKRIPT-0022
-  - ADR-SKRIPT-0024
-  - ADR-SKRIPT-0030
-  - ADR-SKRIPT-0038
-  - EPIC-SKRIPT-14
+    - ADR-SKRIPT-0022
+    - ADR-SKRIPT-0024
+    - ADR-SKRIPT-0030
+    - ADR-SKRIPT-0038
+    - EPIC-SKRIPT-14
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0060
+  - ADR-0060
 ---
 
 ## Context

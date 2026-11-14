@@ -54,33 +54,33 @@ Keep the public guest helper/read model. The required remediation is accepted:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md` | Scope, acceptance criteria, and verification claims | 10 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_shares.py` | Public guest create/reuse/supersede transaction semantics | 18 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/share_artifacts.py` | Public guest artifact validation boundary | 8 min |
-| `src/skriptoteket/infrastructure/repositories/classroom_planner_share_artifacts.py` | Repository-level idempotency, active-count, and revoke behavior | 12 min |
-| `migrations/versions/e2f4a6b8c9d0_add_public_guest_share_controls.py` | Public guest metadata/index support | 6 min |
-| `src/skriptoteket/web/api/v1/public_apps_classroom_planner_shares.py` | Cookie-agnostic public helper route and response contract | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.ts` | Browser-held revoke metadata, idempotency, retry behavior | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareApi.ts` | Public helper API client path and credentials behavior | 5 min |
-| `tests/unit/application/apps/classroom_planner/test_public_shares.py` | Backend proof coverage and missing race cases | 8 min |
-| `tests/unit/web/test_public_apps_classroom_planner_shares.py` | Route proof coverage | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/*Public*Share*.ts` | Frontend proof coverage gaps | 8 min |
+| File                                                                                                   | Focus                                                           | Time   |
+| ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md` | Scope, acceptance criteria, and verification claims             | 10 min |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_shares.py`                | Public guest create/reuse/supersede transaction semantics       | 18 min |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/share_artifacts.py`              | Public guest artifact validation boundary                       | 8 min  |
+| `src/skriptoteket/infrastructure/repositories/classroom_planner_share_artifacts.py`                    | Repository-level idempotency, active-count, and revoke behavior | 12 min |
+| `migrations/versions/e2f4a6b8c9d0_add_public_guest_share_controls.py`                                  | Public guest metadata/index support                             | 6 min  |
+| `src/skriptoteket/web/api/v1/public_apps_classroom_planner_shares.py`                                  | Cookie-agnostic public helper route and response contract       | 8 min  |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.ts`                         | Browser-held revoke metadata, idempotency, retry behavior       | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareApi.ts`                          | Public helper API client path and credentials behavior          | 5 min  |
+| `tests/unit/application/apps/classroom_planner/test_public_shares.py`                                  | Backend proof coverage and missing race cases                   | 8 min  |
+| `tests/unit/web/test_public_apps_classroom_planner_shares.py`                                          | Route proof coverage                                            | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/*Public*Share*.ts`                                          | Frontend proof coverage gaps                                    | 8 min  |
 
 **Total estimated time:** ~103 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Accept remediated backend create/reuse/supersede transaction shape | It now performs create-or-reuse, active-limit enforcement, and previous supersede through one repository operation inside one Unit of Work with transaction-scoped advisory locking. | [x] |
-| Accept stable previous-link metadata identity | Latest browser-held metadata is keyed by stable snapshot id plus draft kind, while content hash stays in the value. | [x] |
-| Accept pending operation id generation as retry-safe | Pending operation metadata preserves client operation id and revoke secret across retryable create failures for the same snapshot/draft/revision. | [x] |
-| Accept remediated public guest artifact validation | `PUBLIC_GUEST` commands reject owner, draft, roster, and template provenance ids. | [x] |
-| Keep the public helper route family as the right boundary | Dedicated public helper routes are the correct route family for this slice | [x] |
-| Keep the 60-day TTL and hashed revoke-secret model | The model matches the accepted `ADR-0084` exception when fixed | [x] |
-| Accept PostgreSQL advisory-lock proof coverage | The implementation depends on `pg_advisory_xact_lock(...)`; independent-session PostgreSQL proof now covers replay, supersede, and active-limit enforcement. | [x] |
+| Decision                                                           | Rationale                                                                                                                                                                            | Approve? |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Accept remediated backend create/reuse/supersede transaction shape | It now performs create-or-reuse, active-limit enforcement, and previous supersede through one repository operation inside one Unit of Work with transaction-scoped advisory locking. | [x]      |
+| Accept stable previous-link metadata identity                      | Latest browser-held metadata is keyed by stable snapshot id plus draft kind, while content hash stays in the value.                                                                  | [x]      |
+| Accept pending operation id generation as retry-safe               | Pending operation metadata preserves client operation id and revoke secret across retryable create failures for the same snapshot/draft/revision.                                    | [x]      |
+| Accept remediated public guest artifact validation                 | `PUBLIC_GUEST` commands reject owner, draft, roster, and template provenance ids.                                                                                                    | [x]      |
+| Keep the public helper route family as the right boundary          | Dedicated public helper routes are the correct route family for this slice                                                                                                           | [x]      |
+| Keep the 60-day TTL and hashed revoke-secret model                 | The model matches the accepted `ADR-0084` exception when fixed                                                                                                                       | [x]      |
+| Accept PostgreSQL advisory-lock proof coverage                     | The implementation depends on `pg_advisory_xact_lock(...)`; independent-session PostgreSQL proof now covers replay, supersede, and active-limit enforcement.                         | [x]      |
 
 ## Review Checklist
 
@@ -228,24 +228,24 @@ Keep the public guest helper/read model. The required remediation is accepted:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0273` | Created retained implementation review record with `changes_requested` verdict. |
-| 2 | `PR-0273` | Linked the retained implementation review as a dependency so the done-state does not hide the blocker. |
-| 3 | `docs/index.md` | Added the new review record to the backlog review index. |
+| Change | Artifact        | Description                                                                                            |
+| ------ | --------------- | ------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0273`   | Created retained implementation review record with `changes_requested` verdict.                        |
+| 2      | `PR-0273`       | Linked the retained implementation review as a dependency so the done-state does not hide the blocker. |
+| 3      | `docs/index.md` | Added the new review record to the backlog review index.                                               |
 
 ## Remediation Applied
 
 **Date:** `2026-04-30`
 **Status:** implemented, including PostgreSQL integration proof; pending independent re-review
 
-| Finding | Remediation | Proof |
-|---------|-------------|-------|
-| P1 atomic/race-safe share creation | Added a single public guest repository operation for create-or-reuse, active-limit enforcement, and previous-link supersede inside one Unit of Work. The PostgreSQL implementation serializes relevant client-operation, snapshot, and previous-token keys with transaction-scoped advisory locks. | `tests/unit/application/apps/classroom_planner/test_public_shares.py` now covers same-client-operation concurrency, two-tab supersede, and concurrent active-limit enforcement. |
-| P1 PostgreSQL advisory-lock proof | Added repository integration tests that run public guest create/reuse/supersede through independent `AsyncSession` transactions against the migrated PostgreSQL test fixture. | `tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py` covers same-client-operation replay, two-tab supersede, and active-limit enforcement under concurrent repository calls. |
-| P1 previous links after edits | Changed browser latest-share metadata lookup to stable `snapshot_id + draft_kind`; snapshot content hash is retained in the value, not the lookup identity. | `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.spec.ts` covers supersede metadata after `snapshot_content_hash` changes. |
-| P2 retry idempotency | Added pending public guest share operation metadata keyed by `snapshot_id + draft_kind + revision`; retryable failures reuse the same client operation id and revoke secret until success. | `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.spec.ts` covers retry after a failed create call and pending cleanup after success. |
-| P2 source provenance ids | Tightened `PUBLIC_GUEST` artifact validation to reject `owner_user_id`, `draft_id`, `roster_id`, and `template_id`. | `tests/unit/application/apps/classroom_planner/test_share_artifacts.py` covers roster/template rejection. |
+| Finding                            | Remediation                                                                                                                                                                                                                                                                                        | Proof                                                                                                                                                                                                                            |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1 atomic/race-safe share creation | Added a single public guest repository operation for create-or-reuse, active-limit enforcement, and previous-link supersede inside one Unit of Work. The PostgreSQL implementation serializes relevant client-operation, snapshot, and previous-token keys with transaction-scoped advisory locks. | `tests/unit/application/apps/classroom_planner/test_public_shares.py` now covers same-client-operation concurrency, two-tab supersede, and concurrent active-limit enforcement.                                                  |
+| P1 PostgreSQL advisory-lock proof  | Added repository integration tests that run public guest create/reuse/supersede through independent `AsyncSession` transactions against the migrated PostgreSQL test fixture.                                                                                                                      | `tests/integration/infrastructure/repositories/test_classroom_planner_public_guest_share_concurrency.py` covers same-client-operation replay, two-tab supersede, and active-limit enforcement under concurrent repository calls. |
+| P1 previous links after edits      | Changed browser latest-share metadata lookup to stable `snapshot_id + draft_kind`; snapshot content hash is retained in the value, not the lookup identity.                                                                                                                                        | `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.spec.ts` covers supersede metadata after `snapshot_content_hash` changes.                                                                             |
+| P2 retry idempotency               | Added pending public guest share operation metadata keyed by `snapshot_id + draft_kind + revision`; retryable failures reuse the same client operation id and revoke secret until success.                                                                                                         | `frontend/apps/skriptoteket/src/views/apps/classroomPlannerPublicShareFlow.spec.ts` covers retry after a failed create call and pending cleanup after success.                                                                   |
+| P2 source provenance ids           | Tightened `PUBLIC_GUEST` artifact validation to reject `owner_user_id`, `draft_id`, `roster_id`, and `template_id`.                                                                                                                                                                                | `tests/unit/application/apps/classroom_planner/test_share_artifacts.py` covers roster/template rejection.                                                                                                                        |
 
 ### Remediation Verification
 

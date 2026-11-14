@@ -36,12 +36,12 @@ default in production.
 
 ## Implementation plan
 
-1) Add a capture store implementation that writes JSON captures under `ARTIFACTS_ROOT/llm-captures/`.
-2) Gate capture with `LLM_CAPTURE_ON_ERROR_ENABLED` (default OFF).
-3) Capture on:
+1. Add a capture store implementation that writes JSON captures under `ARTIFACTS_ROOT/llm-captures/`.
+2. Gate capture with `LLM_CAPTURE_ON_ERROR_ENABLED` (default OFF).
+3. Capture on:
    - edit-ops generation failures (including parse/schema incompatibility)
    - preview failures (ok=false)
-4) Extend artifact pruning to include capture directories.
+4. Extend artifact pruning to include capture directories.
 
 ## Test plan
 

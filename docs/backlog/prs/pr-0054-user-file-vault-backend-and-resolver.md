@@ -96,7 +96,7 @@ retention cleanup, without impacting existing session-file flows.
 - **Potential N+1:** `ListVaultFilesHandler` resolves `source_label` by calling `runs.get_by_id()` per file. This is OK
   short-term but should be revisited if vault lists grow (bulk fetch method or join-based query).
 - **Test file size budget:** `tests/unit/application/scripting/handlers/test_vault_handlers.py` is ~530 LoC (above the
-  <400–500 LoC guideline). Consider splitting into `test_vault_list.py`, `test_vault_save.py`, etc.
+  \<400–500 LoC guideline). Consider splitting into `test_vault_list.py`, `test_vault_save.py`, etc.
 
 ### 🧪 Test coverage notes
 

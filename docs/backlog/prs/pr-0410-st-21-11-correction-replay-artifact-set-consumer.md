@@ -74,16 +74,16 @@ retained proof.
 
 1. Regenerate or update the vendored Sir Convert OpenAPI declaration for the
    Task 378 route and replay-reference schema.
-1. Extend the Exam Converter replay-reference parser to require the full
+2. Extend the Exam Converter replay-reference parser to require the full
    `correction_replay_artifact_reference_v1` shape for corrected file action
    authority.
-1. Carry `artifact_set_id` and `content_sha256` through the
+3. Carry `artifact_set_id` and `content_sha256` through the
    `ExamConverterReviewFileActionReference` projection.
-1. Add a Sir Convert Gateway client method for the nested correction replay
+4. Add a Sir Convert Gateway client method for the nested correction replay
    artifact route and route corrected file downloads/saves through it.
-1. Keep first-pass/original-job artifact downloads on the existing named
+5. Keep first-pass/original-job artifact downloads on the existing named
    artifact route.
-1. Update the retained correction-session Playwright proof so the redacted
+6. Update the retained correction-session Playwright proof so the redacted
    evidence records and asserts the nested correction replay route.
 
 ## Test Plan

@@ -136,34 +136,34 @@ owns rendering, refresh timing, stale-response handling, and artifact lifecycle.
 
 ## Implementation Plan
 
-1. Update the route composable so preview generation is automatic and debounced
-   after file selection, selected HTML changes, output-mode
-   changes, and paper-format changes.
-2. Add request sequencing or abort handling so stale render/download responses
-   cannot overwrite newer selected state.
-3. Fix the backend project manifest entry-id validator so hyphens and
-   underscores are accepted according to the documented contract, with focused
-   regression coverage for a hyphenated HTML filename. Do not replace this
-   with stricter HTML-shape validation.
-4. Change the project asset fetcher/renderer from fatal missing-resource
-   behavior to best-effort blocked/missing-resource handling. Network,
-   filesystem, path traversal, nested path, and undeclared project-resource
-   references must remain sandboxed and must not be fetched.
-5. Render the successful PDF artifact visually in the preview pane using a
-   server-authorized artifact download and a local object URL, with cleanup when
-   the selected preview changes or the component unmounts.
-6. Remove the manual preview button, readiness block, preview-artifact discard
-   action, and forbidden eyebrow/status label from the main page.
-7. Track whether the visible preview artifact matches the latest selected
-   HTML/output/format state. Keep download/save actions disabled until
-   a current preview artifact exists.
-8. Replace the file-picker button presentation with a compact drop area whose
-   click and drag/drop paths share the same project-file validation.
-9. Move retry into the feedback row as an icon-only circular control using the
-   canonical icon store; only add Lucide if the canonical store lacks the symbol.
+01. Update the route composable so preview generation is automatic and debounced
+    after file selection, selected HTML changes, output-mode
+    changes, and paper-format changes.
+02. Add request sequencing or abort handling so stale render/download responses
+    cannot overwrite newer selected state.
+03. Fix the backend project manifest entry-id validator so hyphens and
+    underscores are accepted according to the documented contract, with focused
+    regression coverage for a hyphenated HTML filename. Do not replace this
+    with stricter HTML-shape validation.
+04. Change the project asset fetcher/renderer from fatal missing-resource
+    behavior to best-effort blocked/missing-resource handling. Network,
+    filesystem, path traversal, nested path, and undeclared project-resource
+    references must remain sandboxed and must not be fetched.
+05. Render the successful PDF artifact visually in the preview pane using a
+    server-authorized artifact download and a local object URL, with cleanup when
+    the selected preview changes or the component unmounts.
+06. Remove the manual preview button, readiness block, preview-artifact discard
+    action, and forbidden eyebrow/status label from the main page.
+07. Track whether the visible preview artifact matches the latest selected
+    HTML/output/format state. Keep download/save actions disabled until
+    a current preview artifact exists.
+08. Replace the file-picker button presentation with a compact drop area whose
+    click and drag/drop paths share the same project-file validation.
+09. Move retry into the feedback row as an icon-only circular control using the
+    canonical icon store; only add Lucide if the canonical store lacks the symbol.
 10. Add focused Vitest coverage for auto-preview, stale-response protection,
-   failed-refresh recovery, structural forbidden-surface absence, failure retry,
-   and PDF-object cleanup.
+    failed-refresh recovery, structural forbidden-surface absence, failure retry,
+    and PDF-object cleanup.
 
 ## Red-First Proof Plan
 
@@ -224,11 +224,11 @@ owns rendering, refresh timing, stale-response handling, and artifact lifecycle.
     that pairs `Filer`, `Mall`, or `PDF` with `Klar`, the persistent
     `Förhandsvisa` button, and the `Tillfällig förhandsvisning` eyebrow/status
     label.
-  Focused Vitest must cover the failed-refresh path: after a successful
-  preview, changing a governed setting and receiving a failed automatic refresh
-  keeps any old PDF visual disabled for artifact actions, shows
-  `Det gick inte att skapa PDF:en.`, exposes only `Försök igen`, and re-enables
-  download/save only after a successful render for the latest state.
+    Focused Vitest must cover the failed-refresh path: after a successful
+    preview, changing a governed setting and receiving a failed automatic refresh
+    keeps any old PDF visual disabled for artifact actions, shows
+    `Det gick inte att skapa PDF:en.`, exposes only `Försök igen`, and re-enables
+    download/save only after a successful render for the latest state.
 - Docs/handoff gates:
   `pdm run docs-validate`
   `pdm run handoff-validate`

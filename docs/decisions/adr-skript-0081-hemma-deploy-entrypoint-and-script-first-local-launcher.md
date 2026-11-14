@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0081
 title: Hemma deploy entrypoint and script-first local launcher
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0081
+  - ADR-0081
 ---
 
 ## Context
@@ -42,8 +42,6 @@ existing on-host deploy script.
 ## Decision
 
 ### Source: Decision
-
-
 
 ## Non-Decisions
 

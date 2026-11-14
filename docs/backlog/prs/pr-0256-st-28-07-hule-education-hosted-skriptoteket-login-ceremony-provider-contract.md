@@ -36,8 +36,7 @@ Initial blocker evidence:
 
 - HuleEdu API Gateway exposes `POST /v1/auth/login` as the login endpoint in
   `services/api_gateway_service/routers/auth_routes.py`.
-- HuleEdu's retained consumer conformance reference lists `POST /v1/auth/login`, `POST
-  /v1/auth/logout`, `POST /v1/auth/refresh`, `GET /v1/auth/session`, `GET /v1/auth/csrf`, and
+- HuleEdu's retained consumer conformance reference lists `POST /v1/auth/login`, `POST /v1/auth/logout`, `POST /v1/auth/refresh`, `GET /v1/auth/session`, `GET /v1/auth/csrf`, and
   `GET /v1/auth/websocket-ticket`; it does not define a browser-navigable product-realm ceremony
   URL.
 - The current `InternalIdentityContextV1` contract carries `sub`, session, org/tenant, roles,
@@ -91,16 +90,16 @@ Skriptoteket ceremony.
 
 Required minimum:
 
-| Concern | Required Contract |
-|---------|-------------------|
-| Ceremony URL | Browser-navigable HuleEdu `GET /auth/login`, distinct from POST-only `/v1/auth/login` |
-| App input | `app=skriptoteket` or an equivalent signed/app-registered parameter |
-| Realm input | selected/defaulted product identity realm, at least `skriptoteket_standalone` and `huleedu_school` |
-| Return target | absolute allowlisted Skriptoteket callback URL plus preserved route-level `next` |
-| Account linking | explicit behavior when a browser session has multiple realms available |
-| Session output | shared `huleedu_session` / `huleedu_csrf` browser session contract still applies |
-| Downstream context | signed context includes active app, active product identity realm, and realm subject |
-| Standalone semantics | `skriptoteket_standalone` login does not require HuleEdu school registration |
+| Concern              | Required Contract                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
+| Ceremony URL         | Browser-navigable HuleEdu `GET /auth/login`, distinct from POST-only `/v1/auth/login`              |
+| App input            | `app=skriptoteket` or an equivalent signed/app-registered parameter                                |
+| Realm input          | selected/defaulted product identity realm, at least `skriptoteket_standalone` and `huleedu_school` |
+| Return target        | absolute allowlisted Skriptoteket callback URL plus preserved route-level `next`                   |
+| Account linking      | explicit behavior when a browser session has multiple realms available                             |
+| Session output       | shared `huleedu_session` / `huleedu_csrf` browser session contract still applies                   |
+| Downstream context   | signed context includes active app, active product identity realm, and realm subject               |
+| Standalone semantics | `skriptoteket_standalone` login does not require HuleEdu school registration                       |
 
 ## Implementation Summary
 

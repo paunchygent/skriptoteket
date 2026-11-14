@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0027
 title: Advance repository-governance consumer pin
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-01'
 status: done
 readiness_review:
@@ -22,10 +22,7 @@ closeout_review:
   approval_evidence: Inline review approved candidate 0c80b3aa6f974106aaf724b69cd61fbffea6dc9e
 task_kind: repository
 acceptance_criteria:
-- Given the user-approved immutable repository-governance release, when Skriptoteket
-  advances its governed tooling dependency, then the approved peeled revision is pinned
-  and locked, unchanged generated bindings are synchronized, focused identity and drift
-  checks pass, and no product behavior changes.
+  - Given the user-approved immutable repository-governance release, when Skriptoteket advances its governed tooling dependency, then the approved peeled revision is pinned and locked, unchanged generated bindings are synchronized, focused identity and drift checks pass, and no product behavior changes.
 ---
 
 ## Context
@@ -45,12 +42,12 @@ and Hemma operations are outside scope.
 
 ## Decision And Assumption Ledger
 
-| ID | Status | Contract term, decision, or assumption | Recommendation or closed decision | Other highly plausible options | Motivation | Source |
-| --- | --- | --- | --- | --- | --- | --- |
-| PIN-001 | closed | Which shared package release is the consumer target? | Adopt the exact user-approved immutable release and its peeled revision; do not follow `origin/main`. | Keep the previous immutable release. | The user explicitly requested the pin advance, while the immutable revision preserves reproducibility. | User instruction in the current Codex task on 2026-08-01; central immutable-release handoff. |
-| PIN-002 | closed | What may change in Skriptoteket? | Change only the dependency pin and lock, run the package-owned binding synchronizer, and retain a binding delta only if the synchronizer produces one. | Broaden the update into product, quality-topology, docs-corpus, or operational changes. | The package binding maps are unchanged and the requested outcome is dependency adoption, not another cutover. | Retained discovery `repository-governance-0-9-7-pin/0001`; completed `TASK-SKRIPT-REP-0006`. |
-| PIN-003 | closed | What proves the update? | Validate the central immutable runtime, update only the named dependency group without syncing, install from the resulting lock, check lock freshness, installed package identity and VCS revision, generated-binding drift, the bounded file set, and whitespace. | Run broad backend or frontend tests. | This is package metadata and generated-binding adoption; product tests cannot add relevant confidence and would violate the service-driven check policy. | Retained discovery `repository-governance-0-9-7-pin/0001`; shared proof-selection contract. |
-| PIN-004 | closed | Does behavioral red/green apply? | Use contract and validator proof; behavioral red/green does not apply because the task changes dependency identity without adding consumer behavior. | Add a test that pins a release literal. | Literal-pinning tests are forbidden and would test implementation metadata rather than a behavioral boundary. | Shared proof-selection contract; repository prohibition on prose- and log-pinning tests. |
+| ID      | Status | Contract term, decision, or assumption               | Recommendation or closed decision                                                                                                                                                                                                                                  | Other highly plausible options                                                          | Motivation                                                                                                                                               | Source                                                                                       |
+| ------- | ------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| PIN-001 | closed | Which shared package release is the consumer target? | Adopt the exact user-approved immutable release and its peeled revision; do not follow `origin/main`.                                                                                                                                                              | Keep the previous immutable release.                                                    | The user explicitly requested the pin advance, while the immutable revision preserves reproducibility.                                                   | User instruction in the current Codex task on 2026-08-01; central immutable-release handoff. |
+| PIN-002 | closed | What may change in Skriptoteket?                     | Change only the dependency pin and lock, run the package-owned binding synchronizer, and retain a binding delta only if the synchronizer produces one.                                                                                                             | Broaden the update into product, quality-topology, docs-corpus, or operational changes. | The package binding maps are unchanged and the requested outcome is dependency adoption, not another cutover.                                            | Retained discovery `repository-governance-0-9-7-pin/0001`; completed `TASK-SKRIPT-REP-0006`. |
+| PIN-003 | closed | What proves the update?                              | Validate the central immutable runtime, update only the named dependency group without syncing, install from the resulting lock, check lock freshness, installed package identity and VCS revision, generated-binding drift, the bounded file set, and whitespace. | Run broad backend or frontend tests.                                                    | This is package metadata and generated-binding adoption; product tests cannot add relevant confidence and would violate the service-driven check policy. | Retained discovery `repository-governance-0-9-7-pin/0001`; shared proof-selection contract.  |
+| PIN-004 | closed | Does behavioral red/green apply?                     | Use contract and validator proof; behavioral red/green does not apply because the task changes dependency identity without adding consumer behavior.                                                                                                               | Add a test that pins a release literal.                                                 | Literal-pinning tests are forbidden and would test implementation metadata rather than a behavioral boundary.                                            | Shared proof-selection contract; repository prohibition on prose- and log-pinning tests.     |
 
 ## Plan
 

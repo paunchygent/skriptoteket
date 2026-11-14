@@ -32,23 +32,23 @@ extend run statuses to include `queued/cancelled`. Keep ADR-0016 behavior as a f
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0062-execution-queue-and-worker-loop.md` | Queue design + lifecycle semantics | 15 min |
-| `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md` | Scope, risks, dependencies | 5 min |
-| `docs/backlog/stories/story-18-01-execution-queue-worker-loop.md` | Acceptance criteria + MVP slice | 5 min |
+| File                                                              | Focus                              | Time   |
+| ----------------------------------------------------------------- | ---------------------------------- | ------ |
+| `docs/adr/adr-0062-execution-queue-and-worker-loop.md`            | Queue design + lifecycle semantics | 15 min |
+| `docs/backlog/epics/epic-18-execution-queue-and-worker-loop.md`   | Scope, risks, dependencies         | 5 min  |
+| `docs/backlog/stories/story-18-01-execution-queue-worker-loop.md` | Acceptance criteria + MVP slice    | 5 min  |
 
 **Total estimated time:** ~25 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use Postgres queue with `FOR UPDATE SKIP LOCKED` | Avoid new infra (ADR-0007) while keeping durability | [x] |
-| Add `queued/cancelled` run statuses | Accurate lifecycle visibility for users and ops | [x] |
-| Adopt-first stale-lease recovery (clear lease, keep `running`) | Minimize duplicate execution risk; allow adoption/finalization | [x] |
-| TTL leases via `locked_until` + heartbeat | Crash-safe leasing; enables reaper and adoption | [x] |
-| Keep ADR-0016 fallback mode | Safe rollout and single-host deployments | [x] |
+| Decision                                                       | Rationale                                                      | Approve? |
+| -------------------------------------------------------------- | -------------------------------------------------------------- | -------- |
+| Use Postgres queue with `FOR UPDATE SKIP LOCKED`               | Avoid new infra (ADR-0007) while keeping durability            | [x]      |
+| Add `queued/cancelled` run statuses                            | Accurate lifecycle visibility for users and ops                | [x]      |
+| Adopt-first stale-lease recovery (clear lease, keep `running`) | Minimize duplicate execution risk; allow adoption/finalization | [x]      |
+| TTL leases via `locked_until` + heartbeat                      | Crash-safe leasing; enables reaper and adoption                | [x]      |
+| Keep ADR-0016 fallback mode                                    | Safe rollout and single-host deployments                       | [x]      |
 
 ## Review Checklist
 

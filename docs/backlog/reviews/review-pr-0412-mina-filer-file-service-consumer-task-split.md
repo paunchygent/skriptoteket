@@ -45,25 +45,25 @@ protected proof (`PR-0414`), and migration/cutover safety (`PR-0415`).
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0412-st-14-39-file-service-consumer-task-split.md` | Current docs-only task split | 5 min |
-| `docs/backlog/prs/pr-0413-st-14-39-mina-filer-file-service-metadata-schema.md` | Metadata/schema task boundary | 5 min |
-| `docs/backlog/prs/pr-0414-st-14-39-mina-filer-file-service-client-adapter-proof.md` | Runtime consumer task boundary | 5 min |
-| `docs/backlog/prs/pr-0415-st-14-39-mina-filer-migration-cutover-safety.md` | Migration/cutover safety task boundary | 5 min |
-| `docs/backlog/stories/story-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md` | Story discovery links | 3 min |
-| `docs/adr/adr-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md` | ADR routing note | 3 min |
+| File                                                                                    | Focus                                  | Time  |
+| --------------------------------------------------------------------------------------- | -------------------------------------- | ----- |
+| `docs/backlog/prs/pr-0412-st-14-39-file-service-consumer-task-split.md`                 | Current docs-only task split           | 5 min |
+| `docs/backlog/prs/pr-0413-st-14-39-mina-filer-file-service-metadata-schema.md`          | Metadata/schema task boundary          | 5 min |
+| `docs/backlog/prs/pr-0414-st-14-39-mina-filer-file-service-client-adapter-proof.md`     | Runtime consumer task boundary         | 5 min |
+| `docs/backlog/prs/pr-0415-st-14-39-mina-filer-migration-cutover-safety.md`              | Migration/cutover safety task boundary | 5 min |
+| `docs/backlog/stories/story-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md` | Story discovery links                  | 3 min |
+| `docs/adr/adr-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md`       | ADR routing note                       | 3 min |
 
 **Total estimated time:** ~26 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Treat HuleEdu product-neutral File Service API as an external producer prerequisite. | Current visible routes are not enough for the required Skriptoteket object-file consumer contract. | [x] |
-| Make metadata/schema the first local implementation task. | It prevents raw R2 identity and local paths from becoming hidden domain authority. | [x] |
-| Keep runtime client adapter/protected proof separate from migration/cutover. | It keeps behavior proof and data movement from being bundled. | [x] |
-| Keep migration/cutover blocked behind explicit later approval. | It prevents prod env sync, object copy, and cleanup from entering this docs-only slice. | [x] |
+| Decision                                                                             | Rationale                                                                                          | Approve? |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | -------- |
+| Treat HuleEdu product-neutral File Service API as an external producer prerequisite. | Current visible routes are not enough for the required Skriptoteket object-file consumer contract. | [x]      |
+| Make metadata/schema the first local implementation task.                            | It prevents raw R2 identity and local paths from becoming hidden domain authority.                 | [x]      |
+| Keep runtime client adapter/protected proof separate from migration/cutover.         | It keeps behavior proof and data movement from being bundled.                                      | [x]      |
+| Keep migration/cutover blocked behind explicit later approval.                       | It prevents prod env sync, object copy, and cleanup from entering this docs-only slice.            | [x]      |
 
 ## Review Checklist
 
@@ -120,12 +120,12 @@ named dependencies and proof gates are satisfied.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0412` | Created the docs-only task split. |
-| 2 | `PR-0413` | Created the metadata/schema follow-up task. |
-| 3 | `PR-0414` | Created the client adapter and protected proof follow-up task. |
-| 4 | `PR-0415` | Created the migration and cutover safety follow-up task. |
+| Change | Artifact  | Description                                                    |
+| ------ | --------- | -------------------------------------------------------------- |
+| 1      | `PR-0412` | Created the docs-only task split.                              |
+| 2      | `PR-0413` | Created the metadata/schema follow-up task.                    |
+| 3      | `PR-0414` | Created the client adapter and protected proof follow-up task. |
+| 4      | `PR-0415` | Created the migration and cutover safety follow-up task.       |
 
 ## Validation
 

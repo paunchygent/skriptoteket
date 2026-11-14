@@ -8,16 +8,7 @@ created: 2026-04-07
 updated: 2026-04-07
 stories:
   - "ST-32-06"
-tags:
-  [
-    "frontend",
-    "klassrumskartan",
-    "public-access",
-    "guest-workspace",
-    "grouping",
-    "seating",
-    "regression-hardening",
-  ]
+tags: ["frontend", "klassrumskartan", "public-access", "guest-workspace", "grouping", "seating", "regression-hardening"]
 dependencies:
   - "ADR-0079"
   - "ADR-0080"
@@ -54,6 +45,7 @@ The regression comes from two connected frontend ownership mistakes inside the
 public guest shell.
 
 1. The overview-to-grouping transition discards the classroom selection.
+
    - [PlannerClassWorkspace.vue](../../../frontend/apps/skriptoteket/src/views/apps/components/PlannerClassWorkspace.vue)
      currently emits `open-grouping` with `templateId: null`.
    - [useClassroomPlannerGuestController.ts](../../../frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts)
@@ -65,6 +57,7 @@ public guest shell.
      `ui_state.selected_template_local_id`.
 
 2. The guest planner shell computes seating availability from stale pending ids.
+
    - [ClassroomPlannerGuestWorkspaceShell.vue](../../../frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue)
      seeds `pendingGroupingTemplateId` and `pendingSeatingTemplateId` from the
      old selection and then treats those refs as higher priority than the live
@@ -74,6 +67,7 @@ public guest shell.
      enabled even though the controller can no longer open it.
 
 3. The defect is frontend-local.
+
    - No backend route, authenticated seam, or guest-upgrade transport change is
      involved in this regression.
    - `PR-0233` did not introduce this behavior; it exposed a nearby workflow
@@ -96,24 +90,28 @@ the same truth.
 ## Implementation plan
 
 1. Lock the regression with focused failing specs before changing production code.
+
    - Add a controller regression for overview -> grouping entry that proves the
      selected classroom is currently lost.
    - Add a workspace-shell regression that proves `Sittplatser` can remain
      visually enabled after classroom context is gone.
 
 2. Repair the grouping-entry contract at the first seam.
+
    - Preserve the selected overview classroom when opening grouping from the
      public guest class workspace.
    - Keep that context through grouping draft creation/reuse and overview
      round-trips unless the user explicitly clears or changes it.
 
 3. Repair the seating-affordance truth source.
+
    - Make the shell derive seating availability from the real live context, not
      stale pending refs left over from an earlier selection.
    - Keep the approved prerequisite hint and disabled styling aligned with the
      actual controller behavior.
 
 4. Re-prove the public guest flow live.
+
    - Use the local public route
      `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`.
    - Verify class + classroom selection survives entry into `Grupper`.

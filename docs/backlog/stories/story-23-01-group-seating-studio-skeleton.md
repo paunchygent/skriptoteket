@@ -12,16 +12,19 @@ acceptance_criteria:
 ---
 
 ## Context
+
 Initial scaffolding ensuring backend presence and strict curated app rules. Includes exposing the bespoke bootstrap payload.
 
 ## Implementation Plan
 
 ### [ ] PR 1: Backend Registry Integration & Bootstrap Endpoint
+
 - **Intent**: Register the app in the catalog and provide essential initialization payload for the bespoke UI.
 - **Code Choice**: Update `InMemoryCuratedAppRegistry` with `app_id="classroom.group-seating-studio"` and `ui_mode=CuratedAppUiMode.BESPOKE_REQUIRED`.
 - **API Surface**: Create `web/api/v1/apps_classroom_planner.py` providing the `GET /api/v1/apps/classroom.group-seating-studio/bootstrap` route. This should return typed data including `LessonModePreset` entries and active feature flags.
 
 ### [ ] PR 2: Vue SPA Skeleton & Routing
+
 - **Intent**: Fail-closed generic view rendering and provide a blank landing zone.
 - **Code Choice**:
   - Install `vue-draggable-plus` via `pnpm add`.

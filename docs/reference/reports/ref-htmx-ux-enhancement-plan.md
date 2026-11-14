@@ -32,7 +32,7 @@ This document provides a complete implementation guide for enhancing Skriptoteke
 4. Improved form layouts (less blocky, better visual hierarchy)
 5. HuleEdu design system integration for visual consistency with main platform
 
----
+______________________________________________________________________
 
 ## Session Scope for Lead Developer
 
@@ -52,13 +52,13 @@ From repo root, read:
 
 ### Critical Files to Understand
 
-| File | Purpose |
-|------|---------|
-| `src/skriptoteket/web/templates/base.html` | Base template with HTMX loading, CSS foundation |
-| `src/skriptoteket/web/templates/admin/script_editor.html` | **Reference implementation** - existing HTMX patterns |
-| `src/skriptoteket/web/pages/admin_scripting_support.py` | HTMX helpers: `is_hx_request()`, `redirect_with_hx()` |
-| `src/skriptoteket/web/pages/admin_scripting_runs.py` | Pattern for conditional HTMX vs full-page responses |
-| `docs/reference/reports/ref-vue-spa-migration-assessment.md` | Context on why HTMX over Vue SPA |
+| File                                                         | Purpose                                               |
+| ------------------------------------------------------------ | ----------------------------------------------------- |
+| `src/skriptoteket/web/templates/base.html`                   | Base template with HTMX loading, CSS foundation       |
+| `src/skriptoteket/web/templates/admin/script_editor.html`    | **Reference implementation** - existing HTMX patterns |
+| `src/skriptoteket/web/pages/admin_scripting_support.py`      | HTMX helpers: `is_hx_request()`, `redirect_with_hx()` |
+| `src/skriptoteket/web/pages/admin_scripting_runs.py`         | Pattern for conditional HTMX vs full-page responses   |
+| `docs/reference/reports/ref-vue-spa-migration-assessment.md` | Context on why HTMX over Vue SPA                      |
 
 ### Existing HTMX Patterns
 
@@ -77,7 +77,7 @@ def redirect_with_hx(*, request: Request, url: str) -> RedirectResponse:
 
 **Use existing patterns; do not invent new abstractions if an equivalent pattern already exists.**
 
----
+______________________________________________________________________
 
 ## Current State Analysis
 
@@ -90,12 +90,12 @@ HTMX is only used in the admin script editor (`script_editor.html`):
 
 ### Forms Causing Full Page Reloads
 
-| Form | Template | Pain Points |
-|------|----------|-------------|
-| Login | `login.html` | Full reload on error |
-| Suggestion submit | `suggestions_new.html` | Large form, no inline validation |
-| Suggestion review | `suggestions_review_detail.html` | Complex conditional fields, full reload |
-| Tool publish/depublish | `admin_tools.html` | Button actions reload page |
+| Form                   | Template                         | Pain Points                             |
+| ---------------------- | -------------------------------- | --------------------------------------- |
+| Login                  | `login.html`                     | Full reload on error                    |
+| Suggestion submit      | `suggestions_new.html`           | Large form, no inline validation        |
+| Suggestion review      | `suggestions_review_detail.html` | Complex conditional fields, full reload |
+| Tool publish/depublish | `admin_tools.html`               | Button actions reload page              |
 
 ### CSS Issues
 
@@ -105,7 +105,7 @@ HTMX is only used in the admin script editor (`script_editor.html`):
 - No loading state styles
 - No toast/notification system
 
----
+______________________________________________________________________
 
 ## Implementation Plan
 
@@ -190,7 +190,7 @@ See `static/css/app.css` for complete implementation with all component classes.
 
 **Checkpoint**: Confirm canvas background, IBM Plex fonts, and ledger frame are visible.
 
----
+______________________________________________________________________
 
 ### Phase 2: Global hx-boost (1-2h)
 
@@ -215,7 +215,7 @@ Exclude: file downloads, external links, logout form.
 
 **Checkpoint**: Test navigation between all pages. Verify history works.
 
----
+______________________________________________________________________
 
 ### Phase 3: Form HTMX Conversion (8-12h)
 
@@ -275,7 +275,7 @@ document.querySelectorAll('[name="decision"]').forEach(r => {
 - Create partial `templates/admin/partials/tool_row.html`
 - Backend returns updated row HTML
 
----
+______________________________________________________________________
 
 ### Phase 4: Loading States & Feedback (2-3h)
 
@@ -306,7 +306,7 @@ document.querySelectorAll('[name="decision"]').forEach(r => {
 </div>
 ```
 
----
+______________________________________________________________________
 
 ### Phase 5: Script Editor Enhancements (2h)
 
@@ -316,53 +316,53 @@ document.querySelectorAll('[name="decision"]').forEach(r => {
 - Progress indication for long-running scripts
 - Improved run result display with transitions
 
----
+______________________________________________________________________
 
 ## Files Summary
 
 ### New Files
 
-| Path | Purpose |
-|------|---------|
-| `src/skriptoteket/web/static/css/huleedu-design-tokens.css` | HuleEdu design tokens (shared) |
-| `src/skriptoteket/web/static/css/app.css` | Application CSS with token imports |
-| `src/skriptoteket/web/templates/partials/login_form.html` | Login form partial |
-| `src/skriptoteket/web/templates/partials/suggestion_form.html` | Suggestion form partial |
-| `src/skriptoteket/web/templates/admin/partials/tool_row.html` | Tool list row partial |
-| `src/skriptoteket/web/templates/partials/toast.html` | Toast notification partial |
+| Path                                                           | Purpose                            |
+| -------------------------------------------------------------- | ---------------------------------- |
+| `src/skriptoteket/web/static/css/huleedu-design-tokens.css`    | HuleEdu design tokens (shared)     |
+| `src/skriptoteket/web/static/css/app.css`                      | Application CSS with token imports |
+| `src/skriptoteket/web/templates/partials/login_form.html`      | Login form partial                 |
+| `src/skriptoteket/web/templates/partials/suggestion_form.html` | Suggestion form partial            |
+| `src/skriptoteket/web/templates/admin/partials/tool_row.html`  | Tool list row partial              |
+| `src/skriptoteket/web/templates/partials/toast.html`           | Toast notification partial         |
 
 ## HuleEdu Component Class Mapping
 
-| Current | HuleEdu Class | Notes |
-|---------|---------------|-------|
-| `.card` | `.huleedu-card` | Brutal shadow, navy border |
-| `button` | `.huleedu-btn` | Burgundy by default (CTA) |
-| `button` (functional) | `.huleedu-btn-navy` | Navy filled for LOGGA IN, SPARA |
-| `button` (secondary) | `.huleedu-btn-secondary` | Navy outline for AVBRYT |
-| `input`, `textarea` | `.huleedu-input` | Navy border, canvas background |
-| `.error` | `.huleedu-error` | Burgundy text |
-| `.muted` | `.huleedu-muted` | Navy-60 text |
-| checkbox group | `.huleedu-checkbox-group` | Flex wrap layout |
-| list item | `.huleedu-list-item` | Row with hover state |
-| status dot | `.huleedu-dot-active` | Burgundy for "requires action" |
-| status dot | `.huleedu-dot-success` | Navy for "OK/published" |
-| toast success | `.huleedu-toast-success` | Navy background |
-| toast error | `.huleedu-toast-error` | Burgundy background |
+| Current               | HuleEdu Class             | Notes                           |
+| --------------------- | ------------------------- | ------------------------------- |
+| `.card`               | `.huleedu-card`           | Brutal shadow, navy border      |
+| `button`              | `.huleedu-btn`            | Burgundy by default (CTA)       |
+| `button` (functional) | `.huleedu-btn-navy`       | Navy filled for LOGGA IN, SPARA |
+| `button` (secondary)  | `.huleedu-btn-secondary`  | Navy outline for AVBRYT         |
+| `input`, `textarea`   | `.huleedu-input`          | Navy border, canvas background  |
+| `.error`              | `.huleedu-error`          | Burgundy text                   |
+| `.muted`              | `.huleedu-muted`          | Navy-60 text                    |
+| checkbox group        | `.huleedu-checkbox-group` | Flex wrap layout                |
+| list item             | `.huleedu-list-item`      | Row with hover state            |
+| status dot            | `.huleedu-dot-active`     | Burgundy for "requires action"  |
+| status dot            | `.huleedu-dot-success`    | Navy for "OK/published"         |
+| toast success         | `.huleedu-toast-success`  | Navy background                 |
+| toast error           | `.huleedu-toast-error`    | Burgundy background             |
 
 ### Modified Files
 
-| Path | Changes |
-|------|---------|
-| `src/skriptoteket/web/templates/base.html` | CSS link, hx-boost, toast container |
-| `src/skriptoteket/web/templates/login.html` | HTMX form |
-| `src/skriptoteket/web/templates/suggestions_new.html` | HTMX form, checkbox styling |
-| `src/skriptoteket/web/templates/suggestions_review_detail.html` | HTMX form, conditional fields |
-| `src/skriptoteket/web/templates/admin_tools.html` | HTMX actions |
-| `src/skriptoteket/web/pages/auth.py` | HTMX-aware response |
-| `src/skriptoteket/web/pages/suggestions.py` | HTMX-aware responses |
-| `src/skriptoteket/web/pages/admin_tools.py` | HTMX-aware responses |
+| Path                                                            | Changes                             |
+| --------------------------------------------------------------- | ----------------------------------- |
+| `src/skriptoteket/web/templates/base.html`                      | CSS link, hx-boost, toast container |
+| `src/skriptoteket/web/templates/login.html`                     | HTMX form                           |
+| `src/skriptoteket/web/templates/suggestions_new.html`           | HTMX form, checkbox styling         |
+| `src/skriptoteket/web/templates/suggestions_review_detail.html` | HTMX form, conditional fields       |
+| `src/skriptoteket/web/templates/admin_tools.html`               | HTMX actions                        |
+| `src/skriptoteket/web/pages/auth.py`                            | HTMX-aware response                 |
+| `src/skriptoteket/web/pages/suggestions.py`                     | HTMX-aware responses                |
+| `src/skriptoteket/web/pages/admin_tools.py`                     | HTMX-aware responses                |
 
----
+______________________________________________________________________
 
 ## HTMX Idioms Reference
 
@@ -413,7 +413,7 @@ htmx.on('htmx:afterSettle', function() {
 });
 ```
 
----
+______________________________________________________________________
 
 ## Testing Checklist
 
@@ -428,24 +428,28 @@ For each form converted:
 - [ ] Keyboard navigation works
 - [ ] Screen reader announces changes
 
----
+______________________________________________________________________
 
 ## Session Completion Requirements
 
 When done, you MUST:
 
 1. **Update documentation**:
+
    - Update `ref-vue-spa-migration-assessment.md` to note HTMX implementation status
    - Historical rule-authoring step retired; current backend guidance belongs to
      the repo-local `skriptoteket-backend-dev` skill
 
 2. **Update handoff**:
+
    - Update `.codex/handoff.md` with what was implemented, decisions made, remaining work
 
 3. **Create instruction for next developer**:
+
    - If work continues, create similar scoped instruction with remaining tasks
 
 4. **Verify**:
+
    - `pdm run docs-validate`
    - `pdm run lint` and `pdm run typecheck`
    - `pdm run test`

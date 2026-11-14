@@ -8,15 +8,7 @@ created: 2026-04-07
 updated: 2026-04-30
 stories:
   - "ST-32-06"
-tags:
-  [
-    "frontend",
-    "backend",
-    "klassrumskartan",
-    "public-access",
-    "guest-workspace",
-    "smart-assignment",
-  ]
+tags: ["frontend", "backend", "klassrumskartan", "public-access", "guest-workspace", "smart-assignment"]
 dependencies:
   - "ADR-0074"
   - "ADR-0079"
@@ -79,6 +71,7 @@ Ship the guest Smart-parity slice for Klassrumskartan:
 ## Implementation plan
 
 1. Expand guest workspace routing to include `Regler`.
+
    - Broaden the guest controller and guest shell mode handling beyond
      `"groups" | "seats"`.
    - Re-enable `show_rules_option` in the guest overview/planner surfaces.
@@ -86,6 +79,7 @@ Ship the guest Smart-parity slice for Klassrumskartan:
      path rather than creating a guest-only rules UI.
 
 2. Restore guest Smart settings drawer parity.
+
    - Re-enable the expandable Smart settings affordance in guest grouping and
      seating toolbars.
    - Keep the drawer aligned with the authenticated structure for guest-valid
@@ -94,12 +88,14 @@ Ship the guest Smart-parity slice for Klassrumskartan:
      editors inside task panes.
 
 3. Freeze the guest/account Smart control split from `ADR-0080`.
+
    - Keep solver-based Smart controls in guest mode.
    - Remove or honestly block history-based Smart controls in guest mode,
      especially `Use history`.
    - Ensure guest Smart settings do not imply authenticated history parity.
 
 4. Add explicit public Smart helper transport.
+
    - Introduce guest-capable public helper routes at:
      - `/api/v1/public/apps/classroom.group-seating-studio/grouping/smart-run`
      - `/api/v1/public/apps/classroom.group-seating-studio/seating/smart-run`
@@ -112,12 +108,14 @@ Ship the guest Smart-parity slice for Klassrumskartan:
    - Do not fall back to authenticated `/api/v1/apps/.../smart-run` routes.
 
 5. Wire guest `Slumpa` onto the public solver lane.
+
    - `Smart` off stays local random behavior.
    - `Smart` on uses the explicit public solver seam for both `Grupper` and
      `Sittplatser`.
    - Accepted results persist only into the browser-owned guest snapshot.
 
 6. Keep upgrade semantics unchanged.
+
    - Guest-authored smart rules and accepted Smart-run results remain
      browser-owned until the first authenticated Klassrumskartan visit offers
      import/discard/postpone through the existing upgrade flow.

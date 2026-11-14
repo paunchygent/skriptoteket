@@ -4,15 +4,15 @@ id: ADR-SKRIPT-0049
 title: Login events audit trail
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- lead-developer
-- user-lead
+  - lead-developer
+  - user-lead
 retired_ids:
-- ADR-0049
+  - ADR-0049
 ---
 
 ## Context

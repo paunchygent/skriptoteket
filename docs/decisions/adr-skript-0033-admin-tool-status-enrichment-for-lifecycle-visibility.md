@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0033
 title: Admin tool status enrichment for lifecycle visibility
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0033
+  - ADR-0033
 ---
 
 ## Context
@@ -64,19 +64,19 @@ to perform efficient aggregation without fetching full version records.
 
 The AdminToolsView splits tools into two sections:
 
-| Section | Condition | Display |
-|---------|-----------|---------|
-| **Pågående** | `active_version_id === null` | Status badge based on version stats |
-| **Klara** | `active_version_id !== null` | Publish toggle with "Publicerad"/"Ej publicerad" |
+| Section      | Condition                    | Display                                          |
+| ------------ | ---------------------------- | ------------------------------------------------ |
+| **Pågående** | `active_version_id === null` | Status badge based on version stats              |
+| **Klara**    | `active_version_id !== null` | Publish toggle with "Publicerad"/"Ej publicerad" |
 
 ### 4. Swedish status labels
 
-| Condition | Label |
-|-----------|-------|
-| `version_count == 0` | "Ingen kod" |
-| `latest_version_state == "draft"` | "Utkast" |
-| `has_pending_review == true` | "Granskas" |
-| `active_version_id != null && is_published` | "Publicerad" |
+| Condition                                    | Label           |
+| -------------------------------------------- | --------------- |
+| `version_count == 0`                         | "Ingen kod"     |
+| `latest_version_state == "draft"`            | "Utkast"        |
+| `has_pending_review == true`                 | "Granskas"      |
+| `active_version_id != null && is_published`  | "Publicerad"    |
 | `active_version_id != null && !is_published` | "Ej publicerad" |
 
 ## Non-Decisions
@@ -151,19 +151,19 @@ to perform efficient aggregation without fetching full version records.
 
 The AdminToolsView splits tools into two sections:
 
-| Section | Condition | Display |
-|---------|-----------|---------|
-| **Pågående** | `active_version_id === null` | Status badge based on version stats |
-| **Klara** | `active_version_id !== null` | Publish toggle with "Publicerad"/"Ej publicerad" |
+| Section      | Condition                    | Display                                          |
+| ------------ | ---------------------------- | ------------------------------------------------ |
+| **Pågående** | `active_version_id === null` | Status badge based on version stats              |
+| **Klara**    | `active_version_id !== null` | Publish toggle with "Publicerad"/"Ej publicerad" |
 
 ### 4. Swedish status labels
 
-| Condition | Label |
-|-----------|-------|
-| `version_count == 0` | "Ingen kod" |
-| `latest_version_state == "draft"` | "Utkast" |
-| `has_pending_review == true` | "Granskas" |
-| `active_version_id != null && is_published` | "Publicerad" |
+| Condition                                    | Label           |
+| -------------------------------------------- | --------------- |
+| `version_count == 0`                         | "Ingen kod"     |
+| `latest_version_state == "draft"`            | "Utkast"        |
+| `has_pending_review == true`                 | "Granskas"      |
+| `active_version_id != null && is_published`  | "Publicerad"    |
 | `active_version_id != null && !is_published` | "Ej publicerad" |
 
 ### Consequences

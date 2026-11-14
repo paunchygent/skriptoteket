@@ -48,11 +48,11 @@ outcome: "Operators can monitor Skriptoteket health via Grafana dashboards, rece
 
 ## Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Alert fatigue from noisy rules | Medium | Medium | Start with critical alerts only; tune thresholds after observation |
-| Jaeger memory usage with public access | Low | Medium | Monitor memory; add auth if abuse detected |
-| Dashboard complexity | Low | Low | Follow existing session-files dashboard pattern |
+| Risk                                   | Likelihood | Impact | Mitigation                                                         |
+| -------------------------------------- | ---------- | ------ | ------------------------------------------------------------------ |
+| Alert fatigue from noisy rules         | Medium     | Medium | Start with critical alerts only; tune thresholds after observation |
+| Jaeger memory usage with public access | Low        | Medium | Monitor memory; add auth if abuse detected                         |
+| Dashboard complexity                   | Low        | Low    | Follow existing session-files dashboard pattern                    |
 
 ## Dependencies
 

@@ -35,23 +35,23 @@ those values.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                                          | Focus                            | Time  |
+| ------------------------------------------------------------------------------------------------------------- | -------------------------------- | ----- |
 | `docs/backlog/prs/pr-0226-st-29-11-shared-planner-shell-parity-and-grouping-viewport-height-stabilization.md` | Slice scope and frozen decisions | 5 min |
-| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md` | Parent story scope | 4 min |
-| `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md` | Epic boundary | 3 min |
+| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`  | Parent story scope               | 4 min |
+| `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`                              | Epic boundary                    | 3 min |
 
 **Total estimated time:** ~12 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `PR-0226` under `ST-29-11` | This is shared primitive/parity hardening, not a layout redesign restart | [x] |
-| Freeze one shared sticky toolbar contract | Guest/auth shells should not diverge by wrapper | [x] |
-| Freeze grouping lane floors at `480px` | Grouping should match the current seating baseline and stop collapsing to content | [x] |
-| Freeze group-card floors at `56px` / `112px` | Bucket sizing must be explicit and reviewable | [x] |
-| Require focused proof beyond screenshots | The contract should be testable at component/spec level | [x] |
+| Decision                                     | Rationale                                                                         | Approve? |
+| -------------------------------------------- | --------------------------------------------------------------------------------- | -------- |
+| Keep `PR-0226` under `ST-29-11`              | This is shared primitive/parity hardening, not a layout redesign restart          | [x]      |
+| Freeze one shared sticky toolbar contract    | Guest/auth shells should not diverge by wrapper                                   | [x]      |
+| Freeze grouping lane floors at `480px`       | Grouping should match the current seating baseline and stop collapsing to content | [x]      |
+| Freeze group-card floors at `56px` / `112px` | Bucket sizing must be explicit and reviewable                                     | [x]      |
+| Require focused proof beyond screenshots     | The contract should be testable at component/spec level                           | [x]      |
 
 ## Review Checklist
 
@@ -100,13 +100,13 @@ close-out.
 ### Decision Approvals
 
 - [x] `PR-0226` is the right bounded follow-up slice for the reported guest/authenticated shell
-      parity drift.
+  parity drift.
 - [x] The sticky toolbar contract should be shared and viewport-relative across guest and
-      authenticated shells.
+  authenticated shells.
 - [x] Grouping should keep a shared explicit `480px` minimum-height floor for both the board lane
-      and student-pool lane instead of shrinking to current content.
+  and student-pool lane instead of shrinking to current content.
 - [x] Group cards and empty drop targets should use the explicit `56px` / `112px` minimum-height
-      floors and prove them through focused component/spec assertions.
+  floors and prove them through focused component/spec assertions.
 - [x] `PR-0226` may proceed to implementation once this review clears.
 
 ### Reviewer Notes

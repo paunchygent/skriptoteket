@@ -4,8 +4,8 @@ id: ST-SKRIPT-26-07
 title: Klassrumskartan share-link Teams preview thumbnails
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,34 +16,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-26
 acceptance_criteria:
-- Given a new seating share link is created, when the URL is posted in Microsoft Teams,
-  then Teams can render a large preview image that shows the full classroom arrangement
-  derived from the immutable HTML/CSS share artifact.
-- Given a new grouping share link is created, when the URL is posted in Microsoft
-  Teams, then Teams can render a large preview image that shows the grouping artifact
-  derived from the immutable HTML/CSS share artifact.
-- Given a share page is opened directly, when the browser loads the share URL, then
-  the primary artifact remains the server-rendered HTML/CSS page and does not become
-  an image-only export.
-- Given a preview image is generated, when its provenance is inspected, then it is
-  mechanically derived from the same canonical rendered share artifact and presentation
-  payload used by the public share page, not hand-authored or separately browser-supplied.
-- Given Teams, Google Classroom, an LMS, or another crawler fetches the share page,
-  when it reads metadata, then it sees complete escaped Open Graph/Twitter/schema.org
-  metadata with `og:image`, image dimensions, canonical share URL, artifact title,
-  and description.
-- Given share links can contain class, room, group, and student names, when metadata
-  or preview-image routes are fetched, then the public-by-token/no-owner-API/no-secret/no-indexing
-  contract from `ST-26-06` remains intact.
-- Given active share artifacts existed before this feature shipped, when the rollout
-  strategy is applied, then those active links either receive backfilled preview metadata/images
-  or use a documented lazy-generation path so active seating and grouping links are
-  not left permanently text-only.
-- Given a share is revoked, expired, purged, or missing, when its HTML page or preview
-  image URL is fetched, then unavailable status, noindex headers, cache behavior,
-  and leak-free responses remain deterministic and tested.
+  - Given a new seating share link is created, when the URL is posted in Microsoft Teams, then Teams can render a large preview image that shows the full classroom arrangement derived from the immutable HTML/CSS share artifact.
+  - Given a new grouping share link is created, when the URL is posted in Microsoft Teams, then Teams can render a large preview image that shows the grouping artifact derived from the immutable HTML/CSS share artifact.
+  - Given a share page is opened directly, when the browser loads the share URL, then the primary artifact remains the server-rendered HTML/CSS page and does not become an image-only export.
+  - Given a preview image is generated, when its provenance is inspected, then it is mechanically derived from the same canonical rendered share artifact and presentation payload used by the public share page, not hand-authored or separately browser-supplied.
+  - Given Teams, Google Classroom, an LMS, or another crawler fetches the share page, when it reads metadata, then it sees complete escaped Open Graph/Twitter/schema.org metadata with `og:image`, image dimensions, canonical share URL, artifact title, and description.
+  - Given share links can contain class, room, group, and student names, when metadata or preview-image routes are fetched, then the public-by-token/no-owner-API/no-secret/no-indexing contract from `ST-26-06` remains intact.
+  - Given active share artifacts existed before this feature shipped, when the rollout strategy is applied, then those active links either receive backfilled preview metadata/images or use a documented lazy-generation path so active seating and grouping links are not left permanently text-only.
+  - Given a share is revoked, expired, purged, or missing, when its HTML page or preview image URL is fetched, then unavailable status, noindex headers, cache behavior, and leak-free responses remain deterministic and tested.
 retired_ids:
-- ST-26-07
+  - ST-26-07
 ---
 
 ## Context
@@ -118,8 +100,7 @@ Klassrumskartan share links. Retained review gate: `REV-ST-26-07`.
   assets or prove existing stale-preview detection already forces fresh assets.
   `PR-0279` closed this contract on 2026-05-03: backfill now refreshes active
   old seating artifacts from `presentation_payload` before regenerating previews,
-  and the Hemma production rerun after deploy returned `scanned=0 generated=0
-  refreshed=0 failed=0`, so no active stale seating preview rows remained.
+  and the Hemma production rerun after deploy returned `scanned=0 generated=0 refreshed=0 failed=0`, so no active stale seating preview rows remained.
 - The thumbnail runtime is a backend infrastructure adapter behind an
   application protocol. It must not depend on SPA hydration, browser-local
   state, owner-scoped APIs, or a logged-in user.

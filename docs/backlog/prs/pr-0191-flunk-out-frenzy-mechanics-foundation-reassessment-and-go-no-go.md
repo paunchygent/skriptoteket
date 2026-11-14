@@ -24,6 +24,7 @@ that the modular architecture for Flunk-Out Frenzy is stable, performant, and
 correctly decoupled.
 
 ### Architectural findings:
+
 - **Module Boundaries**: The separation between `PhysicsWorld` (Rapier),
   `RuleEngine` (pure state transitions), and `GameRuntime` (host integration) is
   strictly enforced.

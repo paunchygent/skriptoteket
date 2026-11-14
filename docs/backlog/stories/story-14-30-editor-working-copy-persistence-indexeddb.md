@@ -37,14 +37,10 @@ data_impact: "No (client-side persistence only)"
 
 See also:
 
-- Diff viewer primitive: `docs/backlog/stories/story-14-17-editor-version-
-diff-view.md`
-- Compare uses `compare=working`: `docs/backlog/stories/story-14-18-editor-
-review-navigation-and-compare.md`
-- Chat history reuse of the same IndexedDB helper: `docs/backlog/stories/
-story-08-20-editor-ai-chat-drawer-mvp.md`
-- AI apply safety checkpoints: `docs/backlog/stories/story-08-22-editor-ai-
-diff-preview-apply-undo.md`
+- Diff viewer primitive: `docs/backlog/stories/story-14-17-editor-version- diff-view.md`
+- Compare uses `compare=working`: `docs/backlog/stories/story-14-18-editor- review-navigation-and-compare.md`
+- Chat history reuse of the same IndexedDB helper: `docs/backlog/stories/ story-08-20-editor-ai-chat-drawer-mvp.md`
+- AI apply safety checkpoints: `docs/backlog/stories/story-08-22-editor-ai- diff-preview-apply-undo.md`
 
 ## Implementation decisions
 
@@ -53,8 +49,7 @@ diff-preview-apply-undo.md`
 - Use IndexedDB via a small helper (e.g. `idb`).
 - Implement a shared editor persistence module so other editor surfaces can
   reuse it (e.g. chat history in ST-08-20).
-- **Decided keying:** scope all editor working-copy persistence by `{user_id,
-  tool_id}` (never by `version_id`).
+- **Decided keying:** scope all editor working-copy persistence by `{user_id, tool_id}` (never by `version_id`).
 - Store `base_version_id` as metadata inside the persisted payload (not in the
   key) so saving/new versions do not “lose” the working copy.
 - Persist only the 5 editor fields:
@@ -74,8 +69,7 @@ diff-preview-apply-undo.md`
     - Value: `{ base_version_id, fields..., updated_at, expires_at }`
   - `checkpoints`
     - Primary key: `{ user_id, tool_id, checkpoint_id }`
-    - Value: `{ kind: auto|pinned, label, base_version_id, fields...,
-created_at, expires_at|null }`
+    - Value: `{ kind: auto|pinned, label, base_version_id, fields..., created_at, expires_at|null }`
     - Query needs: list by `{user_id, tool_id}` ordered by `created_at`
   - (Reserved now for ST-08-20 to avoid schema churn) `chat_threads`
 - All stored text must be treated as opaque bytes for diff/fingerprint
@@ -95,14 +89,14 @@ created_at, expires_at|null }`
   - before server Save
   - before applying an AI proposal (ST-08-22)
   - on `pagehide` / `visibilitychange` (best-effort safety on navigation/
-reload)
+    reload)
 - Auto checkpoint TTL: 7 days (`expires_at`).
 - Manual checkpoints (“Skapa återställningspunkt”) are pinned:
   - `expires_at = null` (no TTL)
   - Must be user-deletable
   - Must be capped (e.g. max 20 pinned per `{user_id, tool_id}`); when
-exceeded, block creation with a clear message or require deleting an older
-pinned checkpoint.
+    exceeded, block creation with a clear message or require deleting an older
+    pinned checkpoint.
 - AI apply safety: create a clearly labeled auto checkpoint (e.g. “Before AI
   apply”) immediately before applying a proposal so users can restore even after
   subsequent manual edits.

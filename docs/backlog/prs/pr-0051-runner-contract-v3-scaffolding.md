@@ -58,9 +58,7 @@ schema-first helper modules to support a clean, parallel V3 implementation and D
 
 - `pdm run lint`
 - `pdm run typecheck`
-- `pdm run pytest -q tests/unit/infrastructure/runner/test_docker_runner_execute.py \
-  tests/unit/infrastructure/runner/test_docker_runner_adoption.py \
-  tests/unit/infrastructure/runner/test_runner_contract_seams.py`
+- `pdm run pytest -q tests/unit/infrastructure/runner/test_docker_runner_execute.py \ tests/unit/infrastructure/runner/test_docker_runner_adoption.py \ tests/unit/infrastructure/runner/test_runner_contract_seams.py`
 - `pdm run docs-validate`
 
 ## Rollback plan

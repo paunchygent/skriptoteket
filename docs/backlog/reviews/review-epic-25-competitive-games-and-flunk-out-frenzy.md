@@ -55,26 +55,26 @@ ruleset scoping.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0073-competitive-games-and-official-high-scores.md` | Browser/runtime vs backend/competition boundary | 10 min |
-| `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md` | Scope and slice boundaries | 5 min |
-| `docs/reference/ref-competitive-games-cross-cutting-programme.md` | Cross-cutting workstream and backlog framing | 5 min |
-| `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md` | Curated-app entry seam | 5 min |
-| `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md` | Local runtime boundary | 5 min |
-| `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md` | Submission + leaderboard contract | 5 min |
-| `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md` | Lightweight leaderboard hardening policy | 5 min |
+| File                                                                                                      | Focus                                           | Time   |
+| --------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------ |
+| `docs/adr/adr-0073-competitive-games-and-official-high-scores.md`                                         | Browser/runtime vs backend/competition boundary | 10 min |
+| `docs/backlog/epics/epic-25-competitive-games-and-flunk-out-frenzy.md`                                    | Scope and slice boundaries                      | 5 min  |
+| `docs/reference/ref-competitive-games-cross-cutting-programme.md`                                         | Cross-cutting workstream and backlog framing    | 5 min  |
+| `docs/backlog/stories/story-25-01-competitive-games-substrate-and-flunk-out-frenzy-bootstrap-contract.md` | Curated-app entry seam                          | 5 min  |
+| `docs/backlog/stories/story-25-02-flunk-out-frenzy-local-runtime-vertical-slice.md`                       | Local runtime boundary                          | 5 min  |
+| `docs/backlog/stories/story-25-03-competitive-play-pending-score-submission-and-typed-leaderboards.md`    | Submission + leaderboard contract               | 5 min  |
+| `docs/backlog/stories/story-25-04-competitive-play-leaderboard-hardening-and-ruleset-scoping.md`          | Lightweight leaderboard hardening policy        | 5 min  |
 
 **Total estimated time:** ~40 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Browser-owned live simulation | Protect game feel and keep network latency out of active play | [x] |
-| Shared `competitive_play` backend | Avoid one-off Flunk-Out Frenzy persistence logic and prepare for future games | [x] |
-| Lightweight server-owned leaderboard lifecycle | Keep global leaderboards fun, consistent, and proportionate to the product | [x] |
-| `ruleset_id` from the start | Prevent future scoring/balance changes from corrupting one shared board | [x] |
+| Decision                                       | Rationale                                                                     | Approve? |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- | -------- |
+| Browser-owned live simulation                  | Protect game feel and keep network latency out of active play                 | [x]      |
+| Shared `competitive_play` backend              | Avoid one-off Flunk-Out Frenzy persistence logic and prepare for future games | [x]      |
+| Lightweight server-owned leaderboard lifecycle | Keep global leaderboards fun, consistent, and proportionate to the product    | [x]      |
+| `ruleset_id` from the start                    | Prevent future scoring/balance changes from corrupting one shared board       | [x]      |
 
 ## Review Checklist
 
@@ -107,10 +107,10 @@ None. The proposal is thorough and aligns with the project's architectural princ
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0073 | Initial proposal created |
-| 2 | EPIC-25 / ST-25-01..04 | Initial scope and stories created |
+| Change | Artifact               | Description                       |
+| ------ | ---------------------- | --------------------------------- |
+| 1      | ADR-0073               | Initial proposal created          |
+| 2      | EPIC-25 / ST-25-01..04 | Initial scope and stories created |
 
 ## Supplemental Review Record: PR-0204 Launcher Input/Overlay Gate
 

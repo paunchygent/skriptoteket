@@ -4,8 +4,8 @@ id: TASK-SKRIPT-29-12-01
 title: 'ST-29-12: shared site symbol rollout and guardrails'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,14 +17,9 @@ closeout_review:
 story: ST-SKRIPT-29-12
 task_kind: story
 acceptance_criteria:
-- Given common global actions render outside Klassrumskartan, when users see create,
-  edit, delete, close, share/copy link, file/download, history, or configure affordances,
-  then those symbols match the approved semantic matrix.
-- Given a future developer searches for canonical symbol usage, when they read the
-  reference or wrapper registry, then the intended wrapper and allowed semantic scope
-  are discoverable.
-- Given an icon remains direct-imported from Lucide, when the audit completes, then
-  it has an explicit reason or belongs to an approved local leaf surface.
+  - Given common global actions render outside Klassrumskartan, when users see create, edit, delete, close, share/copy link, file/download, history, or configure affordances, then those symbols match the approved semantic matrix.
+  - Given a future developer searches for canonical symbol usage, when they read the reference or wrapper registry, then the intended wrapper and allowed semantic scope are discoverable.
+  - Given an icon remains direct-imported from Lucide, when the audit completes, then it has an explicit reason or belongs to an approved local leaf surface.
 ---
 
 ## Context
@@ -35,8 +30,8 @@ Even if Klassrumskartan is corrected, the broader SPA can continue drifting if c
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-29-12-01 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice

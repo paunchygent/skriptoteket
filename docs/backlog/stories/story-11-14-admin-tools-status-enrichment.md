@@ -67,10 +67,10 @@ Documented in ADR-0033.
 
 ### Status labels (Swedish)
 
-| Condition | Label | Style |
-|-----------|-------|-------|
-| version_count == 0 | "Ingen kod" | muted background |
-| has_pending_review == true | "Granskas" | warning color |
-| latest_version_state == "draft" | "Utkast" | subtle border |
-| is_published == true | "Publicerad" | success text |
-| is_published == false | "Ej publicerad" | muted text |
+| Condition                       | Label           | Style            |
+| ------------------------------- | --------------- | ---------------- |
+| version_count == 0              | "Ingen kod"     | muted background |
+| has_pending_review == true      | "Granskas"      | warning color    |
+| latest_version_state == "draft" | "Utkast"        | subtle border    |
+| is_published == true            | "Publicerad"    | success text     |
+| is_published == false           | "Ej publicerad" | muted text       |

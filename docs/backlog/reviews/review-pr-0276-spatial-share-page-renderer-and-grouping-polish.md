@@ -42,26 +42,26 @@ refresh desktop/mobile visual proof with both fixtures visible.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md` | Remediation scope and proof obligations | 8 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py` | Static bench fixture HTML/CSS ownership | 10 min |
-| `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py` | Renderer coverage for merged labeled benches and wall fixtures | 8 min |
-| `.artifacts/pr-0276-spatial-share-renderer/` | Desktop/mobile visual proof coverage | 6 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/shares.py` | Share HTML finalization boundary | 8 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py` | Share chrome and public-app attribution link | 8 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_pdf_renderer.py` | Export-backed PDF renderer and per-process cache | 8 min |
+| File                                                                                          | Focus                                                          | Time   |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0276-st-26-06-spatial-share-page-renderer-and-grouping-polish.md`        | Remediation scope and proof obligations                        | 8 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py` | Static bench fixture HTML/CSS ownership                        | 10 min |
+| `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`        | Renderer coverage for merged labeled benches and wall fixtures | 8 min  |
+| `.artifacts/pr-0276-spatial-share-renderer/`                                                  | Desktop/mobile visual proof coverage                           | 6 min  |
+| `src/skriptoteket/application/curated_apps/classroom_planner/shares.py`                       | Share HTML finalization boundary                               | 8 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_renderer.py`       | Share chrome and public-app attribution link                   | 8 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_pdf_renderer.py`   | Export-backed PDF renderer and per-process cache               | 8 min  |
 
 **Total estimated time:** ~32 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Reopen `PR-0276` instead of creating `PR-0278` | The bug is inside the PR-0276 renderer and proof contract | [x] |
-| Keep `PR-0277` blocked until PR-0276 is reclosed | Preview thumbnails depend on trustworthy share-renderer output | [x] |
-| Require both unit coverage and refreshed visual proof | Current tests passed while the visible contract was broken | [x] |
-| Fail closed for `placement=WALL` without `wall_side` | Wrong wall geometry is more misleading than rejecting invalid poster-scene input | [x] |
+| Decision                                              | Rationale                                                                        | Approve? |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------- | -------- |
+| Reopen `PR-0276` instead of creating `PR-0278`        | The bug is inside the PR-0276 renderer and proof contract                        | [x]      |
+| Keep `PR-0277` blocked until PR-0276 is reclosed      | Preview thumbnails depend on trustworthy share-renderer output                   | [x]      |
+| Require both unit coverage and refreshed visual proof | Current tests passed while the visible contract was broken                       | [x]      |
+| Fail closed for `placement=WALL` without `wall_side`  | Wrong wall geometry is more misleading than rejecting invalid poster-scene input | [x]      |
 
 ## Review Checklist
 
@@ -199,19 +199,19 @@ the audit trail for what was fixed:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ST-26-06` | Story captured the PR-0276 remediation and returned to `ready` after the fix. |
-| 2 | `PR-0276` | Slice reopened with bench overlay proof obligations, then closed as `done`. |
-| 3 | `docs/index.md` | Review record added to the docs doorway. |
-| 4 | `share_scene_renderer.py` | Bench fixtures now use absolute body and centered label overlay positioning. |
-| 5 | `test_share_renderer.py` | Added a renderer regression for a normalized merged bench fixture labeled `Bänk`. |
-| 6 | `.artifacts/pr-0276-spatial-share-renderer/` | Refreshed seating sample HTML plus desktop/mobile screenshots with the merged labeled bench visible. |
-| 7 | `share_scene_renderer.py` | Wall fixtures missing `wall_side` now fail closed instead of floor-rendering. |
-| 8 | `test_share_renderer.py` | Added top-wall whiteboard geometry and missing-`wall_side` regressions. |
-| 9 | `.artifacts/pr-0276-spatial-share-renderer/` | Refreshed sample/screenshots with `wall_side=TOP`; proof asserts wall-band geometry. |
-| 10 | `share_renderer.py` / `share_artifacts.py` | Added shared ISO-date `Skapad` chrome, PDF action, public-app attribution, and creation-time placeholder finalization before content hashing. |
-| 11 | `share_pdf_renderer.py` | Added export-backed share PDF renderer with seating A3 poster delegation, grouping A4 PDF delegation, and bounded per-process PDF byte cache. |
-| 12 | `test_share_pdf_renderer.py` / `.artifacts/pr-0276-spatial-share-renderer/` | Replaced CSS-string PDF tests with export-delegation/cache tests and refreshed real seating/grouping PDF proof artifacts. |
-| 13 | `shares.py` / `share_renderer.py` | Replaced document-wide sentinel replacement with exact owned chrome slots and changed attribution to the same-origin public Klassrumskartan path. |
-| 14 | `test_share_chrome_finalization.py` / `test_share_renderer.py` | Added regressions proving hostile sentinel text is preserved and the attribution URL is not hard-coded to production. |
+| Change | Artifact                                                                    | Description                                                                                                                                       |
+| ------ | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `ST-26-06`                                                                  | Story captured the PR-0276 remediation and returned to `ready` after the fix.                                                                     |
+| 2      | `PR-0276`                                                                   | Slice reopened with bench overlay proof obligations, then closed as `done`.                                                                       |
+| 3      | `docs/index.md`                                                             | Review record added to the docs doorway.                                                                                                          |
+| 4      | `share_scene_renderer.py`                                                   | Bench fixtures now use absolute body and centered label overlay positioning.                                                                      |
+| 5      | `test_share_renderer.py`                                                    | Added a renderer regression for a normalized merged bench fixture labeled `Bänk`.                                                                 |
+| 6      | `.artifacts/pr-0276-spatial-share-renderer/`                                | Refreshed seating sample HTML plus desktop/mobile screenshots with the merged labeled bench visible.                                              |
+| 7      | `share_scene_renderer.py`                                                   | Wall fixtures missing `wall_side` now fail closed instead of floor-rendering.                                                                     |
+| 8      | `test_share_renderer.py`                                                    | Added top-wall whiteboard geometry and missing-`wall_side` regressions.                                                                           |
+| 9      | `.artifacts/pr-0276-spatial-share-renderer/`                                | Refreshed sample/screenshots with `wall_side=TOP`; proof asserts wall-band geometry.                                                              |
+| 10     | `share_renderer.py` / `share_artifacts.py`                                  | Added shared ISO-date `Skapad` chrome, PDF action, public-app attribution, and creation-time placeholder finalization before content hashing.     |
+| 11     | `share_pdf_renderer.py`                                                     | Added export-backed share PDF renderer with seating A3 poster delegation, grouping A4 PDF delegation, and bounded per-process PDF byte cache.     |
+| 12     | `test_share_pdf_renderer.py` / `.artifacts/pr-0276-spatial-share-renderer/` | Replaced CSS-string PDF tests with export-delegation/cache tests and refreshed real seating/grouping PDF proof artifacts.                         |
+| 13     | `shares.py` / `share_renderer.py`                                           | Replaced document-wide sentinel replacement with exact owned chrome slots and changed attribution to the same-origin public Klassrumskartan path. |
+| 14     | `test_share_chrome_finalization.py` / `test_share_renderer.py`              | Added regressions proving hostile sentinel text is preserved and the attribution URL is not hard-coded to production.                             |

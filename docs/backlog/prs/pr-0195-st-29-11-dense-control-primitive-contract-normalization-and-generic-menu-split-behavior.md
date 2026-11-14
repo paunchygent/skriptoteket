@@ -43,15 +43,18 @@ wave of surface adoption:
 ## Implementation plan
 
 1. Normalize the shared dense-control contract in `src/components/ui/`.
+
    - Tighten `denseToolPrimitives.ts`.
    - Ensure radius, size tiers, hover, focus, active, disabled, and grouped disclosure behavior are
      owned by the shared primitive layer.
 
 2. Finish generic menu/split behavior.
+
    - Refine `UiDenseMenuButton.vue`, `UiDenseSplitButton.vue`, and `useDenseMenuSurface.ts` so item
      models and focus-return behavior are shared and generic rather than planner-shaped.
 
 3. Remove primitive-level drift in the export surface.
+
    - Update `PlannerExportActionGroup.vue` only as needed to consume the generic split contract,
      without widening into a full planner-wrapper cleanup pass.
 

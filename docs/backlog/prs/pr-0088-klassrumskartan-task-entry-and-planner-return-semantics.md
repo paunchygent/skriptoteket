@@ -50,7 +50,7 @@ Wire the actual task-specific behavior of the class workspace so the teacher can
 - [x] Make seating entry require classroom selection.
 - [x] Make grouping entry default classroom-agnostic with a visible opt-in classroom-aware toggle.
 - [x] Reuse `POST /drafts/resolve` with explicit `draft_kind` and optional `template_id` rather
-      than inventing parallel draft creation semantics.
+  than inventing parallel draft creation semantics.
 - [x] Change normal planner exit from `abandon` to `return to class workspace`.
 - [x] Keep explicit draft discard available as a separate action.
 - [x] Add frontend tests for task selection, start-flow semantics, and planner return behavior.

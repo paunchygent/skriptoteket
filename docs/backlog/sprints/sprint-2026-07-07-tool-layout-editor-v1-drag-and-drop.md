@@ -45,12 +45,12 @@ Reference context: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 ## Execution plan (suggested)
 
-1) Add a well-known drag/drop library (e.g. `interactjs`) and implement:
+1. Add a well-known drag/drop library (e.g. `interactjs`) and implement:
    - drag student “chips” into slots
    - swap/move between slots
    - visual drop targets + invalid drop feedback
-2) Keep “apply changes” semantics (batch updates) rather than invoking a tool run on every drag.
-3) Add basic component tests for keyboard assignment + a couple of drag/drop scenarios.
+2. Keep “apply changes” semantics (batch updates) rather than invoking a tool run on every drag.
+3. Add basic component tests for keyboard assignment + a couple of drag/drop scenarios.
 
 ## Demo checklist
 

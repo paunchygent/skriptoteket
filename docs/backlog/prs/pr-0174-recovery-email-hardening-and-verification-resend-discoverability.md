@@ -84,8 +84,7 @@ Ship one focused auth/email polish slice that:
 ### Manual proof
 
 - Run local backend + SPA.
-- Verify a password-reset request for a verified local account no longer logs `Template
-  reset_password.html missing subject comment`.
+- Verify a password-reset request for a verified local account no longer logs `Template reset_password.html missing subject comment`.
 - Verify the verification email no longer references the removed header image.
 - Verify the resend-verification affordance from both forgot-password and login modal flows.
 

@@ -7,16 +7,7 @@ owners: "agents"
 created: 2026-04-03
 updated: 2026-04-30
 outcome: "Skriptoteket gains a reusable public curated-app access model with explicit per-app access profiles, separate public/authenticated seams, browser-owned guest-state rules, and authenticated upgrade boundaries; Klassrumskartan becomes the first approved `public_browser_workspace_with_upgrade` consumer without weakening the existing authenticated curated-app host or owner-scoped APIs."
-dependencies:
-  [
-    "ADR-0009",
-    "ADR-0023",
-    "ADR-0075",
-    "ADR-0079",
-    "ADR-0080",
-    "EPIC-27",
-    "EPIC-29",
-  ]
+dependencies: ["ADR-0009", "ADR-0023", "ADR-0075", "ADR-0079", "ADR-0080", "EPIC-27", "EPIC-29"]
 ---
 
 ## Scope

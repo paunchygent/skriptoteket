@@ -48,29 +48,29 @@ DOCX contracts.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md` | Scope, non-goals, implementation plan, and proof gates | 15 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` | Parent story sequence and accepted app-presentation decisions | 10 min |
-| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic boundary and remaining ST-37-04 sequence | 5 min |
-| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md` | Registry-only classification, sequencing, stop conditions, and proof expectations | 15 min |
-| `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md` | Product-lane truth and Sir Convert/Skriptoteket ownership boundary | 10 min |
-| `docs/backlog/prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md` | Adjacent route-visible split that must stay out of PR-0367 | 8 min |
-| `docs/backlog/prs/pr-0374-st-37-04-post-cutover-conversion-hub-compatibility-cleanup.md` | Later compatibility cleanup that must stay out of PR-0367 | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/registry.py` | Current stale registry metadata and public capability shape | 8 min |
-| `tests/unit/infrastructure/curated_apps/test_registry.py` | Existing focused proof seam for registry metadata/capability behavior | 5 min |
+| File                                                                                            | Focus                                                                             | Time   |
+| ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0367-st-37-04-curated-app-registry-presentation-alignment.md`              | Scope, non-goals, implementation plan, and proof gates                            | 15 min |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`           | Parent story sequence and accepted app-presentation decisions                     | 10 min |
+| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic boundary and remaining ST-37-04 sequence                                     | 5 min  |
+| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`                       | Registry-only classification, sequencing, stop conditions, and proof expectations | 15 min |
+| `docs/reference/ref-current-product-lanes-and-sir-convert-boundary-v1.md`                       | Product-lane truth and Sir Convert/Skriptoteket ownership boundary                | 10 min |
+| `docs/backlog/prs/pr-0368-st-37-04-route-visible-app-entrypoint-and-presentation-alignment.md`  | Adjacent route-visible split that must stay out of PR-0367                        | 8 min  |
+| `docs/backlog/prs/pr-0374-st-37-04-post-cutover-conversion-hub-compatibility-cleanup.md`        | Later compatibility cleanup that must stay out of PR-0367                         | 5 min  |
+| `src/skriptoteket/infrastructure/curated_apps/registry.py`                                      | Current stale registry metadata and public capability shape                       | 8 min  |
+| `tests/unit/infrastructure/curated_apps/test_registry.py`                                       | Existing focused proof seam for registry metadata/capability behavior             | 5 min  |
 
 **Total estimated time:** ~81 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `PR-0367` registry-only | The accepted plan classifies registry metadata alignment separately from route-visible and backend/API work | [x] |
-| Preserve `documents.conversion_hub` as the technical compatibility app id | `PR-0368` owns route-visible app identities; changing app ids here would skip that review gate | [x] |
-| Preserve public Exam Converter route and capability | The current registry exposes only the `exam_converter` public capability; generic public conversion must remain unsupported | [x] |
-| Keep Document Converter inert | A truthful Document Converter host/backend MVP does not exist yet, so registry copy must not route teachers to the compatibility host under that label | [x] |
-| Defer compatibility cleanup | `PR-0374` owns removal of the temporary `documents.conversion_hub?mode=...` compatibility path after `PR-0368` proves the split | [x] |
+| Decision                                                                  | Rationale                                                                                                                                              | Approve? |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Keep `PR-0367` registry-only                                              | The accepted plan classifies registry metadata alignment separately from route-visible and backend/API work                                            | [x]      |
+| Preserve `documents.conversion_hub` as the technical compatibility app id | `PR-0368` owns route-visible app identities; changing app ids here would skip that review gate                                                         | [x]      |
+| Preserve public Exam Converter route and capability                       | The current registry exposes only the `exam_converter` public capability; generic public conversion must remain unsupported                            | [x]      |
+| Keep Document Converter inert                                             | A truthful Document Converter host/backend MVP does not exist yet, so registry copy must not route teachers to the compatibility host under that label | [x]      |
+| Defer compatibility cleanup                                               | `PR-0374` owns removal of the temporary `documents.conversion_hub?mode=...` compatibility path after `PR-0368` proves the split                        | [x]      |
 
 ## Review Checklist
 
@@ -226,7 +226,7 @@ Validation commands and outcomes:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0367` | Created the retained pre-implementation review gate and approved `PR-0367` as registry-only implementation-ready. |
-| 2 | `REV-PR-0367` | Added the post-implementation review pass and approved the completed registry-only implementation. |
+| Change | Artifact      | Description                                                                                                       |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0367` | Created the retained pre-implementation review gate and approved `PR-0367` as registry-only implementation-ready. |
+| 2      | `REV-PR-0367` | Added the post-implementation review pass and approved the completed registry-only implementation.                |

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-03-04
 title: Retire the Hemma Qwen answer-key sidecar
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-08-30'
 status: done
 closeout_review:
@@ -17,9 +17,7 @@ closeout_review:
   approval_evidence: 'Independent cross-repository ruthless-reviewer (Pi invocation f958cf85) approved with no findings: Sir TASK-SIRCON-REP-0030 (closed 06a56572), Sir docs via TASK-SIRCON-07-04-01 (ee14c6da), HuleEdu TASK-HULE-REP-0130 (20645e56e). Parent Hemma audit found no answer-key container, image, QWEN key or sidecar reference, and removed 10 unused SIR_CONVERT_A_LOT_STRUCTURED_LLM_* keys by user approval. Authenticated Luna/GLM lane proven by the D5 staging click-through; no new post-merge staging walk. Retained session 01a0f34a-1687-7480-a408-a0daee5f1d73 evidence/reviews/TASK-SKRIPT-39-03-04-review.md and evidence/hemma-answer-key-config-audit-2026-09-30.md.'
 task_kind: story
 acceptance_criteria:
-- The authenticated answer-key workflow remains operational through the Luna and GLM
-  remote-provider line while the Hemma Qwen answer-key sidecar and its obsolete configuration
-  and operational surfaces are absent
+  - The authenticated answer-key workflow remains operational through the Luna and GLM remote-provider line while the Hemma Qwen answer-key sidecar and its obsolete configuration and operational surfaces are absent
 story: ST-SKRIPT-39-03
 backlog_document_profile: contract-derived
 ---
@@ -68,8 +66,8 @@ changing the remote provider request path.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1 | The Qwen answer-key sidecar retires only after its last exam consumer moves. |
-| T2 | Luna-primary, GLM-failover, and the shared daily token lease remain unchanged. |
-| T3 | Sidecar service, obsolete configuration, secrets, health checks, operations, and docs retire without a dormant fallback. |
+| ID  | Decided contract term                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------ |
+| T1  | The Qwen answer-key sidecar retires only after its last exam consumer moves.                                             |
+| T2  | Luna-primary, GLM-failover, and the shared daily token lease remain unchanged.                                           |
+| T3  | Sidecar service, obsolete configuration, secrets, health checks, operations, and docs retire without a dormant fallback. |

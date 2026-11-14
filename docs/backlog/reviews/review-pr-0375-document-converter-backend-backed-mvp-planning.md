@@ -40,23 +40,23 @@ submission by default, and separate backend/API versus route-visible proof.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md` | MVP contract, artifact/download/save/replay semantics, stop conditions | 25 min |
-| `.codex/handoff.md` | Current-state truth, Hemma pause, next-step guidance | 10 min |
-| `docs/backlog/prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md` | Blocked-state consistency | 5 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` | Parent story status | 5 min |
+| File                                                                                       | Focus                                                                  | Time   |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0375-st-37-04-document-converter-backend-backed-mvp-planning.md`      | MVP contract, artifact/download/save/replay semantics, stop conditions | 25 min |
+| `.codex/handoff.md`                                                                        | Current-state truth, Hemma pause, next-step guidance                   | 10 min |
+| `docs/backlog/prs/pr-0369-st-37-04-backend-and-api-app-presentation-contract-alignment.md` | Blocked-state consistency                                              | 5 min  |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`      | Parent story status                                                    | 5 min  |
 
 **Total estimated time:** ~45 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Freeze MVP as single-result artifact per job. | Avoids fake artifact discovery and removes browser artifact-key authority. | [x] |
-| Keep first backend slice under `documents.conversion_hub/document-converter`. | Avoids bootstrap/catalog/app-detail changes before a concrete need exists. | [x] |
-| Keep `PR-0369` blocked. | No backend/API app-presentation split is proven by `PR-0375`. | [x] |
-| Split backend/API proof from route-visible proof. | Prevents the backend slice from activating a Document Converter route prematurely. | [x] |
+| Decision                                                                      | Rationale                                                                          | Approve? |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Freeze MVP as single-result artifact per job.                                 | Avoids fake artifact discovery and removes browser artifact-key authority.         | [x]      |
+| Keep first backend slice under `documents.conversion_hub/document-converter`. | Avoids bootstrap/catalog/app-detail changes before a concrete need exists.         | [x]      |
+| Keep `PR-0369` blocked.                                                       | No backend/API app-presentation split is proven by `PR-0375`.                      | [x]      |
+| Split backend/API proof from route-visible proof.                             | Prevents the backend slice from activating a Document Converter route prematurely. | [x]      |
 
 ## Review Checklist
 

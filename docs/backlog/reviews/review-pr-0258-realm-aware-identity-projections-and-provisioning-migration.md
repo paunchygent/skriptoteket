@@ -48,24 +48,24 @@ provisioning claims, or treat idempotency/auditability as slogans. The reworked 
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md` | PR scope, migration contract, provisioning contract, verification | 25 min |
-| `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md` | Parent story status, acceptance criteria, dependencies | 10 min |
-| `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` | Product realm direction and remaining provider obligations | 8 min |
-| `.codex/handoff.md` | Current-session blocked state and next action | 5 min |
+| File                                                                                                | Focus                                                             | Time   |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0258-st-28-09-realm-aware-identity-projections-and-provisioning-migration.md`  | PR scope, migration contract, provisioning contract, verification | 25 min |
+| `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md`            | Parent story status, acceptance criteria, dependencies            | 10 min |
+| `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` | Product realm direction and remaining provider obligations        | 8 min  |
+| `.codex/handoff.md`                                                                                 | Current-session blocked state and next action                     | 5 min  |
 
 **Total estimated time:** ~48 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Require legacy HuleEdu projection backfill before dropping `external_id` | Prevents destructive subject-mapping loss | [x] |
-| Block provisioning until HuleEdu signs concrete email/email-verification fields | Prevents guessing from unsigned or forbidden context data | [x] |
-| Require UoW-owned idempotent provisioning semantics | Prevents duplicate/orphan users and raw unique-conflict `500`s | [x] |
-| Require a projection audit/event surface | Makes provisioning and blocked outcomes reviewable and operable | [x] |
-| Require full migration/API/frontend/live proof gates | Matches the actual blast radius of this slice | [x] |
+| Decision                                                                        | Rationale                                                       | Approve? |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------- |
+| Require legacy HuleEdu projection backfill before dropping `external_id`        | Prevents destructive subject-mapping loss                       | [x]      |
+| Block provisioning until HuleEdu signs concrete email/email-verification fields | Prevents guessing from unsigned or forbidden context data       | [x]      |
+| Require UoW-owned idempotent provisioning semantics                             | Prevents duplicate/orphan users and raw unique-conflict `500`s  | [x]      |
+| Require a projection audit/event surface                                        | Makes provisioning and blocked outcomes reviewable and operable | [x]      |
+| Require full migration/API/frontend/live proof gates                            | Matches the actual blast radius of this slice                   | [x]      |
 
 ## Review Checklist
 
@@ -220,11 +220,11 @@ The requested remediation is complete:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0258` | Added the retained review dependency, expanded migration/provisioning/idempotency/audit/verification contracts, implemented the slice, and closed implementation remediation |
-| 2 | `ST-28-09` | Closed after runtime audit correlation, unique-conflict recovery, generic invalid-context handling, and direct login handoff were implemented and proven |
-| 3 | `EPIC-28` | Updated sequencing so `PR-0254` follows the completed realm-aware projection implementation |
-| 4 | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the projection migration constraints and direct ceremony login direction |
-| 5 | `.codex/handoff.md` | Updated the current lane and next action to the completed `PR-0258` state |
-| 6 | `REV-PR-0258` | Approved the revised contract before implementation and approved the implementation remediation after proof |
+| Change | Artifact                                                                          | Description                                                                                                                                                                  |
+| ------ | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0258`                                                                         | Added the retained review dependency, expanded migration/provisioning/idempotency/audit/verification contracts, implemented the slice, and closed implementation remediation |
+| 2      | `ST-28-09`                                                                        | Closed after runtime audit correlation, unique-conflict recovery, generic invalid-context handling, and direct login handoff were implemented and proven                     |
+| 3      | `EPIC-28`                                                                         | Updated sequencing so `PR-0254` follows the completed realm-aware projection implementation                                                                                  |
+| 4      | `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the projection migration constraints and direct ceremony login direction                                                                                            |
+| 5      | `.codex/handoff.md`                                                               | Updated the current lane and next action to the completed `PR-0258` state                                                                                                    |
+| 6      | `REV-PR-0258`                                                                     | Approved the revised contract before implementation and approved the implementation remediation after proof                                                                  |

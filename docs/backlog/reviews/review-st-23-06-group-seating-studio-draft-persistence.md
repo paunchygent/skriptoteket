@@ -35,26 +35,26 @@ documenting the real follow-up surface.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-23-06-group-seating-studio-draft-persistence.md` | Draft persistence and autosave slice | 10 min |
-| `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md` | Metadata drawer / planning-meta gap | 5 min |
-| `docs/backlog/epics/epic-23-group-seating-studio.md` | Slice 1 scope and archived rollout notes | 5 min |
-| `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md` | Broader fundamentals follow-up context | 5 min |
-| `docs/adr/adr-0069-group-seating-studio-domain-model.md` | Persistence and invariant model | 10 min |
-| `src/skriptoteket/application/apps/classroom_planner/*` | Implementation surface | 15 min |
+| File                                                                           | Focus                                    | Time   |
+| ------------------------------------------------------------------------------ | ---------------------------------------- | ------ |
+| `docs/backlog/stories/story-23-06-group-seating-studio-draft-persistence.md`   | Draft persistence and autosave slice     | 10 min |
+| `docs/backlog/stories/story-23-02-group-seating-studio-manual-planner.md`      | Metadata drawer / planning-meta gap      | 5 min  |
+| `docs/backlog/epics/epic-23-group-seating-studio.md`                           | Slice 1 scope and archived rollout notes | 5 min  |
+| `docs/backlog/reviews/review-epic-24-group-seating-studio-slice-2-planning.md` | Broader fundamentals follow-up context   | 5 min  |
+| `docs/adr/adr-0069-group-seating-studio-domain-model.md`                       | Persistence and invariant model          | 10 min |
+| `src/skriptoteket/application/apps/classroom_planner/*`                        | Implementation surface                   | 15 min |
 
 **Total estimated time:** ~50 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| App-specific persistence | A curated app needs its own durable model rather than generic session state | [x] |
-| Normalized state | Separate maps for group and seat assignments reduce mutation ambiguity | [x] |
-| Separate draft/final lifecycle | Mutable plan drafts and immutable snapshots should not be conflated | [x] |
-| Decoupled axes | Seat and group assignment must remain independent projections | [x] |
-| Follow-up scope stays separate | `ST-23-02` and EPIC-24 remain discoverable without being misrouted into the primary slice-1 gate | [x] |
+| Decision                       | Rationale                                                                                        | Approve? |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ | -------- |
+| App-specific persistence       | A curated app needs its own durable model rather than generic session state                      | [x]      |
+| Normalized state               | Separate maps for group and seat assignments reduce mutation ambiguity                           | [x]      |
+| Separate draft/final lifecycle | Mutable plan drafts and immutable snapshots should not be conflated                              | [x]      |
+| Decoupled axes                 | Seat and group assignment must remain independent projections                                    | [x]      |
+| Follow-up scope stays separate | `ST-23-02` and EPIC-24 remain discoverable without being misrouted into the primary slice-1 gate | [x]      |
 
 ## Review Checklist
 
@@ -98,7 +98,7 @@ broader EPIC-24 follow-up surface is linked rather than absorbed here.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Normalized the review into the canonical target-based shape and kept `ST-23-06` as the primary target. |
-| 2 | Scope | Added `ST-23-02` as supporting governed scope and linked the broader EPIC-24 planning review instead of folding it into this record. |
+| Change | Artifact      | Description                                                                                                                          |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | Review record | Normalized the review into the canonical target-based shape and kept `ST-23-06` as the primary target.                               |
+| 2      | Scope         | Added `ST-23-02` as supporting governed scope and linked the broader EPIC-24 planning review instead of folding it into this record. |

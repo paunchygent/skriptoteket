@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0041
 title: User favorites and tool bookmarking
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0041
+  - ADR-0041
 ---
 
 ## Context

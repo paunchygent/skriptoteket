@@ -49,26 +49,26 @@ gates in that artifact, and leaves the duplicate reference non-authoritative.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md` | Canonical planning matrix and acceptance coverage | 15 min |
-| `docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md` | Package scope, claims, and verification | 10 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` | Parent story authority and remaining implementation scope | 5 min |
-| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic summary alignment | 5 min |
-| `docs/index.md` | Durable docs discoverability | 3 min |
-| `.codex/handoff.md` | Current-state alignment | 3 min |
-| `docs/backlog/prs/pr-0366-*.md` through `pr-0369-*.md` | Spot check that the promised follow-up slices point to the same authority | 10 min |
-| `docs/reference/ref-app-presentation-decomposition-and-naming-sequence-v1.md` | Confirm deprecated redirect behavior and lack of competing authority | 10 min |
+| File                                                                                            | Focus                                                                     | Time   |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------ |
+| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`                       | Canonical planning matrix and acceptance coverage                         | 15 min |
+| `docs/backlog/prs/pr-0362-st-37-04-app-presentation-decomposition-and-naming-package.md`        | Package scope, claims, and verification                                   | 10 min |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`           | Parent story authority and remaining implementation scope                 | 5 min  |
+| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic summary alignment                                                    | 5 min  |
+| `docs/index.md`                                                                                 | Durable docs discoverability                                              | 3 min  |
+| `.codex/handoff.md`                                                                             | Current-state alignment                                                   | 3 min  |
+| `docs/backlog/prs/pr-0366-*.md` through `pr-0369-*.md`                                          | Spot check that the promised follow-up slices point to the same authority | 10 min |
+| `docs/reference/ref-app-presentation-decomposition-and-naming-sequence-v1.md`                   | Confirm deprecated redirect behavior and lack of competing authority      | 10 min |
 
 **Total estimated time:** ~61 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the slice docs-only | The package has no authority to change live route, registry, backend/API, or producer contracts | [x] |
-| Preserve `Document Converter` as planned-only until a truthful route/host exists | Avoids mislabeling the current compatibility host as implemented document conversion | [x] |
-| Require one canonical planning reference for all follow-up slices | Later implementation review cannot proceed from split or hidden authority | [x] |
+| Decision                                                                         | Rationale                                                                                       | Approve? |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| Keep the slice docs-only                                                         | The package has no authority to change live route, registry, backend/API, or producer contracts | [x]      |
+| Preserve `Document Converter` as planned-only until a truthful route/host exists | Avoids mislabeling the current compatibility host as implemented document conversion            | [x]      |
+| Require one canonical planning reference for all follow-up slices                | Later implementation review cannot proceed from split or hidden authority                       | [x]      |
 
 ## Review Checklist
 
@@ -129,7 +129,7 @@ No findings.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0362` | Recorded review pass 1 with a blocker on split planning authority |
-| 2 | `REV-PR-0362` | Updated review pass 2 to approved after the canonical plan absorbed docs impact, follow-up slices were repointed, and the duplicate reference was deprecated |
+| Change | Artifact      | Description                                                                                                                                                  |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0362` | Recorded review pass 1 with a blocker on split planning authority                                                                                            |
+| 2      | `REV-PR-0362` | Updated review pass 2 to approved after the canonical plan absorbed docs impact, follow-up slices were repointed, and the duplicate reference was deprecated |

@@ -129,28 +129,28 @@ grouping surface wins; secondary student/group context remains reachable.
 
 ## Implementation Plan
 
-1. Start from `PlannerGroupingWorkspacePane.vue` and keep the current desktop
-   split workspace intact at `laptop` and `desktop` widths.
-2. Add a phone-specific grouping composition that activates only below the
-   full desktop-composition range established by `EPIC-29`.
-3. Decide the primary phone surface explicitly. The default interpretation is:
-   active group board first; ungrouped students and non-active groups reachable
-   through a compact switcher/sheet.
-4. Keep grouping state mutations in `useClassroomState`; the reduced view
-   should rearrange presentation and event routing, not create a separate
-   grouping state model.
-5. Preserve group-card semantics: rename, move, remove, assign/drop, and
-   student removal must continue to route through the existing group board/card
-   mutations where those actions remain available on phone.
-6. Preserve student rule markers in both ungrouped and assigned student rows.
-7. Adapt the grouping toolbar for phone through existing dense controls and
-   overflow behavior. Do not add text-heavy action rows or duplicate `Dela`,
-   export, or Smart settings controls.
-8. If a new phone-only grouping component is clearer, keep it thin and
-   prop/event-driven so `PlannerGroupingWorkspacePane.vue` stays under SRP and
-   file-size expectations.
-9. Use CSS-owned layout and token-driven styles. Do not add measured viewport
-   sizing, JS breakpoint duplication, or Tailwind default palette colors.
+01. Start from `PlannerGroupingWorkspacePane.vue` and keep the current desktop
+    split workspace intact at `laptop` and `desktop` widths.
+02. Add a phone-specific grouping composition that activates only below the
+    full desktop-composition range established by `EPIC-29`.
+03. Decide the primary phone surface explicitly. The default interpretation is:
+    active group board first; ungrouped students and non-active groups reachable
+    through a compact switcher/sheet.
+04. Keep grouping state mutations in `useClassroomState`; the reduced view
+    should rearrange presentation and event routing, not create a separate
+    grouping state model.
+05. Preserve group-card semantics: rename, move, remove, assign/drop, and
+    student removal must continue to route through the existing group board/card
+    mutations where those actions remain available on phone.
+06. Preserve student rule markers in both ungrouped and assigned student rows.
+07. Adapt the grouping toolbar for phone through existing dense controls and
+    overflow behavior. Do not add text-heavy action rows or duplicate `Dela`,
+    export, or Smart settings controls.
+08. If a new phone-only grouping component is clearer, keep it thin and
+    prop/event-driven so `PlannerGroupingWorkspacePane.vue` stays under SRP and
+    file-size expectations.
+09. Use CSS-owned layout and token-driven styles. Do not add measured viewport
+    sizing, JS breakpoint duplication, or Tailwind default palette colors.
 10. Add focused component tests for phone scan order, group switching,
     ungrouped-student reachability, assignment/drop affordance visibility,
     toolbar compactness, and desktop preservation.

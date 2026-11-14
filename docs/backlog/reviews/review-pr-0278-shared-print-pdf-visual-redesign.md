@@ -41,25 +41,25 @@ and proof obligations.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-26-08-klassrumskartan-shared-print-pdf-visual-parity.md` | Parent story scope and acceptance | 8 min |
-| `docs/backlog/prs/pr-0278-st-26-08-shared-print-pdf-visual-redesign.md` | PR slice, options, proof, stop conditions | 12 min |
-| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | EPIC-26 fit and sequencing | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_pdf_renderer.py` | Existing immutable share-PDF delegation contract | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/grouping_pdf_renderer.py` | Grouping print renderer redesign surface | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/poster_renderer.py` | Seating print renderer redesign surface | 5 min |
+| File                                                                                           | Focus                                            | Time   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------ |
+| `docs/backlog/stories/story-26-08-klassrumskartan-shared-print-pdf-visual-parity.md`           | Parent story scope and acceptance                | 8 min  |
+| `docs/backlog/prs/pr-0278-st-26-08-shared-print-pdf-visual-redesign.md`                        | PR slice, options, proof, stop conditions        | 12 min |
+| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`         | EPIC-26 fit and sequencing                       | 5 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_pdf_renderer.py`    | Existing immutable share-PDF delegation contract | 5 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/grouping_pdf_renderer.py` | Grouping print renderer redesign surface         | 5 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/poster_renderer.py`       | Seating print renderer redesign surface          | 5 min  |
 
 **Total estimated time:** ~40 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Create `ST-26-08` rather than reopening `PR-0276` | The new work spans older workspace PDF exports and share-link PDF downloads, while `PR-0276` is closed and approved. | [ ] |
-| Prefer narrow shared print primitives over divergent renderers | Workspace exports and share-link downloads should use the same print-owned renderer behavior. | [ ] |
-| Keep share PDFs payload-derived | Immutable share artifacts must continue rendering from `presentation_payload`, not responsive browser HTML. | [ ] |
-| Require real PDF/PNG proof for all four paths | Visual regressions cannot be approved from CSS strings or mocked WeasyPrint calls alone. | [ ] |
+| Decision                                                       | Rationale                                                                                                            | Approve? |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------- |
+| Create `ST-26-08` rather than reopening `PR-0276`              | The new work spans older workspace PDF exports and share-link PDF downloads, while `PR-0276` is closed and approved. | [ ]      |
+| Prefer narrow shared print primitives over divergent renderers | Workspace exports and share-link downloads should use the same print-owned renderer behavior.                        | [ ]      |
+| Keep share PDFs payload-derived                                | Immutable share artifacts must continue rendering from `presentation_payload`, not responsive browser HTML.          | [ ]      |
+| Require real PDF/PNG proof for all four paths                  | Visual regressions cannot be approved from CSS strings or mocked WeasyPrint calls alone.                             | [ ]      |
 
 ## Review Checklist
 
@@ -98,8 +98,8 @@ Pending review.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ST-26-08` | Added story for shared print PDF visual parity across workspace and share-link downloads. |
-| 2 | `PR-0278` | Added implementation-ready slice with decision checkpoints, validation, artifact proof, and stop conditions. |
-| 3 | `EPIC-26` | Linked the new story into the export/import epic. |
+| Change | Artifact   | Description                                                                                                  |
+| ------ | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| 1      | `ST-26-08` | Added story for shared print PDF visual parity across workspace and share-link downloads.                    |
+| 2      | `PR-0278`  | Added implementation-ready slice with decision checkpoints, validation, artifact proof, and stop conditions. |
+| 3      | `EPIC-26`  | Linked the new story into the export/import epic.                                                            |

@@ -23,8 +23,7 @@ Production investigation on `2026-03-30` showed two separate trust problems in t
 recovery experience:
 
 1. `forgot-password` for a verified local user created a `password_reset_tokens` row but did not
-   send any email because `reset_password.html` failed the template-renderer contract (`missing
-   subject comment`).
+   send any email because `reset_password.html` failed the template-renderer contract (`missing subject comment`).
 2. The verification email currently includes a header image resource that breaks in common email
    clients and adds noise to an otherwise working verification flow.
 

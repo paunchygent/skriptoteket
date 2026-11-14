@@ -4,8 +4,8 @@ id: REV-SKRIPT-TASK-REP-0024-CLOSEOUT-PART-01
 title: 'Review: PR-0314 solver-owned rule marker semantics — part 01'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REV-SKRIPT-TASK-REP-0024-CLOSEOUT
 part: 1
@@ -23,18 +23,18 @@ teacher-misaligned backend diagnostics.
 
 ## Evidence
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md` | Scope, acceptance criteria, proof obligations | 10 min |
-| `docs/reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md` | Backend diagnostic vocabulary | 10 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_rule_diagnostics.py` | Diagnostic truth source | 20 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py` | Keep-near scoring semantics | 15 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_candidate_scoring.py` | Candidate tradeoff semantics | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts` | Marker diagnostic matching and coloring | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts` | Authenticated diagnostic lifecycle | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts` | Public diagnostic lifecycle | 10 min |
-| `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py` | Solver proof semantics | 15 min |
-| `tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py` | Diagnostic proof cases | 15 min |
+| File                                                                                        | Focus                                         | Time   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md`                            | Scope, acceptance criteria, proof obligations | 10 min |
+| `docs/reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md`         | Backend diagnostic vocabulary                 | 10 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_rule_diagnostics.py`          | Diagnostic truth source                       | 20 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py`           | Keep-near scoring semantics                   | 15 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_candidate_scoring.py` | Candidate tradeoff semantics                  | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts`              | Marker diagnostic matching and coloring       | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`                            | Authenticated diagnostic lifecycle            | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts`            | Public diagnostic lifecycle                   | 10 min |
+| `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py`             | Solver proof semantics                        | 15 min |
+| `tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py`           | Diagnostic proof cases                        | 15 min |
 
 **Total estimated time:** ~135 minutes
 
@@ -208,30 +208,30 @@ diagnostics.
 
 ### Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md` | Scope, acceptance criteria, proof obligations | 10 min |
-| `docs/reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md` | Backend diagnostic vocabulary | 10 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_rule_diagnostics.py` | Diagnostic truth source | 20 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py` | Keep-near scoring semantics | 15 min |
-| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_candidate_scoring.py` | Candidate tradeoff semantics | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts` | Marker diagnostic matching and coloring | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts` | Authenticated diagnostic lifecycle | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts` | Public diagnostic lifecycle | 10 min |
-| `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py` | Solver proof semantics | 15 min |
-| `tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py` | Diagnostic proof cases | 15 min |
+| File                                                                                        | Focus                                         | Time   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0314-solver-owned-rule-marker-semantics.md`                            | Scope, acceptance criteria, proof obligations | 10 min |
+| `docs/reference/ref-klassrumskartan-solver-rule-diagnostics-contract-2026-05-10.md`         | Backend diagnostic vocabulary                 | 10 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_rule_diagnostics.py`          | Diagnostic truth source                       | 20 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_scoring.py`           | Keep-near scoring semantics                   | 15 min |
+| `src/skriptoteket/domain/curated_apps/classroom_planner/smart_seating_candidate_scoring.py` | Candidate tradeoff semantics                  | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts`              | Marker diagnostic matching and coloring       | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomState.ts`                            | Authenticated diagnostic lifecycle            | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts`            | Public diagnostic lifecycle                   | 10 min |
+| `tests/unit/domain/curated_apps/classroom_planner/test_smart_seating_solver.py`             | Solver proof semantics                        | 15 min |
+| `tests/unit/domain/curated_apps/classroom_planner/test_smart_rule_diagnostics.py`           | Diagnostic proof cases                        | 15 min |
 
 **Total estimated time:** ~135 minutes
 
 ### Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Move soft-rule marker tones from frontend inference to solver diagnostics | Correct boundary for teacher trust | [x] |
-| Keep fixed-seat exact-seat marker truth local | Fixed seats are hard direct comparisons | [x] |
-| Treat stale diagnostics as usable when student-seat assignments still match | Rule-set edits can still leave unchanged target diagnostics stale | [ ] |
-| Treat row/bench same-column `Håll nära` as a valid rotation target | Real use reports this as wrong when same-row adjacency is available | [ ] |
-| Treat row/bench same-row adjacency as the only clean two-student target | Second-pass solver proof now matches the teacher-facing requirement | [x] |
+| Decision                                                                    | Rationale                                                           | Approve? |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------- |
+| Move soft-rule marker tones from frontend inference to solver diagnostics   | Correct boundary for teacher trust                                  | [x]      |
+| Keep fixed-seat exact-seat marker truth local                               | Fixed seats are hard direct comparisons                             | [x]      |
+| Treat stale diagnostics as usable when student-seat assignments still match | Rule-set edits can still leave unchanged target diagnostics stale   | [ ]      |
+| Treat row/bench same-column `Håll nära` as a valid rotation target          | Real use reports this as wrong when same-row adjacency is available | [ ]      |
+| Treat row/bench same-row adjacency as the only clean two-student target     | Second-pass solver proof now matches the teacher-facing requirement | [x]      |
 
 ### Review Checklist
 
@@ -334,10 +334,10 @@ diagnostics.
 
 ### Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0314` | Review moved status from `done` to `blocked`. |
-| 2 | `PR-0313` | Real-device pinch failure recorded and status moved from `done` to `blocked`. |
+| Change | Artifact  | Description                                                                   |
+| ------ | --------- | ----------------------------------------------------------------------------- |
+| 1      | `PR-0314` | Review moved status from `done` to `blocked`.                                 |
+| 2      | `PR-0313` | Real-device pinch failure recorded and status moved from `done` to `blocked`. |
 
 ### Remediation Notes
 

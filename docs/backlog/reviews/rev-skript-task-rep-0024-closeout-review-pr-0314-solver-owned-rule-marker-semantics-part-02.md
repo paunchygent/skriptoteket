@@ -4,33 +4,34 @@ id: REV-SKRIPT-TASK-REP-0024-CLOSEOUT-PART-02
 title: 'Review: PR-0314 solver-owned rule marker semantics — part 02'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: REV-SKRIPT-TASK-REP-0024-CLOSEOUT
 part: 2
 ---
 
 - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSmartRuleActions.ts:119`
-     through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSmartRuleActions.ts:292`
-     smart-rule mutations call `syncVisibleSessionBindings()` and
-     `smartRuleLane.markDirty()`, but receive no diagnostic-clear callback.
-   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts:275`
-     through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts:278`
-     shows `syncVisibleSessionBindings()` only syncs draft and roster lane
-     bindings.
-   - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts:168`
-     through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts:190`
-     still accepts any diagnostic that matches the current target rule shape and
-     visible assignment, even when the surrounding smart-rule set is locally
-     dirty.
+  through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSmartRuleActions.ts:292`
+  smart-rule mutations call `syncVisibleSessionBindings()` and
+  `smartRuleLane.markDirty()`, but receive no diagnostic-clear callback.
 
-   Required fix:
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts:275`
+    through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerStateSupport.ts:278`
+    shows `syncVisibleSessionBindings()` only syncs draft and roster lane
+    bindings.
+  - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts:168`
+    through `frontend/apps/skriptoteket/src/views/apps/classroomPlannerSeatRuleMarkers.ts:190`
+    still accepts any diagnostic that matches the current target rule shape and
+    visible assignment, even when the surrounding smart-rule set is locally
+    dirty.
 
-   Clear stored diagnostics on every local smart-rule mutation before marking
-   the smart-rule lane dirty, or carry a solver-input revision through the
-   diagnostics and require that revision to match the current smart-rule/draft
-   state before marker coloring.
+  Required fix:
+
+  Clear stored diagnostics on every local smart-rule mutation before marking
+  the smart-rule lane dirty, or carry a solver-input revision through the
+  diagnostics and require that revision to match the current smart-rule/draft
+  state before marker coloring.
 
 2. Blocker: `PR-0313` still lacks the required real-device iPhone confirmation.
 

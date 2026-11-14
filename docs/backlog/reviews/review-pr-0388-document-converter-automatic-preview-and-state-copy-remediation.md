@@ -51,27 +51,27 @@ button plus the readiness/eyebrow state-copy leftover from `PR-0384`.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md` | Governing behavior, proof plan, stop conditions | 45 min |
-| `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md` | Current route-visible contract being amended | 20 min |
-| `docs/backlog/reviews/review-pr-0384-document-converter-route-visible-mvp-implementation.md` | Accepted repair history, especially stale-preview recovery | 25 min |
-| `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md` | Confirmed UI/copy boundaries already settled | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue` | Current manual-preview/readiness/eyebrow surface | 25 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/useDocumentConverterProjectPreview.ts` | Current preview state, retry, and stale behavior | 30 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterProjectPreviewApi.ts` | Artifact authority and preview-download boundary | 15 min |
+| File                                                                                                   | Focus                                                      | Time   |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md` | Governing behavior, proof plan, stop conditions            | 45 min |
+| `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`             | Current route-visible contract being amended               | 20 min |
+| `docs/backlog/reviews/review-pr-0384-document-converter-route-visible-mvp-implementation.md`           | Accepted repair history, especially stale-preview recovery | 25 min |
+| `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md`              | Confirmed UI/copy boundaries already settled               | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`               | Current manual-preview/readiness/eyebrow surface           | 25 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/useDocumentConverterProjectPreview.ts`   | Current preview state, retry, and stale behavior           | 30 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterProjectPreviewApi.ts`   | Artifact authority and preview-download boundary           | 15 min |
 
 **Total estimated time:** ~2.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Automatic preview should replace the persistent `Förhandsvisa` button. | The current route is product-misaligned and asks teachers to drive app timing manually. | [x] |
-| The success state must be a real embedded PDF, not artifact-only state. | `Preview` is not truthful unless the teacher can actually see the rendered PDF. | [x] |
-| Preview artifact authority must remain server-owned through Skriptoteket endpoints only. | Prevents raw paths, browser-authored authority, or direct Sir Convert browser calls. | [x] |
-| The package must explicitly define stale failed-refresh behavior before implementation. | Automatic refresh makes stale artifact truthfulness a core contract, not an implementation detail. | [x] |
-| Proof must target the legacy readiness/eyebrow surfaces structurally, not ban generic words like `Mall` or `PDF`. | The route still needs legitimate template/media vocabulary after remediation. | [x] |
+| Decision                                                                                                          | Rationale                                                                                          | Approve? |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------- |
+| Automatic preview should replace the persistent `Förhandsvisa` button.                                            | The current route is product-misaligned and asks teachers to drive app timing manually.            | [x]      |
+| The success state must be a real embedded PDF, not artifact-only state.                                           | `Preview` is not truthful unless the teacher can actually see the rendered PDF.                    | [x]      |
+| Preview artifact authority must remain server-owned through Skriptoteket endpoints only.                          | Prevents raw paths, browser-authored authority, or direct Sir Convert browser calls.               | [x]      |
+| The package must explicitly define stale failed-refresh behavior before implementation.                           | Automatic refresh makes stale artifact truthfulness a core contract, not an implementation detail. | [x]      |
+| Proof must target the legacy readiness/eyebrow surfaces structurally, not ban generic words like `Mall` or `PDF`. | The route still needs legitimate template/media vocabulary after remediation.                      | [x]      |
 
 ## Review Checklist
 
@@ -164,8 +164,7 @@ None.
   raw filesystem path text, refreshed blob iframe source, and enabled artifact
   actions.
 - The matching Docker log window records native WeasyPrint Grid `AssertionError`,
-  then `Document Converter project preview retried with grid compatibility
-  fallback.`, followed by preview POST/artifact GET `200` responses. That is
+  then `Document Converter project preview retried with grid compatibility fallback.`, followed by preview POST/artifact GET `200` responses. That is
   acceptable evidence for the scoped best-effort preview contract and should be
   reviewed for sandboxing, product truthfulness, and maintainability.
 
@@ -226,10 +225,10 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0388` | Created the retained independent review record for the pre-implementation PR-0388 package. |
-| 2 | `REV-PR-0388` | Recorded two blocking package-level findings covering stale failed-refresh truthfulness and ambiguous forbidden-copy proof language. |
-| 3 | `REV-PR-0388` | Re-reviewed the amended PR package, confirmed both blockers were resolved, and approved the implementation package. |
-| 4 | `REV-PR-0388` | Added the post-implementation review pass and kept the review pending while the repaired best-effort Grid proof is audited. |
-| 5 | `REV-PR-0388` | Completed the retained re-review of the repaired Grid fallback package and approved the implementation/evidence package. |
+| Change | Artifact      | Description                                                                                                                          |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0388` | Created the retained independent review record for the pre-implementation PR-0388 package.                                           |
+| 2      | `REV-PR-0388` | Recorded two blocking package-level findings covering stale failed-refresh truthfulness and ambiguous forbidden-copy proof language. |
+| 3      | `REV-PR-0388` | Re-reviewed the amended PR package, confirmed both blockers were resolved, and approved the implementation package.                  |
+| 4      | `REV-PR-0388` | Added the post-implementation review pass and kept the review pending while the repaired best-effort Grid proof is audited.          |
+| 5      | `REV-PR-0388` | Completed the retained re-review of the repaired Grid fallback package and approved the implementation/evidence package.             |

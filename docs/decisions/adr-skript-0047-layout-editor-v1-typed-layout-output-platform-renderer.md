@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0047
 title: Layout editor v1 (typed layout output + platform renderer)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0047
+  - ADR-0047
 ---
 
 ## Context
@@ -98,9 +98,9 @@ and introduce a new discriminated output model:
 
 The `spec` is built from three primitives:
 
-1) **Nodes**: a scene graph of rectangular objects (container or leaf).
-2) **Ports**: attachment points on nodes that can hold at most one assigned token (a “slot”).
-3) **Tokens**: assignable items (students), with optional metadata.
+1. **Nodes**: a scene graph of rectangular objects (container or leaf).
+2. **Ports**: attachment points on nodes that can hold at most one assigned token (a “slot”).
+3. **Tokens**: assignable items (students), with optional metadata.
 
 This keeps the foundation generic and composable, while allowing domain semantics as conventions.
 

@@ -57,12 +57,12 @@ while ensuring multi-step actions remain stable via snapshot_id.
 
 ## Implementation plan
 
-1) Add `sandbox_snapshots` storage + `tool_runs.snapshot_id` + TTL cleanup command.
-2) Extend `run-sandbox` (multipart) to accept snapshot payload; enforce 2MB limit; return `snapshot_id`.
-3) Require `snapshot_id` on start-action and use `sandbox:{snapshot_id}` context for sessions/files.
-4) Include `snapshot_id` in run details response for reload continuation.
-5) Enforce draft head lock for preview runs and start-action submissions.
-6) Update frontend sandbox runner to build snapshot payload and track `snapshot_id` per run.
+1. Add `sandbox_snapshots` storage + `tool_runs.snapshot_id` + TTL cleanup command.
+2. Extend `run-sandbox` (multipart) to accept snapshot payload; enforce 2MB limit; return `snapshot_id`.
+3. Require `snapshot_id` on start-action and use `sandbox:{snapshot_id}` context for sessions/files.
+4. Include `snapshot_id` in run details response for reload continuation.
+5. Enforce draft head lock for preview runs and start-action submissions.
+6. Update frontend sandbox runner to build snapshot payload and track `snapshot_id` per run.
 
 ## Test plan
 

@@ -118,14 +118,14 @@ production UI behavior.
 Use the overseer implementation/review loop:
 
 1. Spawn `implementation_agent` for this frontend-only slice.
-1. Require the implementer to read `AGENTS.md`, this PR, the design authorities,
+2. Require the implementer to read `AGENTS.md`, this PR, the design authorities,
    `integrated-frontend-stack`, `skriptoteket-frontend-specialist`, `testing`,
    `.codex/skills/skriptoteket-testing/SKILL.md`, the routed frontend testing
    and browser proof references, and the relevant Exam Converter components and
    specs before editing.
-1. Require a current-state audit before edits. If a requirement is already
+3. Require a current-state audit before edits. If a requirement is already
    satisfied, preserve or strengthen the proof instead of rewriting it.
-1. Require red-first or characterization tests where feasible for:
+4. Require red-first or characterization tests where feasible for:
    - desktop result-band framing;
    - edit-facit `Ändra` to normal `Spara facit` editor state;
    - Lucktext/gap-fill/open-cloze items retained as keyed closed-response
@@ -138,14 +138,14 @@ Use the overseer implementation/review loop:
    - sticky symbolic previous/next navigation;
    - small-screen separate list/detail/files/report task surfaces and overflow
      safety.
-1. Implement the smallest frontend changes that make the approved design
+5. Implement the smallest frontend changes that make the approved design
    behavior true while keeping existing adapter/replay/file-readiness authority
    intact.
-1. Run focused Vitest and frontend gates, then report exact evidence.
-1. Spawn the fixed `ruthless_review_agent` for retained review.
-1. If review requests changes, return findings to the same implementation lane,
+6. Run focused Vitest and frontend gates, then report exact evidence.
+7. Spawn the fixed `ruthless_review_agent` for retained review.
+8. If review requests changes, return findings to the same implementation lane,
    require tests that would have caught the finding, and repeat until approved.
-1. After approval, run required validation gates and retained browser/screenshot
+9. After approval, run required validation gates and retained browser/screenshot
    proof.
 
 ## Test Plan
@@ -228,7 +228,7 @@ governed decision slice instead of widening this PR.
 - Stop if PR-0408 implementation starts changing Sir Convert producer
   contracts, replay semantics, fingerprinting, owner matching, or export-
   runtime root cause work locally. Those changes belong to Sir Convert Task
-  374.
+  374\.
 - Stop if any UI path starts deriving producer truth locally from IR, readiness,
   correction sessions, visual labels, browser state, or local drafts.
 - Stop if any UI path treats free-text or open-writing responses as missing

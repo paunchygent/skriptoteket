@@ -35,12 +35,9 @@ Reference: `docs/reference/ref-tool-editor-dx-review-2025-12-29.md`
 
 See also:
 
-- Diff viewer primitive: `docs/backlog/stories/story-14-17-editor-version-
-diff-view.md`
-- Working copy + checkpoints: `docs/backlog/stories/story-14-30-editor-
-working-copy-persistence-indexeddb.md`
-- Focus mode (width): `docs/backlog/stories/story-14-31-editor-focus-mode-
-collapse-sidebar.md`
+- Diff viewer primitive: `docs/backlog/stories/story-14-17-editor-version- diff-view.md`
+- Working copy + checkpoints: `docs/backlog/stories/story-14-30-editor- working-copy-persistence-indexeddb.md`
+- Focus mode (width): `docs/backlog/stories/story-14-31-editor-focus-mode- collapse-sidebar.md`
 
 ## Implementation decisions
 
@@ -56,8 +53,7 @@ collapse-sidebar.md`
   - Compare selection:
     - `compare=<targetVersionId|working>` (target can be a version id or the
       local working copy head)
-    - `field=<tool.py|entrypoint.txt|settings_schema.json|input_schema.json|
-usage_instructions.md>`
+    - `field=<tool.py|entrypoint.txt|settings_schema.json|input_schema.json| usage_instructions.md>`
 - The editor must not reload or lose unsaved buffers when changing only
   `compare`/`field`.
   - **REQUIRED:** editor boot reload triggers MUST exclude `compare` and

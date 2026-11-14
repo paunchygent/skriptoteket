@@ -49,41 +49,41 @@ draft reports `used_history=true`.
 
 ## Artifacts to Review
 
-| File | Focus |
-|------|-------|
-| `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md` | Scope, acceptance criteria, verification |
-| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Parent story refinement |
-| `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md` | Smart-history behavior statement |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py` | Seating first-run behavior and history sourcing |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_grouping.py` | Grouping first-run behavior and live-seating separation |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py` | Authenticated seating response contract |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py` | Authenticated grouping response contract |
-| `frontend/apps/skriptoteket/src/api/openapi.d.ts` | Generated authenticated API type branch |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts` | Manual frontend smart-run type split |
-| `frontend/apps/skriptoteket/src/views/apps/useSmartSeatingRun.ts` | Authenticated seating frontend handling |
-| `frontend/apps/skriptoteket/src/views/apps/useSmartGroupingRun.ts` | Authenticated grouping frontend handling |
-| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartSeatingRun.ts` | Public guest seating blocked-response preservation |
-| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartGroupingRun.ts` | Public guest grouping blocked-response preservation |
-| `scripts/playwright_pr_0316_smart_history_first_run_soft_degrade.py` | Live authenticated proof |
+| File                                                                                           | Focus                                                   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `docs/backlog/prs/pr-0316-st-27-05-smart-history-first-run-soft-degrade.md`                    | Scope, acceptance criteria, verification                |
+| `docs/backlog/stories/story-27-05-klassrumskartan-smart-explanations-and-alternate-options.md` | Parent story refinement                                 |
+| `docs/reference/ref-klassrumskartan-smart-assignment-v1-decision-memo-2026-03-25.md`           | Smart-history behavior statement                        |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_seating.py`        | Seating first-run behavior and history sourcing         |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/smart_grouping.py`       | Grouping first-run behavior and live-seating separation |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`                                | Authenticated seating response contract                 |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py`                               | Authenticated grouping response contract                |
+| `frontend/apps/skriptoteket/src/api/openapi.d.ts`                                              | Generated authenticated API type branch                 |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerTypes.ts`                           | Manual frontend smart-run type split                    |
+| `frontend/apps/skriptoteket/src/views/apps/useSmartSeatingRun.ts`                              | Authenticated seating frontend handling                 |
+| `frontend/apps/skriptoteket/src/views/apps/useSmartGroupingRun.ts`                             | Authenticated grouping frontend handling                |
+| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartSeatingRun.ts`                        | Public guest seating blocked-response preservation      |
+| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartGroupingRun.ts`                       | Public guest grouping blocked-response preservation     |
+| `scripts/playwright_pr_0316_smart_history_first_run_soft_degrade.py`                           | Live authenticated proof                                |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Remove authenticated `blocked/no_history` payloads | No eligible checkpoint is now normal first-run state, not a business block | [x] |
-| Keep Smart-history source boundaries checkpoint-only | Draft autosave, undo/redo, historic draft rows, and public guest local state must not become history substitutes | [x] |
-| Keep public guest blocked response types separate | Guest Smart remains browser-local without account-backed `Historik` | [x] |
-| Require live proof for first-run and checkpoint follow-up | The user-visible contract spans auth ceremony, APIs, share checkpoint recording, and solver responses | [x] |
+| Decision                                                  | Rationale                                                                                                        | Approve? |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------- |
+| Remove authenticated `blocked/no_history` payloads        | No eligible checkpoint is now normal first-run state, not a business block                                       | [x]      |
+| Keep Smart-history source boundaries checkpoint-only      | Draft autosave, undo/redo, historic draft rows, and public guest local state must not become history substitutes | [x]      |
+| Keep public guest blocked response types separate         | Guest Smart remains browser-local without account-backed `Historik`                                              | [x]      |
+| Require live proof for first-run and checkpoint follow-up | The user-visible contract spans auth ceremony, APIs, share checkpoint recording, and solver responses            | [x]      |
 
 ## Review Checklist
 
 - [x] Scope is bounded to authenticated Smart first-run no-history behavior.
 - [x] Acceptance criteria and proof obligations are reviewable.
 - [x] Authenticated OpenAPI and frontend type branches no longer expose the
-      stale blocked response.
+  stale blocked response.
 - [x] Public guest Smart still has public-only blocked response types.
 - [x] Empty checkpoint windows do not pull history from drafts, undo/redo, or
-      public guest local state.
+  public guest local state.
 - [x] Eligible share-backed checkpoints still produce `used_history=true`.
 
 ## Review Feedback

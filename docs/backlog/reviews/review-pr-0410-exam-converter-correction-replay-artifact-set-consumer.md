@@ -46,31 +46,31 @@ to the nested route while preserving original-job actions for first-pass files.
 
 ## Artifacts to Review
 
-| File | Focus | Reviewed |
-|------|-------|----------|
-| `docs/backlog/prs/pr-0410-st-21-11-correction-replay-artifact-set-consumer.md` | PR scope, non-goals, acceptance criteria, and deferred Story 58 closeout proof | yes |
-| `docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md` | Existing compact projection and file-readiness authority | yes |
-| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md` | Adjacent replay/UI design boundaries | yes |
-| `docs/backlog/reviews/review-pr-0406-exam-converter-compact-answer-key-review-state.md` | Prior retained review and replay-scoped action boundary | yes |
-| `docs/backlog/reviews/review-pr-0408-exam-converter-frontend-design-implementation-alignment.md` | Prior retained review and Story 58 boundary context | yes |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` and `client.spec.ts` | Nested correction replay artifact route and query encoding | yes |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/schemaVersions.ts`, `types.ts`, `sirConvertOpenapi.d.ts` | Contract shape for replay artifact references and route | yes |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.ts` and spec | Strict replay-reference parsing and fail-closed stale-shape rejection | yes |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/digiexamIrReviewParser.ts` | First-pass original-job versus replay-reference action authority | yes |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionProjection.ts` | Corrected replay file projection and missing-reference disablement | yes |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/useExamConverterFileActions.ts` and spec | Download/save byte fetch routing for replay and original actions | yes |
-| Impacted Exam Converter fixtures/specs | Behavioral proof for missing refs, nested route params, and file action gating | yes |
-| `scripts/playwright_pr_0337_correction_session_live.py` | Retained proof script assertion of nested replay route and content digest | yes |
+| File                                                                                                             | Focus                                                                          | Reviewed |
+| ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
+| `docs/backlog/prs/pr-0410-st-21-11-correction-replay-artifact-set-consumer.md`                                   | PR scope, non-goals, acceptance criteria, and deferred Story 58 closeout proof | yes      |
+| `docs/backlog/prs/pr-0406-st-21-04-exam-converter-consume-compact-answer-key-review-state.md`                    | Existing compact projection and file-readiness authority                       | yes      |
+| `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md`                   | Adjacent replay/UI design boundaries                                           | yes      |
+| `docs/backlog/reviews/review-pr-0406-exam-converter-compact-answer-key-review-state.md`                          | Prior retained review and replay-scoped action boundary                        | yes      |
+| `docs/backlog/reviews/review-pr-0408-exam-converter-frontend-design-implementation-alignment.md`                 | Prior retained review and Story 58 boundary context                            | yes      |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` and `client.spec.ts`                            | Nested correction replay artifact route and query encoding                     | yes      |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/schemaVersions.ts`, `types.ts`, `sirConvertOpenapi.d.ts`   | Contract shape for replay artifact references and route                        | yes      |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.ts` and spec | Strict replay-reference parsing and fail-closed stale-shape rejection          | yes      |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/digiexamIrReviewParser.ts`               | First-pass original-job versus replay-reference action authority               | yes      |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/correctionSessionProjection.ts`          | Corrected replay file projection and missing-reference disablement             | yes      |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/useExamConverterFileActions.ts` and spec | Download/save byte fetch routing for replay and original actions               | yes      |
+| Impacted Exam Converter fixtures/specs                                                                           | Behavioral proof for missing refs, nested route params, and file action gating | yes      |
+| `scripts/playwright_pr_0337_correction_session_live.py`                                                          | Retained proof script assertion of nested replay route and content digest      | yes      |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Corrected replay artifact references must use `correction_replay_artifact_reference_v1`. | The parser now rejects stale `{artifact_key, target}`-only references, unknown fields, missing digest, unknown schema versions, and mismatched artifact-key/target pairs. | yes |
-| Corrected replay file actions must use the nested Sir Convert route. | `useExamConverterFileActions` dispatches `replay_result` references to `downloadDigiExamMigrationCorrectionReplayArtifact` with `job_id`, `artifact_set_id`, `artifact_key`, and `content_sha256`. | yes |
-| First-pass/original files must remain on the named artifact route. | `original_job` action references still call `downloadDigiExamMigrationArtifact`; this preserves the existing first-pass contract without using it as a replay fallback. | yes |
-| Missing replay authority must fail closed. | Corrected replay projections return `artifactActionReference: null` when target readiness/availability exists but the replay reference is missing, so UI actions remain disabled instead of falling back. | yes |
-| Browser proof updates are script-level readiness for later closeout, not Story 58 approval. | The Playwright script now records `artifact_set_id` and `content_sha256` from nested route responses, but live dev/prod proof remains a later story-closeout gate. | yes |
+| Decision                                                                                    | Rationale                                                                                                                                                                                                 | Approve? |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Corrected replay artifact references must use `correction_replay_artifact_reference_v1`.    | The parser now rejects stale `{artifact_key, target}`-only references, unknown fields, missing digest, unknown schema versions, and mismatched artifact-key/target pairs.                                 | yes      |
+| Corrected replay file actions must use the nested Sir Convert route.                        | `useExamConverterFileActions` dispatches `replay_result` references to `downloadDigiExamMigrationCorrectionReplayArtifact` with `job_id`, `artifact_set_id`, `artifact_key`, and `content_sha256`.        | yes      |
+| First-pass/original files must remain on the named artifact route.                          | `original_job` action references still call `downloadDigiExamMigrationArtifact`; this preserves the existing first-pass contract without using it as a replay fallback.                                   | yes      |
+| Missing replay authority must fail closed.                                                  | Corrected replay projections return `artifactActionReference: null` when target readiness/availability exists but the replay reference is missing, so UI actions remain disabled instead of falling back. | yes      |
+| Browser proof updates are script-level readiness for later closeout, not Story 58 approval. | The Playwright script now records `artifact_set_id` and `content_sha256` from nested route responses, but live dev/prod proof remains a later story-closeout gate.                                        | yes      |
 
 ## Review Checklist
 
@@ -99,23 +99,23 @@ None.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Code review of `answerKeyReviewStateAdapter.ts` and spec | Strict parser requires full replay-reference shape and rejects stale/incomplete references. |
-| Code review of `digiexamIrReviewParser.ts`, `correctionSessionProjection.ts`, and `useExamConverterFileActions.ts` | Corrected replay actions require replay reference authority and use nested route params; original first-pass actions remain named-route only. |
-| Code review of `scripts/playwright_pr_0337_correction_session_live.py` | Proof script now waits for nested correction replay artifact responses with `content_sha256` and records artifact-set evidence. |
-| Parent-reported `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/exam-converter-authenticated/useExamConverterFileActions.spec.ts` | Passed: 32 tests. |
-| Parent-reported `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts` | Passed: 6 tests. |
-| Parent-reported `pdm run fe-type-check` | Passed. |
-| Parent-reported `pdm run fe-lint` | Passed. |
-| Parent-reported `pdm run fe-build` | Passed with existing Vite chunk/dynamic-import warnings. |
-| Parent-reported `pdm run docs-validate` | Passed. |
-| Parent-reported `git diff --check` | Passed. |
-| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json` | Exact `ak7_lag_och_ratt_with_image.dxe` filename proof passed after HuleEdu `TASK-0831`; PDF/QTI replay downloads and Save to My Files returned `200`. |
-| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json` | Same DXE bytes with run-scoped filename passed and retained `service-monitoring.json` plus `service-logs/*.log` from Skriptoteket, HuleEdu Gateway/File Service, and Sir Convert containers. |
-| Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json` | Same DXE bytes passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; PDF/QTI replay downloads and Save to My Files returned `200` with retained local Docker service logs. |
-| Current production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T110339Z/manifest.json` | Real `ak7_lag_och_ratt_with_image.dxe` run-scoped copy passed through production shared auth and Gateway; Sir Convert returned fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF inspection passed with 6 pages, QTI inspection passed with 9 XML files and 37 correct responses, and retained Hemma Gateway/File/Sir Convert/Skriptoteket service logs show the handled requests. |
-| Current Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T111643Z/manifest.json` | Same real DXE bytes with a run-scoped filename passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF/QTI inspection passed, and retained local Docker service logs show the handled requests. |
+| Command or evidence                                                                                                                                                                                                                                 | Result                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code review of `answerKeyReviewStateAdapter.ts` and spec                                                                                                                                                                                            | Strict parser requires full replay-reference shape and rejects stale/incomplete references.                                                                                                                                                                                                                                                                                                                                                                             |
+| Code review of `digiexamIrReviewParser.ts`, `correctionSessionProjection.ts`, and `useExamConverterFileActions.ts`                                                                                                                                  | Corrected replay actions require replay reference authority and use nested route params; original first-pass actions remain named-route only.                                                                                                                                                                                                                                                                                                                           |
+| Code review of `scripts/playwright_pr_0337_correction_session_live.py`                                                                                                                                                                              | Proof script now waits for nested correction replay artifact responses with `content_sha256` and records artifact-set evidence.                                                                                                                                                                                                                                                                                                                                         |
+| Parent-reported `pdm run fe-test -- --run src/api/sirConvertGateway/client.spec.ts src/views/apps/exam-converter-authenticated/answerKeyReviewStateAdapter.spec.ts src/views/apps/exam-converter-authenticated/useExamConverterFileActions.spec.ts` | Passed: 32 tests.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| Parent-reported `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedFilesActionSlice.spec.ts`                                                                                                                                        | Passed: 6 tests.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Parent-reported `pdm run fe-type-check`                                                                                                                                                                                                             | Passed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Parent-reported `pdm run fe-lint`                                                                                                                                                                                                                   | Passed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Parent-reported `pdm run fe-build`                                                                                                                                                                                                                  | Passed with existing Vite chunk/dynamic-import warnings.                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Parent-reported `pdm run docs-validate`                                                                                                                                                                                                             | Passed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Parent-reported `git diff --check`                                                                                                                                                                                                                  | Passed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T014512Z/manifest.redacted.json`                                                                                                                                    | Exact `ak7_lag_och_ratt_with_image.dxe` filename proof passed after HuleEdu `TASK-0831`; PDF/QTI replay downloads and Save to My Files returned `200`.                                                                                                                                                                                                                                                                                                                  |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T015236Z/manifest.redacted.json`                                                                                                                                    | Same DXE bytes with run-scoped filename passed and retained `service-monitoring.json` plus `service-logs/*.log` from Skriptoteket, HuleEdu Gateway/File Service, and Sir Convert containers.                                                                                                                                                                                                                                                                            |
+| Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T020711Z/manifest.redacted.json`                                                                                                                                           | Same DXE bytes passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; PDF/QTI replay downloads and Save to My Files returned `200` with retained local Docker service logs.                                                                                                                                                                                                                                               |
+| Current production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T110339Z/manifest.json`                                                                                                                                     | Real `ak7_lag_och_ratt_with_image.dxe` run-scoped copy passed through production shared auth and Gateway; Sir Convert returned fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF inspection passed with 6 pages, QTI inspection passed with 9 XML files and 37 correct responses, and retained Hemma Gateway/File/Sir Convert/Skriptoteket service logs show the handled requests. |
+| Current Dev proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T111643Z/manifest.json`                                                                                                                                            | Same real DXE bytes with a run-scoped filename passed through local shared-auth, local HuleEdu Gateway, local Sir Convert, and Skriptoteket Docker; fresh admission followed by in-run strict replay, nested replay PDF/ZIP downloads returned `200`, Save to My Files returned `200`, PDF/QTI inspection passed, and retained local Docker service logs show the handled requests.                                                                                     |
 
 ### Non-Blocking Risks
 
@@ -173,10 +173,10 @@ claiming the broader Dev/Prod stale replay matrix is complete.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
+| Command or evidence                                                                                                                               | Result                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Red-first `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Failed before implementation with `AttributeError: module 'scripts.playwright_pr_0337_correction_session_live' has no attribute '_write_final_summary'`. |
-| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Passed: 1 selected test. |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception`     | Passed: 1 selected test.                                                                                                                                 |
 
 ## Follow-Up Implementation Evidence: PR-0337 Failure Artifact Preservation
 
@@ -199,11 +199,11 @@ error in `failure_artifact_errors` and still re-raises the original exception.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
+| Command or evidence                                                                                                                              | Result                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Red-first `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Failed before implementation with `AttributeError: module 'scripts.playwright_pr_0337_correction_session_live' has no attribute '_record_failure_artifacts'`. |
-| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Passed: 1 test selected. |
-| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 10 tests. |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata`     | Passed: 1 test selected.                                                                                                                                      |
+| Green `pdm run test tests/unit/scripts/test_story58_private_request_capture.py`                                                                  | Passed: 10 tests.                                                                                                                                             |
 
 ## Independent Follow-Up Review: PR-0337 Failure Artifact Preservation
 
@@ -267,11 +267,11 @@ capture failures.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | The helper catches screenshot/text/first summary failures, but the outer `finally` still performs an unguarded summary write. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Passed: 1 selected test; coverage is too narrow for summary-write masking. |
-| Context7 Playwright Python docs lookup for sync screenshot/title/locator APIs | Confirmed the reviewed diagnostic calls are current Playwright Python API surfaces. |
+| Command or evidence                                                                                                                                 | Result                                                                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py`                                                                     | The helper catches screenshot/text/first summary failures, but the outer `finally` still performs an unguarded summary write. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k failure_artifacts_do_not_mask_original_exception_metadata` | Passed: 1 selected test; coverage is too narrow for summary-write masking.                                                    |
+| Context7 Playwright Python docs lookup for sync screenshot/title/locator APIs                                                                       | Confirmed the reviewed diagnostic calls are current Playwright Python API surfaces.                                           |
 
 ### Decision
 
@@ -317,15 +317,15 @@ No blocking findings.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | `_write_final_summary(...)` is strict on success and non-masking only when an active exception is present. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception` | Passed: 1 selected test. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_route_probe.py` | Passed: 24 tests. |
-| Parent-run `pdm run lint` | Passed. |
-| Parent-run `pdm run typecheck` | Passed with the existing `docx.*` note. |
-| Parent-run `pdm run docs-validate` | Passed before this retained-rereview update. |
-| Parent-run `git diff --check` | Passed before this retained-rereview update. |
+| Command or evidence                                                                                                                                                                                       | Result                                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py`                                                                                                                           | `_write_final_summary(...)` is strict on success and non-masking only when an active exception is present. |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py -k final_summary_write_failure_does_not_mask_active_exception`                                                      | Passed: 1 selected test.                                                                                   |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_route_probe.py` | Passed: 24 tests.                                                                                          |
+| Parent-run `pdm run lint`                                                                                                                                                                                 | Passed.                                                                                                    |
+| Parent-run `pdm run typecheck`                                                                                                                                                                            | Passed with the existing `docx.*` note.                                                                    |
+| Parent-run `pdm run docs-validate`                                                                                                                                                                        | Passed before this retained-rereview update.                                                               |
+| Parent-run `git diff --check`                                                                                                                                                                             | Passed before this retained-rereview update.                                                               |
 
 ### Decision
 
@@ -371,14 +371,14 @@ identity/grants, idempotency keys, or provider material.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Red-first `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Failed before implementation with `ModuleNotFoundError: No module named 'scripts._story58_artifact_route_probe'`. |
-| Green `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests. |
-| `pdm run lint` | Passed. |
-| `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
-| `pdm run docs-validate` | Passed. |
-| `git diff --check` | Passed. |
+| Command or evidence                                                                                                                                                                                | Result                                                                                                            |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Red-first `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py`                                                     | Failed before implementation with `ModuleNotFoundError: No module named 'scripts._story58_artifact_route_probe'`. |
+| Green `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests.                                                                                                 |
+| `pdm run lint`                                                                                                                                                                                     | Passed.                                                                                                           |
+| `pdm run typecheck`                                                                                                                                                                                | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note.                            |
+| `pdm run docs-validate`                                                                                                                                                                            | Passed.                                                                                                           |
+| `git diff --check`                                                                                                                                                                                 | Passed.                                                                                                           |
 
 ### Residual Live-Proof Gap
 
@@ -443,14 +443,14 @@ No blocking findings.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests. |
-| Reviewer-run `pdm run lint` | Passed. |
-| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
-| Reviewer-run `git diff --check` | Passed before this retained-review update. |
-| Reviewer-run `pdm run docs-validate` | Passed after this retained-review update. |
-| Reviewer-run `git diff --check` | Passed after this retained-review update. |
+| Command or evidence                                                                                                                                                                                       | Result                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 22 tests.                                                                           |
+| Reviewer-run `pdm run lint`                                                                                                                                                                               | Passed.                                                                                     |
+| Reviewer-run `pdm run typecheck`                                                                                                                                                                          | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
+| Reviewer-run `git diff --check`                                                                                                                                                                           | Passed before this retained-review update.                                                  |
+| Reviewer-run `pdm run docs-validate`                                                                                                                                                                      | Passed after this retained-review update.                                                   |
+| Reviewer-run `git diff --check`                                                                                                                                                                           | Passed after this retained-review update.                                                   |
 
 ### Residual Risks
 
@@ -468,18 +468,18 @@ approved
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0410` | Added this retained independent review artifact with decision `approved`. |
-| 2 | `REV-PR-0410` | Added follow-up retained review for the Story 58 proof-harness extension with decision `approved`. |
-| 3 | `REV-PR-0410` | Added follow-up retained review for the Story 58 artifact-set invariant extension with decision `changes_requested`. |
-| 4 | `REV-PR-0410` | Added rereview for the Story 58 artifact-set invariant extension with decision `approved`. |
-| 5 | `REV-PR-0410` | Added independent follow-up review for comparable Story 58 product-route snapshots with decision `approved`. |
-| 6 | `REV-PR-0410` | Added independent follow-up review for PR-0337 failure artifact preservation with decision `changes_requested`. |
-| 7 | `REV-PR-0410` | Added implementation evidence for the final summary write masking fix; Story 58 closeout remains open. |
-| 8 | `REV-PR-0410` | Added independent rereview for the final summary write masking fix with decision `approved`; Story 58 closeout remains open. |
-| 9 | `REV-PR-0410` | Added independent review for Story 58 selected-detail proof-harness stabilization with decision `changes_requested`. |
-| 10 | `REV-PR-0410` | Added independent rereview for Story 58 selected-detail proof-harness stabilization with decision `approved`; Story 58 closeout remains open. |
+| Change | Artifact      | Description                                                                                                                                   |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0410` | Added this retained independent review artifact with decision `approved`.                                                                     |
+| 2      | `REV-PR-0410` | Added follow-up retained review for the Story 58 proof-harness extension with decision `approved`.                                            |
+| 3      | `REV-PR-0410` | Added follow-up retained review for the Story 58 artifact-set invariant extension with decision `changes_requested`.                          |
+| 4      | `REV-PR-0410` | Added rereview for the Story 58 artifact-set invariant extension with decision `approved`.                                                    |
+| 5      | `REV-PR-0410` | Added independent follow-up review for comparable Story 58 product-route snapshots with decision `approved`.                                  |
+| 6      | `REV-PR-0410` | Added independent follow-up review for PR-0337 failure artifact preservation with decision `changes_requested`.                               |
+| 7      | `REV-PR-0410` | Added implementation evidence for the final summary write masking fix; Story 58 closeout remains open.                                        |
+| 8      | `REV-PR-0410` | Added independent rereview for the final summary write masking fix with decision `approved`; Story 58 closeout remains open.                  |
+| 9      | `REV-PR-0410` | Added independent review for Story 58 selected-detail proof-harness stabilization with decision `changes_requested`.                          |
+| 10     | `REV-PR-0410` | Added independent rereview for Story 58 selected-detail proof-harness stabilization with decision `approved`; Story 58 closeout remains open. |
 
 ## Follow-Up Review: Story 58 Proof Harness Evidence Extension
 
@@ -534,17 +534,17 @@ No blocking findings.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Code review of `Story58PrivateRequestCapture` | Private raw-body writes and public summary boundaries match the Story 58 evidence contract. |
-| Code review of `scripts/_story58_mismatched_artifact_probe.py` | Mismatch proof mutates only `content_sha256`, summarizes only approved request/error metadata, and asserts fail-closed `404`/`409` outcomes. |
-| Code review of `scripts/playwright_pr_0337_correction_session_live.py` | Existing PR-0337 proof behavior is preserved unless the opt-in private directory flag is supplied. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 9 tests. |
-| Parent-reported `pdm run lint` | Passed. |
-| Parent-reported `pdm run typecheck` | Passed. |
-| Reviewer-run `git diff --check -- scripts/playwright_pr_0337_correction_session_live.py scripts/_story58_private_request_capture.py scripts/_story58_mismatched_artifact_probe.py tests/unit/scripts/test_story58_private_request_capture.py docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md` | Passed before this retained-review artifact update. |
-| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json` | Real `ak7_lag_och_ratt_with_image.dxe` proof retained nested PDF/QTI replay downloads `200`, Save to My Files `200`, mismatch probe `409 correction_replay_artifact_reference_mismatch`, service logs, and public private-capture summary counts `30` total requests: `8` correction apply and `22` source-state issue. |
-| Reviewer redaction scan of `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json` | No raw request bodies, private capture paths, source-state signatures, identity/grant envelope, provider prompt, or source text terms were present in the Story 58 private-capture public summary. |
+| Command or evidence                                                                                                                                                                                                                                                                                                                         | Result                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code review of `Story58PrivateRequestCapture`                                                                                                                                                                                                                                                                                               | Private raw-body writes and public summary boundaries match the Story 58 evidence contract.                                                                                                                                                                                                                             |
+| Code review of `scripts/_story58_mismatched_artifact_probe.py`                                                                                                                                                                                                                                                                              | Mismatch proof mutates only `content_sha256`, summarizes only approved request/error metadata, and asserts fail-closed `404`/`409` outcomes.                                                                                                                                                                            |
+| Code review of `scripts/playwright_pr_0337_correction_session_live.py`                                                                                                                                                                                                                                                                      | Existing PR-0337 proof behavior is preserved unless the opt-in private directory flag is supplied.                                                                                                                                                                                                                      |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py`                                                                                                                                                                                                                                                      | Passed: 9 tests.                                                                                                                                                                                                                                                                                                        |
+| Parent-reported `pdm run lint`                                                                                                                                                                                                                                                                                                              | Passed.                                                                                                                                                                                                                                                                                                                 |
+| Parent-reported `pdm run typecheck`                                                                                                                                                                                                                                                                                                         | Passed.                                                                                                                                                                                                                                                                                                                 |
+| Reviewer-run `git diff --check -- scripts/playwright_pr_0337_correction_session_live.py scripts/_story58_private_request_capture.py scripts/_story58_mismatched_artifact_probe.py tests/unit/scripts/test_story58_private_request_capture.py docs/backlog/reviews/review-pr-0410-exam-converter-correction-replay-artifact-set-consumer.md` | Passed before this retained-review artifact update.                                                                                                                                                                                                                                                                     |
+| Production proof `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json`                                                                                                                                                                                                                            | Real `ak7_lag_och_ratt_with_image.dxe` proof retained nested PDF/QTI replay downloads `200`, Save to My Files `200`, mismatch probe `409 correction_replay_artifact_reference_mismatch`, service logs, and public private-capture summary counts `30` total requests: `8` correction apply and `22` source-state issue. |
+| Reviewer redaction scan of `.artifacts/playwright-pr-0337-correction-session-live/20260630T143803Z/manifest.redacted.json`                                                                                                                                                                                                                  | No raw request bodies, private capture paths, source-state signatures, identity/grant envelope, provider prompt, or source text terms were present in the Story 58 private-capture public summary.                                                                                                                      |
 
 ### Residual Risks
 
@@ -609,13 +609,13 @@ the final artifact set.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests. |
-| Reviewer-run `pdm run lint` | Passed. |
-| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
-| Reviewer-run `pdm run docs-validate` | Passed. |
-| Reviewer-run `git diff --check` | Passed. |
+| Command or evidence                                                                                                                               | Result                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests.                                                                      |
+| Reviewer-run `pdm run lint`                                                                                                                       | Passed.                                                                                |
+| Reviewer-run `pdm run typecheck`                                                                                                                  | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
+| Reviewer-run `pdm run docs-validate`                                                                                                              | Passed.                                                                                |
+| Reviewer-run `git diff --check`                                                                                                                   | Passed.                                                                                |
 
 ### Decision
 
@@ -668,16 +668,16 @@ comparable product-route snapshots for each relevant correction-apply response.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py` | `_summarize_apply_request` no longer retains structured correction rows in public `correction_apply_requests`. |
-| Reviewer code review of `tests/unit/scripts/test_story58_private_request_capture.py` | Canonical request-handler boundary test now fails if correction row ids/types/sequence/source text/answer text leak into the public apply-request summary. |
-| Reviewer code review of `scripts/_story58_artifact_set_invariants.py` and `tests/unit/scripts/test_story58_artifact_set_invariants.py` | Invariant helper still redacts non-approved observation keys and preserves `unproven` for insufficient product-route evidence. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests. |
-| Reviewer-run `pdm run lint` | Passed. |
-| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note. |
-| Reviewer-run `pdm run docs-validate` | Passed before and after this retained-review update. |
-| Reviewer-run `git diff --check` | Passed before and after this retained-review update. |
+| Command or evidence                                                                                                                               | Result                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewer code review of `scripts/playwright_pr_0337_correction_session_live.py`                                                                   | `_summarize_apply_request` no longer retains structured correction rows in public `correction_apply_requests`.                                             |
+| Reviewer code review of `tests/unit/scripts/test_story58_private_request_capture.py`                                                              | Canonical request-handler boundary test now fails if correction row ids/types/sequence/source text/answer text leak into the public apply-request summary. |
+| Reviewer code review of `scripts/_story58_artifact_set_invariants.py` and `tests/unit/scripts/test_story58_artifact_set_invariants.py`            | Invariant helper still redacts non-approved observation keys and preserves `unproven` for insufficient product-route evidence.                             |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_private_request_capture.py` | Passed: 17 tests.                                                                                                                                          |
+| Reviewer-run `pdm run lint`                                                                                                                       | Passed.                                                                                                                                                    |
+| Reviewer-run `pdm run typecheck`                                                                                                                  | Passed: no issues in 1166 source files; existing unused `pyproject.toml` section note.                                                                     |
+| Reviewer-run `pdm run docs-validate`                                                                                                              | Passed before and after this retained-review update.                                                                                                       |
+| Reviewer-run `git diff --check`                                                                                                                   | Passed before and after this retained-review update.                                                                                                       |
 
 ### Decision
 
@@ -734,15 +734,15 @@ Proof required:
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer code review of scoped diff | No behavior blocker found in selected-detail scoping or apply-wait semantics. |
-| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Passed: 13 tests. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py` | Passed: 24 tests. |
-| Reviewer-run `pdm run fe-type-check` | Passed. |
-| Reviewer-run `pdm run typecheck` | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
-| Reviewer-run `git diff --check -- frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts scripts/playwright_pr_0337_correction_session_live.py` | Passed. |
-| Reviewer-run `pdm run lint` | Failed: `scripts/playwright_pr_0337_correction_session_live.py` would be reformatted. |
+| Command or evidence                                                                                                                                                                                                                                                                          | Result                                                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Reviewer code review of scoped diff                                                                                                                                                                                                                                                          | No behavior blocker found in selected-detail scoping or apply-wait semantics.               |
+| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`                                                                                                                                                                                         | Passed: 13 tests.                                                                           |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_story58_artifact_set_invariants.py tests/unit/scripts/test_story58_artifact_route_probe.py`                                                                                    | Passed: 24 tests.                                                                           |
+| Reviewer-run `pdm run fe-type-check`                                                                                                                                                                                                                                                         | Passed.                                                                                     |
+| Reviewer-run `pdm run typecheck`                                                                                                                                                                                                                                                             | Passed: no issues in 1166 source files; existing unused `pyproject.toml` docx section note. |
+| Reviewer-run `git diff --check -- frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterQuestionReviewShell.vue frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts scripts/playwright_pr_0337_correction_session_live.py` | Passed.                                                                                     |
+| Reviewer-run `pdm run lint`                                                                                                                                                                                                                                                                  | Failed: `scripts/playwright_pr_0337_correction_session_live.py` would be reformatted.       |
 
 ### Decision
 
@@ -803,15 +803,15 @@ No blocking findings remain.
 
 ### Verification Evidence
 
-| Command or evidence | Result |
-|---|---|
-| Reviewer code review of scoped diff | No behavior, boundary, redaction, or selected-detail blocker found. |
-| Reviewer-run `pdm run lint` | Passed. |
-| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_playwright_script_surface.py` | Passed: 19 tests. |
-| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts` | Passed: 13 tests. |
-| Reviewer-run `pdm run python -m py_compile scripts/playwright_pr_0337_correction_session_live.py` | Passed. |
-| Reviewer-run `git diff --check` | Passed before this retained-review artifact update. |
-| Reviewer manifest spot-check of `.artifacts/playwright-pr-0337-correction-session-live/20260630T201858Z/manifest.redacted.json` | Confirmed proof completion, replay-scoped download/save, manual review-required cleanup, artifact-set invariants, mismatched-artifact 409, and redacted private request capture summary. |
+| Command or evidence                                                                                                                         | Result                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reviewer code review of scoped diff                                                                                                         | No behavior, boundary, redaction, or selected-detail blocker found.                                                                                                                      |
+| Reviewer-run `pdm run lint`                                                                                                                 | Passed.                                                                                                                                                                                  |
+| Reviewer-run `pdm run test tests/unit/scripts/test_story58_private_request_capture.py tests/unit/scripts/test_playwright_script_surface.py` | Passed: 19 tests.                                                                                                                                                                        |
+| Reviewer-run `pdm run fe-test -- --run src/views/apps/ExamConverterAuthenticatedReviewSlice.spec.ts`                                        | Passed: 13 tests.                                                                                                                                                                        |
+| Reviewer-run `pdm run python -m py_compile scripts/playwright_pr_0337_correction_session_live.py`                                           | Passed.                                                                                                                                                                                  |
+| Reviewer-run `git diff --check`                                                                                                             | Passed before this retained-review artifact update.                                                                                                                                      |
+| Reviewer manifest spot-check of `.artifacts/playwright-pr-0337-correction-session-live/20260630T201858Z/manifest.redacted.json`             | Confirmed proof completion, replay-scoped download/save, manual review-required cleanup, artifact-set invariants, mismatched-artifact 409, and redacted private request capture summary. |
 
 ### Decision
 

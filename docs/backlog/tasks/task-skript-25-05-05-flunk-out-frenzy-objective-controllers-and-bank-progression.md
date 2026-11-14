@@ -4,8 +4,8 @@ id: TASK-SKRIPT-25-05-05
 title: 'Flunk-Out Frenzy: objective controllers and bank progression'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,16 +17,12 @@ closeout_review:
 story: ST-SKRIPT-25-05
 task_kind: story
 acceptance_criteria:
-- The rule layer keeps a slim orchestration surface while target banks, skill-shot
-  logic, and objective progression live in dedicated controller modules.
-- Bank completion, jackpot progression, and objective state changes are driven by
-  semantic machine events and surfaced as deliberate game effects.
-- The resulting local runtime remains compatible with future replay, ruleset, and
-  official-score work instead of hardcoding one opaque local-only flow.
+  - The rule layer keeps a slim orchestration surface while target banks, skill-shot logic, and objective progression live in dedicated controller modules.
+  - Bank completion, jackpot progression, and objective state changes are driven by semantic machine events and surfaced as deliberate game effects.
+  - The resulting local runtime remains compatible with future replay, ruleset, and official-score work instead of hardcoding one opaque local-only flow.
 ---
 
 ## Context
-
 
 By the time richer devices, bonus or jackpot state, and ramp semantics exist,
 the remaining risk is orchestration. If all progression logic ends up back in
@@ -39,7 +35,6 @@ rather than prevent it.
 
 ## Story Contract Slice
 
-
 Finish the mechanics-port foundation with bounded rule controllers for:
 
 - target-bank completion
@@ -51,7 +46,6 @@ Finish the mechanics-port foundation with bounded rule controllers for:
 No separate contract inputs is stated in the source.
 
 ## Plan
-
 
 - Create
   `frontend/apps/skriptoteket/src/components/apps/flunk-out-frenzy/game/rules/controllers/skillShotController.ts`
@@ -82,7 +76,6 @@ No separate implementation steps is stated in the source.
 
 ## Proof
 
-
 Automated:
 
 - `pdm run fe-test -- --run src/components/apps/flunk-out-frenzy/game/rules/**/*.spec.ts src/components/apps/flunk-out-frenzy/game/engine/PrototypeAlphaGameEngine.spec.ts`
@@ -101,7 +94,6 @@ No separate validation is stated in the source.
 
 ## Stop Conditions
 
-
 - Remove the new controller modules and fold only the minimum stable rule logic
   back into `RuleEngine.ts`.
 - Remove any half-complete objective-specific HUD or effect hooks.
@@ -117,7 +109,6 @@ No separate lessons learned is stated in the source.
 No separate notes is stated in the source.
 
 ### Source: Non-goals
-
 
 - No backend leaderboard or replay work.
 - No multiball rewrite unless it fits naturally inside the controller seams.

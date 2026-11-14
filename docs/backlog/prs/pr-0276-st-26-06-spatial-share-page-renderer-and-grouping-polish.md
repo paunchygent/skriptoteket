@@ -136,17 +136,21 @@ but improve their responsive and print presentation.
 
 - `REV-PR-0276` reopened this slice after review found the data/model path was
   correct but the static renderer was wrong for labeled merged benches.
+
 - Fix applied in `share_scene_renderer.py`: `.room-fixture--bench` is now a
   positioned block fixture, `.room-bench-body` is absolute/inset, and the
   fixture label is an absolute centered overlay for bench fixtures.
+
 - Test added in
   `tests/unit/infrastructure/curated_apps/apps/classroom_planner/test_share_renderer.py`:
   a seating renderer case with a normalized merged bench fixture labeled
   `Bänk` asserts the overlay CSS and merged fixture markup.
+
 - Visual proof refreshed under `.artifacts/pr-0276-spatial-share-renderer/`:
   `sample-share.html`, `desktop.png`, and `mobile.png` include the merged
   labeled bench; the proof asserted no scripts, no horizontal document
   overflow, centered label geometry, and a body spanning the merged bench.
+
 - Second renderer defect fixed in `_fixture_frame()`: `placement=WALL` without
   `wall_side` now raises instead of rendering with floor geometry. The refreshed
   `sample-share.html` uses `wall_side=TOP` and proves the whiteboard top is
@@ -154,22 +158,28 @@ but improve their responsive and print presentation.
 
 - Added a dedicated static seating share-scene renderer helper:
   `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py`.
+
 - Seating share pages now render from the canonical `poster_scene` as a
   spatial classroom map with room floor, wall fixtures, teacher desk, benches,
   occupied seats, and empty seats.
+
 - Occupied seats render as larger circular tokens centered on first name plus
   surname when it fits, or surname initial for long surnames. Empty seats render
   as a plain dashed circle with no visible text. Seat row/place numbering is not
   shown on the shared page.
+
 - The seating share artifact emits no JavaScript. Responsive fit is CSS-only
   through percentage geometry, `aspect-ratio`, `min()`, `clamp()`, and media
   queries.
+
 - Added a dedicated static grouping share-card renderer helper:
   `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_group_renderer.py`.
+
 - Grouping shares now follow
   `docs/mockups/st-26-06-share-link-ux-and-page-renderer/shared-groups-page-mockup.html`:
   serif page title, two-column desktop card grid, single-column mobile stack,
   group member counts, and circular numbered student markers.
+
 - Seating and grouping share pages now use explicit page variant classes so the
   grouping page keeps the approved `1200px` card shell while seating keeps the
   wider spatial-map shell.

@@ -40,14 +40,17 @@ map planner-specific copy, events, and test ids.
 ## Implementation plan
 
 1. Thin planner-specific wrappers.
+
    - Revisit `PlannerToolbarIconButton.vue`, `PlannerToolbarOverflowMenu.vue`, and
      `PlannerExportActionGroup.vue` after `PR-0195`.
 
 2. Tighten the planner action-surface seam.
+
    - Update `PlannerWorkspaceActionBar.vue` and the grouping/seating/rules toolbar consumers so
      they stop owning dense-control presentation details that belong in the primitives.
 
 3. Keep planner behavior stable.
+
    - Preserve the current shipped grouping/seating/rules composition and ordering.
    - Focus on adapter cleanup, not visible workflow redesign.
 

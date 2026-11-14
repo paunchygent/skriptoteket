@@ -55,28 +55,28 @@ Approve the hybrid option in a narrower form:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md` | Decision shape, options, and acceptance criteria | 12 min |
-| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md` | Parent story alignment | 5 min |
-| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Public/authenticated boundary and one-time bridge rules | 8 min |
-| `docs/backlog/prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md` | Zero-effect guard that must not be regressed | 6 min |
-| `src/skriptoteket/web/api/v1/public_apps.py` | Public bootstrap authority model | 4 min |
-| `frontend/apps/skriptoteket/src/views/PublicAppHostView.vue` | Public host data source | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestUpgrade.ts` | Current authenticated consumption/retention semantics | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts` | Public guest snapshot auto-init seam | 5 min |
+| File                                                                                                    | Focus                                                   | Time   |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0246-st-32-05-one-time-guest-upgrade-consumption-and-repeat-import-suppression.md` | Decision shape, options, and acceptance criteria        | 12 min |
+| `docs/backlog/stories/story-32-05-authenticated-upgrade-orchestration-and-idempotent-import-policy.md`  | Parent story alignment                                  | 5 min  |
+| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`                    | Public/authenticated boundary and one-time bridge rules | 8 min  |
+| `docs/backlog/prs/pr-0245-st-32-05-empty-guest-snapshot-and-zero-effect-import-ui-reconciliation.md`    | Zero-effect guard that must not be regressed            | 6 min  |
+| `src/skriptoteket/web/api/v1/public_apps.py`                                                            | Public bootstrap authority model                        | 4 min  |
+| `frontend/apps/skriptoteket/src/views/PublicAppHostView.vue`                                            | Public host data source                                 | 3 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestUpgrade.ts`                          | Current authenticated consumption/retention semantics   | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`                       | Public guest snapshot auto-init seam                    | 5 min  |
 
 **Total estimated time:** ~49 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a dedicated backend consumption fact instead of planner-artifact inference | Product policy should not depend on draft/checkpoint internals | [x] |
-| Keep a browser-owned consumed marker in addition to the backend fact | Same-browser public suppression and stale-local cleanup still need a local control point | [x] |
-| Keep public hosts off backend/user-specific truth | Preserves the cookie-agnostic public boundary and matches the current public bootstrap seam | [x] |
-| Keep all-zero suspicious receipts non-consuming | Preserves the `PR-0245` truthful zero-effect guard | [x] |
-| Separate browser guest-authoring eligibility from import consumption | Closes the account-first/guest-later loop without overloading the backend ledger | [x] |
+| Decision                                                                       | Rationale                                                                                   | Approve? |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------- |
+| Use a dedicated backend consumption fact instead of planner-artifact inference | Product policy should not depend on draft/checkpoint internals                              | [x]      |
+| Keep a browser-owned consumed marker in addition to the backend fact           | Same-browser public suppression and stale-local cleanup still need a local control point    | [x]      |
+| Keep public hosts off backend/user-specific truth                              | Preserves the cookie-agnostic public boundary and matches the current public bootstrap seam | [x]      |
+| Keep all-zero suspicious receipts non-consuming                                | Preserves the `PR-0245` truthful zero-effect guard                                          | [x]      |
+| Separate browser guest-authoring eligibility from import consumption           | Closes the account-first/guest-later loop without overloading the backend ledger            | [x]      |
 
 ## Review Checklist
 

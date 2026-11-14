@@ -57,17 +57,20 @@ Principer:
 
 ## Implementation plan (stegvis, mergebar)
 
-1) **Fokusläge: fyll ytan**
+1. **Fokusläge: fyll ytan**
+
    - Reducera padding/gap i editor-route när `focusMode=true` (utan att påverka andra vyer).
    - Säkerställ att editor-ytan använder full höjd under AuthTopBar (konsistent “height chain”).
    - Skapa en tydlig plats för editor-specifika layout-tokens (t.ex. CSS-variabler eller klass-variant).
 
-2) **Chat-drawer: minska dödutrymme**
+2. **Chat-drawer: minska dödutrymme**
+
    - Refaktorera chat-drawer till `ChatHeader` + `ChatHistory` + `ChatComposer`.
    - Gör historikytan till `flex-1 min-h-0 overflow-y-auto` och minska vertikal padding/dividers.
    - Flytta sekundära kontroller (Ny chatt / status) till en liten tool-row i composer så historiken får maximal yta.
 
-3) **Remote-fallback samtycke i profil + “first remote attempt” prompt (backend + frontend)**
+3. **Remote-fallback samtycke i profil + “first remote attempt” prompt (backend + frontend)**
+
    - Backend: inför en serverpersistad inställning (tri-state: unset/allow/deny) kopplad till user.
    - API: exponera via `/api/v1/auth/me` eller separat endpoint under profil.
    - Frontend: `useAiStore` hydraterar från server och faller tillbaka till localStorage endast som migration.
@@ -77,16 +80,19 @@ Principer:
      - `deny`: visa tydligt meddelande och skicka inte remote request.
      - `unset`: visa en liten prompt med “Aktivera”/“Stäng av” (med länk till Profil); spara val vid klick. Om prompten stängs behandlas det som “stäng av” för denna begäran (ingen remote request), men inställningen förblir `unset`.
 
-4) **Composer: Chat/Redigera toggle + sänd-ikon i input**
+4. **Composer: Chat/Redigera toggle + sänd-ikon i input**
+
    - Byt “Skicka”/“Föreslå ändringar” till ett läge: `Chat` eller `Redigera`.
    - Enter skickar; Shift+Enter ny rad. Sänd-ikon (aria-label) i textarea (nedre höger).
    - Återanvänd befintliga `btn-*` primitives och token spacing. Ingen Tailwind default palette.
 
-5) **Performance gates**
+5. **Performance gates**
+
    - Bekräfta att nya split-punkter inte drar in tunga moduler i initial chunk.
    - Vid behov: ytterligare `defineAsyncComponent`/dynamic import för edit-ops/diff/test.
 
-6) **Verifiering + docs-as-code**
+6. **Verifiering + docs-as-code**
+
    - Uppdatera Playwright smoke(s) med nya assertions/screenshots för fokusläge + chat-drawer.
    - Uppdatera `.codex/handoff.md` med exakta commands + artifacts (inga påståenden utan screenshot).
 

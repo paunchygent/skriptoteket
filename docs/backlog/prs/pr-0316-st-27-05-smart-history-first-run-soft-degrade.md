@@ -80,6 +80,7 @@ Make the first Smart run calm and useful:
 ## Implementation Plan
 
 1. Update Smart seating application flow.
+
    - In `RunSmartSeatingHandler`, remove the `use_history and not history`
      business block.
    - Continue passing an empty checkpoint list to the solver when no eligible
@@ -89,6 +90,7 @@ Make the first Smart run calm and useful:
      used.
 
 2. Update Smart grouping application flow.
+
    - In `RunSmartGroupingHandler`, remove the `use_history and not history`
      business block.
    - Keep live seating / seating compactness behavior unchanged.
@@ -98,6 +100,7 @@ Make the first Smart run calm and useful:
      used.
 
 3. Remove the stale blocked response contract.
+
    - Confirm whether authenticated smart-run blocked result classes only
      represent `reason: "no_history"`.
    - If they do, delete the blocked result classes, web/API response variants,
@@ -112,6 +115,7 @@ Make the first Smart run calm and useful:
      business state unrelated to history availability.
 
 4. Update frontend run handling and tests.
+
    - Do not add a frontend workaround. The backend should return the applied
      workspace.
    - Update seating/grouping composable specs so first-run no-history results
@@ -120,9 +124,10 @@ Make the first Smart run calm and useful:
      branch is deleted.
 
 5. Add live proof.
+
    - Use the repo's HuleEdu browser-session helper/preflight.
    - Prove an authenticated first seating run and first grouping run with Smart
-     + `Historik` on, no checkpoints, no warning, and applied workspace changes.
+     - `Historik` on, no checkpoints, no warning, and applied workspace changes.
    - Prove an authenticated run after export/share checkpoint creation still
      reports `used_history=true`.
 

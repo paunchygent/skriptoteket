@@ -39,24 +39,24 @@ repo does not advertise the wrong remaining work.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0372-st-37-04-public-landing-header-simplification.md` | Scope, acceptance criteria, and proof plan | 12 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` | Parent story sequencing and notes | 8 min |
-| `docs/reference/ref-public-landing-copy-lock.md` | Header copy lock and public CTA ownership | 8 min |
-| `docs/index.md` | Durable docs discoverability | 5 min |
-| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Parent epic implementation summary truth | 8 min |
-| `docs/backlog/reviews/review-pr-0371-public-landing-authenticated-app-preview-implementation.md` | Immediate predecessor close-out status | 5 min |
+| File                                                                                             | Focus                                      | Time   |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0372-st-37-04-public-landing-header-simplification.md`                      | Scope, acceptance criteria, and proof plan | 12 min |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`            | Parent story sequencing and notes          | 8 min  |
+| `docs/reference/ref-public-landing-copy-lock.md`                                                 | Header copy lock and public CTA ownership  | 8 min  |
+| `docs/index.md`                                                                                  | Durable docs discoverability               | 5 min  |
+| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md`  | Parent epic implementation summary truth   | 8 min  |
+| `docs/backlog/reviews/review-pr-0371-public-landing-authenticated-app-preview-implementation.md` | Immediate predecessor close-out status     | 5 min  |
 
 **Total estimated time:** ~46 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Remove the signed-out header `Klassrumskartan` link because the hero owns that CTA. | Matches the approved landing hierarchy and avoids duplicate CTA competition. | [x] |
-| Keep brand, `Logga in`, and `Hjälp` on one row on small screens, with `Logga in` and `Hjälp` using the same visual treatment. | This is the user-approved header simplification contract. | [x] |
-| Keep the parent `EPIC-37` summary aligned with the current `ST-37-04` slice stack. | Parent docs must not contradict the story and docs doorway about what is done and what remains. | [x] |
+| Decision                                                                                                                      | Rationale                                                                                       | Approve? |
+| ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| Remove the signed-out header `Klassrumskartan` link because the hero owns that CTA.                                           | Matches the approved landing hierarchy and avoids duplicate CTA competition.                    | [x]      |
+| Keep brand, `Logga in`, and `Hjälp` on one row on small screens, with `Logga in` and `Hjälp` using the same visual treatment. | This is the user-approved header simplification contract.                                       | [x]      |
+| Keep the parent `EPIC-37` summary aligned with the current `ST-37-04` slice stack.                                            | Parent docs must not contradict the story and docs doorway about what is done and what remains. | [x]      |
 
 ## Review Checklist
 
@@ -179,8 +179,8 @@ review pass.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0372` | Created the retained pre-implementation review record and requested changes on the stale parent epic authority chain. |
-| 2 | `REV-PR-0372` | Re-reviewed the parent-spine fix, found no remaining docs-authority blockers in scope, and updated the retained decision to `approved`. |
-| 3 | `REV-PR-0372` | Performed the post-implementation ruthless review, verified the runtime header change against focused tests and retained public proof, and kept the retained decision at `approved`. |
+| Change | Artifact      | Description                                                                                                                                                                          |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0372` | Created the retained pre-implementation review record and requested changes on the stale parent epic authority chain.                                                                |
+| 2      | `REV-PR-0372` | Re-reviewed the parent-spine fix, found no remaining docs-authority blockers in scope, and updated the retained decision to `approved`.                                              |
+| 3      | `REV-PR-0372` | Performed the post-implementation ruthless review, verified the runtime header change against focused tests and retained public proof, and kept the retained decision at `approved`. |

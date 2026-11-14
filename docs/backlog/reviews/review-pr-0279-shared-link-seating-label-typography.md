@@ -46,25 +46,25 @@ separate so seating-only typography fixes do not invalidate grouping previews.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md` | Scope, acceptance, stop conditions | 12 min |
-| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md` | Parent share-link renderer contract | 6 min |
-| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md` | Preview asset lifecycle impact | 6 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py` | Seat label markup/CSS entry point | 8 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_preview_renderer.py` | 1200x630 render proof implications | 5 min |
+| File                                                                                            | Focus                               | Time   |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------- | ------ |
+| `docs/backlog/prs/pr-0279-st-26-06-shared-link-seating-label-typography-and-long-name-fit.md`   | Scope, acceptance, stop conditions  | 12 min |
+| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md`           | Parent share-link renderer contract | 6 min  |
+| `docs/backlog/stories/story-26-07-klassrumskartan-share-link-teams-preview-thumbnails.md`       | Preview asset lifecycle impact      | 6 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_scene_renderer.py`   | Seat label markup/CSS entry point   | 8 min  |
+| `src/skriptoteket/infrastructure/curated_apps/apps/classroom_planner/share_preview_renderer.py` | 1200x630 render proof implications  | 5 min  |
 
 **Total estimated time:** ~37 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the task under `ST-26-06` with `ST-26-07` linked | The bug is in shared-link HTML/CSS, and preview thumbnails inherit that renderer. | [ ] |
-| Use deterministic CSS-owned long-name tiers | The immutable share artifact must remain static and script-free. | [ ] |
-| Preserve full accessible labels | Visual fallback must not hide the actual student name from `aria-label`/`title`. | [ ] |
-| Split grouping and seating renderer provenance | Grouping output is unchanged; seating-only CSS/markup should not invalidate grouping preview assets. | [ ] |
-| Treat seating preview asset staleness as in-scope | Existing seating preview rows may need renderer-version/hash/backfill handling after output changes. | [ ] |
+| Decision                                              | Rationale                                                                                            | Approve? |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
+| Keep the task under `ST-26-06` with `ST-26-07` linked | The bug is in shared-link HTML/CSS, and preview thumbnails inherit that renderer.                    | [ ]      |
+| Use deterministic CSS-owned long-name tiers           | The immutable share artifact must remain static and script-free.                                     | [ ]      |
+| Preserve full accessible labels                       | Visual fallback must not hide the actual student name from `aria-label`/`title`.                     | [ ]      |
+| Split grouping and seating renderer provenance        | Grouping output is unchanged; seating-only CSS/markup should not invalidate grouping preview assets. | [ ]      |
+| Treat seating preview asset staleness as in-scope     | Existing seating preview rows may need renderer-version/hash/backfill handling after output changes. | [ ]      |
 
 ## Review Checklist
 
@@ -192,11 +192,11 @@ PYTHONPATH=src:. pdm run python -m scripts.prove_pr_0279_share_label_typography
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0279` | Added task for shared-link seating label typography and long-name fit. |
-| 2 | `REV-PR-0279` | Added retained pre-implementation review gate. |
-| 3 | `EPIC-26` / `ST-26-06` / `ST-26-07` | Linked the renderer correction and preview lifecycle implications. |
-| 4 | `PR-0279` | Implemented renderer-versioned seat-label tiers and recorded proof artifacts for review. |
-| 5 | `PR-0279` / `REV-PR-0279` | Added remediation requirements for weighted fit, clipping proof, and share-kind-specific renderer provenance. |
-| 6 | `PR-0279` / `REV-PR-0279` | Added remediation evidence for old active seating artifact refresh/backfill and stronger map-fit/fixture-overlap proof. |
+| Change | Artifact                            | Description                                                                                                             |
+| ------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0279`                           | Added task for shared-link seating label typography and long-name fit.                                                  |
+| 2      | `REV-PR-0279`                       | Added retained pre-implementation review gate.                                                                          |
+| 3      | `EPIC-26` / `ST-26-06` / `ST-26-07` | Linked the renderer correction and preview lifecycle implications.                                                      |
+| 4      | `PR-0279`                           | Implemented renderer-versioned seat-label tiers and recorded proof artifacts for review.                                |
+| 5      | `PR-0279` / `REV-PR-0279`           | Added remediation requirements for weighted fit, clipping proof, and share-kind-specific renderer provenance.           |
+| 6      | `PR-0279` / `REV-PR-0279`           | Added remediation evidence for old active seating artifact refresh/backfill and stronger map-fit/fixture-overlap proof. |

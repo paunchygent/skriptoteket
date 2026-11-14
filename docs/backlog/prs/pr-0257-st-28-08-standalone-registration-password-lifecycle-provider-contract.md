@@ -90,20 +90,20 @@ HuleEdu has published and proved the retained browser contract needed for implem
 
 Required minimum:
 
-| Concern | Required Contract |
-|---------|-------------------|
-| Registration entry | Browser-navigable HuleEdu route for `app=skriptoteket` standalone registration |
-| Password reset entry | Browser-navigable route for reset request plus reset-token completion |
-| Email verification entry | Browser-navigable route for verification request plus verification-token completion |
-| App input | `app=skriptoteket` or equivalent signed/app-registered parameter |
-| Realm input | selected/defaulted `product_identity_realm`, including `skriptoteket_standalone` |
-| Return target | absolute allowlisted Skriptoteket callback/return URL plus safe route-level `next` |
-| Product copy | user-facing copy clearly says Skriptoteket account/access, not HuleEdu school enrollment |
-| Standalone semantics | standalone registration does not require `organization_name`, `org_id`, or HuleEdu school membership |
-| Token links | email/reset links preserve or recover app, realm, and return context |
-| Session output | successful lifecycle completion can establish the shared browser session or return to login with preserved app/realm context |
-| Downstream context | successful login after lifecycle completion signs active app, active product identity realm, and realm subject fields |
-| Abuse controls | registration/reset/verification have provider-owned rate limits and token replay/expiry semantics |
+| Concern                  | Required Contract                                                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Registration entry       | Browser-navigable HuleEdu route for `app=skriptoteket` standalone registration                                               |
+| Password reset entry     | Browser-navigable route for reset request plus reset-token completion                                                        |
+| Email verification entry | Browser-navigable route for verification request plus verification-token completion                                          |
+| App input                | `app=skriptoteket` or equivalent signed/app-registered parameter                                                             |
+| Realm input              | selected/defaulted `product_identity_realm`, including `skriptoteket_standalone`                                             |
+| Return target            | absolute allowlisted Skriptoteket callback/return URL plus safe route-level `next`                                           |
+| Product copy             | user-facing copy clearly says Skriptoteket account/access, not HuleEdu school enrollment                                     |
+| Standalone semantics     | standalone registration does not require `organization_name`, `org_id`, or HuleEdu school membership                         |
+| Token links              | email/reset links preserve or recover app, realm, and return context                                                         |
+| Session output           | successful lifecycle completion can establish the shared browser session or return to login with preserved app/realm context |
+| Downstream context       | successful login after lifecycle completion signs active app, active product identity realm, and realm subject fields        |
+| Abuse controls           | registration/reset/verification have provider-owned rate limits and token replay/expiry semantics                            |
 
 ## Implementation Plan
 

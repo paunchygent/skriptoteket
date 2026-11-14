@@ -85,46 +85,46 @@ ST-14-09 removed the legacy `input_schema == null` “upload-first” mode; file
 
 ### Phase 1: Backend (schema + storage)
 
-| Step | File | Action |
-|------|------|--------|
-| 1.1 | `migrations/versions/0016_tool_versions_input_schema.py` | Add `tool_versions.input_schema` (JSONB) |
-| 1.2 | `migrations/versions/0017_tool_runs_input_values.py` | Add `tool_runs.input_values` (JSONB) + allow runs without files (nullable `input_filename` or equivalent) |
-| 1.3 | `src/skriptoteket/domain/scripting/tool_inputs.py` | NEW: ToolInputField types + schema/value validation |
-| 1.4 | `src/skriptoteket/domain/scripting/models.py` | Add `input_schema` to ToolVersion + `input_values` to ToolRun |
-| 1.5 | `src/skriptoteket/infrastructure/db/models/tool_version.py` | Persist `input_schema` |
-| 1.6 | `src/skriptoteket/infrastructure/db/models/tool_run.py` | Persist `input_values` + allow file-less runs |
-| 1.7 | `src/skriptoteket/application/scripting/commands.py` | Add `input_schema` to draft/publish commands; add `input_values` to execute/run commands |
-| 1.8 | `src/skriptoteket/application/scripting/handlers/save_draft_version.py` | Validate/normalize `input_schema` |
-| 1.9 | `src/skriptoteket/application/scripting/handlers/create_draft_version.py` | Validate/normalize `input_schema` |
-| 1.10 | `src/skriptoteket/web/api/v1/editor.py` | Return + accept `input_schema` in editor responses/requests |
-| 1.11 | `src/skriptoteket/web/api/v1/tools.py` | Return `input_schema` in tool metadata for run view |
+| Step | File                                                                      | Action                                                                                                    |
+| ---- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1.1  | `migrations/versions/0016_tool_versions_input_schema.py`                  | Add `tool_versions.input_schema` (JSONB)                                                                  |
+| 1.2  | `migrations/versions/0017_tool_runs_input_values.py`                      | Add `tool_runs.input_values` (JSONB) + allow runs without files (nullable `input_filename` or equivalent) |
+| 1.3  | `src/skriptoteket/domain/scripting/tool_inputs.py`                        | NEW: ToolInputField types + schema/value validation                                                       |
+| 1.4  | `src/skriptoteket/domain/scripting/models.py`                             | Add `input_schema` to ToolVersion + `input_values` to ToolRun                                             |
+| 1.5  | `src/skriptoteket/infrastructure/db/models/tool_version.py`               | Persist `input_schema`                                                                                    |
+| 1.6  | `src/skriptoteket/infrastructure/db/models/tool_run.py`                   | Persist `input_values` + allow file-less runs                                                             |
+| 1.7  | `src/skriptoteket/application/scripting/commands.py`                      | Add `input_schema` to draft/publish commands; add `input_values` to execute/run commands                  |
+| 1.8  | `src/skriptoteket/application/scripting/handlers/save_draft_version.py`   | Validate/normalize `input_schema`                                                                         |
+| 1.9  | `src/skriptoteket/application/scripting/handlers/create_draft_version.py` | Validate/normalize `input_schema`                                                                         |
+| 1.10 | `src/skriptoteket/web/api/v1/editor.py`                                   | Return + accept `input_schema` in editor responses/requests                                               |
+| 1.11 | `src/skriptoteket/web/api/v1/tools.py`                                    | Return `input_schema` in tool metadata for run view                                                       |
 
 ### Phase 2: Runner Contract
 
-| Step | File | Action |
-|------|------|--------|
-| 2.1 | `src/skriptoteket/web/api/v1/tools.py` | Accept `inputs` (JSON string) + optional `files[]` in run request |
-| 2.2 | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py` | Validate/normalize `inputs` against schema; store on ToolRun; pass to runner |
-| 2.3 | `src/skriptoteket/infrastructure/runner/docker_runner.py` | Add `SKRIPTOTEKET_INPUTS` env var |
+| Step | File                                                                      | Action                                                                       |
+| ---- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 2.1  | `src/skriptoteket/web/api/v1/tools.py`                                    | Accept `inputs` (JSON string) + optional `files[]` in run request            |
+| 2.2  | `src/skriptoteket/application/scripting/handlers/execute_tool_version.py` | Validate/normalize `inputs` against schema; store on ToolRun; pass to runner |
+| 2.3  | `src/skriptoteket/infrastructure/runner/docker_runner.py`                 | Add `SKRIPTOTEKET_INPUTS` env var                                            |
 
 ### Phase 3: Frontend (SPA)
 
-| Step | File | Action |
-|------|------|--------|
-| 3.1 | `frontend/.../composables/tools/useToolInputs.ts` | NEW: manage `input_schema` + form state + validation |
-| 3.2 | `frontend/.../components/tool-run/ToolInputForm.vue` | NEW: render text/dropdown fields + optional file picker |
-| 3.3 | `frontend/.../composables/tools/useToolRun.ts` | Submit `inputs` + optional `files` (multipart) |
-| 3.4 | `frontend/.../views/ToolRunView.vue` | Render ToolInputForm before first run |
+| Step | File                                                 | Action                                                  |
+| ---- | ---------------------------------------------------- | ------------------------------------------------------- |
+| 3.1  | `frontend/.../composables/tools/useToolInputs.ts`    | NEW: manage `input_schema` + form state + validation    |
+| 3.2  | `frontend/.../components/tool-run/ToolInputForm.vue` | NEW: render text/dropdown fields + optional file picker |
+| 3.3  | `frontend/.../composables/tools/useToolRun.ts`       | Submit `inputs` + optional `files` (multipart)          |
+| 3.4  | `frontend/.../views/ToolRunView.vue`                 | Render ToolInputForm before first run                   |
 
 ### Phase 4: Script Bank & Editor
 
-| Step | File | Action |
-|------|------|--------|
-| 4.1 | `src/skriptoteket/script_bank/models.py` | Add input_schema to ScriptBankEntry |
-| 4.2 | `src/skriptoteket/script_bank/scripts/demo_inputs.py` | NEW: demo tool with input_schema |
-| 4.3 | `src/skriptoteket/web/editor_support.py` | Update STARTER_TEMPLATE |
-| 4.4 | `frontend/.../components/editor/EditorWorkspacePanel.vue` | Add input_schema JSON editor section (same pattern as settings_schema) |
-| 4.5 | `frontend/.../components/editor/SandboxRunner.vue` | Support `inputs` + optional files in sandbox run |
+| Step | File                                                      | Action                                                                 |
+| ---- | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| 4.1  | `src/skriptoteket/script_bank/models.py`                  | Add input_schema to ScriptBankEntry                                    |
+| 4.2  | `src/skriptoteket/script_bank/scripts/demo_inputs.py`     | NEW: demo tool with input_schema                                       |
+| 4.3  | `src/skriptoteket/web/editor_support.py`                  | Update STARTER_TEMPLATE                                                |
+| 4.4  | `frontend/.../components/editor/EditorWorkspacePanel.vue` | Add input_schema JSON editor section (same pattern as settings_schema) |
+| 4.5  | `frontend/.../components/editor/SandboxRunner.vue`        | Support `inputs` + optional files in sandbox run                       |
 
 ## Key Patterns to Follow
 

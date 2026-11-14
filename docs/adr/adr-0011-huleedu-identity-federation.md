@@ -41,6 +41,7 @@ We must avoid coupling domain/application logic to *how* authentication happens 
    `admin`/`superuser`) is always determined by Skriptoteket’s own role management.
 
 3. **Prepare for external identity without shared authorization.**
+
    - v0.1: local email+password → server-side session (PostgreSQL)
    - current cutover: HuleEdu shared browser-session/product-realm ceremony,
      without changing business logic

@@ -50,24 +50,24 @@ scopes to the snapshot session.
 
 ## Implementation plan (draft)
 
-1) Commands + handlers
+1. Commands + handlers
 
    - Extend `RunActiveToolCommand` and `RunSandboxCommand` with `session_context` and `session_files_mode` (defaults: `"default"` + `"none"`).
    - If uploads are present, keep the current behavior (store/replace files).
    - If no uploads, apply `session_files_mode`: `"none"` (no injection), `"reuse"` (inject persisted files), `"clear"` (clear session files, then run empty).
    - For sandbox runs, derive `session_context` as `sandbox:{snapshot_id}` from the run response.
 
-2) Web/API parsing
+2. Web/API parsing
 
    - Accept optional form fields on both endpoints; validate allowed modes and map to commands.
    - Keep defaults so existing clients remain unchanged.
 
-3) SPA UI
+3. SPA UI
 
    - Add “Återanvänd tidigare filer” and “Rensa sparade filer” controls to the run form.
    - Send `session_files_mode` in FormData; only send `session_context` if needed in the UI.
 
-4) Tests
+4. Tests
 
    - Unit tests for handler behavior with protocol mocks (reuse/clear/none).
    - API tests for request parsing defaults + explicit values.

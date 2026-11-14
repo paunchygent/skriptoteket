@@ -50,31 +50,31 @@ Approve the consumer implementation because it:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                                       | Focus                                                  | Time   |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------ |
 | `docs/backlog/prs/pr-0256-st-28-07-hule-education-hosted-skriptoteket-login-ceremony-provider-contract.md` | Implementation package and provider-clearance evidence | 15 min |
-| `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md` | Story acceptance and current status | 8 min |
-| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md` | Accepted realm and ceremony contract | 10 min |
-| `frontend/apps/skriptoteket/src/api/sharedAuth.ts` | Current temporary ceremony helper | 5 min |
-| `frontend/apps/skriptoteket/src/components/auth/AuthLoginPanel.vue` | Current login handoff UI | 5 min |
-| `frontend/apps/skriptoteket/src/composables/auth/authEntryNavigation.ts` | Safe `next` sanitation | 5 min |
-| `src/skriptoteket/domain/identity/internal_identity_context.py` | Realm-aware additive context acceptance | 5 min |
-| `scripts/playwright_pr_0256_auth_ceremony.py` | Live ceremony/callback proof | 10 min |
-| HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md` | Published provider endpoint contract | 5 min |
-| HuleEdu `docs/reference/ref-internal-identity-context-v1-contract.md` | Published downstream context fields | 5 min |
-| HuleEdu `TASK-0314` | Public provider proof closeout | 5 min |
+| `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md`                    | Story acceptance and current status                    | 8 min  |
+| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`                       | Accepted realm and ceremony contract                   | 10 min |
+| `frontend/apps/skriptoteket/src/api/sharedAuth.ts`                                                         | Current temporary ceremony helper                      | 5 min  |
+| `frontend/apps/skriptoteket/src/components/auth/AuthLoginPanel.vue`                                        | Current login handoff UI                               | 5 min  |
+| `frontend/apps/skriptoteket/src/composables/auth/authEntryNavigation.ts`                                   | Safe `next` sanitation                                 | 5 min  |
+| `src/skriptoteket/domain/identity/internal_identity_context.py`                                            | Realm-aware additive context acceptance                | 5 min  |
+| `scripts/playwright_pr_0256_auth_ceremony.py`                                                              | Live ceremony/callback proof                           | 10 min |
+| HuleEdu `docs/reference/ref-shared-browser-session-consumer-conformance-v1.md`                             | Published provider endpoint contract                   | 5 min  |
+| HuleEdu `docs/reference/ref-internal-identity-context-v1-contract.md`                                      | Published downstream context fields                    | 5 min  |
+| HuleEdu `TASK-0314`                                                                                        | Public provider proof closeout                         | 5 min  |
 
 **Total estimated time:** ~68 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Create `PR-0256` as the `ST-28-07` implementation package | Gives the login ceremony work a reviewable owner | [x] |
-| Consume HuleEdu `GET /auth/login` with `app`, realm, `return_to`, and safe `next` | Matches the approved provider contract | [x] |
-| Accept additive realm-aware downstream context before projection migration | Prevents verifier breakage while preserving `ST-28-09` scope | [x] |
-| Keep `/auth/login?next=...` as a transition surface, not a local form | Preserves `PR-0253` hard-retirement and `ST-32-10` route semantics | [x] |
-| Defer registration/password lifecycle and projection migration | Keeps `ST-28-08` and `ST-28-09` separate | [x] |
+| Decision                                                                          | Rationale                                                          | Approve? |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------ | -------- |
+| Create `PR-0256` as the `ST-28-07` implementation package                         | Gives the login ceremony work a reviewable owner                   | [x]      |
+| Consume HuleEdu `GET /auth/login` with `app`, realm, `return_to`, and safe `next` | Matches the approved provider contract                             | [x]      |
+| Accept additive realm-aware downstream context before projection migration        | Prevents verifier breakage while preserving `ST-28-09` scope       | [x]      |
+| Keep `/auth/login?next=...` as a transition surface, not a local form             | Preserves `PR-0253` hard-retirement and `ST-32-10` route semantics | [x]      |
+| Defer registration/password lifecycle and projection migration                    | Keeps `ST-28-08` and `ST-28-09` separate                           | [x]      |
 
 ## Review Checklist
 
@@ -174,11 +174,11 @@ Approve the consumer implementation because it:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | HuleEdu provider clearance | Consumed `TASK-0313`, `TASK-0314`, and approved `REV-TASK-0313-01` as blocker closeout |
-| 2 | `PR-0256` | Implemented the provider-approved ceremony URL, callback route, and realm-aware context acceptance |
-| 3 | Review remediation | Preserved query/hash auth continuation, hardened helper-level `next`, and enforced app/realm context before projection lookup |
-| 4 | `ST-28-07` | Marked the story done after focused tests and live Playwright proof |
-| 5 | `EPIC-28` | Updated the implementation summary and next sequence |
-| 6 | `.codex/handoff.md` | Updated current lane, verification, known risk, and next step |
+| Change | Artifact                   | Description                                                                                                                   |
+| ------ | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1      | HuleEdu provider clearance | Consumed `TASK-0313`, `TASK-0314`, and approved `REV-TASK-0313-01` as blocker closeout                                        |
+| 2      | `PR-0256`                  | Implemented the provider-approved ceremony URL, callback route, and realm-aware context acceptance                            |
+| 3      | Review remediation         | Preserved query/hash auth continuation, hardened helper-level `next`, and enforced app/realm context before projection lookup |
+| 4      | `ST-28-07`                 | Marked the story done after focused tests and live Playwright proof                                                           |
+| 5      | `EPIC-28`                  | Updated the implementation summary and next sequence                                                                          |
+| 6      | `.codex/handoff.md`        | Updated current lane, verification, known risk, and next step                                                                 |

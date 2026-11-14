@@ -4,8 +4,8 @@ id: ST-SKRIPT-15-02
 title: Avatar upload
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
 readiness_review:
@@ -16,10 +16,9 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-15
 acceptance_criteria:
-- Given a user is on their profile, when they upload an avatar image, then the avatar
-  is stored and displayed on their profile.
+  - Given a user is on their profile, when they upload an avatar image, then the avatar is stored and displayed on their profile.
 retired_ids:
-- ST-15-02
+  - ST-15-02
 ---
 
 ## Context

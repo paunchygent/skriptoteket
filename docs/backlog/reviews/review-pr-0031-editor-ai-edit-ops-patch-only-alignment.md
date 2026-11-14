@@ -23,9 +23,9 @@ adrs:
 Edit-ops v2 is implemented (ST-08-24) and we added capture-on-error (ST-08-28), but real-world failures show two
 workflow gaps:
 
-1) The model often emits malformed unified diffs (most commonly incorrect `@@ -a,b +c,d @@` counts) and we currently
+1. The model often emits malformed unified diffs (most commonly incorrect `@@ -a,b +c,d @@` counts) and we currently
    surface this as a generic “Patchen kunde inte appliceras”.
-2) Correlation-ids are not stable end-to-end across `edit-ops` → `preview` → `apply`, so the correlation-id shown in the
+2. Correlation-ids are not stable end-to-end across `edit-ops` → `preview` → `apply`, so the correlation-id shown in the
    UI is not the one you can use to locate captures/logs for preview/apply failures.
 
 PR-0031 proposes a patch-only alignment + diff hygiene + correlation propagation cleanup so edit-ops feels like a modern
@@ -77,11 +77,11 @@ surface.
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Patch-only in v2 mode | Avoids cursor/selection ambiguity while preserving v1 CRUD compatibility | [x] |
-| Hybrid hunk repair | Fixes mechanical hunk-count mistakes without rewriting the model’s intent | [x] |
-| Correlation propagation | Keeps generation, preview, and apply failures traceable with one id | [x] |
+| Decision                | Rationale                                                                 | Approve? |
+| ----------------------- | ------------------------------------------------------------------------- | -------- |
+| Patch-only in v2 mode   | Avoids cursor/selection ambiguity while preserving v1 CRUD compatibility  | [x]      |
+| Hybrid hunk repair      | Fixes mechanical hunk-count mistakes without rewriting the model’s intent | [x]      |
+| Correlation propagation | Keeps generation, preview, and apply failures traceable with one id       | [x]      |
 
 **Implementation entry points**
 
@@ -101,11 +101,11 @@ surface.
 - [x] PR-0031 acceptance criteria are correct, testable, and aligned with ADR-0051 intent.
 - [x] Prompt changes are unambiguous: patch-only output; no cursor/selection targeting requirements.
 - [x] Proposed backend diff hygiene is safe: rejects dangerous cases; repairs only mechanical mistakes; preserves
-      deterministic apply/undo semantics.
+  deterministic apply/undo semantics.
 - [x] Correlation propagation plan ensures a single id is visible + usable for debugging across generation/preview/apply.
 - [x] Failure modes become diagnosable (captures contain enough context; user-visible messages are actionable).
 - [x] No violations of architecture rules (thin web layer; protocol-first DI; UoW owns transactions; no prompt/code
-      content in normal logs).
+  content in normal logs).
 
 ## Verification (when PR-0031 is implemented)
 
@@ -136,8 +136,8 @@ The plan to align on **patch-only edit ops** is approved and strongly recommende
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-PR-0031` target-based PR review record. |
-| 2 | Legacy brief | Preserved the historical edit-ops patch-workflow analysis brief as linked support material via `REF-pr-0031-edit-ops-patch-workflow-brief`. |
-| 3 | Support brief | Added `REF-pr-0031-edit-ops-patch-workflow-brief` so the broader analysis remains discoverable without implying approval or archival retirement. |
+| Change | Artifact      | Description                                                                                                                                      |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | Review record | Migrated from the legacy epic-ledger `REV-EPIC-08` archive to the canonical `REV-PR-0031` target-based PR review record.                         |
+| 2      | Legacy brief  | Preserved the historical edit-ops patch-workflow analysis brief as linked support material via `REF-pr-0031-edit-ops-patch-workflow-brief`.      |
+| 3      | Support brief | Added `REF-pr-0031-edit-ops-patch-workflow-brief` so the broader analysis remains discoverable without implying approval or archival retirement. |

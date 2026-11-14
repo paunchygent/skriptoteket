@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-09
 title: Security hardening for production deployment
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,10 +14,9 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Skriptoteket is hardened against common internet threats with defense-in-depth
-  at the reverse proxy, OS, and application layers.
+outcome: Skriptoteket is hardened against common internet threats with defense-in-depth at the reverse proxy, OS, and application layers.
 retired_ids:
-- EPIC-09
+  - EPIC-09
 ---
 
 ## Scope

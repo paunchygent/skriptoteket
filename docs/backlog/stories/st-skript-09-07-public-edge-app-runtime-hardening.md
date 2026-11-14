@@ -4,8 +4,8 @@ id: ST-SKRIPT-09-07
 title: Public-edge app/runtime hardening
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -16,27 +16,16 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-09
 acceptance_criteria:
-- Given Skriptoteket starts with `ENVIRONMENT=production`, when an unauthenticated
-  caller requests `/docs`, `/redoc`, or `/openapi.json`, then the routes fail closed
-  and no interactive API surface is exposed.
-- Given Skriptoteket starts with `ENVIRONMENT=production`, when an unauthenticated
-  caller requests `/healthz`, then the response is limited to a public-safe status
-  payload and omits service version, environment, and dependency details.
-- Given Skriptoteket starts with identity metrics disabled, when `/metrics` is requested,
-  then the response omits `skriptoteket_active_sessions` and `skriptoteket_users_by_role`
-  while keeping operational metrics intact.
-- Given login-event audit logging runs behind the public edge, when an untrusted direct
-  peer sends `X-Forwarded-For` or `X-Real-IP`, then the stored client IP is derived
-  from the direct peer and not the caller-supplied forwarding header.
-- Given Docker-based local development proxies requests with the backend alias host,
-  when a bootstrap superuser logs in through the frontend dev server, then the request
-  succeeds and the non-production host allowance does not widen production `ALLOWED_HOSTS`.
+  - Given Skriptoteket starts with `ENVIRONMENT=production`, when an unauthenticated caller requests `/docs`, `/redoc`, or `/openapi.json`, then the routes fail closed and no interactive API surface is exposed.
+  - Given Skriptoteket starts with `ENVIRONMENT=production`, when an unauthenticated caller requests `/healthz`, then the response is limited to a public-safe status payload and omits service version, environment, and dependency details.
+  - Given Skriptoteket starts with identity metrics disabled, when `/metrics` is requested, then the response omits `skriptoteket_active_sessions` and `skriptoteket_users_by_role` while keeping operational metrics intact.
+  - Given login-event audit logging runs behind the public edge, when an untrusted direct peer sends `X-Forwarded-For` or `X-Real-IP`, then the stored client IP is derived from the direct peer and not the caller-supplied forwarding header.
+  - Given Docker-based local development proxies requests with the backend alias host, when a bootstrap superuser logs in through the frontend dev server, then the request succeeds and the non-production host allowance does not widen production `ALLOWED_HOSTS`.
 retired_ids:
-- ST-09-07
+  - ST-09-07
 ---
 
 ## Context
-
 
 The March 29, 2026 UTC authorized red-team pass confirmed that Skriptoteket's
 repo-side public-edge hardening was only partially landed in production shape.
@@ -73,7 +62,6 @@ No separate live verification plan is stated in the source.
 No separate non-goals is stated in the source.
 
 ## Notes
-
 
 - Keep the production trust boundary fail-closed by default:
   - production `ALLOWED_HOSTS` must stay explicit

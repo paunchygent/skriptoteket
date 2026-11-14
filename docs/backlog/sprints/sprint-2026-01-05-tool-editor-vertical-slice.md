@@ -49,15 +49,15 @@ authors can iterate on drafts without publishing.
 - Lock heartbeat failures causing unexpected read-only states; ensure clear UI and override flow.
 - Snapshot TTL expiry interrupting multi-step flows; UI must surface actionable rerun guidance.
 - Snapshot payload size limits blocking preview runs; validation errors must be explicit.
-- Sandbox settings context hashing must stay <=64 chars and collision-resistant.
+- Sandbox settings context hashing must stay \<=64 chars and collision-resistant.
 
 ## Execution plan
 
-1) Backend storage + migrations (sandbox_snapshots, draft_locks, tool_runs snapshot_id).
-2) Handlers + endpoints: preview run, start-action with snapshot_id, sandbox settings resolve/save, draft lock acquire/refresh/force.
-3) Frontend: snapshot payload wiring, ToolInputForm + ToolRunActions parity, settings panel, lock UX/read-only mode.
-4) Regenerate OpenAPI/TS types and update editor API client usage.
-5) Tests + manual verification (lock conflicts, snapshot expiry, settings isolation, next_actions).
+1. Backend storage + migrations (sandbox_snapshots, draft_locks, tool_runs snapshot_id).
+2. Handlers + endpoints: preview run, start-action with snapshot_id, sandbox settings resolve/save, draft lock acquire/refresh/force.
+3. Frontend: snapshot payload wiring, ToolInputForm + ToolRunActions parity, settings panel, lock UX/read-only mode.
+4. Regenerate OpenAPI/TS types and update editor API client usage.
+5. Tests + manual verification (lock conflicts, snapshot expiry, settings isolation, next_actions).
 
 ## Demo checklist
 

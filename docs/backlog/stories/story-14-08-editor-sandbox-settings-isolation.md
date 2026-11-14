@@ -54,14 +54,14 @@ unsaved schema edits.
 
 ## Implementation plan
 
-1) Add sandbox settings resolve/save endpoints (`POST .../resolve`, `PUT .../sandbox-settings`)
+1. Add sandbox settings resolve/save endpoints (`POST .../resolve`, `PUT .../sandbox-settings`)
    that accept `settings_schema`.
-2) Add a settings service wrapper around `tool_sessions` to validate schemas and
+2. Add a settings service wrapper around `tool_sessions` to validate schemas and
    resolve/save values under the sandbox context.
-3) Store settings under `sandbox-settings:{sha256(f"{draft_head_id}:{schema_hash}")[:32]}`.
-4) Require draft head lock ownership for resolve/save.
-5) Update `ExecuteToolVersion` to accept a `settings_context` override for sandbox runs.
-6) Update sandbox settings UI to use the new endpoints.
+3. Store settings under `sandbox-settings:{sha256(f"{draft_head_id}:{schema_hash}")[:32]}`.
+4. Require draft head lock ownership for resolve/save.
+5. Update `ExecuteToolVersion` to accept a `settings_context` override for sandbox runs.
+6. Update sandbox settings UI to use the new endpoints.
 
 ## Test plan
 

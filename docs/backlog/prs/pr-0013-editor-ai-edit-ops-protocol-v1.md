@@ -42,17 +42,20 @@ deterministic ops + base fingerprints for downstream diff preview/apply (ST-08-2
 
 ## Implementation plan
 
-1) **Contract + models**
+1. **Contract + models**
+
    - Add Pydantic request/response models for `POST /api/v1/editor/edit-ops`.
    - Define op schema: `{op, target_file, target, content?}` with strict validation rules.
    - Define `base_fingerprints` as `{ [virtual_file_id]: "sha256:<hex>" }`.
 
-2) **Prompt template**
+2. **Prompt template**
+
    - Add a dedicated system prompt template (e.g. `editor_chat_ops_v1`) registered in
      `prompt_templates.py`.
    - Prompt must instruct JSON-only output matching the edit-ops schema (no markdown).
 
-3) **Settings + budgeting**
+3. **Settings + budgeting**
+
    - Add `LLM_CHAT_OPS_*` settings (enabled flag, base URL, model, tokens, temp, timeouts, context window).
    - Add a budget helper for chat ops:
      - never truncate the system prompt
@@ -61,7 +64,8 @@ deterministic ops + base fingerprints for downstream diff preview/apply (ST-08-2
      - if newest message + full virtual files can’t fit, return ops=[] with a user-actionable message and **do not**
        mutate stored chat state.
 
-4) **Provider + handler**
+4. **Provider + handler**
+
    - Create a non-streaming chat provider for edit-ops (OpenAI-compatible `/v1/chat/completions`).
    - Handler responsibilities:
      - require contributor role + tool access
@@ -73,11 +77,13 @@ deterministic ops + base fingerprints for downstream diff preview/apply (ST-08-2
      - persist user + assistant messages in the canonical thread
    - Use the existing chat in-flight guard to prevent concurrent requests.
 
-5) **Routing**
+5. **Routing**
+
    - Add `POST /api/v1/editor/edit-ops` with thin web layer and CSRF enforcement.
    - Mirror `X-Skriptoteket-Eval` admin gating for eval metadata headers (dev-only).
 
-6) **Tests**
+6. **Tests**
+
    - Unit tests for handler:
      - disabled configuration
      - over-budget (no mutation)

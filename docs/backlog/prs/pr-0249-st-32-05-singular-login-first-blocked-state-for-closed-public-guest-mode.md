@@ -8,15 +8,7 @@ created: 2026-04-09
 updated: 2026-04-09
 stories:
   - "ST-32-05"
-tags:
-  [
-    "frontend",
-    "klassrumskartan",
-    "guest-upgrade",
-    "public-access",
-    "copy",
-    "ui-reconciliation",
-  ]
+tags: ["frontend", "klassrumskartan", "guest-upgrade", "public-access", "copy", "ui-reconciliation"]
 dependencies:
   - "ST-32-05"
   - "ST-32-06"
@@ -86,11 +78,13 @@ Ship one narrow public-host reconciliation slice that:
 ## Implementation plan
 
 1. Reconcile the blocked-state contract across the real controller and view seams.
+
    - Keep the controller-owned login-first bootstrap truth for closed guest authoring.
    - Update the overview view so it renders that truth through exactly one blocked-state surface instead of layering a second repeated panel on top of it.
    - Remove the duplicate banner/panel split without leaving a second hidden truth-path alive.
 
 2. Make the action path explicit and truthful.
+
    - Route `Logga in` to the canonical auth-entry contract at `/auth/login`.
    - Route `Skapa konto` to `/register`.
    - Keep `Logga in` visually primary and `Skapa konto` available as a secondary action.
@@ -98,6 +92,7 @@ Ship one narrow public-host reconciliation slice that:
      reconciliation only.
 
 3. Lock the exact copy, seam ownership, and action targets in focused frontend tests.
+
    - Add or update controller-level proof in `src/views/apps/useClassroomPlannerGuestOverviewShell.spec.ts`.
    - Add or update view-level proof in `src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts`.
    - Add or update public-host route/action proof in `src/views/PublicAppHostView.spec.ts`.

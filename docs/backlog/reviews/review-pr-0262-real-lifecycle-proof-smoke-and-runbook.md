@@ -37,22 +37,22 @@ provider lifecycle routes and Skriptoteket projection/role behavior.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0262-st-28-12-real-lifecycle-proof-smoke-and-runbook.md` | Proof scope and artifact contract | 10 min |
-| `docs/backlog/stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md` | Parent story expectations | 5 min |
-| HuleEdu `TASK-0326` / `TASK-0327` | Provider prerequisites | 5 min |
+| File                                                                                 | Focus                             | Time   |
+| ------------------------------------------------------------------------------------ | --------------------------------- | ------ |
+| `docs/backlog/prs/pr-0262-st-28-12-real-lifecycle-proof-smoke-and-runbook.md`        | Proof scope and artifact contract | 10 min |
+| `docs/backlog/stories/story-28-12-real-standalone-lifecycle-and-auth-entry-proof.md` | Parent story expectations         | 5 min  |
+| HuleEdu `TASK-0326` / `TASK-0327`                                                    | Provider prerequisites            | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Separate lifecycle proof from final cutover smoke | Keeps failures easier to diagnose | [x] |
-| Use controlled real inbox accounts | Proves launch behavior without bulk alpha import | [x] |
-| Prove direct-action link landing | Product and email links must open the requested action page directly | [x] |
-| Sanitize retained artifacts | Proof must not leak credentials or tokens | [x] |
+| Decision                                          | Rationale                                                            | Approve? |
+| ------------------------------------------------- | -------------------------------------------------------------------- | -------- |
+| Separate lifecycle proof from final cutover smoke | Keeps failures easier to diagnose                                    | [x]      |
+| Use controlled real inbox accounts                | Proves launch behavior without bulk alpha import                     | [x]      |
+| Prove direct-action link landing                  | Product and email links must open the requested action page directly | [x]      |
+| Sanitize retained artifacts                       | Proof must not leak credentials or tokens                            | [x]      |
 
 ## Review Checklist
 
@@ -176,12 +176,12 @@ Skriptoteket artifacts.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0262` | Initial review-ready lifecycle proof slice |
-| 2 | `PR-0262` | Added `REV-PR-0260` and `REV-PR-0261` as explicit dependencies and added a prerequisite gate requiring approved HuleEdu provider reviews plus approved Skriptoteket prerequisite reviews before implementation |
-| 3 | `PR-0262` | Tightened lifecycle proof assertions around `active_app=skriptoteket`, `active_product_identity_realm=skriptoteket_standalone`, nonblank `realm_subject_id`, provider-owned verified email, matching `identity_projection`, and local `User.role` from the accepted `PR-0260` matrix |
-| 4 | `PR-0262` | Added the concrete `manifest.redacted.json` artifact contract, default `.artifacts/playwright-pr-0262-real-lifecycle/...` path, allowed evidence types, and forbidden retained fields |
-| 5 | `PR-0262` | Named the future `scripts/playwright_pr_0262_real_lifecycle.py` module, `pdm run pr-0262-real-lifecycle` proof command, required validation gates, HuleEdu local non-production lane, and failure-triage interpretation |
-| 6 | `REV-PR-0262` | Requested re-review of the revised proof plan; final approval remains gated by approved `REV-TASK-0326-01`, `REV-TASK-0327-01`, `REV-PR-0260`, and `REV-PR-0261` |
-| 7 | `PR-0262` / `REV-PR-0262` | Approved the adapted proof shape after HuleEdu `TASK-0327` final live apply succeeded against the `PR-0261` sanitized diagnostics route |
+| Change | Artifact                  | Description                                                                                                                                                                                                                                                                          |
+| ------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `PR-0262`                 | Initial review-ready lifecycle proof slice                                                                                                                                                                                                                                           |
+| 2      | `PR-0262`                 | Added `REV-PR-0260` and `REV-PR-0261` as explicit dependencies and added a prerequisite gate requiring approved HuleEdu provider reviews plus approved Skriptoteket prerequisite reviews before implementation                                                                       |
+| 3      | `PR-0262`                 | Tightened lifecycle proof assertions around `active_app=skriptoteket`, `active_product_identity_realm=skriptoteket_standalone`, nonblank `realm_subject_id`, provider-owned verified email, matching `identity_projection`, and local `User.role` from the accepted `PR-0260` matrix |
+| 4      | `PR-0262`                 | Added the concrete `manifest.redacted.json` artifact contract, default `.artifacts/playwright-pr-0262-real-lifecycle/...` path, allowed evidence types, and forbidden retained fields                                                                                                |
+| 5      | `PR-0262`                 | Named the future `scripts/playwright_pr_0262_real_lifecycle.py` module, `pdm run pr-0262-real-lifecycle` proof command, required validation gates, HuleEdu local non-production lane, and failure-triage interpretation                                                              |
+| 6      | `REV-PR-0262`             | Requested re-review of the revised proof plan; final approval remains gated by approved `REV-TASK-0326-01`, `REV-TASK-0327-01`, `REV-PR-0260`, and `REV-PR-0261`                                                                                                                     |
+| 7      | `PR-0262` / `REV-PR-0262` | Approved the adapted proof shape after HuleEdu `TASK-0327` final live apply succeeded against the `PR-0261` sanitized diagnostics route                                                                                                                                              |

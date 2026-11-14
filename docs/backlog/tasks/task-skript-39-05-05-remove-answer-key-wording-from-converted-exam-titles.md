@@ -4,8 +4,8 @@ id: TASK-SKRIPT-39-05-05
 title: Remove answer-key wording from converted exam titles
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-11'
 status: done
 closeout_review:
@@ -15,9 +15,7 @@ closeout_review:
   approval_evidence: 'User closed 39-05-05 on 2026-10-14 ("finish up the story items") after review approval 83501383, merge ece1b674 and the 2026-10-11 staging walk, evidence .orchestration/context/sessions/01a12706-566c-7480-acc3-427145283942/evidence/task-skript-39-05-05/staging-walk-ece1b674/'
 task_kind: story
 acceptance_criteria:
-- A DOCX whose opening heading carries answer-key wording converts to a title without
-  that wording, the rest of the heading copied verbatim, and every gold title that
-  carries that wording matches it
+  - A DOCX whose opening heading carries answer-key wording converts to a title without that wording, the rest of the heading copied verbatim, and every gold title that carries that wording matches it
 story: ST-SKRIPT-39-05
 backlog_document_profile: contract-derived
 ---
@@ -74,9 +72,9 @@ export title. The step does no extra model call.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Converted titles drop answer-key wording, and every gold title carrying it drops it too (five corpus exams; amended 2026-10-11 when discovery found three more than the walk showed). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Converted titles drop answer-key wording, and every gold title carrying it drops it too (five corpus exams; amended 2026-10-11 when discovery found three more than the walk showed).                                                                                                                                  |
 | D2  | The rule 5 verbatim check is unchanged. A deterministic step after it removes the phrases on one closed Swedish and English list (answer key, key, facit, med facit, with answers, svar) at the heading's start or end, with their joining separator. The filename fallback uses the same step. No rule names an exam. |
 
 ## Implementation Evidence

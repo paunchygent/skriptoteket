@@ -135,30 +135,30 @@ editing remain reachable through subordinate reduced surfaces.
 
 ## Implementation Plan
 
-1. Start from `PlannerRulesWorkspacePane.vue` and keep the current desktop
-   `PR-0155` rail/map/inspector workspace intact at `laptop` and `desktop`
-   widths.
-2. Add a phone-specific rules composition that activates only below the full
-   desktop-composition range established by `EPIC-29`.
-3. Make rule-tool choice plus pending selected students the primary phone
-   surface. Do not render the full desktop map as the default phone body.
-4. Keep smart-rule state in `useSmartRuleUiState` and existing planner state
-   actions. The reduced view should rearrange presentation and event routing,
-   not create a separate phone rule model.
-5. Preserve the three canonical tools and labels from the existing tool rail:
-   `Nära läraren`, `Håll isär`, and `Håll nära`.
-6. Preserve selected-student semantics: order, count, per-student removal,
-   `Rensa`, commit/save, edit, and delete must route through the existing
-   smart-rule actions.
-7. Decide how map/student selection opens on phone. Acceptable patterns include
-   a subordinate sheet, a focused map-selection step, or a compact drawer, as
-   long as selected-student state remains visible and the default body stays
-   tool-first.
-8. Preserve `Planeringskarta` / `Sittschema` projection semantics inside the
-   subordinate map-selection surface where those views remain available.
-9. Keep saved-rule summaries compact. Edit/delete actions should be icon
-   controls, row actions, overflow menus, or subordinate sheets rather than a
-   persistent management panel.
+01. Start from `PlannerRulesWorkspacePane.vue` and keep the current desktop
+    `PR-0155` rail/map/inspector workspace intact at `laptop` and `desktop`
+    widths.
+02. Add a phone-specific rules composition that activates only below the full
+    desktop-composition range established by `EPIC-29`.
+03. Make rule-tool choice plus pending selected students the primary phone
+    surface. Do not render the full desktop map as the default phone body.
+04. Keep smart-rule state in `useSmartRuleUiState` and existing planner state
+    actions. The reduced view should rearrange presentation and event routing,
+    not create a separate phone rule model.
+05. Preserve the three canonical tools and labels from the existing tool rail:
+    `Nära läraren`, `Håll isär`, and `Håll nära`.
+06. Preserve selected-student semantics: order, count, per-student removal,
+    `Rensa`, commit/save, edit, and delete must route through the existing
+    smart-rule actions.
+07. Decide how map/student selection opens on phone. Acceptable patterns include
+    a subordinate sheet, a focused map-selection step, or a compact drawer, as
+    long as selected-student state remains visible and the default body stays
+    tool-first.
+08. Preserve `Planeringskarta` / `Sittschema` projection semantics inside the
+    subordinate map-selection surface where those views remain available.
+09. Keep saved-rule summaries compact. Edit/delete actions should be icon
+    controls, row actions, overflow menus, or subordinate sheets rather than a
+    persistent management panel.
 10. Use CSS-owned layout and token-driven styles. Do not add measured viewport
     sizing, JS breakpoint duplication, hardcoded colors, or Tailwind default
     palette colors.

@@ -35,30 +35,30 @@ compact proof helper so it fails if upload appears below conversion controls.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md` | Governing scope and acceptance criteria | 3 min |
-| `docs/backlog/prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md` | Superseded compact ordering | 2 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterWorkspace.css` | Compact CSS order | 3 min |
-| `scripts/_document_converter_single_file_proof.py` | Live compact geometry proof | 3 min |
+| File                                                                                                         | Focus                                   | Time  |
+| ------------------------------------------------------------------------------------------------------------ | --------------------------------------- | ----- |
+| `docs/backlog/prs/pr-0402-st-37-04-document-converter-compact-source-first-layout.md`                        | Governing scope and acceptance criteria | 3 min |
+| `docs/backlog/prs/pr-0398-st-37-04-document-converter-production-conversion-and-preview-zoom-remediation.md` | Superseded compact ordering             | 2 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterWorkspace.css`                | Compact CSS order                       | 3 min |
+| `scripts/_document_converter_single_file_proof.py`                                                           | Live compact geometry proof             | 3 min |
 
 **Total estimated time:** ~11 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Source/file picker leads compact `Filkonvertering` | Source inference removes the old need to choose source format before upload | [x] |
-| Browser proof owns compact geometry | CSS order is user-visible and jsdom cannot prove rendered vertical order | [x] |
+| Decision                                           | Rationale                                                                   | Approve? |
+| -------------------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| Source/file picker leads compact `Filkonvertering` | Source inference removes the old need to choose source format before upload | [x]      |
+| Browser proof owns compact geometry                | CSS order is user-visible and jsdom cannot prove rendered vertical order    | [x]      |
 
 ## Review Checklist
 
 - [x] Governing docs match the product decision and do not leave the old
-      compact-order rule as active truth.
+  compact-order rule as active truth.
 - [x] Compact CSS orders source, operations, and preview predictably without
-      changing desktop/tablet ownership.
+  changing desktop/tablet ownership.
 - [x] The retained browser proof fails if compact source upload appears below
-      conversion controls.
+  conversion controls.
 - [x] Focused frontend and docs verification are recorded.
 
 ## Review Feedback
@@ -114,7 +114,7 @@ conversion controls.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0402` | Created governed compact source-first layout slice |
-| 2 | `REV-PR-0402` | Approved the current working tree diff with no findings after CSS, proof, docs, and retained artifact review |
+| Change | Artifact      | Description                                                                                                  |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------ |
+| 1      | `PR-0402`     | Created governed compact source-first layout slice                                                           |
+| 2      | `REV-PR-0402` | Approved the current working tree diff with no findings after CSS, proof, docs, and retained artifact review |

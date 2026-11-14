@@ -61,29 +61,29 @@ clear before either auth cutover or Skriptoteket-local SEO work hardens around t
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md` | Final browser-session contract and rejected options | 8 min |
-| `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md` | Cross-repo launch topology, ownership matrix, and phased critical path | 6 min |
-| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md` | Scope, hard-break posture, sequencing | 6 min |
-| `docs/backlog/stories/story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md` | Upstream dependency gate and launch-surface ownership freeze | 5 min |
-| `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md` | Bootstrap + CSRF cutover | 5 min |
+| File                                                                                                         | Focus                                                                         | Time  |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----- |
+| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`                              | Final browser-session contract and rejected options                           | 8 min |
+| `docs/reference/ref-huleedu-launch-surface-and-shared-auth-topology-2026-04-08.md`                           | Cross-repo launch topology, ownership matrix, and phased critical path        | 6 min |
+| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`                               | Scope, hard-break posture, sequencing                                         | 6 min |
+| `docs/backlog/stories/story-28-05-cross-repo-launch-surface-and-shared-auth-dependency-freeze.md`            | Upstream dependency gate and launch-surface ownership freeze                  | 5 min |
+| `docs/backlog/stories/story-28-01-frontend-auth-store-and-api-client-cutover-to-huleedu-session-contract.md` | Bootstrap + CSRF cutover                                                      | 5 min |
 | `docs/backlog/stories/story-28-02-auth-interruption-and-protected-route-handoff-on-huleedu-owned-session.md` | UX parity, dedicated auth-entry interruption, and return-to-origin guarantees | 5 min |
-| `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md` | Deletion posture and contract cleanup | 5 min |
-| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Joint proof and operator verification | 5 min |
+| `docs/backlog/stories/story-28-03-remove-local-auth-ownership-and-regenerate-client-contracts.md`            | Deletion posture and contract cleanup                                         | 5 min |
+| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`                | Joint proof and operator verification                                         | 5 min |
 
 **Total estimated time:** ~45 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use `GET /v1/auth/session` as the canonical browser bootstrap instead of keeping `/v1/auth/me` as the browser contract | Cleaner long-term session semantics and an explicit hard break | [ ] |
-| Keep browser auth on secure cookies + CSRF instead of bearer tokens in frontend storage | Preserves the stronger Skriptoteket-grade browser contract needed for SaaS and cross-app parity | [ ] |
-| Use `https://api.hule.education` as the browser auth origin for both apps | One real authority, no app-local auth ownership | [ ] |
-| Freeze the launch topology and host ownership before local cutover work | Prevents apex, gateway, auth, and SEO work from diverging across repos | [ ] |
-| Reject a Skriptoteket-local auth bridge | Prevents a hidden dual-contract end state | [ ] |
-| Preserve dedicated `/auth/login` handoff and redirect semantics as a non-regression requirement | The auth authority changes, but the Skriptoteket UX contract should not regress | [ ] |
+| Decision                                                                                                               | Rationale                                                                                       | Approve? |
+| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| Use `GET /v1/auth/session` as the canonical browser bootstrap instead of keeping `/v1/auth/me` as the browser contract | Cleaner long-term session semantics and an explicit hard break                                  | [ ]      |
+| Keep browser auth on secure cookies + CSRF instead of bearer tokens in frontend storage                                | Preserves the stronger Skriptoteket-grade browser contract needed for SaaS and cross-app parity | [ ]      |
+| Use `https://api.hule.education` as the browser auth origin for both apps                                              | One real authority, no app-local auth ownership                                                 | [ ]      |
+| Freeze the launch topology and host ownership before local cutover work                                                | Prevents apex, gateway, auth, and SEO work from diverging across repos                          | [ ]      |
+| Reject a Skriptoteket-local auth bridge                                                                                | Prevents a hidden dual-contract end state                                                       | [ ]      |
+| Preserve dedicated `/auth/login` handoff and redirect semantics as a non-regression requirement                        | The auth authority changes, but the Skriptoteket UX contract should not regress                 | [ ]      |
 
 ## Review Checklist
 
@@ -122,14 +122,14 @@ clear before either auth cutover or Skriptoteket-local SEO work hardens around t
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0076 | Drafted the HuleEdu-owned browser-session target for Skriptoteket |
-| 2 | EPIC-28 | Drafted the hard-break cutover epic and sequencing |
-| 3 | ST-28-05 | Added the cross-repo launch topology and shared-auth dependency freeze story |
-| 4 | ST-28-01..04 | Drafted the frontend cutover, dedicated auth-entry handoff, deletion, and proof slices |
-| 5 | REV-EPIC-28 | Review completed with requested changes for auth-entry ownership sequencing, smoke-proof contract drift, and missing gating dependencies |
-| 6 | EPIC-28 / ST-28-01..04 / ST-32-10 / PR-0242 | Addressed the requested changes by making `ST-32-10` / `PR-0242` the clear owner of `/auth/login`, rewriting the smoke lane away from modal-first proof, and making `ST-28-05` an explicit dependency gate for downstream cutover stories |
+| Change | Artifact                                    | Description                                                                                                                                                                                                                               |
+| ------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | ADR-0076                                    | Drafted the HuleEdu-owned browser-session target for Skriptoteket                                                                                                                                                                         |
+| 2      | EPIC-28                                     | Drafted the hard-break cutover epic and sequencing                                                                                                                                                                                        |
+| 3      | ST-28-05                                    | Added the cross-repo launch topology and shared-auth dependency freeze story                                                                                                                                                              |
+| 4      | ST-28-01..04                                | Drafted the frontend cutover, dedicated auth-entry handoff, deletion, and proof slices                                                                                                                                                    |
+| 5      | REV-EPIC-28                                 | Review completed with requested changes for auth-entry ownership sequencing, smoke-proof contract drift, and missing gating dependencies                                                                                                  |
+| 6      | EPIC-28 / ST-28-01..04 / ST-32-10 / PR-0242 | Addressed the requested changes by making `ST-32-10` / `PR-0242` the clear owner of `/auth/login`, rewriting the smoke lane away from modal-first proof, and making `ST-28-05` an explicit dependency gate for downstream cutover stories |
 
 ## Approval Notes
 

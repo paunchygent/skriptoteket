@@ -111,8 +111,7 @@ dependencies: ["ADR-0059", "ADR-0069", "ADR-0071", "ADR-0072", "EPIC-23"]
     active grouping workspace
 - `ST-24-04` is now shipped:
   - room-builder ergonomics and object-visual slices (`PR-0101` to `PR-0103`) are done
-  - `PR-0105` shipped the seating continuity drawer in `Sittplatser`, classroom-required `Nytt
-    sittschema`, and reopen/delete for historic seating drafts with a dedicated browser proof
+  - `PR-0105` shipped the seating continuity drawer in `Sittplatser`, classroom-required `Nytt sittschema`, and reopen/delete for historic seating drafts with a dedicated browser proof
   - `PR-0106` shipped seating-specific `Ångra` / `Gör om`, bounded in-draft history, shared
     backend undo/redo routes with neutral draft-history contracts, and a targeted browser proof
     that continuity stays draft-level while classroom switching stays outside seating undo/redo

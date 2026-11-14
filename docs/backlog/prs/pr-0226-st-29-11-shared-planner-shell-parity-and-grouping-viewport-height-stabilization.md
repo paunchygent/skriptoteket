@@ -115,6 +115,7 @@ to clear before implementation begins.
 
 1. Audit the current shell split and identify which sticky/layout rules are
    still duplicated between:
+
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`
    - `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`
 
@@ -122,22 +123,24 @@ to clear before implementation begins.
    both shells inherit the same viewport-relative sticky behavior.
 
 3. Define a shared grouping height contract across:
+
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspacePane.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/PlannerStudentPool.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/GroupBoard.vue`
    - `frontend/apps/skriptoteket/src/views/apps/components/GroupCard.vue`
-   Freeze the grouping lane/pool floor at `480px` so the contract matches the
-   current `RoomCanvas` seating viewport baseline rather than an inferred
-   content-driven height.
+     Freeze the grouping lane/pool floor at `480px` so the contract matches the
+     current `RoomCanvas` seating viewport baseline rather than an inferred
+     content-driven height.
 
 4. Use the seating workspace vertical rhythm as the reference baseline where
    practical, so grouping does not feel like a shorter or more jittery sibling
    workspace.
 
 5. Increase grouping bucket minimum heights to the explicit reviewable floors:
+
    - assigned student rows: `56px`
    - empty drop targets: `112px`
-   Keep the result desktop-first and calm rather than cramped.
+     Keep the result desktop-first and calm rather than cramped.
 
 6. Add focused parity coverage for both authenticated and guest shells so
    shared behavior regressions are caught explicitly.

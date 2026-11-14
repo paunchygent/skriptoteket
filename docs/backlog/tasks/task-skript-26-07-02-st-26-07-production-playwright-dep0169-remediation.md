@@ -4,8 +4,8 @@ id: TASK-SKRIPT-26-07-02
 title: ST-26-07 Production Playwright DEP0169 remediation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,23 +17,14 @@ closeout_review:
 story: ST-SKRIPT-26-07
 task_kind: story
 acceptance_criteria:
-- Given the production image installs the browser runtime, when the BuildKit production
-  target is built with Node deprecation tracing enabled, then the build log contains
-  zero `[DEP0169]` warnings.
-- Given Klassrumskartan share-preview thumbnails still require browser rendering,
-  when the production image is smoke-tested, then the Playwright-backed renderer produces
-  a 1200x630 PNG from stored share HTML/CSS.
-- Given Playwright is upgraded or its install shape changes, when dependency and browser
-  binaries are inspected, then the checked-in lockfile, Dockerfile command, and `/ms-playwright`
-  runtime path remain coherent.
-- Given the remediation is reviewed, when `PR-0353` is closed, then retained evidence
-  distinguishes app-code URL handling from Playwright build-time downloader warnings.
-- Given the warning cannot be removed by a supported Playwright upgrade, when the
-  task continues, then it moves browser rendering behind an explicit renderer-image/service
-  boundary instead of suppressing Node warnings or downgrading Node only to hide them.
+  - Given the production image installs the browser runtime, when the BuildKit production target is built with Node deprecation tracing enabled, then the build log contains zero `[DEP0169]` warnings.
+  - Given Klassrumskartan share-preview thumbnails still require browser rendering, when the production image is smoke-tested, then the Playwright-backed renderer produces a 1200x630 PNG from stored share HTML/CSS.
+  - Given Playwright is upgraded or its install shape changes, when dependency and browser binaries are inspected, then the checked-in lockfile, Dockerfile command, and `/ms-playwright` runtime path remain coherent.
+  - Given the remediation is reviewed, when `PR-0353` is closed, then retained evidence distinguishes app-code URL handling from Playwright build-time downloader warnings.
+  - Given the warning cannot be removed by a supported Playwright upgrade, when the task continues, then it moves browser rendering behind an explicit renderer-image/service boundary instead of suppressing Node warnings or downgrading Node only to hide them.
 dependencies:
-- TASK-SKRIPT-26-07-01
-- ST-SKRIPT-26-07
+  - TASK-SKRIPT-26-07-01
+  - ST-SKRIPT-26-07
 ---
 
 ## Context
@@ -119,29 +110,29 @@ canonical HTML/CSS artifact.
 
 ### Source: Implementation Plan
 
-1. Use the testing skill before adding or editing tests.
-2. Reproduce and capture the current warning with a traced BuildKit production
-   build, retaining only sanitized log excerpts that show the stack owner.
-3. Research the implementation-time Playwright Python release and official
-   browser-install docs. Confirm whether the latest bundled proxy helper no
-   longer calls Node's legacy parser on browser download URLs.
-4. Update `pyproject.toml` and `pdm.lock` to the selected Playwright release.
-5. Run `pdm run playwright install --dry-run --with-deps chromium` and record
-   which browser archives the new release expects.
-6. Build the production image with BuildKit and `NODE_OPTIONS=--trace-deprecation`
-   so the build fails review if `[DEP0169]` still appears.
-7. Add a narrow Dockerfile build arg, for example
-   `PLAYWRIGHT_INSTALL_NODE_OPTIONS`, that is applied only to the Playwright
-   browser-install `RUN` step. This lets the implementation prove downloader
-   stack ownership with `--trace-deprecation` without making Node tracing a
-   permanent production runtime setting.
-8. Add or update a repo-owned production-container smoke command for
-   `PlaywrightClassroomPlannerSharePreviewRenderer`; do not use inline
-   multi-statement `python -c`.
-9. Evaluate `--only-shell chromium` in the Dockerfile only after the container
-   smoke proves the renderer works with headless shell alone.
+01. Use the testing skill before adding or editing tests.
+02. Reproduce and capture the current warning with a traced BuildKit production
+    build, retaining only sanitized log excerpts that show the stack owner.
+03. Research the implementation-time Playwright Python release and official
+    browser-install docs. Confirm whether the latest bundled proxy helper no
+    longer calls Node's legacy parser on browser download URLs.
+04. Update `pyproject.toml` and `pdm.lock` to the selected Playwright release.
+05. Run `pdm run playwright install --dry-run --with-deps chromium` and record
+    which browser archives the new release expects.
+06. Build the production image with BuildKit and `NODE_OPTIONS=--trace-deprecation`
+    so the build fails review if `[DEP0169]` still appears.
+07. Add a narrow Dockerfile build arg, for example
+    `PLAYWRIGHT_INSTALL_NODE_OPTIONS`, that is applied only to the Playwright
+    browser-install `RUN` step. This lets the implementation prove downloader
+    stack ownership with `--trace-deprecation` without making Node tracing a
+    permanent production runtime setting.
+08. Add or update a repo-owned production-container smoke command for
+    `PlaywrightClassroomPlannerSharePreviewRenderer`; do not use inline
+    multi-statement `python -c`.
+09. Evaluate `--only-shell chromium` in the Dockerfile only after the container
+    smoke proves the renderer works with headless shell alone.
 10. Update `TASK-SKRIPT-26-07-02`, `ST-SKRIPT-26-07`, `EPIC-SKRIPT-26`, and `.codex/handoff.md` with exact
-   verification evidence before moving this task to `done`.
+    verification evidence before moving this task to `done`.
 11. If the warning survives the supported upgrade, pause the dependency-only
     path and create the renderer-boundary change in this same PR slice or an
     immediately linked follow-up before closing the task.

@@ -18,18 +18,18 @@ This assessment evaluates the effort required to migrate Skriptoteket from its c
 
 **Key finding**: The current DDD/Clean Architecture with Dishka DI was designed for exactly this kind of extensibility. Adding an API layer is additive, not disruptive.
 
----
+______________________________________________________________________
 
 ## Current Architecture
 
 ### HTTP Surface (28 Endpoints)
 
-| Auth Level | Count | Examples |
-|------------|-------|----------|
-| Public | 3 | `/health`, `/login` |
-| `require_user` | 5 | `/`, `/logout`, `/browse/*` |
-| `require_contributor` | 12 | `/suggestions/new`, `/admin/tools/{id}`, `/admin/tool-versions/{id}/*` |
-| `require_admin` | 8 | `/admin/tools`, `/admin/suggestions/*`, version publish/request-changes |
+| Auth Level            | Count | Examples                                                                |
+| --------------------- | ----- | ----------------------------------------------------------------------- |
+| Public                | 3     | `/health`, `/login`                                                     |
+| `require_user`        | 5     | `/`, `/logout`, `/browse/*`                                             |
+| `require_contributor` | 12    | `/suggestions/new`, `/admin/tools/{id}`, `/admin/tool-versions/{id}/*`  |
+| `require_admin`       | 8     | `/admin/tools`, `/admin/suggestions/*`, version publish/request-changes |
 
 ### Frontend Stack
 
@@ -40,16 +40,16 @@ This assessment evaluates the effort required to migrate Skriptoteket from its c
 
 ### Backend Plumbing
 
-| Layer | Location |
-|-------|----------|
-| Protocols | `src/skriptoteket/protocols/*.py` |
-| Handlers | `src/skriptoteket/application/*/handlers/*.py` |
-| DI Container | `src/skriptoteket/di.py` |
+| Layer        | Location                                            |
+| ------------ | --------------------------------------------------- |
+| Protocols    | `src/skriptoteket/protocols/*.py`                   |
+| Handlers     | `src/skriptoteket/application/*/handlers/*.py`      |
+| DI Container | `src/skriptoteket/di.py`                            |
 | Repositories | `src/skriptoteket/infrastructure/repositories/*.py` |
 
 All handlers are protocol-based, injected via Dishka, and return Pydantic models. This means they can be called from both web routes (returning HTML) and API routes (returning JSON) without modification.
 
----
+______________________________________________________________________
 
 ## Migration Scope
 
@@ -81,31 +81,31 @@ src/skriptoteket/web/api/
 
 ### Endpoint Mapping
 
-| Current Web Route | New API Endpoint |
-|-------------------|------------------|
-| Historical local login form | Superseded by HuleEdu browser-session ceremony |
-| `POST /logout` | `POST /api/v1/auth/logout` |
-| `GET /` (user info) | `GET /api/v1/auth/me` |
-| `GET /browse/` | `GET /api/v1/professions` |
-| `GET /browse/{slug}` | `GET /api/v1/professions/{slug}/categories` |
-| `GET /browse/{p}/{c}` | `GET /api/v1/professions/{p}/categories/{c}/tools` |
-| `POST /suggestions/new` | `POST /api/v1/suggestions` |
-| `GET /admin/suggestions` | `GET /api/v1/admin/suggestions` |
-| `POST /admin/suggestions/{id}/decision` | `POST /api/v1/admin/suggestions/{id}/decision` |
-| `GET /admin/tools` | `GET /api/v1/admin/tools` |
-| `POST /admin/tools/{id}/publish` | `POST /api/v1/admin/tools/{id}/publish` |
-| `POST /admin/tools/{id}/depublish` | `POST /api/v1/admin/tools/{id}/depublish` |
-| `GET /admin/tools/{id}/versions` | `GET /api/v1/admin/tools/{id}/versions` |
-| `POST /admin/tools/{id}/versions` | `POST /api/v1/admin/tools/{id}/versions` |
-| `POST /admin/tool-versions/{id}/save` | `POST /api/v1/admin/versions/{id}/save` |
-| `POST /admin/tool-versions/{id}/submit-review` | `POST /api/v1/admin/versions/{id}/submit-review` |
-| `POST /admin/tool-versions/{id}/publish` | `POST /api/v1/admin/versions/{id}/publish` |
+| Current Web Route                                | New API Endpoint                                   |
+| ------------------------------------------------ | -------------------------------------------------- |
+| Historical local login form                      | Superseded by HuleEdu browser-session ceremony     |
+| `POST /logout`                                   | `POST /api/v1/auth/logout`                         |
+| `GET /` (user info)                              | `GET /api/v1/auth/me`                              |
+| `GET /browse/`                                   | `GET /api/v1/professions`                          |
+| `GET /browse/{slug}`                             | `GET /api/v1/professions/{slug}/categories`        |
+| `GET /browse/{p}/{c}`                            | `GET /api/v1/professions/{p}/categories/{c}/tools` |
+| `POST /suggestions/new`                          | `POST /api/v1/suggestions`                         |
+| `GET /admin/suggestions`                         | `GET /api/v1/admin/suggestions`                    |
+| `POST /admin/suggestions/{id}/decision`          | `POST /api/v1/admin/suggestions/{id}/decision`     |
+| `GET /admin/tools`                               | `GET /api/v1/admin/tools`                          |
+| `POST /admin/tools/{id}/publish`                 | `POST /api/v1/admin/tools/{id}/publish`            |
+| `POST /admin/tools/{id}/depublish`               | `POST /api/v1/admin/tools/{id}/depublish`          |
+| `GET /admin/tools/{id}/versions`                 | `GET /api/v1/admin/tools/{id}/versions`            |
+| `POST /admin/tools/{id}/versions`                | `POST /api/v1/admin/tools/{id}/versions`           |
+| `POST /admin/tool-versions/{id}/save`            | `POST /api/v1/admin/versions/{id}/save`            |
+| `POST /admin/tool-versions/{id}/submit-review`   | `POST /api/v1/admin/versions/{id}/submit-review`   |
+| `POST /admin/tool-versions/{id}/publish`         | `POST /api/v1/admin/versions/{id}/publish`         |
 | `POST /admin/tool-versions/{id}/request-changes` | `POST /api/v1/admin/versions/{id}/request-changes` |
-| `POST /admin/tool-versions/{id}/run-sandbox` | `POST /api/v1/admin/versions/{id}/run-sandbox` |
-| `GET /admin/tool-runs/{id}` | `GET /api/v1/admin/runs/{id}` |
-| `GET /admin/tool-runs/{id}/artifacts/{a}` | `GET /api/v1/admin/runs/{id}/artifacts/{a}` |
+| `POST /admin/tool-versions/{id}/run-sandbox`     | `POST /api/v1/admin/versions/{id}/run-sandbox`     |
+| `GET /admin/tool-runs/{id}`                      | `GET /api/v1/admin/runs/{id}`                      |
+| `GET /admin/tool-runs/{id}/artifacts/{a}`        | `GET /api/v1/admin/runs/{id}/artifacts/{a}`        |
 
----
+______________________________________________________________________
 
 ## Authentication Strategy
 
@@ -126,12 +126,12 @@ src/skriptoteket/web/api/
 
 ### Required Changes
 
-| File | Change |
-|------|--------|
-| `src/skriptoteket/config.py` | Add `CORS_ORIGINS: list[str]`, `CORS_ALLOW_CREDENTIALS: bool` |
-| `src/skriptoteket/web/app.py` | Add `CORSMiddleware` with credentials support |
-| `src/skriptoteket/web/auth/dependencies.py` | Add `verify_csrf_for_api()` checking `X-CSRF-Token` header |
-| `src/skriptoteket/web/api/v1/auth.py` | Return `csrf_token` in login response for SPA storage |
+| File                                        | Change                                                        |
+| ------------------------------------------- | ------------------------------------------------------------- |
+| `src/skriptoteket/config.py`                | Add `CORS_ORIGINS: list[str]`, `CORS_ALLOW_CREDENTIALS: bool` |
+| `src/skriptoteket/web/app.py`               | Add `CORSMiddleware` with credentials support                 |
+| `src/skriptoteket/web/auth/dependencies.py` | Add `verify_csrf_for_api()` checking `X-CSRF-Token` header    |
+| `src/skriptoteket/web/api/v1/auth.py`       | Return `csrf_token` in login response for SPA storage         |
 
 ### CSRF Flow for SPA
 
@@ -142,7 +142,7 @@ src/skriptoteket/web/api/
 4. The SPA fetches shared CSRF through the HuleEdu session contract when
    needed for mutating requests.
 
----
+______________________________________________________________________
 
 ## Vue/Vite Frontend Structure
 
@@ -193,15 +193,15 @@ frontend/
 
 ### Key Technical Decisions
 
-| Decision | Recommendation | Rationale |
-|----------|----------------|-----------|
-| State management | Pinia | Vue 3 standard, simple API, TypeScript support |
-| HTTP client | Axios | Interceptors for CSRF, better error handling than fetch |
-| Code editor | CodeMirror 6 | Modern, tree-shakeable, better TypeScript support than v5 |
-| Routing | Vue Router 4 | Standard, navigation guards for auth |
-| Build tool | Vite | Fast HMR, optimal production builds |
+| Decision         | Recommendation | Rationale                                                 |
+| ---------------- | -------------- | --------------------------------------------------------- |
+| State management | Pinia          | Vue 3 standard, simple API, TypeScript support            |
+| HTTP client      | Axios          | Interceptors for CSRF, better error handling than fetch   |
+| Code editor      | CodeMirror 6   | Modern, tree-shakeable, better TypeScript support than v5 |
+| Routing          | Vue Router 4   | Standard, navigation guards for auth                      |
+| Build tool       | Vite           | Fast HMR, optimal production builds                       |
 
----
+______________________________________________________________________
 
 ## Migration Phases
 
@@ -290,77 +290,77 @@ frontend/
 - Production build configuration
 - Asset optimization
 
----
+______________________________________________________________________
 
 ## Effort Estimation
 
 ### Backend
 
-| Task | Hours |
-|------|-------|
-| CORS middleware + settings | 1 |
-| Auth API endpoints | 2 |
-| CSRF verification | 1 |
-| Browse API endpoints | 2 |
-| Suggestions API endpoints | 3 |
-| Admin tools API endpoints | 2 |
-| Scripting API endpoints | 6 |
-| Response schemas | 4 |
-| Integration testing | 2 |
-| **Subtotal** | **23** |
+| Task                       | Hours  |
+| -------------------------- | ------ |
+| CORS middleware + settings | 1      |
+| Auth API endpoints         | 2      |
+| CSRF verification          | 1      |
+| Browse API endpoints       | 2      |
+| Suggestions API endpoints  | 3      |
+| Admin tools API endpoints  | 2      |
+| Scripting API endpoints    | 6      |
+| Response schemas           | 4      |
+| Integration testing        | 2      |
+| **Subtotal**               | **23** |
 
 ### Frontend
 
-| Task | Hours |
-|------|-------|
-| Project setup | 2 |
-| API client + types | 3 |
-| Auth flow + views | 4 |
-| Browse views | 4 |
-| Suggestion views | 7 |
-| Admin tools view | 2 |
-| Script editor + CodeMirror | 10 |
-| Common components | 3 |
-| Swedish translations | 2 |
-| Build optimization | 2 |
-| **Subtotal** | **39** |
+| Task                       | Hours  |
+| -------------------------- | ------ |
+| Project setup              | 2      |
+| API client + types         | 3      |
+| Auth flow + views          | 4      |
+| Browse views               | 4      |
+| Suggestion views           | 7      |
+| Admin tools view           | 2      |
+| Script editor + CodeMirror | 10     |
+| Common components          | 3      |
+| Swedish translations       | 2      |
+| Build optimization         | 2      |
+| **Subtotal**               | **39** |
 
 ### Infrastructure
 
-| Task | Hours |
-|------|-------|
-| CORS testing | 2 |
-| Docker/compose updates | 2 |
-| API integration tests | 8 |
-| E2E tests (Playwright/Cypress) | 8 |
-| Documentation | 4 |
-| **Subtotal** | **24** |
+| Task                           | Hours  |
+| ------------------------------ | ------ |
+| CORS testing                   | 2      |
+| Docker/compose updates         | 2      |
+| API integration tests          | 8      |
+| E2E tests (Playwright/Cypress) | 8      |
+| Documentation                  | 4      |
+| **Subtotal**                   | **24** |
 
 ### Total
 
-| Category | Hours |
-|----------|-------|
-| Backend | 23 |
-| Frontend | 39 |
-| Infrastructure | 24 |
-| Buffer (20%) | 17 |
-| **Total** | **103** |
+| Category       | Hours   |
+| -------------- | ------- |
+| Backend        | 23      |
+| Frontend       | 39      |
+| Infrastructure | 24      |
+| Buffer (20%)   | 17      |
+| **Total**      | **103** |
 
 **Calendar estimate**: 5-7 weeks (depending on parallelization)
 
----
+______________________________________________________________________
 
 ## Risks and Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| CORS misconfiguration in production | Medium | High | Explicit allowed origins, no wildcards, integration tests |
-| Session cookie issues across domains | Low | Medium | Use `SameSite=Lax`, test in staging with real domain |
-| CodeMirror 6 learning curve | Low | Low | Well-documented, similar API to v5 |
-| API/frontend contract drift | Medium | Medium | Generate TypeScript types from Pydantic schemas |
-| Performance regression (SPA bundle size) | Low | Low | Vite tree-shaking, lazy route loading |
+| Risk                                     | Likelihood | Impact | Mitigation                                                |
+| ---------------------------------------- | ---------- | ------ | --------------------------------------------------------- |
+| CORS misconfiguration in production      | Medium     | High   | Explicit allowed origins, no wildcards, integration tests |
+| Session cookie issues across domains     | Low        | Medium | Use `SameSite=Lax`, test in staging with real domain      |
+| CodeMirror 6 learning curve              | Low        | Low    | Well-documented, similar API to v5                        |
+| API/frontend contract drift              | Medium     | Medium | Generate TypeScript types from Pydantic schemas           |
+| Performance regression (SPA bundle size) | Low        | Low    | Vite tree-shaking, lazy route loading                     |
 
----
+______________________________________________________________________
 
 ## Coexistence Strategy
 
@@ -387,7 +387,7 @@ This enables:
 - Rollback capability (web routes remain functional)
 - A/B testing between old and new frontends
 
----
+______________________________________________________________________
 
 ## Key Advantages
 
@@ -396,7 +396,7 @@ This enables:
 3. **Incremental**: Each domain (browse, suggestions, admin) migrates independently
 4. **Reversible**: Web routes preserved during transition
 
----
+______________________________________________________________________
 
 ## Dependencies
 
@@ -410,7 +410,7 @@ This enables:
 - Vue frontend development (once API contracts defined)
 - API endpoint implementation (domain by domain)
 
----
+______________________________________________________________________
 
 ## ADR Recommendations
 
@@ -424,7 +424,7 @@ If proceeding with this migration, consider formalizing:
 
    Formalize cookie + CSRF approach for SPA, session lifetime, and refresh behavior.
 
----
+______________________________________________________________________
 
 ## Decision Required
 
@@ -436,7 +436,7 @@ This assessment is provided for planning purposes. Before proceeding:
 
 Recommendation: Defer SPA migration until after EPIC-05 (identity federation) unless there is a specific driver (mobile support, offline capability, third-party integrations) that requires a decoupled frontend.
 
----
+______________________________________________________________________
 
 ## Related Documents
 

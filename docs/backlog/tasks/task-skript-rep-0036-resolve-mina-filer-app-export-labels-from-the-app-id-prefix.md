@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0036
 title: Resolve Mina filer app-export labels from the app id prefix
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-10'
 status: done
 closeout_review:
@@ -17,9 +17,7 @@ closeout_review:
   approval_evidence: 'The user closed the task on 2026-10-22 after seeing the labels: findings F1 and F2 were repaired, the Sol rereview approved at 0f17cc78, and the repair merged at 61cce3ac.'
 task_kind: repository
 acceptance_criteria:
-- APP_EXPORT files whose source artifact id is a plain app id or an app-scoped id
-  shaped <app_id>:<parts> show the curated app title in Mina filer; unknown app ids
-  keep the generic App-export label.
+  - APP_EXPORT files whose source artifact id is a plain app id or an app-scoped id shaped <app_id>:<parts> show the curated app title in Mina filer; unknown app ids keep the generic App-export label.
 backlog_document_profile: contract-derived
 ---
 
@@ -44,8 +42,7 @@ keep the generic label for unknown apps.
 
 ## Core Vertical And Performance
 
-`list vault files -> APP_EXPORT row -> app id from prefix -> curated app
-title`. One string split per listed row; no new queries or persistence.
+`list vault files -> APP_EXPORT row -> app id from prefix -> curated app title`. One string split per listed row; no new queries or persistence.
 
 ## Validation
 
@@ -61,11 +58,11 @@ title`. One string split per listed row; no new queries or persistence.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
+| ID  | Decided contract term                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------------------------- |
 | D1  | The app id is the `source_artifact_id` text before the first `:`, trimmed; a value without `:` is the app id itself. |
-| D2  | Unknown or empty app ids keep the generic "App-export" label. |
-| D3  | The fix ships as its own commit, separate from TASK-SKRIPT-39-04-01. |
+| D2  | Unknown or empty app ids keep the generic "App-export" label.                                                        |
+| D3  | The fix ships as its own commit, separate from TASK-SKRIPT-39-04-01.                                                 |
 
 ## Progress
 

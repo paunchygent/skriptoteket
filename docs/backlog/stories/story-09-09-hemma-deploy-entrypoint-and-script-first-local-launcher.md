@@ -47,8 +47,7 @@ does not replace the current on-host deploy logic.
   using the existing `==>` milestone markers plus obvious failure patterns.
 - Update the relevant runbook/docs so the canonical local path and the
   break-glass direct on-host path are both explicit.
-- Verification should include a real Hemma launch through `pdm run
-  hemma-deploy` and a recorded note in `.codex/handoff.md`.
+- Verification should include a real Hemma launch through `pdm run hemma-deploy` and a recorded note in `.codex/handoff.md`.
 
 ## Implementation Summary (as of 2026-04-07)
 

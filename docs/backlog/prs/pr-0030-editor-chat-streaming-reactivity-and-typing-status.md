@@ -41,19 +41,23 @@ We also want the process wording to be more accurate:
 
 ## Implementation plan
 
-1) **Reactive messages (root fix)**
+1. **Reactive messages (root fix)**
+
 - Wrap new/mapped `EditorChatMessage` objects with Vue `reactive()` and ensure we only mutate the proxied versions.
   - Note: Vue reactivity is proxy-based — mutating a raw/original object reference will bypass UI updates.
 
-2) **Composable reveal controller**
+2. **Composable reveal controller**
+
 - Track `content` (raw) + `visibleContent` (rendered) and advance `visibleContent` in small batches at a stable pace.
 - Keep `visibleContent` as a strict prefix of `content` (single source of truth for raw).
 
-3) **Thinking vs writing status**
+3. **Thinking vs writing status**
+
 - Inline per-message: `Tänker...` until `visibleContent.length > 0`, then `Skriver...` while streaming.
 - Composer row: same semantics (computed from the active streaming message; fallback to “Tänker...” before the message exists).
 
-4) **Fade-in rendering**
+4. **Fade-in rendering**
+
 - Keep `ChatMessageContent.vue` as a dumb renderer that fades in the latest appended chunk.
 
 ## Test plan

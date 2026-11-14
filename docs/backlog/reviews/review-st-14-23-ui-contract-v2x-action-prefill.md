@@ -41,21 +41,21 @@ Implement ADR-0060:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0060-ui-contract-v2x-action-prefill.md` | Contract shape, validation rules, UI semantics | 10 min |
-| `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md` | Acceptance criteria and scope | 5 min |
-| `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md` | Sprint linkage and risks | 5 min |
+| File                                                                                          | Focus                                          | Time   |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------- | ------ |
+| `docs/adr/adr-0060-ui-contract-v2x-action-prefill.md`                                         | Contract shape, validation rules, UI semantics | 10 min |
+| `docs/backlog/stories/story-14-23-ui-contract-action-defaults-prefill.md`                     | Acceptance criteria and scope                  | 5 min  |
+| `docs/backlog/sprints/sprint-2026-06-09-tool-ui-contract-v2-action-defaults-and-file-refs.md` | Sprint linkage and risks                       | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Defaults/prefill lives on `UiFormAction.prefill` (not field-level defaults) | Minimal contract surface; enables deterministic validation/stripping in normalizer | [x] |
-| Invalid prefill is stripped + surfaced via system notice output | Deterministic, non-breaking rendering while still actionable | [x] |
-| Separate ADR for ST-14-24 file references | Keeps this change shippable independently; avoids coupling to runner/security details | [x] |
+| Decision                                                                    | Rationale                                                                             | Approve? |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| Defaults/prefill lives on `UiFormAction.prefill` (not field-level defaults) | Minimal contract surface; enables deterministic validation/stripping in normalizer    | [x]      |
+| Invalid prefill is stripped + surfaced via system notice output             | Deterministic, non-breaking rendering while still actionable                          | [x]      |
+| Separate ADR for ST-14-24 file references                                   | Keeps this change shippable independently; avoids coupling to runner/security details | [x]      |
 
 ## Review Checklist
 
@@ -64,7 +64,7 @@ Implement ADR-0060:
 - [x] UI semantics are defined for both runtime and editor sandbox action rendering
 - [x] Scope stays within ST-14-23 (file refs deferred to separate ADR)
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -88,6 +88,6 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Migrated from the legacy epic-ledger `REV-EPIC-14` archive to the canonical `REV-ST-14-23` target-based story review record. |
+| Change | Artifact      | Description                                                                                                                  |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Migrated from the legacy epic-ledger `REV-EPIC-14` archive to the canonical `REV-ST-14-23` target-based story review record. |

@@ -8,16 +8,7 @@ created: 2026-04-07
 updated: 2026-04-30
 stories:
   - "ST-32-06"
-tags:
-  [
-    "frontend",
-    "backend",
-    "klassrumskartan",
-    "public-access",
-    "guest-workspace",
-    "export",
-    "history",
-  ]
+tags: ["frontend", "backend", "klassrumskartan", "public-access", "guest-workspace", "export", "history"]
 dependencies:
   - "ADR-0079"
   - "ADR-0080"
@@ -77,6 +68,7 @@ Finish the honest guest-local continuity layer:
 ## Implementation plan
 
 1. Implement guest local undo/redo.
+
    - Replace the guest no-op history actions with real browser-owned local
      undo/redo for grouping and seating drafts.
    - Introduce the shared planner undo/redo keyboard shortcut composable in
@@ -97,6 +89,7 @@ Finish the honest guest-local continuity layer:
      swallowing or misfiring planner shortcuts.
 
 2. Keep history boundaries honest.
+
    - Do not add guest history drawers or authenticated recovery surfaces.
    - Keep history-based Smart controls out of guest mode per `ADR-0080`.
    - Make sure guest local undo/redo does not imply guest durable history.
@@ -108,6 +101,7 @@ Finish the honest guest-local continuity layer:
        surfaces
 
 3. Add guest direct-download export.
+
    - Reuse the same visible export entry point where possible.
    - Send guest export through explicit public direct-download routes at:
      - `/api/v1/public/apps/classroom.group-seating-studio/grouping/export`
@@ -138,6 +132,7 @@ Finish the honest guest-local continuity layer:
      - no `download_url`
 
 4. Keep checkpoint capture scoped correctly.
+
    - If guest export captures checkpoint payloads or descriptors, store them
      only in the browser-owned guest snapshot.
    - Keep that payload lane importable later through the authenticated upgrade
@@ -166,6 +161,7 @@ Finish the honest guest-local continuity layer:
        server-recomputed snapshot and entity fingerprints
 
 5. Finish the account-only affordance audit.
+
    - Remove or block authenticated history/recovery/job/Vault affordances in the
      guest toolbar, drawers, and related presentation seams according to the
      explicit table below.
@@ -178,18 +174,18 @@ Finish the honest guest-local continuity layer:
 
 ### Guest/auth affordance table
 
-| Surface | Guest in `PR-0232` | Authenticated remains |
-|---------|--------------------|-----------------------|
-| Undo / redo buttons | Visible and functional as browser-owned local draft state | Visible and backed by server-owned draft history |
-| Undo / redo keyboard shortcuts | Functional through the shared shortcut contract | Functional through the shared shortcut contract |
-| Export split-button | Visible and functional | Visible and functional |
-| Export transport | Dedicated public direct-download route only | Existing authenticated export-job flow |
-| Export status / recovery | No job id, polling, recovery CTA, or later retrieval copy | Existing job status, recovery, and download behavior unchanged |
-| `Historik` toolbar/drawer affordance | Hidden / omitted | Existing history drawer behavior unchanged |
-| `Use history` in Smart settings | Hidden / omitted | Existing authenticated-only behavior unchanged |
-| Vault / My Files language | Hidden / omitted | Existing authenticated copy unchanged |
-| Authenticated export/history/download API family | Forbidden as guest fallback | Canonical authenticated seam |
-| Guest-upgrade prompt relation | Guest export/checkpoint continuity may later feed first authenticated Klassrumskartan import prompt; no registration-time import | Existing `import` / `discard` / `postpone` prompt from `PR-0221` remains canonical |
+| Surface                                          | Guest in `PR-0232`                                                                                                               | Authenticated remains                                                              |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Undo / redo buttons                              | Visible and functional as browser-owned local draft state                                                                        | Visible and backed by server-owned draft history                                   |
+| Undo / redo keyboard shortcuts                   | Functional through the shared shortcut contract                                                                                  | Functional through the shared shortcut contract                                    |
+| Export split-button                              | Visible and functional                                                                                                           | Visible and functional                                                             |
+| Export transport                                 | Dedicated public direct-download route only                                                                                      | Existing authenticated export-job flow                                             |
+| Export status / recovery                         | No job id, polling, recovery CTA, or later retrieval copy                                                                        | Existing job status, recovery, and download behavior unchanged                     |
+| `Historik` toolbar/drawer affordance             | Hidden / omitted                                                                                                                 | Existing history drawer behavior unchanged                                         |
+| `Use history` in Smart settings                  | Hidden / omitted                                                                                                                 | Existing authenticated-only behavior unchanged                                     |
+| Vault / My Files language                        | Hidden / omitted                                                                                                                 | Existing authenticated copy unchanged                                              |
+| Authenticated export/history/download API family | Forbidden as guest fallback                                                                                                      | Canonical authenticated seam                                                       |
+| Guest-upgrade prompt relation                    | Guest export/checkpoint continuity may later feed first authenticated Klassrumskartan import prompt; no registration-time import | Existing `import` / `discard` / `postpone` prompt from `PR-0221` remains canonical |
 
 6. Publish the public export abuse-control contract.
    - Freeze the guest export routes as cookie-agnostic and non-ambient per

@@ -42,7 +42,7 @@ from inline completions so Tab/ghost-text behavior remains stable and fast.
 - Auth + CSRF requirements should match the existing editor AI endpoints.
 - This endpoint returns assistant text only (no structured edit ops).
   Structured edit proposals are handled by
-    `POST /api/v1/editor/edit-ops` (ST-08-21).
+  `POST /api/v1/editor/edit-ops` (ST-08-21).
 - Add a clear endpoint: `DELETE /api/v1/editor/tools/{tool_id}/chat`.
 
 ### Thread storage (canonical)
@@ -74,12 +74,11 @@ from inline completions so Tab/ghost-text behavior remains stable and fast.
   - `event: done` (exactly once, last)
     - `data: {"enabled": true, "reason": "stop"|"cancelled"|"error"}`
 - Disabled / misconfigured:
-  - Send a single `event: done` with `data: {"enabled": false, "message":
-"AI‑chat är inte tillgänglig just nu. Försök igen senare."}` then close.
+  - Send a single `event: done` with `data: {"enabled": false, "message": "AI‑chat är inte tillgänglig just nu. Försök igen senare."}` then close.
   - MUST NOT return a 500 or leak provider details.
 - Cancellation:
   - On client disconnect, stop emitting events immediately and cancel upstream
-work when possible (best-effort).
+    work when possible (best-effort).
 
 ### History + budgeting behavior (MVP)
 
@@ -125,5 +124,5 @@ finalized during implementation):
 
 - The frontend must be able to cancel requests (AbortController); backend
   should treat client disconnect as a signal to
-    stop work where possible to avoid wasting tokens/latency.
+  stop work where possible to avoid wasting tokens/latency.
 - Related PR: `docs/backlog/prs/pr-0008-editor-chat-message-storage-minimal-c.md`

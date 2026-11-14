@@ -107,69 +107,69 @@ two-pass reviewed-completion workflow:
 
 ## Implementation Plan
 
-1. Update the governed request builder in
-   `frontend/apps/skriptoteket/src/api/sirConvertGateway/`:
-   - add centralized constants for `source_evidence_only`,
-     `local_llm_suggest_missing_machine_marked`,
-     `local_llm_apply_missing_machine_marked_with_review`, and
-     `remote_provider_policy=forbidden`;
-   - make the first authenticated Exam Converter submit request advisory
-     enrichment by default;
-   - make overlay submits explicitly use reviewed apply mode; and
-   - keep idempotency digests sensitive to completion mode and overlay JSON.
-2. Add focused parser/types for `answer_key_completion_report_v1` and
-   `effective_ir_json` from the generated Sir Convert contract:
-   - validate schema versions and required lineage fields;
-   - reject unknown candidate states rather than silently degrading;
-   - keep raw answer payloads bounded to supported machine-marked shapes; and
-   - preserve report SHA/digest fields needed for the reviewed overlay.
-3. Extend `useExamConverterReviewArtifacts` so one load gathers:
-   `bundle_manifest`, `ir_json`, `migration_manifest`,
-   `target_readiness_report`, `answer_key_completion_report`, and
-   `effective_ir_json` when present. Missing optional reviewed-apply artifacts
-   may be represented as absent; missing advisory report in advisory mode is a
-   contract failure.
-4. Split the current review projection if needed to keep modules small. The
-   normalized per-item model must contain:
-   - `itemId`, `sequence`, `itemType`, `sourceItemFingerprint`,
-     `promptPreview`, `currentAnswerKeyProvenance`, and `missingFields`;
-   - `llmCandidate` with `decisionState`, `validationState`, `backendStatus`,
-     `backendFailureCode`, `candidateId`, `candidatePayloadDigest`,
-     `providerProfileId`, `modelProfile`, `promptTemplateVersion`,
-     `schemaName`, `schemaVersion`, and `answerPayload`; and
-   - a null candidate when no candidate is needed or usable.
-5. Implement the approved UI slice from the PR-0326 mockup bundle. The selected
-   question detail pane owns AI-facit review; the grid keeps only the existing
-   compact columns plus symbolic status. Product-approved purpose for the bulk
-   affordance: accept all currently valid supported suggestions; do not use that
-   verbose phrase as the button label.
-6. Implement the teacher review state as explicit, source-bound UI state:
-   - valid supported candidates can be accepted unchanged;
-   - supported candidates can be edited before accept when the payload kind is
-     implemented for this slice;
-   - invalid, provider-unavailable, skipped, and manual-follow-up candidates are
-     visible but not accept-enabled;
-   - accept-all applies only to valid supported suggestions that have not been
-     rejected or manually edited;
-   - changing source file, result PDF, target selection, or rerunning the first
-     pass clears review state.
-7. Build the reviewed-completion overlay from explicit teacher decisions:
-   - schema version `digiexam_ingestion_overlay_v2`;
-   - source binding from the bundle manifest;
-   - per item `reviewed_completion_answer_key`;
-   - `review_outcome=accepted_unchanged` or `teacher_edited`;
-   - candidate lineage from the completion report; and
-   - no `manual_answer_key`, no `review_decision`, and no
-     `effective_item_patch` in this path.
-8. Wire the second submit through the existing authenticated runtime bridge:
-   - attach `digiexam-ingestion-overlay.json`;
-   - set `completion_mode=local_llm_apply_missing_machine_marked_with_review`;
-   - preserve HuleEdu Gateway credentials, CSRF, correlation, and idempotency;
-   - reload artifacts after terminal result; and
-   - render reviewed provenance from `effective_ir_json` and readiness from
-     `target_readiness_report_v1`.
-9. Keep files gated by producer evidence. `Hämta` and `Spara` remain disabled
-   unless the reviewed apply bundle marks the corresponding target exportable.
+01. Update the governed request builder in
+    `frontend/apps/skriptoteket/src/api/sirConvertGateway/`:
+    - add centralized constants for `source_evidence_only`,
+      `local_llm_suggest_missing_machine_marked`,
+      `local_llm_apply_missing_machine_marked_with_review`, and
+      `remote_provider_policy=forbidden`;
+    - make the first authenticated Exam Converter submit request advisory
+      enrichment by default;
+    - make overlay submits explicitly use reviewed apply mode; and
+    - keep idempotency digests sensitive to completion mode and overlay JSON.
+02. Add focused parser/types for `answer_key_completion_report_v1` and
+    `effective_ir_json` from the generated Sir Convert contract:
+    - validate schema versions and required lineage fields;
+    - reject unknown candidate states rather than silently degrading;
+    - keep raw answer payloads bounded to supported machine-marked shapes; and
+    - preserve report SHA/digest fields needed for the reviewed overlay.
+03. Extend `useExamConverterReviewArtifacts` so one load gathers:
+    `bundle_manifest`, `ir_json`, `migration_manifest`,
+    `target_readiness_report`, `answer_key_completion_report`, and
+    `effective_ir_json` when present. Missing optional reviewed-apply artifacts
+    may be represented as absent; missing advisory report in advisory mode is a
+    contract failure.
+04. Split the current review projection if needed to keep modules small. The
+    normalized per-item model must contain:
+    - `itemId`, `sequence`, `itemType`, `sourceItemFingerprint`,
+      `promptPreview`, `currentAnswerKeyProvenance`, and `missingFields`;
+    - `llmCandidate` with `decisionState`, `validationState`, `backendStatus`,
+      `backendFailureCode`, `candidateId`, `candidatePayloadDigest`,
+      `providerProfileId`, `modelProfile`, `promptTemplateVersion`,
+      `schemaName`, `schemaVersion`, and `answerPayload`; and
+    - a null candidate when no candidate is needed or usable.
+05. Implement the approved UI slice from the PR-0326 mockup bundle. The selected
+    question detail pane owns AI-facit review; the grid keeps only the existing
+    compact columns plus symbolic status. Product-approved purpose for the bulk
+    affordance: accept all currently valid supported suggestions; do not use that
+    verbose phrase as the button label.
+06. Implement the teacher review state as explicit, source-bound UI state:
+    - valid supported candidates can be accepted unchanged;
+    - supported candidates can be edited before accept when the payload kind is
+      implemented for this slice;
+    - invalid, provider-unavailable, skipped, and manual-follow-up candidates are
+      visible but not accept-enabled;
+    - accept-all applies only to valid supported suggestions that have not been
+      rejected or manually edited;
+    - changing source file, result PDF, target selection, or rerunning the first
+      pass clears review state.
+07. Build the reviewed-completion overlay from explicit teacher decisions:
+    - schema version `digiexam_ingestion_overlay_v2`;
+    - source binding from the bundle manifest;
+    - per item `reviewed_completion_answer_key`;
+    - `review_outcome=accepted_unchanged` or `teacher_edited`;
+    - candidate lineage from the completion report; and
+    - no `manual_answer_key`, no `review_decision`, and no
+      `effective_item_patch` in this path.
+08. Wire the second submit through the existing authenticated runtime bridge:
+    - attach `digiexam-ingestion-overlay.json`;
+    - set `completion_mode=local_llm_apply_missing_machine_marked_with_review`;
+    - preserve HuleEdu Gateway credentials, CSRF, correlation, and idempotency;
+    - reload artifacts after terminal result; and
+    - render reviewed provenance from `effective_ir_json` and readiness from
+      `target_readiness_report_v1`.
+09. Keep files gated by producer evidence. `Hämta` and `Spara` remain disabled
+    unless the reviewed apply bundle marks the corresponding target exportable.
 10. Update this PR, `ST-21-03`, `EPIC-21`, `docs/index.md`, and
     `.codex/handoff.md` with implementation evidence, then create or unblock the
     follow-up live proof slice.

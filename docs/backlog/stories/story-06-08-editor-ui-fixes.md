@@ -33,6 +33,7 @@ The native file input is visible alongside the custom styled "Välj fil" button.
 technique isn't working properly.
 
 **Current HTML**:
+
 ```html
 <label class="huleedu-file-label">
   <span class="huleedu-file-fake-button">Välj fil</span>
@@ -41,6 +42,7 @@ technique isn't working properly.
 ```
 
 **Current CSS** (`app.css`):
+
 ```css
 .huleedu-file-hidden {
   position: absolute;
@@ -65,11 +67,13 @@ issue. May need to add `clip: rect(0,0,0,0)` or use the visually-hidden pattern.
 **Location**: `src/skriptoteket/web/templates/admin/script_editor.html` lines 187-225
 
 **Symptoms**:
+
 - First visit to editor page: CodeMirror doesn't load, textarea shows plain text
 - After page reload: CodeMirror initializes, syntax highlighting works
 - This suggests the deferred script loading or DOMContentLoaded timing is wrong
 
 **Current JS**:
+
 ```javascript
 <script src="/static/vendor/codemirror/codemirror.min.js" defer></script>
 <script src="/static/vendor/codemirror/mode/python/python.min.js" defer></script>
@@ -88,6 +92,7 @@ issue. May need to add `clip: rect(0,0,0,0)` or use the visually-hidden pattern.
 ```
 
 **Investigation needed**:
+
 - The `defer` attribute may cause scripts to load after `DOMContentLoaded` fires
 - HTMX navigation (hx-boost) may not re-execute deferred scripts
 - Consider using `load` event only, or checking CodeMirror availability in a loop/timeout
@@ -97,22 +102,26 @@ issue. May need to add `clip: rect(0,0,0,0)` or use the visually-hidden pattern.
 **Location**: `src/skriptoteket/web/static/css/app.css` (SCRIPT EDITOR LAYOUT section)
 
 **Symptoms**:
+
 - Code panel doesn't scroll properly within its container
 - Editor doesn't dynamically resize when window is resized
 - Toolbar (Välj fil, Testkör) gets pushed off-screen on smaller viewports
 
 **Root cause analysis**:
 The editor layout uses a two-column CSS grid. The left column contains the code card with:
+
 - Form with "Källkod" label
 - Textarea wrapper (replaced by CodeMirror)
 - Toolbar at bottom
 
 The challenge is making the code panel fill available viewport space while:
+
 1. Keeping toolbar visible at bottom
 2. Not breaking scroll on other pages (body overflow: hidden breaks HTMX navigation)
 3. Allowing CodeMirror to scroll internally
 
 **Attempted solutions that failed**:
+
 - `overflow: hidden` on body/frame: Breaks scroll on all pages
 - CSS `:has()` selector for page-specific styles: Same problem with HTMX body class persistence
 - `calc(100vh - Npx)` on wrapper: Static offset doesn't account for dynamic header sizes

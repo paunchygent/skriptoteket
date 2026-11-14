@@ -69,13 +69,13 @@ rejects download/save when recovery claims cannot be verified.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|---|---|---|
-| `docs/backlog/prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md` | Acceptance criteria, planning decision, manifest shape, stop conditions, close-out steps | 35 min |
-| `docs/backlog/prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md` and `docs/backlog/reviews/review-pr-0400-document-converter-artifact-content-hygiene-contract.md` | Predecessor boundary and deferred PDF image-recovery obligation | 20 min |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-272-add-formula-aware-final-pass-and-linked-pdf-image-artifacts-for-dirty-pdf-ocr-outputs.md` | Upstream task scope, status, bundle/manifest semantics | 25 min |
-| Sir Convert v2 executor, checkpoint, PyMuPDF, Pandoc, API-resource docs/code | Validate factual claims about current producer route and resource limits | 35 min |
-| Skriptoteket Document Converter protocols, handler, and Sir Convert client | Validate current consumer/client boundary and absence of recovery sidecar model | 25 min |
+| File                                                                                                                                                                                          | Focus                                                                                    | Time   |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0401-st-37-04-document-converter-pdf-image-recovery-planning.md`                                                                                                         | Acceptance criteria, planning decision, manifest shape, stop conditions, close-out steps | 35 min |
+| `docs/backlog/prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md` and `docs/backlog/reviews/review-pr-0400-document-converter-artifact-content-hygiene-contract.md` | Predecessor boundary and deferred PDF image-recovery obligation                          | 20 min |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-272-add-formula-aware-final-pass-and-linked-pdf-image-artifacts-for-dirty-pdf-ocr-outputs.md`                     | Upstream task scope, status, bundle/manifest semantics                                   | 25 min |
+| Sir Convert v2 executor, checkpoint, PyMuPDF, Pandoc, API-resource docs/code                                                                                                                  | Validate factual claims about current producer route and resource limits                 | 35 min |
+| Skriptoteket Document Converter protocols, handler, and Sir Convert client                                                                                                                    | Validate current consumer/client boundary and absence of recovery sidecar model          | 25 min |
 
 **Total estimated time:** ~2.5 hours
 
@@ -150,13 +150,13 @@ rejects download/save when recovery claims cannot be verified.
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|---|---|---|
-| Sir Convert owns PDF image recovery and terminal artifact truth. | Extraction, stable byte identity, manifests, and reinsertion belong with the producer that sees the PDF route internals. | [x] |
-| Skriptoteket owns strict consumer validation only after upstream contract support exists. | Prevents the app from inventing recovery semantics from generic artifact download support. | [x] |
-| Missing bytes or untrusted insertion evidence cannot become placeholder metadata or DOCX recovery claims. | Preserves the `PR-0400` artifact hygiene boundary. | [x] |
-| Full PDF layout reconstruction is out of scope for the editable DOCX lane. | Avoids turning a bounded recovery plan into a visual-facsimile converter rewrite. | [x] |
-| DOCX image recovery remains deferred until Task 272 is amended or followed. | Task 272 is currently PDF-to-Markdown bundle authority, not a completed DOCX recovery contract. | [x] |
+| Decision                                                                                                  | Rationale                                                                                                                | Approve? |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Sir Convert owns PDF image recovery and terminal artifact truth.                                          | Extraction, stable byte identity, manifests, and reinsertion belong with the producer that sees the PDF route internals. | [x]      |
+| Skriptoteket owns strict consumer validation only after upstream contract support exists.                 | Prevents the app from inventing recovery semantics from generic artifact download support.                               | [x]      |
+| Missing bytes or untrusted insertion evidence cannot become placeholder metadata or DOCX recovery claims. | Preserves the `PR-0400` artifact hygiene boundary.                                                                       | [x]      |
+| Full PDF layout reconstruction is out of scope for the editable DOCX lane.                                | Avoids turning a bounded recovery plan into a visual-facsimile converter rewrite.                                        | [x]      |
+| DOCX image recovery remains deferred until Task 272 is amended or followed.                               | Task 272 is currently PDF-to-Markdown bundle authority, not a completed DOCX recovery contract.                          | [x]      |
 
 ## Review Checklist
 
@@ -165,22 +165,22 @@ rejects download/save when recovery claims cannot be verified.
 - [x] Upstream Sir Convert Task 272 status and scope are verified.
 - [x] Sir Convert PDF checkpoint/Pandoc path claims are verified against code.
 - [x] Skriptoteket Document Converter artifact consumer/client protocol claims
-      are verified against code.
+  are verified against code.
 - [x] The plan does not overpromise DOCX image recovery before upstream
-      manifest/resources exist.
+  manifest/resources exist.
 - [x] Required review/doc close-out steps are present.
 - [x] Scope remains planning/docs-only and does not drift into implementation.
 
 ## Acceptance-Criteria Check
 
-| Criterion | Result |
-|---|---|
-| Real-byte recovery route | Passed. The plan routes recovery through upstream Sir Convert byte extraction, stable image identity, manifest/bundle retention, and upstream reinsertion before claims. |
-| No placeholder metadata promise | Passed. The plan forbids placeholder metadata and diagnostic-only bytes as DOCX recovery claims. |
-| Stop conditions for layout reconstruction | Passed. The plan rejects full PDF layout reconstruction for the editable DOCX lane and names visual facsimile as a separate future product route. |
-| Linked upstream Sir Convert task | Passed. Task 272 is linked and correctly treated as prerequisite, not completed capability. |
-| Clear Skriptoteket/Sir Convert boundary | Passed. Sir Convert owns extraction and terminal artifact truth; Skriptoteket owns validation, copy/status after contract existence, and fail-closed consumption. |
-| No DOCX image-recovery overpromise | Passed. The plan explicitly requires Task 272 amendment or successor upstream work before DOCX media reinsertion becomes user-visible behavior. |
+| Criterion                                 | Result                                                                                                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Real-byte recovery route                  | Passed. The plan routes recovery through upstream Sir Convert byte extraction, stable image identity, manifest/bundle retention, and upstream reinsertion before claims. |
+| No placeholder metadata promise           | Passed. The plan forbids placeholder metadata and diagnostic-only bytes as DOCX recovery claims.                                                                         |
+| Stop conditions for layout reconstruction | Passed. The plan rejects full PDF layout reconstruction for the editable DOCX lane and names visual facsimile as a separate future product route.                        |
+| Linked upstream Sir Convert task          | Passed. Task 272 is linked and correctly treated as prerequisite, not completed capability.                                                                              |
+| Clear Skriptoteket/Sir Convert boundary   | Passed. Sir Convert owns extraction and terminal artifact truth; Skriptoteket owns validation, copy/status after contract existence, and fail-closed consumption.        |
+| No DOCX image-recovery overpromise        | Passed. The plan explicitly requires Task 272 amendment or successor upstream work before DOCX media reinsertion becomes user-visible behavior.                          |
 
 ## Required Changes
 
@@ -208,7 +208,7 @@ None.
 - [x] Placeholder metadata remains forbidden.
 - [x] Layout reconstruction stop conditions are explicit.
 - [x] Task 272 is the linked prerequisite, with DOCX recovery deferred until
-      amended or followed.
+  amended or followed.
 - [x] Skriptoteket/Sir Convert ownership is clear.
 
 ## Residual Risks And Test Gaps
@@ -232,6 +232,6 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|---|---|---|
-| 1 | `REV-PR-0401` | Created retained independent review record with verdict `approved`. |
+| Change | Artifact      | Description                                                         |
+| ------ | ------------- | ------------------------------------------------------------------- |
+| 1      | `REV-PR-0401` | Created retained independent review record with verdict `approved`. |

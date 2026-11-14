@@ -4,17 +4,17 @@ id: ADR-SKRIPT-0027
 title: Full Vue/Vite SPA as the Skriptoteket frontend
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 links:
   governing:
-  - REF-SKRIPT-PRD-frontend-prd-v0-1-full-vue-vite-spa-migration
+    - REF-SKRIPT-PRD-frontend-prd-v0-1-full-vue-vite-spa-migration
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0027
+  - ADR-0027
 ---
 
 ## Context

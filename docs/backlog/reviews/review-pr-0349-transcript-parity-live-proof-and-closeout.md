@@ -110,27 +110,27 @@ Out of scope for approval here:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md` | Blocked closeout claims and acceptance-state honesty | 15 min |
-| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Story status and parity gate wording | 10 min |
-| `scripts/playwright_pr_0349_transcript_parity_live.py` | Auth path, proof sequencing, retained summary truth | 30 min |
-| `scripts/_transcript_parity_evidence.py` | Sanitization, blocker extraction, captured-artifact manifest | 15 min |
-| `scripts/_playwright_auth.py` | HuleEdu browser-session ceremony compliance | 15 min |
-| `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py` | Blocked-run summary truthfulness coverage | 10 min |
-| `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/*` | Retained evidence strength and honesty | 20 min |
-| `tests/unit/scripts/test_playwright_script_surface.py` | Script-surface allowlist enforcement | 5 min |
-| `tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py` | Transcript docs guard coverage | 5 min |
+| File                                                                                           | Focus                                                        | Time   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0349-st-21-08-transcript-parity-live-proof-and-closeout.md`               | Blocked closeout claims and acceptance-state honesty         | 15 min |
+| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Story status and parity gate wording                         | 10 min |
+| `scripts/playwright_pr_0349_transcript_parity_live.py`                                         | Auth path, proof sequencing, retained summary truth          | 30 min |
+| `scripts/_transcript_parity_evidence.py`                                                       | Sanitization, blocker extraction, captured-artifact manifest | 15 min |
+| `scripts/_playwright_auth.py`                                                                  | HuleEdu browser-session ceremony compliance                  | 15 min |
+| `tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`                           | Blocked-run summary truthfulness coverage                    | 10 min |
+| `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/*`                      | Retained evidence strength and honesty                       | 20 min |
+| `tests/unit/scripts/test_playwright_script_surface.py`                                         | Script-surface allowlist enforcement                         | 5 min  |
+| `tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`                              | Transcript docs guard coverage                               | 5 min  |
 
 **Total estimated time:** ~2 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep approval scoped to the upload/admission remediation and proof-script truthfulness only | The full parity acceptance criteria remain unproven by design. | [x] |
-| Require HuleEdu browser-session ceremony and repo helpers for proof | Matches AGENTS.md, browser-automation rules, and the PR non-goals. | [x] |
-| Treat heuristic cancel-path classification as an approval blocker until fixed | This PR slice now claims truthful distinction between upload abort and Sir Convert job cancel, so the retained proof cannot guess the path from a timeout. The remediation now satisfies that requirement. | [x] |
+| Decision                                                                                    | Rationale                                                                                                                                                                                                  | Approve? |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep approval scoped to the upload/admission remediation and proof-script truthfulness only | The full parity acceptance criteria remain unproven by design.                                                                                                                                             | [x]      |
+| Require HuleEdu browser-session ceremony and repo helpers for proof                         | Matches AGENTS.md, browser-automation rules, and the PR non-goals.                                                                                                                                         | [x]      |
+| Treat heuristic cancel-path classification as an approval blocker until fixed               | This PR slice now claims truthful distinction between upload abort and Sir Convert job cancel, so the retained proof cannot guess the path from a timeout. The remediation now satisfies that requirement. | [x]      |
 
 ## Review Checklist
 
@@ -353,11 +353,11 @@ Historical blocker:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0349` | Re-reviewed the remediated upload/admission slice, updated the retained review record, and marked it `approved` within the scoped boundary. |
-| 2 | Implementation | No production code changes were made by this reviewer. |
-| 3 | `REV-PR-0349` | Re-reviewed the replay/export disabled client-state remediation, recorded the retained artifact RCA check, and kept the follow-up decision `approved`; final live parity was closed later by the 2026-06-14 Hemma rerun. |
+| Change | Artifact       | Description                                                                                                                                                                                                              |
+| ------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0349`  | Re-reviewed the remediated upload/admission slice, updated the retained review record, and marked it `approved` within the scoped boundary.                                                                              |
+| 2      | Implementation | No production code changes were made by this reviewer.                                                                                                                                                                   |
+| 3      | `REV-PR-0349`  | Re-reviewed the replay/export disabled client-state remediation, recorded the retained artifact RCA check, and kept the follow-up decision `approved`; final live parity was closed later by the 2026-06-14 Hemma rerun. |
 
 ## Follow-Up Client-State Review
 
@@ -505,8 +505,7 @@ replay backend behavior for this blocker.
 
 - Red:
   `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
-  failed before the patch with `Transcript JSON must contain at least one
-  segment.`
+  failed before the patch with `Transcript JSON must contain at least one segment.`
 - Green:
   the same command passed with `1 passed`.
 - `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
@@ -949,8 +948,7 @@ changes_requested
 
 - The retained artifact supports the stated immediate RCA: `network.bounded.json`
   in `20260613T203933Z` shows `/formatter-replay/complete` succeeded and the
-  subsequent formatter artifact download returned HTTP `503` with `Failed to
-  download named v2 artifact.`
+  subsequent formatter artifact download returned HTTP `503` with `Failed to download named v2 artifact.`
 - The direct backend Sir Convert named-artifact client was removed from
   download/save handlers; download and Mina-save now read persisted bytes only.
 - Migration/model/repository wiring for the nullable `content` column is

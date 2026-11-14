@@ -143,12 +143,12 @@ Transcription, or a resurrected broad "Conversion Hub" app.
 MVP routes are limited to the routes already mirrored by
 `apps_conversion_hub.py`:
 
-| Source | Targets | MVP notes |
-|--------|---------|-----------|
-| PDF | Markdown, DOCX | Uses existing Sir Convert PDF options; no exam extraction. |
-| DOCX | Markdown, PDF | No template merge, comment import, or exam-state interpretation. |
-| Markdown | PDF, DOCX | PDF layout uses the existing constrained preset only. |
-| HTML | Markdown, PDF, DOCX | HTML/CSS to PDF is in scope only through server-built job specs; browser does not call Sir Convert. |
+| Source   | Targets             | MVP notes                                                                                           |
+| -------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| PDF      | Markdown, DOCX      | Uses existing Sir Convert PDF options; no exam extraction.                                          |
+| DOCX     | Markdown, PDF       | No template merge, comment import, or exam-state interpretation.                                    |
+| Markdown | PDF, DOCX           | PDF layout uses the existing constrained preset only.                                               |
+| HTML     | Markdown, PDF, DOCX | HTML/CSS to PDF is in scope only through server-built job specs; browser does not call Sir Convert. |
 
 Out of scope for MVP: QTI, Exam.net packages, DigiExam imports, answer-key
 enrichment, STT, diarization, transcript formatter bundles, arbitrary batch
@@ -158,18 +158,18 @@ producer credentials.
 
 ## Ownership split
 
-| Area | Owner | Contract |
-|------|-------|----------|
-| Product route and app identity | Skriptoteket | A later route-visible slice may create `/apps/document-converter`; until then the lane stays inert. |
-| Supported route catalog | Skriptoteket over Sir Convert mirror | The first implementation should expose only the approved MVP route set, not every upstream route. |
-| Source upload validation | Skriptoteket web boundary | Validate declared route, extension/content type, size limits, and exactly one source file before producer submission. |
-| Conversion execution | Sir Convert | `/v2/convert/jobs`, job status, default/named artifact bytes, upstream error taxonomy, source binding, and readiness evidence. |
-| Auth edge | HuleEdu Gateway | Browser-session, CSRF, route grants, signed identity, and server-side Sir Convert credential injection remain unchanged. |
-| Local job ledger | Skriptoteket backend | Owner-scoped job id, upstream job id, source filename, selected source/target route, status, error, correlation id, and timestamps. |
-| Artifact download | Skriptoteket backend | Owner-scoped download by local job id; no browser-direct Sir Convert artifact URL. |
-| Mina filer save | Skriptoteket backend | Server-owned save should fetch or verify producer artifact bytes and store a Vault `APP_EXPORT` record. |
-| Replay/retry | Skriptoteket backend | New submission by default; no original-job fallback or guessed artifact key after failed or stale producer state. |
-| UI shell | Skriptoteket frontend | Dedicated app surface for source, target, progress, result, download, save, retry, and failure recovery. |
+| Area                           | Owner                                | Contract                                                                                                                            |
+| ------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Product route and app identity | Skriptoteket                         | A later route-visible slice may create `/apps/document-converter`; until then the lane stays inert.                                 |
+| Supported route catalog        | Skriptoteket over Sir Convert mirror | The first implementation should expose only the approved MVP route set, not every upstream route.                                   |
+| Source upload validation       | Skriptoteket web boundary            | Validate declared route, extension/content type, size limits, and exactly one source file before producer submission.               |
+| Conversion execution           | Sir Convert                          | `/v2/convert/jobs`, job status, default/named artifact bytes, upstream error taxonomy, source binding, and readiness evidence.      |
+| Auth edge                      | HuleEdu Gateway                      | Browser-session, CSRF, route grants, signed identity, and server-side Sir Convert credential injection remain unchanged.            |
+| Local job ledger               | Skriptoteket backend                 | Owner-scoped job id, upstream job id, source filename, selected source/target route, status, error, correlation id, and timestamps. |
+| Artifact download              | Skriptoteket backend                 | Owner-scoped download by local job id; no browser-direct Sir Convert artifact URL.                                                  |
+| Mina filer save                | Skriptoteket backend                 | Server-owned save should fetch or verify producer artifact bytes and store a Vault `APP_EXPORT` record.                             |
+| Replay/retry                   | Skriptoteket backend                 | New submission by default; no original-job fallback or guessed artifact key after failed or stale producer state.                   |
+| UI shell                       | Skriptoteket frontend                | Dedicated app surface for source, target, progress, result, download, save, retry, and failure recovery.                            |
 
 ### Artifact contract
 

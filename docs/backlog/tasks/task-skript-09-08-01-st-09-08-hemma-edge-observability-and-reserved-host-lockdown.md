@@ -4,8 +4,8 @@ id: TASK-SKRIPT-09-08-01
 title: ST-09-08 Hemma edge observability and reserved-host lockdown
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,13 +17,10 @@ closeout_review:
 story: ST-SKRIPT-09-08
 task_kind: story
 acceptance_criteria:
-- Hemma deploys the repo-side hardening patch and production env values for `ALLOWED_HOSTS`
-  plus the exact trusted nginx-proxy CIDR/IP.
-- The live public edge no longer exposes `/metrics` anonymously.
-- Reserved hosts `hule.education`, `api.hule.education`, and `ws.hule.education` no
-  longer fall through to the Skriptoteket backend.
-- Post-deploy curl proofs are captured for `/docs`, `/openapi.json`, `/metrics`, `/healthz`,
-  and the reserved hosts.
+  - Hemma deploys the repo-side hardening patch and production env values for `ALLOWED_HOSTS` plus the exact trusted nginx-proxy CIDR/IP.
+  - The live public edge no longer exposes `/metrics` anonymously.
+  - Reserved hosts `hule.education`, `api.hule.education`, and `ws.hule.education` no longer fall through to the Skriptoteket backend.
+  - Post-deploy curl proofs are captured for `/docs`, `/openapi.json`, `/metrics`, `/healthz`, and the reserved hosts.
 ---
 
 ## Context

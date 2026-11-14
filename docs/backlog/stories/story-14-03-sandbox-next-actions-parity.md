@@ -37,7 +37,7 @@ We must implement sandbox interactivity using the same invariants as production:
 
 ### Backend (editor sandbox interactivity)
 
-1) Persist sandbox state after `run-sandbox`
+1. Persist sandbox state after `run-sandbox`
 
 - Update the sandbox execution flow to persist `normalized_state` to `tool_sessions` using context
   `sandbox:{version_id}`.
@@ -46,12 +46,12 @@ We must implement sandbox interactivity using the same invariants as production:
 - Nice-to-have: include the resulting `state_rev` in the `run-sandbox` response to avoid an extra session fetch
   roundtrip for the UI.
 
-2) Add editor endpoint to read sandbox session state
+2. Add editor endpoint to read sandbox session state
 
 - Add `GET /api/v1/editor/tool-versions/{version_id}/session` returning `{state, state_rev}` (or `state_rev` only).
 - Enforce the same permissions as `run-sandbox`.
 
-3) Add editor endpoint to start a sandbox action
+3. Add editor endpoint to start a sandbox action
 
 - Add `POST /api/v1/editor/tool-versions/{version_id}/start-action` accepting:
   - `action_id: str`
@@ -64,24 +64,24 @@ We must implement sandbox interactivity using the same invariants as production:
   - updates `tool_sessions` with the new normalized state using `expected_state_rev`
   - returns `{run_id, state_rev}`
 
-4) Regenerate SPA OpenAPI types (ADR-0030)
+4. Regenerate SPA OpenAPI types (ADR-0030)
 
 - After adding/changing editor endpoints and response models, regenerate OpenAPI + TypeScript types:
   - `pdm run fe-gen-api-types`
 
 ### Frontend (SandboxRunner parity)
 
-1) Render actions
+1. Render actions
 
 - Import and render `ToolRunActions` in `SandboxRunner.vue`, driven by `runResult.ui_payload.next_actions`.
 
-2) Track `state_rev` (not `state`)
+2. Track `state_rev` (not `state`)
 
 - Add `sandboxStateRev` state.
 - After each completed run, fetch `/api/v1/editor/tool-versions/{version_id}/session` to populate `sandboxStateRev`.
 - Disable action submission until `sandboxStateRev` is available.
 
-3) Submit actions
+3. Submit actions
 
 - On submit, call the editor start-action endpoint with `expected_state_rev=sandboxStateRev`.
 - Surface conflicts (409) as a dedicated action error message (parity with `ToolRunView`).

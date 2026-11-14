@@ -205,25 +205,25 @@ The implementation order is intentionally staged:
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-| --- | --- | --- |
-| Preserve current strengths | Keep the normalized draft core and backend layering that already work | [x] |
-| Fundamentals-first reset | Recover the visible workflow before exposing more advanced planner logic | [x] |
-| Class-first anchor and draft kinds | Classes stay the teacher anchor, with grouping and seating as separate draft kinds | [x] |
-| Suggestion engine location | Authoritative evaluation may live server-side without entering the default workflow yet | [x] |
-| Constraint model | Draft-scoped typed constraints stay separate from roster identity and student-card presentation | [x] |
-| Validation UX | Cheap client hints remain acceptable, with authoritative backend validation for harder cases | [x] |
+| Decision                           | Rationale                                                                                       | Approve? |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------- | -------- |
+| Preserve current strengths         | Keep the normalized draft core and backend layering that already work                           | [x]      |
+| Fundamentals-first reset           | Recover the visible workflow before exposing more advanced planner logic                        | [x]      |
+| Class-first anchor and draft kinds | Classes stay the teacher anchor, with grouping and seating as separate draft kinds              | [x]      |
+| Suggestion engine location         | Authoritative evaluation may live server-side without entering the default workflow yet         | [x]      |
+| Constraint model                   | Draft-scoped typed constraints stay separate from roster identity and student-card presentation | [x]      |
+| Validation UX                      | Cheap client hints remain acceptable, with authoritative backend validation for harder cases    | [x]      |
 
 ## Review Checklist
 
-| Decision | Proposed direction |
-| --- | --- |
-| Seating randomizer semantics | Seating `Slumpa` reshuffles the full active seating draft and remains fully random for now. |
-| Grouping/classroom relationship | Grouping remains classroom-agnostic by default even if overview shows a selected classroom; classroom-aware grouping remains an explicit opt-in. |
-| Overview transition model | Duplicate resumable CTA in both landing and overview during `ST-24-07`, then remove the landing-only copy in `ST-24-08`. |
-| Desktop-first overview | `Översikt` becomes a compact desktop-first dashboard using compact panels, selectors, previews, and short action rows rather than long management lists. |
-| Final cutover posture | `ST-24-08` is a big-bang landing removal with no compatibility layer left behind. |
-| `Avsluta` semantics | After cutover, `Avsluta` leaves Klassrumskartan and returns the teacher to the page they entered from. |
+| Decision                        | Proposed direction                                                                                                                                       |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Seating randomizer semantics    | Seating `Slumpa` reshuffles the full active seating draft and remains fully random for now.                                                              |
+| Grouping/classroom relationship | Grouping remains classroom-agnostic by default even if overview shows a selected classroom; classroom-aware grouping remains an explicit opt-in.         |
+| Overview transition model       | Duplicate resumable CTA in both landing and overview during `ST-24-07`, then remove the landing-only copy in `ST-24-08`.                                 |
+| Desktop-first overview          | `Översikt` becomes a compact desktop-first dashboard using compact panels, selectors, previews, and short action rows rather than long management lists. |
+| Final cutover posture           | `ST-24-08` is a big-bang landing removal with no compatibility layer left behind.                                                                        |
+| `Avsluta` semantics             | After cutover, `Avsluta` leaves Klassrumskartan and returns the teacher to the page they entered from.                                                   |
 
 ## Review Feedback
 
@@ -265,6 +265,6 @@ planning changes.
 - [x] Overview-first management is separated from the later landing-page cutover.
 - [x] Grouping remains classroom-agnostic by default even when overview shows a classroom.
 - [x] Resumable CTA is duplicated during transition before the final cutover removes the
-      landing-only copy.
+  landing-only copy.
 - [x] `Avsluta` becomes an exit-to-origin action only in the final cutover story, with catalog as
-      the fallback when entry-origin state is missing.
+  the fallback when entry-origin state is missing.

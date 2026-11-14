@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-06
 title: Contributor help (Mina verktyg + Föreslå skript)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,12 +16,10 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given contributor pages, when opening help, then it explains what each panel lets
-  the user do (edit, submit suggestion, choose professions/categories)
-- Given non-trivial text fields (title/description), when focusing them, then placeholder
-  examples are shown and field help is available
+  - Given contributor pages, when opening help, then it explains what each panel lets the user do (edit, submit suggestion, choose professions/categories)
+  - Given non-trivial text fields (title/description), when focusing them, then placeholder examples are shown and field help is available
 retired_ids:
-- ST-08-06
+  - ST-08-06
 ---
 
 ## Context
@@ -54,14 +52,12 @@ No separate notes is stated in the source.
 
 ### Source: Scope
 
-
 Kontext-hjälp för contributors:
 
 - `my_tools.html`
 - `suggestions_new.html`
 
 ### Source: Tasks
-
 
 - [ ] Skapa help topics för båda sidorna (kort, actions-fokuserat)
 - [ ] Lägg till fält-hjälp + placeholder-exempel för:
@@ -71,7 +67,6 @@ Kontext-hjälp för contributors:
 - [ ] Förklara granskningsflödet på ett icke-tekniskt sätt (”ligger i granskningskön”)
 
 ### Source: Files
-
 
 - `src/skriptoteket/web/templates/my_tools.html`
 - `src/skriptoteket/web/templates/suggestions_new.html`

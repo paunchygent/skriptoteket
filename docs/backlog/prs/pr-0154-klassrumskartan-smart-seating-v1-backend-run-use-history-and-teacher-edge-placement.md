@@ -8,17 +8,7 @@ created: 2026-03-27
 updated: 2026-05-11
 stories:
   - "ST-27-03"
-tags:
-  [
-    "backend",
-    "frontend",
-    "api",
-    "planner",
-    "smart-assignment",
-    "klassrumskartan",
-    "seating",
-    "history",
-  ]
+tags: ["backend", "frontend", "api", "planner", "smart-assignment", "klassrumskartan", "seating", "history"]
 dependencies:
   - "ADR-0074"
   - "EPIC-27"
@@ -85,6 +75,7 @@ small while making smart seating real end-to-end:
 ## Implementation plan
 
 1. Lock the run contract and pure smart-seating rules in tests first.
+
    - Add pure domain tests for teaching-edge inference.
    - Add pure domain tests for seating objectives:
      - `Keep apart` avoids direct orthogonal adjacency where possible.
@@ -98,6 +89,7 @@ small while making smart seating real end-to-end:
      no-history soft-degrade.
 
 2. Add the backend smart-seating run seam.
+
    - Introduce one pure smart-seating domain module for:
      - teaching-edge inference
      - seat distance ranking
@@ -117,6 +109,7 @@ small while making smart seating real end-to-end:
      remain truthful.
 
 3. Extend the checkpoint repository seam for fairness-over-time.
+
    - Keep `PR-0150` dedupe semantics intact.
    - Add one protocol/repository read path with explicit eligibility semantics for smart seating:
      - same `roster_id`
@@ -131,6 +124,7 @@ small while making smart seating real end-to-end:
      handler.
 
 4. Add the bespoke web/API contract.
+
    - Add one seating-only endpoint for backend smart runs:
      - `POST /api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run`
    - Request body:
@@ -155,6 +149,7 @@ small while making smart seating real end-to-end:
    - Map domain/application errors to those thin HTTP responses in the web layer only.
 
 5. Wire the seating workspace onto the smart run without reopening the planner shell.
+
    - Add a draft-local `Use history` control in the seating workspace.
    - Keep the current `Smart` toggle and current visible rule surface.
    - Branch `Slumpa`:

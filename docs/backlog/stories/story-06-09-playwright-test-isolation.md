@@ -27,12 +27,12 @@ When running Playwright tests, they create drafts or publish versions with test-
 
 ## Audit Results
 
-| Script | Modifies Source | Restores | Severity |
-|--------|-----------------|----------|----------|
-| `playwright_st_11_07_spa_tool_run_e2e.py` | Creates draft via API | NO | HIGH |
-| `playwright_st_12_03_personalized_tool_settings_e2e.py` | Publishes new version | NO | CRITICAL |
-| `playwright_st_12_02_native_pdf_output_helper_e2e.py` | Modifies CodeMirror | YES | OK |
-| Others | Read-only | N/A | OK |
+| Script                                                  | Modifies Source       | Restores | Severity |
+| ------------------------------------------------------- | --------------------- | -------- | -------- |
+| `playwright_st_11_07_spa_tool_run_e2e.py`               | Creates draft via API | NO       | HIGH     |
+| `playwright_st_12_03_personalized_tool_settings_e2e.py` | Publishes new version | NO       | CRITICAL |
+| `playwright_st_12_02_native_pdf_output_helper_e2e.py`   | Modifies CodeMirror   | YES      | OK       |
+| Others                                                  | Read-only             | N/A      | OK       |
 
 ## Root Cause
 
@@ -67,6 +67,7 @@ No cleanup. Publishes modified code!
 ### Recommended: Create dedicated test tools
 
 Rationale:
+
 - Cleanup code is fragile (test failure = dirty state)
 - Dedicated tools are explicit about their purpose
 - No risk of polluting production demo tools
@@ -88,12 +89,12 @@ Rationale:
 
 ## Files to Create/Modify
 
-| File | Action |
-|------|--------|
-| `src/skriptoteket/script_bank/scripts/demo_regression_table.py` | NEW |
-| `src/skriptoteket/script_bank/scripts/demo_settings_test.py` | NEW |
-| `src/skriptoteket/script_bank/manifest.py` | Add new tools |
-| `scripts/playwright_st_11_07_spa_tool_run_e2e.py` | Use new tool, remove source modification |
+| File                                                            | Action                                   |
+| --------------------------------------------------------------- | ---------------------------------------- |
+| `src/skriptoteket/script_bank/scripts/demo_regression_table.py` | NEW                                      |
+| `src/skriptoteket/script_bank/scripts/demo_settings_test.py`    | NEW                                      |
+| `src/skriptoteket/script_bank/manifest.py`                      | Add new tools                            |
+| `scripts/playwright_st_11_07_spa_tool_run_e2e.py`               | Use new tool, remove source modification |
 | `scripts/playwright_st_12_03_personalized_tool_settings_e2e.py` | Use new tool, remove source modification |
 
 ## Immediate Workaround

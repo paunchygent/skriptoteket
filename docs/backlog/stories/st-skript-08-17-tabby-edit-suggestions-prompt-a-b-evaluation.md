@@ -4,8 +4,8 @@ id: ST-SKRIPT-08-17
 title: Tabby edit suggestions + prompt A/B evaluation
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -16,18 +16,12 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-08
 acceptance_criteria:
-- Given LLM edit suggestions are enabled and provider=tabby, when an edit is requested,
-  then the backend calls Tabby /v1/chat/completions and returns enabled=true with
-  a raw replacement suggestion
-- Given provider=llama (default), when an edit is requested, then behavior matches
-  the ST-08-16 llama-only path (no regression)
-- Given a configured prompt variant, when an edit is requested, then the selected
-  prompt template is applied and the variant id is logged (metadata only)
-- Given the A/B evaluation script is run, when it completes, then it writes a summary
-  report (success/empty/truncated/latency) to .artifacts/ai-edit-ab/ without logging
-  prompt or code content
+  - Given LLM edit suggestions are enabled and provider=tabby, when an edit is requested, then the backend calls Tabby /v1/chat/completions and returns enabled=true with a raw replacement suggestion
+  - Given provider=llama (default), when an edit is requested, then behavior matches the ST-08-16 llama-only path (no regression)
+  - Given a configured prompt variant, when an edit is requested, then the selected prompt template is applied and the variant id is logged (metadata only)
+  - Given the A/B evaluation script is run, when it completes, then it writes a summary report (success/empty/truncated/latency) to .artifacts/ai-edit-ab/ without logging prompt or code content
 retired_ids:
-- ST-08-17
+  - ST-08-17
 ---
 
 ## Context

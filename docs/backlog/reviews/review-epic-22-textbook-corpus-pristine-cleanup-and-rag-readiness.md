@@ -36,26 +36,26 @@ traceability.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md` | Policy clarity and guardrails | 10 min |
-| `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md` | Scope, risks, sequencing | 6 min |
-| `docs/backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md` | Acceptance criteria and testability | 8 min |
-| `docs/backlog/prs/pr-0073-textbook-corpus-governance-immutable-snapshot-and-job-reconciliation.md` | Baseline/provenance gate completeness | 6 min |
-| `docs/backlog/prs/pr-0074-textbook-corpus-deterministic-mechanical-cleanup-and-issue-ledger.md` | Script boundary enforcement | 6 min |
-| `docs/backlog/prs/pr-0075-textbook-corpus-multi-agent-manual-restoration-and-verification.md` | Manual labor workflow safety | 6 min |
-| `docs/backlog/prs/pr-0076-textbook-corpus-integrity-gates-and-pristine-build-contract.md` | Promotion gates and fail-closed behavior | 6 min |
-| `docs/backlog/prs/pr-0077-textbook-corpus-rag-packaging-and-postgresql-vector-ingest-contract.md` | RAG provenance and retrieval QA gates | 6 min |
+| File                                                                                                   | Focus                                    | Time   |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------- | ------ |
+| `docs/adr/adr-0068-textbook-corpus-pristine-cleanup-and-rag-ingest-governance.md`                      | Policy clarity and guardrails            | 10 min |
+| `docs/backlog/epics/epic-22-textbook-corpus-pristine-cleanup-and-rag-readiness.md`                     | Scope, risks, sequencing                 | 6 min  |
+| `docs/backlog/stories/story-22-01-textbook-corpus-cleanup-pipeline-and-manual-restoration-workflow.md` | Acceptance criteria and testability      | 8 min  |
+| `docs/backlog/prs/pr-0073-textbook-corpus-governance-immutable-snapshot-and-job-reconciliation.md`     | Baseline/provenance gate completeness    | 6 min  |
+| `docs/backlog/prs/pr-0074-textbook-corpus-deterministic-mechanical-cleanup-and-issue-ledger.md`        | Script boundary enforcement              | 6 min  |
+| `docs/backlog/prs/pr-0075-textbook-corpus-multi-agent-manual-restoration-and-verification.md`          | Manual labor workflow safety             | 6 min  |
+| `docs/backlog/prs/pr-0076-textbook-corpus-integrity-gates-and-pristine-build-contract.md`              | Promotion gates and fail-closed behavior | 6 min  |
+| `docs/backlog/prs/pr-0077-textbook-corpus-rag-packaging-and-postgresql-vector-ingest-contract.md`      | RAG provenance and retrieval QA gates    | 6 min  |
 
 **Total estimated time:** ~54 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Strict no-autofix semantic zones | Prevent silent meaning corruption | [ ] |
-| Manual patch + verifier workflow | Make semantic edits auditable and reversible | [ ] |
-| Fail-closed pristine/RAG promotion gates | Prevent ingest of unresolved critical corruption | [ ] |
+| Decision                                 | Rationale                                        | Approve? |
+| ---------------------------------------- | ------------------------------------------------ | -------- |
+| Strict no-autofix semantic zones         | Prevent silent meaning corruption                | [ ]      |
+| Manual patch + verifier workflow         | Make semantic edits auditable and reversible     | [ ]      |
+| Fail-closed pristine/RAG promotion gates | Prevent ingest of unresolved critical corruption | [ ]      |
 
 ## Review Checklist
 
@@ -88,6 +88,6 @@ stays auditable.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | Review record | Preserved the textbook corpus review in canonical shape while keeping the integrity/provenance decisions pending. |
+| Change | Artifact      | Description                                                                                                       |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1      | Review record | Preserved the textbook corpus review in canonical shape while keeping the integrity/provenance decisions pending. |

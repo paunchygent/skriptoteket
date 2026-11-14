@@ -62,30 +62,30 @@ Approve a small frontend-led PR slice that:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0259-st-32-06-public-smart-slumpa-accepted-workspace-snapshot-commit-contract.md` | Scope, acceptance criteria, and proof obligations | 12 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts` | Current failing orchestration and planned commit injection point | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartSeatingRun.ts` | Seating public Smart flow and success/rollback behavior | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartGroupingRun.ts` | Grouping parity and shared risk surface | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/useDraftPersistenceLane.ts` | Busy-gated autosave behavior and direct-commit acknowledgement needs | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftWorkspace.ts` | Existing guest snapshot mutation seam to reuse | 6 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_seating.py` | Backend revision guard that should remain intact | 4 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_grouping.py` | Grouping revision guard parity | 4 min |
-| `docs/backlog/reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md` | Prior approved guest Smart boundary and regression context | 6 min |
+| File                                                                                                   | Focus                                                                | Time   |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0259-st-32-06-public-smart-slumpa-accepted-workspace-snapshot-commit-contract.md` | Scope, acceptance criteria, and proof obligations                    | 12 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts`                       | Current failing orchestration and planned commit injection point     | 8 min  |
+| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartSeatingRun.ts`                                | Seating public Smart flow and success/rollback behavior              | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/usePublicSmartGroupingRun.ts`                               | Grouping parity and shared risk surface                              | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useDraftPersistenceLane.ts`                                 | Busy-gated autosave behavior and direct-commit acknowledgement needs | 6 min  |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftWorkspace.ts`                     | Existing guest snapshot mutation seam to reuse                       | 6 min  |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_seating.py`         | Backend revision guard that should remain intact                     | 4 min  |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/public_smart_grouping.py`        | Grouping revision guard parity                                       | 4 min  |
+| `docs/backlog/reviews/review-pr-0231-guest-smart-parity-and-local-continuity-boundary.md`              | Prior approved guest Smart boundary and regression context           | 6 min  |
 
 **Total estimated time:** ~58 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Fix the public guest snapshot commit path rather than backend revision validation | The backend is correctly detecting drift between `expected_revision` and submitted snapshot truth | [x] |
-| Commit accepted Smart workspaces directly to guest storage before applying success | Success should mean the browser-owned snapshot can survive the next run or reload | [x] |
-| Apply the contract to both public seating and grouping | Both public Smart composables share the same persistence shape even though seating surfaced the bug | [x] |
-| Keep Smart-off `Slumpa` on existing local random autosave semantics | The regression is specific to accepted public Smart helper results | [x] |
-| Add two-consecutive-run proof as the main regression test | One successful run is insufficient; the bug appears on the next `Slumpa` | [x] |
-| Sanitize public Smart revision-conflict toasts | Raw revision diagnostics are internal and not actionable teacher copy | [x] |
+| Decision                                                                           | Rationale                                                                                           | Approve? |
+| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------- |
+| Fix the public guest snapshot commit path rather than backend revision validation  | The backend is correctly detecting drift between `expected_revision` and submitted snapshot truth   | [x]      |
+| Commit accepted Smart workspaces directly to guest storage before applying success | Success should mean the browser-owned snapshot can survive the next run or reload                   | [x]      |
+| Apply the contract to both public seating and grouping                             | Both public Smart composables share the same persistence shape even though seating surfaced the bug | [x]      |
+| Keep Smart-off `Slumpa` on existing local random autosave semantics                | The regression is specific to accepted public Smart helper results                                  | [x]      |
+| Add two-consecutive-run proof as the main regression test                          | One successful run is insufficient; the bug appears on the next `Slumpa`                            | [x]      |
+| Sanitize public Smart revision-conflict toasts                                     | Raw revision diagnostics are internal and not actionable teacher copy                               | [x]      |
 
 ## Review Checklist
 
@@ -152,8 +152,8 @@ Implementation must preserve these proof obligations:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0259` | Created a detailed follow-up implementation slice for public Smart `Slumpa` accepted-workspace guest snapshot commits. |
-| 2 | `REV-PR-0259` | Approved the direct public guest snapshot commit contract and recorded the required implementation proof obligations. |
-| 3 | `PR-0259` / `REV-PR-0259` | Clarified that the same root cause covers grouping and that raw `Draft revision mismatch` diagnostics must not surface in user toasts. |
+| Change | Artifact                  | Description                                                                                                                            |
+| ------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0259`                 | Created a detailed follow-up implementation slice for public Smart `Slumpa` accepted-workspace guest snapshot commits.                 |
+| 2      | `REV-PR-0259`             | Approved the direct public guest snapshot commit contract and recorded the required implementation proof obligations.                  |
+| 3      | `PR-0259` / `REV-PR-0259` | Clarified that the same root cause covers grouping and that raw `Draft revision mismatch` diagnostics must not surface in user toasts. |

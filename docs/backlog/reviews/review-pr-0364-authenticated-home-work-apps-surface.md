@@ -52,28 +52,28 @@ preserves flat secondary file/catalog/contribution affordances.
 
 ## Artifacts To Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md` | Approved C2 design direction, accepted/rejected patterns, Document Converter truth boundary | 8 min |
-| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html` | Concrete HTML/CSS mockup hierarchy, token usage, truthful links, and forbidden nested-card/open-link patterns | 10 min |
-| `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md` | Scope, decisions, options, red/green plan, and proof gates | 20 min |
-| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-desktop.png` | Desktop geometry, equal-height shelves, and absence of clipping/overlap | 5 min |
-| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-mobile.png` | Compact-width geometry, stacking coherence, and absence of clipping/overlap | 5 min |
+| File                                                                                        | Focus                                                                                                         | Time   |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------ |
+| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md`                       | Approved C2 design direction, accepted/rejected patterns, Document Converter truth boundary                   | 8 min  |
+| `docs/mockups/pr-0364-authenticated-home-work-apps-surface/index.html`                      | Concrete HTML/CSS mockup hierarchy, token usage, truthful links, and forbidden nested-card/open-link patterns | 10 min |
+| `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md`                 | Scope, decisions, options, red/green plan, and proof gates                                                    | 20 min |
+| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-desktop.png` | Desktop geometry, equal-height shelves, and absence of clipping/overlap                                       | 5 min  |
+| `.artifacts/pr-0364-authenticated-home-work-apps-surface/design-rule-alignment-mobile.png`  | Compact-width geometry, stacking coherence, and absence of clipping/overlap                                   | 5 min  |
 
 **Total estimated time:** ~56 minutes.
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Put work-app lanes before old dashboard/platform sections on authenticated `/`. | This is the smallest route-visible step that centers the current product proposition without changing sidebar navigation yet. | [x] |
-| Use current truthful route targets for the three runnable lanes. | `PR-0363` made Exam and Transcript directly linkable while preserving app-id compatibility. | [x] |
-| Promote `Kodredigerare` into the app shelf. | The user explicitly rejected treating the editor as a form or nested secondary action. | [x] |
-| Include `Document Converter` only with a truthful route stop condition. | The approved mockup includes the lane, but linking it to Exam/Transcript or catalog would be false. | [x] |
-| Remove `Mina körningar`/latest/recent home chrome. | The user explicitly retired this dashboard path from the active home direction. | [x] |
-| Preserve useful secondary surfaces without nested cards. | Files/catalog/contribution remain useful but must be flat ledger affordances below the app shelf. | [x] |
-| Require Docker-backed HuleEdu browser-session proof. | Authenticated route-visible proof belongs to the implementation slice, not this static mockup review; the PR still keeps that gate. | [x] |
-| Treat the approved C2 mockup as the design authority. | The user approved the latest C2 suggestion and requested a real HTML/CSS mockup before code. | [x] |
+| Decision                                                                        | Rationale                                                                                                                           | Approve? |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Put work-app lanes before old dashboard/platform sections on authenticated `/`. | This is the smallest route-visible step that centers the current product proposition without changing sidebar navigation yet.       | [x]      |
+| Use current truthful route targets for the three runnable lanes.                | `PR-0363` made Exam and Transcript directly linkable while preserving app-id compatibility.                                         | [x]      |
+| Promote `Kodredigerare` into the app shelf.                                     | The user explicitly rejected treating the editor as a form or nested secondary action.                                              | [x]      |
+| Include `Document Converter` only with a truthful route stop condition.         | The approved mockup includes the lane, but linking it to Exam/Transcript or catalog would be false.                                 | [x]      |
+| Remove `Mina körningar`/latest/recent home chrome.                              | The user explicitly retired this dashboard path from the active home direction.                                                     | [x]      |
+| Preserve useful secondary surfaces without nested cards.                        | Files/catalog/contribution remain useful but must be flat ledger affordances below the app shelf.                                   | [x]      |
+| Require Docker-backed HuleEdu browser-session proof.                            | Authenticated route-visible proof belongs to the implementation slice, not this static mockup review; the PR still keeps that gate. | [x]      |
+| Treat the approved C2 mockup as the design authority.                           | The user approved the latest C2 suggestion and requested a real HTML/CSS mockup before code.                                        | [x]      |
 
 ## Review Checklist
 
@@ -441,9 +441,9 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0364` | Retained the independent mockup review verdict as `approved` with scoped evidence, no findings, and validator results |
-| 2 | `REV-PR-0364` | Added a separate runtime implementation review pass, recorded the live-proof blocker plus code/test findings, and changed the current overall verdict to `changes_requested` |
-| 3 | `REV-PR-0364` | Added a follow-up runtime pass confirming the loader/test findings are fixed and that only the governed authenticated browser-proof blocker remains |
-| 4 | `REV-PR-0364` | Added the final runtime proof-closeout pass, verified the corrected preflight plus retained browser-proof artifacts, and promoted the overall verdict to `approved` |
+| Change | Artifact      | Description                                                                                                                                                                  |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0364` | Retained the independent mockup review verdict as `approved` with scoped evidence, no findings, and validator results                                                        |
+| 2      | `REV-PR-0364` | Added a separate runtime implementation review pass, recorded the live-proof blocker plus code/test findings, and changed the current overall verdict to `changes_requested` |
+| 3      | `REV-PR-0364` | Added a follow-up runtime pass confirming the loader/test findings are fixed and that only the governed authenticated browser-proof blocker remains                          |
+| 4      | `REV-PR-0364` | Added the final runtime proof-closeout pass, verified the corrected preflight plus retained browser-proof artifacts, and promoted the overall verdict to `approved`          |

@@ -45,26 +45,26 @@ it claims to protect.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0365-st-37-03-authenticated-shell-navigation-realignment.md` | Scope, acceptance criteria, review gate, and proof plan | 15 min |
-| `docs/backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md` | Parent story state and dependency truth | 8 min |
-| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic implementation summary consistency | 8 min |
-| `docs/index.md` | Durable docs discoverability | 5 min |
-| `docs/reference/ref-service-shell-ux-realignment-plan-v1.md` | Governing shell sequence and proof expectations | 10 min |
-| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md` | Lane naming and route-visible stop conditions | 8 min |
-| `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md` | Dependency close-out status | 5 min |
+| File                                                                                            | Focus                                                   | Time   |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0365-st-37-03-authenticated-shell-navigation-realignment.md`               | Scope, acceptance criteria, review gate, and proof plan | 15 min |
+| `docs/backlog/stories/story-37-03-service-shell-and-dashboard-ux-realignment.md`                | Parent story state and dependency truth                 | 8 min  |
+| `docs/backlog/epics/epic-37-backlog-product-direction-inventory-and-app-surface-realignment.md` | Epic implementation summary consistency                 | 8 min  |
+| `docs/index.md`                                                                                 | Durable docs discoverability                            | 5 min  |
+| `docs/reference/ref-service-shell-ux-realignment-plan-v1.md`                                    | Governing shell sequence and proof expectations         | 10 min |
+| `docs/reference/ref-app-presentation-decomposition-and-naming-plan-v1.md`                       | Lane naming and route-visible stop conditions           | 8 min  |
+| `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md`                   | Dependency close-out status                             | 5 min  |
 
 **Total estimated time:** ~59 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Lead authenticated navigation with `Klassrumskartan`, `Provhantering`, `Ljudtranskribering`, and contributor-only `Kodredigerare`, with no visible group labels. | Matches the approved product direction and keeps `Document Converter` out of runtime navigation until a truthful route exists. | [x] |
-| Make `Föreslå verktyg` available to all signed-in users. | The user explicitly widened this surface beyond contributor-only gating. | [x] |
-| Surface `PR-0365` through the normal docs doorway and truthful parent backlog chain before implementation. | This repo requires `docs/index.md` plus parent backlog records to remain the discoverable authority. | [x] |
-| Keep the route-visible proof plan aligned with sidebar ordering and shell-level focus/immersive/breakpoint behavior. | Test truthfulness matters because the slice claims protection for more than one component boundary. | [x] |
+| Decision                                                                                                                                                         | Rationale                                                                                                                      | Approve? |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Lead authenticated navigation with `Klassrumskartan`, `Provhantering`, `Ljudtranskribering`, and contributor-only `Kodredigerare`, with no visible group labels. | Matches the approved product direction and keeps `Document Converter` out of runtime navigation until a truthful route exists. | [x]      |
+| Make `Föreslå verktyg` available to all signed-in users.                                                                                                         | The user explicitly widened this surface beyond contributor-only gating.                                                       | [x]      |
+| Surface `PR-0365` through the normal docs doorway and truthful parent backlog chain before implementation.                                                       | This repo requires `docs/index.md` plus parent backlog records to remain the discoverable authority.                           | [x]      |
+| Keep the route-visible proof plan aligned with sidebar ordering and shell-level focus/immersive/breakpoint behavior.                                             | Test truthfulness matters because the slice claims protection for more than one component boundary.                            | [x]      |
 
 ## Review Checklist
 
@@ -202,8 +202,8 @@ exists, this slice cannot be approved.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0365` | Created the retained pre-implementation review record and requested changes on docs discoverability, parent authority truth, and proof-plan alignment. |
-| 2 | `REV-PR-0365` | Re-reviewed the blocker fixes, found no remaining docs-authority gaps in scope, and updated the retained decision to `approved`. |
-| 3 | `REV-PR-0365` | Performed the post-implementation ruthless review, confirmed the runtime patch and focused tests are aligned, and moved the retained decision back to `changes_requested` because protected authenticated browser proof is still missing. |
+| Change | Artifact      | Description                                                                                                                                                                                                                               |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0365` | Created the retained pre-implementation review record and requested changes on docs discoverability, parent authority truth, and proof-plan alignment.                                                                                    |
+| 2      | `REV-PR-0365` | Re-reviewed the blocker fixes, found no remaining docs-authority gaps in scope, and updated the retained decision to `approved`.                                                                                                          |
+| 3      | `REV-PR-0365` | Performed the post-implementation ruthless review, confirmed the runtime patch and focused tests are aligned, and moved the retained decision back to `changes_requested` because protected authenticated browser proof is still missing. |

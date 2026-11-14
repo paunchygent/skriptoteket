@@ -31,26 +31,25 @@ bulk migration blocker.
 
 Consume the provider subject export from HuleEdu `TASK-0326`, apply an explicit
 Skriptoteket-owned role matrix, and keep all authorization in local `User.role`
-while projection identity comes from `(product_identity_realm,
-realm_subject_id)`.
+while projection identity comes from `(product_identity_realm, realm_subject_id)`.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0260-st-28-11-bootstrap-projection-role-matrix-contract.md` | Scope and implementation contract | 10 min |
-| `docs/backlog/stories/story-28-11-bootstrap-proof-identities-and-projection-role-matrix.md` | Parent story expectations | 5 min |
-| `docs/backlog/tasks/task-0326-*` in HuleEdu | Provider prerequisite fit | 5 min |
+| File                                                                                        | Focus                             | Time   |
+| ------------------------------------------------------------------------------------------- | --------------------------------- | ------ |
+| `docs/backlog/prs/pr-0260-st-28-11-bootstrap-projection-role-matrix-contract.md`            | Scope and implementation contract | 10 min |
+| `docs/backlog/stories/story-28-11-bootstrap-proof-identities-and-projection-role-matrix.md` | Parent story expectations         | 5 min  |
+| `docs/backlog/tasks/task-0326-*` in HuleEdu                                                 | Provider prerequisite fit         | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Do not bulk import alpha users | Fake education-domain users are not launch-critical identity assets | [x] |
-| Keep role assignment local | Skriptoteket roles remain product authorization, not provider claims | [x] |
-| Require sanitized subject export input | Avoid copying credentials or tokens between repos | [x] |
+| Decision                               | Rationale                                                            | Approve? |
+| -------------------------------------- | -------------------------------------------------------------------- | -------- |
+| Do not bulk import alpha users         | Fake education-domain users are not launch-critical identity assets  | [x]      |
+| Keep role assignment local             | Skriptoteket roles remain product authorization, not provider claims | [x]      |
+| Require sanitized subject export input | Avoid copying credentials or tokens between repos                    | [x]      |
 
 ## Review Checklist
 
@@ -143,14 +142,14 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0260` | Initial review-ready consumer bootstrap slice |
-| 2 | `ST-28-11` / `PR-0260` | Marked the story and PR blocked until HuleEdu `REV-TASK-0326-01` approves the corrected provider export contract |
-| 3 | `PR-0260` | Froze the consumed export schema, including `stable_account_key`, `active_app=skriptoteket`, `active_product_identity_realm=skriptoteket_standalone`, `realm_subject_id`, `email`, `email_verified=true`, and `skriptoteket_role_hint` |
-| 4 | `PR-0260` | Explicitly labeled `huleedu_subject_id` diagnostic-only and forbidden as a projection lookup key |
-| 5 | `PR-0260` | Added concrete focused backend test commands, type/lint/docs/diff gates, and the gitignored sanitized artifact directory `.artifacts/skriptoteket-auth-bootstrap/` |
-| 6 | `PR-0260` | Recorded HuleEdu `TASK-0326` completion/deployment/proof state and marked the provider gate resolved |
+| Change | Artifact               | Description                                                                                                                                                                                                                            |
+| ------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0260`              | Initial review-ready consumer bootstrap slice                                                                                                                                                                                          |
+| 2      | `ST-28-11` / `PR-0260` | Marked the story and PR blocked until HuleEdu `REV-TASK-0326-01` approves the corrected provider export contract                                                                                                                       |
+| 3      | `PR-0260`              | Froze the consumed export schema, including `stable_account_key`, `active_app=skriptoteket`, `active_product_identity_realm=skriptoteket_standalone`, `realm_subject_id`, `email`, `email_verified=true`, and `skriptoteket_role_hint` |
+| 4      | `PR-0260`              | Explicitly labeled `huleedu_subject_id` diagnostic-only and forbidden as a projection lookup key                                                                                                                                       |
+| 5      | `PR-0260`              | Added concrete focused backend test commands, type/lint/docs/diff gates, and the gitignored sanitized artifact directory `.artifacts/skriptoteket-auth-bootstrap/`                                                                     |
+| 6      | `PR-0260`              | Recorded HuleEdu `TASK-0326` completion/deployment/proof state and marked the provider gate resolved                                                                                                                                   |
 
 ## Planning Re-review Decision 2026-04-13
 
@@ -180,22 +179,20 @@ accepted:
    back user/projection mutations but still record a sanitized local
    `identity_projection_events` audit row for the blocked outcome.
 
-**Implementation review verification:** `pdm run pytest -q
-tests/unit/application/identity/test_bootstrap_subject_export_schema.py
-tests/unit/application/identity/test_bootstrap_projection_role_matrix.py`
+**Implementation review verification:** `pdm run pytest -q tests/unit/application/identity/test_bootstrap_subject_export_schema.py tests/unit/application/identity/test_bootstrap_projection_role_matrix.py`
 passed; `pdm run consume-huleedu-subject-export --help` confirmed command
 registration; `pdm run typecheck` passed. The reviewer did not run
 `pdm run lint`, `pdm run docs-validate`, or `git diff --check` in that pass.
 
 ## Changes Made For Implementation Review
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 7 | `huleedu_subject_export_contract.py` | Made `schema_version`, `active_app`, and `active_product_identity_realm` required top-level export fields; stopped synthesizing them from defaults |
-| 8 | schema tests | Added rejection coverage for bare arrays, unversioned accounts objects, missing contract fields, and failed provider envelopes |
-| 9 | `huleedu_subject_export_consumer.py` | Added blocked-mapping handling that rolls back unsafe apply mutations and then records a sanitized local audit event in a clean Unit of Work |
-| 10 | projection-role matrix tests | Asserted duplicate email/linking failures persist the expected `DUPLICATE_EMAIL_LINKING_REQUIRED` event |
-| 11 | audit integration test | Added DB-backed proof that a blocked email-linking apply creates no user/projection mutation but does commit the audit event |
+| Change | Artifact                             | Description                                                                                                                                        |
+| ------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 7      | `huleedu_subject_export_contract.py` | Made `schema_version`, `active_app`, and `active_product_identity_realm` required top-level export fields; stopped synthesizing them from defaults |
+| 8      | schema tests                         | Added rejection coverage for bare arrays, unversioned accounts objects, missing contract fields, and failed provider envelopes                     |
+| 9      | `huleedu_subject_export_consumer.py` | Added blocked-mapping handling that rolls back unsafe apply mutations and then records a sanitized local audit event in a clean Unit of Work       |
+| 10     | projection-role matrix tests         | Asserted duplicate email/linking failures persist the expected `DUPLICATE_EMAIL_LINKING_REQUIRED` event                                            |
+| 11     | audit integration test               | Added DB-backed proof that a blocked email-linking apply creates no user/projection mutation but does commit the audit event                       |
 
 ## Remediation Re-review Request 2026-04-13
 

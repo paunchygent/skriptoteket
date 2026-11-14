@@ -86,13 +86,13 @@ Every action sends `app=skriptoteket`,
 Skriptoteket route string; hostile, cross-origin, protocol-relative, login, or
 callback loops are dropped.
 
-| Action | Skriptoteket source | HuleEdu path | Token rule | Expected first interactive page |
-|--------|---------------------|--------------|------------|---------------------------------|
-| Login | `/auth/login` auto-handoff and visible login buttons | `/auth/login` | No token accepted or forwarded | Login form/page for the Skriptoteket app realm |
-| Create account | `/register` and "Skapa konto" affordances | `/auth/register` | No token accepted or forwarded | Registration form/page for the Skriptoteket app realm |
-| Password-reset request | `/forgot-password` and "Glömt lösenordet?" affordances | `/auth/password-reset` | No token in product-originating request links | Password-reset request form/page |
-| Password-reset completion | `/reset-password?token=<redacted>` and reset email links | `/auth/password-reset` | `token` is required for completion, forwarded to HuleEdu, and redacted from artifacts | New-password completion form/page |
-| Email verification | `/verify-email?token=<redacted>` and verification email links | `/auth/email-verification` | `token` is required for verification, forwarded to HuleEdu, and redacted from artifacts | Email-verification action/confirmation page |
+| Action                    | Skriptoteket source                                           | HuleEdu path               | Token rule                                                                              | Expected first interactive page                       |
+| ------------------------- | ------------------------------------------------------------- | -------------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Login                     | `/auth/login` auto-handoff and visible login buttons          | `/auth/login`              | No token accepted or forwarded                                                          | Login form/page for the Skriptoteket app realm        |
+| Create account            | `/register` and "Skapa konto" affordances                     | `/auth/register`           | No token accepted or forwarded                                                          | Registration form/page for the Skriptoteket app realm |
+| Password-reset request    | `/forgot-password` and "Glömt lösenordet?" affordances        | `/auth/password-reset`     | No token in product-originating request links                                           | Password-reset request form/page                      |
+| Password-reset completion | `/reset-password?token=<redacted>` and reset email links      | `/auth/password-reset`     | `token` is required for completion, forwarded to HuleEdu, and redacted from artifacts   | New-password completion form/page                     |
+| Email verification        | `/verify-email?token=<redacted>` and verification email links | `/auth/email-verification` | `token` is required for verification, forwarded to HuleEdu, and redacted from artifacts | Email-verification action/confirmation page           |
 
 No canonical link in this matrix may target local browser endpoints under
 `/api/v1/auth/*` or HuleEdu API endpoints under `/v1/auth/*`. Generic HuleEdu

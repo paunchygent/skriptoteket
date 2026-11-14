@@ -47,31 +47,31 @@ run the focused plus live proofs.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md` | Scope, gates, proof obligations | 20 min |
-| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md` | HuleEdu Gateway and signed downstream identity boundary | 8 min |
-| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md` | App-local continuation boundary | 5 min |
-| `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md` | Projection and signed-context constraints | 8 min |
-| `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` | Product identity realm correction and follow-up ADR/story direction | 10 min |
-| `frontend/apps/skriptoteket/src/api/client.ts` | Current browser API transport | 5 min |
-| `frontend/apps/skriptoteket/src/stores/auth.ts` and `frontend/apps/skriptoteket/src/router/routes.ts` | Local ceremony calls/routes | 8 min |
-| `src/skriptoteket/web/auth/api_dependencies.py` and `src/skriptoteket/application/identity/huleedu_app_projection.py` | Current guard surface and missing projection behavior | 8 min |
-| `migrations/versions/0001_init.py` and `migrations/versions/0030_sessions_cache_ai_settings.py` | Session table lifecycle | 5 min |
-| `pyproject.toml` and `scripts/_playwright_auth.py` | Supported script surfaces using local auth | 5 min |
+| File                                                                                                                  | Focus                                                               | Time   |
+| --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md`                      | Scope, gates, proof obligations                                     | 20 min |
+| `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md`                                       | HuleEdu Gateway and signed downstream identity boundary             | 8 min  |
+| `docs/adr/adr-0082-app-local-bootstrap-continuation-on-huleedu-session.md`                                            | App-local continuation boundary                                     | 5 min  |
+| `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md`         | Projection and signed-context constraints                           | 8 min  |
+| `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md`                   | Product identity realm correction and follow-up ADR/story direction | 10 min |
+| `frontend/apps/skriptoteket/src/api/client.ts`                                                                        | Current browser API transport                                       | 5 min  |
+| `frontend/apps/skriptoteket/src/stores/auth.ts` and `frontend/apps/skriptoteket/src/router/routes.ts`                 | Local ceremony calls/routes                                         | 8 min  |
+| `src/skriptoteket/web/auth/api_dependencies.py` and `src/skriptoteket/application/identity/huleedu_app_projection.py` | Current guard surface and missing projection behavior               | 8 min  |
+| `migrations/versions/0001_init.py` and `migrations/versions/0030_sessions_cache_ai_settings.py`                       | Session table lifecycle                                             | 5 min  |
+| `pyproject.toml` and `scripts/_playwright_auth.py`                                                                    | Supported script surfaces using local auth                          | 5 min  |
 
 **Total estimated time:** ~72 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Treat `PR-0253` as the hard break for local browser-auth authority | Keeps no-legacy-support posture and prevents hidden compatibility bridges | [x] |
-| Require retained review approval before implementation | The slice removes auth, session, frontend, scripts, and DB surfaces with high blast radius | [x] |
-| Freeze a browser API edge contract before route rewiring | Signed gateway context must be injected by a trusted edge, never by browser code | [x] |
-| Keep provisioning separate from browser auth | Current HuleEdu signed context does not carry trusted email/email-verification claims | [x] |
-| Replace local CSRF with signed-context route dependencies | CSRF tokens tied to local sessions cannot remain an authority after session retirement | [x] |
-| Drop/refactor session infrastructure with explicit migration/data policy | The sessions table has schema and observability implications beyond route deletion | [x] |
+| Decision                                                                 | Rationale                                                                                  | Approve? |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | -------- |
+| Treat `PR-0253` as the hard break for local browser-auth authority       | Keeps no-legacy-support posture and prevents hidden compatibility bridges                  | [x]      |
+| Require retained review approval before implementation                   | The slice removes auth, session, frontend, scripts, and DB surfaces with high blast radius | [x]      |
+| Freeze a browser API edge contract before route rewiring                 | Signed gateway context must be injected by a trusted edge, never by browser code           | [x]      |
+| Keep provisioning separate from browser auth                             | Current HuleEdu signed context does not carry trusted email/email-verification claims      | [x]      |
+| Replace local CSRF with signed-context route dependencies                | CSRF tokens tied to local sessions cannot remain an authority after session retirement     | [x]      |
+| Drop/refactor session infrastructure with explicit migration/data policy | The sessions table has schema and observability implications beyond route deletion         | [x]      |
 
 ## Review Checklist
 
@@ -353,122 +353,122 @@ and story work coordinated with the Hule Education API Gateway and Identity serv
 Resolved. The list below preserves the initial review findings that shaped the approved task
 revision.
 
-1. **blocker - retained review/doc gate must be kept before implementation**
+01. **blocker - retained review/doc gate must be kept before implementation**
 
-   File references:
-   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:5`,
-   `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md:16`
+    File references:
+    `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:5`,
+    `docs/backlog/prs/pr-0253-st-28-03-local-auth-authority-retirement-and-contract-regeneration.md:16`
 
-   `ADR-0076` is still proposed while the task treats the decision as settled, and `PR-0253`
-   explicitly requires review. Keep this `REV-PR-0253` record, record the feedback here, reconcile
-   `ADR-0076` status or cite approved `REV-EPIC-28` as the governing backlog approval, update
-   `.codex/handoff.md`, and run `pdm run docs-validate`.
+    `ADR-0076` is still proposed while the task treats the decision as settled, and `PR-0253`
+    explicitly requires review. Keep this `REV-PR-0253` record, record the feedback here, reconcile
+    `ADR-0076` status or cite approved `REV-EPIC-28` as the governing backlog approval, update
+    `.codex/handoff.md`, and run `pdm run docs-validate`.
 
-2. **blocker - deleting local registration/password paths can strand HuleEdu users**
+02. **blocker - deleting local registration/password paths can strand HuleEdu users**
 
-   File references:
-   `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md:44`,
-   `src/skriptoteket/application/identity/huleedu_app_projection.py:63`
+    File references:
+    `docs/backlog/prs/pr-0255-st-28-01-pr-0251-remediation-huleedu-context-and-local-authorization-projection.md:44`,
+    `src/skriptoteket/application/identity/huleedu_app_projection.py:63`
 
-   The signed HuleEdu context currently lacks trusted email/email-verification claims, and the
-   resolver fails closed when no projection exists. Before deleting local register/verify/reset,
-   the task must choose either a provider follow-up for signed provisioning claims or a non-browser
-   admin/import/local-user provisioning path. Tests must prove missing projection creates no local
-   user, protected APIs fail closed, and the frontend reaches a deliberate not-provisioned or
-   local-provisioning-required state.
+    The signed HuleEdu context currently lacks trusted email/email-verification claims, and the
+    resolver fails closed when no projection exists. Before deleting local register/verify/reset,
+    the task must choose either a provider follow-up for signed provisioning claims or a non-browser
+    admin/import/local-user provisioning path. Tests must prove missing projection creates no local
+    user, protected APIs fail closed, and the frontend reaches a deliberate not-provisioned or
+    local-provisioning-required state.
 
-3. **high - browser API transport is still implicit**
+03. **high - browser API transport is still implicit**
 
-   File references:
-   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:78`,
-   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:98`,
-   `frontend/apps/skriptoteket/src/api/client.ts:144`
+    File references:
+    `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:78`,
+    `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:98`,
+    `frontend/apps/skriptoteket/src/api/client.ts:144`
 
-   `ADR-0076` says HuleEdu Gateway is the browser auth/API origin and downstream services receive
-   signed internal identity context, while the current SPA still calls relative Skriptoteket paths.
-   Once backend routes require signed gateway context, direct `/api/v1/...` browser calls will fail
-   unless a real gateway/proxy inserts the headers. Add a browser API edge contract cohort: choose
-   a configured HuleEdu Gateway app API base URL or declare same-origin `/api` as the formal
-   gateway/proxy path that injects signed context. Browser code must never construct
-   `X-Huledu-Identity-*` headers. Proof must cover no browser-set internal identity headers,
-   backend missing-context rejection, and a live gateway/proxy-signed read and write.
+    `ADR-0076` says HuleEdu Gateway is the browser auth/API origin and downstream services receive
+    signed internal identity context, while the current SPA still calls relative Skriptoteket paths.
+    Once backend routes require signed gateway context, direct `/api/v1/...` browser calls will fail
+    unless a real gateway/proxy inserts the headers. Add a browser API edge contract cohort: choose
+    a configured HuleEdu Gateway app API base URL or declare same-origin `/api` as the formal
+    gateway/proxy path that injects signed context. Browser code must never construct
+    `X-Huledu-Identity-*` headers. Proof must cover no browser-set internal identity headers,
+    backend missing-context rejection, and a live gateway/proxy-signed read and write.
 
-4. **high - CSRF removal needs signed-context proof, not just dependency deletion**
+04. **high - CSRF removal needs signed-context proof, not just dependency deletion**
 
-   File references:
-   `src/skriptoteket/web/auth/api_dependencies.py:36`,
-   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:49`,
-   `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:98`
+    File references:
+    `src/skriptoteket/web/auth/api_dependencies.py:36`,
+    `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:49`,
+    `docs/adr/adr-0076-huleedu-owned-browser-session-authority-for-skriptoteket.md:98`
 
-   Local CSRF was coupled to local sessions. The task should require every protected browser write
-   to depend on `require_app_*_api`, which verifies signed gateway context. Tests must prove missing
-   signed context returns `401` even if `X-CSRF-Token` is present, valid signed context succeeds
-   without `skriptoteket_session`, and stale local CSRF no longer grants anything. Also update
-   `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
-   so future agents do not reintroduce the old dependency.
+    Local CSRF was coupled to local sessions. The task should require every protected browser write
+    to depend on `require_app_*_api`, which verifies signed gateway context. Tests must prove missing
+    signed context returns `401` even if `X-CSRF-Token` is present, valid signed context succeeds
+    without `skriptoteket_session`, and stale local CSRF no longer grants anything. Also update
+    `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
+    so future agents do not reintroduce the old dependency.
 
-5. **high - frontend auth ceremony replacement is under-scoped**
+05. **high - frontend auth ceremony replacement is under-scoped**
 
-   File references:
-   `frontend/apps/skriptoteket/src/stores/auth.ts:231`,
-   `frontend/apps/skriptoteket/src/stores/auth.ts:278`,
-   `frontend/apps/skriptoteket/src/stores/auth.ts:336`,
-   `frontend/apps/skriptoteket/src/router/routes.ts:25`
+    File references:
+    `frontend/apps/skriptoteket/src/stores/auth.ts:231`,
+    `frontend/apps/skriptoteket/src/stores/auth.ts:278`,
+    `frontend/apps/skriptoteket/src/stores/auth.ts:336`,
+    `frontend/apps/skriptoteket/src/router/routes.ts:25`
 
-   The live SPA still posts local login/register/logout and exposes local forgot/register/reset/
-   verify pages. Replace `auth.login()` with a Hule Education inloggning handoff adapter, make
-   `auth.logout()` call `sharedAuthUrl("/v1/auth/logout")`, and remove or redirect
-   register/forgot/reset/verify/resend
-   according to a frozen ceremony target matrix. Add frontend tests proving no browser code calls
-   the old local `/api/v1/auth/*` endpoints and every public auth route reaches the intended
-   handoff or retired-state UX.
+    The live SPA still posts local login/register/logout and exposes local forgot/register/reset/
+    verify pages. Replace `auth.login()` with a Hule Education inloggning handoff adapter, make
+    `auth.logout()` call `sharedAuthUrl("/v1/auth/logout")`, and remove or redirect
+    register/forgot/reset/verify/resend
+    according to a frozen ceremony target matrix. Add frontend tests proving no browser code calls
+    the old local `/api/v1/auth/*` endpoints and every public auth route reaches the intended
+    handoff or retired-state UX.
 
-6. **high - route migration needs a classification table before codemods**
+06. **high - route migration needs a classification table before codemods**
 
-   File reference:
-   `src/skriptoteket/web/auth/api_dependencies.py:9`
+    File reference:
+    `src/skriptoteket/web/auth/api_dependencies.py:9`
 
-   The old guards are consumed across dozens of route files. Add a route inventory table before
-   code changes with file, method/path, current guard, target guard, browser-facing, mutating, and
-   proof owner. Codemod only after classification, and add a static test that fails on imports of
-   `require_user_api`, `require_contributor_api`, `require_admin_api`, `require_superuser_api`,
-   `require_session_api`, or `require_csrf_token` outside an explicit allowlist.
+    The old guards are consumed across dozens of route files. Add a route inventory table before
+    code changes with file, method/path, current guard, target guard, browser-facing, mutating, and
+    proof owner. Codemod only after classification, and add a static test that fails on imports of
+    `require_user_api`, `require_contributor_api`, `require_admin_api`, `require_superuser_api`,
+    `require_session_api`, or `require_csrf_token` outside an explicit allowlist.
 
-7. **medium - new dependency API must be exact**
+07. **medium - new dependency API must be exact**
 
-   File references:
-   `src/skriptoteket/application/identity/huleedu_app_projection.py:26`,
-   `src/skriptoteket/web/auth/ai_preferences.py:48`
+    File references:
+    `src/skriptoteket/application/identity/huleedu_app_projection.py:26`,
+    `src/skriptoteket/web/auth/ai_preferences.py:48`
 
-   Define the canonical surface explicitly: `require_app_user_projection_api()`,
-   `require_app_user_api()`, role wrappers, and `require_app_ai_preferences()` reading from
-   projection/profile. This keeps handlers stable while preventing AI routes from quietly retaining
-   local session auth.
+    Define the canonical surface explicitly: `require_app_user_projection_api()`,
+    `require_app_user_api()`, role wrappers, and `require_app_ai_preferences()` reading from
+    projection/profile. This keeps handlers stable while preventing AI routes from quietly retaining
+    local session auth.
 
-8. **medium - public auth ceremony needs concrete target contracts**
+08. **medium - public auth ceremony needs concrete target contracts**
 
-   File references:
-   `frontend/apps/skriptoteket/src/router/routes.ts:25`,
-   `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
+    File references:
+    `frontend/apps/skriptoteket/src/router/routes.ts:25`,
+    `docs/backlog/prs/pr-0250-st-28-05-huleedu-provider-conformance-ingest-and-cutover-readiness.md`
 
-   `PR-0250` freezes session/login/logout/refresh/csrf/websocket surfaces, but not clearly
-   registration or password lifecycle. Add a ceremony target matrix for `/auth/login`, `/register`,
-   `/forgot-password`, `/reset-password`, `/verify-email`, and verification resend. If a target is
-   missing, choose a deliberate retired/local-provisioning-required page rather than a dangling
-   redirect.
+    `PR-0250` freezes session/login/logout/refresh/csrf/websocket surfaces, but not clearly
+    registration or password lifecycle. Add a ceremony target matrix for `/auth/login`, `/register`,
+    `/forgot-password`, `/reset-password`, `/verify-email`, and verification resend. If a target is
+    missing, choose a deliberate retired/local-provisioning-required page rather than a dangling
+    redirect.
 
-9. **medium - session cleanup is larger than deleting the repository**
+09. **medium - session cleanup is larger than deleting the repository**
 
-   File references:
-   `src/skriptoteket/application/auth/update_ai_settings.py:108`,
-   `src/skriptoteket/application/auth/reset_password.py:96`,
-   `src/skriptoteket/web/observability.py:78`
+    File references:
+    `src/skriptoteket/application/auth/update_ai_settings.py:108`,
+    `src/skriptoteket/application/auth/reset_password.py:96`,
+    `src/skriptoteket/web/observability.py:78`
 
-   Session behavior still appears in non-route flows: AI settings syncs session rows, password
-   reset revokes sessions, and observability counts active sessions. Add a cleanup checklist for
-   login/logout handlers, current-user provider, reset-password session revocation, AI session
-   syncing, active-session metric, `SessionModel`, repository/DI binding, migration imports/schema
-   assertions, and the sessions table. Keep `ToolSessionRepositoryProtocol` untouched.
+    Session behavior still appears in non-route flows: AI settings syncs session rows, password
+    reset revokes sessions, and observability counts active sessions. Add a cleanup checklist for
+    login/logout handlers, current-user provider, reset-password session revocation, AI session
+    syncing, active-session metric, `SessionModel`, repository/DI binding, migration imports/schema
+    assertions, and the sessions table. Keep `ToolSessionRepositoryProtocol` untouched.
 
 10. **medium - dropping `sessions` needs migration/data-policy proof**
 
@@ -544,24 +544,22 @@ approved task shape. Do not reopen the architectural decision package unless new
   `PR-0253`).
 - `pdm run docs-validate` (pass on 2026-04-11 after approving `REV-PR-0253` through docs-quality
   closeout).
-- `pdm run pytest -q tests/integration/test_migration_c1d2e3f4a5b6_idempotent.py -m docker
-  --override-ini addopts=''` (pass on 2026-04-11 after implementation; proves sessions-table drop
+- `pdm run pytest -q tests/integration/test_migration_c1d2e3f4a5b6_idempotent.py -m docker --override-ini addopts=''` (pass on 2026-04-11 after implementation; proves sessions-table drop
   and downgrade shape).
-- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend
-  --start-vite` (pass on 2026-04-11 after implementation; proves signed read/write, stale-CSRF
+- `ARTIFACTS_ROOT=.artifacts/local-tool-artifacts pdm run pr-0253-auth-retirement --start-backend --start-vite` (pass on 2026-04-11 after implementation; proves signed read/write, stale-CSRF
   missing-context `401`, missing projection `401`, and inloggning ceremony handoff).
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0253` | Retained the initial review findings that shaped implementation approval |
-| 2 | `PR-0253` | Required review gate, route inventory, browser API edge, ceremony matrix, provisioning policy, CSRF trust-boundary proof, session migration policy, no-zombie tests, supported scripts, and live proof |
-| 3 | `REV-PR-0253` | Recorded retained re-review: architecture accepted, with temporary docs-quality cleanup remaining |
-| 4 | `REV-PR-0253` / `PR-0253` | Closed docs-quality drift and approved the retained review for implementation planning |
-| 5 | `REV-PR-0253` | Recorded retained implementation review as `changes_requested` with four required remediation findings and failing verification evidence |
-| 6 | `REV-PR-0253` | Added reviewer-owned remediation checklist for tracking implementation review closeout |
-| 7 | `REV-PR-0253` / `PR-0253` / `ST-28-03` | Submitted implementation remediation evidence and left reviewer-owned acceptance gates pending |
-| 8 | `REV-PR-0253` / `PR-0253` / `EPIC-28` / `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the product identity realm correction so local browser-session retirement does not erase standalone Skriptoteket identity |
-| 9 | `REV-PR-0253` / `PR-0253` / frontend auth entry | Split browser ceremony URLs from shared auth API endpoints and renamed HuleEdu-only login copy to `inloggning`/Skriptoteket access language |
-| 10 | `REV-PR-0253` / `PR-0253` / `ST-28-03` / `EPIC-28` | Approved the retained implementation re-review, closed the reviewer checklist, and moved the governed PR/story to done |
+| Change | Artifact                                                                                                                  | Description                                                                                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0253`                                                                                                             | Retained the initial review findings that shaped implementation approval                                                                                                                               |
+| 2      | `PR-0253`                                                                                                                 | Required review gate, route inventory, browser API edge, ceremony matrix, provisioning policy, CSRF trust-boundary proof, session migration policy, no-zombie tests, supported scripts, and live proof |
+| 3      | `REV-PR-0253`                                                                                                             | Recorded retained re-review: architecture accepted, with temporary docs-quality cleanup remaining                                                                                                      |
+| 4      | `REV-PR-0253` / `PR-0253`                                                                                                 | Closed docs-quality drift and approved the retained review for implementation planning                                                                                                                 |
+| 5      | `REV-PR-0253`                                                                                                             | Recorded retained implementation review as `changes_requested` with four required remediation findings and failing verification evidence                                                               |
+| 6      | `REV-PR-0253`                                                                                                             | Added reviewer-owned remediation checklist for tracking implementation review closeout                                                                                                                 |
+| 7      | `REV-PR-0253` / `PR-0253` / `ST-28-03`                                                                                    | Submitted implementation remediation evidence and left reviewer-owned acceptance gates pending                                                                                                         |
+| 8      | `REV-PR-0253` / `PR-0253` / `EPIC-28` / `REF-hule-education-product-identity-realms-and-skriptoteket-standalone-identity` | Recorded the product identity realm correction so local browser-session retirement does not erase standalone Skriptoteket identity                                                                     |
+| 9      | `REV-PR-0253` / `PR-0253` / frontend auth entry                                                                           | Split browser ceremony URLs from shared auth API endpoints and renamed HuleEdu-only login copy to `inloggning`/Skriptoteket access language                                                            |
+| 10     | `REV-PR-0253` / `PR-0253` / `ST-28-03` / `EPIC-28`                                                                        | Approved the retained implementation re-review, closed the reviewer checklist, and moved the governed PR/story to done                                                                                 |

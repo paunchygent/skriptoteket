@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0008-PART-02
 title: Hemma incident log findings (2026-01-04 to 2026-01-06) — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: TASK-SKRIPT-REP-0008
 part: 2
@@ -44,17 +44,19 @@ findings above.
 
 ### Steps
 
-1) **Inventory current stack (before changes)**
+1. **Inventory current stack (before changes)**
+
    - `uname -r`
    - `modinfo amdgpu | grep -E 'version|srcversion'`
    - `dpkg -l | rg -i 'amdgpu|rocm|mesa'`
    - `ls /lib/modules/$(uname -r)/updates/dkms/`
 
-2) **Remove conflicting AMD DKMS/ROCm packages**
+2. **Remove conflicting AMD DKMS/ROCm packages**
+
    - Use AMD’s uninstall path or apt purge for any installed DKMS + ROCm
      packages after confirming what is currently installed.
 
-3) **Install AMD’s official Noble 24.04.3 HWE ROCm stack**
+3. **Install AMD’s official Noble 24.04.3 HWE ROCm stack**
 
 ```bash
 sudo apt update
@@ -65,14 +67,14 @@ sudo usermod -a -G render,video $LOGNAME
 sudo reboot
 ```
 
-4) **Update firmware**
+4. **Update firmware**
 
 ```bash
 sudo apt update
 sudo apt install --only-upgrade linux-firmware
 ```
 
-5) **Verify after reboot**
+5. **Verify after reboot**
 
 ```bash
 uname -r
@@ -88,11 +90,12 @@ No separate plan document review was recorded in the source snapshot.
 
 ### Implementation Review
 
-### Source: Findings (from /root/logs/incident-*.log)
+### Source: Findings (from /root/logs/incident-\*.log)
 
 ### New or notable signals since the prior report
 
 - **amdgpu-force-active sysfs write failures**
+
   - `/bin/sh: 1: echo: echo: I/O error` while starting
     `amdgpu-force-active.service` (force GPU active state).
   - Seen at boot times: 2026-01-04 20:20:07, 2026-01-05 00:32:06, 10:29:58,
@@ -107,6 +110,7 @@ No separate plan document review was recorded in the source snapshot.
     - `incident-20260106-091948.log`
 
 - **AMD-Vi IOMMU invalid device requests**
+
   - `iommu ivhd0: AMD-Vi: Event logged [INVALID_DEVICE_REQUEST ...]` at boot.
   - Observed at 2026-01-05 00:32:05 and 10:29:56.
   - Example logs:
@@ -114,6 +118,7 @@ No separate plan document review was recorded in the source snapshot.
     - `incident-20260105-103458.log`
 
 - **MCE hardware errors (new)**
+
   - `mce: [Hardware Error]: Machine check events logged` with CPU bank details.
   - Observed at 2026-01-06 06:27:44.
   - Example log:
@@ -122,6 +127,7 @@ No separate plan document review was recorded in the source snapshot.
 ### Continuing signals
 
 - **amdgpu display-core timeouts**
+
   - `amdgpu: [drm] REG_WAIT timeout ... optc401_disable_crtc` persists across
     multiple boots (2026-01-05 00:32/10:29/13:16 and 2026-01-06 09:14).
   - Example logs:
@@ -132,6 +138,7 @@ No separate plan document review was recorded in the source snapshot.
     - `incident-20260106-091948.log`
 
 - **Memory pressure / OOM**
+
   - 2026-01-04 20:56:44: `tailscaled` invoked OOM killer; large `sh` process
     (~30 GB RSS) killed; journald flushing under memory pressure.
   - Example logs:
@@ -139,12 +146,14 @@ No separate plan document review was recorded in the source snapshot.
     - `incident-20260104-210504.log`
 
 - **Tailscale network/DNS instability**
+
   - DNS/control-plane failures and “network is unreachable” errors around
     2026-01-05 17:44–17:50.
   - Example log:
     - `incident-20260105-174533.log`
 
 - **Capture anomaly**
+
   - `incident-20260105-065819.log` is 0 bytes and timestamped one second before
     reboot at 06:58:20, consistent with capture dying during the crash.
 

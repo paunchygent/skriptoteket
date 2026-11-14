@@ -44,34 +44,34 @@ the gesture midpoint.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md` | Governing scope and acceptance criteria | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/` | Preview gesture and zoom implementation | 12 min |
-| `scripts/authenticated_home_work_apps.py` and helpers | Retained browser proof | 6 min |
-| `docs/backlog/prs/pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md` | Prior working reference pattern | 4 min |
+| File                                                                                    | Focus                                   | Time   |
+| --------------------------------------------------------------------------------------- | --------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0403-st-37-04-document-converter-preview-touch-pinch-ownership.md` | Governing scope and acceptance criteria | 3 min  |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/`                         | Preview gesture and zoom implementation | 12 min |
+| `scripts/authenticated_home_work_apps.py` and helpers                                   | Retained browser proof                  | 6 min  |
+| `docs/backlog/prs/pr-0313-shared-phone-classroom-map-real-device-pinch-remediation.md`  | Prior working reference pattern         | 4 min  |
 
 **Total estimated time:** ~25 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Preview pinch ownership must be native target-bound | Vue handler proof is insufficient for real browser gesture arbitration | [x] |
-| Platform `gesture*` events belong in the preview gesture owner | iPhone/Safari may route pinch through platform gesture events | [x] |
-| Zoom must anchor around the gesture midpoint | Top-left scaling makes touch zoom feel broken even when scale changes | [x] |
+| Decision                                                       | Rationale                                                              | Approve? |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------- | -------- |
+| Preview pinch ownership must be native target-bound            | Vue handler proof is insufficient for real browser gesture arbitration | [x]      |
+| Platform `gesture*` events belong in the preview gesture owner | iPhone/Safari may route pinch through platform gesture events          | [x]      |
+| Zoom must anchor around the gesture midpoint                   | Top-left scaling makes touch zoom feel broken even when scale changes  | [x]      |
 
 ## Review Checklist
 
 - [x] Governing docs preserve the `PR-0313` lesson and do not accept shallow
-      synthetic event proof as sufficient.
+  synthetic event proof as sufficient.
 - [x] Implementation keeps Document Converter domain-neutral and does not
-      import room/classroom semantics.
+  import room/classroom semantics.
 - [x] One-finger panning remains available.
 - [x] Platform gesture and native non-passive target binding are covered by
-      focused tests.
+  focused tests.
 - [x] Retained proof reports visible preview zoom-state change and gesture
-      ownership evidence.
+  ownership evidence.
 - [x] Required frontend verification gates are green in the current worktree.
 
 ## Review Feedback
@@ -138,8 +138,8 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0403` | Created governed preview touch-pinch ownership slice |
-| 2 | `REV-PR-0403` | Recorded the earlier `changes_requested` verdict when the invalid PNPM workspace placeholder blocked frontend proof gates |
-| 3 | `REV-PR-0403` | Re-reviewed after the PNPM config fix, reran the frontend gates, and approved the current PR-0403 working tree |
+| Change | Artifact      | Description                                                                                                               |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0403`     | Created governed preview touch-pinch ownership slice                                                                      |
+| 2      | `REV-PR-0403` | Recorded the earlier `changes_requested` verdict when the invalid PNPM workspace placeholder blocked frontend proof gates |
+| 3      | `REV-PR-0403` | Re-reviewed after the PNPM config fix, reran the frontend gates, and approved the current PR-0403 working tree            |

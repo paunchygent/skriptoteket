@@ -71,11 +71,11 @@ The phone branch should be a reduced companion workflow:
 
 Use explicit named compositions instead of one fluid responsive chain:
 
-| Composition | Viewport contract | Intended behavior |
-|---|---:|---|
-| Phone | `max-width: 767px` | Dedicated one-surface review flow; no table, no side-by-side detail, no three-action horizontal header grid. |
-| Tablet / narrow laptop | `768px-1199px` | Reduced navigator plus visible detail pane; no phone bottom-sheet routing. |
-| Laptop / desktop | `min-width: 1200px` | Dense table plus selected-question detail pane; current desktop scanning behavior is preserved. |
+| Composition            |   Viewport contract | Intended behavior                                                                                            |
+| ---------------------- | ------------------: | ------------------------------------------------------------------------------------------------------------ |
+| Phone                  |  `max-width: 767px` | Dedicated one-surface review flow; no table, no side-by-side detail, no three-action horizontal header grid. |
+| Tablet / narrow laptop |      `768px-1199px` | Reduced navigator plus visible detail pane; no phone bottom-sheet routing.                                   |
+| Laptop / desktop       | `min-width: 1200px` | Dense table plus selected-question detail pane; current desktop scanning behavior is preserved.              |
 
 Tailwind range variants may be used for bounded utility changes, for example
 `md:max-xl:*`, but structural composition should live in focused CSS or

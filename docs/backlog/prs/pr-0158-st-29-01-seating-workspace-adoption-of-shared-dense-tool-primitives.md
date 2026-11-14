@@ -49,17 +49,21 @@ shell overhaul from later stories.
 ## Implementation plan
 
 1. Swap local seating action controls to shared primitives.
+
    - Replace planner-local icon buttons and menu triggers where a shared control now exists.
 
 2. Normalize export as a shared split pattern.
+
    - Refactor the seating export cluster to consume the shared split-button behavior and canonical
      symbol/label contract.
 
 3. Normalize `Smart` as a compound control.
+
    - Keep visible on/off state.
    - Route the configure child action into the rules workspace instead of adding toolbar drawers.
 
 4. Verify seating typography/density stays compact.
+
    - Preserve the dense-tool target.
    - Do not reintroduce helper-band or panel-stack regressions during the primitive swap.
 

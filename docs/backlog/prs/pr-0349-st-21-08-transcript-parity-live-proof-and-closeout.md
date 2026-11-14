@@ -156,8 +156,10 @@ internal-identity verifier:
 
 - HuleEdu retained review approved `TASK-0676`:
   `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/reviews/review-task-0676-01-ruthless-review-task-0676-internalidentitycontextv1-trust-profile.md`.
+
 - Sir Convert retained review approved `task-361`:
   `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/reviews/review-46-ruthless-review-task-361-huleedu-internalidentitycontextv1-trust-profile-consumption.md`.
+
 - HuleEdu profile publisher passed for `local-auth-integration` and
   `hemma-production`:
   `pdm run run-local-pdm hemma-sir-convert-internal-identity-trust-profile --environment local-auth-integration`
@@ -165,6 +167,7 @@ internal-identity verifier:
   `pdm run run-local-pdm hemma-sir-convert-internal-identity-trust-profile --environment hemma-production`.
   Both emitted sanitized profile metadata with canonical DER SPKI fingerprint
   `46aefc0edc2f71267e2df783ca27f4df2b0da269cc7e84b43cbe2de6ac7c1992`.
+
 - Sir Convert approved Task 361 smoke passed:
   `pdm run pytest-root tests/sir_convert_a_lot/test_huleedu_internal_identity_trust_profile_v1.py tests/sir_convert_a_lot/test_structured_llm_settings_route_v2.py tests/sir_convert_a_lot/test_digiexam_migration_access_control_api_v2.py tests/sir_convert_a_lot/test_compose_contract.py tests/sir_convert_a_lot/test_local_compose_contract.py -q`
   with `39 passed`.
@@ -175,15 +178,19 @@ internal-identity verifier:
   `spellchecker_db`, `result_aggregator_db`, `nlp_db`,
   `batch_conductor_db`, `identity_db`, `email_db`, and `entitlements_db`:
   `HULEEDU_ENV_OVERLAY_FILE=output/tmp/pr0349-shared-postgres-migrations.env pdm run run-local-pdm db-lifecycle verify --all`.
+
 - Skriptoteket dev DB migration state upgraded cleanly:
   `pdm run dev-stack db-upgrade`.
+
 - Canonical local stacks were healthy:
   `HULEEDU_ENV_OVERLAY_FILE=output/tmp/pr0349-sir-convert-tunnel.env pdm run run-local-pdm auth-integration check`
   and `pdm run dev-stack ps`.
+
 - Gateway was corrected from the closed default `host.docker.internal:8085` to
   the canonical tunnel backend `http://host.docker.internal:28085` through the
   HuleEdu env-overlay + `dev-recreate api_gateway_service` path. Container-side
   `/readyz` to that backend returned ready.
+
 - A focused red/green harness remediation added blocked-run summary tests.
   Red evidence:
   `pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py`
@@ -191,18 +198,22 @@ internal-identity verifier:
   Green focused command:
   `pdm run test tests/unit/scripts/test_playwright_pr_0349_summary_truthfulness.py tests/unit/scripts/test_playwright_script_surface.py tests/unit/scripts/test_conversion_hub_transcript_docs_guard.py`
   passed with `8 passed`.
+
 - Retained browser proof artifact after the remediation:
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/proof-summary.json`.
   The summary keeps `status=failed` and now records the typed
   `sir_convert_internal_identity_rejected` object as the primary `failure`;
   the generic Playwright timeout is retained only as `raw_failure`.
+
 - The artifact manifest now lists only captured files:
   `network.bounded.json`, `browser-console.bounded.json`, and `failure.png`.
+
 - Retained network evidence:
   `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T153843Z/network.bounded.json`
   records `POST /sir-convert/v2/convert/jobs?wait_seconds=0` as HTTP `401`
   with `error_code=auth_invalid_internal_identity` and
   `reason=invalid_internal_identity_signature`.
+
 - Read-only Hemma/Sir Convert verification showed the local HuleEdu public-key
   fingerprint `b1e569219f6045be01bd89a1907e515c9a9d5c2e800bc2dacf593027a3d7b4b2`
   does not match the Sir Convert prod trusted public-key fingerprint
@@ -297,8 +308,7 @@ SHA/fingerprint alignment, or Sir Convert replay backend behavior:
   failed waiting for
   `[data-test="transcript-formatter-replay-button"]` to become enabled.
 - `.artifacts/playwright-pr-0349-transcript-parity-live/20260613T181847Z/network.bounded.json`
-  records `GET .../speaker-overlays` with `overlay_count=0`, then `PUT
-  .../speaker-overlays` with `overlay_count=0`, and no
+  records `GET .../speaker-overlays` with `overlay_count=0`, then `PUT .../speaker-overlays` with `overlay_count=0`, and no
   `/formatter-replay/prepare` or `/formatter-replay/complete` requests.
 - The retained `failure.png` shows the false-success UI state:
   `Talarnamn sparade.` and `Exportfiler kan skapas.` were rendered while the
@@ -358,8 +368,7 @@ fingerprint trust, overlay persistence, or the Sir Convert replay backend:
 - `proof-summary.json` records `save_transcript.status=200`,
   `transcript_json.segment_count=27`, `transcript_json.speaker_label_count=2`,
   and `speaker_overlays.status=200` with `overlay_count=2`.
-- `network.bounded.json` records `POST
-  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/prepare`
+- `network.bounded.json` records `POST /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/prepare`
   returning HTTP `422`, `error_code=VALIDATION_ERROR`, message
   `Transcript JSON must contain at least one segment.`
 - No `/formatter-replay/complete` request was sent because the proof was
@@ -395,8 +404,7 @@ Focused validation:
 
 - Red:
   `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py`
-  failed before the production patch with `Transcript JSON must contain at
-  least one segment.`
+  failed before the production patch with `Transcript JSON must contain at least one segment.`
 - Green:
   the same command passed with `1 passed`.
 - `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay_saved_shapes.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_formatter_replay.py tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_saves.py tests/unit/web/conversion_hub/test_apps_conversion_hub_transcript_saves_api.py`
@@ -415,8 +423,7 @@ successful Sir Convert replay artifact listing for exactly `transcript_txt`,
 `transcript_md`, `transcript_vtt`, and `transcript_srt`. The new blocker was
 Skriptoteket completion parsing:
 
-- `network.bounded.json` records `POST
-  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/complete`
+- `network.bounded.json` records `POST /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-replay/complete`
   returning HTTP `503`, `error_code=SERVICE_UNAVAILABLE`, message
   `Sir Convert replay result is malformed.`
 - The preceding Sir Convert replay job succeeded with HTTP `200`.
@@ -477,8 +484,7 @@ prepare, Sir Convert replay submit, Sir Convert replay result, Sir Convert
 artifact listing, and Skriptoteket replay completion. The remaining blocker was
 artifact download:
 
-- `network.bounded.json` records `GET
-  /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-artifacts/transcript_txt/download`
+- `network.bounded.json` records `GET /api/v1/apps/documents.conversion_hub/transcripts/{id}/formatter-artifacts/transcript_txt/download`
   returning HTTP `503`, message `Failed to download named v2 artifact.`
 - Browser console records only the same backend `503`; this was not a
   Playwright download timeout.
@@ -518,8 +524,7 @@ Focused validation:
 
 - Red:
   `pdm run test tests/unit/application/curated_apps/handlers/test_conversion_hub_transcript_artifact_payloads.py`
-  initially reproduced the live failure as `DomainError: Failed to download
-  named v2 artifact.` when the action still attempted a direct backend producer
+  initially reproduced the live failure as `DomainError: Failed to download named v2 artifact.` when the action still attempted a direct backend producer
   read.
 - Green:
   focused application-handler tests now reject unsigned self-consistent browser

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0002
 title: Reconcile completed shared-governance bootstrap
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: done
 readiness_review:
@@ -22,7 +22,7 @@ closeout_review:
   approval_evidence: PR-0417 retained pass-two implementation review
 task_kind: repository
 acceptance_criteria:
-- The verified PR-0417 bootstrap is represented by a collision-free current task identity without changing its historical evidence or authorization.
+  - The verified PR-0417 bootstrap is represented by a collision-free current task identity without changing its historical evidence or authorization.
 ---
 
 ## Context
@@ -39,9 +39,9 @@ selection, and historical PR-0417 evidence remain unchanged.
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Decision | Source |
-| --- | --- | --- | --- | --- |
-| RCB-001 | identity | closed | `PR-0417` retires into `TASK-SKRIPT-REP-0002`; Task 0001 remains the product-context task. | ST-SKILL-08-06 SKR-004S |
+| ID      | Type      | Status | Decision                                                                                                  | Source                               |
+| ------- | --------- | ------ | --------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| RCB-001 | identity  | closed | `PR-0417` retires into `TASK-SKRIPT-REP-0002`; Task 0001 remains the product-context task.                | ST-SKILL-08-06 SKR-004S              |
 | RCB-002 | authority | closed | The user exception, approved implementation rereview, and verified checkpoint are the complete authority. | Retained PR-0417 review and verifier |
 
 ## Plan

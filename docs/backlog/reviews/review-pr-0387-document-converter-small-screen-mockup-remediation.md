@@ -45,27 +45,27 @@ removing hard-coded surface styling from the bundle.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md` | Acceptance criteria, proof claims, stop conditions | 15 min |
-| `docs/backlog/prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md` | Governing mockup constraints and verification carry-forward | 15 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/README.md` | Mockup contract and phone-port rules | 15 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/index.html` | Mobile summary shell, outcome controls, forbidden-surface audit | 20 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/styles.css` | Breakpoint ownership, reduced-port geometry, selector/button token usage | 20 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/preview.css` | Preview-surface token fidelity and preview layout behavior | 15 min |
-| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/icons.css` | Token-safe icon placeholders | 10 min |
-| `.artifacts/pr-0383-html-css-mockup-proof/desktop-1680x980-before-pr0387.png`, `.artifacts/pr-0383-html-css-mockup-proof/desktop-1680x980.png`, `.artifacts/pr-0383-html-css-mockup-proof/mobile-390-full-before-pr0387.png`, `.artifacts/pr-0383-html-css-mockup-proof/mobile-390-full.png` | Red/green screenshot proof | 20 min |
+| File                                                                                                                                                                                                                                                                                         | Focus                                                                    | Time   |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0387-st-37-04-document-converter-small-screen-mockup-remediation.md`                                                                                                                                                                                                    | Acceptance criteria, proof claims, stop conditions                       | 15 min |
+| `docs/backlog/prs/pr-0383-st-37-04-document-converter-mockup-and-copy-approval-package.md`                                                                                                                                                                                                   | Governing mockup constraints and verification carry-forward              | 15 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/README.md`                                                                                                                                                                                                                 | Mockup contract and phone-port rules                                     | 15 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/index.html`                                                                                                                                                                                                | Mobile summary shell, outcome controls, forbidden-surface audit          | 20 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/styles.css`                                                                                                                                                                                                | Breakpoint ownership, reduced-port geometry, selector/button token usage | 20 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/preview.css`                                                                                                                                                                                               | Preview-surface token fidelity and preview layout behavior               | 15 min |
+| `docs/mockups/pr-0383-document-converter-mockup-and-copy-approval/html-css-mockup/icons.css`                                                                                                                                                                                                 | Token-safe icon placeholders                                             | 10 min |
+| `.artifacts/pr-0383-html-css-mockup-proof/desktop-1680x980-before-pr0387.png`, `.artifacts/pr-0383-html-css-mockup-proof/desktop-1680x980.png`, `.artifacts/pr-0383-html-css-mockup-proof/mobile-390-full-before-pr0387.png`, `.artifacts/pr-0383-html-css-mockup-proof/mobile-390-full.png` | Red/green screenshot proof                                               | 20 min |
 
 **Total estimated time:** ~2 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep phone as a reduced port instead of a stacked desktop rail. | Matches dense-workspace doctrine and the governed small-screen scope. | [x] |
-| Keep preview first on phone while deferring full project inventory. | Preserves the dominant work surface and avoids dumping secondary rails into mobile. | [x] |
-| Require literal-color removal across the full mockup bundle, not only the topbar. | `PR-0387` acceptance and rule `045` are token-first, bundle-wide contracts. | [x] |
-| Require retained proof notes to match the actual audit coverage. | Review docs are canonical evidence for the `PR-0384` handoff. | [x] |
+| Decision                                                                          | Rationale                                                                           | Approve? |
+| --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | -------- |
+| Keep phone as a reduced port instead of a stacked desktop rail.                   | Matches dense-workspace doctrine and the governed small-screen scope.               | [x]      |
+| Keep preview first on phone while deferring full project inventory.               | Preserves the dominant work surface and avoids dumping secondary rails into mobile. | [x]      |
+| Require literal-color removal across the full mockup bundle, not only the topbar. | `PR-0387` acceptance and rule `045` are token-first, bundle-wide contracts.         | [x]      |
+| Require retained proof notes to match the actual audit coverage.                  | Review docs are canonical evidence for the `PR-0384` handoff.                       | [x]      |
 
 ## Review Checklist
 
@@ -131,8 +131,8 @@ The prior findings are resolved:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0387` | Created the retained independent review record for the fixed reviewer pass. |
-| 2 | `REV-PR-0387` | Recorded two blocking findings covering remaining literal-color drift and overstated verification evidence. |
-| 3 | `REV-PR-0387` | Re-reviewed the repair scope, verified both prior findings were resolved, and approved the slice. |
+| Change | Artifact      | Description                                                                                                 |
+| ------ | ------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0387` | Created the retained independent review record for the fixed reviewer pass.                                 |
+| 2      | `REV-PR-0387` | Recorded two blocking findings covering remaining literal-color drift and overstated verification evidence. |
+| 3      | `REV-PR-0387` | Re-reviewed the repair scope, verified both prior findings were resolved, and approved the slice.           |

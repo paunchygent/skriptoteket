@@ -43,28 +43,28 @@ gestures.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md` | Scope, acceptance criteria, proof obligations | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/useRoomViewportZoom.ts` | Direct zoom-factor API and clamp semantics | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/useRoomTouchViewportGestures.ts` | Gesture recognition and tap suppression | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue` | Builder pinch integration and single-tap preservation | 10 min |
+| File                                                                                    | Focus                                                                    | Time   |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0312-shared-phone-classroom-map-touch-viewport-gestures.md`        | Scope, acceptance criteria, proof obligations                            | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/useRoomViewportZoom.ts`                      | Direct zoom-factor API and clamp semantics                               | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/useRoomTouchViewportGestures.ts`             | Gesture recognition and tap suppression                                  | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue`   | Builder pinch integration and single-tap preservation                    | 10 min |
 | `frontend/apps/skriptoteket/src/views/apps/components/PlannerPhoneClassroomSeatMap.vue` | Phone seating/fixed-seat pinch integration and domain-action suppression | 15 min |
-| `frontend/apps/skriptoteket/src/assets/klassrumskartan-phone-workspace.css` | Phone map geometry and browser touch arbitration | 5 min |
-| `scripts/_playwright_touch.py` | Retained browser proof helper fidelity | 10 min |
-| `scripts/playwright_pr_0310_phone_fixed_seat_rules_map.py` | Phone `Sittplatser` and `Fast plats` proof scope | 10 min |
-| `scripts/playwright_pr_0311_phone_room_template_modal.py` | Phone room-template builder proof scope | 10 min |
+| `frontend/apps/skriptoteket/src/assets/klassrumskartan-phone-workspace.css`             | Phone map geometry and browser touch arbitration                         | 5 min  |
+| `scripts/_playwright_touch.py`                                                          | Retained browser proof helper fidelity                                   | 10 min |
+| `scripts/playwright_pr_0310_phone_fixed_seat_rules_map.py`                              | Phone `Sittplatser` and `Fast plats` proof scope                         | 10 min |
+| `scripts/playwright_pr_0311_phone_room_template_modal.py`                               | Phone room-template builder proof scope                                  | 10 min |
 
 **Total estimated time:** ~85 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use a shared composable instead of component-local gesture code | Keeps the three phone map surfaces from drifting | [x] |
-| Extend the existing viewport zoom model with direct scale/factor APIs | Reuses the existing clamp and fit-to-view model | [x] |
-| Preserve one-finger domain actions unless a two-finger gesture is recognized | Matches the PR acceptance criteria and PR-0310/PR-0311 contracts | [x] |
-| Treat synthetic touch-event browser proof as sufficient live mobile proof | It bypasses browser gesture arbitration and is not enough for this contract | [ ] |
+| Decision                                                                     | Rationale                                                                   | Approve? |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| Use a shared composable instead of component-local gesture code              | Keeps the three phone map surfaces from drifting                            | [x]      |
+| Extend the existing viewport zoom model with direct scale/factor APIs        | Reuses the existing clamp and fit-to-view model                             | [x]      |
+| Preserve one-finger domain actions unless a two-finger gesture is recognized | Matches the PR acceptance criteria and PR-0310/PR-0311 contracts            | [x]      |
+| Treat synthetic touch-event browser proof as sufficient live mobile proof    | It bypasses browser gesture arbitration and is not enough for this contract | [ ]      |
 
 ## Review Checklist
 
@@ -152,8 +152,8 @@ gestures.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0312` | Recorded retained review verdict as `changes_requested` with the browser touch-arbitration blocker and observed verification evidence. |
-| 2 | `PR-0312` | Remediation added `touch-action: pan-x pan-y` to the phone builder and simplified phone map targets, replaced fabricated retained pinch events with CDP touch input, and added computed `touch-action` assertions to the retained phone proofs. Pending re-review. |
-| 3 | `REV-PR-0312` | Second-pass review was approved by the user on 2026-05-10 and deployed. Post-deploy iPhone evidence opened `PR-0313` for the remaining simplified-map real-device pinch gap. |
+| Change | Artifact      | Description                                                                                                                                                                                                                                                        |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1      | `REV-PR-0312` | Recorded retained review verdict as `changes_requested` with the browser touch-arbitration blocker and observed verification evidence.                                                                                                                             |
+| 2      | `PR-0312`     | Remediation added `touch-action: pan-x pan-y` to the phone builder and simplified phone map targets, replaced fabricated retained pinch events with CDP touch input, and added computed `touch-action` assertions to the retained phone proofs. Pending re-review. |
+| 3      | `REV-PR-0312` | Second-pass review was approved by the user on 2026-05-10 and deployed. Post-deploy iPhone evidence opened `PR-0313` for the remaining simplified-map real-device pinch gap.                                                                                       |

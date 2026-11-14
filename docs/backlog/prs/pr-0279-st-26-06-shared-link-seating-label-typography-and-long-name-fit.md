@@ -252,8 +252,7 @@ shows Hemma fast-forwarded to `b7bc5d9d`, rebuilt and recreated `web` and
 `worker`, applied migrations, and passed the local seating export smoke with
 artifact directory
 `/home/paunchygent/apps/skriptoteket/.artifacts/pr-0146-seat-export-cutover-20260503-121524`.
-Production backfill returned `Backfill classroom share previews complete:
-scanned=0 generated=0 refreshed=0 failed=0 failed_share_ids=`. Production
+Production backfill returned `Backfill classroom share previews complete: scanned=0 generated=0 refreshed=0 failed=0 failed_share_ids=`. Production
 `web` and `worker` were healthy, and `https://skriptoteket.hule.education/healthz`
 returned `{"status":"healthy","message":"Service is healthy"}`.
 

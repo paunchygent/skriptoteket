@@ -26,6 +26,7 @@ acceptance_criteria:
 ---
 
 Related:
+
 - Follow-up to `docs/backlog/prs/pr-0015-editor-ai-edit-ops-anchor-patch-v2.md`.
 - Story: `docs/backlog/stories/story-08-24-ai-edit-ops-anchor-patch-v2.md`.
 - ADR: `docs/adr/adr-0051-chat-first-ai-editing.md` (v2 request semantics + patch/anchor targeting).
@@ -56,21 +57,25 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
 
 ## Implementation plan
 
-1) **Confirm the patching strategy decisions (STOP and confirm with the user)**
+1. **Confirm the patching strategy decisions (STOP and confirm with the user)**
+
    - Confirm patch apply engine: subprocess `patch` (not custom parsing).
    - Confirm confidence thresholds: hard-fail `max_offset > 50`; require confirmation when `fuzz>0 OR max_offset>10`.
    - Confirm validation split: relax model-level patch header strictness; sanitize/normalize on backend.
 
-2) **Chat drawer UX**
+2. **Chat drawer UX**
+
    - Preserve the prompt draft until a request succeeds; restore on failure.
    - Ensure edit-ops request failures are visible in the chat drawer (SystemMessage).
 
-3) **Backend-first preview/apply (version-gated)**
+3. **Backend-first preview/apply (version-gated)**
+
    - Add/verify `POST /api/v1/editor/edit-ops/preview` (no LLM calls) returning `after_virtual_files` + `meta`.
    - Add/verify `POST /api/v1/editor/edit-ops/apply` that re-runs preview and enforces `base_hash` + `patch_id` gating
      (reject with `409` and instruct user to re-preview + re-confirm).
 
-4) **Patch sanitization + controlled fuzz ladder (backend)**
+4. **Patch sanitization + controlled fuzz ladder (backend)**
+
    - Implement a sanitization/normalization layer that strips predictable LLM noise (code fences, indentation, CRLF/LF,
      invisible chars) and standardizes headers to `--- a/<virtualFileId>` / `+++ b/<virtualFileId>`.
    - Reject multi-file diffs and any diff that targets a different file than `target_file`.
@@ -79,7 +84,8 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
      `max_offset>10`.
    - Return actionable `error_details` (failed hunk header + compact snippets) on failure when possible.
 
-5) **Frontend: server preview/apply + fuzz UX**
+5. **Frontend: server preview/apply + fuzz UX**
+
    - After `POST /api/v1/editor/edit-ops` returns ops, call preview endpoint to compute `after_virtual_files` and render
      diffs from `before` vs `after`.
    - Apply calls the backend apply endpoint with `base_hash` + `patch_id` from preview.
@@ -87,16 +93,19 @@ UX + tests) without expanding the feature scope. Reduce regen loops while keepin
    - Treat `requires_confirmation`/fuzz/offset as a safety signal: show a warning banner and require an extra click.
    - Remove/deprecate any client-side unified diff applier (frontend must not apply patches).
 
-6) **Frontend: modern post-apply UX + scroll safety**
+6. **Frontend: modern post-apply UX + scroll safety**
+
    - Ensure diff viewers are always height-constrained and scrollable (AI proposal diff + working-copy restore diff modal).
    - Replace the post-apply banner with compact undo/redo controls that do not steal CodeMirror real estate.
    - Ensure a clearly named restore point is created before apply so users can find it in “Öppna sparade”.
    - Show save blockers inline when “Spara arbetsversion” is disabled.
 
-7) **Runtime support**
+7. **Runtime support**
+
    - Ensure the backend runtime image has the `patch` binary available (install in Docker images used by dev/prod).
 
-8) **Tests + verification**
+8. **Tests + verification**
+
    - Backend unit tests: sanitizer edge cases (fences/CRLF/missing headers), fuzz ladder, version gating, misapply-safe
      failures.
    - Frontend unit tests: draft retention, inline error visibility, preview/apply gating tokens, fuzz warning UX.

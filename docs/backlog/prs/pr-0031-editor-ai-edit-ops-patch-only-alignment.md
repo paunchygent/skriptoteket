@@ -201,11 +201,13 @@ Correlation propagation:
 ### 3) Backend diff hygiene: patch lint + hunk header repair
 
 - Extend `src/skriptoteket/infrastructure/editor/unified_diff_applier.py` in `prepare()`:
+
   - parse hunks and recompute old/new line counts from the hunk body
   - rewrite mismatched `@@ -a,b +c,d @@` counts (record normalization flag, e.g. `rewrote_hunk_counts`)
   - fail fast with a specific error for non-unified-diff lines inside hunks (prevents generic “Patchen kunde inte appliceras”)
 
 - Add regression tests in `tests/unit/infrastructure/test_unified_diff_applier.py`:
+
   - captured malformed-count diff is repaired and becomes apply-able (or rejected with the specific error)
 
 ### 4) End-to-end correlation id propagation (edit-ops → preview → apply)

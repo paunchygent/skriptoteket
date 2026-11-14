@@ -42,25 +42,25 @@ Implement the approved mockup direction:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                | Focus                        | Time   |
+| ----------------------------------------------------------------------------------- | ---------------------------- | ------ |
 | `docs/backlog/prs/pr-0351-st-21-08-transcript-completion-progress-and-export-ux.md` | Scope, non-goals, acceptance | 10 min |
-| `docs/mockups/pr-0351-transcript-progress-export-ux/README.md` | Approved UX contract | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/` | Runtime transcript workspace | 40 min |
-| `frontend/apps/skriptoteket/src/api/` transcript/export clients | Product endpoint ownership | 20 min |
-| Focused Vitest/backend/browser proof artifacts | Behavioral coverage | 30 min |
+| `docs/mockups/pr-0351-transcript-progress-export-ux/README.md`                      | Approved UX contract         | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/`              | Runtime transcript workspace | 40 min |
+| `frontend/apps/skriptoteket/src/api/` transcript/export clients                     | Product endpoint ownership   | 20 min |
+| Focused Vitest/backend/browser proof artifacts                                      | Behavioral coverage          | 30 min |
 
 **Total estimated time:** ~110 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Autosave on successful transcript completion | Manual `Spara` is not a meaningful teacher choice after successful STT completion and currently hides the useful workspace. | [x] |
-| Stable export control block | Format is selected once; actions stay `Ladda ner` and `Mina filer` without duplicated download buttons or dynamic two-line labels. | [x] |
-| No jump-scare status surfaces | Pending/running/failed/warning states must have reserved layout or separate planned state layouts. | [x] |
-| No internal/Swenglish copy | Producer stages must map to normal Swedish teacher language. | [x] |
-| Browser remains product-observer only | `PR-0351` must not restore browser-owned Sir Convert replay submit/poll/download/base64/complete behavior. | [x] |
+| Decision                                     | Rationale                                                                                                                          | Approve? |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Autosave on successful transcript completion | Manual `Spara` is not a meaningful teacher choice after successful STT completion and currently hides the useful workspace.        | [x]      |
+| Stable export control block                  | Format is selected once; actions stay `Ladda ner` and `Mina filer` without duplicated download buttons or dynamic two-line labels. | [x]      |
+| No jump-scare status surfaces                | Pending/running/failed/warning states must have reserved layout or separate planned state layouts.                                 | [x]      |
+| No internal/Swenglish copy                   | Producer stages must map to normal Swedish teacher language.                                                                       | [x]      |
+| Browser remains product-observer only        | `PR-0351` must not restore browser-owned Sir Convert replay submit/poll/download/base64/complete behavior.                         | [x]      |
 
 ## Review Checklist
 
@@ -299,8 +299,8 @@ Final residual risk:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0351` | Recorded changes-requested decision after independent review. |
-| 2 | `REV-PR-0351` | Recorded approved re-review decision after partial-overlay remediation. |
-| 3 | `REV-PR-0351` | Recorded final approved re-review after spec split and closeout docs. |
+| Change | Artifact      | Description                                                             |
+| ------ | ------------- | ----------------------------------------------------------------------- |
+| 1      | `REV-PR-0351` | Recorded changes-requested decision after independent review.           |
+| 2      | `REV-PR-0351` | Recorded approved re-review decision after partial-overlay remediation. |
+| 3      | `REV-PR-0351` | Recorded final approved re-review after spec split and closeout docs.   |

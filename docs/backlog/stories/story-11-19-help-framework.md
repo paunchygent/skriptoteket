@@ -18,6 +18,7 @@ dependencies: ["ST-11-05"]
 ## Context
 
 SSR help is implemented in `src/skriptoteket/web/templates/base.html` with:
+
 - Index views: `partials/help/index_logged_in.html`, `partials/help/index_logged_out.html`
 - Topics: `partials/help/topics/*.html` keyed by `data-help-topic`
 - Context binding via `{% block help_context_id %}` per page
@@ -28,21 +29,21 @@ These templates are the source of truth for content and wording.
 
 ### Help topics (SSR parity)
 
-| Topic | Route(s) |
-|-------|----------|
-| `home` | `/` |
-| `login` | `/login` |
-| `browse_professions` | `/browse` |
-| `browse_categories` | `/browse/:profession` |
-| `browse_tools` | `/browse/:profession/:category` |
-| `tools_run` | `/tools/:slug/run` |
-| `tools_result` | `/tools/:slug/runs/:runId` |
-| `my_tools` | `/my-tools` |
-| `apps_detail` | `/apps/:appId` |
-| `suggestions_new` | `/suggestions/new` |
-| `admin_suggestions` | `/admin/suggestions`, `/admin/suggestions/:id` |
-| `admin_tools` | `/admin/tools` |
-| `admin_editor` | `/admin/tools/:toolId`, `/admin/tool-versions/:versionId` |
+| Topic                | Route(s)                                                  |
+| -------------------- | --------------------------------------------------------- |
+| `home`               | `/`                                                       |
+| `login`              | `/login`                                                  |
+| `browse_professions` | `/browse`                                                 |
+| `browse_categories`  | `/browse/:profession`                                     |
+| `browse_tools`       | `/browse/:profession/:category`                           |
+| `tools_run`          | `/tools/:slug/run`                                        |
+| `tools_result`       | `/tools/:slug/runs/:runId`                                |
+| `my_tools`           | `/my-tools`                                               |
+| `apps_detail`        | `/apps/:appId`                                            |
+| `suggestions_new`    | `/suggestions/new`                                        |
+| `admin_suggestions`  | `/admin/suggestions`, `/admin/suggestions/:id`            |
+| `admin_tools`        | `/admin/tools`                                            |
+| `admin_editor`       | `/admin/tools/:toolId`, `/admin/tool-versions/:versionId` |
 
 ### Frontend components
 

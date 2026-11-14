@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0003
 title: 'Script taxonomy: professions + task-flow categories'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0003
+  - ADR-0003
 ---
 
 ## Context

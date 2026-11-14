@@ -22,6 +22,7 @@ Jaeger UI is currently internal-only, requiring SSH tunnel access (`ssh -L 16686
 ### DNS Record
 
 Add A record in Namecheap:
+
 - Host: `jaeger.hemma`
 - Type: A
 - Value: (server IP, same as other subdomains)

@@ -33,30 +33,30 @@ The implementation adds transcript request values, lifecycle parsers, transcript
 
 ## Artifacts to Review
 
-| File | Focus | Result |
-|------|-------|--------|
-| `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md` | Governing scope, acceptance criteria, evidence | Approved |
-| `docs/backlog/stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md` | Transcript intake and copy boundary | Approved |
-| `docs/backlog/stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md` | Gateway lifecycle and false-success boundary | Approved |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptOptions.ts` | Speaker controls and JobSpec mapping | Approved |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptRequestContext.ts` | Idempotency and correlation construction | Approved |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` | Gateway transport methods | Approved |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts` | Lifecycle and transcript JSON parsing | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/` | Bespoke transcript UI and runtime | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts` | UI behavior proof | Approved |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts` | Stage-sanitization DOM proof | Approved |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts` | Gateway and parser proof | Approved |
+| File                                                                                                   | Focus                                          | Result   |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- | -------- |
+| `docs/backlog/prs/pr-0342-st-21-05-transcript-intake-and-gateway-lifecycle-client.md`                  | Governing scope, acceptance criteria, evidence | Approved |
+| `docs/backlog/stories/story-21-05-conversion-hub-transcript-intake-and-diarization-controls.md`        | Transcript intake and copy boundary            | Approved |
+| `docs/backlog/stories/story-21-06-transcript-job-lifecycle-through-huleedu-gateway.md`                 | Gateway lifecycle and false-success boundary   | Approved |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptOptions.ts`                            | Speaker controls and JobSpec mapping           | Approved |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptRequestContext.ts`                     | Idempotency and correlation construction       | Approved |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`                                       | Gateway transport methods                      | Approved |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptParsers.ts`                            | Lifecycle and transcript JSON parsing          | Approved |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/`                                 | Bespoke transcript UI and runtime              | Approved |
+| `frontend/apps/skriptoteket/src/views/apps/ConversionHubTranscriptMode.spec.ts`                        | UI behavior proof                              | Approved |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts` | Stage-sanitization DOM proof                   | Approved |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/transcriptClient.spec.ts`                        | Gateway and parser proof                       | Approved |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use authenticated HuleEdu Gateway only for transcript jobs | Matches `ST-21-05`/`ST-21-06`; no public/no-login/direct Sir Convert path was added | [x] |
-| Map auto/exact/range speaker controls to `auto`, `known_speaker_count`, and `speaker_range` | `transcriptOptions.ts` rejects invalid exact/range values before submit | [x] |
-| Add status/result/manifest/download/cancel methods on the existing Gateway client family | Methods and URLs match the accepted lifecycle shape | [x] |
-| Treat `transcript_json` as the only success authority | Parser code is fail-closed and the false-success matrix is covered by focused tests | [x] |
-| Keep model/provider/internal-service terms out of teacher UI | Upstream stage values are mapped to bounded teacher-facing copy with DOM proof for unsafe input | [x] |
-| Treat missing live Hule/Sir proof as follow-up until TASK-0570 is available in target deployment | The PR records the absence truthfully; not a blocker for local client approval by itself | [x] |
+| Decision                                                                                         | Rationale                                                                                       | Approve? |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | -------- |
+| Use authenticated HuleEdu Gateway only for transcript jobs                                       | Matches `ST-21-05`/`ST-21-06`; no public/no-login/direct Sir Convert path was added             | [x]      |
+| Map auto/exact/range speaker controls to `auto`, `known_speaker_count`, and `speaker_range`      | `transcriptOptions.ts` rejects invalid exact/range values before submit                         | [x]      |
+| Add status/result/manifest/download/cancel methods on the existing Gateway client family         | Methods and URLs match the accepted lifecycle shape                                             | [x]      |
+| Treat `transcript_json` as the only success authority                                            | Parser code is fail-closed and the false-success matrix is covered by focused tests             | [x]      |
+| Keep model/provider/internal-service terms out of teacher UI                                     | Upstream stage values are mapped to bounded teacher-facing copy with DOM proof for unsafe input | [x]      |
+| Treat missing live Hule/Sir proof as follow-up until TASK-0570 is available in target deployment | The PR records the absence truthfully; not a blocker for local client approval by itself        | [x]      |
 
 ## Review Checklist
 
@@ -102,7 +102,7 @@ Live authenticated Hule/Sir end-to-end proof was not run and is not claimed. Bec
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0342` | Created retained ruthless review record with `changes_requested` verdict, findings, verification, and live-proof follow-up. |
-| 2 | `REV-PR-0342` | Re-reviewed remediation and approved after verifying safe stage-label rendering and complete false-success parser proof. |
+| Change | Artifact      | Description                                                                                                                 |
+| ------ | ------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0342` | Created retained ruthless review record with `changes_requested` verdict, findings, verification, and live-proof follow-up. |
+| 2      | `REV-PR-0342` | Re-reviewed remediation and approved after verifying safe stage-label rendering and complete false-success parser proof.    |

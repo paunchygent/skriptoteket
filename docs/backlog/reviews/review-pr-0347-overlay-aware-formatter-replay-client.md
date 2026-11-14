@@ -87,23 +87,23 @@ Out of scope by governed design:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0347-st-21-08-overlay-aware-formatter-replay-client.md` | PR scope, acceptance, verification | 10 min |
-| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story contract and non-goals | 10 min |
-| `docs/backlog/prs/pr-0345-st-21-08-formatter-authority-sync-and-artifact-selection.md` | Formatter authority dependency | 8 min |
-| `docs/backlog/prs/pr-0346-st-21-08-saved-transcript-speaker-overlay-aggregate.md` | Overlay persistence dependency | 8 min |
-| Backend/frontend/test files listed in Scope | Replay provenance, parser strictness, UI truthfulness | 45 min |
+| File                                                                                           | Focus                                                 | Time   |
+| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0347-st-21-08-overlay-aware-formatter-replay-client.md`                   | PR scope, acceptance, verification                    | 10 min |
+| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story contract and non-goals                   | 10 min |
+| `docs/backlog/prs/pr-0345-st-21-08-formatter-authority-sync-and-artifact-selection.md`         | Formatter authority dependency                        | 8 min  |
+| `docs/backlog/prs/pr-0346-st-21-08-saved-transcript-speaker-overlay-aggregate.md`              | Overlay persistence dependency                        | 8 min  |
+| Backend/frontend/test files listed in Scope                                                    | Replay provenance, parser strictness, UI truthfulness | 45 min |
 
 **Total estimated time:** ~1.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep replay authority producer-owned and fail closed on malformed/non-requested artifacts | Matches ST-21-08 and avoids local formatter fallbacks. | [x] |
-| Keep PR-0348 download/Mina filer actions out of this slice | Matches the governed PR split. | [x] |
-| Persist replay provenance in the local `ConversionHubJob` ledger | Acceptable because replay-job reuse now validates the current transcript-derived gateway filename before reusing local provenance. | [x] |
+| Decision                                                                                  | Rationale                                                                                                                          | Approve? |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep replay authority producer-owned and fail closed on malformed/non-requested artifacts | Matches ST-21-08 and avoids local formatter fallbacks.                                                                             | [x]      |
+| Keep PR-0348 download/Mina filer actions out of this slice                                | Matches the governed PR split.                                                                                                     | [x]      |
+| Persist replay provenance in the local `ConversionHubJob` ledger                          | Acceptable because replay-job reuse now validates the current transcript-derived gateway filename before reusing local provenance. | [x]      |
 
 ## Review Checklist
 
@@ -187,7 +187,7 @@ Resolved prior finding:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0347` | Updated the retained review record for pass 2 and marked the PR approved. |
-| 2 | Implementation | No production code changes were made by this reviewer. |
+| Change | Artifact       | Description                                                               |
+| ------ | -------------- | ------------------------------------------------------------------------- |
+| 1      | `REV-PR-0347`  | Updated the retained review record for pass 2 and marked the PR approved. |
+| 2      | Implementation | No production code changes were made by this reviewer.                    |

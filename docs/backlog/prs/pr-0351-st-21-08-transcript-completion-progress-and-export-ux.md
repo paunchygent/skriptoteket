@@ -91,8 +91,7 @@ Mockup lessons that are part of this PR contract:
   later controls.
 - Do not use an `Avbryt efter klar` concept. Running work has one clear
   `Avbryt` action only where cancellation is actually possible.
-- Avoid internal terms. Use normal Swedish such as `Hittar talare`, `Skriver ut
-  samtalet`, and `Gör texten klar`.
+- Avoid internal terms. Use normal Swedish such as `Hittar talare`, `Skriver ut samtalet`, and `Gör texten klar`.
 - Do not add explanatory marketing/helper text unless it states verified
   product behavior.
 - Do not add redundant labels such as `Talarnamn` and `Export` inside an
@@ -112,8 +111,7 @@ Mockup lessons that are part of this PR contract:
 2. Add red-first frontend tests for the approved UX contract:
    - running progress does not render as a dead 0% single-chunk surface;
    - transcript completion autosaves and skips the generic `Spara` gate;
-   - old copy/actions such as primary `Spara`, `Skapa exportfiler`, `Skapa
-     igen`, and `Skapa transkript igen` are absent from the normal path;
+   - old copy/actions such as primary `Spara`, `Skapa exportfiler`, `Skapa igen`, and `Skapa transkript igen` are absent from the normal path;
    - export controls expose one selected format and stable `Ladda ner` /
      `Mina filer` actions.
 3. Update the progress rendering to consume the current product/Sir Convert

@@ -7,8 +7,7 @@ owners: "agents"
 created: 2026-04-07
 updated: 2026-04-08
 epic: "EPIC-32"
-dependencies:
-  ["ADR-0028", "ST-11-03", "ST-32-06", "ST-32-07"]
+dependencies: ["ADR-0028", "ST-11-03", "ST-32-06", "ST-32-07"]
 acceptance_criteria:
   - "Given a visitor enters any unmatched SPA URL, when the route resolves, then Skriptoteket renders a visible not-found or recovery surface instead of an empty layout shell."
   - "Given a visitor enters `/public/<app-id>` instead of `/public/apps/<app-id>`, when the route resolves, then the page explains the canonical public curated-app route shape and offers the correct path for `classroom.group-seating-studio`."

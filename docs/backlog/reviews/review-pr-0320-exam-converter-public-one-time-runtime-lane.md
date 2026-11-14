@@ -46,27 +46,27 @@ without Vault/MyFiles writes or account history.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0320-st-21-03-exam-converter-public-one-time-runtime-lane.md` | Public-runtime scope, acceptance criteria, stop conditions | 15 min |
-| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md` | Public/authenticated lane split and PR ordering | 10 min |
-| `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md` | Scoped public exception authority | 10 min |
-| `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/tasks/task-0559-implement-sir-convert-protected-gateway-route-surface-and-signed-audience.md` | Gateway route and session authority | 10 min |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md` | Downstream conversion/ownership contract | 10 min |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/reference/ref-sir-convert-internalidentitycontextv1-authorization-profile.md` | Allowed caller classes and minting authority | 10 min |
-| `src/skriptoteket/web/api/v1/public_apps.py` | Frozen PR-0319 public metadata shape consumed by the next slice | 5 min |
-| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts` | Existing public host resolver boundary | 5 min |
+| File                                                                                                                                                 | Focus                                                           | Time   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0320-st-21-03-exam-converter-public-one-time-runtime-lane.md`                                                                   | Public-runtime scope, acceptance criteria, stop conditions      | 15 min |
+| `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`                                                         | Public/authenticated lane split and PR ordering                 | 10 min |
+| `docs/adr/adr-0085-exam-converter-public-conversion-exception-for-conversion-hub.md`                                                                 | Scoped public exception authority                               | 10 min |
+| `/Users/olofs_mba/Documents/Repos/huleedu/docs/backlog/tasks/task-0559-implement-sir-convert-protected-gateway-route-surface-and-signed-audience.md` | Gateway route and session authority                             | 10 min |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/converters/digiexam-migration-service-api-artifact-contract.md`                             | Downstream conversion/ownership contract                        | 10 min |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/reference/ref-sir-convert-internalidentitycontextv1-authorization-profile.md`               | Allowed caller classes and minting authority                    | 10 min |
+| `src/skriptoteket/web/api/v1/public_apps.py`                                                                                                         | Frozen PR-0319 public metadata shape consumed by the next slice | 5 min  |
+| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts`                                                                                     | Existing public host resolver boundary                          | 5 min  |
 
 **Total estimated time:** ~75 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Implement anonymous public submit/poll/download in this slice | Grant-lane authority now exists in dependency docs, but retained bridge and upstream acceptance evidence still block runtime approval | [ ] |
-| Keep all browser traffic under the scoped public Skriptoteket namespace | Correct boundary from PR-0319 and ADR-0085 | [x] |
-| Keep general Conversion Hub authenticated-only | Correct boundary from ADR-0085 and PR-0319 | [x] |
-| Treat PR-0319 metadata as the runtime contract without amending its status shape | Resolved by PR-0321's explicit runtime-status/action-affordance bridge and approved in `REV-PR-0321` | [x] |
+| Decision                                                                         | Rationale                                                                                                                             | Approve? |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Implement anonymous public submit/poll/download in this slice                    | Grant-lane authority now exists in dependency docs, but retained bridge and upstream acceptance evidence still block runtime approval | [ ]      |
+| Keep all browser traffic under the scoped public Skriptoteket namespace          | Correct boundary from PR-0319 and ADR-0085                                                                                            | [x]      |
+| Keep general Conversion Hub authenticated-only                                   | Correct boundary from ADR-0085 and PR-0319                                                                                            | [x]      |
+| Treat PR-0319 metadata as the runtime contract without amending its status shape | Resolved by PR-0321's explicit runtime-status/action-affordance bridge and approved in `REV-PR-0321`                                  | [x]      |
 
 ## Review Checklist
 
@@ -74,11 +74,11 @@ without Vault/MyFiles writes or account history.
 - [x] Public surfaces under review were enumerated.
 - [x] Upstream HuleEdu/Sir Convert route and identity contracts were checked.
 - [x] Cookie-parity and no-account-persistence requirements were checked
-      against upstream ownership semantics.
+  against upstream ownership semantics.
 - [x] The implementation package has an approved server-mediated upstream path
-      for anonymous Exam Converter work.
+  for anonymous Exam Converter work.
 - [x] The bootstrap metadata can truthfully describe an active runtime without
-      reopening the PR-0319 contract.
+  reopening the PR-0319 contract.
 - [x] Verification gates are sufficient for the claimed runtime surface.
 
 ## Review Feedback
@@ -328,8 +328,8 @@ Verification run during this re-review:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0320` | Retained review recorded `changes_requested`; implementation is blocked until anonymous upstream authority and active-runtime metadata semantics are governed. |
-| 2 | `PR-0320` re-review | Retained `changes_requested` after re-checking HuleEdu `TASK-0563`, Sir Convert `TASK-291`, and Skriptoteket `PR-0321`; original technical blockers moved, but bridge review/authority evidence still blocks runtime approval. |
-| 3 | `PR-0320` re-review after bridge review | Approved runtime implementation package after `REV-PR-0321` approval, corrected HuleEdu decision paths, Sir Convert completed-task authority acceptance, full focused backend/frontend proof, lint/typecheck, frontend build, docs gates, and forbidden production-bundle string grep. |
+| Change | Artifact                                | Description                                                                                                                                                                                                                                                                            |
+| ------ | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0320`                               | Retained review recorded `changes_requested`; implementation is blocked until anonymous upstream authority and active-runtime metadata semantics are governed.                                                                                                                         |
+| 2      | `PR-0320` re-review                     | Retained `changes_requested` after re-checking HuleEdu `TASK-0563`, Sir Convert `TASK-291`, and Skriptoteket `PR-0321`; original technical blockers moved, but bridge review/authority evidence still blocks runtime approval.                                                         |
+| 3      | `PR-0320` re-review after bridge review | Approved runtime implementation package after `REV-PR-0321` approval, corrected HuleEdu decision paths, Sir Convert completed-task authority acceptance, full focused backend/frontend proof, lint/typecheck, frontend build, docs gates, and forbidden production-bundle string grep. |

@@ -27,12 +27,12 @@ missing in the SPA editor. Rollback is available from
 
 ### Backend API (add to `src/skriptoteket/web/api/v1/editor.py`)
 
-| Endpoint | Method | Role | Action |
-|----------|--------|------|--------|
-| `/api/v1/editor/tool-versions/{version_id}/submit-review` | POST | contributor+ | Submit draft for admin review |
-| `/api/v1/editor/tool-versions/{version_id}/publish` | POST | admin+ | Publish version (makes it active) |
-| `/api/v1/editor/tool-versions/{version_id}/request-changes` | POST | admin+ | Return to draft with feedback |
-| `/api/v1/editor/tool-versions/{version_id}/rollback` | POST | superuser | Rollback to archived version |
+| Endpoint                                                    | Method | Role         | Action                            |
+| ----------------------------------------------------------- | ------ | ------------ | --------------------------------- |
+| `/api/v1/editor/tool-versions/{version_id}/submit-review`   | POST   | contributor+ | Submit draft for admin review     |
+| `/api/v1/editor/tool-versions/{version_id}/publish`         | POST   | admin+       | Publish version (makes it active) |
+| `/api/v1/editor/tool-versions/{version_id}/request-changes` | POST   | admin+       | Return to draft with feedback     |
+| `/api/v1/editor/tool-versions/{version_id}/rollback`        | POST   | superuser    | Rollback to archived version      |
 
 - All endpoints require CSRF via `require_csrf_token`.
 - Reuse handlers + commands:

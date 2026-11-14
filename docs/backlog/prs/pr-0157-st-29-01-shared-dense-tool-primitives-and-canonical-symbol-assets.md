@@ -51,12 +51,14 @@ Implement the first shared dense-tool primitive layer for the SPA:
 ## Implementation plan
 
 1. Finalize the shared symbol inventory in code.
+
    - Consolidate and extend `frontend/apps/skriptoteket/src/components/icons/`.
    - Ensure one canonical icon export surface exists.
    - Add the missing shared plus/create, zoom in, zoom out, and fit-view icons.
    - Replace editor-local undo/redo unicode glyphs with the canonical icon components.
 
 2. Add shared primitive components.
+
    - Create or refactor shared controls in `frontend/apps/skriptoteket/src/components/ui/`.
    - Cover:
      - icon-first toolbar action
@@ -69,6 +71,7 @@ Implement the first shared dense-tool primitive layer for the SPA:
      - compound toggle cluster for `toggle + configure_context child`
 
 3. Encode the shared behavioral contract.
+
    - Tooltips / titles
    - `aria-label` / accessible-name rules
    - hover / focus / disabled / active states
@@ -78,12 +81,14 @@ Implement the first shared dense-tool primitive layer for the SPA:
    - focus return after menu dismissal
 
 4. Remove app-shaped APIs from candidate shared controls.
+
    - Refactor current split/menu candidates so they accept generic item models instead of
      planner-specific unions and hardcoded labels.
    - Resolve `configure_context` so it can disambiguate `Regler` / `Inställningar` instead of
      collapsing to a bare icon.
 
 5. Replace planner/editor primitive stopgaps where safe.
+
    - Reduce one-off wrappers such as planner-local icon button treatments when they can become thin
      adapters over the shared primitive layer.
    - Remove dense-action dependence on page-button primitives such as `btn-ghost` plus local

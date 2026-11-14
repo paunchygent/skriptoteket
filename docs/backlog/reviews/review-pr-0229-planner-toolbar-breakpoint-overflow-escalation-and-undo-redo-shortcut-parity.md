@@ -46,43 +46,43 @@ Review and freeze one shared shell and toolbar breakpoint doctrine:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
+| File                                                                                                                              | Focus                                                               | Time  |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----- |
 | `docs/backlog/prs/pr-0229-st-29-11-desktop-first-planner-toolbar-breakpoint-overflow-escalation-and-undo-redo-shortcut-parity.md` | Target breakpoint ladder, overflow order, and shortcut expectations | 5 min |
-| `docs/backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md` | Earlier toolbar hardening contract | 4 min |
-| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md` | Parent story scope | 3 min |
-| `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md` | Desktop composition expectations | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue` | Shared toolbar zone ownership | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue` | Grouping toolbar priority and overflow candidates | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue` | Seating toolbar priority and overflow candidates | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue` | Shared overflow menu behavior | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue` | Export-cluster survival vs overflow decisions | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` | Shared toolbar integration path | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue` | Guest shared-shell parity path | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.ts` | Shared auth+guest undo/redo keyboard guard seam | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts` | Existing shared toolbar spec blind spots | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts` | Current grouping/seating toolbar assertions | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.shortcuts.spec.ts` | Focused authenticated shell menu/input shortcut guard proof | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` | Current guest parity assertions | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.shortcuts.spec.ts` | Focused guest shell menu/input shortcut guard proof | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.spec.ts` | Positive/negative shared shortcut proof | 4 min |
-| `scripts/playwright_pr_0229_toolbar_overflow_threshold_check.py` | Exact live shell + overflow threshold verifier | 6 min |
-| `frontend/apps/skriptoteket/src/components/ui/useDenseMenuSurface.ts` | Overflow-menu keyboard/focus interactions | 3 min |
-| `frontend/apps/skriptoteket/src/assets/main.css` | Shared CSS-owned geometry and toolbar primitives | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts` | Shared planner layout token names | 2 min |
+| `docs/backlog/prs/pr-0225-st-29-11-desktop-first-planner-toolbar-priority-and-overflow-hardening.md`                              | Earlier toolbar hardening contract                                  | 4 min |
+| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md`                      | Parent story scope                                                  | 3 min |
+| `docs/backlog/stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md`                             | Desktop composition expectations                                    | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.vue`                                              | Shared toolbar zone ownership                                       | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue`                                        | Grouping toolbar priority and overflow candidates                   | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue`                                         | Seating toolbar priority and overflow candidates                    | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerToolbarOverflowMenu.vue`                                             | Shared overflow menu behavior                                       | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue`                                               | Export-cluster survival vs overflow decisions                       | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`                                                  | Shared toolbar integration path                                     | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`                                               | Guest shared-shell parity path                                      | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.ts`                                                        | Shared auth+guest undo/redo keyboard guard seam                     | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceActionBar.spec.ts`                                          | Existing shared toolbar spec blind spots                            | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`                                              | Current grouping/seating toolbar assertions                         | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.shortcuts.spec.ts`                                    | Focused authenticated shell menu/input shortcut guard proof         | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`                                           | Current guest parity assertions                                     | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.shortcuts.spec.ts`                                 | Focused guest shell menu/input shortcut guard proof                 | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/usePlannerUndoRedoShortcuts.spec.ts`                                                   | Positive/negative shared shortcut proof                             | 4 min |
+| `scripts/playwright_pr_0229_toolbar_overflow_threshold_check.py`                                                                  | Exact live shell + overflow threshold verifier                      | 6 min |
+| `frontend/apps/skriptoteket/src/components/ui/useDenseMenuSurface.ts`                                                             | Overflow-menu keyboard/focus interactions                           | 3 min |
+| `frontend/apps/skriptoteket/src/assets/main.css`                                                                                  | Shared CSS-owned geometry and toolbar primitives                    | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/plannerWorkspaceLayout.ts`                                                             | Shared planner layout token names                                   | 2 min |
 
 **Total estimated time:** ~85 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Freeze a one-row desktop toolbar rule | Multi-row fallback is not acceptable for this workspace | [ ] |
-| Overflow `undo` / `redo` before `Börja om` | Undo/redo are less critical to keep visibly pinned | [ ] |
-| Overflow `Börja om` before more critical controls | Required workflow, export, and context should stay visible longer | [ ] |
-| Require shortcut parity for hidden undo/redo | Hidden controls must not mean lost capability | [ ] |
-| Treat grouping and seating as one shared toolbar contract | Shared toolbar drift should be reviewed as one surface | [ ] |
-| Freeze the auth shell breakpoint at `1280px` | Toolbar width cannot be reviewed honestly if the sidebar/mobile-header seam drifts | [ ] |
+| Decision                                                  | Rationale                                                                          | Approve? |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Freeze a one-row desktop toolbar rule                     | Multi-row fallback is not acceptable for this workspace                            | [ ]      |
+| Overflow `undo` / `redo` before `Börja om`                | Undo/redo are less critical to keep visibly pinned                                 | [ ]      |
+| Overflow `Börja om` before more critical controls         | Required workflow, export, and context should stay visible longer                  | [ ]      |
+| Require shortcut parity for hidden undo/redo              | Hidden controls must not mean lost capability                                      | [ ]      |
+| Treat grouping and seating as one shared toolbar contract | Shared toolbar drift should be reviewed as one surface                             | [ ]      |
+| Freeze the auth shell breakpoint at `1280px`              | Toolbar width cannot be reviewed honestly if the sidebar/mobile-header seam drifts | [ ]      |
 
 ## Review Checklist
 

@@ -50,30 +50,30 @@ testing.
 
 ## Artifacts To Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md` | Scope, acceptance criteria, proof claims, and stop conditions | 10 min |
-| `docs/backlog/prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md` | Approved mockup/package boundary | 6 min |
-| `docs/mockups/pr-0370-public-landing-authenticated-app-preview/README.md` | Product-owner symbol requirement and rejected marker chrome | 8 min |
-| `docs/mockups/pr-0370-public-landing-authenticated-app-preview/approved-copy.md` | Locked Swedish copy | 4 min |
-| `docs/reference/ref-public-landing-copy-lock.md` | Copy lock and symbol/auth-link contract | 6 min |
-| `frontend/apps/skriptoteket/src/views/HomeView.vue` | Signed-out composition and removed repeated showcase | 8 min |
-| `frontend/apps/skriptoteket/src/components/home/LandingAuthenticatedPreview.vue` | Preview copy, symbol reuse, and auth continuation links | 12 min |
-| `frontend/apps/skriptoteket/src/views/HomeView.spec.ts` | Behavioral truthfulness of the focused landing tests | 10 min |
-| `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-desktop.png` | Desktop production proof | 5 min |
-| `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-mobile.png` | Mobile production proof | 5 min |
+| File                                                                                            | Focus                                                         | Time   |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0371-st-37-04-public-landing-authenticated-app-preview-implementation.md`  | Scope, acceptance criteria, proof claims, and stop conditions | 10 min |
+| `docs/backlog/prs/pr-0370-st-37-04-public-landing-authenticated-app-preview-mockup-approval.md` | Approved mockup/package boundary                              | 6 min  |
+| `docs/mockups/pr-0370-public-landing-authenticated-app-preview/README.md`                       | Product-owner symbol requirement and rejected marker chrome   | 8 min  |
+| `docs/mockups/pr-0370-public-landing-authenticated-app-preview/approved-copy.md`                | Locked Swedish copy                                           | 4 min  |
+| `docs/reference/ref-public-landing-copy-lock.md`                                                | Copy lock and symbol/auth-link contract                       | 6 min  |
+| `frontend/apps/skriptoteket/src/views/HomeView.vue`                                             | Signed-out composition and removed repeated showcase          | 8 min  |
+| `frontend/apps/skriptoteket/src/components/home/LandingAuthenticatedPreview.vue`                | Preview copy, symbol reuse, and auth continuation links       | 12 min |
+| `frontend/apps/skriptoteket/src/views/HomeView.spec.ts`                                         | Behavioral truthfulness of the focused landing tests          | 10 min |
+| `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-desktop.png`        | Desktop production proof                                      | 5 min  |
+| `.artifacts/pr-0371-public-landing-authenticated-app-preview/public-landing-mobile.png`         | Mobile production proof                                       | 5 min  |
 
 **Total estimated time:** ~74 minutes.
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the existing signed-out Klassrumskartan hero and public CTA behavior. | `PR-0370` approved a minimal landing change, not a hero redesign. | [x] |
-| Replace the repeated below-hero Klassrumskartan showcase with the three-panel authenticated preview. | This is the core scope of `PR-0371`. | [x] |
-| Reuse authenticated-home app symbols instead of custom SVG diagrams or markers. | The product owner explicitly required shared symbols and rejected alternate diagram chrome. | [x] |
-| Preserve shared HuleEdu auth ceremony links through the existing continuation helpers. | Auth continuation is a governed cross-product contract. | [x] |
-| Require plausible retained desktop and mobile proof before approval. | `PR-0371` acceptance explicitly includes live browser proof reflecting the production page. | [x] |
+| Decision                                                                                             | Rationale                                                                                   | Approve? |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| Keep the existing signed-out Klassrumskartan hero and public CTA behavior.                           | `PR-0370` approved a minimal landing change, not a hero redesign.                           | [x]      |
+| Replace the repeated below-hero Klassrumskartan showcase with the three-panel authenticated preview. | This is the core scope of `PR-0371`.                                                        | [x]      |
+| Reuse authenticated-home app symbols instead of custom SVG diagrams or markers.                      | The product owner explicitly required shared symbols and rejected alternate diagram chrome. | [x]      |
+| Preserve shared HuleEdu auth ceremony links through the existing continuation helpers.               | Auth continuation is a governed cross-product contract.                                     | [x]      |
+| Require plausible retained desktop and mobile proof before approval.                                 | `PR-0371` acceptance explicitly includes live browser proof reflecting the production page. | [x]      |
 
 ## Review Checklist
 
@@ -143,7 +143,7 @@ scoped fix surface.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0371` | Created the retained review record and recorded the blocking mobile-proof finding plus re-review proof requirements. |
-| 2 | `REV-PR-0371` | Re-reviewed the proof fix, confirmed the mobile symbol blocker is resolved, and updated the retained decision to `approved`. |
+| Change | Artifact      | Description                                                                                                                  |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0371` | Created the retained review record and recorded the blocking mobile-proof finding plus re-review proof requirements.         |
+| 2      | `REV-PR-0371` | Re-reviewed the proof fix, confirmed the mobile symbol blocker is resolved, and updated the retained decision to `approved`. |

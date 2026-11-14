@@ -44,29 +44,29 @@ boundary, OpenAPI/type regeneration, and focused backend/frontend tests.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0321-st-21-03-exam-converter-public-active-runtime-metadata-and-grant-contract.md` | Scope, dependencies, implementation summary, stop conditions | 15 min |
-| `src/skriptoteket/domain/curated_apps/models.py` | Runtime-status model and default state | 10 min |
-| `src/skriptoteket/infrastructure/curated_apps/registry.py` | `documents.conversion_hub` scoped capability status | 10 min |
-| `src/skriptoteket/web/api/v1/public_apps.py` | Public metadata, action affordances, authority boundary | 20 min |
-| `frontend/apps/skriptoteket/src/api/openapi.d.ts` and `frontend/apps/skriptoteket/openapi.json` | Generated schema/type shape | 10 min |
-| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts` | Public host grant-ready metadata consumption | 10 min |
-| `tests/unit/domain/curated_apps/test_models.py`, `tests/unit/infrastructure/curated_apps/test_registry.py`, `tests/unit/web/test_public_apps_api_routes.py` | Backend contract proof | 15 min |
-| `/Users/olofs_mba/Documents/Repos/huleedu/docs/decisions/0045-public-exam-converter-grant-authority-for-sir-convert.md` | Upstream HuleEdu authority | 10 min |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-291-define-public-exam-converter-grant-lane-for-digiexam-migration-bundles.md` | Upstream Sir Convert grant lane | 10 min |
+| File                                                                                                                                                        | Focus                                                        | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0321-st-21-03-exam-converter-public-active-runtime-metadata-and-grant-contract.md`                                                     | Scope, dependencies, implementation summary, stop conditions | 15 min |
+| `src/skriptoteket/domain/curated_apps/models.py`                                                                                                            | Runtime-status model and default state                       | 10 min |
+| `src/skriptoteket/infrastructure/curated_apps/registry.py`                                                                                                  | `documents.conversion_hub` scoped capability status          | 10 min |
+| `src/skriptoteket/web/api/v1/public_apps.py`                                                                                                                | Public metadata, action affordances, authority boundary      | 20 min |
+| `frontend/apps/skriptoteket/src/api/openapi.d.ts` and `frontend/apps/skriptoteket/openapi.json`                                                             | Generated schema/type shape                                  | 10 min |
+| `frontend/apps/skriptoteket/src/views/PublicAppHostView.spec.ts`                                                                                            | Public host grant-ready metadata consumption                 | 10 min |
+| `tests/unit/domain/curated_apps/test_models.py`, `tests/unit/infrastructure/curated_apps/test_registry.py`, `tests/unit/web/test_public_apps_api_routes.py` | Backend contract proof                                       | 15 min |
+| `/Users/olofs_mba/Documents/Repos/huleedu/docs/decisions/0045-public-exam-converter-grant-authority-for-sir-convert.md`                                     | Upstream HuleEdu authority                                   | 10 min |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-291-define-public-exam-converter-grant-lane-for-digiexam-migration-bundles.md`  | Upstream Sir Convert grant lane                              | 10 min |
 
 **Total estimated time:** ~110 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Use `contract_only`, `grant_contract_ready`, and `active` as public runtime states | Separates the PR-0319 shell, upstream-contract readiness, and actual PR-0320 runtime availability | [x] |
-| Expose grant-ready public action affordances as disabled until runtime is active | Lets the SPA understand the future route contract without submitting work early | [x] |
-| Keep browser authority to opaque public handles only | Prevents raw grant, read-lease, signing material, credentials, or direct upstream routes from becoming browser authority | [x] |
-| Keep general Conversion Hub `authenticated_only` | Preserves ADR-0085 scoped public exception | [x] |
-| Treat Sir Convert `TASK-291` as sufficient upstream acceptance evidence | Sir Convert's own docs contract accepts completed task state as governed backlog authority; `TASK-291` is completed and the converter/auth-profile contracts carry the public-grant verifier shape | [x] |
+| Decision                                                                           | Rationale                                                                                                                                                                                          | Approve? |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Use `contract_only`, `grant_contract_ready`, and `active` as public runtime states | Separates the PR-0319 shell, upstream-contract readiness, and actual PR-0320 runtime availability                                                                                                  | [x]      |
+| Expose grant-ready public action affordances as disabled until runtime is active   | Lets the SPA understand the future route contract without submitting work early                                                                                                                    | [x]      |
+| Keep browser authority to opaque public handles only                               | Prevents raw grant, read-lease, signing material, credentials, or direct upstream routes from becoming browser authority                                                                           | [x]      |
+| Keep general Conversion Hub `authenticated_only`                                   | Preserves ADR-0085 scoped public exception                                                                                                                                                         | [x]      |
+| Treat Sir Convert `TASK-291` as sufficient upstream acceptance evidence            | Sir Convert's own docs contract accepts completed task state as governed backlog authority; `TASK-291` is completed and the converter/auth-profile contracts carry the public-grant verifier shape | [x]      |
 
 ## Review Checklist
 
@@ -120,7 +120,7 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0321` | Created a retained pending review record so `PR-0321` is no longer a done-but-unreviewed runtime prerequisite. |
-| 2 | `REV-PR-0321` | Approved the bridge after verifying HuleEdu path correction, Sir Convert completed-task authority, metadata/action-affordance boundaries, focused tests, lint/typecheck, frontend build, docs gates, and forbidden production-bundle string grep. |
+| Change | Artifact      | Description                                                                                                                                                                                                                                       |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0321` | Created a retained pending review record so `PR-0321` is no longer a done-but-unreviewed runtime prerequisite.                                                                                                                                    |
+| 2      | `REV-PR-0321` | Approved the bridge after verifying HuleEdu path correction, Sir Convert completed-task authority, metadata/action-affordance boundaries, focused tests, lint/typecheck, frontend build, docs gates, and forbidden production-bundle string grep. |

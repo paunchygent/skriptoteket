@@ -48,31 +48,31 @@ while they actually add a durable anonymous public artifact surface.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md` | Parent story, acceptance criteria, export-boundary claims | 12 min |
-| `docs/backlog/prs/pr-0274-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md` | Authenticated implementation plan and proof obligations | 14 min |
+| File                                                                                                   | Focus                                                       | Time   |
+| ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ------ |
+| `docs/backlog/stories/story-26-06-klassrumskartan-shareable-html-css-export-links.md`                  | Parent story, acceptance criteria, export-boundary claims   | 12 min |
+| `docs/backlog/prs/pr-0274-st-26-06-authenticated-klassrumskartan-shareable-html-css-export-links.md`   | Authenticated implementation plan and proof obligations     | 14 min |
 | `docs/backlog/prs/pr-0273-st-26-06-public-guest-klassrumskartan-share-links-with-ttl-and-supersede.md` | Public guest implementation plan and public-helper boundary | 14 min |
-| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | Epic-level export contract | 8 min |
-| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Public guest state and export boundary | 12 min |
-| `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md` | Guest Smart/export/history separation | 6 min |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py` | Current authenticated seating export route shape | 5 min |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py` | Current authenticated grouping export route shape | 5 min |
-| `src/skriptoteket/web/api/v1/public_apps_classroom_planner_exports.py` | Current public helper limits and route shape | 8 min |
-| `src/skriptoteket/web/routes/spa_fallback.py` / `src/skriptoteket/web/spa_metadata.py` | Public route indexing and fallback behavior | 8 min |
+| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`                 | Epic-level export contract                                  | 8 min  |
+| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`                   | Public guest state and export boundary                      | 12 min |
+| `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`             | Guest Smart/export/history separation                       | 6 min  |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner_seating.py`                                        | Current authenticated seating export route shape            | 5 min  |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner_grouping.py`                                       | Current authenticated grouping export route shape           | 5 min  |
+| `src/skriptoteket/web/api/v1/public_apps_classroom_planner_exports.py`                                 | Current public helper limits and route shape                | 8 min  |
+| `src/skriptoteket/web/routes/spa_fallback.py` / `src/skriptoteket/web/spa_metadata.py`                 | Public route indexing and fallback behavior                 | 8 min  |
 
 **Total estimated time:** ~92 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Put `Dela länk` in the existing export menu | Matches EPIC-26 and avoids a parallel sharing workflow | [x] |
-| Use unguessable tokens with cosmetic slugs | Correct authority split; slugs must never authorize access | [x] |
-| Store authenticated shares as durable teacher-owned artifacts | `PR-0274` now requires lifecycle/delete/deactivation rules and proof | [x] |
-| Let public guests create 60-day server-stored share artifacts under ADR-0079 | Not under `ADR-0079` alone; accepted `ADR-0084` is the narrow exception authority for `PR-0273` | [x] |
-| Treat the current PR-0274 endpoint shape as implementation-ready | `PR-0274` now uses kind-specific routes plus typed `expected_revision` proof | [x] |
-| Treat PR-0273 abuse controls as specified enough | `PR-0273` now requires share-specific limits, size caps, purge, metrics/log redaction, and race/idempotency tests | [x] |
+| Decision                                                                     | Rationale                                                                                                         | Approve? |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------- |
+| Put `Dela länk` in the existing export menu                                  | Matches EPIC-26 and avoids a parallel sharing workflow                                                            | [x]      |
+| Use unguessable tokens with cosmetic slugs                                   | Correct authority split; slugs must never authorize access                                                        | [x]      |
+| Store authenticated shares as durable teacher-owned artifacts                | `PR-0274` now requires lifecycle/delete/deactivation rules and proof                                              | [x]      |
+| Let public guests create 60-day server-stored share artifacts under ADR-0079 | Not under `ADR-0079` alone; accepted `ADR-0084` is the narrow exception authority for `PR-0273`                   | [x]      |
+| Treat the current PR-0274 endpoint shape as implementation-ready             | `PR-0274` now uses kind-specific routes plus typed `expected_revision` proof                                      | [x]      |
+| Treat PR-0273 abuse controls as specified enough                             | `PR-0273` now requires share-specific limits, size caps, purge, metrics/log redaction, and race/idempotency tests | [x]      |
 
 ## Review Checklist
 
@@ -80,12 +80,12 @@ while they actually add a durable anonymous public artifact surface.
 - [x] Authenticated and public guest slices are separated
 - [x] Public guest persistence is governed by the accepted `ADR-0084` exception
 - [x] Authenticated share creation has a request/route shape that can enforce
-      draft kind and expected revision
+  draft kind and expected revision
 - [x] Public read route metadata, robots policy, and sitemap posture are explicit
 - [x] Share artifact retention, purge, and deletion semantics are specified
 - [x] Supersede/revoke behavior is idempotent and race-safe
 - [x] Tests prove malicious roster/classroom/student text is escaped in HTML,
-      title, description, and share metadata
+  title, description, and share metadata
 
 ## Review Feedback
 
@@ -101,8 +101,7 @@ audit trail for what was remediated.
 1. **Blocker: public guest share persistence is not authorized by the accepted public boundary.**
 
    `PR-0273` creates durable server-side public guest share artifacts with
-   `owner_user_id = null`, `source = public_guest`, and `expires_at =
-   created_at + 60 days`. That is a real anonymous persistence surface, not the
+   `owner_user_id = null`, `source = public_guest`, and `expires_at = created_at + 60 days`. That is a real anonymous persistence surface, not the
    current direct-download helper model. `ADR-0079` says browser-owned guest
    state remains authoritative, the server may only perform stateless helper
    work or direct rendering before login, and guest export may use transient
@@ -122,8 +121,7 @@ audit trail for what was remediated.
 
    `ST-26-06` requires the same pre-export persistence contract as PDF/Excel,
    including `expected_revision` validation before metadata is created. The
-   proposed authenticated route is `POST
-   /api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/share`; it
+   proposed authenticated route is `POST /api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}/share`; it
    does not carry draft kind, expected revision, or a typed share-creation
    payload. The existing authenticated export-job endpoints are draft-kind
    specific (`/drafts/seating/{draft_id}/exports/jobs` and
@@ -331,14 +329,14 @@ the accepted exception rather than blocked on a proposed decision.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-ST-26-06` | Recorded a retained changes-requested review for the ST-26-06 / PR-0274 / PR-0273 share-link planning surface. |
-| 2 | `ADR-0084` | Added the public share artifact exception, later accepted by the user-lead after re-review. |
-| 3 | `ST-26-06` | Added the `ADR-0084` dependency, privacy/indexing requirements, and public-guest authority acceptance criteria; later moved the story to ready after ADR acceptance. |
-| 4 | `PR-0274` | Added kind-specific routes, `expected_revision`, lifecycle, provenance, metadata, and deletion proof requirements; re-review moved the authenticated slice back to ready. |
-| 5 | `PR-0273` | Added concrete abuse-control, purge, idempotency, and race-safety requirements; later moved the public guest slice to ready after accepted `ADR-0084`. |
-| 6 | `REV-ST-26-06` | Re-reviewed the remediation and approved the planning surface while retaining the then-active `ADR-0084` implementation stop condition for public guest shares. |
-| 7 | `ADR-0084`, `ST-26-06`, `PR-0273`, `REV-ST-26-06` | Applied the ADR acceptance review guardrails for renderer provenance, 60-day TTL ceiling, and public helper creation versus anonymous token read route separation. |
-| 8 | `REV-ST-26-06` | Re-reviewed the ADR-0084 acceptance guardrail remediation and approved the ADR for user-lead acceptance while keeping `PR-0273` blocked until the ADR status changes. |
-| 9 | `ADR-0084`, `ST-26-06`, `PR-0273`, `EPIC-26`, `.codex/handoff.md`, `docs/index.md` | Aligned docs to user-lead ADR acceptance: `ADR-0084` accepted, `ST-26-06` and `PR-0273` ready, and stale proposed/blocking wording removed from live guidance. |
+| Change | Artifact                                                                           | Description                                                                                                                                                               |
+| ------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-ST-26-06`                                                                     | Recorded a retained changes-requested review for the ST-26-06 / PR-0274 / PR-0273 share-link planning surface.                                                            |
+| 2      | `ADR-0084`                                                                         | Added the public share artifact exception, later accepted by the user-lead after re-review.                                                                               |
+| 3      | `ST-26-06`                                                                         | Added the `ADR-0084` dependency, privacy/indexing requirements, and public-guest authority acceptance criteria; later moved the story to ready after ADR acceptance.      |
+| 4      | `PR-0274`                                                                          | Added kind-specific routes, `expected_revision`, lifecycle, provenance, metadata, and deletion proof requirements; re-review moved the authenticated slice back to ready. |
+| 5      | `PR-0273`                                                                          | Added concrete abuse-control, purge, idempotency, and race-safety requirements; later moved the public guest slice to ready after accepted `ADR-0084`.                    |
+| 6      | `REV-ST-26-06`                                                                     | Re-reviewed the remediation and approved the planning surface while retaining the then-active `ADR-0084` implementation stop condition for public guest shares.           |
+| 7      | `ADR-0084`, `ST-26-06`, `PR-0273`, `REV-ST-26-06`                                  | Applied the ADR acceptance review guardrails for renderer provenance, 60-day TTL ceiling, and public helper creation versus anonymous token read route separation.        |
+| 8      | `REV-ST-26-06`                                                                     | Re-reviewed the ADR-0084 acceptance guardrail remediation and approved the ADR for user-lead acceptance while keeping `PR-0273` blocked until the ADR status changes.     |
+| 9      | `ADR-0084`, `ST-26-06`, `PR-0273`, `EPIC-26`, `.codex/handoff.md`, `docs/index.md` | Aligned docs to user-lead ADR acceptance: `ADR-0084` accepted, `ST-26-06` and `PR-0273` ready, and stale proposed/blocking wording removed from live guidance.            |

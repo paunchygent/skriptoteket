@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0054
 title: Editor chat virtual file context (hidden snapshots)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0054
+  - ADR-0054
 ---
 
 ## Context

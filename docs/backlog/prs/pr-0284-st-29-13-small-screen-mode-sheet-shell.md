@@ -111,31 +111,31 @@ the live workspace.
 
 ## Implementation Plan
 
-1. Add a small-screen mode-switcher path to `PlannerTopPanel.vue` while keeping
-   the current `UiSegmentedToggle` as the desktop/laptop workspace selector.
-2. Keep the existing `workspaceOptions` computation as the single source of
-   mode labels, disabled states, data-test hooks, and selected mode.
-3. Introduce a local mode-sheet component only if it keeps `PlannerTopPanel.vue`
-   under the repo's SRP/file-size expectations; otherwise keep the surface
-   thin and extract immediately.
-4. Use CSS breakpoints to choose between desktop segmented selector and phone
-   active-mode-plus-`Lägen` controls.
-5. Reuse local dense controls and icon components where they fit. If a control
-   must be new, keep it local to the planner shell until `ST-29-11` or a later
-   primitive task promotes it.
-6. Model the phone sheet on the existing `PlannerShareLinksPanel` mobile
-   bottom-sheet behavior: backdrop, fixed bottom surface, safe-area padding,
-   dialog semantics, and close affordance.
-7. Wire mode selection through the existing `update:modeValue` emit so
-   `PlannerWorkspaceShell.vue` and `ClassroomPlannerGuestWorkspaceShell.vue`
-   keep their current save guards, route flow, disabled-reason handling, and
-   help-context sync.
-8. Add focused component tests for the phone shell and mode sheet, including
-   no four-option rail at phone width, sheet row contents, current state,
-   disabled reasons, mode selection, close behavior, and focus/keyboard basics.
-9. Add browser proof for `phone`, `tablet`, `laptop`, and `desktop` using the
-   `EPIC-29` viewport names. The phone proof must include closed and open sheet
-   screenshots compared qualitatively against the mockup.
+01. Add a small-screen mode-switcher path to `PlannerTopPanel.vue` while keeping
+    the current `UiSegmentedToggle` as the desktop/laptop workspace selector.
+02. Keep the existing `workspaceOptions` computation as the single source of
+    mode labels, disabled states, data-test hooks, and selected mode.
+03. Introduce a local mode-sheet component only if it keeps `PlannerTopPanel.vue`
+    under the repo's SRP/file-size expectations; otherwise keep the surface
+    thin and extract immediately.
+04. Use CSS breakpoints to choose between desktop segmented selector and phone
+    active-mode-plus-`Lägen` controls.
+05. Reuse local dense controls and icon components where they fit. If a control
+    must be new, keep it local to the planner shell until `ST-29-11` or a later
+    primitive task promotes it.
+06. Model the phone sheet on the existing `PlannerShareLinksPanel` mobile
+    bottom-sheet behavior: backdrop, fixed bottom surface, safe-area padding,
+    dialog semantics, and close affordance.
+07. Wire mode selection through the existing `update:modeValue` emit so
+    `PlannerWorkspaceShell.vue` and `ClassroomPlannerGuestWorkspaceShell.vue`
+    keep their current save guards, route flow, disabled-reason handling, and
+    help-context sync.
+08. Add focused component tests for the phone shell and mode sheet, including
+    no four-option rail at phone width, sheet row contents, current state,
+    disabled reasons, mode selection, close behavior, and focus/keyboard basics.
+09. Add browser proof for `phone`, `tablet`, `laptop`, and `desktop` using the
+    `EPIC-29` viewport names. The phone proof must include closed and open sheet
+    screenshots compared qualitatively against the mockup.
 10. Update `ST-29-13`, this PR task, and `.codex/handoff.md` with exact proof
     commands and artifact paths during implementation closeout.
 

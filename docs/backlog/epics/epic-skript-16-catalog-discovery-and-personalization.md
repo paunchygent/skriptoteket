@@ -4,8 +4,8 @@ id: EPIC-SKRIPT-16
 title: Catalog discovery and personalization
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 readiness_review:
@@ -14,17 +14,14 @@ readiness_review:
 closeout_review:
   record: inline
   status: not_started
-outcome: Teachers can discover tools via flat browsing with filters, search, and access
-  personalized favorites/recently-used lists
+outcome: Teachers can discover tools via flat browsing with filters, search, and access personalized favorites/recently-used lists
 retired_ids:
-- EPIC-16
+  - EPIC-16
 ---
 
 ## Scope
 
 ### Source: Scope
-
-
 
 ### Source: Out of scope
 
@@ -61,17 +58,17 @@ The source does not provide a separate adr coverage section; no additional adr c
 
 ### Source: Stories
 
-| ID | Title | Status |
-|----|-------|--------|
-| ST-16-01 | Favorites domain model and database migration | done |
-| ST-16-02 | Favorites API endpoints (add/remove/list) | done |
-| ST-16-03 | Flat catalog API with label filtering and search | done |
-| ST-16-04 | Recently used tools API endpoint | done |
-| ST-16-05 | Flat catalog Vue view with filter sidebar | done |
-| ST-16-06 | Tool card favorites toggle (star icon) | done |
-| ST-16-07 | Home view favorites and recently used sections | done |
-| ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready |
-| ST-16-09 | Default Klassrumskartan bookmark | done |
+| ID       | Title                                                            | Status |
+| -------- | ---------------------------------------------------------------- | ------ |
+| ST-16-01 | Favorites domain model and database migration                    | done   |
+| ST-16-02 | Favorites API endpoints (add/remove/list)                        | done   |
+| ST-16-03 | Flat catalog API with label filtering and search                 | done   |
+| ST-16-04 | Recently used tools API endpoint                                 | done   |
+| ST-16-05 | Flat catalog Vue view with filter sidebar                        | done   |
+| ST-16-06 | Tool card favorites toggle (star icon)                           | done   |
+| ST-16-07 | Home view favorites and recently used sections                   | done   |
+| ST-16-08 | Catalog cleanup: curated-apps-only filter + final EPIC-16 review | ready  |
+| ST-16-09 | Default Klassrumskartan bookmark                                 | done   |
 
 ## Epic Verification Plan
 
@@ -85,13 +82,13 @@ The source does not provide a separate exceptions and follow-ups section; no add
 
 ### Source: Risks
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|------------|--------|------------|
-| Performance degradation with many tools | Low | Medium | Monitor query times; add pagination if needed |
-| Filter UI complexity confuses users | Medium | Low | Follow existing brutalist design patterns; user testing |
-| OR-within-facet returns too many results | Low | Low | Clear filter state in URL; combine facets + search |
-| Curated apps become less discoverable after `/browse` swap | Medium | Medium | Keep hierarchical browse entrypoint visible (`/browse/professions`) and link to it from flat browse |
-| Breadcrumb confusion/regression in hierarchical browse | Medium | Medium | Update hierarchical breadcrumbs to link to `/browse/professions` instead of `/browse` |
+| Risk                                                       | Likelihood | Impact | Mitigation                                                                                          |
+| ---------------------------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------------------- |
+| Performance degradation with many tools                    | Low        | Medium | Monitor query times; add pagination if needed                                                       |
+| Filter UI complexity confuses users                        | Medium     | Low    | Follow existing brutalist design patterns; user testing                                             |
+| OR-within-facet returns too many results                   | Low        | Low    | Clear filter state in URL; combine facets + search                                                  |
+| Curated apps become less discoverable after `/browse` swap | Medium     | Medium | Keep hierarchical browse entrypoint visible (`/browse/professions`) and link to it from flat browse |
+| Breadcrumb confusion/regression in hierarchical browse     | Medium     | Medium | Update hierarchical breadcrumbs to link to `/browse/professions` instead of `/browse`               |
 
 ## Notes
 

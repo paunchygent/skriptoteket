@@ -8,15 +8,7 @@ created: 2026-04-12
 updated: 2026-04-30
 stories:
   - "ST-32-06"
-tags:
-  [
-    "frontend",
-    "klassrumskartan",
-    "public-access",
-    "guest-workspace",
-    "smart-assignment",
-    "regression",
-  ]
+tags: ["frontend", "klassrumskartan", "public-access", "guest-workspace", "smart-assignment", "regression"]
 dependencies:
   - "ADR-0079"
   - "ADR-0080"
@@ -110,6 +102,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
 ## Implementation plan
 
 1. Add an explicit guest snapshot commit helper for active workspaces.
+
    - Place it in the existing guest workspace/persistence seam rather than in a
      component:
      - `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftWorkspace.ts`
@@ -126,6 +119,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
    - It must not depend on `draftLane.markDirty()` or autosave timers.
 
 2. Commit current visible guest state before public Smart helper calls.
+
    - Before posting to `/public/.../smart-run`, flush existing draft and
      smart-rule lanes.
    - Then directly commit the current visible workspace to the browser snapshot.
@@ -136,6 +130,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
      newer than the stored snapshot because of the current bug.
 
 3. Commit accepted public Smart results before applying success.
+
    - On a public Smart `applied` response, commit `result.workspace` directly
      into the guest snapshot first.
    - Only after that commit succeeds:
@@ -146,6 +141,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
      warning/error rather than a success toast.
 
 4. Acknowledge bypassed draft-lane state intentionally.
+
    - After a direct guest snapshot commit succeeds, clear stale pending draft
      lane state so a delayed autosave cannot replay older assignments.
    - Prefer a narrow lane method with an explicit name such as
@@ -154,6 +150,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
    - Keep this lane API frontend-local; do not change backend contracts.
 
 5. Update both public Smart composables.
+
    - Apply the same commit contract to:
      - `usePublicSmartSeatingRun.ts`
      - `usePublicSmartGroupingRun.ts`
@@ -162,18 +159,21 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
      easy to read.
 
 6. Keep normal local random `Slumpa` behavior unchanged.
+
    - When `Smart` is off, grouping/seating still use local random mutation plus
      normal draft autosave.
    - The new direct accepted-workspace commit path is only for public Smart
      helper results.
 
 7. Preserve strict backend conflict semantics.
+
    - Leave `RunPublicSmartSeatingHandler` and `RunPublicSmartGroupingHandler`
      revision comparison intact.
    - Add coverage that proves the backend still rejects intentionally mismatched
      public payloads.
 
 8. Normalize public Smart revision-conflict feedback.
+
    - Do not pass backend messages matching the `Draft revision mismatch` class
      through to `ClassroomPlannerGuestWorkspaceShell` toasts.
    - Map public Smart `409 CONFLICT` responses to teacher-facing copy that asks
@@ -184,6 +184,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
 ## Test plan
 
 - Focused frontend unit tests:
+
   - `pdm run fe-test -- --run src/views/apps/usePublicSmartSeatingRun.spec.ts src/views/apps/usePublicSmartGroupingRun.spec.ts`
   - Add two-run seating coverage:
     - first run commits response revision `3` to the snapshot
@@ -202,6 +203,7 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
     - raw `Draft revision mismatch` text is not surfaced.
 
 - Guest-session integration-style frontend tests:
+
   - Target `classroomPlannerGuestDraftSession` or a narrow harness around it.
   - Prove `smartSeatingRunInFlight` / `smartGroupingRunInFlight` do not block
     accepted workspace snapshot commits.
@@ -209,15 +211,18 @@ Make public guest Smart `Slumpa` persistence atomic and explicit:
     commits.
 
 - Backend/web regression tests:
+
   - `pdm run pytest tests/unit/application/apps/classroom_planner/test_public_smart_run.py tests/unit/web/test_public_apps_classroom_planner_smart.py`
   - Keep or add assertions that mismatched `expected_revision` still returns
     `409 CONFLICT`.
 
 - Type and docs checks:
+
   - `pdm run fe-type-check`
   - `pdm run docs-validate`
 
 - Live dev proof:
+
   - Use the running Docker dev stack.
   - Open `http://127.0.0.1:5173/public/apps/classroom.group-seating-studio`.
   - In `Sittplatser`, enable `Smart` and click `Slumpa` twice.

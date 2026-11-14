@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0005
 title: User roles and script governance (RBAC)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0005
+  - ADR-0005
 ---
 
 ## Context

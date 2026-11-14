@@ -148,30 +148,30 @@ through compact subordinate surfaces.
 
 ## Implementation Plan
 
-1. Start from `PlannerSeatingWorkspacePane.vue` and keep the current desktop
-   split workspace intact at `laptop` and `desktop` widths.
-2. Add a phone-specific seating composition that activates only below the full
-   desktop-composition range established by `EPIC-29`.
-3. Make the room scene the primary phone surface. The student pool should not
-   render as a full sibling rail or stacked card above the map by default.
-4. Keep seating state mutations in the existing planner state/composables. The
-   reduced view should rearrange presentation and event routing, not create a
-   second seating assignment model.
-5. Preserve `useRoomViewportZoom` and existing fit/reset behavior. Phone zoom
-   controls should call the same viewport operations and remain CSS-positioned
-   or locally composed, not driven by persistent JS geometry.
-6. Preserve room-scene semantics: assignment, drag/drop or select-to-place,
-   seat removal, wall labels, fixture rendering, and rule-marker visibility
-   must continue to route through the existing room canvas/seat components.
-7. Introduce a `Visa elever` student sheet/drawer/list only if it remains thin
-   and prop/event-driven. It should expose student access without permanently
-   hiding the active map.
-8. Adapt the seating toolbar for phone through existing dense controls and
-   overflow behavior. Do not add text-heavy action rows or duplicate `Dela`,
-   export, or Smart settings controls.
-9. Preserve the `PR-0286` `Dela och exportera` composition: seating link
-   management and `Affisch (A3)`, `Affisch (A4)`, and `Excel (.xlsx)` actions
-   stay inside one distribution surface.
+01. Start from `PlannerSeatingWorkspacePane.vue` and keep the current desktop
+    split workspace intact at `laptop` and `desktop` widths.
+02. Add a phone-specific seating composition that activates only below the full
+    desktop-composition range established by `EPIC-29`.
+03. Make the room scene the primary phone surface. The student pool should not
+    render as a full sibling rail or stacked card above the map by default.
+04. Keep seating state mutations in the existing planner state/composables. The
+    reduced view should rearrange presentation and event routing, not create a
+    second seating assignment model.
+05. Preserve `useRoomViewportZoom` and existing fit/reset behavior. Phone zoom
+    controls should call the same viewport operations and remain CSS-positioned
+    or locally composed, not driven by persistent JS geometry.
+06. Preserve room-scene semantics: assignment, drag/drop or select-to-place,
+    seat removal, wall labels, fixture rendering, and rule-marker visibility
+    must continue to route through the existing room canvas/seat components.
+07. Introduce a `Visa elever` student sheet/drawer/list only if it remains thin
+    and prop/event-driven. It should expose student access without permanently
+    hiding the active map.
+08. Adapt the seating toolbar for phone through existing dense controls and
+    overflow behavior. Do not add text-heavy action rows or duplicate `Dela`,
+    export, or Smart settings controls.
+09. Preserve the `PR-0286` `Dela och exportera` composition: seating link
+    management and `Affisch (A3)`, `Affisch (A4)`, and `Excel (.xlsx)` actions
+    stay inside one distribution surface.
 10. Preserve the `PR-0287` Smart settings lifecycle and keep `Öppna Regler` as
     the intentional navigation close path.
 11. If a new phone-only seating component is clearer, keep it thin and

@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0022
 title: Tool UI contract v2 (typed outputs, actions, and state)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0022
+  - ADR-0022
 ---
 
 ## Context
@@ -58,8 +58,6 @@ The source does not provide a separate non-decisions section; no additional non-
 ## Consequences
 
 ### Source: Consequences
-
-
 
 ### Source: Benefits
 

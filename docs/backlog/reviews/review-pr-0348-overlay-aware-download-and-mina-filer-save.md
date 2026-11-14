@@ -84,21 +84,21 @@ Out of scope by governed design:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0348-st-21-08-overlay-aware-download-and-mina-filer-save.md` | Scope, acceptance, proof obligations | 10 min |
-| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story contract and non-goals | 10 min |
-| Backend/frontend/test files listed in Scope | Authorization, provenance, stale-ref invalidation, Mina filer semantics, truthful proof | 60 min |
+| File                                                                                           | Focus                                                                                   | Time   |
+| ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0348-st-21-08-overlay-aware-download-and-mina-filer-save.md`              | Scope, acceptance, proof obligations                                                    | 10 min |
+| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story contract and non-goals                                                     | 10 min |
+| Backend/frontend/test files listed in Scope                                                    | Authorization, provenance, stale-ref invalidation, Mina filer semantics, truthful proof | 60 min |
 
 **Total estimated time:** ~1.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep artifact actions transcript-owned and provenance-checked before every download/save | Prevents browser-supplied job ids, artifact paths, or stale overlay exports from becoming trusted. | [x] |
-| Keep save/download bytes producer-owned with no local formatting or source-audio replay | Matches ST-21-08 non-goals and preserves Sir Convert as formatter authority. | [x] |
-| Keep Mina filer metadata product-owned and content-safe | Avoids leaking transcript text, speaker names, media-hash labels, or provider details into saved-file labels/metadata. | [x] |
+| Decision                                                                                 | Rationale                                                                                                              | Approve? |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep artifact actions transcript-owned and provenance-checked before every download/save | Prevents browser-supplied job ids, artifact paths, or stale overlay exports from becoming trusted.                     | [x]      |
+| Keep save/download bytes producer-owned with no local formatting or source-audio replay  | Matches ST-21-08 non-goals and preserves Sir Convert as formatter authority.                                           | [x]      |
+| Keep Mina filer metadata product-owned and content-safe                                  | Avoids leaking transcript text, speaker names, media-hash labels, or provider details into saved-file labels/metadata. | [x]      |
 
 ## Review Checklist
 
@@ -165,7 +165,7 @@ No findings in the reviewed PR-0348 scope.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0348` | Created the retained review record and marked PR-0348 approved. |
-| 2 | Implementation | No production code changes were made by this reviewer. |
+| Change | Artifact       | Description                                                     |
+| ------ | -------------- | --------------------------------------------------------------- |
+| 1      | `REV-PR-0348`  | Created the retained review record and marked PR-0348 approved. |
+| 2      | Implementation | No production code changes were made by this reviewer.          |

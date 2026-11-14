@@ -39,30 +39,30 @@ preserving readiness-driven file actions after conversion and replay.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0356-st-21-10-exam-converter-source-only-intake-and-export-owned-formats.md` | Scope, acceptance, proof obligations | 10 min |
-| `docs/backlog/stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md` | Parent story contract | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/useExamConverterSourceFile.ts` | Source-only intake state and rejection behavior | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue` | Authenticated host wiring and submit/retry path | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterWorkflowRailShell.vue` | Rail UI contract and stale control removal | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterWorkspaceShell.vue` | Drop-zone copy and idle intake guidance | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.ts` | Source-only idempotency/correlation shape | 10 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` | Multipart field removal | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticated*.spec.ts` | Behavioral proof quality | 15 min |
-| `.codex/handoff.md` | Retained verification evidence | 10 min |
+| File                                                                                                        | Focus                                           | Time   |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0356-st-21-10-exam-converter-source-only-intake-and-export-owned-formats.md`           | Scope, acceptance, proof obligations            | 10 min |
+| `docs/backlog/stories/story-21-10-exam-converter-source-only-intake-and-export-owned-formats.md`            | Parent story contract                           | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/useExamConverterSourceFile.ts`      | Source-only intake state and rejection behavior | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticatedView.vue`                              | Authenticated host wiring and submit/retry path | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterWorkflowRailShell.vue` | Rail UI contract and stale control removal      | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/exam-converter-authenticated/ExamConverterWorkspaceShell.vue`    | Drop-zone copy and idle intake guidance         | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/requestContext.ts`                                    | Source-only idempotency/correlation shape       | 10 min |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`                                            | Multipart field removal                         | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/ExamConverterAuthenticated*.spec.ts`                             | Behavioral proof quality                        | 15 min |
+| `.codex/handoff.md`                                                                                         | Retained verification evidence                  | 10 min |
 
 **Total estimated time:** ~110 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Authenticated intake is source-only | Matches ST-21-10 and removes stale marked-PDF/target-selection UX. | [x] |
-| Default PDF/QTI requests stay producer-owned | Keeps early target choice out of the rail while preserving current artifact support. | [x] |
-| Public one-time cleanup is split to PR-0357 | The public lane still has its own governed UI/API/backend contract surface. | [x] |
-| Browser-visible closeout needs retained authenticated proof | Repo policy and PR acceptance require it for approval. | [x] |
-| Invalid replacement attempts must not destroy a valid selected source file | Source-only rejection should be fail-safe, not state-destructive. | [x] |
+| Decision                                                                   | Rationale                                                                            | Approve? |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------- |
+| Authenticated intake is source-only                                        | Matches ST-21-10 and removes stale marked-PDF/target-selection UX.                   | [x]      |
+| Default PDF/QTI requests stay producer-owned                               | Keeps early target choice out of the rail while preserving current artifact support. | [x]      |
+| Public one-time cleanup is split to PR-0357                                | The public lane still has its own governed UI/API/backend contract surface.          | [x]      |
+| Browser-visible closeout needs retained authenticated proof                | Repo policy and PR acceptance require it for approval.                               | [x]      |
+| Invalid replacement attempts must not destroy a valid selected source file | Source-only rejection should be fail-safe, not state-destructive.                    | [x]      |
 
 ## Review Checklist
 
@@ -176,7 +176,7 @@ Results:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `docs/backlog/reviews/review-pr-0356-source-only-intake-export-owned-formats.md` | Recorded the independent review, findings, and validation outcomes. |
-| 2 | `PR-0356` | Second-pass review approved after rerunning the focused frontend/spec, script-surface, live proof, and docs gates. |
+| Change | Artifact                                                                         | Description                                                                                                        |
+| ------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1      | `docs/backlog/reviews/review-pr-0356-source-only-intake-export-owned-formats.md` | Recorded the independent review, findings, and validation outcomes.                                                |
+| 2      | `PR-0356`                                                                        | Second-pass review approved after rerunning the focused frontend/spec, script-surface, live proof, and docs gates. |

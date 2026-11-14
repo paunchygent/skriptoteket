@@ -72,8 +72,8 @@ Out of scope:
   - wall-annotation placement
   - coalescing rules
   - normalized rendered fixture labels
-  Both preview and export must consume that seam rather than duplicating
-  heuristics independently.
+    Both preview and export must consume that seam rather than duplicating
+    heuristics independently.
 - Wall markers belong to wall margins/annotation space, not to the classroom
   floor area.
 - Left and right wall labels should render vertically.
@@ -167,19 +167,23 @@ for this slice, or explicitly mark that fixture as intentionally unlabeled.
 ### Option 1: Fix export HTML/CSS only
 
 Pros:
+
 - Smaller immediate patch.
 
 Cons:
+
 - Preview stays wrong.
 - Duplicates presentation logic and invites future drift.
 
 ### Option 2: Fix shared preview/export presentation rules
 
 Pros:
+
 - Correct seam and the cleanest long-term result.
 - One visual language across overview/preview/export.
 
 Cons:
+
 - Touches both frontend presentation and export translation/rendering.
 
 ## Recommendation

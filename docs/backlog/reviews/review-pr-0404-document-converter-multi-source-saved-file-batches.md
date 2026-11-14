@@ -113,24 +113,24 @@ existing result/artifact selector.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md` | Governing contract, remediation evidence, proof honesty | 15 min |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` and `PR-0385` | Parent/prior scope boundaries | 10 min |
-| `src/skriptoteket/application/curated_apps/document_converter.py` and saved-source handler/API route | Backend request contract, validation, all-or-nothing behavior | 30 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/` | UI selection/order/removal, refs-only submission, visible language | 35 min |
-| Focused backend/frontend specs and retained proof manifest | Behavioral proof quality and shared-auth browser evidence | 30 min |
+| File                                                                                                 | Focus                                                              | Time   |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0404-st-37-04-document-converter-multi-source-saved-file-batches.md`            | Governing contract, remediation evidence, proof honesty            | 15 min |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` and `PR-0385`  | Parent/prior scope boundaries                                      | 10 min |
+| `src/skriptoteket/application/curated_apps/document_converter.py` and saved-source handler/API route | Backend request contract, validation, all-or-nothing behavior      | 30 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/`                                      | UI selection/order/removal, refs-only submission, visible language | 35 min |
+| Focused backend/frontend specs and retained proof manifest                                           | Behavioral proof quality and shared-auth browser evidence          | 30 min |
 
 **Total estimated time:** ~2 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Saved-file batch submission should use ordered `source_refs` only. | Prevents competing active payload shapes and keeps the batch contract clean. | [x] |
-| Saved-file validation should fail the whole request before job creation. | Prevents partial conversion and preserves teacher trust in batch action semantics. | [x] |
-| Each saved source should produce one separate output artifact. | Matches the PR non-goal that there is no combined/concatenated general file-conversion output. | [x] |
-| Browser proof must exercise the protected shared-auth route. | Vitest/API tests cannot prove the authenticated teacher path or artifact hygiene checks. | [x] |
+| Decision                                                                 | Rationale                                                                                      | Approve? |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------- |
+| Saved-file batch submission should use ordered `source_refs` only.       | Prevents competing active payload shapes and keeps the batch contract clean.                   | [x]      |
+| Saved-file validation should fail the whole request before job creation. | Prevents partial conversion and preserves teacher trust in batch action semantics.             | [x]      |
+| Each saved source should produce one separate output artifact.           | Matches the PR non-goal that there is no combined/concatenated general file-conversion output. | [x]      |
+| Browser proof must exercise the protected shared-auth route.             | Vitest/API tests cannot prove the authenticated teacher path or artifact hygiene checks.       | [x]      |
 
 ## Review Checklist
 
@@ -223,8 +223,7 @@ pre-closes `PR-0404` before independent review acceptance.
 - `/opt/homebrew/bin/pdm run fe-test -- --run src/views/apps/document-converter/documentConverterFileApi.spec.ts src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts src/views/apps/document-converter/DocumentConverterView.spec.ts src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts src/views/apps/document-converter/DocumentConverterSavedFileBatch.spec.ts`:
   `5` files passed, `25` tests passed.
 - `/opt/homebrew/bin/pdm run lint`: passed.
-- `/opt/homebrew/bin/pdm run typecheck`: passed with `Success: no issues found
-  in 1166 source files`.
+- `/opt/homebrew/bin/pdm run typecheck`: passed with `Success: no issues found in 1166 source files`.
 - `/opt/homebrew/bin/pdm run fe-type-check`: passed.
 - `/opt/homebrew/bin/pdm run fe-lint`: passed.
 - `/opt/homebrew/bin/pdm run fe-build`: passed; existing Vite chunk-size and
@@ -257,8 +256,7 @@ pre-closes `PR-0404` before independent review acceptance.
   `5` files passed, `27` tests passed.
 - `/opt/homebrew/bin/pdm run lint`: passed with `All checks passed!`,
   migration-test coverage ok, and hazard shortcard guard pass.
-- `/opt/homebrew/bin/pdm run typecheck`: passed with `Success: no issues found
-  in 1166 source files`.
+- `/opt/homebrew/bin/pdm run typecheck`: passed with `Success: no issues found in 1166 source files`.
 - `/opt/homebrew/bin/pdm run fe-type-check`: passed.
 - `/opt/homebrew/bin/pdm run fe-lint`: passed.
 - `/opt/homebrew/bin/pdm run fe-build`: passed; existing Vite chunk-size and
@@ -334,10 +332,10 @@ replacement command execution is claimed.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0404` | Created the retained independent review record for PR-0404 with `changes_requested`. |
-| 2 | `REV-PR-0404` | Updated the retained review to `approved` after verifying remediation of the public request contract and retained shared-auth proof blockers. |
-| 3 | `REV-PR-0404` | Recorded a now-superseded post-approval cleanup check. |
-| 4 | `REV-PR-0404` | Replaced the superseded cleanup note with SRP decomposition rereview evidence and kept the decision `approved`. |
-| 5 | `REV-PR-0404` | Approved the post-remediation rereview after verifying the filename fail-closed repair, docs-state reversal, retained proof artifact, and focused gates. |
+| Change | Artifact      | Description                                                                                                                                              |
+| ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0404` | Created the retained independent review record for PR-0404 with `changes_requested`.                                                                     |
+| 2      | `REV-PR-0404` | Updated the retained review to `approved` after verifying remediation of the public request contract and retained shared-auth proof blockers.            |
+| 3      | `REV-PR-0404` | Recorded a now-superseded post-approval cleanup check.                                                                                                   |
+| 4      | `REV-PR-0404` | Replaced the superseded cleanup note with SRP decomposition rereview evidence and kept the decision `approved`.                                          |
+| 5      | `REV-PR-0404` | Approved the post-remediation rereview after verifying the filename fail-closed repair, docs-state reversal, retained proof artifact, and focused gates. |

@@ -73,6 +73,7 @@ non-fixed student should still rotate around those hard seeds as much as the roo
 ## Implementation Plan
 
 1. Add a focused history-diversity scoring context.
+
    - Keep the domain pure and local to `src/skriptoteket/domain/curated_apps/classroom_planner/`.
    - Derive compact history summaries from `SeatingExportCheckpoint` snapshots rather than querying
      persistence from the solver.
@@ -80,6 +81,7 @@ non-fixed student should still rotate around those hard seeds as much as the roo
      pair reuse, and `Håll isär` unordered pair-seat plus cluster spread history.
 
 2. Rebalance candidate selection.
+
    - Keep hard fixed-seat seeding ahead of scoring.
    - Keep `Håll nära`, `Håll isär`, and `Närmare läraren` as quality constraints.
    - Add repetition penalties or diversity bonuses strongly enough to choose materially different
@@ -87,6 +89,7 @@ non-fixed student should still rotate around those hard seeds as much as the roo
    - Preserve honest tradeoff detection when rule constraints genuinely narrow the search space.
 
 3. Cover the production workflow in simulations.
+
    - Extend the current G20/SA24D simulation fixtures to run both same-draft reruns and new-draft
      accepted-checkpoint cycles.
    - Add explicit assertions for distinct full-layout signatures over a 10-run new-draft/share
@@ -101,6 +104,7 @@ non-fixed student should still rotate around those hard seeds as much as the roo
      part of another rule still rotates without violating stronger constraints.
 
 4. Add a small live-proof/update path only if needed.
+
    - If existing Playwright/API proof scripts can be extended safely, add one retained proof for the
      new-draft/share/export history cycle.
    - If local production-like proof requires credentials or live data, keep the automated proof

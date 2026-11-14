@@ -50,35 +50,35 @@ authority, and logout authority remain upstream observability responsibilities.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md` | Scope, metric/log contract, ownership split | 20 min |
-| `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md` | Parent story acceptance criteria | 5 min |
-| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md` | Auth cutover sequence and final proof context | 8 min |
-| `docs/runbooks/runbook-observability-logging.md` | Current log/correlation policy | 5 min |
-| `docs/runbooks/runbook-observability-metrics.md` | Current metrics and retired auth metric policy | 5 min |
-| `docs/runbooks/runbook-observability-tracing.md` | Optional trace correlation expectations | 3 min |
+| File                                                                                  | Focus                                          | Time   |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0264-st-28-10-auth-outcome-observability-for-huleedu-cutover.md` | Scope, metric/log contract, ownership split    | 20 min |
+| `docs/backlog/stories/story-28-10-auth-outcome-observability-for-realm-cutover.md`    | Parent story acceptance criteria               | 5 min  |
+| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`        | Auth cutover sequence and final proof context  | 8 min  |
+| `docs/runbooks/runbook-observability-logging.md`                                      | Current log/correlation policy                 | 5 min  |
+| `docs/runbooks/runbook-observability-metrics.md`                                      | Current metrics and retired auth metric policy | 5 min  |
+| `docs/runbooks/runbook-observability-tracing.md`                                      | Optional trace correlation expectations        | 3 min  |
 
 **Total estimated time:** ~46 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep HuleEdu Gateway/session/lifecycle observability upstream-owned | Prevents Skriptoteket from recreating auth authority | [x] |
-| Add Skriptoteket-owned auth outcome counters/logs only at app-continuation, projection, and RBAC boundaries | Keeps the first slice diagnosable and bounded | [x] |
-| Use bounded enum-like metric labels and sanitized structured log fields | Prevents high cardinality and identity leakage | [x] |
-| Prefer a small protocol-first recorder over scattered logger/metric calls | Keeps tests behavior-focused and preserves clean architecture boundaries | [x] |
-| Update runbooks with correlation handoff across HuleEdu Gateway and Skriptoteket | Makes the signal usable in normal operations | [x] |
+| Decision                                                                                                    | Rationale                                                                | Approve? |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------- |
+| Keep HuleEdu Gateway/session/lifecycle observability upstream-owned                                         | Prevents Skriptoteket from recreating auth authority                     | [x]      |
+| Add Skriptoteket-owned auth outcome counters/logs only at app-continuation, projection, and RBAC boundaries | Keeps the first slice diagnosable and bounded                            | [x]      |
+| Use bounded enum-like metric labels and sanitized structured log fields                                     | Prevents high cardinality and identity leakage                           | [x]      |
+| Prefer a small protocol-first recorder over scattered logger/metric calls                                   | Keeps tests behavior-focused and preserves clean architecture boundaries | [x]      |
+| Update runbooks with correlation handoff across HuleEdu Gateway and Skriptoteket                            | Makes the signal usable in normal operations                             | [x]      |
 
 ## Review Checklist
 
 - [x] Scope is bounded to `ST-28-10` and does not reopen auth behavior.
 - [x] No metric recreates `skriptoteket_active_sessions` or local browser-session state.
 - [x] Proposed labels cannot contain user ids, raw realm subjects, emails, raw URLs, tokens,
-      signed headers, CSRF values, or exception text.
+  signed headers, CSRF values, or exception text.
 - [x] HuleEdu-owned Gateway/session/lifecycle outcomes are separated from Skriptoteket-owned
-      app-continuation/projection/RBAC outcomes.
+  app-continuation/projection/RBAC outcomes.
 - [x] The planned recorder shape preserves protocol-first DI and keeps domain code pure.
 - [x] Tests assert behavior and redaction without patching implementation-private dependencies.
 - [x] Runbook requirements include correlation-id handoff and failure interpretation.
@@ -118,12 +118,12 @@ authority, and logout authority remain upstream observability responsibilities.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0264` | Created the review-ready auth outcome observability slice for `ST-28-10`. |
-| 2 | `REV-PR-0264` | Created the retained review gate that must approve the signal contract before implementation. |
-| 3 | `REV-PR-0264` | Approved the bounded signal contract for implementation after lead-architect/CTO review. |
-| 4 | `REV-PR-0264` | Recorded the implementation follow-up `changes_requested` decision: dependency-only RBAC observability was too narrow. |
-| 5 | `PR-0264` | Resolved the follow-up by centralizing RBAC denial recording in the web `DomainError` boundary and adding non-dependency RBAC tests. |
-| 6 | `PR-0264` | Addressed the latest `changes_requested` findings by routing eval-mode and force-takeover role denials through role guards, adding direct-route/application-handler regression checks, and replacing new `Any` / `cast(...)` usage with protocols and typed helpers. |
-| 7 | `REV-PR-0264` | Re-reviewed the latest fixes and approved the retained implementation record; downstream `PR-0264`, `ST-28-10`, and `EPIC-28` done statuses remain valid. |
+| Change | Artifact      | Description                                                                                                                                                                                                                                                          |
+| ------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0264`     | Created the review-ready auth outcome observability slice for `ST-28-10`.                                                                                                                                                                                            |
+| 2      | `REV-PR-0264` | Created the retained review gate that must approve the signal contract before implementation.                                                                                                                                                                        |
+| 3      | `REV-PR-0264` | Approved the bounded signal contract for implementation after lead-architect/CTO review.                                                                                                                                                                             |
+| 4      | `REV-PR-0264` | Recorded the implementation follow-up `changes_requested` decision: dependency-only RBAC observability was too narrow.                                                                                                                                               |
+| 5      | `PR-0264`     | Resolved the follow-up by centralizing RBAC denial recording in the web `DomainError` boundary and adding non-dependency RBAC tests.                                                                                                                                 |
+| 6      | `PR-0264`     | Addressed the latest `changes_requested` findings by routing eval-mode and force-takeover role denials through role guards, adding direct-route/application-handler regression checks, and replacing new `Any` / `cast(...)` usage with protocols and typed helpers. |
+| 7      | `REV-PR-0264` | Re-reviewed the latest fixes and approved the retained implementation record; downstream `PR-0264`, `ST-28-10`, and `EPIC-28` done statuses remain valid.                                                                                                            |

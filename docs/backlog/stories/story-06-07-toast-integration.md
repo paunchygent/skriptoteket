@@ -38,14 +38,14 @@ confirmations.
 
 ## Routes to Integrate
 
-| Route | File | Toast Message |
-|-------|------|---------------|
-| `/admin/tools/{tool_id}/metadata` | admin_scripting.py:118 | "Metadata sparad" |
-| `/admin/tool-versions/{version_id}/submit-review` | admin_scripting.py:384 | "Skickad for granskning" |
-| `/admin/tool-versions/{version_id}/publish` | admin_scripting.py:423 | "Version publicerad" |
-| `/admin/tool-versions/{version_id}/request-changes` | admin_scripting.py:462 | "Andringar begarda" |
-| `/admin/tool-versions/{version_id}/rollback` | admin_scripting.py:618 | "Aterstald till v{n}" |
-| `/admin/suggestions/{suggestion_id}/decision` | suggestions.py:220 | "Forslag godkant/nekat" |
+| Route                                               | File                   | Toast Message            |
+| --------------------------------------------------- | ---------------------- | ------------------------ |
+| `/admin/tools/{tool_id}/metadata`                   | admin_scripting.py:118 | "Metadata sparad"        |
+| `/admin/tool-versions/{version_id}/submit-review`   | admin_scripting.py:384 | "Skickad for granskning" |
+| `/admin/tool-versions/{version_id}/publish`         | admin_scripting.py:423 | "Version publicerad"     |
+| `/admin/tool-versions/{version_id}/request-changes` | admin_scripting.py:462 | "Andringar begarda"      |
+| `/admin/tool-versions/{version_id}/rollback`        | admin_scripting.py:618 | "Aterstald till v{n}"    |
+| `/admin/suggestions/{suggestion_id}/decision`       | suggestions.py:220     | "Forslag godkant/nekat"  |
 
 ## Plan
 

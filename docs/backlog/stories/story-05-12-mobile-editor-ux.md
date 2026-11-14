@@ -33,12 +33,13 @@ Four mobile UX issues were discovered during ST-05-11 verification:
 **Root cause:** Missing `accept` attribute on `<input type="file">`. iOS is stricter than desktop browsers about file picker permissions when no explicit MIME types are specified.
 
 **Files affected:**
+
 - `src/skriptoteket/web/templates/tools/run.html:31`
 - `src/skriptoteket/web/templates/admin/script_editor.html:73`
 
 ### Issue 2: CodeMirror Ordering
 
-**Symptom:** On mobile (<1024px), metadata sidebar appears first, CodeMirror at bottom.
+**Symptom:** On mobile (\<1024px), metadata sidebar appears first, CodeMirror at bottom.
 
 **Root cause:** CSS `order: -1` on `.huleedu-editor-sidebar` in mobile media query makes sidebar appear first.
 
@@ -59,12 +60,13 @@ Four mobile UX issues were discovered during ST-05-11 verification:
 **Root cause:** Mobile nav (`.huleedu-mobile-nav`) has no positioning - it's in document flow between header and main. When expanded, it pushes flex children causing compression artifacts in editor layout.
 
 **Files affected:**
+
 - `src/skriptoteket/web/static/css/app/components.css:447` (mobile nav positioning)
 - `src/skriptoteket/web/static/css/app/layout.css` (header relative positioning)
 
 ### Issue 5: Mobile Editor Clipped / No Vertical Scroll
 
-**Symptom:** On mobile (<1024px), CodeMirror shows only a few lines and the editor+sidebar content is clipped instead of scrollable.
+**Symptom:** On mobile (\<1024px), CodeMirror shows only a few lines and the editor+sidebar content is clipped instead of scrollable.
 
 **Root cause:** Desktop containment rules (`height: 100%` + `overflow: hidden`) still apply to key editor containers (e.g. `.huleedu-editor-main`, `.huleedu-editor-code-card`, `.huleedu-editor-form`, `.huleedu-editor-sidebar`). The existing mobile overrides do not override these properties effectively, so CodeMirror can still be clipped even when it has a `min-height`.
 
@@ -73,6 +75,7 @@ Four mobile UX issues were discovered during ST-05-11 verification:
 ## Implementation Plan
 
 ### Fix 1: iOS File Upload
+
 Add `accept="*/*"` attribute to file inputs:
 
 ```html
@@ -84,6 +87,7 @@ Add `accept="*/*"` attribute to file inputs:
 ```
 
 ### Fix 2: CodeMirror Ordering
+
 Remove `order: -1` from sidebar in mobile media query (natural HTML order puts CodeMirror first):
 
 ```css
@@ -99,6 +103,7 @@ Remove `order: -1` from sidebar in mobile media query (natural HTML order puts C
 ```
 
 ### Fix 3: Width Overflow
+
 Add explicit width constraints in mobile media query:
 
 ```css
@@ -117,6 +122,7 @@ Add explicit width constraints in mobile media query:
 ```
 
 ### Fix 4: Mobile Nav Overlay
+
 Make mobile nav overlay content with absolute positioning:
 
 ```css
@@ -147,6 +153,7 @@ Also add header relative positioning for `top: 100%` to work:
 ```
 
 ### Fix 5: Mobile Editor Vertical Growth (Editor-scoped)
+
 Prefer an editor-scoped change over altering the global frame (`.huleedu-frame`).
 
 Override the remaining desktop containment rules on mobile so stacked editor sections can grow naturally and the page can scroll:
@@ -188,7 +195,7 @@ src/skriptoteket/web/static/css/app/layout.css          # Header relative positi
 ## Testing
 
 1. **iOS file upload:** Open https://skriptoteket.hule.education on iOS Safari, navigate to a tool, tap "Välj fil" - should open file picker without error
-2. **CodeMirror ordering:** Open Testyta on mobile viewport (<1024px) - CodeMirror should appear first, metadata below
+2. **CodeMirror ordering:** Open Testyta on mobile viewport (\<1024px) - CodeMirror should appear first, metadata below
 3. **Width overflow:** Navigate between Testyta panels on mobile - no horizontal scroll should appear
 4. **Mobile nav overlay:** Open hamburger in Testyta - dropdown should overlay content, not compress it
 5. **CodeMirror height + scroll:** Open Testyta on mobile - CodeMirror shows ~15-20 lines and page scrolls vertically to reach full editor + sidebar
@@ -203,12 +210,15 @@ src/skriptoteket/web/static/css/app/layout.css          # Header relative positi
 All issues resolved in commit `424e90b`.
 
 ### Production verification (2025-12-19)
+
 - Verified on a real iOS device against the deployed app: Testyta + Mina verktyg.
 
 ### Root Cause
+
 All three issues traced to a single CSS bug: `.huleedu-mobile-nav` had `position: absolute` but **no `top` value**. Without `top`, the browser used `top: auto`, positioning the element at its natural flow location - not truly removing it from document flow.
 
 ### Fix Applied
+
 Added `top: var(--huleedu-header-height)` to `.huleedu-mobile-nav` in `components.css`:
 
 ```css
@@ -222,6 +232,7 @@ Added `top: var(--huleedu-header-height)` to `.huleedu-mobile-nav` in `component
 ```
 
 ### Verification (375x667 mobile viewport)
+
 - Nav top (65px) matches header bottom (65px) - properly positioned below header
 - Nav overlays main content without compressing it
 - "KATALOG" fully visible (left edge 17px, within viewport)

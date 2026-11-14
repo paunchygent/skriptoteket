@@ -79,33 +79,33 @@ PII.
 
 ## Implementation Plan
 
-1. Add red-first focused backend/API or frontend tests that prove the failing
-   production PDF conversion behavior or the unsupported-route truthfulness
-   issue identified from logs.
-2. Consume the `PR-0399` status contract for the production conversion failure;
-   do not add tolerant status aliases or route-local string normalization.
-3. Repair the smallest owning layer: frontend request shape, backend route/
-   handler validation, producer routing, production dependency wiring, or UI
-   capability gating.
-4. Strengthen failure-state handling so a failed current conversion is not
-   presented as a ready preview while any older successful preview remains
-   clearly stale.
-5. Use separate route-session history instances for `HTML/CSS-projekt` and
-   `Filkonvertering`, then select the active history by mode so artifacts,
-   preview URLs, filename fields, download, save, and artifact selectors cannot
-   leak across mode switches.
-6. Make local file selection infer the source format from allowed route
-   extensions in every layout size, and fail closed by clearing stale uploads
-   when replacement selections are unsupported or mixed.
-7. Add a source-list remove action for local uploads so the visible source list
-   and submit payload stay aligned.
-8. On compact file-conversion layouts, keep source upload before conversion
-   controls because local picker selection now infers the source format.
-9. Add a document-preview zoom primitive or component that reuses the existing
-   zoom/fit icon semantics and the established fit/manual-zoom/pinch model
-   without coupling Document Converter to room-builder domain semantics.
+01. Add red-first focused backend/API or frontend tests that prove the failing
+    production PDF conversion behavior or the unsupported-route truthfulness
+    issue identified from logs.
+02. Consume the `PR-0399` status contract for the production conversion failure;
+    do not add tolerant status aliases or route-local string normalization.
+03. Repair the smallest owning layer: frontend request shape, backend route/
+    handler validation, producer routing, production dependency wiring, or UI
+    capability gating.
+04. Strengthen failure-state handling so a failed current conversion is not
+    presented as a ready preview while any older successful preview remains
+    clearly stale.
+05. Use separate route-session history instances for `HTML/CSS-projekt` and
+    `Filkonvertering`, then select the active history by mode so artifacts,
+    preview URLs, filename fields, download, save, and artifact selectors cannot
+    leak across mode switches.
+06. Make local file selection infer the source format from allowed route
+    extensions in every layout size, and fail closed by clearing stale uploads
+    when replacement selections are unsupported or mixed.
+07. Add a source-list remove action for local uploads so the visible source list
+    and submit payload stay aligned.
+08. On compact file-conversion layouts, keep source upload before conversion
+    controls because local picker selection now infers the source format.
+09. Add a document-preview zoom primitive or component that reuses the existing
+    zoom/fit icon semantics and the established fit/manual-zoom/pinch model
+    without coupling Document Converter to room-builder domain semantics.
 10. Integrate the preview zoom surface into both HTML/CSS project outputs and
-   single-file PDF outputs.
+    single-file PDF outputs.
 
 ## Test Plan
 
@@ -205,8 +205,7 @@ PII.
   caused the local polling `503` despite upstream `200 OK`.
 - Red-first backend evidence:
   `pdm run test tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py -k running_upstream`
-  failed before the fix with `DomainError: Unsupported Conversion Hub upstream
-  status: running`.
+  failed before the fix with `DomainError: Unsupported Conversion Hub upstream status: running`.
 - Red-first frontend evidence:
   `pdm run fe-test -- --run frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.spec.ts`
   failed before the preview implementation because

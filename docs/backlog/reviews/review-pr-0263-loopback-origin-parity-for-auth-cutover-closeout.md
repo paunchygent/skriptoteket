@@ -46,30 +46,30 @@ Approve a narrow loopback-origin policy:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md` | Scope, ownership boundaries, proof obligations | 10 min |
-| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md` | Existing final proof contract and blocked 127 lane | 5 min |
-| `frontend/apps/skriptoteket/src/api/sharedAuth.ts` | HuleEdu URL policy surface to implement after approval | 5 min |
-| HuleEdu Gateway auth ceremony code | Provider redirect surface to keep aligned with validated `return_to` | 5 min |
+| File                                                                                    | Focus                                                                | Time   |
+| --------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0263-st-28-04-loopback-origin-parity-for-auth-cutover-closeout.md` | Scope, ownership boundaries, proof obligations                       | 10 min |
+| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`   | Existing final proof contract and blocked 127 lane                   | 5 min  |
+| `frontend/apps/skriptoteket/src/api/sharedAuth.ts`                                      | HuleEdu URL policy surface to implement after approval               | 5 min  |
+| HuleEdu Gateway auth ceremony code                                                      | Provider redirect surface to keep aligned with validated `return_to` | 5 min  |
 
 **Total estimated time:** ~25 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Treat 127 closeout as required | Browser host-scoped cookies make localhost and 127 distinct proof lanes | [x] |
-| Centralize loopback host parity for HuleEdu URLs | Fixes the class of failures across ceremony, session, CSRF, and logout | [x] |
-| Keep Skriptoteket protected APIs relative | Ensures protected reads/writes still prove Gateway proxying, not local auth | [x] |
-| Do not rewrite non-loopback hosts | Avoids weakening production or custom deployment URL contracts | [x] |
+| Decision                                         | Rationale                                                                   | Approve? |
+| ------------------------------------------------ | --------------------------------------------------------------------------- | -------- |
+| Treat 127 closeout as required                   | Browser host-scoped cookies make localhost and 127 distinct proof lanes     | [x]      |
+| Centralize loopback host parity for HuleEdu URLs | Fixes the class of failures across ceremony, session, CSRF, and logout      | [x]      |
+| Keep Skriptoteket protected APIs relative        | Ensures protected reads/writes still prove Gateway proxying, not local auth | [x]      |
+| Do not rewrite non-loopback hosts                | Avoids weakening production or custom deployment URL contracts              | [x]      |
 
 ## Review Checklist
 
 - [x] Scope is bounded to local loopback origin parity.
 - [x] Acceptance criteria require both lane summaries green.
 - [x] The structural fault line is named: host-scoped browser cookies across multiple HuleEdu
-      browser-visible surfaces.
+  browser-visible surfaces.
 - [x] The verification plan proves the final cross-process contract and redaction guarantees.
 - [x] The design does not introduce Skriptoteket-local browser session authority or API-gated auth.
 
@@ -156,8 +156,8 @@ Non-blocking auditability note:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0263` | Created reviewed follow-up task for both-lane auth cutover closeout |
-| 2 | `REV-PR-0263` | Approved the architecture-aligned loopback-origin parity design |
-| 3 | `REV-PR-0263` | Added independent implementation review, retained artifact inspection, and non-blocking manifest auditability note |
+| Change | Artifact      | Description                                                                                                        |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 1      | `PR-0263`     | Created reviewed follow-up task for both-lane auth cutover closeout                                                |
+| 2      | `REV-PR-0263` | Approved the architecture-aligned loopback-origin parity design                                                    |
+| 3      | `REV-PR-0263` | Added independent implementation review, retained artifact inspection, and non-blocking manifest auditability note |

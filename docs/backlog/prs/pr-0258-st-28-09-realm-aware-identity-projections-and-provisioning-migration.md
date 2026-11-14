@@ -71,21 +71,21 @@ The PR must remove `external_id` rather than preserve it as legacy provider meta
 
 ## Decisions Locked
 
-| Decision | Locked shape |
-|----------|--------------|
-| Projection storage | Dedicated local projection table, not identity columns on `users` |
-| Projection key | Unique `(product_identity_realm, realm_subject_id)` |
-| Legacy field | Remove `users.external_id` and old lookup protocols now |
-| Legacy backfill | Existing `auth_provider=huleedu` + nonblank `external_id` rows backfill to `huleedu_school` projections before `external_id` is dropped |
-| Local user | Keep `users` as Skriptoteket profile/RBAC state |
-| Default role | Newly provisioned projections create local role `user` |
-| Promotions | Contributor/admin/superuser remain local promotions |
-| Provider roles | Metadata only; never app authorization |
-| Account linking | Explicit signed/admin link only; never email inference |
-| Lifecycle completion | Does not imply authenticated app state until shared login/context is proven |
-| Provisioning claims | Concrete signed `email`, `email_verified`, and optional profile/locale fields inside `InternalIdentityContextV1`; missing, false, blank, malformed, or unsigned values fail closed |
-| Auditability | Dedicated identity-projection audit/event surface, not an implied login side effect |
-| Local proof | Local/non-production Gateway with exact dev-origin allowlist |
+| Decision             | Locked shape                                                                                                                                                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Projection storage   | Dedicated local projection table, not identity columns on `users`                                                                                                                  |
+| Projection key       | Unique `(product_identity_realm, realm_subject_id)`                                                                                                                                |
+| Legacy field         | Remove `users.external_id` and old lookup protocols now                                                                                                                            |
+| Legacy backfill      | Existing `auth_provider=huleedu` + nonblank `external_id` rows backfill to `huleedu_school` projections before `external_id` is dropped                                            |
+| Local user           | Keep `users` as Skriptoteket profile/RBAC state                                                                                                                                    |
+| Default role         | Newly provisioned projections create local role `user`                                                                                                                             |
+| Promotions           | Contributor/admin/superuser remain local promotions                                                                                                                                |
+| Provider roles       | Metadata only; never app authorization                                                                                                                                             |
+| Account linking      | Explicit signed/admin link only; never email inference                                                                                                                             |
+| Lifecycle completion | Does not imply authenticated app state until shared login/context is proven                                                                                                        |
+| Provisioning claims  | Concrete signed `email`, `email_verified`, and optional profile/locale fields inside `InternalIdentityContextV1`; missing, false, blank, malformed, or unsigned values fail closed |
+| Auditability         | Dedicated identity-projection audit/event surface, not an implied login side effect                                                                                                |
+| Local proof          | Local/non-production Gateway with exact dev-origin allowlist                                                                                                                       |
 
 ## Required Signed Context Contract
 
@@ -95,17 +95,17 @@ Gateway inside `X-Huledu-Identity-Context`. Skriptoteket models those fields exp
 
 Required signed fields:
 
-| Field | Required Semantics |
-|-------|--------------------|
-| `active_app` | Must be exactly `skriptoteket` |
-| `active_product_identity_realm` | Must be one accepted realm: `skriptoteket_standalone` or `huleedu_school` |
-| `realm_subject_id` | Nonblank realm-local subject id used in the projection key |
-| `email` | Nonblank normalized email address; unsigned query/session values do not count |
-| `email_verified` | Boolean `true`; missing, `false`, null, or string-like values fail closed |
-| `given_name` | Optional signed profile source; blank values normalize to absent |
-| `family_name` | Optional signed profile source; blank values normalize to absent |
-| `display_name` | Optional signed profile source; blank values normalize to absent |
-| `locale` | Optional signed locale; defaults to `sv-SE` when absent |
+| Field                           | Required Semantics                                                            |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| `active_app`                    | Must be exactly `skriptoteket`                                                |
+| `active_product_identity_realm` | Must be one accepted realm: `skriptoteket_standalone` or `huleedu_school`     |
+| `realm_subject_id`              | Nonblank realm-local subject id used in the projection key                    |
+| `email`                         | Nonblank normalized email address; unsigned query/session values do not count |
+| `email_verified`                | Boolean `true`; missing, `false`, null, or string-like values fail closed     |
+| `given_name`                    | Optional signed profile source; blank values normalize to absent              |
+| `family_name`                   | Optional signed profile source; blank values normalize to absent              |
+| `display_name`                  | Optional signed profile source; blank values normalize to absent              |
+| `locale`                        | Optional signed locale; defaults to `sv-SE` when absent                       |
 
 The verifier/model work adds explicit Pydantic fields and validators for these claims. It must not
 read provisioning claims from `active_context`, arbitrary extra fields, route query
@@ -113,45 +113,45 @@ parameters, local storage, or a non-signed session response.
 
 ## Implementation Plan
 
-1. Add a realm-aware identity projection domain model and protocol-first repository surface.
-2. Add an Alembic migration that creates the projection table with a unique
-   `(product_identity_realm, realm_subject_id)` constraint.
-3. Move app continuation from `get_by_auth_provider_external_id()` to projection lookup by
-   signed `active_product_identity_realm` and `realm_subject_id`.
-4. Add a migration preflight/backfill phase before dropping `users.external_id`:
-   - copy existing rows with `auth_provider=huleedu` and nonblank `external_id` into projections as
-     `product_identity_realm=huleedu_school`
-   - fail the migration on duplicate `(huleedu_school, external_id)` rows, blank external ids,
-     unexpected provider/external-id combinations, or any row that cannot be mapped without
-     guessing
-   - prove upgraded app continuation still resolves backfilled users through the new projection key
-5. Only after successful preflight/backfill, remove `users.external_id`, its index, and the old
-   provider-subject uniqueness constraint plus the domain/repository protocol lookup.
-6. Extend `InternalIdentityContextV1`, verifier fixtures, and provider-contract tests for signed
-   `email`, `email_verified`, optional profile-name fields, and optional locale.
-7. Add provisioning logic that creates a local user/profile/projection only from sufficient signed
-   context: `active_app=skriptoteket`, accepted realm, realm subject, signed email, and signed
-   `email_verified=true`.
-8. Implement UoW-owned idempotency:
-   - first read projection by `(product_identity_realm, realm_subject_id)`
-   - create user/profile/projection in one transaction when absent
-   - on projection unique conflict, roll back and re-read the projection
-   - on email unique conflict with no projection after re-read, fail closed into linking-required
-     UX rather than returning `500`
-9. Treat duplicate email without explicit link as a fail-closed linking/provisioning-required
-   outcome, not an implicit merge.
+01. Add a realm-aware identity projection domain model and protocol-first repository surface.
+02. Add an Alembic migration that creates the projection table with a unique
+    `(product_identity_realm, realm_subject_id)` constraint.
+03. Move app continuation from `get_by_auth_provider_external_id()` to projection lookup by
+    signed `active_product_identity_realm` and `realm_subject_id`.
+04. Add a migration preflight/backfill phase before dropping `users.external_id`:
+    - copy existing rows with `auth_provider=huleedu` and nonblank `external_id` into projections as
+      `product_identity_realm=huleedu_school`
+    - fail the migration on duplicate `(huleedu_school, external_id)` rows, blank external ids,
+      unexpected provider/external-id combinations, or any row that cannot be mapped without
+      guessing
+    - prove upgraded app continuation still resolves backfilled users through the new projection key
+05. Only after successful preflight/backfill, remove `users.external_id`, its index, and the old
+    provider-subject uniqueness constraint plus the domain/repository protocol lookup.
+06. Extend `InternalIdentityContextV1`, verifier fixtures, and provider-contract tests for signed
+    `email`, `email_verified`, optional profile-name fields, and optional locale.
+07. Add provisioning logic that creates a local user/profile/projection only from sufficient signed
+    context: `active_app=skriptoteket`, accepted realm, realm subject, signed email, and signed
+    `email_verified=true`.
+08. Implement UoW-owned idempotency:
+    - first read projection by `(product_identity_realm, realm_subject_id)`
+    - create user/profile/projection in one transaction when absent
+    - on projection unique conflict, roll back and re-read the projection
+    - on email unique conflict with no projection after re-read, fail closed into linking-required
+      UX rather than returning `500`
+09. Treat duplicate email without explicit link as a fail-closed linking/provisioning-required
+    outcome, not an implicit merge.
 10. Add a dedicated identity-projection audit/event surface for resolved, provisioned, blocked,
-   duplicate-email/linking-required, unsupported-realm, migration-backfilled, and migration-blocked
-   outcomes. Include realm, realm subject, local user/projection id when available, reason code,
-   correlation id, and signed context `jti`.
+    duplicate-email/linking-required, unsupported-realm, migration-backfilled, and migration-blocked
+    outcomes. Include realm, realm subject, local user/projection id when available, reason code,
+    correlation id, and signed context `jti`.
 11. Preserve local RBAC by defaulting new users to `Role.USER` and leaving promotions as local admin
-   actions.
+    actions.
 12. Update tests, fixtures, admin/user serializers, and docs that still mention `external_id` as a
-   `User` field or app-continuation lookup key.
+    `User` field or app-continuation lookup key.
 13. Regenerate OpenAPI and frontend types after API/user contract changes:
-   `pdm run fe-gen-api-types`.
+    `pdm run fe-gen-api-types`.
 14. Add local Docker ceremony proof that points Skriptoteket at a local or non-production HuleEdu
-   Gateway whose return-origin allowlist includes the exact Vite dev origin under test.
+    Gateway whose return-origin allowlist includes the exact Vite dev origin under test.
 
 ## Test Plan
 
@@ -171,8 +171,7 @@ parameters, local storage, or a non-signed session response.
   malformed provisioning claims.
 - Audit/event tests for resolved, provisioned, blocked provisioning, duplicate-email/linking-
   required, unsupported-realm, migration-backfilled, and migration-blocked outcomes.
-- Continuation API tests proving accepted realms resolve by `(product_identity_realm,
-  realm_subject_id)` and unsupported/missing realm fields fail closed.
+- Continuation API tests proving accepted realms resolve by `(product_identity_realm, realm_subject_id)` and unsupported/missing realm fields fail closed.
 - Frontend/store tests for provisioning-required or linking-required UX.
 - Local Docker or local/non-production Gateway Playwright proof for the full auth ceremony.
 - Exact live proof command and artifacts path must be recorded in `.codex/handoff.md`; expected

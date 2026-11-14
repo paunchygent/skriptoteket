@@ -67,6 +67,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
 ## Implementation plan
 
 1. Lock the corrected ownership model in tests first.
+
    - Add backend API tests that prove:
      - smart rules load per roster, not per draft
      - draft PATCH no longer accepts `seating_preferences` or `relationship_rules`
@@ -79,6 +80,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
      - `Smart` off does not disable smart-rule editing
 
 2. Split the domain boundary.
+
    - Introduce a roster-global smart-rule aggregate/value shape such as `RosterSmartRules`.
    - Remove smart-rule ownership from draft workspace models while keeping:
      - current seating/group arrangements
@@ -88,18 +90,21 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
      roster-global data.
 
 3. Reset the application and API boundary.
+
    - Add roster-scoped smart-rule handlers and routes.
    - Remove smart-rule mutation from draft PATCH flows.
    - Allow draft/workspace GET composition to hydrate roster-global rules for convenience if
      helpful, but keep persistence paths separate.
 
 4. Reset persistence.
+
    - Replace draft-owned smart-rule tables with roster-owned tables keyed to the class list /
      roster.
    - Keep draft tables focused on arrangement state, smart toggles, and draft history only.
    - Remove smart-rule snapshotting from bounded draft undo/redo history.
 
 5. Retarget the current local `PR-0149` frontend work onto the new boundary.
+
    - Update the store/types so smart rules load/save through the roster-scoped contract.
    - Remove smart rules from draft autosave serialization.
    - Remove `draft.smart_enabled` as an authoring gate.
@@ -111,6 +116,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
      - visible summary surface
 
 6. Remediate the 2026-03-27 implementation review findings before landing.
+
    - Add optimistic concurrency for roster-global smart rules:
      - introduce a roster smart-rule revision/version contract at domain, repository, API, and frontend-store boundaries
      - require writes to supply `expected_revision` (or equivalent) and return `409` on stale saves
@@ -215,6 +221,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
 ## 2026-03-27 Ruthless Review Findings
 
 1. Stale autosave responses can still apply after a workspace switch.
+
    - Finding:
      - The current async invalidation only runs on `cancelPendingSave()` / `clearWorkspace()`.
      - If draft A has an in-flight save and the teacher opens draft B, the late draft-A response can still pass the save-generation guard and reapply draft-A workspace or roster-smart-rule state into the draft-B session.
@@ -225,6 +232,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
      - Add a store regression where draft A starts an autosave, draft B loads before the response resolves, and the late draft-A response must not change the visible draft, roster, or smart rules.
 
 2. Same-lane edits can be lost when a save response lands after newer local edits.
+
    - Finding:
      - The store currently reapplies returned workspace/smart-rule payloads and clears the corresponding dirty flag on save success.
      - If the teacher makes more draft edits or more smart-rule edits while that lane is already saving, the first success response can wipe the newer local edits and leave the queued rerun with nothing dirty to persist.
@@ -235,6 +243,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
      - Add one regression for draft edits made during an in-flight draft save and one for smart-rule edits made during an in-flight smart-rule save; each should prove the lane stays dirty or sends a second patch after the first response lands.
 
 3. False-valued `near_teacher` entries can create ghost rule rendering.
+
    - Finding:
      - The backend currently accepts and persists `seating_preferences` entries where `near_teacher` is `false`.
      - The frontend summary/selection logic treats the presence of an entry as an active near-teacher rule, which can render ghost `Närmare läraren` markers from malformed or repaired data.
@@ -247,6 +256,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
 ## Review Remediation Subtasks
 
 1. Add roster smart-rule revision ownership.
+
    - Introduce a `RosterSmartRules` revision/value contract and persist it alongside the roster-owned rules.
    - Reject stale smart-rule PATCH requests with `409` and a clear API error payload.
    - Update the SPA store to include the expected revision on every smart-rule save and reload on conflict.
@@ -254,11 +264,13 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
    - Cover the specific teacher flow where a repaired/backfilled roster loads old rules at revision `0`, the teacher deletes one rule, and the save must succeed as revision `1`.
 
 2. Decouple autosave lane retries.
+
    - Refactor the store so draft-state saves and smart-rule saves have separate success/failure bookkeeping.
    - Ensure a smart-rule failure does not clear pending draft edits, and a draft failure does not clear pending smart-rule edits.
    - Add regression tests for partial failure, retry after failure, and mixed-lane flush-before-history actions.
 
 3. Make workspace hydration atomic or fail-safe.
+
    - Clear roster smart-rule state as soon as a different workspace begins loading, or stage both responses and commit them together.
    - Add a failure-path test for the second smart-rule request and a switch-roster test proving the previous roster's rules never remain visible.
    - Keep the UI disabled/busy semantics aligned with the chosen loading strategy so teachers cannot interact with mismatched state.
@@ -266,16 +278,19 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
    - Keep late autosave responses from applying after exit-without-waiting has cleared planner state.
 
 4. Guard autosave responses across workspace switches.
+
    - Invalidate the active save generation whenever the teacher loads or activates a different workspace, not only on clear/exit.
    - Carry the draft/roster identity with each in-flight save request and ignore late responses that target an older workspace.
    - Add a regression proving a late draft-A autosave cannot overwrite a newer draft-B session or re-show draft-A smart rules.
 
 5. Preserve same-lane edits that happen during an in-flight autosave.
+
    - Track per-lane mutation versions or request snapshots separately for draft autosave and smart-rule autosave.
    - Only clear `hasPendingDraftAutosave` or `hasPendingSmartRuleAutosave` when the response still matches the latest local edit generation for that lane.
    - Add regressions for both lanes showing that edits made during an in-flight save either trigger a second patch or remain pending after the first response lands.
 
 6. Normalize false-valued near-teacher rules across backend and frontend.
+
    - Strip or reject `near_teacher: false` seating-preference rows at the smart-rule handler boundary so persisted data stays canonical.
    - Update store/component checks so only `near_teacher === true` counts as an active near-teacher rule.
    - Add backend and frontend regressions proving false-valued entries do not survive persistence and do not render as active markers.
@@ -285,6 +300,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
 The review-remediation solution for the smart-rule ownership reset is now:
 
 1. Roster-global smart rules own their own revision and concurrency boundary.
+
    - Persist the roster rule set through a dedicated aggregate root with its own revision.
    - Require smart-rule writes to include `expected_revision`.
    - Return `409` on stale writes instead of silently overwriting newer rules.
@@ -296,17 +312,20 @@ The review-remediation solution for the smart-rule ownership reset is now:
    - Only a stored revision different from the caller's expected revision should return `409`.
 
 2. Draft autosave and smart-rule autosave are separate save lanes.
+
    - Track dirty/in-flight/error state independently for draft-local workspace state and roster-global smart rules.
    - Allow one lane to fail without clearing the other lane's pending retry state.
    - Preserve conflict feedback when one lane reports `409` and the other lane later reports a generic save error.
 
 3. Workspace hydration is fail-safe across roster switches.
+
    - Clear roster smart-rule state before showing a newly loaded workspace, or stage both responses before committing visible state.
    - Ignore stale follow-up responses from an older workspace request.
    - Disable smart-rule authoring until roster rules are hydrated for the current workspace.
    - `clearWorkspace()` must also invalidate any in-flight load/save work so exit flows cannot repopulate state after teardown.
 
 4. Host planner smoke remains a separate verification gate, not proof of the smart-rule remediation by itself.
+
    - If the host planner route fails in a different subsystem, capture that blocker explicitly instead of treating it as a smart-rule regression.
    - Current known examples from local verification were a transient missing grouping-export table on the host DB, a grouping-export handler that previously assumed `DraftWorkspace.template`, and a Docker DB stamped at head while still carrying the older partial roster-smart-rule FK shape.
    - The durable fixes for those classes of failures are:
@@ -314,17 +333,20 @@ The review-remediation solution for the smart-rule ownership reset is now:
      - keep export handlers dependent on an explicit hydrated export workspace, not partially hydrated draft-local models
 
 5. Applied migrations are immutable and Docker dev boot must self-heal.
+
    - Treat any migration already run against a persistent dev/staging DB as immutable; follow-up fixes belong in a new forward repair migration, not by editing the old revision in place.
    - The durable recovery for the observed Docker drift state is the repair-forward Alembic revision `7d4c1a2b9e6f`.
    - Docker dev startup/recreate/reset paths now run the in-container `pdm run db-upgrade` step so long-lived containers do not keep serving against stale schemas after migration files change.
 
 6. Autosave correctness needs both generation invalidation and per-lane edit versioning.
+
    - Generation invalidation alone is not enough because it protects clear/exit flows but not workspace switches or newer edits in the same lane.
    - The durable fix is a two-part contract:
      - invalidate or reject responses whose workspace identity no longer matches the active draft/roster
      - track draft-lane and smart-rule-lane edit versions so a stale success response cannot clear newer pending edits
 
 7. Near-teacher rules should persist in canonical true-only form.
+
    - `near_teacher: false` should not be stored as a meaningful rule state because the UI and future solver logic interpret the existence of the preference as teacher intent.
    - The durable boundary is therefore:
      - reject or strip false-valued entries before persistence

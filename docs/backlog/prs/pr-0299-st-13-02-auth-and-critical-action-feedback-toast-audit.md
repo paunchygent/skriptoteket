@@ -102,6 +102,7 @@ Implementation result:
 ## Implementation plan
 
 1. Inventory current ad-hoc feedback surfaces.
+
    - Search `frontend/apps/skriptoteket/src` for `logoutError`, `errorMessage`,
      `border-error`, `text-error`, `role=\"alert\"`, `SystemMessage`,
      `toast.failure`, `Failed`, and timeout messages.
@@ -111,24 +112,28 @@ Implementation result:
      raw inline panel remains.
 
 2. Centralize auth-facing copy for the touched paths.
+
    - Add a small typed helper/module for auth user messages if the audit shows
      more than one auth message should change.
    - Keep timeout classification separate from generic HTTP/server failures so
      connection advice is not shown for the wrong cause.
 
 3. Move logout transient failures to toasts.
+
    - Use `useToast().failure(...)` from `App.vue` or a small shell helper.
    - Remove `logoutError` prop drilling and the ad-hoc `AuthLayout` panel when
      no blocking auth-shell case still uses it.
    - Keep `Logga ut` as the visible retry action.
 
 4. Normalize similar critical action failures.
+
    - Migrate only audited non-blocking critical/destructive action failures to
      failure toasts.
    - Keep blocking errors in flow with `SystemMessage` and a close control.
    - Avoid new full-width banners in dense workspaces.
 
 5. Update tests and proof.
+
    - Add focused tests proving logout timeout/network-like failure uses a
      dismissible failure toast and does not render the layout-shifting panel.
    - Add tests for non-network logout failure copy if the implementation

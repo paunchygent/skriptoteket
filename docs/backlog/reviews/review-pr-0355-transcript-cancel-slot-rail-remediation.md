@@ -49,29 +49,29 @@ Keep the cancel action as one direct rail control with reserved layout:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md` | Governing scope, acceptance, proof boundary | 10 min |
-| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md` | Parent story alignment | 10 min |
-| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Epic summary and out-of-scope proof note | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.vue` | Cancel-slot DOM order, visibility, focus, icon removal | 20 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts` | Rail behavioral proof truthfulness | 15 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.vue` | Empty-state copy | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts` | Copy regression proof | 10 min |
-| `.codex/handoff.md` | Retained verification evidence and scope note | 10 min |
-| `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json` | Existing retained remote-proof E2E evidence | 10 min |
+| File                                                                                                      | Focus                                                  | Time   |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0355-st-21-08-transcript-cancel-slot-rail-remediation.md`                            | Governing scope, acceptance, proof boundary            | 10 min |
+| `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md`            | Parent story alignment                                 | 10 min |
+| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                                                | Epic summary and out-of-scope proof note               | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.vue`     | Cancel-slot DOM order, visibility, focus, icon removal | 20 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkflowRailShell.spec.ts` | Rail behavioral proof truthfulness                     | 15 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.vue`        | Empty-state copy                                       | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/conversion-hub-transcript/TranscriptWorkspaceShell.spec.ts`    | Copy regression proof                                  | 10 min |
+| `.codex/handoff.md`                                                                                       | Retained verification evidence and scope note          | 10 min |
+| `.artifacts/playwright-pr-0349-transcript-parity-live/20260615T141002Z/proof-summary.json`                | Existing retained remote-proof E2E evidence            | 10 min |
 
 **Total estimated time:** ~105 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Cancel row stays permanently mounted in the rail | This is the simplest truthful way to reserve the row without JS-owned geometry. | [x] |
-| Idle cancel state must be invisible, disabled, and unfocusable | Matches the PR contract while preserving layout occupancy. | [x] |
-| Pending-cancel state must stay visible but inert | Avoids a disappearing destructive action during the user-visible abort attempt. | [x] |
-| Empty workspace intro must use teacher-intent wording | This was an explicit copy requirement added to the governed PR. | [x] |
-| Native deploy proof is not an approval requirement for this pass | The workspace is mixed with PR-0356 and the governing PR explicitly excludes deploy from this slice. | [x] |
+| Decision                                                         | Rationale                                                                                            | Approve? |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | -------- |
+| Cancel row stays permanently mounted in the rail                 | This is the simplest truthful way to reserve the row without JS-owned geometry.                      | [x]      |
+| Idle cancel state must be invisible, disabled, and unfocusable   | Matches the PR contract while preserving layout occupancy.                                           | [x]      |
+| Pending-cancel state must stay visible but inert                 | Avoids a disappearing destructive action during the user-visible abort attempt.                      | [x]      |
+| Empty workspace intro must use teacher-intent wording            | This was an explicit copy requirement added to the governed PR.                                      | [x]      |
+| Native deploy proof is not an approval requirement for this pass | The workspace is mixed with PR-0356 and the governing PR explicitly excludes deploy from this slice. | [x]      |
 
 ## Review Checklist
 
@@ -154,6 +154,6 @@ Evidence inspected without rerunning long E2E:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `docs/backlog/reviews/review-pr-0355-transcript-cancel-slot-rail-remediation.md` | Recorded the independent review, decision, scope boundary, and validation evidence for PR-0355. |
+| Change | Artifact                                                                         | Description                                                                                     |
+| ------ | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1      | `docs/backlog/reviews/review-pr-0355-transcript-cancel-slot-rail-remediation.md` | Recorded the independent review, decision, scope boundary, and validation evidence for PR-0355. |

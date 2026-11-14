@@ -4,8 +4,8 @@ id: ST-SKRIPT-21-02
 title: 'Migration: retire html-to-pdf-preview + update tests'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -18,16 +18,11 @@ closeout_review:
   status: not_started
 epic: EPIC-SKRIPT-21
 acceptance_criteria:
-- Given production seed profile is used, when the script bank is seeded, then the
-  `html-to-pdf-preview` tool is not seeded/published as a production tool.
-- Given the Conversion Hub curated app exists, when Playwright E2Es run, then they
-  exercise conversion through the curated app (not `/tools/html-to-pdf-preview/run`)
-  while still validating session file persistence + vault save flows.
-- Given unit tests previously depended on `html_to_pdf_preview.py`, when tests are
-  run, then coverage remains high and tests validate the new v2-driven conversion
-  behavior rather than local WeasyPrint-specific details.
+  - Given production seed profile is used, when the script bank is seeded, then the `html-to-pdf-preview` tool is not seeded/published as a production tool.
+  - Given the Conversion Hub curated app exists, when Playwright E2Es run, then they exercise conversion through the curated app (not `/tools/html-to-pdf-preview/run`) while still validating session file persistence + vault save flows.
+  - Given unit tests previously depended on `html_to_pdf_preview.py`, when tests are run, then coverage remains high and tests validate the new v2-driven conversion behavior rather than local WeasyPrint-specific details.
 retired_ids:
-- ST-21-02
+  - ST-21-02
 ---
 
 ## Context

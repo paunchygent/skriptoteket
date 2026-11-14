@@ -63,6 +63,7 @@ the ownership correction. It still needs the `PR-0151` boundary reset so the exi
 ## Implementation plan
 
 1. Lock the UI state model first.
+
    - Add one active smart-tool state plus temporary relation selection state in the seating store.
    - Keep `Närmare läraren` separate from relationship-cluster membership.
    - Enforce one visible relationship-cluster membership per student in the client state model.
@@ -70,6 +71,7 @@ the ownership correction. It still needs the `PR-0151` boundary reset so the exi
      assuming draft PATCH is the authoritative persistence path.
 
 2. Add seating-toolbar rule authoring.
+
    - Add or extend a seating smart-toolbar surface with:
      - `Håll isär`
      - `Håll nära`
@@ -79,17 +81,20 @@ the ownership correction. It still needs the `PR-0151` boundary reset so the exi
    - Clear incomplete selections on tool change and explicit reset.
 
 3. Implement tile interaction rules.
+
    - `Närmare läraren`: click tile toggles the unary rule immediately.
    - `Håll isär` / `Håll nära`: click tiles builds a temporary 2+ student selection.
    - Add one explicit commit action for relation-cluster creation.
    - Keep the active relation tool selected after a successful commit.
 
 4. Add visible rule-summary rendering.
+
    - Render one main summary surface in the seating workspace for current rules.
    - Support deleting rules from that summary.
    - Keep the metadata drawer secondary; do not route primary rule editing through it.
 
 5. Keep `Use history` background-only.
+
    - Preserve the existing contract/state where relevant.
    - Do not add a new toolbar toggle or settings drawer entry for it in this slice.
 

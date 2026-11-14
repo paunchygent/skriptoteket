@@ -14,14 +14,17 @@ acceptance_criteria:
 ---
 
 ## Context
+
 Rosters and Room Templates are durable domain concepts that must be stored in the database, not lost on reload.
 
 ## Implementation Plan
 
 ### [ ] PR 1: Domain/State Modeling (Backend Endpoints)
+
 - **Intent**: CRUD logic for App-specific durable items.
 - **Code Choice**: Implement explicit relational tables (`roster`, `room_template`) in Postgres. Expose standard CRUD routes under the `/api/v1/apps/classroom.group-seating-studio/` prefix.
 
 ### [ ] PR 2: Setup Components
+
 - **Intent**: Build the UI for setting up constraints prior to unlocking the canvas.
 - **Code Choice**: Build `LessonModePicker.vue` selecting a subset from the `/bootstrap` catalog presets (no CRUD). Build `ConstraintDrawer.vue` managing `StudentPlanningMeta` separately from `StudentCardViewModel`. Disable planner canvas if lesson mode is null.

@@ -50,27 +50,27 @@ and retain focused tests for the new authenticated UI/runtime/save behavior.
 
 ## Artifacts to Review
 
-| Artifact | Focus | Time |
-|----------|-------|------|
-| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts` | Authenticated host registration for `documents.conversion_hub` | 5 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts` | Existing HuleEdu Gateway browser client for DigiExam migration | 5 min |
-| `frontend/apps/skriptoteket/src/api/sirConvertGateway/saveMetadata.ts` | Save metadata mapper that is not yet consumed by UI/user-file flows | 5 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub.py` | Authenticated Conversion Hub API shape | 10 min |
-| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_jobs.py` | Current generic owned job download handler | 10 min |
-| `src/skriptoteket/web/api/v1/vault.py` and `src/skriptoteket/application/scripting/vault.py` | Existing vault save command shape | 5 min |
-| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py` | Klassrumskartan app-export finalizer pattern | 5 min |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner_export_job_contracts.py` | `download_url` + `vault_artifact` DTO pattern | 5 min |
+| Artifact                                                                                                | Focus                                                               | Time   |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------ |
+| `frontend/apps/skriptoteket/src/views/curatedAppHostRegistry.ts`                                        | Authenticated host registration for `documents.conversion_hub`      | 5 min  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/client.ts`                                        | Existing HuleEdu Gateway browser client for DigiExam migration      | 5 min  |
+| `frontend/apps/skriptoteket/src/api/sirConvertGateway/saveMetadata.ts`                                  | Save metadata mapper that is not yet consumed by UI/user-file flows | 5 min  |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub.py`                                                    | Authenticated Conversion Hub API shape                              | 10 min |
+| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_jobs.py`                             | Current generic owned job download handler                          | 10 min |
+| `src/skriptoteket/web/api/v1/vault.py` and `src/skriptoteket/application/scripting/vault.py`            | Existing vault save command shape                                   | 5 min  |
+| `src/skriptoteket/application/curated_apps/classroom_planner/handlers/seating_export_job_completion.py` | Klassrumskartan app-export finalizer pattern                        | 5 min  |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner_export_job_contracts.py`                            | `download_url` + `vault_artifact` DTO pattern                       | 5 min  |
 
 **Total estimated time:** ~50 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `PR-0324` proof-only | The PR explicitly says to stop and create a narrow remediation PR when runtime gaps are found | [x] |
-| Implement remediation in `PR-0325` | Avoid mixing proof evidence with product/runtime implementation | [x] |
-| Keep public lane untouched | Public grant/read-lease proof is approved and this blocker is authenticated-only | [x] |
-| Require owner-scoped save semantics | Authenticated lane acceptance includes save-to-user-files and unrelated-account denial | [x] |
+| Decision                            | Rationale                                                                                     | Approve? |
+| ----------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| Keep `PR-0324` proof-only           | The PR explicitly says to stop and create a narrow remediation PR when runtime gaps are found | [x]      |
+| Implement remediation in `PR-0325`  | Avoid mixing proof evidence with product/runtime implementation                               | [x]      |
+| Keep public lane untouched          | Public grant/read-lease proof is approved and this blocker is authenticated-only              | [x]      |
+| Require owner-scoped save semantics | Authenticated lane acceptance includes save-to-user-files and unrelated-account denial        | [x]      |
 
 ## Review Checklist
 
@@ -138,10 +138,10 @@ run-artifact Vault command.
 
 ## Changes Made
 
-| # | Files | Change |
-|---|-------|--------|
-| 1 | `docs/backlog/prs/pr-0324-st-21-03-exam-converter-authenticated-end-to-end-proof.md` | Marked the proof slice `blocked` and recorded the stop-condition reason. |
-| 2 | `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md` | Created the narrow remediation PR that must land before rerunning `PR-0324`, including the Klassrumskartan app-export/Vault finalizer precedent. |
-| 3 | `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md` | Synced the authenticated lane plan to `PR-0324` blocked and `PR-0325` ready. |
-| 4 | `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Synced implementation summary with the authenticated proof blocker and remediation slice. |
-| 5 | `docs/index.md` and `.codex/handoff.md` | Added the retained review/remediation pointers and next-step state. |
+| #   | Files                                                                                               | Change                                                                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | `docs/backlog/prs/pr-0324-st-21-03-exam-converter-authenticated-end-to-end-proof.md`                | Marked the proof slice `blocked` and recorded the stop-condition reason.                                                                         |
+| 2   | `docs/backlog/prs/pr-0325-st-21-03-exam-converter-authenticated-runtime-ui-and-save-remediation.md` | Created the narrow remediation PR that must land before rerunning `PR-0324`, including the Klassrumskartan app-export/Vault finalizer precedent. |
+| 3   | `docs/backlog/stories/story-21-03-exam-converter-public-and-authenticated-artifact-lanes.md`        | Synced the authenticated lane plan to `PR-0324` blocked and `PR-0325` ready.                                                                     |
+| 4   | `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                                          | Synced implementation summary with the authenticated proof blocker and remediation slice.                                                        |
+| 5   | `docs/index.md` and `.codex/handoff.md`                                                             | Added the retained review/remediation pointers and next-step state.                                                                              |

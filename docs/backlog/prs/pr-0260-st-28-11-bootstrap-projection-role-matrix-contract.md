@@ -84,16 +84,16 @@ top-level export fields from `{"accounts": [...]}`.
 Each exported record must validate exactly against the consumer contract below
 before any repository write occurs.
 
-| Field | Required | Consumer rule |
-|-------|----------|---------------|
-| `stable_account_key` | Yes | Nonblank provider-stable account label; never an email address, password, token, or credential. Used for role-matrix lookup and sanitized operator messages only. |
-| `active_app` | Yes | Must equal `skriptoteket`; any other value fails closed before linking or user lookup. |
-| `active_product_identity_realm` | Yes | Must equal `skriptoteket_standalone` for this export and is the first half of the projection key. |
-| `realm_subject_id` | Yes | Nonblank product-realm subject identifier and the second half of the projection key. |
-| `email` | Yes | Provider-owned verified email address used only after the realm subject passes validation; duplicate email never authorizes inferred linking. |
-| `email_verified` | Yes | Must be boolean `true`; missing, false, string-like, or nullable values fail closed. |
-| `skriptoteket_role_hint` | Yes | Consumer-owned matrix key, validated against the active local role matrix. HuleEdu roles, groups, Gateway grants, and browser-session claims are ignored for `User.role`. |
-| `huleedu_subject_id` | Optional | Diagnostic umbrella HuleEdu subject only. It must not be accepted as the Skriptoteket projection key and must not repair a missing realm or `realm_subject_id`. |
+| Field                           | Required | Consumer rule                                                                                                                                                             |
+| ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `stable_account_key`            | Yes      | Nonblank provider-stable account label; never an email address, password, token, or credential. Used for role-matrix lookup and sanitized operator messages only.         |
+| `active_app`                    | Yes      | Must equal `skriptoteket`; any other value fails closed before linking or user lookup.                                                                                    |
+| `active_product_identity_realm` | Yes      | Must equal `skriptoteket_standalone` for this export and is the first half of the projection key.                                                                         |
+| `realm_subject_id`              | Yes      | Nonblank product-realm subject identifier and the second half of the projection key.                                                                                      |
+| `email`                         | Yes      | Provider-owned verified email address used only after the realm subject passes validation; duplicate email never authorizes inferred linking.                             |
+| `email_verified`                | Yes      | Must be boolean `true`; missing, false, string-like, or nullable values fail closed.                                                                                      |
+| `skriptoteket_role_hint`        | Yes      | Consumer-owned matrix key, validated against the active local role matrix. HuleEdu roles, groups, Gateway grants, and browser-session claims are ignored for `User.role`. |
+| `huleedu_subject_id`            | Optional | Diagnostic umbrella HuleEdu subject only. It must not be accepted as the Skriptoteket projection key and must not repair a missing realm or `realm_subject_id`.           |
 
 Validation must reject missing `active_product_identity_realm` or
 `realm_subject_id`, non-`skriptoteket` app values, unsupported role hints,

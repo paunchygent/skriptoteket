@@ -39,23 +39,23 @@ Freeze a desktop-only rule set:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md` | Exactness contract | 5 min |
-| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md` | Story boundary | 3 min |
-| `.codex/handoff.md` | Proof expectations | 2 min |
+| File                                                                                                         | Focus              | Time  |
+| ------------------------------------------------------------------------------------------------------------ | ------------------ | ----- |
+| `docs/backlog/prs/pr-0227-st-29-11-exact-two-row-grouping-board-height-contract-at-desktop-baseline.md`      | Exactness contract | 5 min |
+| `docs/backlog/stories/story-29-11-klassrumskartan-shared-site-and-app-dense-control-primitive-tightening.md` | Story boundary     | 3 min |
+| `.codex/handoff.md`                                                                                          | Proof expectations | 2 min |
 
 **Total estimated time:** ~10 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `PR-0227` as a bounded `ST-29-11` follow-up | This is grouping hardening, not a broader redesign | [x] |
-| Limit exact `480px` proof to the empty/default desktop case | Exactness should not become a universal content cap | [x] |
-| Freeze `234px` as a desktop `min-height` floor | Populated cards need room to grow beyond the default floor | [x] |
-| Allow smaller breakpoints to diverge | Desktop proof math should not leak silently to lighter workflows | [x] |
-| Require browser geometry proof | Class-only assertions are not enough for exact-height review | [x] |
+| Decision                                                    | Rationale                                                        | Approve? |
+| ----------------------------------------------------------- | ---------------------------------------------------------------- | -------- |
+| Keep `PR-0227` as a bounded `ST-29-11` follow-up            | This is grouping hardening, not a broader redesign               | [x]      |
+| Limit exact `480px` proof to the empty/default desktop case | Exactness should not become a universal content cap              | [x]      |
+| Freeze `234px` as a desktop `min-height` floor              | Populated cards need room to grow beyond the default floor       | [x]      |
+| Allow smaller breakpoints to diverge                        | Desktop proof math should not leak silently to lighter workflows | [x]      |
+| Require browser geometry proof                              | Class-only assertions are not enough for exact-height review     | [x]      |
 
 ## Review Checklist
 
@@ -96,14 +96,14 @@ breakpoints may intentionally diverge from the desktop workspace behavior.
 
 - [x] `PR-0227` remains a valid bounded `ST-29-11` follow-up for desktop-first grouping hardening.
 - [x] The exact `480px` rule is now correctly limited to the empty/default four-card desktop proof
-      case.
+  case.
 - [x] The `234px` desktop card rule is now correctly frozen as a `min-height` floor that persists
-      after assignment rather than as a universal maximum.
+  after assignment rather than as a universal maximum.
 - [x] Populated cards are explicitly allowed to grow beyond the floor without mandatory internal
-      scrolling in this slice.
+  scrolling in this slice.
 - [x] Smaller breakpoint workflows are explicitly allowed to diverge from the desktop proof path.
 - [x] The proof plan now requires rendered browser measurement for the exact empty/default
-      `480px` contract.
+  `480px` contract.
 
 ### Reviewer Notes
 

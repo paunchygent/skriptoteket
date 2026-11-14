@@ -57,13 +57,13 @@ it. That work closes on review and unit proof.
 
 ## Reference Router
 
-| Test area                                                          | Load                                |
-| ------------------------------------------------------------------ | ----------------------------------- |
-| Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`      |
-| Frontend Vitest/component tests                                    | `references/frontend-vitest.md`     |
+| Test area                                                          | Load                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Backend pytest, domain/application/API tests                       | `references/backend-pytest.md`                                              |
+| Frontend Vitest/component tests                                    | `references/frontend-vitest.md`                                             |
 | Browser walk, screenshots, authenticated UI proof                  | `## Walk Scope` above; the shared staging-walk skill runs the walk on Hemma |
-| Alembic migrations and schema drift                                | `references/migrations.md`          |
-| Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md` |
+| Alembic migrations and schema drift                                | `references/migrations.md`                                                  |
+| Worker/runtime, observability, PDF/export, curated-app specialties | `references/specialized-domains.md`                                         |
 
 ## Close-Out Defaults
 

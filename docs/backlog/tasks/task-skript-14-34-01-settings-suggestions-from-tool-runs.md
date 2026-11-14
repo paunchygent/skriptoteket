@@ -4,8 +4,8 @@ id: TASK-SKRIPT-14-34-01
 title: Settings suggestions from tool runs
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,11 +17,9 @@ closeout_review:
 story: ST-SKRIPT-14-34
 task_kind: story
 acceptance_criteria:
-- Tool runs can return settings_suggestions and the UI renders a clean suggestion
-  card (no raw JSON).
-- User-confirmed saves validate against settings_schema and persist via existing settings
-  APIs.
-- Invalid suggestions are rejected with actionable errors and do not persist.
+  - Tool runs can return settings_suggestions and the UI renders a clean suggestion card (no raw JSON).
+  - User-confirmed saves validate against settings_schema and persist via existing settings APIs.
+  - Invalid suggestions are rejected with actionable errors and do not persist.
 ---
 
 ## Context
@@ -51,24 +49,24 @@ No separate contract inputs were recorded in the source snapshot.
 
 ### Source: Implementation plan
 
-1) Contract + validation
+1. Contract + validation
    - Extend `ToolUiContractV2Result` + `UiPayloadV2` with `settings_suggestions`.
    - Define suggestion schema: `key`, `label`, `summary` (optional), `value` (JsonValue).
    - Add normalization/caps (max suggestions, max bytes per suggestion).
-2) Backend persistence flow
+2. Backend persistence flow
    - Include `settings_suggestions` in stored `ui_payload`.
    - Expose in run APIs that return ui_payload (ToolRunView + editor sandbox).
-3) Frontend UI
+3. Frontend UI
    - Add a `ToolRunSettingsSuggestionCard` in ToolRunView + SandboxRunner.
    - Render label + summary, hide raw JSON by default.
    - “Spara” triggers existing `PUT /api/v1/tools/{tool_id}/settings` with
      `values = { [key]: value }` and the current `state_rev`.
    - Show success/failure toasts (reuse existing toast flow).
-4) Planned tool GUI story integration
+4. Planned tool GUI story integration
    - Align card styling and placement with the ToolRunView UX conventions
      (see ST-SKRIPT-14-22 “Tool run UX conventions for progress + input file references”).
    - Keep cards consistent with other result components in the tool GUI.
-5) Follow-up usage
+5. Follow-up usage
    - Update Gruppgeneratorn to emit a settings_suggestion instead of JSON
      once the platform support exists.
 

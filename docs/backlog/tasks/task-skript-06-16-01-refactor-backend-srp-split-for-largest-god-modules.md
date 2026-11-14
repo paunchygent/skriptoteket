@@ -4,8 +4,8 @@ id: TASK-SKRIPT-06-16-01
 title: 'Refactor: backend SRP split for largest god modules'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: ready
 readiness_review:
@@ -17,28 +17,23 @@ closeout_review:
 story: ST-SKRIPT-06-16
 task_kind: story
 acceptance_criteria:
-- Each targeted module is split into smaller, cohesive units (generally <=400–500
-  LOC) with clear single responsibilities.
-- 'DDD/Clean boundaries are preserved: domain stays pure, web stays thin, infrastructure
-  implements protocols.'
-- Protocol-first DI remains intact; repositories still avoid committing and UoW owns
-  transactions.
-- Behavior is preserved (no API or user-facing behavior changes) and tests are updated/added
-  where structure changes.
-- Module entrypoints and docs are updated to reflect the new structure (imports/exports
-  remain stable or are explicitly updated).
+  - Each targeted module is split into smaller, cohesive units (generally <=400–500 LOC) with clear single responsibilities.
+  - 'DDD/Clean boundaries are preserved: domain stays pure, web stays thin, infrastructure implements protocols.'
+  - Protocol-first DI remains intact; repositories still avoid committing and UoW owns transactions.
+  - Behavior is preserved (no API or user-facing behavior changes) and tests are updated/added where structure changes.
+  - Module entrypoints and docs are updated to reflect the new structure (imports/exports remain stable or are explicitly updated).
 ---
 
 ## Context
 
 Source: `docs/backlog/prs/pr-0049-backend-srp-refactor-god-modules.md`. Refactor: backend SRP split for largest god modules.
 
-Several backend modules have grown into large, multi-responsibility files that are difficult to reason about and test. This creates review risk, slows iteration, and hides subtle regressions. - Split the largest backend “god modules” into cohesive units that follow SRP and DDD/Clean boundaries. - Preserve behavior while improving readability, testability, and ownership clarity. - Prefer clean refactors over minimizing churn. - Feature work or behavior changes. - Refactoring script bank scripts (content, not architecture). - Changing persistence or domain invariants. Prioritize the largest backend modules that mix responsibilities. Exclude script bank scripts. - `src/skriptoteket/application/
+Several backend modules have grown into large, multi-responsibility files that are difficult to reason about and test. This creates review risk, slows iteration, and hides subtle regressions. - Split the largest backend “god modules” into cohesive units that follow SRP and DDD/Clean boundaries. - Preserve behavior while improving readability, testability, and ownership clarity. - Prefer clean refactors over minimizing churn. - Feature work or behavior changes. - Refactoring script bank scripts (content, not architecture). - Changing persistence or domain invariants. Prioritize the largest backend modules that mix responsibilities. Exclude script bank scripts. - \`src/skriptoteket/application/
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Question/Assumption | Recommendation/Decision | Source |
-| --- | --- | --- | --- | --- | --- |
+| ID                       | Type      | Status | Question/Assumption              | Recommendation/Decision                                                                            | Source                               |
+| ------------------------ | --------- | ------ | -------------------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------ |
 | MIG-TASK-SKRIPT-06-16-01 | migration | closed | How is source meaning preserved? | Preserve the source task contract, current relationships, and status while changing identity only. | ST-SKILL-08-06; TASK-SKRIPT-REP-0003 |
 
 ## Story Contract Slice
@@ -116,23 +111,23 @@ Prioritize the largest backend modules that mix responsibilities. Exclude script
 
 ### Suggested order (least churn + dependency-aware)
 
-1) `src/skriptoteket/protocols/llm.py`
+1. `src/skriptoteket/protocols/llm.py`
    - Foundation for editor + infra LLM usage; stabilize via re-exports to minimize call-site churn.
-2) `src/skriptoteket/application/editor/completion_handler.py`
+2. `src/skriptoteket/application/editor/completion_handler.py`
    - Largest module; depends on LLM protocols and provider wiring.
-3) `src/skriptoteket/application/editor/chat_stream_orchestrator.py`
+3. `src/skriptoteket/application/editor/chat_stream_orchestrator.py`
    - Shares LLM protocol surface; refactor after protocol split.
-4) `src/skriptoteket/infrastructure/editor/unified_diff/normalize.py`
+4. `src/skriptoteket/infrastructure/editor/unified_diff/normalize.py`
    - Used by edit-ops preview; small, localized split reduces risk.
-5) `src/skriptoteket/application/editor/edit_ops_handler.py`
+5. `src/skriptoteket/application/editor/edit_ops_handler.py`
    - Depends on unified diff helpers + LLM protocols.
-6) `src/skriptoteket/web/api/v1/editor/models.py`
+6. `src/skriptoteket/web/api/v1/editor/models.py`
    - DTOs rely on LLM protocol types; split after protocol stabilization.
-7) `src/skriptoteket/infrastructure/runner/docker/runner.py`
+7. `src/skriptoteket/infrastructure/runner/docker/runner.py`
    - Infra-only refactor; coordinate with runner protocol boundaries.
-8) `src/skriptoteket/workers/execution_queue_job_processor.py`
+8. `src/skriptoteket/workers/execution_queue_job_processor.py`
    - Depends on runner protocols; refactor after runner package split.
-9) `src/skriptoteket/di/infrastructure.py`
+9. `src/skriptoteket/di/infrastructure.py`
    - Final wiring pass after module paths settle.
 
 ### Dependency map (A -> B means B depends on A)

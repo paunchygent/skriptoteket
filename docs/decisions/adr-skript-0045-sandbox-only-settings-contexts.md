@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0045
 title: Sandbox-only settings contexts
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0045
+  - ADR-0045
 ---
 
 ## Context

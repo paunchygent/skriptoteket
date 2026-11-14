@@ -40,28 +40,28 @@ failed precondition has already been prepared by an operator.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md` | Governing contract and validation claims | 10 min |
-| `scripts/_playwright_auth.py` | Opt-in shared-auth target recovery | 20 min |
-| `scripts/_audio_transcription_browser.py` | Route-owned Audio Transcription browser helpers | 10 min |
-| `scripts/_sir_convert_gateway_evidence.py` | Gateway evidence assertions and redaction | 25 min |
-| `scripts/audio_transcription_retryable_reattempt_public_proof.py` | Public proof entrypoint and sidecar boundary | 15 min |
-| `tests/unit/scripts/test_playwright_auth_recovery.py` | Auth recovery truthfulness | 10 min |
-| `tests/unit/scripts/test_audio_transcription_retryable_reattempt_public_proof.py` | Gateway proof truthfulness | 15 min |
-| `tests/unit/scripts/test_playwright_script_surface.py` | Domain-named script surface | 10 min |
-| `pyproject.toml`, `docs/index.md`, `.codex/handoff.md`, `ST-37-04` | Command/docs discoverability | 10 min |
+| File                                                                                         | Focus                                           | Time   |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md` | Governing contract and validation claims        | 10 min |
+| `scripts/_playwright_auth.py`                                                                | Opt-in shared-auth target recovery              | 20 min |
+| `scripts/_audio_transcription_browser.py`                                                    | Route-owned Audio Transcription browser helpers | 10 min |
+| `scripts/_sir_convert_gateway_evidence.py`                                                   | Gateway evidence assertions and redaction       | 25 min |
+| `scripts/audio_transcription_retryable_reattempt_public_proof.py`                            | Public proof entrypoint and sidecar boundary    | 15 min |
+| `tests/unit/scripts/test_playwright_auth_recovery.py`                                        | Auth recovery truthfulness                      | 10 min |
+| `tests/unit/scripts/test_audio_transcription_retryable_reattempt_public_proof.py`            | Gateway proof truthfulness                      | 15 min |
+| `tests/unit/scripts/test_playwright_script_surface.py`                                       | Domain-named script surface                     | 10 min |
+| `pyproject.toml`, `docs/index.md`, `.codex/handoff.md`, `ST-37-04`                           | Command/docs discoverability                    | 10 min |
 
 **Total estimated time:** ~125 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep reusable proof ownership in Skriptoteket under domain names. | Matches the public browser route and avoids a Sir Convert-owned one-off proof script becoming the durable surface. | Yes |
-| Keep Sir Convert retryable-failed setup external to the browser helper. | Prevents hidden sidecar stop/start or runtime mutation inside a Skriptoteket proof. | Yes |
-| Require opt-in shared-auth route recovery without weakening strict callers. | Recovery now navigates to the requested route and waits for the route-owned ready selector or success heading. | Yes |
-| Assert one replay create-job POST, `service_reattempt` lineage, and result/artifact/transcript JSON fetches. | The helper fails closed for duplicate submits and missing lineage/fetch evidence. | Yes |
+| Decision                                                                                                     | Rationale                                                                                                          | Approve? |
+| ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | -------- |
+| Keep reusable proof ownership in Skriptoteket under domain names.                                            | Matches the public browser route and avoids a Sir Convert-owned one-off proof script becoming the durable surface. | Yes      |
+| Keep Sir Convert retryable-failed setup external to the browser helper.                                      | Prevents hidden sidecar stop/start or runtime mutation inside a Skriptoteket proof.                                | Yes      |
+| Require opt-in shared-auth route recovery without weakening strict callers.                                  | Recovery now navigates to the requested route and waits for the route-owned ready selector or success heading.     | Yes      |
+| Assert one replay create-job POST, `service_reattempt` lineage, and result/artifact/transcript JSON fetches. | The helper fails closed for duplicate submits and missing lineage/fetch evidence.                                  | Yes      |
 
 ## Review Checklist
 
@@ -104,6 +104,7 @@ None open.
    must keep the existing strict failure behavior.
 
    Proof required:
+
    - Add/update a behavioral unit test in
      `tests/unit/scripts/test_playwright_auth_recovery.py` where recovery
      navigation succeeds only after the route-ready locator becomes visible
@@ -124,9 +125,9 @@ None open.
 
 ### Pass 2 Verification
 
-| Command | Result |
-|---------|--------|
-| `pdm run test tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_audio_transcription_retryable_reattempt_public_proof.py tests/unit/scripts/test_playwright_script_surface.py` | Passed, 13 tests. |
+| Command                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Result                                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `pdm run test tests/unit/scripts/test_playwright_auth_recovery.py tests/unit/scripts/test_audio_transcription_retryable_reattempt_public_proof.py tests/unit/scripts/test_playwright_script_surface.py`                                                                                                                                                                                                                                                                                                               | Passed, 13 tests.                                                                      |
 | `rg -n "caller-side\|second-submit\|salt\|sidecar\|docker\|subprocess\|requests\\.\|httpx\|playwright_pr_0407\|task-371\|Task 371\|compatibility shim\|fallback\|except Exception\|pass" scripts/_playwright_auth.py tests/unit/scripts/test_playwright_auth_recovery.py scripts/_audio_transcription_browser.py scripts/_sir_convert_gateway_evidence.py scripts/audio_transcription_retryable_reattempt_public_proof.py docs/backlog/prs/pr-0407-st-37-04-audio-transcription-reattempt-browser-proof-ownership.md` | No new forbidden retry, sidecar, task-named active script, or mutation shortcut found. |
 
 ### Suggestions (Optional)
@@ -143,7 +144,7 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0407` | Initial independent retained review recorded with `changes_requested`. |
-| 2 | `REV-PR-0407` | Pass 2 approved after auth recovery was changed to wait for delayed route readiness and focused tests passed. |
+| Change | Artifact      | Description                                                                                                   |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0407` | Initial independent retained review recorded with `changes_requested`.                                        |
+| 2      | `REV-PR-0407` | Pass 2 approved after auth recovery was changed to wait for delayed route readiness and focused tests passed. |

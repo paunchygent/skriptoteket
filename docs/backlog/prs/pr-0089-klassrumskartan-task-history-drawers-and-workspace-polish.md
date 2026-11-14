@@ -48,7 +48,7 @@ teacher-readable:
 - [x] Avoid always-open grids or dashboard-style history expansion.
 - [x] Keep the class workspace focused on one chosen task at a time.
 - [x] Add or extend browser automation coverage using the reusable Klassrumskartan smoke as the
-      setup baseline.
+  setup baseline.
 - [x] Add frontend tests for history-surface visibility and task separation.
 
 ## Implementation plan

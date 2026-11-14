@@ -70,58 +70,58 @@ following:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0231-st-32-06-guest-regler-workspace-solver-smart-parity-and-expandable-smart-settings-drawer.md` | Guest Smart parity contract and no-history boundary | 8 min |
-| `docs/backlog/prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md` | Local continuity, export, and account-only history contract | 8 min |
-| `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md` | Frozen Smart/history distinction | 5 min |
-| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md` | Public helper, browser-owned state, and direct-download export boundary | 5 min |
-| `docs/backlog/prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md` | Shipped public baseline these follow-on slices must not reopen | 5 min |
-| `docs/backlog/stories/story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md` | Parent story expectations and parity language | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts` | Guest controller width, rules-mode routing, and transport ownership | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue` | Shared-shell guest parity and blocked account-only affordances | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestControllerSupport.ts` | Guest capability flags and public helper path wiring | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts` | Guest Smart state, local undo/redo semantics, and no-op history removal | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftWorkspace.ts` | Smart-rule hydration/persistence and guest continuity boundaries | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.vue` | Shared `Regler` presentation reuse | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue` | Grouping Smart drawer, `Use history`, undo/redo, and export affordances | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue` | Seating Smart drawer, `Use history`, undo/redo, and export affordances | 6 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue` | Shared planner-shell contract across guest/auth lanes | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue` | Direct-download export vs authenticated recovery/history drift | 4 min |
-| `src/skriptoteket/web/api/v1/public_apps_classroom_planner.py` | Public Smart/export helper seams and anonymous-safe transport | 7 min |
-| `src/skriptoteket/web/api/v1/apps_classroom_planner.py` | Ensure authenticated seams stay unchanged and are not reused as guest fallback | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts` | Guest overview/rules entry coverage | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts` | Guest Smart/export/history parity assertions | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts` | Shared guest/auth shell invariants | 4 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.spec.ts` | `Regler` presentation expectations | 3 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.spec.ts` | Export cluster behavior and affordance shape | 3 min |
-| `tests/unit/application/apps/classroom_planner/test_smart_rules.py` | Smart-rule state, browser-owned persistence, and no-history semantics | 4 min |
-| `tests/unit/application/apps/classroom_planner/test_smart_grouping.py` | Solver-based grouping behavior and guest-safe result ownership | 4 min |
-| `tests/unit/application/apps/classroom_planner/test_smart_seating.py` | Solver-based seating behavior and guest-safe result ownership | 4 min |
-| `tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py` | Guest local continuity vs authenticated durable-history drift | 4 min |
-| `tests/unit/application/apps/classroom_planner/test_grouping_exports.py` | Grouping export boundary and checkpoint semantics | 4 min |
-| `tests/unit/application/apps/classroom_planner/test_seating_exports.py` | Seating export boundary and checkpoint semantics | 4 min |
-| `tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py` | Public vs authenticated grouping Smart API split | 4 min |
-| `tests/unit/web/apps/classroom_planner/test_smart_seating_api.py` | Public vs authenticated seating Smart API split | 4 min |
-| `tests/unit/web/apps/classroom_planner/test_grouping_export_api.py` | Guest direct-download grouping export boundary | 4 min |
-| `tests/unit/web/apps/classroom_planner/test_seating_export_api.py` | Guest direct-download seating export boundary | 4 min |
-| `tests/unit/web/test_public_apps_classroom_planner_imports.py` | Public route import guardrail pattern | 2 min |
-| `tests/unit/web/test_apps_classroom_planner_imports.py` | Authenticated route import guardrail stays unchanged | 2 min |
-| `scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py` | Existing public guest proof lane that should be extended, not forked casually | 4 min |
+| File                                                                                                                              | Focus                                                                          | Time  |
+| --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ----- |
+| `docs/backlog/prs/pr-0231-st-32-06-guest-regler-workspace-solver-smart-parity-and-expandable-smart-settings-drawer.md`            | Guest Smart parity contract and no-history boundary                            | 8 min |
+| `docs/backlog/prs/pr-0232-st-32-06-guest-local-draft-parity-direct-download-export-and-account-only-history-affordance-polish.md` | Local continuity, export, and account-only history contract                    | 8 min |
+| `docs/adr/adr-0080-klassrumskartan-guest-smart-parity-and-history-based-smart-boundary.md`                                        | Frozen Smart/history distinction                                               | 5 min |
+| `docs/adr/adr-0079-public-curated-app-access-profiles-and-guest-state-boundaries.md`                                              | Public helper, browser-owned state, and direct-download export boundary        | 5 min |
+| `docs/backlog/prs/pr-0223-st-32-06-public-klassrumskartan-demo-capability-matrix-and-browser-workspace-adoption.md`               | Shipped public baseline these follow-on slices must not reopen                 | 5 min |
+| `docs/backlog/stories/story-32-06-klassrumskartan-demo-adoption-on-the-public-browser-workspace-profile.md`                       | Parent story expectations and parity language                                  | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/useClassroomPlannerGuestController.ts`                                                 | Guest controller width, rules-mode routing, and transport ownership            | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.vue`                                               | Shared-shell guest parity and blocked account-only affordances                 | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestControllerSupport.ts`                                             | Guest capability flags and public helper path wiring                           | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftSession.ts`                                                  | Guest Smart state, local undo/redo semantics, and no-op history removal        | 8 min |
+| `frontend/apps/skriptoteket/src/views/apps/classroomPlannerGuestDraftWorkspace.ts`                                                | Smart-rule hydration/persistence and guest continuity boundaries               | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.vue`                                              | Shared `Regler` presentation reuse                                             | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerGroupingWorkspaceToolbar.vue`                                        | Grouping Smart drawer, `Use history`, undo/redo, and export affordances        | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerSeatingWorkspaceToolbar.vue`                                         | Seating Smart drawer, `Use history`, undo/redo, and export affordances         | 6 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.vue`                                                  | Shared planner-shell contract across guest/auth lanes                          | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.vue`                                               | Direct-download export vs authenticated recovery/history drift                 | 4 min |
+| `src/skriptoteket/web/api/v1/public_apps_classroom_planner.py`                                                                    | Public Smart/export helper seams and anonymous-safe transport                  | 7 min |
+| `src/skriptoteket/web/api/v1/apps_classroom_planner.py`                                                                           | Ensure authenticated seams stay unchanged and are not reused as guest fallback | 5 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestOverviewView.spec.ts`                                             | Guest overview/rules entry coverage                                            | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/ClassroomPlannerGuestWorkspaceShell.spec.ts`                                           | Guest Smart/export/history parity assertions                                   | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`                                              | Shared guest/auth shell invariants                                             | 4 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerRulesWorkspacePane.spec.ts`                                          | `Regler` presentation expectations                                             | 3 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/PlannerExportActionGroup.spec.ts`                                           | Export cluster behavior and affordance shape                                   | 3 min |
+| `tests/unit/application/apps/classroom_planner/test_smart_rules.py`                                                               | Smart-rule state, browser-owned persistence, and no-history semantics          | 4 min |
+| `tests/unit/application/apps/classroom_planner/test_smart_grouping.py`                                                            | Solver-based grouping behavior and guest-safe result ownership                 | 4 min |
+| `tests/unit/application/apps/classroom_planner/test_smart_seating.py`                                                             | Solver-based seating behavior and guest-safe result ownership                  | 4 min |
+| `tests/unit/application/apps/classroom_planner/test_draft_lifecycle.py`                                                           | Guest local continuity vs authenticated durable-history drift                  | 4 min |
+| `tests/unit/application/apps/classroom_planner/test_grouping_exports.py`                                                          | Grouping export boundary and checkpoint semantics                              | 4 min |
+| `tests/unit/application/apps/classroom_planner/test_seating_exports.py`                                                           | Seating export boundary and checkpoint semantics                               | 4 min |
+| `tests/unit/web/apps/classroom_planner/test_smart_grouping_api.py`                                                                | Public vs authenticated grouping Smart API split                               | 4 min |
+| `tests/unit/web/apps/classroom_planner/test_smart_seating_api.py`                                                                 | Public vs authenticated seating Smart API split                                | 4 min |
+| `tests/unit/web/apps/classroom_planner/test_grouping_export_api.py`                                                               | Guest direct-download grouping export boundary                                 | 4 min |
+| `tests/unit/web/apps/classroom_planner/test_seating_export_api.py`                                                                | Guest direct-download seating export boundary                                  | 4 min |
+| `tests/unit/web/test_public_apps_classroom_planner_imports.py`                                                                    | Public route import guardrail pattern                                          | 2 min |
+| `tests/unit/web/test_apps_classroom_planner_imports.py`                                                                           | Authenticated route import guardrail stays unchanged                           | 2 min |
+| `scripts/playwright_pr_0223_public_guest_overview_checkpoint2_check.py`                                                           | Existing public guest proof lane that should be extended, not forked casually  | 4 min |
 
 **Total estimated time:** ~155 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Review `PR-0231` and `PR-0232` as one package | The real risk is the shared guest/auth boundary between them, not the delivery split | [x] |
-| Guest parity includes `Regler` and the expandable Smart settings drawer | `ADR-0080` freezes these as part of the same teacher-facing product | [x] |
-| Guest parity includes solver-based Smart runs only through explicit public helper seams | Prevents ambient fallback into owner-scoped authenticated APIs | [x] |
-| Guest parity excludes history-based Smart and `Use history` | Avoids fake guest history parity and keeps the account-only boundary honest | [x] |
-| Guest undo/redo and export checkpoints are local continuity only | Keeps browser-owned editing state separate from authenticated durable history | [x] |
-| Guest export is direct-download only with no Vault/job recovery drift | Preserves the public/authenticated export boundary from `ADR-0079` | [x] |
-| Authenticated grouping/seating Smart, export, and history flows remain unchanged | Shared-shell reuse must not weaken the logged-in product | [x] |
+| Decision                                                                                | Rationale                                                                            | Approve? |
+| --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | -------- |
+| Review `PR-0231` and `PR-0232` as one package                                           | The real risk is the shared guest/auth boundary between them, not the delivery split | [x]      |
+| Guest parity includes `Regler` and the expandable Smart settings drawer                 | `ADR-0080` freezes these as part of the same teacher-facing product                  | [x]      |
+| Guest parity includes solver-based Smart runs only through explicit public helper seams | Prevents ambient fallback into owner-scoped authenticated APIs                       | [x]      |
+| Guest parity excludes history-based Smart and `Use history`                             | Avoids fake guest history parity and keeps the account-only boundary honest          | [x]      |
+| Guest undo/redo and export checkpoints are local continuity only                        | Keeps browser-owned editing state separate from authenticated durable history        | [x]      |
+| Guest export is direct-download only with no Vault/job recovery drift                   | Preserves the public/authenticated export boundary from `ADR-0079`                   | [x]      |
+| Authenticated grouping/seating Smart, export, and history flows remain unchanged        | Shared-shell reuse must not weaken the logged-in product                             | [x]      |
 
 ## Review Checklist
 
@@ -245,11 +245,17 @@ None.
   are now frozen concretely enough in the retained PR docs for implementation.
 
 - [x] The pair should be reviewed as one guest-boundary package
+
 - [x] `Regler` and Smart-drawer parity belong in guest mode
+
 - [x] Solver-based Smart must stay on public helper seams only
+
 - [x] `Use history` must remain account-only
+
 - [x] Guest undo/redo and checkpoint continuity must stay local-only
+
 - [x] Guest export must stay direct-download only
+
 - [x] Authenticated Smart/history/export flows remain unchanged
 
 ## Changes Made

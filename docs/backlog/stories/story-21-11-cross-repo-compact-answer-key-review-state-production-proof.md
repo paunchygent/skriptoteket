@@ -111,47 +111,47 @@ rendering. The story closes only after the final live browser gate below passes.
 Run this only after both repos have approved retained reviews and production
 deploys are healthy.
 
-1. Authenticate through the HuleEdu browser-session ceremony at production
-   Skriptoteket. Do not use direct backend credential posts, direct product
-   cookies, browser-authored identity headers, or browser-direct Sir Convert
-   calls.
-1. Upload the named DXE fixture through the production Exam Converter UI.
-1. Verify Sir Convert first-pass artifacts include the compact
-   `answer_key_review_state_report`, target readiness, PDF, and QTI where
-   readiness permits.
-1. Verify desktop and mobile question list/detail states render from the compact
-   projection.
-1. Verify the desktop result band uses `Kontrollera facit` review framing when
-   compact review state exists and does not show partial-conversion copy for the
-   projection-backed review state.
-1. Verify the pre-conversion workflow rail does not ask the teacher to select
-   PDF/QTI target files or source formats.
-1. Verify desktop detail navigation uses symbolic previous/next controls with
-   accessible labels and no visible word labels.
-1. Verify `Ändra` opens the represented answer-key edit surface, `Spara facit`
-   persists teacher-owned edits, and bounded advisory provenance remains
-   detail-only.
-1. At a phone-sized viewport, verify the small-screen flow keeps the question
-   list, item detail, files, and report as separate task surfaces with no
-   horizontal overflow, clipped action labels, hidden desktop columns, or
-   selected-question editor/detail inside the Files view.
-1. Exercise all supported teacher interactions available in the fixture:
-   accept an unchanged advisory key, edit a suggested key or keyed content,
-   create/fix a missing choice or gap/open-cloze key, save facit, navigate
-   between items, open report, open files, and return to questions.
-1. Verify saved intents survive navigation/reload but do not become fresh
-   `Klart`/file-ready state until Sir Convert replay returns projection and
-   readiness.
-1. Verify correction replay submits the complete supported persisted correction
-   set through Gateway/Sir Convert and PR-0406 renders returned
-   `answer_key_review_state`.
-1. Verify PDF/QTI download and save actions stay disabled until replay artifact
-   references authorize them, then download and save replay-scoped corrected
-   PDF/QTI artifacts.
-1. Retain a redacted proof bundle with screenshots, request/correlation ids,
-   projection/readiness snippets, artifact names, download/save evidence,
-   reload evidence, desktop/mobile checks, and forbidden browser-authority
-   checks.
+01. Authenticate through the HuleEdu browser-session ceremony at production
+    Skriptoteket. Do not use direct backend credential posts, direct product
+    cookies, browser-authored identity headers, or browser-direct Sir Convert
+    calls.
+02. Upload the named DXE fixture through the production Exam Converter UI.
+03. Verify Sir Convert first-pass artifacts include the compact
+    `answer_key_review_state_report`, target readiness, PDF, and QTI where
+    readiness permits.
+04. Verify desktop and mobile question list/detail states render from the compact
+    projection.
+05. Verify the desktop result band uses `Kontrollera facit` review framing when
+    compact review state exists and does not show partial-conversion copy for the
+    projection-backed review state.
+06. Verify the pre-conversion workflow rail does not ask the teacher to select
+    PDF/QTI target files or source formats.
+07. Verify desktop detail navigation uses symbolic previous/next controls with
+    accessible labels and no visible word labels.
+08. Verify `Ändra` opens the represented answer-key edit surface, `Spara facit`
+    persists teacher-owned edits, and bounded advisory provenance remains
+    detail-only.
+09. At a phone-sized viewport, verify the small-screen flow keeps the question
+    list, item detail, files, and report as separate task surfaces with no
+    horizontal overflow, clipped action labels, hidden desktop columns, or
+    selected-question editor/detail inside the Files view.
+10. Exercise all supported teacher interactions available in the fixture:
+    accept an unchanged advisory key, edit a suggested key or keyed content,
+    create/fix a missing choice or gap/open-cloze key, save facit, navigate
+    between items, open report, open files, and return to questions.
+11. Verify saved intents survive navigation/reload but do not become fresh
+    `Klart`/file-ready state until Sir Convert replay returns projection and
+    readiness.
+12. Verify correction replay submits the complete supported persisted correction
+    set through Gateway/Sir Convert and PR-0406 renders returned
+    `answer_key_review_state`.
+13. Verify PDF/QTI download and save actions stay disabled until replay artifact
+    references authorize them, then download and save replay-scoped corrected
+    PDF/QTI artifacts.
+14. Retain a redacted proof bundle with screenshots, request/correlation ids,
+    projection/readiness snippets, artifact names, download/save evidence,
+    reload evidence, desktop/mobile checks, and forbidden browser-authority
+    checks.
 
 ## Planned PR Slice
 

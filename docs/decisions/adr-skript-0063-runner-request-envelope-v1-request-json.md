@@ -4,21 +4,21 @@ id: ADR-SKRIPT-0063
 title: Runner request envelope v1 (request.json)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0063
+  - ADR-0063
 ---
 
 ## Context
 
 Source: `docs/adr/adr-0063-runner-request-envelope-v1.md`. Runner request envelope v1 (request.json).
 
-Runner-based tools currently receive JSON payloads via environment variables: - `SKRIPTOTEKET_INPUTS` - `SKRIPTOTEKET_INPUT_MANIFEST` - `SKRIPTOTEKET_ACTION` This is fragile (size limits, quoting/encoding issues) and splits the tool author mental model across multiple channels. We also need to evolve the request surface to include first-class file references (session/vault) and maintain a single, stable DX/UX contract. The platform MUST write a single UTF-8 JSON file at: - `/work/request.json` This file is the source of truth for runner inputs, action payload (if any), and the file manifest. The platform MUST stop setting the JSON payload environment variables for runner containers: - `SKRIP
+Runner-based tools currently receive JSON payloads via environment variables: - `SKRIPTOTEKET_INPUTS` - `SKRIPTOTEKET_INPUT_MANIFEST` - `SKRIPTOTEKET_ACTION` This is fragile (size limits, quoting/encoding issues) and splits the tool author mental model across multiple channels. We also need to evolve the request surface to include first-class file references (session/vault) and maintain a single, stable DX/UX contract. The platform MUST write a single UTF-8 JSON file at: - `/work/request.json` This file is the source of truth for runner inputs, action payload (if any), and the file manifest. The platform MUST stop setting the JSON payload environment variables for runner containers: - \`SKRIP
 
 ## Decision
 

@@ -64,8 +64,7 @@ Separate first-time defaults from remembered explicit choices:
    - Authenticated drafts should seed from the teacher's last explicit preference when one exists.
    - Public guest drafts should seed from browser-owned preference state when one exists.
    - First-time fallback values should remain explicit and centralized.
-2. Change first-time grouping fallback so `grouping_seating_distance_enabled` / `Tillämpa
-   sittschema` is `false`.
+2. Change first-time grouping fallback so `grouping_seating_distance_enabled` / `Tillämpa sittschema` is `false`.
 3. Preserve first-time authenticated `use_history=true` and `smart_enabled=true`.
 4. Persist preference only when the teacher explicitly changes the corresponding advanced setting,
    not merely because a draft was created or serialized.
@@ -98,8 +97,7 @@ Separate first-time defaults from remembered explicit choices:
 
 Authenticated Smart settings are now profile-owned through nullable `UserProfile` fields and
 `/api/v1/profile/classroom-planner-settings`, so explicit teacher choices persist across browsers
-and seed new authenticated drafts. First-time authenticated drafts still start with `Smart
-placering` and `Historik` on, but `Tillämpa sittschema` is off until explicitly enabled.
+and seed new authenticated drafts. First-time authenticated drafts still start with `Smart placering` and `Historik` on, but `Tillämpa sittschema` is off until explicitly enabled.
 
 Public guest drafts keep the same first-time behavior for Smart and seating influence, with
 `Historik` omitted/off, and remember explicit guest choices in browser storage only.

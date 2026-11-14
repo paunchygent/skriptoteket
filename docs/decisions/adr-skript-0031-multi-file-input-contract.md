@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0031
 title: Multi-file input contract
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- olof
+  - olof
 retired_ids:
-- ADR-0031
+  - ADR-0031
 ---
 
 ## Context

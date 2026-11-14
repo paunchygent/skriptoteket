@@ -45,7 +45,8 @@ rolling via prompt budgets. Avoid holding DB/UoW across streaming and remove sta
 
 ## Implementation plan
 
-1) Migration
+1. Migration
+
 - Add table `tool_session_messages` with columns:
   - `id` (UUID pk)
   - `tool_session_id` (UUID fk -> tool_sessions.id, on delete cascade)
@@ -57,14 +58,16 @@ rolling via prompt budgets. Avoid holding DB/UoW across streaming and remove sta
   - `created_at` (timestamptz, default now)
 - Indexes: `(tool_session_id, sequence desc)`, `(tool_session_id, message_id)`.
 
-2) Protocol + repository
+2. Protocol + repository
+
 - Add `ToolSessionMessageRepositoryProtocol` with:
   - `append_message(tool_session_id, message_id, role, content, meta=None)`
   - `list_tail(tool_session_id, limit)`
   - `delete_all(tool_session_id)`
 - Add PostgreSQL implementation + SQLAlchemy model.
 
-3) Chat handler changes
+3. Chat handler changes
+
 - Generate a `message_id` for each user message.
 - Persist user message row before provider call.
 - Build provider context from `list_tail(..., limit=60)` then apply `apply_chat_budget` to maintain rolling window.
@@ -74,10 +77,12 @@ rolling via prompt budgets. Avoid holding DB/UoW across streaming and remove sta
   `tool_sessions.updated_at` for freshness.
 - Stop writing chat messages into tool_sessions.state (leave empty for chat context).
 
-4) Clear endpoint
+4. Clear endpoint
+
 - Update DELETE /api/v1/editor/tools/{tool_id}/chat to delete message rows for that session.
 
-5) Tests
+5. Tests
+
 - Update `tests/unit/application/test_editor_chat_handler.py` for new repository protocol.
 - Add repository unit tests for append + tail ordering and delete.
 - Add concurrency test case for duplicate user messages (message_id-based correlation).

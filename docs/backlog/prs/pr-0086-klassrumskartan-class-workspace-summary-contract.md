@@ -53,11 +53,11 @@ focused and easy to reason about:
 - [x] Return active grouping and active seating summaries separately for one class.
 - [x] Return grouping history and seating history separately for one class.
 - [x] Keep task-entry rules explicit through a lightweight `TaskEntryOption` contract so the
-      summary body does not need to carry full template catalogs later.
+  summary body does not need to carry full template catalogs later.
 - [x] Keep top-level `GET /drafts/resumable` as the cross-class quick-resume surface rather than
-      merging that concern into the class-workspace summary.
+  merging that concern into the class-workspace summary.
 - [x] Add repository/query support for task-specific class history without reviving owner-global
-      draft semantics.
+  draft semantics.
 - [x] Add backend tests for summary loading, task separation, and history ordering.
 
 ## Implementation plan

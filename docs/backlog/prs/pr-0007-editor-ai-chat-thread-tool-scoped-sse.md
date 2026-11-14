@@ -41,20 +41,20 @@ semantics and budgeting behavior.
 
 ## Implementation plan
 
-1) **API contract + routing**
+1. **API contract + routing**
 
    - Replace the legacy endpoint with:
      - `POST /api/v1/editor/tools/{tool_id}/chat` (SSE), body `{ "message": "..." }`
      - `DELETE /api/v1/editor/tools/{tool_id}/chat` (clear thread)
-   - Keep the SSE event format stable: `meta` → `delta`* → `done`.
+   - Keep the SSE event format stable: `meta` → `delta`\* → `done`.
    - Ensure validation errors (e.g. message too long) return HTTP 422 as normal JSON (not SSE).
 
-2) **Authorization**
+2. **Authorization**
 
    - Require contributor auth + CSRF (same as other editor endpoints).
    - Enforce tool access using existing maintainer/admin checks (mirror editor boot).
 
-3) **Thread persistence**
+3. **Thread persistence**
 
    - Store chat thread in `tool_sessions` under context `editor_chat`, keyed by `{tool_id, user_id, context}`.
    - TTL policy: if `updated_at` is older than 30 days, treat the thread as empty.
@@ -62,7 +62,7 @@ semantics and budgeting behavior.
      - Persist the newest user message immediately (before streaming starts).
      - Persist the assistant message only on successful completion.
 
-4) **Budgeting (ADR-0052 alignment)**
+4. **Budgeting (ADR-0052 alignment)**
 
    - Never truncate the system prompt.
    - When calling the provider, use a sliding window: drop oldest turns first until prompt fits.
@@ -70,12 +70,12 @@ semantics and budgeting behavior.
      - return HTTP 422 with `För långt meddelande: korta ned eller starta en ny chatt.`
      - do not mutate stored history.
 
-5) **Provider compatibility**
+5. **Provider compatibility**
 
    - Continue to use OpenAI-compatible HTTP `/v1/chat/completions`.
    - Add llama-server optimization: include `cache_prompt: true` only when `LLM_CHAT_BASE_URL` is local `:8082`.
 
-6) **Unit tests**
+6. **Unit tests**
 
    - Mock protocols (provider/uow/session repo/clock/id generator).
    - Cover:

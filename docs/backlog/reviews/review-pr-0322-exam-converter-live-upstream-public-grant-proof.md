@@ -54,24 +54,24 @@ responses.
 
 ## Artifacts to Review
 
-| Artifact | Focus | Time |
-|----------|-------|------|
-| `docs/backlog/prs/pr-0322-st-21-03-exam-converter-live-upstream-public-grant-proof.md` | Proof scope and stop conditions | 5 min |
-| `docs/backlog/prs/pr-0323-st-21-03-exam-converter-grant-only-consumer-alignment.md` | Skriptoteket grant-only consumer remediation | 5 min |
-| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-292-implement-public-exam-converter-grant-verifier-and-read-leases.md` | Sir Convert runtime verifier/read-lease remediation | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/public_exam_converter_grants.py` | HuleEdu grant-only client | 5 min |
-| `src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/public_exam_converter_sir_convert_client_v2.py` | Public Sir Convert grant/read-lease client | 5 min |
-| `src/skriptoteket/application/curated_apps/handlers/public_exam_converter_jobs.py` | Server-side authority retention and public projection | 5 min |
+| Artifact                                                                                                                                           | Focus                                                 | Time  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- | ----- |
+| `docs/backlog/prs/pr-0322-st-21-03-exam-converter-live-upstream-public-grant-proof.md`                                                             | Proof scope and stop conditions                       | 5 min |
+| `docs/backlog/prs/pr-0323-st-21-03-exam-converter-grant-only-consumer-alignment.md`                                                                | Skriptoteket grant-only consumer remediation          | 5 min |
+| `/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/docs/backlog/tasks/task-292-implement-public-exam-converter-grant-verifier-and-read-leases.md` | Sir Convert runtime verifier/read-lease remediation   | 5 min |
+| `src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/public_exam_converter_grants.py`                                                 | HuleEdu grant-only client                             | 5 min |
+| `src/skriptoteket/infrastructure/curated_apps/apps/conversion_hub/public_exam_converter_sir_convert_client_v2.py`                                  | Public Sir Convert grant/read-lease client            | 5 min |
+| `src/skriptoteket/application/curated_apps/handlers/public_exam_converter_jobs.py`                                                                 | Server-side authority retention and public projection | 5 min |
 
 **Total estimated time:** ~30 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Treat HuleEdu as grant-only authority | Matches `TASK-0565` and prevents authority mixing | [x] |
-| Treat Sir Convert as read-lease issuer | Leases are only valid after Sir Convert verifies the grant and owns the job/artifact boundary | [x] |
-| Retain only sanitized local evidence | Prevents secrets, raw grants, and raw read leases from entering governed docs | [x] |
+| Decision                               | Rationale                                                                                     | Approve? |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| Treat HuleEdu as grant-only authority  | Matches `TASK-0565` and prevents authority mixing                                             | [x]      |
+| Treat Sir Convert as read-lease issuer | Leases are only valid after Sir Convert verifies the grant and owns the job/artifact boundary | [x]      |
+| Retain only sanitized local evidence   | Prevents secrets, raw grants, and raw read leases from entering governed docs                 | [x]      |
 
 ## Review Checklist
 
@@ -183,8 +183,8 @@ These files are local proof artifacts only and are not committed.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0322` | Marked live proof done after successful positive, negative, cookie-parity, TTL, no-account, and forbidden-browser-authority proof. |
-| 2 | `REV-PR-0322` | Retained approved review with sanitized proof evidence and verification. |
-| 3 | `ST-21-03` / `EPIC-21` / `.codex/handoff.md` | Synced the public lane from blocked to approved and pointed next work to authenticated proof. |
+| Change | Artifact                                     | Description                                                                                                                        |
+| ------ | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0322`                                    | Marked live proof done after successful positive, negative, cookie-parity, TTL, no-account, and forbidden-browser-authority proof. |
+| 2      | `REV-PR-0322`                                | Retained approved review with sanitized proof evidence and verification.                                                           |
+| 3      | `ST-21-03` / `EPIC-21` / `.codex/handoff.md` | Synced the public lane from blocked to approved and pointed next work to authenticated proof.                                      |

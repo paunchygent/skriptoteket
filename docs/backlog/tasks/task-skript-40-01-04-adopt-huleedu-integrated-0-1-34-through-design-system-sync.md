@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-01-04
 title: Adopt huleedu-integrated 0.1.34 through design-system sync
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: done
 closeout_review:
@@ -17,11 +17,11 @@ closeout_review:
   approval_evidence: 'The user closed the task on 2026-10-22: merged at e9983e4f, review findings F1 and F2 fixed and merged at 3b91b792, and admitted on focused proof.'
 task_kind: story
 acceptance_criteria:
-- Running repository-governance-frontend-catalog design-system sync from skill-repository main 5cbfeb7f sets design-system-map.json and the mirror to 0.1.34, and the diff holds only what 0.1.34 changed
-- UiSegmentedToggle.vue matches the 0.1.34 export byte for byte, with no cast or non-null assertion (the FocusableButton alias is retained as the focus guard's narrow type)
-- pdm run design-system-validate, frontend typecheck, ESLint, build and the focused UiSegmentedToggle specs pass
+  - Running repository-governance-frontend-catalog design-system sync from skill-repository main 5cbfeb7f sets design-system-map.json and the mirror to 0.1.34, and the diff holds only what 0.1.34 changed
+  - UiSegmentedToggle.vue matches the 0.1.34 export byte for byte, with no cast or non-null assertion (the FocusableButton alias is retained as the focus guard's narrow type)
+  - pdm run design-system-validate, frontend typecheck, ESLint, build and the focused UiSegmentedToggle specs pass
 dependencies:
-- TASK-SKILL-REP-0351
+  - TASK-SKILL-REP-0351
 story: ST-SKRIPT-40-01
 backlog_document_profile: contract-derived
 ---
@@ -71,12 +71,12 @@ presentation change.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Adoption runs through `repository-governance-frontend-catalog design-system sync` against skill-repository main 5cbfeb7f; no hand copy (40-01-01 rule). |
-| D2  | Version-only refresh: the export map and pre-commit hook stay as they are. |
+| ID  | Decided contract term                                                                                                                                                                                       |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Adoption runs through `repository-governance-frontend-catalog design-system sync` against skill-repository main 5cbfeb7f; no hand copy (40-01-01 rule).                                                     |
+| D2  | Version-only refresh: the export map and pre-commit hook stay as they are.                                                                                                                                  |
 | D3  | Proof is design-system validate, typecheck, ESLint, build and the focused `UiSegmentedToggle` specs; a full frontend suite runs only if sync touches more than the one component (orchestrator 2026-10-19). |
-| D4  | No staging walk for this task: no visual change, and the staging-walk scope is the exam converter only (user 2026-10-17). |
+| D4  | No staging walk for this task: no visual change, and the staging-walk scope is the exam converter only (user 2026-10-17).                                                                                   |
 
 ## Resume here
 

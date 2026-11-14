@@ -13,11 +13,13 @@ acceptance_criteria:
 ---
 
 ## Context
+
 Finalizing the architecture to prevent `vue-draggable-plus` from destructively mutating arrays.
 
 ## Implementation Plan
 
 ### [ ] PR 1: Reducer Sync Engine
+
 - **Intent**: Prevent duplicate entries, ghost items, and memory leaks by protecting array manipulation.
 - **Code Choice**: Ensure the `GroupView` and `RoomView` do not own DOM state arrays. Action drops fire strict explicit reducers in Pinia `useClassroomState`:
   - `assignStudentToGroup(studentId, groupId)`

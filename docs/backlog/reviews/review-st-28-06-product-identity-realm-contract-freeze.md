@@ -54,29 +54,29 @@ Accept `ADR-0083` as the governing product identity realm contract after freezin
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md` | Governing decision and frozen contract | 20 min |
-| `docs/backlog/stories/story-28-06-product-identity-realm-adr-and-contract-freeze.md` | Story scope and acceptance criteria | 8 min |
+| File                                                                                                | Focus                                      | Time   |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------ | ------ |
+| `docs/adr/adr-0083-hule-education-product-identity-realms-for-skriptoteket-login.md`                | Governing decision and frozen contract     | 20 min |
+| `docs/backlog/stories/story-28-06-product-identity-realm-adr-and-contract-freeze.md`                | Story scope and acceptance criteria        | 8 min  |
 | `docs/reference/ref-hule-education-product-identity-realms-and-skriptoteket-standalone-identity.md` | Reference direction and research questions | 10 min |
-| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md` | Epic sequencing and dependency impact | 8 min |
-| `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md` | Login ceremony consumer story | 5 min |
-| `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md` | Standalone lifecycle consumer story | 5 min |
-| `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md` | Realm-aware projection consumer story | 5 min |
-| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Final smoke dependency and proof scope | 5 min |
-| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md` | Final proof PR backlog wording | 5 min |
+| `docs/backlog/epics/epic-28-skriptoteket-auth-authority-cutover-to-huleedu.md`                      | Epic sequencing and dependency impact      | 8 min  |
+| `docs/backlog/stories/story-28-07-hule-education-hosted-skriptoteket-login-ceremony.md`             | Login ceremony consumer story              | 5 min  |
+| `docs/backlog/stories/story-28-08-skriptoteket-standalone-registration-and-password-lifecycle.md`   | Standalone lifecycle consumer story        | 5 min  |
+| `docs/backlog/stories/story-28-09-realm-aware-projection-provisioning-and-local-rbac.md`            | Realm-aware projection consumer story      | 5 min  |
+| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md`       | Final smoke dependency and proof scope     | 5 min  |
+| `docs/backlog/prs/pr-0254-st-28-04-cross-app-auth-cutover-smoke-and-runbook-proof.md`               | Final proof PR backlog wording             | 5 min  |
 
 **Total estimated time:** ~71 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Accept `ADR-0083` as the contract freeze for product identity realms | Gives downstream login/projection work one retained source of truth | [x] |
-| Keep Hule Education as browser session and ceremony authority | Preserves `ADR-0076` and avoids a hidden local auth bridge | [x] |
-| Preserve `skriptoteket_standalone` as a distinct realm | Prevents a HuleEdu-school-only identity future from stranding standalone users | [x] |
-| Require realm-aware signed context before final cross-app proof | Makes `PR-0254` prove the real target contract rather than a legacy provider shortcut | [x] |
-| Keep projection and RBAC app-local | Preserves existing ownership, profile, AI preferences, and contributor/admin semantics | [x] |
+| Decision                                                             | Rationale                                                                              | Approve? |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- |
+| Accept `ADR-0083` as the contract freeze for product identity realms | Gives downstream login/projection work one retained source of truth                    | [x]      |
+| Keep Hule Education as browser session and ceremony authority        | Preserves `ADR-0076` and avoids a hidden local auth bridge                             | [x]      |
+| Preserve `skriptoteket_standalone` as a distinct realm               | Prevents a HuleEdu-school-only identity future from stranding standalone users         | [x]      |
+| Require realm-aware signed context before final cross-app proof      | Makes `PR-0254` prove the real target contract rather than a legacy provider shortcut  | [x]      |
+| Keep projection and RBAC app-local                                   | Preserves existing ownership, profile, AI preferences, and contributor/admin semantics | [x]      |
 
 ## Review Checklist
 
@@ -143,10 +143,10 @@ Resolved during review:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `ADR-0083` | Accepted the ADR and added frozen terms, accepted realms, browser ceremony rules, signed context contract, projection/RBAC contract, and rejected options |
-| 2 | `ST-28-06` | Moved the story to done and recorded the contract-freeze implementation summary |
-| 3 | `EPIC-28` | Updated the implementation summary to show `ST-28-06` / `ADR-0083` are complete |
-| 4 | `ST-28-07` | Moved the next login-ceremony story to ready after the ADR contract freeze unblocked it |
-| 5 | `.codex/handoff.md` | Updated the current lane, status, verification, and next step |
+| Change | Artifact            | Description                                                                                                                                               |
+| ------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `ADR-0083`          | Accepted the ADR and added frozen terms, accepted realms, browser ceremony rules, signed context contract, projection/RBAC contract, and rejected options |
+| 2      | `ST-28-06`          | Moved the story to done and recorded the contract-freeze implementation summary                                                                           |
+| 3      | `EPIC-28`           | Updated the implementation summary to show `ST-28-06` / `ADR-0083` are complete                                                                           |
+| 4      | `ST-28-07`          | Moved the next login-ceremony story to ready after the ADR contract freeze unblocked it                                                                   |
+| 5      | `.codex/handoff.md` | Updated the current lane, status, verification, and next step                                                                                             |

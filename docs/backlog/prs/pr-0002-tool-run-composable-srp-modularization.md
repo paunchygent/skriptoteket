@@ -36,24 +36,24 @@ Extract cohesive modules while keeping the public `useToolRun` API stable and mi
 
 ## Proposed refactor outline (keep API stable)
 
-1) **Extract polling**
+1. **Extract polling**
 
    - New module: `useToolRunPolling` that owns timers, backoff/cadence rules, cancellation, and cleanup.
    - `useToolRun` delegates polling concerns but keeps the same returned state/actions.
 
-2) **Extract session-files manager**
+2. **Extract session-files manager**
 
    - New module: `useToolSessionFiles` that owns list/refresh/clear/reuse semantics and `session_context` derivation.
    - Consolidate the “reuse/clear/none” branching to a single place (ST-12-07).
 
-3) **Extract request building**
+3. **Extract request building**
 
    - New module: `toolRunRequest` (or similar) that builds `FormData` consistently for:
      - `inputs` JSON
      - optional `files[]`
      - optional session file mode/context
 
-4) **Leave useToolRun as the façade**
+4. **Leave useToolRun as the façade**
 
    - Keep the same function signature and returned API.
    - Keep call sites unchanged; prefer internal-only module boundaries.

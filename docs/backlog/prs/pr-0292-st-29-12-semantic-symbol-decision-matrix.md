@@ -85,13 +85,13 @@ targets.
 The custom SVG replacement map is already locked in
 `REF-symbol-semantics-inventory-and-decision-contract-2026-05-04`:
 
-| Current wrapper | Locked replacement |
-|---|---|
-| `IconAdjustments` | `SlidersHorizontal` |
-| `IconFitView` | `Fullscreen` behind the existing fit-view wrapper name |
-| `IconMinus` | `Minus` |
-| `IconZoomIn` | `ZoomIn` |
-| `IconZoomOut` | `ZoomOut` |
+| Current wrapper   | Locked replacement                                     |
+| ----------------- | ------------------------------------------------------ |
+| `IconAdjustments` | `SlidersHorizontal`                                    |
+| `IconFitView`     | `Fullscreen` behind the existing fit-view wrapper name |
+| `IconMinus`       | `Minus`                                                |
+| `IconZoomIn`      | `ZoomIn`                                               |
+| `IconZoomOut`     | `ZoomOut`                                              |
 
 `PR-0292` should preserve these as accepted decisions while completing the rest
 of the semantic matrix. No compatible EdTech add-on icon library is needed for

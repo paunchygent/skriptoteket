@@ -66,28 +66,28 @@ Approve a script-first two-layer deploy model:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md` | Decision boundary, supersession scope, and consequences | 6 min |
-| `docs/backlog/stories/story-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md` | Acceptance criteria, verification burden, and fallback rules | 6 min |
-| `docs/backlog/epics/epic-09-security-hardening.md` | Epic fit and story placement | 3 min |
+| File                                                                                                          | Focus                                                                               | Time  |
+| ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----- |
+| `docs/adr/adr-0081-hemma-deploy-entrypoint-and-script-first-local-launcher.md`                                | Decision boundary, supersession scope, and consequences                             | 6 min |
+| `docs/backlog/stories/story-09-09-hemma-deploy-entrypoint-and-script-first-local-launcher.md`                 | Acceptance criteria, verification burden, and fallback rules                        | 6 min |
+| `docs/backlog/epics/epic-09-security-hardening.md`                                                            | Epic fit and story placement                                                        | 3 min |
 | `docs/backlog/prs/pr-0122-klassrumskartan-seating-export-production-wiring-and-hemma-deploy-orchestration.md` | Historical deploy-wrapper assumptions this review may deliberately narrow/supersede | 6 min |
-| `docs/runbooks/runbook-home-server.md` | Current canonical deploy instructions and fallback/debug wording | 5 min |
-| `scripts/hemma_deploy_and_verify_seating_export.sh` | Existing on-host deploy/readiness source of truth that must remain singular | 6 min |
-| `pyproject.toml` | Future `pdm run hemma-deploy` entrypoint seam | 3 min |
+| `docs/runbooks/runbook-home-server.md`                                                                        | Current canonical deploy instructions and fallback/debug wording                    | 5 min |
+| `scripts/hemma_deploy_and_verify_seating_export.sh`                                                           | Existing on-host deploy/readiness source of truth that must remain singular         | 6 min |
+| `pyproject.toml`                                                                                              | Future `pdm run hemma-deploy` entrypoint seam                                       | 3 min |
 
 **Total estimated time:** ~35 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the existing on-host script as the only deploy/readiness implementation | Prevents deploy-logic drift across laptop and server paths | [x] |
-| Add `pdm run hemma-deploy` as the canonical local operator entrypoint | Gives one script-first launch path and reduces ad hoc SSH composition | [x] |
-| Require quoting-safe detached remote start with PID + log breadcrumbs | Lets the deploy survive initiator-session loss without inventing a second deploy flow | [x] |
-| Keep any monitor/follow output as a filtered view over the raw log only | Preserves one authoritative deploy record while still giving operators a readable stream | [x] |
-| Keep direct on-host script execution as documented fallback/debug only | Preserves break-glass operability without competing with the canonical local path | [x] |
-| Explicitly supersede the older “not a laptop-side SSH wrapper” assumption only at the launch layer | Allows a local launcher while keeping all actual deploy logic on Hemma | [x] |
+| Decision                                                                                           | Rationale                                                                                | Approve? |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | -------- |
+| Keep the existing on-host script as the only deploy/readiness implementation                       | Prevents deploy-logic drift across laptop and server paths                               | [x]      |
+| Add `pdm run hemma-deploy` as the canonical local operator entrypoint                              | Gives one script-first launch path and reduces ad hoc SSH composition                    | [x]      |
+| Require quoting-safe detached remote start with PID + log breadcrumbs                              | Lets the deploy survive initiator-session loss without inventing a second deploy flow    | [x]      |
+| Keep any monitor/follow output as a filtered view over the raw log only                            | Preserves one authoritative deploy record while still giving operators a readable stream | [x]      |
+| Keep direct on-host script execution as documented fallback/debug only                             | Preserves break-glass operability without competing with the canonical local path        | [x]      |
+| Explicitly supersede the older “not a laptop-side SSH wrapper” assumption only at the launch layer | Allows a local launcher while keeping all actual deploy logic on Hemma                   | [x]      |
 
 ## Review Checklist
 
@@ -224,14 +224,14 @@ reopening the operator boundary.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-ST-09-09` | Created the retained story review record for the Hemma deploy-entrypoint lane. |
-| 2 | `ADR-0081` | Governed the new deploy-entrypoint ADR through `adrs:` instead of inventing a standalone ADR-target review doc. |
-| 3 | Review feedback | Sent the package back with changes requested because the ADR currently requires foreground/non-detached launch behavior that conflicts with the real deploy survivability requirement for Hemma. |
-| 4 | `ADR-0081` | Redrafted the ADR so the canonical local launcher must start the on-host deploy as a detached remote process that survives initiating-session loss and prints PID + remote log breadcrumbs. |
-| 5 | `ST-09-09` | Redrafted the story acceptance criteria and notes around detached remote start, start-up failure propagation, and PID/log follow-up breadcrumbs. |
-| 6 | `ADR-0081` + `ST-09-09` | Clarified that the raw remote log remains authoritative and any optional human-readable monitor is only a best-effort filtered tail over that log using existing milestone/failure patterns. |
-| 7 | Re-review request | The docs package now addresses the launcher survivability conflict and the lightweight monitor model, so the retained review is ready for another reviewer pass. |
-| 8 | `REV-ST-09-09` | Rewrote the retained review feedback so it distinguishes the historical foreground-launch finding from the current post-redraft assessment and no longer lists already-addressed rewrite work as if it were still open. |
-| 9 | Review closure | Updated the retained review to `approved` after the reviewer accepted the detached-launch redraft. |
+| Change | Artifact                | Description                                                                                                                                                                                                             |
+| ------ | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-ST-09-09`          | Created the retained story review record for the Hemma deploy-entrypoint lane.                                                                                                                                          |
+| 2      | `ADR-0081`              | Governed the new deploy-entrypoint ADR through `adrs:` instead of inventing a standalone ADR-target review doc.                                                                                                         |
+| 3      | Review feedback         | Sent the package back with changes requested because the ADR currently requires foreground/non-detached launch behavior that conflicts with the real deploy survivability requirement for Hemma.                        |
+| 4      | `ADR-0081`              | Redrafted the ADR so the canonical local launcher must start the on-host deploy as a detached remote process that survives initiating-session loss and prints PID + remote log breadcrumbs.                             |
+| 5      | `ST-09-09`              | Redrafted the story acceptance criteria and notes around detached remote start, start-up failure propagation, and PID/log follow-up breadcrumbs.                                                                        |
+| 6      | `ADR-0081` + `ST-09-09` | Clarified that the raw remote log remains authoritative and any optional human-readable monitor is only a best-effort filtered tail over that log using existing milestone/failure patterns.                            |
+| 7      | Re-review request       | The docs package now addresses the launcher survivability conflict and the lightweight monitor model, so the retained review is ready for another reviewer pass.                                                        |
+| 8      | `REV-ST-09-09`          | Rewrote the retained review feedback so it distinguishes the historical foreground-launch finding from the current post-redraft assessment and no longer lists already-addressed rewrite work as if it were still open. |
+| 9      | Review closure          | Updated the retained review to `approved` after the reviewer accepted the detached-launch redraft.                                                                                                                      |

@@ -36,23 +36,23 @@ Implement ADR-0061 and ST-07-06:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/adr/adr-0061-asgi-correlation-middleware.md` | ASGI strategy, lifecycle/ordering, consequences | 10 min |
-| `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md` | Acceptance criteria | 5 min |
-| `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md` | Implementation + test plan | 5 min |
+| File                                                              | Focus                                           | Time   |
+| ----------------------------------------------------------------- | ----------------------------------------------- | ------ |
+| `docs/adr/adr-0061-asgi-correlation-middleware.md`                | ASGI strategy, lifecycle/ordering, consequences | 10 min |
+| `docs/backlog/stories/story-07-06-asgi-correlation-middleware.md` | Acceptance criteria                             | 5 min  |
+| `docs/backlog/prs/pr-0032-asgi-correlation-middleware.md`         | Implementation + test plan                      | 5 min  |
 
 **Total estimated time:** ~20 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Pure ASGI middleware (not `BaseHTTPMiddleware`) | Keeps contextvars bound through `http.response.start` and streaming lifecycles | [x] |
-| Preserve current public contract (`X-Correlation-ID`, `request.state.correlation_id`) | Avoids breaking callers + existing middleware | [x] |
-| Make correlation outermost middleware | Lets tracing/metrics/error handler read `request.state.correlation_id` and keeps it available for `uvicorn.access` | [x] |
-| Hybrid test approach (ASGI-level automated + manual smoke) | Avoids flaky “real server” tests while still validating end-to-end behavior | [x] |
-| Reopen EPIC-07 for ST-07-06 follow-up | Keeps observability work discoverable and consistent with story linkage | [x] |
+| Decision                                                                              | Rationale                                                                                                          | Approve? |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------- |
+| Pure ASGI middleware (not `BaseHTTPMiddleware`)                                       | Keeps contextvars bound through `http.response.start` and streaming lifecycles                                     | [x]      |
+| Preserve current public contract (`X-Correlation-ID`, `request.state.correlation_id`) | Avoids breaking callers + existing middleware                                                                      | [x]      |
+| Make correlation outermost middleware                                                 | Lets tracing/metrics/error handler read `request.state.correlation_id` and keeps it available for `uvicorn.access` | [x]      |
+| Hybrid test approach (ASGI-level automated + manual smoke)                            | Avoids flaky “real server” tests while still validating end-to-end behavior                                        | [x]      |
+| Reopen EPIC-07 for ST-07-06 follow-up                                                 | Keeps observability work discoverable and consistent with story linkage                                            | [x]      |
 
 ## Review Checklist
 
@@ -61,7 +61,7 @@ Implement ADR-0061 and ST-07-06:
 - [x] Implementation plan aligns with existing patterns (contextvars, `scope["state"]`, middleware ordering)
 - [x] Risks are identified with reasonable mitigations
 
----
+______________________________________________________________________
 
 ## Review Feedback
 
@@ -96,13 +96,13 @@ None.
 docs-validate: OK
 ```
 
----
+______________________________________________________________________
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | ADR-0061 | Corrected access-log timing (`http.response.start` in Uvicorn 0.40.0) and accepted the ADR |
-| 2 | ST-07-06 | Updated streaming/SSE acceptance criterion to match access-log timing |
-| 3 | PR-0032 | Updated acceptance criteria and test plan (ASGI-level automated + manual smoke) |
-| 4 | EPIC-07 | Reopened epic and added missing story links (ST-07-05) + ST-07-06 |
+| Change | Artifact | Description                                                                                |
+| ------ | -------- | ------------------------------------------------------------------------------------------ |
+| 1      | ADR-0061 | Corrected access-log timing (`http.response.start` in Uvicorn 0.40.0) and accepted the ADR |
+| 2      | ST-07-06 | Updated streaming/SSE acceptance criterion to match access-log timing                      |
+| 3      | PR-0032  | Updated acceptance criteria and test plan (ASGI-level automated + manual smoke)            |
+| 4      | EPIC-07  | Reopened epic and added missing story links (ST-07-05) + ST-07-06                          |

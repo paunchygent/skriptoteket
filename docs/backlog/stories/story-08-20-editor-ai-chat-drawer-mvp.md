@@ -40,25 +40,21 @@ organizes AI interactions in a single, predictable place.
 
 This story delivers the chat drawer UI + conversation state plumbing.
 
- - Uses the streaming chat endpoint `POST /api/v1/editor/tools/{tool_id}/chat`
-   (SSE)
+- Uses the streaming chat endpoint `POST /api/v1/editor/tools/{tool_id}/chat`
+  (SSE)
   (implemented in ST-08-23).
 - Non-goal: change inline completions (ghost text) behavior or prompt profiles
   (`POST /api/v1/editor/completions`).
 - Structured edit operations, diff preview, and apply/undo are handled in
   follow-up stories (ST-08-21/22).
-- **Decided persistence keying:** conversation history is keyed by `{user_id,
-  tool_id}`; store `base_version_id` as metadata inside the stored payload (not
+- **Decided persistence keying:** conversation history is keyed by `{user_id, tool_id}`; store `base_version_id` as metadata inside the stored payload (not
   in the key) so editor saves/new versions do not reset the chat.
 
 See also:
 
-- IndexedDB helper + shared DB: `docs/backlog/stories/story-14-30-editor-
-working-copy-persistence-indexeddb.md`
-- Focus mode (width): `docs/backlog/stories/story-14-31-editor-focus-mode-
-collapse-sidebar.md`
-- Chat streaming backend: `docs/backlog/stories/story-08-23-ai-chat-streaming-
-proxy-and-config.md`
+- IndexedDB helper + shared DB: `docs/backlog/stories/story-14-30-editor- working-copy-persistence-indexeddb.md`
+- Focus mode (width): `docs/backlog/stories/story-14-31-editor-focus-mode- collapse-sidebar.md`
+- Chat streaming backend: `docs/backlog/stories/story-08-23-ai-chat-streaming- proxy-and-config.md`
 
 ## Implementation decisions
 
@@ -99,40 +95,47 @@ proxy-and-config.md`
 
 ### Backend
 
-1) **GET history endpoint (thin web layer)**
+1. **GET history endpoint (thin web layer)**
+
 - Add `GET /api/v1/editor/tools/{tool_id}/chat?limit=60`.
 - Use a dedicated application handler (no repository calls in router).
 - Return Pydantic response models (`response_model=...`) for OpenAPI typing.
 - **TTL enforcement:** when loading history, if the last message is older than
   TTL, delete all messages + clear `tool_sessions.state`, then return empty.
 
-2) **Base_version_id metadata**
+2. **Base_version_id metadata**
+
 - Extend `EditorChatRequest` with optional `base_version_id`.
 - On POST: if provided, update `tool_sessions.state` for
   `context="editor_chat"` (best effort).
 - On GET: include `base_version_id` in response metadata if present.
 - On DELETE: clear `tool_sessions.state` (alongside message deletion).
 
-3) **Router rules**
+3. **Router rules**
+
 - Keep `src/skriptoteket/web/api/v1/editor/chat.py` free of
   `from __future__ import annotations`.
 
 ### Frontend
 
-1) **Composable local state**
+1. **Composable local state**
+
 - Implement `useEditorChat` with in-memory state (messages, status, errors).
 - `loadHistory()` calls GET on drawer open (and/or editor load).
 - **No localStorage transcript**; only IndexedDB if caching is added later.
 
-2) **Streaming transport**
+2. **Streaming transport**
+
 - Use **POST + SSE over `fetch`** with a small parser.
 - Treat “stream ended before done” as **cancelled**.
 - Ignore late deltas after `AbortController.abort()`.
 
-3) **Clear while streaming**
+3. **Clear while streaming**
+
 - Abort the stream first, then DELETE, then clear UI state.
 
-4) **Drawer integration**
+4. **Drawer integration**
+
 - Add AI chat drawer to the existing right-side drawer system.
 - Add toolbar entry point.
 - Ensure opening chat in compare mode auto-enables Focus mode.

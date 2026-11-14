@@ -45,31 +45,31 @@ Approve only if the patch:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0359-st-37-01-stale-state-repair-and-supersession-cleanup-batch.md` | Cleanup scope, claimed repairs, gate language | 10 min |
-| `docs/reference/ref-pr-0358-active-backlog-inventory-2026-06-17.md` | Deep-audit authority and revised queue | 20 min |
-| `docs/backlog/stories/story-37-01-backlog-inventory-and-stale-state-repair.md` | Parent story authority and gate notes | 5 min |
-| `docs/backlog/epics/epic-02-identity-and-access-control.md` | Browser-auth cancellation summary and warning preservation | 5 min |
-| `docs/backlog/epics/epic-14-admin-tool-authoring.md` | File-ref, vault, editor repairs and layout-editor cancellations | 10 min |
-| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md` | Transcript repairs and `PR-0324` / `PR-0325` supersession | 10 min |
-| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md` | `PR-0277` / `ST-26-07` remain open | 5 min |
-| `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md` | `PR-0195`..`PR-0197` absorption record | 5 min |
-| `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md` | `EPIC-30` done-state repair | 5 min |
-| `.codex/handoff.md` | Current-state alignment and retained gate notes | 5 min |
-| `frontend/...` and `src/...` spot checks | Current code evidence for repaired rows and supersession notes | 20 min |
+| File                                                                                     | Focus                                                           | Time   |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0359-st-37-01-stale-state-repair-and-supersession-cleanup-batch.md` | Cleanup scope, claimed repairs, gate language                   | 10 min |
+| `docs/reference/ref-pr-0358-active-backlog-inventory-2026-06-17.md`                      | Deep-audit authority and revised queue                          | 20 min |
+| `docs/backlog/stories/story-37-01-backlog-inventory-and-stale-state-repair.md`           | Parent story authority and gate notes                           | 5 min  |
+| `docs/backlog/epics/epic-02-identity-and-access-control.md`                              | Browser-auth cancellation summary and warning preservation      | 5 min  |
+| `docs/backlog/epics/epic-14-admin-tool-authoring.md`                                     | File-ref, vault, editor repairs and layout-editor cancellations | 10 min |
+| `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`                               | Transcript repairs and `PR-0324` / `PR-0325` supersession       | 10 min |
+| `docs/backlog/epics/epic-26-klassrumskartan-explicit-exports-and-class-list-import.md`   | `PR-0277` / `ST-26-07` remain open                              | 5 min  |
+| `docs/backlog/epics/epic-29-klassrumskartan-desktop-first-workspace-overhaul.md`         | `PR-0195`..`PR-0197` absorption record                          | 5 min  |
+| `docs/backlog/epics/epic-30-frontend-transition-continuity-for-same-shell-selectors.md`  | `EPIC-30` done-state repair                                     | 5 min  |
+| `.codex/handoff.md`                                                                      | Current-state alignment and retained gate notes                 | 5 min  |
+| `frontend/...` and `src/...` spot checks                                                 | Current code evidence for repaired rows and supersession notes  | 20 min |
 
 **Total estimated time:** ~100 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Repair only the rows named in the deep-audit revised queue | Avoids arbitrary cleanup or silent expansion of scope | [x] |
-| Leave `EPIC-37` proposed and `REV-EPIC-37` pending | Docs-only cleanup must not substitute for the epic review gate | [x] |
-| Leave `PR-0277` and `ST-26-07` open | Retained review and fresh Teams unfurl proof are still missing | [x] |
-| Preserve identity-token retirement warnings in the browser-auth cancellations | Docs cleanup must not imply backend artifact deletion authority | [x] |
-| Approve only if the diff remains docs-only | This slice has no authority to change production code or tests | [x] |
+| Decision                                                                      | Rationale                                                       | Approve? |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------- | -------- |
+| Repair only the rows named in the deep-audit revised queue                    | Avoids arbitrary cleanup or silent expansion of scope           | [x]      |
+| Leave `EPIC-37` proposed and `REV-EPIC-37` pending                            | Docs-only cleanup must not substitute for the epic review gate  | [x]      |
+| Leave `PR-0277` and `ST-26-07` open                                           | Retained review and fresh Teams unfurl proof are still missing  | [x]      |
+| Preserve identity-token retirement warnings in the browser-auth cancellations | Docs cleanup must not imply backend artifact deletion authority | [x]      |
+| Approve only if the diff remains docs-only                                    | This slice has no authority to change production code or tests  | [x]      |
 
 ## Review Checklist
 
@@ -146,6 +146,6 @@ No findings.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0359` | Recorded the independent review decision, evidence trail, and validation results for the docs-only cleanup batch |
+| Change | Artifact      | Description                                                                                                      |
+| ------ | ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0359` | Recorded the independent review decision, evidence trail, and validation results for the docs-only cleanup batch |

@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0003
 title: Migrate current governed corpus
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: done
 readiness_review:
@@ -20,11 +20,11 @@ closeout_review:
   approval_evidence: User approved completion without another review on 2026-07-31
 task_kind: repository
 acceptance_criteria:
-- All current governed meaning is migrated to the shared contract.
-- Terminal backlog and reviews remain immutable historical evidence and are absent from current relationships, indexes, gates, and lifecycle operations.
-- The legacy validator becomes a read-only historical validator and the shared validator is the only current-document authority.
-- Same-repository paths are portable while genuine host, container, and cross-repository paths remain explicit.
-- The sealed migration plan assigns every candidate exactly once across eight disjoint documentation-specialist slots.
+  - All current governed meaning is migrated to the shared contract.
+  - Terminal backlog and reviews remain immutable historical evidence and are absent from current relationships, indexes, gates, and lifecycle operations.
+  - The legacy validator becomes a read-only historical validator and the shared validator is the only current-document authority.
+  - Same-repository paths are portable while genuine host, container, and cross-repository paths remain explicit.
+  - The sealed migration plan assigns every candidate exactly once across eight disjoint documentation-specialist slots.
 ---
 
 ## Context
@@ -44,18 +44,18 @@ operation.
 
 ## Decision And Assumption Ledger
 
-| ID | Type | Status | Decision | Source |
-| --- | --- | --- | --- | --- |
-| MGC-001 | basis | closed | Use clean main `10374578358a4ee82761cc6fa329fa5db941fde0` as the audited source basis and merge later main changes before execution. | Approved identity repair and audit |
-| MGC-002 | audit | closed | The complete audit has 1,180 rows: 398 migrate, 764 historical, 9 product-local, 7 replaced, and 2 already current; unresolved count is zero. | Retained audit digest `ee19a78d18b08d6dfdef49cebb7076930b111746a2c514a885af016fed5c5ad0` |
-| MGC-003 | cohort | closed | The retained 398-row migration cohort is authoritative; PR-0417 and PR-0418 are reconciled by their already-current Tasks 0002 and 0003, so the package inventory contains the remaining 396 rows. | Retained cohort digest `d4e8f8b46ff802bfefd56cfea9e4858749f723dad909139339cac4bdefc77cff`; current task identities |
-| MGC-004 | identity | closed | Use the registered `SKRIPT` namespace, preserve Task 0001, reconcile PR-0417 as Task 0002, and map PR-0418 through PR-0421 to Tasks 0003 through 0006. | ST-SKILL-08-06 SKR-004S |
-| MGC-005 | history | closed | Terminal sources remain unchanged and current links to terminal or ambiguous legacy identities are removed or mapped to one proven current target. | User approval and audit |
-| MGC-006 | ownership | closed | Migrated records use owner `service: skriptoteket`; shared writes and semantic decisions remain parent-owned. | User approval and common contract |
-| MGC-007 | lanes | closed | Migrate epic, story, PR/task, changes-requested review, ADR, reference, codemap, PRD, approved mockup, and runbook lanes; keep product material local and replace package-owned templates. | Audit/profile summary |
-| MGC-008 | specialists | closed | Run package planning with specialist count 8 and dispatch the exact eight frozen disjoint assignments. | User direction and ST-SKILL-08-06 |
-| MGC-009 | validators | closed | Shared validation owns current documents; the local validator is historical-only, read-only, and absent from current gates and generated indexes. | User direction and PR-0418 |
-| MGC-010 | package | closed | Select the approved immutable package through executable dependency/lock/runtime evidence; do not pin its version in backlog prose. | ST-SKILL-08-06 package-selection rule |
+| ID      | Type        | Status | Decision                                                                                                                                                                                           | Source                                                                                                             |
+| ------- | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| MGC-001 | basis       | closed | Use clean main `10374578358a4ee82761cc6fa329fa5db941fde0` as the audited source basis and merge later main changes before execution.                                                               | Approved identity repair and audit                                                                                 |
+| MGC-002 | audit       | closed | The complete audit has 1,180 rows: 398 migrate, 764 historical, 9 product-local, 7 replaced, and 2 already current; unresolved count is zero.                                                      | Retained audit digest `ee19a78d18b08d6dfdef49cebb7076930b111746a2c514a885af016fed5c5ad0`                           |
+| MGC-003 | cohort      | closed | The retained 398-row migration cohort is authoritative; PR-0417 and PR-0418 are reconciled by their already-current Tasks 0002 and 0003, so the package inventory contains the remaining 396 rows. | Retained cohort digest `d4e8f8b46ff802bfefd56cfea9e4858749f723dad909139339cac4bdefc77cff`; current task identities |
+| MGC-004 | identity    | closed | Use the registered `SKRIPT` namespace, preserve Task 0001, reconcile PR-0417 as Task 0002, and map PR-0418 through PR-0421 to Tasks 0003 through 0006.                                             | ST-SKILL-08-06 SKR-004S                                                                                            |
+| MGC-005 | history     | closed | Terminal sources remain unchanged and current links to terminal or ambiguous legacy identities are removed or mapped to one proven current target.                                                 | User approval and audit                                                                                            |
+| MGC-006 | ownership   | closed | Migrated records use owner `service: skriptoteket`; shared writes and semantic decisions remain parent-owned.                                                                                      | User approval and common contract                                                                                  |
+| MGC-007 | lanes       | closed | Migrate epic, story, PR/task, changes-requested review, ADR, reference, codemap, PRD, approved mockup, and runbook lanes; keep product material local and replace package-owned templates.         | Audit/profile summary                                                                                              |
+| MGC-008 | specialists | closed | Run package planning with specialist count 8 and dispatch the exact eight frozen disjoint assignments.                                                                                             | User direction and ST-SKILL-08-06                                                                                  |
+| MGC-009 | validators  | closed | Shared validation owns current documents; the local validator is historical-only, read-only, and absent from current gates and generated indexes.                                                  | User direction and PR-0418                                                                                         |
+| MGC-010 | package     | closed | Select the approved immutable package through executable dependency/lock/runtime evidence; do not pin its version in backlog prose.                                                                | ST-SKILL-08-06 package-selection rule                                                                              |
 
 ## Plan
 

@@ -44,26 +44,26 @@ operations filename field.
 
 ## Artifacts to Review
 
-| File | Focus | Reviewed |
-|------|-------|----------|
-| `docs/backlog/prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md` | Authority, acceptance criteria, evidence | yes |
-| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md` | Parent story and scope boundary | yes |
-| `.codex/handoff.md` | Volatile state and retained proof path | yes |
-| `docs/index.md` | Docs index link | yes |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/*` | UI ownership, copy, CSS-only header alignment, tests | yes |
-| `scripts/_document_converter_proof.py` | Project-preview proof helper filename ownership | yes |
-| `scripts/_document_converter_single_file_proof.py` | Single-file proof helper filename ownership | yes |
-| `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json` | Existing retained shared-auth proof evidence | yes |
+| File                                                                                               | Focus                                                | Reviewed |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | -------- |
+| `docs/backlog/prs/pr-0405-st-37-04-document-converter-column-hierarchy-and-preview-empty-state.md` | Authority, acceptance criteria, evidence             | yes      |
+| `docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`              | Parent story and scope boundary                      | yes      |
+| `.codex/handoff.md`                                                                                | Volatile state and retained proof path               | yes      |
+| `docs/index.md`                                                                                    | Docs index link                                      | yes      |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/*`                                   | UI ownership, copy, CSS-only header alignment, tests | yes      |
+| `scripts/_document_converter_proof.py`                                                             | Project-preview proof helper filename ownership      | yes      |
+| `scripts/_document_converter_single_file_proof.py`                                                 | Single-file proof helper filename ownership          | yes      |
+| `.artifacts/authenticated-home-work-apps/20260629T005352Z/manifest.redacted.json`                  | Existing retained shared-auth proof evidence         | yes      |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep file actions and filename editing in the operations column | Matches `PR-0397` and `PR-0403` ownership; preview remains display-only apart from zoom controls | yes |
-| Use `Resultat` as the preview column header, not the editable filename fallback | Prevents the empty filename field from implying a fake result exists | yes |
-| Preserve `Konvertering` as the middle-column header in both modes | Gives `HTML/CSS-projekt` and `Filkonvertering` the same column grammar while leaving mode-specific labels below | yes |
-| Tone shared column headers down to `text-base` / `bold` and `3.75rem` | Keeps the column hierarchy distinct without making workbench headers read like app/page titles; the change is CSS-only and token-driven | yes |
-| Accept existing shared-auth proof without rerun after the final CSS-only typography/height tweak | Operator explicitly requested no auth-heavy rerun because the HuleEdu auth lane recently hit `RATE_LIMIT`; focused post-tweak tests, static CSS review, and the existing retained proof cover the narrow presentation risk | yes |
+| Decision                                                                                         | Rationale                                                                                                                                                                                                                  | Approve? |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Keep file actions and filename editing in the operations column                                  | Matches `PR-0397` and `PR-0403` ownership; preview remains display-only apart from zoom controls                                                                                                                           | yes      |
+| Use `Resultat` as the preview column header, not the editable filename fallback                  | Prevents the empty filename field from implying a fake result exists                                                                                                                                                       | yes      |
+| Preserve `Konvertering` as the middle-column header in both modes                                | Gives `HTML/CSS-projekt` and `Filkonvertering` the same column grammar while leaving mode-specific labels below                                                                                                            | yes      |
+| Tone shared column headers down to `text-base` / `bold` and `3.75rem`                            | Keeps the column hierarchy distinct without making workbench headers read like app/page titles; the change is CSS-only and token-driven                                                                                    | yes      |
+| Accept existing shared-auth proof without rerun after the final CSS-only typography/height tweak | Operator explicitly requested no auth-heavy rerun because the HuleEdu auth lane recently hit `RATE_LIMIT`; focused post-tweak tests, static CSS review, and the existing retained proof cover the narrow presentation risk | yes      |
 
 ## Review Checklist
 
@@ -149,9 +149,9 @@ None required for PR-0405.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0405` | Added stable column headers and empty-state copy/placeholder behavior. |
-| 2 | `PR-0405` | Updated retained proof helpers to assert filenames in operations. |
-| 3 | `PR-0405` | Applied the final CSS-only shared-header treatment: `text-base`, `bold`, and `3.75rem`. |
-| 4 | `REV-PR-0405` | Recorded independent retained review decision as approved, including the no-Playwright-rerun rationale. |
+| Change | Artifact      | Description                                                                                             |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0405`     | Added stable column headers and empty-state copy/placeholder behavior.                                  |
+| 2      | `PR-0405`     | Updated retained proof helpers to assert filenames in operations.                                       |
+| 3      | `PR-0405`     | Applied the final CSS-only shared-header treatment: `text-base`, `bold`, and `3.75rem`.                 |
+| 4      | `REV-PR-0405` | Recorded independent retained review decision as approved, including the no-Playwright-rerun rationale. |

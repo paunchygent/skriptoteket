@@ -4,8 +4,8 @@ id: TASK-SKRIPT-14-39-03
 title: ST-14-39 Mina filer File Service metadata schema
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: blocked
 readiness_review:
@@ -17,16 +17,10 @@ closeout_review:
 story: ST-SKRIPT-14-39
 task_kind: story
 acceptance_criteria:
-- Given a `Mina filer` record is saved or migrated, then Skriptoteket can persist
-  an opaque File Service object reference and mirrored content facts without storing
-  R2 bucket/key identity as a domain concept.
-- Given a `vault:*` ref is resolved, then repository/domain behavior can fail closed
-  for cross-owner, deleted, missing-object, checksum-mismatched, or lifecycle-invalid
-  records.
-- Given File Service object metadata is unavailable or incomplete, then the catalog
-  record remains unusable for protected download and saved-source batch authority.
-- Given migration is not yet authorized, then schema work does not copy bytes, sync
-  prod env, delete local vault bytes, or enable a runtime File Service adapter.
+  - Given a `Mina filer` record is saved or migrated, then Skriptoteket can persist an opaque File Service object reference and mirrored content facts without storing R2 bucket/key identity as a domain concept.
+  - Given a `vault:*` ref is resolved, then repository/domain behavior can fail closed for cross-owner, deleted, missing-object, checksum-mismatched, or lifecycle-invalid records.
+  - Given File Service object metadata is unavailable or incomplete, then the catalog record remains unusable for protected download and saved-source batch authority.
+  - Given migration is not yet authorized, then schema work does not copy bytes, sync prod env, delete local vault bytes, or enable a runtime File Service adapter.
 ---
 
 ## Context

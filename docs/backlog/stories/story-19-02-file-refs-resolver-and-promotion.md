@@ -57,19 +57,19 @@ source (upload/session/vault).
 
 ## Implementation plan
 
-1) Domain model + protocols
+1. Domain model + protocols
 
 - Add a `FileRef` type and a resolver protocol that can:
   - list available refs for `(tool_id, user_id, session_context)`,
   - validate + resolve refs into staged input files for a run,
   - return a deterministic manifest mapping `ref → /work/input/...`.
 
-2) Session files as a FileRef source
+2. Session files as a FileRef source
 
 - Define session file refs as `session:<name>` where `<name>` corresponds to the persisted session file name.
 - Adjust session file storage protocol semantics to support promotion safely (avoid “replace all” footguns).
 
-3) Promotion primitives
+3. Promotion primitives
 
 - Add a platform-level “promote artifact → session file” operation (tool-requestable):
   - source: run artifact (`run_id` + artifact id/path)
@@ -78,7 +78,7 @@ source (upload/session/vault).
 - Vault promotions are explicitly user-initiated (ADR-0059 / ST-14-36) and must reuse the same resolver + validation
   rules (no vault-specific staging pipeline).
 
-4) Runner integration
+4. Runner integration
 
 - Extend `/work/request.json` manifest to include a `ref` field per staged file (so tools can map file refs back to
   actual staged paths deterministically).

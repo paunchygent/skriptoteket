@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0020
 title: Responsive mobile adaptation strategy
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0020
+  - ADR-0020
 ---
 
 ## Context
@@ -20,7 +20,7 @@ retired_ids:
 
 Skriptoteket's frontend was developed with desktop-first assumptions. Three critical usability issues have been identified on smaller screens (tablets and phones):
 
-1. **Header navigation inaccessible** – `flex-wrap: nowrap` causes nav items to overflow horizontally on viewports <768px
+1. **Header navigation inaccessible** – `flex-wrap: nowrap` causes nav items to overflow horizontally on viewports \<768px
 2. **CodeMirror collapses** – `min-height: 0` combined with flex shrink causes the editor to shrink to zero height
 3. **Script editor two-column layout broken** – Fixed 320px sidebar leaves insufficient space for main content on narrow screens
 
@@ -36,11 +36,11 @@ Adopt an **adaptive mobile strategy** (Option A from analysis) rather than a ful
 
 Define consistent breakpoints in design tokens:
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| `--huleedu-bp-sm` | 640px | Compact mobile adjustments |
-| `--huleedu-bp-md` | 768px | Tablet/header collapse |
-| `--huleedu-bp-lg` | 1024px | Editor layout collapse |
+| Token             | Value  | Usage                      |
+| ----------------- | ------ | -------------------------- |
+| `--huleedu-bp-sm` | 640px  | Compact mobile adjustments |
+| `--huleedu-bp-md` | 768px  | Tablet/header collapse     |
+| `--huleedu-bp-lg` | 1024px | Editor layout collapse     |
 
 **Note:** Plain CSS `@media` queries cannot reference CSS custom properties. Until a CSS build step is introduced (e.g. via `@custom-media`), media queries will continue to use literal pixel values; the tokens are for documentation consistency and potential JS usage.
 

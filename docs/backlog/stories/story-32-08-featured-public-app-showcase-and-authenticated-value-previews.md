@@ -7,8 +7,7 @@ owners: "agents"
 created: 2026-04-07
 updated: 2026-04-19
 epic: "EPIC-32"
-dependencies:
-  ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06", "ST-32-07"]
+dependencies: ["ADR-0027", "ADR-0032", "ADR-0079", "ST-11-21", "ST-32-06", "ST-32-07"]
 acceptance_criteria:
   - "Given the public Klassrumskartan route is now the only publicly available app surface, when the landing page scrolls below the fold, then a featured showcase demonstrates what the app actually lets a teacher do in practice instead of relying only on generic value-proposition cards."
   - "Given some Skriptoteket capabilities remain authenticated-only, when the landing page presents them, then they appear as clearly labeled showcase or preview surfaces rather than misleading public entry points."

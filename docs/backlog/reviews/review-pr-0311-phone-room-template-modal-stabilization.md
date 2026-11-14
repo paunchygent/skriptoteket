@@ -38,27 +38,27 @@ desktop hover previews.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md` | Scope, acceptance criteria, copy lock, proof obligations | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue` | Footer actions, save/delete lifecycle, missing-name recovery | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateEditorSidebar.vue` | Name field focus and field-level validation | 5 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue` | Touch/no-hover suppression and desktop hover preservation | 10 min |
-| `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts` | Placement reducer and hover-state cleanup | 8 min |
-| `frontend/apps/skriptoteket/src/assets/klassrumskartan-responsive-workspace.css` | Phone modal/footer geometry | 5 min |
-| `scripts/playwright_pr_0311_phone_room_template_modal.py` | Retained phone/desktop proof scope | 8 min |
-| `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.phone.spec.ts` | Focused phone modal tests | 5 min |
+| File                                                                                         | Focus                                                        | Time   |
+| -------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ------ |
+| `docs/backlog/prs/pr-0311-st-24-04-phone-room-template-modal-stabilization.md`               | Scope, acceptance criteria, copy lock, proof obligations     | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue`           | Footer actions, save/delete lifecycle, missing-name recovery | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateEditorSidebar.vue`         | Name field focus and field-level validation                  | 5 min  |
+| `frontend/apps/skriptoteket/src/views/apps/components/RoomTemplateBuilderSurface.vue`        | Touch/no-hover suppression and desktop hover preservation    | 10 min |
+| `frontend/apps/skriptoteket/src/views/apps/useRoomTemplateEditorState.ts`                    | Placement reducer and hover-state cleanup                    | 8 min  |
+| `frontend/apps/skriptoteket/src/assets/klassrumskartan-responsive-workspace.css`             | Phone modal/footer geometry                                  | 5 min  |
+| `scripts/playwright_pr_0311_phone_room_template_modal.py`                                    | Retained phone/desktop proof scope                           | 8 min  |
+| `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.phone.spec.ts` | Focused phone modal tests                                    | 5 min  |
 
 **Total estimated time:** ~61 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep the contained modal and fix sticky footer geometry with CSS | Matches PR non-goals and layout-geometry doctrine | [x] |
-| Replace disabled missing-name save with field-level recovery and focus | Matches the required-name acceptance criterion | [x] |
-| Suppress ghost previews only for touch/coarse-pointer input | Preserves desktop hover behavior while fixing phone ambiguity | [x] |
-| Keep destructive delete failure copy unchanged | Required by the PR UX copy lock unless a visible issue is documented | [x] |
+| Decision                                                               | Rationale                                                            | Approve? |
+| ---------------------------------------------------------------------- | -------------------------------------------------------------------- | -------- |
+| Keep the contained modal and fix sticky footer geometry with CSS       | Matches PR non-goals and layout-geometry doctrine                    | [x]      |
+| Replace disabled missing-name save with field-level recovery and focus | Matches the required-name acceptance criterion                       | [x]      |
+| Suppress ghost previews only for touch/coarse-pointer input            | Preserves desktop hover behavior while fixing phone ambiguity        | [x]      |
+| Keep destructive delete failure copy unchanged                         | Required by the PR UX copy lock unless a visible issue is documented | [x]      |
 
 ## Review Checklist
 
@@ -117,12 +117,12 @@ desktop hover previews.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0311` | Recorded retained review verdict as `changes_requested` with two required fixes and observed verification evidence. |
-| 2 | `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.phone.spec.ts` | Added direct `Sittplats` touch proof that first tap creates a real builder seat, leaves no ghost overlay, and second tap removes the same real seat. |
-| 3 | `scripts/playwright_pr_0311_phone_room_template_modal.py` | Updated retained phone proof to exercise the same `Sittplats` create/remove contract instead of the prior `Whiteboard` no-ghost-only path. |
-| 4 | `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue` | Restored stable Swedish delete failure recovery copy instead of surfacing backend error message text. |
+| Change | Artifact                                                                                     | Description                                                                                                                                          |
+| ------ | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0311`                                                                                | Recorded retained review verdict as `changes_requested` with two required fixes and observed verification evidence.                                  |
+| 2      | `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.phone.spec.ts` | Added direct `Sittplats` touch proof that first tap creates a real builder seat, leaves no ghost overlay, and second tap removes the same real seat. |
+| 3      | `scripts/playwright_pr_0311_phone_room_template_modal.py`                                    | Updated retained phone proof to exercise the same `Sittplats` create/remove contract instead of the prior `Whiteboard` no-ghost-only path.           |
+| 4      | `frontend/apps/skriptoteket/src/views/apps/components/CreateRoomTemplateModal.vue`           | Restored stable Swedish delete failure recovery copy instead of surfacing backend error message text.                                                |
 
 ### Second Pass
 

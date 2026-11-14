@@ -44,7 +44,7 @@ mention it. Plan a small follow-up PR to avoid confusion:
    - Update docs that describe the legacy endpoint to either:
      - remove the mention, or
      - explicitly mark it as removed and point to chat-ops (`/api/v1/editor/edit-ops`) instead.
-     Candidates (from `rg "/api/v1/editor/edits"`):
+       Candidates (from `rg "/api/v1/editor/edits"`):
      - `docs/reference/ref-tool-editor-framework-codemap.md`
      - `docs/reference/reports/ref-ai-edit-suggestions-kb-context-budget-blocker.md`
      - `stakeholders/tooleditor_flow.html`

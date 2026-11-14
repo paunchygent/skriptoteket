@@ -48,24 +48,24 @@ lane plus route-session history for recent preview/job results.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md` | Scope, goals, decision boundary, claimed proof | 25 min |
-| `src/skriptoteket/application/curated_apps/handlers/document_converter_saved_sources.py`, `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_saved_files.py`, `src/skriptoteket/application/curated_apps/document_converter.py`, `src/skriptoteket/di/curated_apps.py` | Owner scoping, saved-file authority, route wiring, shared job flow reuse | 45 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`, `useDocumentConverterSingleFile.ts`, `useDocumentConverterSessionHistory.ts`, `useDocumentConverterHistoryBridge.ts` | Session-history truthfulness, stale state, retry semantics, preview selection | 75 min |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileControls.vue`, `DocumentConverterSourcePanel.vue`, `DocumentConverterResultPanel.vue`, `documentConverterFileApi.ts` | Visible UI contract, source-selector scope, protected API usage | 35 min |
-| `tests/unit/application/curated_apps/handlers/test_document_converter_saved_sources.py`, `tests/unit/web/conversion_hub/test_apps_document_converter_api.py`, `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts`, `DocumentConverterSingleFileView.spec.ts`, `documentConverterFileApi.spec.ts` | Behavioral proof strength and missing coverage | 45 min |
+| File                                                                                                                                                                                                                                                                                                                                      | Focus                                                                         | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`                                                                                                                                                                                                                                                     | Scope, goals, decision boundary, claimed proof                                | 25 min |
+| `src/skriptoteket/application/curated_apps/handlers/document_converter_saved_sources.py`, `src/skriptoteket/web/api/v1/apps_conversion_hub_document_converter_saved_files.py`, `src/skriptoteket/application/curated_apps/document_converter.py`, `src/skriptoteket/di/curated_apps.py`                                                   | Owner scoping, saved-file authority, route wiring, shared job flow reuse      | 45 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`, `useDocumentConverterSingleFile.ts`, `useDocumentConverterSessionHistory.ts`, `useDocumentConverterHistoryBridge.ts`                                                                                                                            | Session-history truthfulness, stale state, retry semantics, preview selection | 75 min |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileControls.vue`, `DocumentConverterSourcePanel.vue`, `DocumentConverterResultPanel.vue`, `documentConverterFileApi.ts`                                                                                                                             | Visible UI contract, source-selector scope, protected API usage               | 35 min |
+| `tests/unit/application/curated_apps/handlers/test_document_converter_saved_sources.py`, `tests/unit/web/conversion_hub/test_apps_document_converter_api.py`, `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts`, `DocumentConverterSingleFileView.spec.ts`, `documentConverterFileApi.spec.ts` | Behavioral proof strength and missing coverage                                | 45 min |
 
 **Total estimated time:** ~3.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Saved-file intake must stay owner-scoped and server-authoritative through Vault refs, not browser-uploaded bytes. | This is Goal 1’s trust boundary and the current backend implementation follows it. | [x] |
-| Current-session history must reopen the result the teacher actually selected, not silently fall back to the latest live preview. | Goal 2 promises useful route-session continuity, so history selection must be truthful. | [x] |
-| Nonterminal single-file jobs must remain visibly pending or retryable, not be recorded as failed by timeout heuristics. | A queued/running job is not the same thing as a failed result. | [x] |
-| Reopen from saved output remains single-file reuse only, not project-workspace restore. | The current slice must not overbuild a fake saved-project story. | [x] |
+| Decision                                                                                                                         | Rationale                                                                               | Approve? |
+| -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | -------- |
+| Saved-file intake must stay owner-scoped and server-authoritative through Vault refs, not browser-uploaded bytes.                | This is Goal 1’s trust boundary and the current backend implementation follows it.      | [x]      |
+| Current-session history must reopen the result the teacher actually selected, not silently fall back to the latest live preview. | Goal 2 promises useful route-session continuity, so history selection must be truthful. | [x]      |
+| Nonterminal single-file jobs must remain visibly pending or retryable, not be recorded as failed by timeout heuristics.          | A queued/running job is not the same thing as a failed result.                          | [x]      |
+| Reopen from saved output remains single-file reuse only, not project-workspace restore.                                          | The current slice must not overbuild a fake saved-project story.                        | [x]      |
 
 ## Review Checklist
 
@@ -147,11 +147,11 @@ No blocking findings remain in the PR-0385 implementation scope.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0385` | Created the retained independent review record for the Document Converter files/history follow-up slice. |
-| 2 | `REV-PR-0385` | Recorded the original blocking findings covering project-history revisit truthfulness and single-file timeout-to-failure misclassification. |
-| 3 | `REV-PR-0385` | Re-reviewed the remediation pass, confirmed the two high findings and adjacent frontend regressions are fixed, and approved the slice. |
+| Change | Artifact      | Description                                                                                                                                 |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0385` | Created the retained independent review record for the Document Converter files/history follow-up slice.                                    |
+| 2      | `REV-PR-0385` | Recorded the original blocking findings covering project-history revisit truthfulness and single-file timeout-to-failure misclassification. |
+| 3      | `REV-PR-0385` | Re-reviewed the remediation pass, confirmed the two high findings and adjacent frontend regressions are fixed, and approved the slice.      |
 
 ## Remediation Follow-up
 

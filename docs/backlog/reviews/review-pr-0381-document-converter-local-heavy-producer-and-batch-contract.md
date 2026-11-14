@@ -47,30 +47,30 @@ heavy or unsupported lanes to Sir Convert with explicit decision reasons.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md` | Scope, research evidence, stop conditions, verification | 15 min |
-| `src/skriptoteket/application/curated_apps/document_converter.py` | Scoped API models, validation, job/result identity | 15 min |
-| `src/skriptoteket/application/curated_apps/document_converter_producers.py` | Automatic local/Sir Convert routing and local conversion lanes | 20 min |
-| `src/skriptoteket/application/curated_apps/handlers/document_converter_jobs.py` | Batch job creation, UoW behavior, local artifact storage | 20 min |
-| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_document_converter.py` | Download/save authority for local and Sir Convert jobs | 15 min |
-| `src/skriptoteket/protocols/documents.py`, `src/skriptoteket/protocols/document_converter.py`, `src/skriptoteket/infrastructure/documents/` | Shared document protocols and adapters | 20 min |
-| `src/skriptoteket/web/api/v1/apps_conversion_hub.py` and `src/skriptoteket/di/curated_apps.py` | Scoped API wiring and Dishka providers | 20 min |
-| `tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py` | Focused Document Converter proof | 25 min |
-| Adjacent Conversion Hub tests listed in `PR-0381` verification evidence | Exam Converter and Audio Transcription regression proof | 15 min |
-| `frontend/apps/skriptoteket/src/api/openapi.d.ts` | Generated API type update | 10 min |
+| File                                                                                                                                                                                                                                                                                                                                                              | Focus                                                          | Time   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0381-st-37-04-document-converter-local-heavy-producer-and-batch-contract.md`                                                                                                                                                                                                                                                                 | Scope, research evidence, stop conditions, verification        | 15 min |
+| `src/skriptoteket/application/curated_apps/document_converter.py`                                                                                                                                                                                                                                                                                                 | Scoped API models, validation, job/result identity             | 15 min |
+| `src/skriptoteket/application/curated_apps/document_converter_producers.py`                                                                                                                                                                                                                                                                                       | Automatic local/Sir Convert routing and local conversion lanes | 20 min |
+| `src/skriptoteket/application/curated_apps/handlers/document_converter_jobs.py`                                                                                                                                                                                                                                                                                   | Batch job creation, UoW behavior, local artifact storage       | 20 min |
+| `src/skriptoteket/application/curated_apps/handlers/conversion_hub_document_converter.py`                                                                                                                                                                                                                                                                         | Download/save authority for local and Sir Convert jobs         | 15 min |
+| `src/skriptoteket/protocols/documents.py`, `src/skriptoteket/protocols/document_converter.py`, `src/skriptoteket/infrastructure/documents/`                                                                                                                                                                                                                       | Shared document protocols and adapters                         | 20 min |
+| `src/skriptoteket/web/api/v1/apps_conversion_hub.py` and `src/skriptoteket/di/curated_apps.py`                                                                                                                                                                                                                                                                    | Scoped API wiring and Dishka providers                         | 20 min |
+| `tests/unit/web/conversion_hub/test_apps_document_converter_batch_api.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_producer_routing.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_local_artifact_actions.py`, `tests/unit/application/curated_apps/handlers/test_document_converter_artifact_saves.py` | Focused Document Converter proof                               | 25 min |
+| Adjacent Conversion Hub tests listed in `PR-0381` verification evidence                                                                                                                                                                                                                                                                                           | Exam Converter and Audio Transcription regression proof        | 15 min |
+| `frontend/apps/skriptoteket/src/api/openapi.d.ts`                                                                                                                                                                                                                                                                                                                 | Generated API type update                                      | 10 min |
 
 **Total estimated time:** ~2.5 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `/apps/document-converter` inactive. | Route-visible UI still waits for mockup/copy approval and later PR slices. | [x] |
-| Use automatic producer routing only. | Teachers should never choose local versus Sir Convert. | [x] |
-| Run only first proven simple lanes locally. | WeasyPrint, Python-Markdown, and pdfplumber have current syntax/runtime evidence; pypdf/python-docx/Pandoc remain future lane proof. | [x] |
-| Store local outputs server-side by local job id. | Download/save authority must not come from browser artifact refs or bytes. | [x] |
-| Centralize reusable document/PDF surfaces. | Prevents another app-local WeasyPrint/PDF wrapper and gives later curated apps protocol seams. | [x] |
+| Decision                                         | Rationale                                                                                                                            | Approve? |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| Keep `/apps/document-converter` inactive.        | Route-visible UI still waits for mockup/copy approval and later PR slices.                                                           | [x]      |
+| Use automatic producer routing only.             | Teachers should never choose local versus Sir Convert.                                                                               | [x]      |
+| Run only first proven simple lanes locally.      | WeasyPrint, Python-Markdown, and pdfplumber have current syntax/runtime evidence; pypdf/python-docx/Pandoc remain future lane proof. | [x]      |
+| Store local outputs server-side by local job id. | Download/save authority must not come from browser artifact refs or bytes.                                                           | [x]      |
+| Centralize reusable document/PDF surfaces.       | Prevents another app-local WeasyPrint/PDF wrapper and gives later curated apps protocol seams.                                       | [x]      |
 
 ## Review Checklist
 
@@ -153,9 +153,9 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0381` | Implemented route-inactive batch and local/heavy producer contract pending independent review. |
-| 2 | `REV-PR-0381` | Recorded independent review findings, verification evidence, and `changes_requested` verdict. |
-| 3 | `PR-0381` | Added repair tests and implementation for complex PDF routing plus fail-closed local artifact-store failures. |
-| 4 | `REV-PR-0381` | Re-reviewed the repair pass, verified the prior findings were resolved, and approved the slice. |
+| Change | Artifact      | Description                                                                                                   |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0381`     | Implemented route-inactive batch and local/heavy producer contract pending independent review.                |
+| 2      | `REV-PR-0381` | Recorded independent review findings, verification evidence, and `changes_requested` verdict.                 |
+| 3      | `PR-0381`     | Added repair tests and implementation for complex PDF routing plus fail-closed local artifact-store failures. |
+| 4      | `REV-PR-0381` | Re-reviewed the repair pass, verified the prior findings were resolved, and approved the slice.               |

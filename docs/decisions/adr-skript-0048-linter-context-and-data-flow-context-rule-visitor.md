@@ -4,15 +4,15 @@ id: ADR-SKRIPT-0048
 title: Linter context and data flow (Context-Rule-Visitor)
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- agents
-- lead-developer
+  - agents
+  - lead-developer
 retired_ids:
-- ADR-0048
+  - ADR-0048
 ---
 
 ## Context
@@ -46,8 +46,6 @@ The source does not provide a separate non-decisions section; no additional non-
 ## Consequences
 
 ### Source: Consequences
-
-
 
 ### Source: 1. The Linter Context (Single Source of Truth)
 
@@ -99,8 +97,8 @@ Rules MAY attach CodeMirror quick-fix actions to diagnostics using `Diagnostic.a
 
 - Each action is a small, safe edit implemented via `apply(view, from, to)`.
 - For import-related fixes, use a shared helper `findImportInsertPosition(state)` that inserts:
-  1) after shebang + encoding cookie (PEP 263), 2) after module docstring, 3) after any `from __future__ ...` imports,
-  2) into/after the top-of-file import block.
+  1. after shebang + encoding cookie (PEP 263), 2) after module docstring, 3) after any `from __future__ ...` imports,
+  2. into/after the top-of-file import block.
 
 ### Source: 6. AI Context Integration (EPIC-08)
 
@@ -123,5 +121,5 @@ The `LinterContext` is also the structured source of truth for future inline com
 - **Performance:** Building the full context takes more time than a single regex, but Lezer is fast enough for ~1000 LOC on the main thread (debounced).
 
 **Performance budget (required):** the full context pass (parse + fact extraction) SHOULD remain under ~10ms for typical
-scripts (<500 LOC) to preserve typing latency. If exceeded, reduce work done in the context pass and/or increase
+scripts (\<500 LOC) to preserve typing latency. If exceeded, reduce work done in the context pass and/or increase
 debounce.

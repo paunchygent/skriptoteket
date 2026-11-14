@@ -8,14 +8,7 @@ created: 2026-03-27
 updated: 2026-04-01
 stories:
   - "ST-27-07"
-tags:
-  [
-    "frontend",
-    "planner",
-    "smart-assignment",
-    "klassrumskartan",
-    "ux",
-  ]
+tags: ["frontend", "planner", "smart-assignment", "klassrumskartan", "ux"]
 dependencies:
   - "ADR-0074"
   - "EPIC-27"
@@ -74,11 +67,13 @@ while keeping `Sittplatser` and `Grupper` calm:
 ## Implementation plan
 
 1. Add the dedicated `Regler` workspace shell.
+
    - Extend the planner workspace selector to include `Regler`.
    - Update the workspace shell routing/rendering so `Regler` is first-class rather than a modal
      or drawer.
 
 2. Split the current smart-rule surface into explicit desktop components.
+
    - Add `PlannerRulesWorkspacePane.vue`.
    - Add `PlannerRulesToolRail.vue`.
    - Add `PlannerRulesMapPanel.vue`.
@@ -87,6 +82,7 @@ while keeping `Sittplatser` and `Grupper` calm:
    - Add `PlannerRulesInspector.vue`.
 
 3. Introduce the dual-map projection model.
+
    - `Planeringskarta`:
      - never inherit classroom geometry, seat positions, or the current seating draft
      - always render one normalized planning grid
@@ -98,6 +94,7 @@ while keeping `Sittplatser` and `Grupper` calm:
      authoring state.
 
 4. Strengthen the authoring affordances.
+
    - Move tool identity onto canonical iconography from the shared icon library.
    - Add explicit active-tool styling, hover/selection states, ordered multi-select badges, and a
      short status line.
@@ -106,6 +103,7 @@ while keeping `Sittplatser` and `Grupper` calm:
      rail, including `Nära läraren`.
 
 5. Cut over task-pane smart chrome.
+
    - Replace the seating-embedded full rule editor with a compact smart summary surface.
    - Add the same compact smart summary surface to grouping.
    - Keep any compact drawer read-only for rules, while still allowing mode-local smart toggles

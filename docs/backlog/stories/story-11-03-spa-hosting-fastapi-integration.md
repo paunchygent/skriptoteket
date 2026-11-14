@@ -22,25 +22,30 @@ The SPA must work with history routing and be served as a first-class part of th
 ### Changes Made
 
 1. **SPA Vite config** (`frontend/apps/skriptoteket/vite.config.ts`):
+
    - Added `base: "/static/spa/"` for correct asset URL prefixes
    - Added `outDir` pointing to `src/skriptoteket/web/static/spa`
    - Added `/static` proxy for dev server
 
 2. **History fallback route** (`src/skriptoteket/web/routes/spa_fallback.py`):
+
    - New module with catch-all route `/{full_path:path}`
    - Serves `index.html` for non-API/static paths
    - Explicit exclusion list: `/api/`, `/static/`, `/healthz`, `/metrics`, `/docs`, `/redoc`, `/openapi.json`
    - No authentication on fallback (Vue Router handles auth via `/api/v1/auth/me`)
 
 3. **Router registration** (`src/skriptoteket/web/router.py`):
+
    - Imported `spa_fallback` module
    - Registered fallback router LAST to avoid intercepting API routes
 
 4. **Dockerfile**:
+
    - Updated Stage 1 to build `@skriptoteket/spa` instead of `@skriptoteket/islands`
    - SPA replaces islands at `/static/spa/` (clean break per ADR-0027)
 
 5. **Tests** (`tests/unit/web/test_spa_fallback.py`):
+
    - Unit tests for `_should_serve_spa()` path exclusion logic
 
 ### Verification

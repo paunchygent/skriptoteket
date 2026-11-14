@@ -90,12 +90,12 @@ the contract with retained fixture plus focused boundary/consumer tests.
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Parse upstream job status into a typed enum at the shared client boundary | Prevents app-local aliases and catches vocabulary drift before product mapping | [x] |
-| Keep `RUNNING -> PROCESSING` only as an explicit product mapping | Preserves local UX vocabulary without accepting free-form upstream synonyms | [x] |
-| Use a retained fixture plus focused tests as the drift gate | Gives a commit-time proof path for enum-vs-contract alignment | [x] |
-| Scope this review to PR-0399 backend contract work only | Avoids mixing unrelated PR-0398 frontend/browser concerns into the verdict | [x] |
+| Decision                                                                  | Rationale                                                                      | Approve? |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
+| Parse upstream job status into a typed enum at the shared client boundary | Prevents app-local aliases and catches vocabulary drift before product mapping | [x]      |
+| Keep `RUNNING -> PROCESSING` only as an explicit product mapping          | Preserves local UX vocabulary without accepting free-form upstream synonyms    | [x]      |
+| Use a retained fixture plus focused tests as the drift gate               | Gives a commit-time proof path for enum-vs-contract alignment                  | [x]      |
+| Scope this review to PR-0399 backend contract work only                   | Avoids mixing unrelated PR-0398 frontend/browser concerns into the verdict     | [x]      |
 
 ## Review Checklist
 
@@ -151,10 +151,10 @@ No findings.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0399` | Created the retained PR-0399 backend contract review record. |
-| 2 | `REV-PR-0399` | Recorded the scoped contract review, focused verification evidence, and final verdict. |
+| Change | Artifact      | Description                                                                            |
+| ------ | ------------- | -------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0399` | Created the retained PR-0399 backend contract review record.                           |
+| 2      | `REV-PR-0399` | Recorded the scoped contract review, focused verification evidence, and final verdict. |
 
 ## Residual Risks
 

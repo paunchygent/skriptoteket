@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0024-PART-02
 title: Solver-owned rule marker semantics — part 02
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 root: TASK-SKRIPT-REP-0024
 part: 2

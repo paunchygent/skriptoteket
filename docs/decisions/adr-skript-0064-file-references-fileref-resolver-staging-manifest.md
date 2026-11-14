@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0064
 title: File references (FileRef) + resolver + staging manifest
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0064
+  - ADR-0064
 ---
 
 ## Context
@@ -29,8 +29,6 @@ This makes multi-step workflows brittle and pushes internal path conventions int
 ## Decision
 
 ### Source: Decision
-
-
 
 ## Non-Decisions
 

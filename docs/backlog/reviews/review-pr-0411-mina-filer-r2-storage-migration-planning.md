@@ -41,26 +41,26 @@ before any storage code or production env sync starts.
 
 ## Artifacts To Review
 
-| Artifact | Focus | Reviewed |
-|---|---|---|
-| `docs/adr/adr-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md` | Decision, consequences, and open questions | yes |
-| `docs/reference/ref-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook.md` | Architecture, config, Docker, migration phases, stop conditions | yes |
-| `docs/backlog/stories/story-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md` | Story contract and non-goals | yes |
-| `docs/backlog/prs/pr-0411-st-14-39-mina-filer-r2-storage-migration-planning.md` | Slice acceptance, tests, and rollback requirements | yes |
+| Artifact                                                                                | Focus                                                           | Reviewed |
+| --------------------------------------------------------------------------------------- | --------------------------------------------------------------- | -------- |
+| `docs/adr/adr-0088-cloudflare-r2-storage-boundary-for-mina-filer-and-filerefs.md`       | Decision, consequences, and open questions                      | yes      |
+| `docs/reference/ref-cloudflare-r2-skriptoteket-file-storage-migration-pre-runbook.md`   | Architecture, config, Docker, migration phases, stop conditions | yes      |
+| `docs/backlog/stories/story-14-39-cloudflare-r2-backed-mina-filer-storage-migration.md` | Story contract and non-goals                                    | yes      |
+| `docs/backlog/prs/pr-0411-st-14-39-mina-filer-r2-storage-migration-planning.md`         | Slice acceptance, tests, and rollback requirements              | yes      |
 
 ## Key Decisions
 
-| Decision | Required before approval | Status |
-|---|---|---|
-| Storage adapter owner | HuleEdu File Service client; no Skriptoteket direct R2 adapter | closed |
-| Catalog/list owner | Skriptoteket keeps v1 `Mina filer` catalog/list; File Service list optional | closed |
-| Lifecycle owner | HuleEdu File Service owns init, finalize, metadata, download, delete | closed |
-| Upload v2 semantic boundary | no essay, BOS, assessment, or batch semantics leak into Skriptoteket | closed |
-| Manifest object identity | migration authority must use opaque File Service object references, not target R2 object keys | closed |
-| Storage metadata | DB columns, opaque File Service object ref, checksum, lifecycle mirror | retained implementation blocker |
-| Runtime config | exact File Service settings, secret-source labels, Docker readiness | retained implementation blocker |
-| Migration safety | dry-run, copy, checksum proof, dual-read, cutover, rollback, cleanup | retained implementation blocker |
-| Product proof | protected route tests and live shared-auth browser proof | retained implementation blocker |
+| Decision                    | Required before approval                                                                      | Status                          |
+| --------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------- |
+| Storage adapter owner       | HuleEdu File Service client; no Skriptoteket direct R2 adapter                                | closed                          |
+| Catalog/list owner          | Skriptoteket keeps v1 `Mina filer` catalog/list; File Service list optional                   | closed                          |
+| Lifecycle owner             | HuleEdu File Service owns init, finalize, metadata, download, delete                          | closed                          |
+| Upload v2 semantic boundary | no essay, BOS, assessment, or batch semantics leak into Skriptoteket                          | closed                          |
+| Manifest object identity    | migration authority must use opaque File Service object references, not target R2 object keys | closed                          |
+| Storage metadata            | DB columns, opaque File Service object ref, checksum, lifecycle mirror                        | retained implementation blocker |
+| Runtime config              | exact File Service settings, secret-source labels, Docker readiness                           | retained implementation blocker |
+| Migration safety            | dry-run, copy, checksum proof, dual-read, cutover, rollback, cleanup                          | retained implementation blocker |
+| Product proof               | protected route tests and live shared-auth browser proof                                      | retained implementation blocker |
 
 ## Review Checklist
 

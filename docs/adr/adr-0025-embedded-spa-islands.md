@@ -46,7 +46,7 @@ with the backend via JSON APIs.
 To maximize integration compatibility, SPA islands use the same stack as HuleEdu:
 
 | Layer      | Technology                                                       |
-|------------|------------------------------------------------------------------|
+| ---------- | ---------------------------------------------------------------- |
 | Framework  | Vue 3.5 (Composition API, `<script setup>`)                      |
 | State      | Pinia 3.0                                                        |
 | Routing    | vue-router 4.6                                                   |

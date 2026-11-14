@@ -46,30 +46,30 @@ Converter, and Document Converter.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/stories/story-37-05-cross-app-save-export-file-naming-protocol.md` | Parent story scope and acceptance | 5 min |
-| `docs/reference/ref-file-naming-save-export-protocol-v1.md` | Shared naming, save, export, and rename contract | 10 min |
-| `docs/backlog/prs/pr-0390-st-37-05-file-naming-save-export-protocol-reference.md` | Reference closeout slice | 3 min |
-| `docs/backlog/prs/pr-0391-st-37-05-shared-save-export-naming-backend-contract.md` | Backend/domain authority slice | 5 min |
-| `docs/backlog/prs/pr-0392-st-37-05-shared-filename-editing-ui-primitives.md` | Shared UI primitive slice | 3 min |
-| `docs/backlog/prs/pr-0393-st-37-05-mina-filer-rename-and-extension-contract.md` | Rename and extension preservation slice | 5 min |
-| `docs/backlog/prs/pr-0394-st-37-05-audio-transcription-export-naming-adoption.md` | Transcript app adoption | 3 min |
-| `docs/backlog/prs/pr-0395-st-37-05-exam-converter-export-naming-adoption.md` | Exam Converter app adoption | 3 min |
-| `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md` | Document Converter app adoption | 3 min |
+| File                                                                                  | Focus                                            | Time   |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------ | ------ |
+| `docs/backlog/stories/story-37-05-cross-app-save-export-file-naming-protocol.md`      | Parent story scope and acceptance                | 5 min  |
+| `docs/reference/ref-file-naming-save-export-protocol-v1.md`                           | Shared naming, save, export, and rename contract | 10 min |
+| `docs/backlog/prs/pr-0390-st-37-05-file-naming-save-export-protocol-reference.md`     | Reference closeout slice                         | 3 min  |
+| `docs/backlog/prs/pr-0391-st-37-05-shared-save-export-naming-backend-contract.md`     | Backend/domain authority slice                   | 5 min  |
+| `docs/backlog/prs/pr-0392-st-37-05-shared-filename-editing-ui-primitives.md`          | Shared UI primitive slice                        | 3 min  |
+| `docs/backlog/prs/pr-0393-st-37-05-mina-filer-rename-and-extension-contract.md`       | Rename and extension preservation slice          | 5 min  |
+| `docs/backlog/prs/pr-0394-st-37-05-audio-transcription-export-naming-adoption.md`     | Transcript app adoption                          | 3 min  |
+| `docs/backlog/prs/pr-0395-st-37-05-exam-converter-export-naming-adoption.md`          | Exam Converter app adoption                      | 3 min  |
+| `docs/backlog/prs/pr-0396-st-37-05-document-converter-save-export-naming-adoption.md` | Document Converter app adoption                  | 3 min  |
 
 **Total estimated time:** ~40 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep ST-37-05 separate from PR-0385 | Filename policy is cross-app and should not widen the Document Converter follow-up | [x] |
-| Separate display names from source references | Names help teachers; source references preserve authority | [x] |
-| Use shared backend/frontend primitives before app adoption | Prevents unnecessary app-specific drift | [x] |
-| Define duplicate-save and rename-collision behavior before app adoption | Prevents route-by-route save/export drift | [x] |
-| Require server-owned final filename proof | Preserves download/save parity and producer-replay trust boundaries | [x] |
-| Centralize output-purpose vocabulary | Keeps user-facing filenames cohesive across apps | [x] |
+| Decision                                                                | Rationale                                                                          | Approve? |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------- |
+| Keep ST-37-05 separate from PR-0385                                     | Filename policy is cross-app and should not widen the Document Converter follow-up | [x]      |
+| Separate display names from source references                           | Names help teachers; source references preserve authority                          | [x]      |
+| Use shared backend/frontend primitives before app adoption              | Prevents unnecessary app-specific drift                                            | [x]      |
+| Define duplicate-save and rename-collision behavior before app adoption | Prevents route-by-route save/export drift                                          | [x]      |
+| Require server-owned final filename proof                               | Preserves download/save parity and producer-replay trust boundaries                | [x]      |
+| Centralize output-purpose vocabulary                                    | Keeps user-facing filenames cohesive across apps                                   | [x]      |
 
 ## Review Checklist
 
@@ -241,13 +241,13 @@ therefore `approved`, matching the repo's review status vocabulary.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-ST-37-05` | Retained a changes-requested review for ST-37-05 and PR-0390 through PR-0396. |
-| 2 | `REV-ST-37-05` | Recorded blocking findings for duplicate/collision semantics, server-owned download filename authority, and canonical purpose labels. |
-| 3 | `REV-ST-37-05` | Re-reviewed the remediation and narrowed remaining changes to Document Converter DOCX purpose-label coverage plus independent approval. |
-| 4 | `REF-file-naming-save-export-protocol-v1`, `PR-0396`, `REV-ST-37-05` | Added the canonical `Word-dokument` DOCX output label and required Document Converter DOCX naming proof. |
-| 5 | `REV-ST-37-05` | Flipped retained review status to `approved` after explicit owner acceptance. |
+| Change | Artifact                                                             | Description                                                                                                                             |
+| ------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-ST-37-05`                                                       | Retained a changes-requested review for ST-37-05 and PR-0390 through PR-0396.                                                           |
+| 2      | `REV-ST-37-05`                                                       | Recorded blocking findings for duplicate/collision semantics, server-owned download filename authority, and canonical purpose labels.   |
+| 3      | `REV-ST-37-05`                                                       | Re-reviewed the remediation and narrowed remaining changes to Document Converter DOCX purpose-label coverage plus independent approval. |
+| 4      | `REF-file-naming-save-export-protocol-v1`, `PR-0396`, `REV-ST-37-05` | Added the canonical `Word-dokument` DOCX output label and required Document Converter DOCX naming proof.                                |
+| 5      | `REV-ST-37-05`                                                       | Flipped retained review status to `approved` after explicit owner acceptance.                                                           |
 
 ## Verification
 

@@ -45,23 +45,23 @@ both `localhost` and `127.0.0.1` lanes.
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0283-st-28-04-local-auth-edge-bootstrap-preflight.md` | Consumer contract, gates, proof shape | 15 min |
-| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Parent story status and dependency framing | 5 min |
-| HuleEdu `TASK-0325` | Local Gateway lane prerequisite | 5 min |
-| HuleEdu `TASK-0380` | Provider-owned bootstrap seed-scope authority | 5 min |
+| File                                                                                          | Focus                                         | Time   |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0283-st-28-04-local-auth-edge-bootstrap-preflight.md`                    | Consumer contract, gates, proof shape         | 15 min |
+| `docs/backlog/stories/story-28-04-cross-app-auth-cutover-smoke-and-operator-runbook-proof.md` | Parent story status and dependency framing    | 5 min  |
+| HuleEdu `TASK-0325`                                                                           | Local Gateway lane prerequisite               | 5 min  |
+| HuleEdu `TASK-0380`                                                                           | Provider-owned bootstrap seed-scope authority | 5 min  |
 
 **Total estimated time:** ~30 minutes
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep HuleEdu as credential authority | Prevents reviving Skriptoteket-local browser passwords. | [x] |
-| Keep Skriptoteket as authorization/projection authority | Local RBAC remains app-owned without credential verification shortcuts. | [x] |
-| Extend `PR-0254` proof instead of adding a parallel browser proof | Reuses the retained auth-cutover proof lane and avoids duplicate semantics. | [x] |
-| Consume HuleEdu `TASK-0380` provider seed evidence | `TASK-0325` proves Gateway lane shape, not the `.env` account seed. | [x] |
+| Decision                                                          | Rationale                                                                   | Approve? |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------- | -------- |
+| Keep HuleEdu as credential authority                              | Prevents reviving Skriptoteket-local browser passwords.                     | [x]      |
+| Keep Skriptoteket as authorization/projection authority           | Local RBAC remains app-owned without credential verification shortcuts.     | [x]      |
+| Extend `PR-0254` proof instead of adding a parallel browser proof | Reuses the retained auth-cutover proof lane and avoids duplicate semantics. | [x]      |
+| Consume HuleEdu `TASK-0380` provider seed evidence                | `TASK-0325` proves Gateway lane shape, not the `.env` account seed.         | [x]      |
 
 ## Review Checklist
 
@@ -153,9 +153,9 @@ guardrails:
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `PR-0283` | Changed status from `ready` to `blocked`, added `HuleEdu TASK-0380` and `REV-PR-0283`, and named the provider seed-scope commands/evidence consumed by Skriptoteket. |
-| 2 | `REV-PR-0283` | Created retained review gate with `changes_requested` status. |
-| 3 | `REV-PR-0283` | Recorded the re-review decision: no new findings; blocked contract shape approved while implementation remains gated on HuleEdu `TASK-0380` evidence. |
-| 4 | `PR-0283` / `REV-PR-0283` | Unblocked the PR after HuleEdu `TASK-0380` close-out and approved the retained review for implementation. |
+| Change | Artifact                  | Description                                                                                                                                                          |
+| ------ | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `PR-0283`                 | Changed status from `ready` to `blocked`, added `HuleEdu TASK-0380` and `REV-PR-0283`, and named the provider seed-scope commands/evidence consumed by Skriptoteket. |
+| 2      | `REV-PR-0283`             | Created retained review gate with `changes_requested` status.                                                                                                        |
+| 3      | `REV-PR-0283`             | Recorded the re-review decision: no new findings; blocked contract shape approved while implementation remains gated on HuleEdu `TASK-0380` evidence.                |
+| 4      | `PR-0283` / `REV-PR-0283` | Unblocked the PR after HuleEdu `TASK-0380` close-out and approved the retained review for implementation.                                                            |

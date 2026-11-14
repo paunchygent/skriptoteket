@@ -391,16 +391,16 @@ repeat-commit idempotency claim honest.
 - [ ] Add this PR document and update `docs/index.md`
 - [ ] Add typed frontend guest-upgrade DTOs and API client
 - [ ] Add authenticated Klassrumskartan guest-upgrade prompt orchestration that gates planner
-      bootstrap while the decision is unresolved
+  bootstrap while the decision is unresolved
 - [ ] Add authenticated guest-upgrade API route with `preview|commit`
 - [ ] Add application-layer guest-upgrade contracts and handler
 - [ ] Add server-side recomputation of snapshot content hash and per-entity fingerprints before
-      dedupe/import decisions
+  dedupe/import decisions
 - [ ] Add one narrow durable draft import identity / lookup seam for historical draft idempotency
 - [ ] Add Dishka wiring for the guest-upgrade handler
 - [ ] Preserve and consume `task_entry_classroom_selection_mode` in the import path
 - [ ] Add targeted backend tests for preview, commit, idempotency, conflict policy, auth/CSRF
-      negatives, and registration-without-session no-op behavior
+  negatives, and registration-without-session no-op behavior
 - [ ] Add targeted frontend tests for prompt behavior and local-clear policy
 - [ ] Run targeted verification and record it in `.codex/handoff.md`
 - [ ] Run independent `skriptoteket_reviewer` on the implemented slice before close-out

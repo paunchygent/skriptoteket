@@ -83,6 +83,7 @@ src/skriptoteket/web/static/js/app.js                  # ResizeObserver (done)
 **Ursprunglig rapport:** Frontend-expert rapporterade att `.huleedu-toast-container` i `components.css` saknade closing brace `}`.
 
 **Verifikation:** Vid granskning av faktiska filen konstaterades att:
+
 - CSS-filen har 58 opening braces och 58 closing braces (balanserad)
 - `.huleedu-toast-container`-blocket är korrekt avslutat på rad 271 (`src/skriptoteket/web/static/css/app/components.css:271`)
 - `.huleedu-toast`-regeln börjar korrekt på rad 273 (`src/skriptoteket/web/static/css/app/components.css:273`)
@@ -90,6 +91,7 @@ src/skriptoteket/web/static/js/app.js                  # ResizeObserver (done)
 **Slutsats:** Buggen existerar INTE. Repomix-paketet hade troligen trunkerat eller korrumperat innehållet vid export. Frontend-expertens analys baserades på felaktig data.
 
 **Åtgärd:** Markerad som icke-applicerbar. Nästa session ska fokusera på de verkliga problemen:
+
 - Panel-bredd inkonsistens
 - Editor-layout bräcklighet
 - dvh fallback
@@ -123,12 +125,14 @@ Följande alternativ utvärderades av frontend-expert och avvisades:
 Stödjer: Safari 15+, Chrome 90+, Firefox 90+
 
 **Säkra moderna features:**
+
 - `gap` i flexbox
 - `aspect-ratio`
 - `clamp()`
 - Logical properties (`margin-inline`, `padding-block`)
 
 **Undvik (saknar support):**
+
 - `@layer`
 - Container Queries
 - `:has()` selector

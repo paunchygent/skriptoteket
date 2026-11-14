@@ -4,22 +4,18 @@ id: TASK-SKRIPT-REP-0033
 title: Adopt the shared design-system sync command
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-23'
 status: canceled
 dependencies:
-- TASK-SKILL-REP-0171
+  - TASK-SKILL-REP-0171
 closeout_review:
   record: inline
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- Running repository-governance-frontend-catalog design-system sync against Skriptoteket
-  copies the pinned huleedu-integrated package into the paths named in design-system-map.json
-  (the tokens export into src/skriptoteket/web/static/css/huleedu-design-tokens.css,
-  unused exports listed as not adopted), and Skriptoteket's named design-system validate
-  command passes; Skriptoteket docs name the sync command instead of hand copying.
+  - Running repository-governance-frontend-catalog design-system sync against Skriptoteket copies the pinned huleedu-integrated package into the paths named in design-system-map.json (the tokens export into src/skriptoteket/web/static/css/huleedu-design-tokens.css, unused exports listed as not adopted), and Skriptoteket's named design-system validate command passes; Skriptoteket docs name the sync command instead of hand copying.
 backlog_document_profile: contract-derived
 ---
 
@@ -46,6 +42,6 @@ See TASK-SKRIPT-40-01-01.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                     |
-| --- | --------------------------------------------------------- |
+| ID  | Decided contract term                                        |
+| --- | ------------------------------------------------------------ |
 | D1  | This task is canceled and continues as TASK-SKRIPT-40-01-01. |

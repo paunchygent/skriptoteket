@@ -4,14 +4,14 @@ id: ADR-SKRIPT-0004
 title: 'Architecture: DDD + Clean Architecture + DI (async, SRP)'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: accepted
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0004
+  - ADR-0004
 ---
 
 ## Context

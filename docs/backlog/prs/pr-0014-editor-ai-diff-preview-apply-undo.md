@@ -73,36 +73,42 @@ and provides a reliable undo path when no additional edits have occurred.
 
 ## Implementation plan
 
-1) **Composable + state**
+1. **Composable + state**
+
    - Add `useEditorEditOps` with proposal state, stale detection (SHA-256), apply/undo helpers, and error states.
    - Keep `useEditorChat` focused on streaming text (no proposal logic).
    - Wire a chat drawer CTA that calls `/api/v1/editor/edit-ops` (non-streaming) without replacing the
      existing `/chat` SSE path.
 
-2) **Pure ops application helper**
+2. **Pure ops application helper**
+
    - Implement `applyEditOpsToVirtualFiles(virtualFiles, ops, selection, cursor)`:
      - validates op schema and target resolution
      - returns `{ nextFiles, errors }`
    - Use it for both preview and apply to avoid divergence.
 
-3) **Preview UI**
+3. **Preview UI**
+
    - Add a “Proposed changes” panel in the main editor column.
    - Reuse diff viewer with per-file tabs for targeted files.
    - Show stale/invalid warnings and a Regenerate CTA when apply is blocked.
 
-4) **Apply + undo**
+4. **Apply + undo**
+
    - On apply:
      - create checkpoint (“Före AI-ändring”)
      - apply changes atomically to all virtual files
    - Undo available only if no subsequent edits; otherwise disable and point to checkpoints.
 
-5) **Guardrails**
+5. **Guardrails**
+
    - Block apply if:
      - draft lock is held by another user
      - fingerprint mismatch on any targeted file
    - Show “Regenerate” CTA when stale/invalid.
 
-6) **Session rule**
+6. **Session rule**
+
    - Run live UI check (backend + Vite) and record in `.codex/handoff.md`.
 
 ## Test plan

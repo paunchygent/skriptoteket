@@ -39,12 +39,12 @@ Uses existing HuleEdu design tokens and Tailwind theme:
 
 ### States
 
-| State   | Trigger                            | Action                      |
-| ------- | ---------------------------------- | --------------------------- |
-| Loading | Page loads, API called             | Show spinner                |
-| Success | 200 OK                             | Show message, auto-redirect |
-| Expired | 400 + VERIFICATION_TOKEN_EXPIRED   | Show resend button          |
-| Invalid | 400 + INVALID_VERIFICATION_TOKEN   | Show back link              |
+| State   | Trigger                          | Action                      |
+| ------- | -------------------------------- | --------------------------- |
+| Loading | Page loads, API called           | Show spinner                |
+| Success | 200 OK                           | Show message, auto-redirect |
+| Expired | 400 + VERIFICATION_TOKEN_EXPIRED | Show resend button          |
+| Invalid | 400 + INVALID_VERIFICATION_TOKEN | Show back link              |
 
 ### Mockups
 

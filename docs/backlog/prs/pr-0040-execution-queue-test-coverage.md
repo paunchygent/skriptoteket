@@ -32,7 +32,7 @@ processing behavior — aligned with the repo testing rules:
 
 - Mock protocols; avoid patching implementation details.
 - Focus on behavior and invariants.
-- Keep test files small (<400–500 LOC).
+- Keep test files small (\<400–500 LOC).
 
 ## Non-goals
 
@@ -43,15 +43,18 @@ processing behavior — aligned with the repo testing rules:
 ## Implementation plan
 
 0. Ensure queued-run timestamps are not overwritten by the database:
+
    - `tool_runs.started_at` must be nullable **and** have no `DEFAULT now()`; queued runs write `NULL` until claimed.
    - Migration: `migrations/versions/0028_tool_runs_started_at_drop_default.py`
    - Docker-marked idempotency test: `tests/integration/test_migration_0028_tool_runs_started_at_drop_default_idempotent.py`
 
 1. Add domain unit tests for `ToolRunJob` state-machine helpers:
+
    - New file: `tests/unit/domain/scripting/test_tool_run_jobs.py`
    - Cover: `enqueue_job`, `mark_job_started`, `mark_job_finished`, `requeue_job_with_backoff`, validation errors.
 
 2. Add application unit tests for queue-enabled enqueue path:
+
    - New file: `tests/unit/application/scripting/handlers/test_execute_tool_version_queueing.py`
    - Use protocol mocks (`ToolRunRepositoryProtocol`, `ToolRunJobRepositoryProtocol`, `RunInputStorageProtocol`,
      `ToolRunnerProtocol`).
@@ -61,6 +64,7 @@ processing behavior — aligned with the repo testing rules:
      - Ensure sandbox/action/override cases do not enqueue (fallback to existing pipeline).
 
 3. Add integration tests for Postgres queue repository semantics:
+
    - New file: `tests/integration/infrastructure/repositories/test_tool_run_job_repository.py`
    - Use existing integration DB fixture patterns (similar to `test_tool_run_repository.py`).
    - Cover:
@@ -71,6 +75,7 @@ processing behavior — aligned with the repo testing rules:
      - `clear_stale_leases` clears `locked_by/locked_until` for stale leased running jobs and returns a count.
 
 4. Add worker job processor unit tests using protocol fakes (no DB):
+
    - New file: `tests/unit/workers/test_execution_queue_job_processor.py`
    - Create small in-memory fake implementations of:
      - `ToolRunRepositoryProtocol`, `ToolRunJobRepositoryProtocol`, `ToolVersionRepositoryProtocol`,
@@ -84,6 +89,7 @@ processing behavior — aligned with the repo testing rules:
      - Non-adoption path: runner success ⇒ finalize terminal + `run_inputs.delete` called.
 
 5. Extend existing Docker runner unit tests to cover adoption logic:
+
    - Update file: `tests/unit/infrastructure/runner/test_docker_runner.py`
    - Cover `DockerToolRunner.try_adopt`:
      - No matching containers ⇒ returns `None`.
@@ -92,6 +98,7 @@ processing behavior — aligned with the repo testing rules:
      - Timeout path ⇒ returns `TIMED_OUT` and archives output safely.
 
 6. Add unit tests for run input storage:
+
    - New file: `tests/unit/infrastructure/runner/test_run_input_storage.py`
    - Cover `LocalRunInputStorage.store/get/delete` roundtrip with `tmp_path`.
 

@@ -51,27 +51,27 @@ Keep the cleanup narrow and fail-closed:
 
 ## Artifacts to Review
 
-| File | Focus | Time |
-|------|-------|------|
-| `docs/backlog/prs/pr-0389-st-37-04-shared-auth-local-proof-path-cleanup.md` | Governing scope, acceptance criteria, claimed validation, stop conditions | 20 min |
-| `.codex/handoff.md` | Active worktree scope, local proof guidance, risk wording | 10 min |
-| `.codex/skills/skriptoteket-backend-dev/SKILL.md` | Repo-local skill command surfaces for projection and preflight | 10 min |
-| `docs/runbooks/runbook-user-management.md` | Operator-facing local bootstrap and preflight commands | 15 min |
-| `scripts/playwright_pr_0254_auth_cutover.py` | Active proof default, fail-closed rejection path, CLI contract | 20 min |
-| `tests/unit/application/auth/test_pr_0254_auth_cutover_config.py` | Behavioral proof for default path and unsupported-name rejection | 15 min |
-| `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md` and `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md` | Historical mention framing and stale-command cleanup | 15 min |
-| `docs/index.md` | Docs-as-code discoverability for the new PR slice | 5 min |
+| File                                                                                                                                                          | Focus                                                                     | Time   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------ |
+| `docs/backlog/prs/pr-0389-st-37-04-shared-auth-local-proof-path-cleanup.md`                                                                                   | Governing scope, acceptance criteria, claimed validation, stop conditions | 20 min |
+| `.codex/handoff.md`                                                                                                                                           | Active worktree scope, local proof guidance, risk wording                 | 10 min |
+| `.codex/skills/skriptoteket-backend-dev/SKILL.md`                                                                                                             | Repo-local skill command surfaces for projection and preflight            | 10 min |
+| `docs/runbooks/runbook-user-management.md`                                                                                                                    | Operator-facing local bootstrap and preflight commands                    | 15 min |
+| `scripts/playwright_pr_0254_auth_cutover.py`                                                                                                                  | Active proof default, fail-closed rejection path, CLI contract            | 20 min |
+| `tests/unit/application/auth/test_pr_0254_auth_cutover_config.py`                                                                                             | Behavioral proof for default path and unsupported-name rejection          | 15 min |
+| `docs/backlog/prs/pr-0364-st-37-03-authenticated-home-work-apps-surface.md` and `docs/backlog/reviews/review-pr-0364-authenticated-home-work-apps-surface.md` | Historical mention framing and stale-command cleanup                      | 15 min |
+| `docs/index.md`                                                                                                                                               | Docs-as-code discoverability for the new PR slice                         | 5 min  |
 
 **Total estimated time:** ~1.8 hours
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|----------|-----------|----------|
-| Keep `local-shared-verify-export.json` as the only active repo-scoped local proof export path. | Removes operator ambiguity and matches the governed PR-0389 cleanup contract. | [x] |
-| Reject unsupported HuleEdu subject-export names in the active PR-0254 proof script instead of silently accepting them. | Fails closed on mismatched local Identity DB lanes and prevents misleading local auth proof. | [x] |
-| Remove obsolete export identifiers from active tests and retained guidance. | Avoids keeping retired paths alive as operator concepts while preserving reviewable behavior. | [x] |
-| Close the shared `local-devops` residual outside this checkout. | The user requested skill cleanup as part of the same hygiene pass. | [x] |
+| Decision                                                                                                               | Rationale                                                                                     | Approve? |
+| ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------- |
+| Keep `local-shared-verify-export.json` as the only active repo-scoped local proof export path.                         | Removes operator ambiguity and matches the governed PR-0389 cleanup contract.                 | [x]      |
+| Reject unsupported HuleEdu subject-export names in the active PR-0254 proof script instead of silently accepting them. | Fails closed on mismatched local Identity DB lanes and prevents misleading local auth proof.  | [x]      |
+| Remove obsolete export identifiers from active tests and retained guidance.                                            | Avoids keeping retired paths alive as operator concepts while preserving reviewable behavior. | [x]      |
+| Close the shared `local-devops` residual outside this checkout.                                                        | The user requested skill cleanup as part of the same hygiene pass.                            | [x]      |
 
 ## Review Checklist
 
@@ -127,10 +127,10 @@ None.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|--------|----------|-------------|
-| 1 | `REV-PR-0389` | Created the retained independent review record for PR-0389. |
-| 2 | `REV-PR-0389` | Recorded the repo-scope audit, validation evidence, residual external risk, and approved verdict. |
+| Change | Artifact      | Description                                                                                       |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0389` | Created the retained independent review record for PR-0389.                                       |
+| 2      | `REV-PR-0389` | Recorded the repo-scope audit, validation evidence, residual external risk, and approved verdict. |
 
 ## Addendum: Shared Skill Cleanup Narrow Pass
 

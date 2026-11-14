@@ -43,30 +43,30 @@ history-backed result state instead of the live project-preview branch.
 
 ## Artifacts to Review
 
-| File | Focus |
-|---|---|
-| `docs/backlog/prs/pr-0397-st-37-05-document-converter-file-operations-layout-remediation.md` | Governing scope, acceptance criteria, test plan |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue` | Shared three-column workspace composition |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSourceIntake.vue` | Source intake extraction and single-source-of-truth boundary |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultActions.vue` | Shared file-operations ownership and drift control |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.vue` | Preview-only right-column behavior |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileControls.vue` | Single-file operations-column behavior |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterWorkspace.css` | Column geometry and responsive ownership |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterPreview.css` | Preview and result-action styles split out of workspace geometry |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts` | Project layout ownership proof |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts` | Route behavioral proof |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts` | Single-file behavioral proof |
-| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterArtifactSelector.vue` | Generated-output selector ownership |
-| `.artifacts/pr-0397-layout-screenshots/20260627T104912Z/manifest.redacted.json` | Retained layout screenshot matrix |
-| `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json` | Retained authenticated browser proof coverage |
+| File                                                                                                    | Focus                                                            |
+| ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `docs/backlog/prs/pr-0397-st-37-05-document-converter-file-operations-layout-remediation.md`            | Governing scope, acceptance criteria, test plan                  |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.vue`                | Shared three-column workspace composition                        |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSourceIntake.vue`        | Source intake extraction and single-source-of-truth boundary     |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultActions.vue`       | Shared file-operations ownership and drift control               |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterResultPanel.vue`         | Preview-only right-column behavior                               |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileControls.vue`  | Single-file operations-column behavior                           |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterWorkspace.css`           | Column geometry and responsive ownership                         |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/documentConverterPreview.css`             | Preview and result-action styles split out of workspace geometry |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterLayoutOwnership.spec.ts` | Project layout ownership proof                                   |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterView.spec.ts`            | Route behavioral proof                                           |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterSingleFileView.spec.ts`  | Single-file behavioral proof                                     |
+| `frontend/apps/skriptoteket/src/views/apps/document-converter/DocumentConverterArtifactSelector.vue`    | Generated-output selector ownership                              |
+| `.artifacts/pr-0397-layout-screenshots/20260627T104912Z/manifest.redacted.json`                         | Retained layout screenshot matrix                                |
+| `.artifacts/authenticated-home-work-apps/20260627T104130Z/manifest.redacted.json`                       | Retained authenticated browser proof coverage                    |
 
 ## Key Decisions
 
-| Decision | Rationale | Approve? |
-|---|---|---|
-| Keep the shared file-operations surface centralized in one component | Controls duplication and layout drift between modes | [x] |
-| Treat preview-only ownership as a behavioral contract, not just DOM structure | The user-approved issue was visual/user-facing, not internal | [x] |
-| Require proof for `Filkonvertering` success state before approval | That mode is explicitly in scope and uses a different result path | [x] |
+| Decision                                                                      | Rationale                                                         | Approve? |
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------- | -------- |
+| Keep the shared file-operations surface centralized in one component          | Controls duplication and layout drift between modes               | [x]      |
+| Treat preview-only ownership as a behavioral contract, not just DOM structure | The user-approved issue was visual/user-facing, not internal      | [x]      |
+| Require proof for `Filkonvertering` success state before approval             | That mode is explicitly in scope and uses a different result path | [x]      |
 
 ## Review Checklist
 
@@ -219,14 +219,14 @@ resolved; `pdm run handoff-validate` now passes.
 
 ## Changes Made
 
-| Change | Artifact | Description |
-|---|---|---|
-| 1 | `REV-PR-0397` | Re-reviewed the current PR-0397 working-tree slice against the retained blocker only. |
-| 2 | `REV-PR-0397` | Confirmed the strengthened succeeded-state single-file spec now proves the shared three-column contract after success. |
-| 3 | `REV-PR-0397` | Marked the decision as `approved` and recorded the remaining live-proof note as residual risk rather than a blocker. |
-| 4 | `REV-PR-0397` | Second review pass confirmed the same approval still holds on the latest working tree after Harvey's follow-up. |
-| 5 | `REV-PR-0397` | Third review pass confirmed the cleanup extraction, CSS split, and spec split preserve the approved PR-0397 layout contract. |
-| 6 | `REV-PR-0397` | Final visual-polish pass confirmed the CSS spacing, full-width action rows, viewport height adjustment, and retained screenshots preserve the approved layout contract. |
-| 7 | `REV-PR-0397` | Changed the decision to `changes_requested` because `pdm run handoff-validate` fails on the current tree line budget. |
-| 8 | `REV-PR-0397` | Final corrected-contract pass approved the current tree after artifact selection moved to operations, preview became preview-only, stale eyebrow copy was removed, and handoff validation passed. |
-| 9 | `REV-PR-0397` | Final typography pass approved the compact selected-source summary demotion and shared text-token cleanup. |
+| Change | Artifact      | Description                                                                                                                                                                                       |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1      | `REV-PR-0397` | Re-reviewed the current PR-0397 working-tree slice against the retained blocker only.                                                                                                             |
+| 2      | `REV-PR-0397` | Confirmed the strengthened succeeded-state single-file spec now proves the shared three-column contract after success.                                                                            |
+| 3      | `REV-PR-0397` | Marked the decision as `approved` and recorded the remaining live-proof note as residual risk rather than a blocker.                                                                              |
+| 4      | `REV-PR-0397` | Second review pass confirmed the same approval still holds on the latest working tree after Harvey's follow-up.                                                                                   |
+| 5      | `REV-PR-0397` | Third review pass confirmed the cleanup extraction, CSS split, and spec split preserve the approved PR-0397 layout contract.                                                                      |
+| 6      | `REV-PR-0397` | Final visual-polish pass confirmed the CSS spacing, full-width action rows, viewport height adjustment, and retained screenshots preserve the approved layout contract.                           |
+| 7      | `REV-PR-0397` | Changed the decision to `changes_requested` because `pdm run handoff-validate` fails on the current tree line budget.                                                                             |
+| 8      | `REV-PR-0397` | Final corrected-contract pass approved the current tree after artifact selection moved to operations, preview became preview-only, stale eyebrow copy was removed, and handoff validation passed. |
+| 9      | `REV-PR-0397` | Final typography pass approved the compact selected-source summary demotion and shared text-token cleanup.                                                                                        |

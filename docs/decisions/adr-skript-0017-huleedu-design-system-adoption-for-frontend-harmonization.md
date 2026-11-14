@@ -4,17 +4,18 @@ id: ADR-SKRIPT-0017
 title: HuleEdu design system adoption for frontend harmonization
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: proposed
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0017
+  - ADR-0017
 ---
 
 ## Context
+
 Skriptoteket will be integrated with HuleEdu, the main EdTech platform. The current Skriptoteket frontend uses minimal inline CSS with system fonts and lacks a cohesive design language. The planned HTMX UX enhancements (ref-htmx-ux-enhancement-plan.md) propose creating a generic CSS design system.
 
 For seamless future integration with HuleEdu, Skriptoteket should adopt the HuleEdu design system instead of creating an independent design language. This ensures:
@@ -25,6 +26,7 @@ For seamless future integration with HuleEdu, Skriptoteket should adopt the Hule
 - Brand coherence for end users
 
 ## Decision
+
 Adopt the HuleEdu design system for all Skriptoteket frontend styling:
 
 ### Design Tokens
@@ -62,9 +64,11 @@ Adopt the HuleEdu design system for all Skriptoteket frontend styling:
 - All components use `huleedu-*` prefixed CSS classes
 
 ## Non-Decisions
+
 The source record did not define a separate section for this package heading.
 
 ## Consequences
+
 **Benefits**:
 
 - Immediate visual coherence with HuleEdu product family
