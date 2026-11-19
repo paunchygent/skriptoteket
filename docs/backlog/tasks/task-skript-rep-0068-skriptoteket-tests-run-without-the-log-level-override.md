@@ -28,7 +28,7 @@ block has no place for it. pytest's `log_level` is unset by default, so
 capture follows the root logger's level, WARNING by default. This task gives
 each test that asserts on INFO records `caplog.set_level(logging.INFO)`, then
 removes `--log-level=INFO` from the producer arguments. The work is mechanical
-and runs as cheap junior or refactoring-specialist units.
+and runs as junior or capable-junior units.
 
 ## Contract Inputs
 
