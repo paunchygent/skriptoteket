@@ -21,7 +21,7 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 from playwright.sync_api import Locator, Page, Route, expect, sync_playwright
 from pydantic import JsonValue
@@ -30,6 +30,7 @@ from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import focus_workspace_mode, wait_for_app_heading
 from scripts._playwright_config import get_config
 from scripts._playwright_huleedu_auth import temporary_vite_server
+from scripts._playwright_json import json_array, json_int, json_object, json_str
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0303-public-guest-overview-distribution")
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
@@ -60,18 +61,15 @@ def _first_visible(page: Page, selector: str) -> Locator:
 class _SelectOption(TypedDict):
     """Option keys read from the browser select element."""
 
-    value: JsonValue
-    label: JsonValue
+    value: str
+    label: str
 
 
 def _parse_select_options(value: JsonValue) -> list[_SelectOption]:
-    if not isinstance(value, list):
-        raise TypeError(f"Expected select options array, got {type(value).__name__}.")
     options: list[_SelectOption] = []
-    for item in value:
-        if not isinstance(item, dict):
-            raise TypeError(f"Expected select option object, got {type(item).__name__}.")
-        options.append({"value": item["value"], "label": item["label"]})
+    for item in json_array(value, label="select options"):
+        obj = json_object(item, label="select option")
+        options.append({"value": str(obj["value"]), "label": json_str(obj, "label")})
     return options
 
 
@@ -92,15 +90,8 @@ def _wait_for_select_option(page: Page, *, selector: str, label: str) -> str:
             )
             options = _parse_select_options(options_value)
             for option in options:
-                if not option["value"]:
-                    continue
-                option_label = option["label"]
-                if not isinstance(option_label, (str, list, dict)):
-                    raise TypeError(
-                        f"argument of type {type(option_label).__name__!r} is not iterable"
-                    )
-                if label in option_label:
-                    return str(option["value"])
+                if option["value"] and label in option["label"]:
+                    return option["value"]
         page.wait_for_timeout(150)
     raise AssertionError(f"{label!r} did not appear in {selector!r}.")
 
@@ -171,111 +162,91 @@ def _select_overview_assets(page: Page, *, roster_name: str, template_name: str)
     expect(template_select).to_have_value(template_value)
 
 
-def _json_object(value: JsonValue, *, label: str) -> dict[str, JsonValue]:
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected {label} to be a JSON object, got {type(value).__name__}.")
-    return value
-
-
 class _GroupingDraftSnapshot(TypedDict):
     """`grouping_draft` snapshot keys read by the parity assertions."""
 
-    roster_local_id: JsonValue
-    template_local_id: JsonValue
-    revision: JsonValue
+    roster_local_id: str
+    template_local_id: str | None
+    revision: int
 
 
 class _SnapshotAsset(TypedDict):
     """Roster/classroom asset keys read by the parity assertions."""
 
-    local_id: JsonValue
-    name: JsonValue
-
-
-class _UiStateSnapshot(TypedDict):
-    """`ui_state` keys read by the parity assertions."""
-
-    current_screen: JsonValue
+    local_id: str
+    name: str
 
 
 class _RequestSnapshot(TypedDict):
     """Request `snapshot` keys this proof reads."""
 
-    grouping_draft: JsonValue
+    grouping_draft: _GroupingDraftSnapshot | None
     rosters: list[_SnapshotAsset]
     templates: list[_SnapshotAsset]
-    ui_state: _UiStateSnapshot
+    current_screen: str
 
 
 class _HelperRequest(TypedDict):
-    """Public helper request keys this proof reads."""
+    """Public helper request keys the parity assertions read."""
 
     snapshot: _RequestSnapshot
-    expected_revision: JsonValue
-    revoke_secret: NotRequired[JsonValue]
+    expected_revision: int
 
 
 @dataclass(frozen=True)
 class _CapturedHelperRequest:
-    """Captured helper request plus the share/export kind parsed from the URL."""
+    """Captured helper request body plus the share/export kind parsed from the URL.
 
-    payload: _HelperRequest
+    The body stays raw until the parity assertions parse it, so intercepting a
+    request never fails on fields only those assertions read.
+    """
+
+    payload: dict[str, JsonValue]
     kind: str
 
 
-def _parse_grouping_draft(value: JsonValue) -> _GroupingDraftSnapshot:
-    obj = _json_object(value, label="grouping_draft")
+def _parse_grouping_draft(value: JsonValue) -> _GroupingDraftSnapshot | None:
+    if not value:
+        return None
+    obj = json_object(value, label="grouping_draft")
+    template_local_id = obj["template_local_id"]
+    if template_local_id is not None:
+        template_local_id = json_str(obj, "template_local_id")
     return {
-        "roster_local_id": obj["roster_local_id"],
-        "template_local_id": obj["template_local_id"],
-        "revision": obj["revision"],
+        "roster_local_id": json_str(obj, "roster_local_id"),
+        "template_local_id": template_local_id,
+        "revision": json_int(obj, "revision"),
     }
 
 
 def _parse_snapshot_assets(value: JsonValue, *, label: str) -> list[_SnapshotAsset]:
-    if not isinstance(value, list):
-        raise TypeError(f"Expected {label} to be a JSON array, got {type(value).__name__}.")
     assets: list[_SnapshotAsset] = []
-    for item in value:
-        if not isinstance(item, dict):
-            raise TypeError(
-                f"Expected {label} entries to be JSON objects, got {type(item).__name__}."
-            )
-        assets.append({"local_id": item["local_id"], "name": item["name"]})
+    for item in json_array(value, label=label):
+        obj = json_object(item, label=f"{label} entry")
+        assets.append({"local_id": json_str(obj, "local_id"), "name": json_str(obj, "name")})
     return assets
 
 
-def _parse_ui_state(value: JsonValue) -> _UiStateSnapshot:
-    obj = _json_object(value, label="ui_state")
-    return {"current_screen": obj["current_screen"]}
-
-
-def _parse_snapshot(value: JsonValue) -> _RequestSnapshot:
-    obj = _json_object(value, label="request snapshot")
+def _parse_helper_request(obj: dict[str, JsonValue]) -> _HelperRequest:
+    snapshot = json_object(obj["snapshot"], label="request snapshot")
     return {
-        "grouping_draft": obj["grouping_draft"],
-        "rosters": _parse_snapshot_assets(obj["rosters"], label="rosters"),
-        "templates": _parse_snapshot_assets(obj["templates"], label="templates"),
-        "ui_state": _parse_ui_state(obj["ui_state"]),
+        "snapshot": {
+            "grouping_draft": _parse_grouping_draft(snapshot["grouping_draft"]),
+            "rosters": _parse_snapshot_assets(snapshot["rosters"], label="rosters"),
+            "templates": _parse_snapshot_assets(snapshot["templates"], label="templates"),
+            "current_screen": json_str(
+                json_object(snapshot["ui_state"], label="ui_state"), "current_screen"
+            ),
+        },
+        "expected_revision": json_int(obj, "expected_revision"),
     }
 
 
-def _parse_helper_request(value: JsonValue) -> _HelperRequest:
-    obj = _json_object(value, label="helper request payload")
-    request: _HelperRequest = {
-        "snapshot": _parse_snapshot(obj["snapshot"]),
-        "expected_revision": obj["expected_revision"],
-    }
-    if "revoke_secret" in obj:
-        request["revoke_secret"] = obj["revoke_secret"]
-    return request
-
-
-def _request_payload(route: Route) -> _HelperRequest:
+def _request_payload(route: Route) -> dict[str, JsonValue]:
     payload: JsonValue = route.request.post_data_json
     if not isinstance(payload, dict):
         payload = json.loads(route.request.post_data or "{}")
-    return _parse_helper_request(payload)
+    return json_object(payload, label="helper request payload")
 
 
 def _install_public_distribution_routes(
@@ -385,12 +356,11 @@ def _assert_snapshot_targets(
 
     if request.kind != "grouping":
         raise AssertionError(f"Expected grouping helper request, got {request.kind!r}.")
-    payload = request.payload
+    payload = _parse_helper_request(request.payload)
     snapshot = payload["snapshot"]
-    draft = snapshot["grouping_draft"]
-    if not draft:
+    grouping_draft = snapshot["grouping_draft"]
+    if grouping_draft is None:
         raise AssertionError("Expected captured request snapshot to include a grouping draft.")
-    grouping_draft = _parse_grouping_draft(draft)
     roster = next(
         entry
         for entry in snapshot["rosters"]
@@ -407,11 +377,10 @@ def _assert_snapshot_targets(
         raise AssertionError(
             f"Expected selected classroom {template_name!r}, got {template['name']!r}."
         )
-    ui_state = snapshot["ui_state"]
-    if ui_state["current_screen"] != "class-workspace":
+    if snapshot["current_screen"] != "class-workspace":
         raise AssertionError(
             f"Expected overview request to preserve class-workspace screen, got "
-            f"{ui_state['current_screen']!r}."
+            f"{snapshot['current_screen']!r}."
         )
     if payload["expected_revision"] != grouping_draft["revision"]:
         raise AssertionError(

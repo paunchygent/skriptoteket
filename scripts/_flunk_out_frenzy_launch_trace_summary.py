@@ -19,9 +19,26 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from json import JSONDecodeError
 from pathlib import Path
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 from pydantic import JsonValue
+
+from scripts._flunk_out_frenzy_launch_trace_drift import (
+    CaseDrift,
+    build_case_drift,
+    evaluate_numeric_drift,
+    evaluate_optional_step_drift,
+)
+from scripts._flunk_out_frenzy_launch_trace_payload import (
+    BaselineMatrixRecord,
+    BaselinePayload,
+    MatrixSummaryRecord,
+    Number,
+    TraceStep,
+    has_trace_top_level_keys,
+    parse_baseline_payload,
+    parse_trace_payload,
+)
 
 DEFAULT_BASELINE_ARTIFACT_PATH = Path(
     "frontend/apps/skriptoteket/.artifacts/flunk-out-frenzy-launch-to-drop/"
@@ -41,112 +58,30 @@ BASELINE_MISSING = "missing"
 BASELINE_UNREADABLE = "unreadable"
 BASELINE_INCOMPATIBLE = "schema_incompatible"
 
-STEP_DELTA_ATTENTION_THRESHOLD = 2
-STEP_DELTA_BLOCKED_THRESHOLD = 5
-PERCENT_DRIFT_ATTENTION_THRESHOLD = 0.05
-PERCENT_DRIFT_BLOCKED_THRESHOLD = 0.15
-
-
-ScalarKey = str | int | float | bool | None
-"""Hashable JSON scalars; `case_id` flows through trace/matrix dict lookups."""
-
-
-class TraceStep(TypedDict):
-    """One canonical launch-trace step row; only the keys this summary reads."""
-
-    phase: JsonValue
-    seam_transition: JsonValue
-    step_index: NotRequired[JsonValue]
-    handoff_to_board_step: NotRequired[JsonValue]
-    first_board_collision_step: NotRequired[JsonValue]
-
-
-class MatrixSummaryRecord(TypedDict):
-    """One `matrix_summaries` record; only the keys this summary reads."""
-
-    case_id: ScalarKey
-    hold_profile: JsonValue
-    phase_order_observed: JsonValue
-    sw16_exit_observed: JsonValue
-    handoff_to_board_step: JsonValue
-    first_board_collision_step: JsonValue
-    strike_classification: JsonValue
-    peak_speed: int | float | str
-    min_vy: JsonValue
-    max_displacement_px: int | float | str
-    invariant_violations: list[str]
-
-
-class BaselineMatrixRecord(TypedDict):
-    """Baseline record fields read by drift checks; other keys stay unread."""
-
-    case_id: ScalarKey
-    phase_order_observed: JsonValue
-    strike_classification: JsonValue
-    handoff_to_board_step: JsonValue
-    first_board_collision_step: JsonValue
-    peak_speed: int | float | str
-    max_displacement_px: int | float | str
-
-
-class LaunchTracePayload(TypedDict):
-    """Launch-trace artifact payload after the top-level shape check."""
-
-    matrix_summaries: list[MatrixSummaryRecord]
-    traces: dict[ScalarKey, JsonValue]
-    metadata: NotRequired[JsonValue]
-
 
 class SpotlightRow(TypedDict):
     trace_row_index: int
-    step_index: JsonValue
-    phase: JsonValue
+    step_index: int
+    phase: str
     reasons: list[str]
     seam_transition: JsonValue
-    handoff_to_board_step: JsonValue
-    first_board_collision_step: JsonValue
-
-
-class PhaseOrderDrift(TypedDict):
-    current: JsonValue
-    baseline: JsonValue
-    matches_baseline: bool | None
-
-
-class OptionalStepDrift(TypedDict):
-    current: JsonValue
-    baseline: JsonValue
-    delta_absolute: float | None
-
-
-class NumericDrift(TypedDict):
-    current: float
-    baseline: float | None
-    delta_absolute: float | None
-    delta_ratio: float | None
-
-
-class CaseDrift(TypedDict):
-    phase_order_observed: PhaseOrderDrift
-    handoff_to_board_step: OptionalStepDrift
-    first_board_collision_step: OptionalStepDrift
-    peak_speed: NumericDrift
-    max_displacement_px: NumericDrift
+    handoff_to_board_step: int | None
+    first_board_collision_step: int | None
 
 
 class CaseSummary(TypedDict):
-    case_id: ScalarKey
-    hold_profile: JsonValue
+    case_id: str
+    hold_profile: str
     case_verdict: str
-    phase_order_observed: JsonValue
-    sw16_exit_observed: JsonValue
-    handoff_to_board_step: JsonValue
-    first_board_collision_step: JsonValue
+    phase_order_observed: list[str]
+    sw16_exit_observed: bool
+    handoff_to_board_step: int | None
+    first_board_collision_step: int | None
     seam_transition_count: int
-    strike_classification: JsonValue
-    peak_speed: int | float | str
-    min_vy: JsonValue
-    max_displacement_px: int | float | str
+    strike_classification: str
+    peak_speed: Number
+    min_vy: Number
+    max_displacement_px: Number
     case_blockers: list[str]
     case_attentions: list[str]
     anomaly_flags: list[str]
@@ -195,7 +130,7 @@ def load_trace_payload(path: Path) -> JsonValue:
 
 def resolve_baseline_payload(
     baseline_artifact_path: Path,
-) -> tuple[str, JsonValue | None]:
+) -> tuple[str, BaselinePayload | None]:
     """Resolve the baseline artifact payload and return status plus payload."""
 
     if not baseline_artifact_path.exists():
@@ -205,23 +140,9 @@ def resolve_baseline_payload(
         payload = load_trace_payload(baseline_artifact_path)
     except (OSError, JSONDecodeError, ValueError):
         return BASELINE_UNREADABLE, None
-    if not _has_trace_top_level_keys(payload):
+    if not has_trace_top_level_keys(payload):
         return BASELINE_INCOMPATIBLE, None
-    return BASELINE_AVAILABLE, payload
-
-
-def parse_trace_payload(payload: JsonValue) -> LaunchTracePayload:
-    """Narrow a launch-trace artifact payload into the typed summary shape."""
-
-    if not isinstance(payload, dict):
-        raise TypeError(f"launch-trace payload is not a JSON object: {type(payload).__name__}")
-    parsed: LaunchTracePayload = {
-        "matrix_summaries": _parse_matrix_summaries(payload["matrix_summaries"]),
-        "traces": _parse_traces(payload["traces"]),
-    }
-    if "metadata" in payload:
-        parsed["metadata"] = payload["metadata"]
-    return parsed
+    return BASELINE_AVAILABLE, parse_baseline_payload(payload)
 
 
 def build_trace_summary(
@@ -233,32 +154,23 @@ def build_trace_summary(
 ) -> TraceSummaryPayload:
     """Build the deterministic operator summary for a launch-trace payload."""
 
-    if not _has_trace_top_level_keys(raw_payload):
+    if not has_trace_top_level_keys(raw_payload):
         raise ValueError("Raw launch-trace payload is missing required top-level fields.")
     payload = parse_trace_payload(raw_payload)
 
-    baseline_status, baseline_json = resolve_baseline_payload(baseline_artifact_path)
-    baseline_matrix = _baseline_matrix_by_case_id(baseline_json)
-    baseline_traces = _baseline_traces(baseline_json)
+    baseline_status, baseline = resolve_baseline_payload(baseline_artifact_path)
+    baseline_matrix = {} if baseline is None else baseline["matrix_summaries"]
+    baseline_traces = {} if baseline is None else baseline["traces"]
 
     case_summaries: list[CaseSummary] = []
     for record in payload["matrix_summaries"]:
         case_id = record["case_id"]
-        trace_steps = _parse_trace_steps(payload["traces"][case_id])
-        baseline_record_value = baseline_matrix.get(case_id)
-        baseline_record = (
-            None if baseline_record_value is None else _parse_baseline_record(baseline_record_value)
-        )
-        baseline_steps_value = baseline_traces.get(case_id)
-        baseline_steps = (
-            None if baseline_steps_value is None else _parse_trace_steps(baseline_steps_value)
-        )
         case_summaries.append(
             _build_case_summary(
                 record=record,
-                trace_steps=trace_steps,
-                baseline_record=baseline_record,
-                baseline_steps=baseline_steps,
+                trace_steps=payload["traces"][case_id],
+                baseline_record=baseline_matrix.get(case_id),
+                baseline_steps=baseline_traces.get(case_id),
                 baseline_status=baseline_status,
             )
         )
@@ -400,7 +312,7 @@ def _build_case_summary(
             blockers.append("seam_transition_count_drift")
             anomaly_flags.append("seam_transition_count_drift")
 
-        _evaluate_optional_step_drift(
+        evaluate_optional_step_drift(
             field_name="handoff_to_board_step",
             current_value=record["handoff_to_board_step"],
             baseline_value=baseline_record["handoff_to_board_step"],
@@ -408,7 +320,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_optional_step_drift(
+        evaluate_optional_step_drift(
             field_name="first_board_collision_step",
             current_value=record["first_board_collision_step"],
             baseline_value=baseline_record["first_board_collision_step"],
@@ -416,7 +328,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_numeric_drift(
+        evaluate_numeric_drift(
             field_name="peak_speed",
             current_value=float(record["peak_speed"]),
             baseline_value=float(baseline_record["peak_speed"]),
@@ -424,7 +336,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_numeric_drift(
+        evaluate_numeric_drift(
             field_name="max_displacement_px",
             current_value=float(record["max_displacement_px"]),
             baseline_value=float(baseline_record["max_displacement_px"]),
@@ -456,41 +368,7 @@ def _build_case_summary(
         "case_attentions": attentions,
         "anomaly_flags": sorted(set(anomaly_flags)),
         "spotlight_rows": spotlight_rows,
-        "drift": {
-            "phase_order_observed": {
-                "current": record["phase_order_observed"],
-                "baseline": None
-                if baseline_record is None
-                else baseline_record["phase_order_observed"],
-                "matches_baseline": None
-                if baseline_record is None
-                else record["phase_order_observed"] == baseline_record["phase_order_observed"],
-            },
-            "handoff_to_board_step": _build_optional_step_drift(
-                current_value=record["handoff_to_board_step"],
-                baseline_value=None
-                if baseline_record is None
-                else baseline_record["handoff_to_board_step"],
-            ),
-            "first_board_collision_step": _build_optional_step_drift(
-                current_value=record["first_board_collision_step"],
-                baseline_value=None
-                if baseline_record is None
-                else baseline_record["first_board_collision_step"],
-            ),
-            "peak_speed": _build_numeric_drift(
-                current_value=float(record["peak_speed"]),
-                baseline_value=None
-                if baseline_record is None
-                else float(baseline_record["peak_speed"]),
-            ),
-            "max_displacement_px": _build_numeric_drift(
-                current_value=float(record["max_displacement_px"]),
-                baseline_value=None
-                if baseline_record is None
-                else float(baseline_record["max_displacement_px"]),
-            ),
-        },
+        "drift": build_case_drift(record, baseline_record),
     }
 
 
@@ -524,7 +402,7 @@ def _build_run_summary(case_summaries: list[CaseSummary], baseline_status: str) 
 
 def _build_spotlight_rows(trace_steps: list[TraceStep]) -> list[SpotlightRow]:
     spotlight_by_row_index: dict[int, SpotlightRow] = {}
-    seen_phases: set[JsonValue] = set()
+    seen_phases: set[str] = set()
     first_handoff_row: int | None = None
     first_preimpact_row: int | None = None
     first_collision_row: int | None = None
@@ -564,232 +442,7 @@ def _build_spotlight_rows(trace_steps: list[TraceStep]) -> list[SpotlightRow]:
     return [spotlight_by_row_index[index] for index in sorted(spotlight_by_row_index)]
 
 
-def _evaluate_optional_step_drift(
-    *,
-    field_name: str,
-    current_value: JsonValue,
-    baseline_value: JsonValue,
-    blockers: list[str],
-    attentions: list[str],
-    anomaly_flags: list[str],
-) -> None:
-    if current_value is None and baseline_value is None:
-        return
-    if current_value is None or baseline_value is None:
-        blockers.append(f"{field_name}_presence_drift")
-        anomaly_flags.append(f"{field_name}_presence_drift")
-        return
-
-    if not isinstance(current_value, (int, float)) or not isinstance(baseline_value, (int, float)):
-        raise TypeError(
-            f"{field_name} drift requires numeric steps: {current_value!r} vs {baseline_value!r}"
-        )
-    delta = abs(current_value - baseline_value)
-    if delta > STEP_DELTA_BLOCKED_THRESHOLD:
-        blockers.append(f"{field_name}_drift_blocked")
-        anomaly_flags.append(f"{field_name}_drift")
-    elif delta > STEP_DELTA_ATTENTION_THRESHOLD:
-        attentions.append(f"{field_name}_drift_attention")
-        anomaly_flags.append(f"{field_name}_drift")
-
-
-def _evaluate_numeric_drift(
-    *,
-    field_name: str,
-    current_value: float,
-    baseline_value: float,
-    blockers: list[str],
-    attentions: list[str],
-    anomaly_flags: list[str],
-) -> None:
-    delta_ratio = _delta_ratio(current_value, baseline_value)
-    if delta_ratio is None:
-        return
-    if delta_ratio > PERCENT_DRIFT_BLOCKED_THRESHOLD:
-        blockers.append(f"{field_name}_drift_blocked")
-        anomaly_flags.append(f"{field_name}_drift")
-    elif delta_ratio > PERCENT_DRIFT_ATTENTION_THRESHOLD:
-        attentions.append(f"{field_name}_drift_attention")
-        anomaly_flags.append(f"{field_name}_drift")
-
-
-def _build_numeric_drift(
-    *,
-    current_value: float,
-    baseline_value: float | None,
-) -> NumericDrift:
-    delta_ratio = None if baseline_value is None else _delta_ratio(current_value, baseline_value)
-    delta_absolute = None if baseline_value is None else current_value - baseline_value
-    return {
-        "current": current_value,
-        "baseline": baseline_value,
-        "delta_absolute": delta_absolute,
-        "delta_ratio": delta_ratio,
-    }
-
-
-def _build_optional_step_drift(
-    *,
-    current_value: JsonValue,
-    baseline_value: JsonValue,
-) -> OptionalStepDrift:
-    if current_value is None or baseline_value is None:
-        delta_absolute = None
-    elif not isinstance(current_value, (int, float)) or not isinstance(
-        baseline_value, (int, float)
-    ):
-        raise TypeError(
-            f"optional step drift requires numeric steps: {current_value!r} vs {baseline_value!r}"
-        )
-    else:
-        delta_absolute = current_value - baseline_value
-    return {
-        "current": current_value,
-        "baseline": baseline_value,
-        "delta_absolute": delta_absolute,
-    }
-
-
-def _delta_ratio(current_value: float, baseline_value: float) -> float | None:
-    if baseline_value == 0:
-        if current_value == 0:
-            return 0.0
-        return 1.0
-    return abs(current_value - baseline_value) / abs(baseline_value)
-
-
-def _has_trace_top_level_keys(payload: JsonValue) -> bool:
-    if not isinstance(payload, (str, list, dict)):
-        # Preserve the bare `in` TypeError that non-container JSON scalars raised.
-        raise TypeError(f"argument of type {type(payload).__name__!r} is not iterable")
-    return "matrix_summaries" in payload and "traces" in payload
-
-
-def _parse_case_id(value: JsonValue) -> ScalarKey:
-    if value is None or isinstance(value, (str, int, float, bool)):
-        return value
-    raise TypeError(f"matrix_summaries case_id is not hashable: {type(value).__name__}")
-
-
-def _parse_floatable(value: JsonValue, *, field: str) -> int | float | str:
-    if isinstance(value, (int, float, str)):
-        return value
-    raise TypeError(f"matrix_summaries {field} is not a number: {type(value).__name__}")
-
-
-def _parse_str_iterable(value: JsonValue, *, field: str) -> list[str]:
-    if not isinstance(value, (list, dict, str)):
-        raise TypeError(f"matrix_summaries {field} is not iterable: {type(value).__name__}")
-    items: list[str] = []
-    for item in value:
-        if not isinstance(item, str):
-            raise TypeError(
-                f"matrix_summaries {field} entry is not a string: {type(item).__name__}"
-            )
-        items.append(item)
-    return items
-
-
-def _parse_matrix_record(value: JsonValue) -> MatrixSummaryRecord:
-    if not isinstance(value, dict):
-        raise TypeError(f"matrix_summaries entry is not an object: {type(value).__name__}")
-    return {
-        "case_id": _parse_case_id(value["case_id"]),
-        "hold_profile": value["hold_profile"],
-        "phase_order_observed": value["phase_order_observed"],
-        "sw16_exit_observed": value["sw16_exit_observed"],
-        "handoff_to_board_step": value["handoff_to_board_step"],
-        "first_board_collision_step": value["first_board_collision_step"],
-        "strike_classification": value["strike_classification"],
-        "peak_speed": _parse_floatable(value["peak_speed"], field="peak_speed"),
-        "min_vy": value["min_vy"],
-        "max_displacement_px": _parse_floatable(
-            value["max_displacement_px"], field="max_displacement_px"
-        ),
-        "invariant_violations": _parse_str_iterable(
-            value["invariant_violations"], field="invariant_violations"
-        ),
-    }
-
-
-def _parse_matrix_summaries(value: JsonValue) -> list[MatrixSummaryRecord]:
-    if not isinstance(value, (list, dict, str)):
-        raise TypeError(f"matrix_summaries is not iterable: {type(value).__name__}")
-    return [_parse_matrix_record(record) for record in value]
-
-
-def _parse_baseline_record(value: JsonValue) -> BaselineMatrixRecord:
-    if not isinstance(value, dict):
-        raise TypeError(f"matrix_summaries entry is not an object: {type(value).__name__}")
-    return {
-        "case_id": _parse_case_id(value["case_id"]),
-        "phase_order_observed": value["phase_order_observed"],
-        "strike_classification": value["strike_classification"],
-        "handoff_to_board_step": value["handoff_to_board_step"],
-        "first_board_collision_step": value["first_board_collision_step"],
-        "peak_speed": _parse_floatable(value["peak_speed"], field="peak_speed"),
-        "max_displacement_px": _parse_floatable(
-            value["max_displacement_px"], field="max_displacement_px"
-        ),
-    }
-
-
-def _parse_traces(value: JsonValue) -> dict[ScalarKey, JsonValue]:
-    if not isinstance(value, dict):
-        raise TypeError(f"traces is not a JSON object: {type(value).__name__}")
-    traces: dict[ScalarKey, JsonValue] = {}
-    for case_id, steps in value.items():
-        traces[case_id] = steps
-    return traces
-
-
-def _parse_trace_step(value: JsonValue) -> TraceStep:
-    if not isinstance(value, dict):
-        raise TypeError(f"trace step entry is not an object: {type(value).__name__}")
-    step: TraceStep = {
-        "phase": value["phase"],
-        "seam_transition": value["seam_transition"],
-    }
-    if "step_index" in value:
-        step["step_index"] = value["step_index"]
-    if "handoff_to_board_step" in value:
-        step["handoff_to_board_step"] = value["handoff_to_board_step"]
-    if "first_board_collision_step" in value:
-        step["first_board_collision_step"] = value["first_board_collision_step"]
-    return step
-
-
-def _parse_trace_steps(value: JsonValue) -> list[TraceStep]:
-    if not isinstance(value, (list, dict, str)):
-        raise TypeError(f"trace steps is not iterable: {type(value).__name__}")
-    return [_parse_trace_step(step) for step in value]
-
-
-def _baseline_matrix_by_case_id(payload: JsonValue) -> dict[ScalarKey, JsonValue]:
-    if payload is None:
-        return {}
-    if not isinstance(payload, dict):
-        raise TypeError(f"baseline payload is not a JSON object: {type(payload).__name__}")
-    matrix = payload["matrix_summaries"]
-    if not isinstance(matrix, (list, dict, str)):
-        raise TypeError(f"matrix_summaries is not iterable: {type(matrix).__name__}")
-    records: dict[ScalarKey, JsonValue] = {}
-    for record in matrix:
-        if not isinstance(record, dict):
-            raise TypeError(f"matrix_summaries entry is not an object: {type(record).__name__}")
-        records[_parse_case_id(record["case_id"])] = record
-    return records
-
-
-def _baseline_traces(payload: JsonValue) -> dict[ScalarKey, JsonValue]:
-    if payload is None:
-        return {}
-    if not isinstance(payload, dict):
-        raise TypeError(f"baseline payload is not a JSON object: {type(payload).__name__}")
-    return _parse_traces(payload["traces"])
-
-
-def _format_optional_int(value: JsonValue) -> str:
+def _format_optional_int(value: int | None) -> str:
     return "-" if value is None else str(value)
 
 

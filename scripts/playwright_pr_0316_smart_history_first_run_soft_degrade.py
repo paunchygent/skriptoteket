@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import NotRequired, TypedDict
+from typing import TypedDict
 
 from playwright.sync_api import Page, sync_playwright
 from pydantic import JsonValue
@@ -25,150 +25,50 @@ from pydantic import JsonValue
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import login_to_app
 from scripts._playwright_config import get_config
+from scripts._playwright_json import json_int, json_object, json_str
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0316-smart-history-first-run")
 FAILURE_SCREENSHOT_PATH = ARTIFACTS_DIR / "failure.png"
 APP_ID = "classroom.group-seating-studio"
 API_PREFIX = f"/api/v1/apps/{APP_ID}"
-CSRF_TOKEN: JsonValue = None
-
-
-class _CsrfProbeResult(TypedDict):
-    """CSRF probe keys this proof reads."""
-
-    ok: JsonValue
-    attempts: NotRequired[JsonValue]
-    source: NotRequired[JsonValue]
-    token: NotRequired[JsonValue]
-
-
-class _ApiResult(TypedDict):
-    """API probe keys this proof reads."""
-
-    ok: JsonValue
-    status: NotRequired[JsonValue]
-    body: NotRequired[JsonValue]
-
-
-class _IdentityBody(TypedDict):
-    """Response keys read for id-bearing create responses."""
-
-    id: JsonValue
+CSRF_TOKEN: str | None = None
 
 
 class _DraftBody(TypedDict):
-    """Draft keys read by the Smart-history proof."""
+    """`PlanDraftDto` keys read by the Smart-history proof."""
 
-    id: JsonValue
-    draft_kind: JsonValue
-    revision: JsonValue
-    smart_enabled: JsonValue
-    use_history: JsonValue
-    grouping_seating_distance_enabled: NotRequired[JsonValue]
-
-
-class _WorkspaceBody(TypedDict):
-    """Workspace keys read by the Smart-history proof."""
-
-    draft: _DraftBody
+    id: str
+    draft_kind: str
+    revision: int
+    smart_enabled: bool
+    use_history: bool
+    grouping_seating_distance_enabled: bool
 
 
-class _SmartRunResult(TypedDict):
-    """Smart-run result keys read by the proof assertions."""
-
-    status: JsonValue
-    used_history: JsonValue
-    workspace: NotRequired[JsonValue]
-    reason: NotRequired[JsonValue]
-    message: NotRequired[JsonValue]
-
-
-class _ShareArtifact(TypedDict):
-    """Share artifact keys read by the proof assertions."""
-
-    id: JsonValue
-
-
-class _ShareResult(TypedDict):
-    """Share result keys read by the proof assertions."""
-
-    artifact: _ShareArtifact
-
-
-def _json_object(value: JsonValue, *, label: str) -> dict[str, JsonValue]:
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected {label} to be a JSON object, got {type(value).__name__}.")
+def _json_bool(obj: dict[str, JsonValue], key: str) -> bool:
+    value = obj[key]
+    if not isinstance(value, bool):
+        raise TypeError(f"Expected {key} to be a boolean, got {type(value).__name__}.")
     return value
 
 
-def _parse_csrf_result(value: JsonValue) -> _CsrfProbeResult:
-    obj = _json_object(value, label="csrf probe result")
-    result: _CsrfProbeResult = {"ok": obj["ok"]}
-    if "attempts" in obj:
-        result["attempts"] = obj["attempts"]
-    if "source" in obj:
-        result["source"] = obj["source"]
-    if "token" in obj:
-        result["token"] = obj["token"]
-    return result
-
-
-def _parse_api_result(value: JsonValue) -> _ApiResult:
-    obj = _json_object(value, label="api result")
-    result: _ApiResult = {"ok": obj["ok"]}
-    if "status" in obj:
-        result["status"] = obj["status"]
-    if "body" in obj:
-        result["body"] = obj["body"]
-    return result
-
-
-def _parse_identity_body(value: JsonValue, *, label: str) -> _IdentityBody:
-    obj = _json_object(value, label=label)
-    return {"id": obj["id"]}
-
-
 def _parse_draft_body(value: JsonValue) -> _DraftBody:
-    obj = _json_object(value, label="draft")
-    draft: _DraftBody = {
-        "id": obj["id"],
-        "draft_kind": obj["draft_kind"],
-        "revision": obj["revision"],
-        "smart_enabled": obj["smart_enabled"],
-        "use_history": obj["use_history"],
+    obj = json_object(value, label="draft")
+    return {
+        "id": json_str(obj, "id"),
+        "draft_kind": json_str(obj, "draft_kind"),
+        "revision": json_int(obj, "revision"),
+        "smart_enabled": _json_bool(obj, "smart_enabled"),
+        "use_history": _json_bool(obj, "use_history"),
+        "grouping_seating_distance_enabled": _json_bool(obj, "grouping_seating_distance_enabled"),
     }
-    if "grouping_seating_distance_enabled" in obj:
-        draft["grouping_seating_distance_enabled"] = obj["grouping_seating_distance_enabled"]
-    return draft
 
 
-def _parse_workspace_body(value: JsonValue) -> _WorkspaceBody:
-    obj = _json_object(value, label="workspace")
-    return {"draft": _parse_draft_body(obj["draft"])}
+def _parse_workspace_draft(value: JsonValue) -> _DraftBody:
+    return _parse_draft_body(json_object(value, label="workspace")["draft"])
 
 
-def _parse_smart_run_result(value: JsonValue) -> _SmartRunResult:
-    obj = _json_object(value, label="smart run result")
-    result: _SmartRunResult = {
-        "status": obj["status"],
-        "used_history": obj["used_history"],
-    }
-    if "workspace" in obj:
-        result["workspace"] = obj["workspace"]
-    if "reason" in obj:
-        result["reason"] = obj["reason"]
-    if "message" in obj:
-        result["message"] = obj["message"]
-    return result
-
-
-def _parse_share_result(value: JsonValue) -> _ShareResult:
-    obj = _json_object(value, label="share result")
-    artifact = _json_object(obj["artifact"], label="share.artifact")
-    return {"artifact": {"id": artifact["id"]}}
-
-
-def _load_csrf_token(page: Page) -> dict[str, JsonValue]:
+def _load_csrf_token(page: Page) -> dict[str, str]:
     """Fetch the shared HuleEdu CSRF token for browser-session writes."""
 
     result_value: JsonValue = page.evaluate(
@@ -205,10 +105,10 @@ def _load_csrf_token(page: Page) -> dict[str, JsonValue]:
             return { ok: false, attempts };
         }"""
     )
-    result = _parse_csrf_result(result_value)
+    result = json_object(result_value, label="csrf probe result")
     if not result["ok"]:
         raise AssertionError(f"Could not fetch shared CSRF token: {result['attempts']!r}")
-    return {"source": result["source"], "token": result["token"]}
+    return {"source": json_str(result, "source"), "token": json_str(result, "token")}
 
 
 def _api_json(
@@ -249,7 +149,7 @@ def _api_json(
             "csrfToken": CSRF_TOKEN,
         },
     )
-    result = _parse_api_result(result_value)
+    result = json_object(result_value, label="api result")
     if not result["ok"]:
         raise AssertionError(f"{method} {path} returned {result['status']}: {result['body']!r}")
     body = result["body"]
@@ -261,22 +161,19 @@ def _api_json(
 def _create_roster(page: Page, *, suffix: str) -> str:
     """Create one unique roster and return its id."""
 
-    roster = _parse_identity_body(
-        _api_json(
-            page,
-            path=f"{API_PREFIX}/rosters",
-            method="POST",
-            payload={
-                "name": f"PR-0316 Klass {suffix}",
-                "students": [
-                    {"id": "s1", "display_name": "Ada Lovelace"},
-                    {"id": "s2", "display_name": "Bo Berg"},
-                    {"id": "s3", "display_name": "Cecilia Ceder"},
-                    {"id": "s4", "display_name": "David Dahl"},
-                ],
-            },
-        ),
-        label="roster",
+    roster = _api_json(
+        page,
+        path=f"{API_PREFIX}/rosters",
+        method="POST",
+        payload={
+            "name": f"PR-0316 Klass {suffix}",
+            "students": [
+                {"id": "s1", "display_name": "Ada Lovelace"},
+                {"id": "s2", "display_name": "Bo Berg"},
+                {"id": "s3", "display_name": "Cecilia Ceder"},
+                {"id": "s4", "display_name": "David Dahl"},
+            ],
+        },
     )
     return str(roster["id"])
 
@@ -284,25 +181,22 @@ def _create_roster(page: Page, *, suffix: str) -> str:
 def _create_template(page: Page, *, suffix: str) -> str:
     """Create one unique four-seat classroom and return its id."""
 
-    template = _parse_identity_body(
-        _api_json(
-            page,
-            path=f"{API_PREFIX}/templates",
-            method="POST",
-            payload={
-                "name": f"PR-0316 Sal {suffix}",
-                "grid_cols": 4,
-                "grid_rows": 2,
-                "seats": [
-                    {"id": "seat-1", "x": 0, "y": 0, "zone": "front"},
-                    {"id": "seat-2", "x": 1, "y": 0, "zone": "front"},
-                    {"id": "seat-3", "x": 2, "y": 0, "zone": "middle"},
-                    {"id": "seat-4", "x": 3, "y": 0, "zone": "middle"},
-                ],
-                "fixtures": [],
-            },
-        ),
-        label="template",
+    template = _api_json(
+        page,
+        path=f"{API_PREFIX}/templates",
+        method="POST",
+        payload={
+            "name": f"PR-0316 Sal {suffix}",
+            "grid_cols": 4,
+            "grid_rows": 2,
+            "seats": [
+                {"id": "seat-1", "x": 0, "y": 0, "zone": "front"},
+                {"id": "seat-2", "x": 1, "y": 0, "zone": "front"},
+                {"id": "seat-3", "x": 2, "y": 0, "zone": "middle"},
+                {"id": "seat-4", "x": 3, "y": 0, "zone": "middle"},
+            ],
+            "fixtures": [],
+        },
     )
     return str(template["id"])
 
@@ -348,7 +242,7 @@ def _ensure_smart_history_on(page: Page, *, draft: _DraftBody) -> _DraftBody:
         method="PATCH",
         payload=payload,
     )
-    return _parse_workspace_body(workspace)["draft"]
+    return _parse_workspace_draft(workspace)
 
 
 def _run_smart(
@@ -357,16 +251,14 @@ def _run_smart(
     kind: str,
     draft: _DraftBody,
     expected_used_history: bool,
-) -> _SmartRunResult:
-    """Run Smart for one draft and assert the PR-0316 payload shape."""
+) -> _DraftBody:
+    """Run Smart for one draft, assert the PR-0316 payload shape, return the run's draft."""
 
-    result = _parse_smart_run_result(
-        _api_json(
-            page,
-            path=f"{API_PREFIX}/drafts/{kind}/{draft['id']}/smart-run",
-            method="POST",
-            payload={"expected_revision": draft["revision"]},
-        )
+    result = _api_json(
+        page,
+        path=f"{API_PREFIX}/drafts/{kind}/{draft['id']}/smart-run",
+        method="POST",
+        payload={"expected_revision": draft["revision"]},
     )
     if result["status"] != "applied":
         raise AssertionError(f"Expected applied {kind} result, got {result!r}")
@@ -379,24 +271,22 @@ def _run_smart(
     message = str(result.get("message") or "")
     if not expected_used_history and "historik" in message.lower():
         raise AssertionError(f"First-run {kind} message still looks history-blocked: {message!r}")
-    if not isinstance(result.get("workspace"), dict):
+    workspace = result.get("workspace")
+    if not isinstance(workspace, dict):
         raise AssertionError(f"Expected {kind} smart run to return a workspace.")
-    return result
+    return _parse_workspace_draft(workspace)
 
 
-def _share_draft(page: Page, *, kind: str, result: _SmartRunResult) -> _ShareResult:
+def _share_draft(page: Page, *, kind: str, draft: _DraftBody) -> str:
     """Create one authenticated share, which records the Smart-history checkpoint."""
 
-    workspace = _parse_workspace_body(result["workspace"])
-    draft = workspace["draft"]
-    return _parse_share_result(
-        _api_json(
-            page,
-            path=f"{API_PREFIX}/drafts/{kind}/{draft['id']}/share",
-            method="POST",
-            payload={"expected_revision": draft["revision"]},
-        )
+    share = _api_json(
+        page,
+        path=f"{API_PREFIX}/drafts/{kind}/{draft['id']}/share",
+        method="POST",
+        payload={"expected_revision": draft["revision"]},
     )
+    return json_str(json_object(share["artifact"], label="share.artifact"), "id")
 
 
 def _run_kind(
@@ -417,13 +307,13 @@ def _run_kind(
             template_id=template_id,
         ),
     )
-    first_result = _run_smart(
+    first_run_draft = _run_smart(
         page,
         kind=kind,
         draft=first_draft,
         expected_used_history=False,
     )
-    share = _share_draft(page, kind=kind, result=first_result)
+    share_artifact_id = _share_draft(page, kind=kind, draft=first_run_draft)
 
     second_draft = _ensure_smart_history_on(
         page,
@@ -434,25 +324,20 @@ def _run_kind(
             template_id=template_id,
         ),
     )
-    second_result = _run_smart(
+    second_run_draft = _run_smart(
         page,
         kind=kind,
         draft=second_draft,
         expected_used_history=True,
     )
-    first_workspace = _parse_workspace_body(first_result["workspace"])
-    first_workspace_draft = first_workspace["draft"]
-    second_workspace = _parse_workspace_body(second_result["workspace"])
-    second_workspace_draft = second_workspace["draft"]
-    share_artifact = share["artifact"]
     return {
         "first_draft_id": first_draft["id"],
-        "first_revision_after_run": first_workspace_draft["revision"],
-        "first_used_history": first_result["used_history"],
-        "share_artifact_id": share_artifact["id"],
+        "first_revision_after_run": first_run_draft["revision"],
+        "first_used_history": False,
+        "share_artifact_id": share_artifact_id,
         "second_draft_id": second_draft["id"],
-        "second_revision_after_run": second_workspace_draft["revision"],
-        "second_used_history": second_result["used_history"],
+        "second_revision_after_run": second_run_draft["revision"],
+        "second_used_history": True,
     }
 
 

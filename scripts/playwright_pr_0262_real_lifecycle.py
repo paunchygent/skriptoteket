@@ -19,7 +19,7 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypedDict, TypeGuard
+from typing import TypedDict
 from urllib.parse import quote, urlparse
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
@@ -43,6 +43,7 @@ from scripts._playwright_huleedu_auth import (
     temporary_backend_server,
     temporary_vite_server,
 )
+from scripts._playwright_json import json_object, json_str
 from scripts._pr_0262_lifecycle_manifest import (
     DEFAULT_PROBE_PATH,
     DEFAULT_REALM,
@@ -70,72 +71,41 @@ REQUIRED_TRUE_CLAIMS = (
 )
 
 
-def _json_object(value: JsonValue, *, label: str) -> dict[str, JsonValue]:
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected {label} to be a JSON object, got {type(value).__name__}.")
-    return value
+class _Continuation(TypedDict):
+    """`ProfileAppContinuationResponse` values this proof reads."""
+
+    role: str
+    local_user_id: str
+    profile_user_id: str
 
 
-class _ContinuationLocalUser(TypedDict):
-    """Continuation `local_user` keys this proof reads."""
+class _ProbeClaims(TypedDict):
+    """`HuleEduInternalIdentityProbeClaims` values this proof saves."""
 
-    role: JsonValue
-    id: JsonValue
-
-
-class _ContinuationProfile(TypedDict):
-    """Continuation `profile` keys this proof reads."""
-
-    user_id: JsonValue
+    active_app: str
+    active_product_identity_realm: str
 
 
-class _ContinuationPayload(TypedDict):
-    """Continuation response keys this proof reads."""
-
-    local_user: _ContinuationLocalUser
-    profile: _ContinuationProfile
-
-
-class _ProbeClaims(TypedDict, total=False):
-    """Probe `claims` keys this proof reads; extra keys pass through."""
-
-    realm_subject_id_present: JsonValue
-    subject_claim_present: JsonValue
-    subject_matches_realm_subject: JsonValue
-    linked_identity_realm_present: JsonValue
-    linked_identity_matches_realm_subject: JsonValue
-    email_present: JsonValue
-    email_verified: JsonValue
-    active_app: JsonValue
-    active_product_identity_realm: JsonValue
-
-
-def _parse_local_user(value: JsonValue) -> _ContinuationLocalUser:
-    obj = _json_object(value, label="continuation local_user")
-    return {"role": obj["role"], "id": obj["id"]}
-
-
-def _parse_profile(value: JsonValue) -> _ContinuationProfile:
-    obj = _json_object(value, label="continuation profile")
-    return {"user_id": obj["user_id"]}
-
-
-def _parse_continuation_payload(value: JsonValue) -> _ContinuationPayload:
-    obj = _json_object(value, label="continuation payload")
+def _parse_continuation(value: JsonValue) -> _Continuation:
+    obj = json_object(value, label="continuation payload")
+    local_user = json_object(obj["local_user"], label="continuation local_user")
+    profile = json_object(obj["profile"], label="continuation profile")
     return {
-        "local_user": _parse_local_user(obj["local_user"]),
-        "profile": _parse_profile(obj["profile"]),
+        "role": json_str(local_user, "role"),
+        "local_user_id": json_str(local_user, "id"),
+        "profile_user_id": json_str(profile, "user_id"),
     }
 
 
-def _is_probe_claims(value: JsonValue) -> TypeGuard[_ProbeClaims]:
-    return isinstance(value, dict)
-
-
 def _parse_probe_claims(value: JsonValue) -> _ProbeClaims:
-    if not _is_probe_claims(value):
-        raise TypeError(f"Expected probe claims to be a JSON object, got {type(value).__name__}.")
-    return value
+    claims = json_object(value, label="probe claims")
+    for key in REQUIRED_TRUE_CLAIMS:
+        if claims.get(key) is not True:
+            raise AssertionError(f"Live probe claim {key} was not true.")
+    return {
+        "active_app": json_str(claims, "active_app"),
+        "active_product_identity_realm": json_str(claims, "active_product_identity_realm"),
+    }
 
 
 def _verify_api_surfaces(
@@ -163,24 +133,17 @@ def _verify_api_surfaces(
             raise AssertionError(f"Expected diagnostics probe 200, got {probe.status}")
 
         continuation_body: JsonValue = continuation.json()
-        continuation_payload = _parse_continuation_payload(continuation_body)
-        local_user = continuation_payload["local_user"]
-        profile = continuation_payload["profile"]
-        observed_role = local_user["role"]
+        continuation_payload = _parse_continuation(continuation_body)
+        observed_role = continuation_payload["role"]
         if observed_role != expected_local_role:
             raise AssertionError(
                 f"Expected local role {expected_local_role}, got {observed_role!r}"
             )
-        if profile["user_id"] != local_user["id"]:
+        if continuation_payload["profile_user_id"] != continuation_payload["local_user_id"]:
             raise AssertionError("Continuation profile does not match the local user.")
 
         probe_body: JsonValue = probe.json()
-        probe_claims = _parse_probe_claims(
-            _json_object(probe_body, label="probe payload")["claims"]
-        )
-        for key in REQUIRED_TRUE_CLAIMS:
-            if probe_claims.get(key) is not True:
-                raise AssertionError(f"Live probe claim {key} was not true.")
+        probe_claims = _parse_probe_claims(json_object(probe_body, label="probe payload")["claims"])
 
         return (
             {
@@ -190,7 +153,7 @@ def _verify_api_surfaces(
             },
             {
                 "projection_resolved": True,
-                "local_user_id_present": bool(local_user["id"]),
+                "local_user_id_present": bool(continuation_payload["local_user_id"]),
                 "profile_user_matches_local_user": True,
                 "projection_subject_matched_session_claim": True,
                 "product_identity_realm": DEFAULT_REALM,
@@ -206,15 +169,7 @@ def _verify_api_surfaces(
                 "claims": {
                     "active_app": probe_claims["active_app"],
                     "active_product_identity_realm": probe_claims["active_product_identity_realm"],
-                    "realm_subject_id_present": probe_claims["realm_subject_id_present"],
-                    "subject_claim_present": probe_claims["subject_claim_present"],
-                    "subject_matches_realm_subject": probe_claims["subject_matches_realm_subject"],
-                    "linked_identity_realm_present": probe_claims["linked_identity_realm_present"],
-                    "linked_identity_matches_realm_subject": probe_claims[
-                        "linked_identity_matches_realm_subject"
-                    ],
-                    "email_present": probe_claims["email_present"],
-                    "email_verified": probe_claims["email_verified"],
+                    **{key: True for key in REQUIRED_TRUE_CLAIMS},
                 },
             },
         )

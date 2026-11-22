@@ -16,8 +16,7 @@ from __future__ import annotations
 import io
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from typing import TypedDict
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from starlette.datastructures import Headers, UploadFile
@@ -28,8 +27,6 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobStatus,
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
-    ConversionHubSubmitResult,
-    ConversionHubSubmittedJob,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSavedVaultArtifact,
@@ -47,17 +44,24 @@ from skriptoteket.application.curated_apps.document_converter import (
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
-    JobSpecBuilder,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, User
+from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.file_refs import build_vault_file_ref
 from skriptoteket.web.api.v1 import apps_conversion_hub as api
 from skriptoteket.web.api.v1 import (
     apps_conversion_hub_document_converter_saved_files as api_saved_files,
 )
 from tests.fixtures.identity_fixtures import make_user
+from tests.unit.web.conversion_hub.document_converter_api_test_support import (
+    FakeCreateHandler,
+    FakeDownloadHandler,
+    FakeGetDocumentConverterHandler,
+    FakeListSavedFilesHandler,
+    FakeSaveHandler,
+    FakeSubmitSavedFileHandler,
+)
 
 
 def _unwrap_dishka(fn):
@@ -88,175 +92,6 @@ def _upload(*, filename: str, content: bytes, content_type: str) -> UploadFile:
 class FakeRegistry:
     def get_by_app_id(self, *, app_id: str):
         return SimpleNamespace(app_id=app_id, min_role=Role.USER)
-
-
-class _CreateJobCall(TypedDict):
-    actor: User
-    spec: ConversionHubJobSpecV2
-    uploads: list[ConversionHubUpload]
-    wait_seconds: int
-    correlation_id: str | None
-    build_job_spec: JobSpecBuilder
-
-
-class FakeCreateHandler:
-    def __init__(self) -> None:
-        self.calls: list[_CreateJobCall] = []
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        spec: ConversionHubJobSpecV2,
-        uploads: list[ConversionHubUpload],
-        wait_seconds: int,
-        correlation_id: str | None,
-        build_job_spec: JobSpecBuilder,
-    ) -> ConversionHubSubmitResult:
-        self.calls.append(
-            {
-                "actor": actor,
-                "spec": spec,
-                "uploads": uploads,
-                "wait_seconds": wait_seconds,
-                "correlation_id": correlation_id,
-                "build_job_spec": build_job_spec,
-            }
-        )
-        return ConversionHubSubmitResult(
-            jobs=[
-                ConversionHubSubmittedJob(
-                    input_filename="source.html",
-                    job_id=uuid4(),
-                    status=ConversionHubJobStatus.QUEUED,
-                    error=None,
-                )
-            ]
-        )
-
-
-class _JobCall(TypedDict):
-    actor: User
-    job_id: UUID
-    correlation_id: str | None
-
-
-class FakeGetDocumentConverterHandler:
-    def __init__(self, result: DocumentConverterJobStatusResult) -> None:
-        self.result = result
-        self.calls: list[_JobCall] = []
-
-    async def handle(
-        self, *, actor: User, job_id: UUID, correlation_id: str | None
-    ) -> DocumentConverterJobStatusResult:
-        self.calls.append({"actor": actor, "job_id": job_id, "correlation_id": correlation_id})
-        return self.result
-
-
-class _ArtifactCall(TypedDict):
-    actor: User
-    job_id: UUID
-    correlation_id: str | None
-    filename_stem: str | None
-
-
-class FakeDownloadHandler:
-    def __init__(self, *, filename: str = "converted.pdf") -> None:
-        self.filename = filename
-        self.calls: list[_ArtifactCall] = []
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        job_id: UUID,
-        correlation_id: str | None,
-        filename_stem: str | None = None,
-    ) -> tuple[str, str, bytes]:
-        self.calls.append(
-            {
-                "actor": actor,
-                "job_id": job_id,
-                "correlation_id": correlation_id,
-                "filename_stem": filename_stem,
-            }
-        )
-        return (self.filename, "application/pdf", b"%PDF-1.7")
-
-
-class FakeSaveHandler:
-    def __init__(self, result: SaveDocumentConverterArtifactResult) -> None:
-        self.result = result
-        self.calls: list[_ArtifactCall] = []
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        job_id: UUID,
-        correlation_id: str | None,
-        filename_stem: str | None = None,
-    ) -> SaveDocumentConverterArtifactResult:
-        self.calls.append(
-            {
-                "actor": actor,
-                "job_id": job_id,
-                "correlation_id": correlation_id,
-                "filename_stem": filename_stem,
-            }
-        )
-        return self.result
-
-
-class _ActorCall(TypedDict):
-    actor: User
-
-
-class FakeListSavedFilesHandler:
-    def __init__(self, result: ListDocumentConverterSavedFilesResult) -> None:
-        self.result = result
-        self.calls: list[_ActorCall] = []
-
-    async def handle(self, *, actor: User) -> ListDocumentConverterSavedFilesResult:
-        self.calls.append({"actor": actor})
-        return self.result
-
-
-class _SavedFileJobCall(TypedDict):
-    actor: User
-    spec: ConversionHubJobSpecV2
-    source_refs: list[str]
-    wait_seconds: int
-    correlation_id: str | None
-    build_job_spec: JobSpecBuilder
-
-
-class FakeSubmitSavedFileHandler:
-    def __init__(self, result: DocumentConverterSubmitResult) -> None:
-        self.result = result
-        self.calls: list[_SavedFileJobCall] = []
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        spec: ConversionHubJobSpecV2,
-        source_refs: list[str],
-        wait_seconds: int,
-        correlation_id: str | None,
-        build_job_spec: JobSpecBuilder,
-    ) -> DocumentConverterSubmitResult:
-        self.calls.append(
-            {
-                "actor": actor,
-                "spec": spec,
-                "source_refs": source_refs,
-                "wait_seconds": wait_seconds,
-                "correlation_id": correlation_id,
-                "build_job_spec": build_job_spec,
-            }
-        )
-        return self.result
 
 
 @pytest.mark.unit

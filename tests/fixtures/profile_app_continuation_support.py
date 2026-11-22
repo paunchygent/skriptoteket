@@ -60,8 +60,6 @@ from skriptoteket.protocols.identity import (
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user, make_user_profile
 
-JsonObject = dict[str, JsonValue]
-
 CONTEXT_SUBJECT = "huleedu-teacher-subject"
 KEY_ID = "gateway-identity-rs256-v1"
 
@@ -267,7 +265,7 @@ class ProfileRepositoryStub:
         return self.result
 
 
-def _require_user_repository_stub(users: UserRepositoryProtocol) -> UserRepositoryStub:
+def _user_stub(users: UserRepositoryProtocol) -> UserRepositoryStub:
     if not isinstance(users, UserRepositoryStub):
         raise TypeError("users must be a UserRepositoryStub when projections are not provided")
     return users
@@ -291,10 +289,8 @@ class ProfileContinuationApiProvider(Provider):
         self._clock = clock
         self._users = users
         self._profiles = profiles
-        self._projections = projections or _require_user_repository_stub(users).projections
-        self._projection_events = (
-            projection_events or _require_user_repository_stub(users).projection_events
-        )
+        self._projections = projections or _user_stub(users).projections
+        self._projection_events = projection_events or _user_stub(users).projection_events
         self._id_generator = id_generator or IdGeneratorStub()
         self._auth_outcomes = auth_outcomes or AuthOutcomeRecorderStub()
         self._uow = UnitOfWorkStub()
@@ -385,8 +381,8 @@ def _sign_context(*, encoded_context: str, private_key: rsa.RSAPrivateKey) -> st
     return b64url_encode(signature)
 
 
-def _build_context_payload(*, now_ts: int, **overrides: JsonValue) -> JsonObject:
-    payload: JsonObject = {
+def _build_context_payload(*, now_ts: int, **overrides: JsonValue) -> dict[str, JsonValue]:
+    payload: dict[str, JsonValue] = {
         "context_version": 1,
         "iss": "api_gateway_service",
         "aud": "skriptoteket",
@@ -461,7 +457,7 @@ def signed_huleedu_headers(
 ) -> dict[str, str]:
     """Build a signed gateway context for browser API route tests."""
 
-    overrides: JsonObject = {
+    overrides: dict[str, JsonValue] = {
         "sub": subject,
         "realm_subject_id": subject,
         "linked_identity_ids": {"skriptoteket_standalone": subject},

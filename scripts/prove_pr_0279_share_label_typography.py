@@ -102,7 +102,7 @@ def main() -> None:
     print(f"pr-0279-proof: ok {run_dir}")
 
 
-_LINE_CHECK_KEYS = (
+_LINE_CHECK_BOOL_KEYS = (
     "contained",
     "separated",
     "noHiddenClip",
@@ -110,54 +110,57 @@ _LINE_CHECK_KEYS = (
     "noEllipsis",
     "fallbackPreservesFullLabel",
     "withinSurface",
-    "labelFixtureOverlaps",
 )
 
 
 class _LineCheck(TypedDict):
-    """`lineChecks` entry keys read by the layout assertions."""
+    """`lineChecks` entry keys read by the layout assertions.
 
-    contained: JsonValue
-    separated: JsonValue
-    noHiddenClip: JsonValue
-    visibleLinesNotEmpty: JsonValue
-    noEllipsis: JsonValue
-    fallbackPreservesFullLabel: JsonValue
-    withinSurface: JsonValue
-    labelFixtureOverlaps: JsonValue
-    seatIndex: NotRequired[JsonValue]
-    title: NotRequired[JsonValue]
-    ariaLabel: NotRequired[JsonValue]
-    classes: NotRequired[JsonValue]
-    isFallback: NotRequired[JsonValue]
-    token: NotRequired[JsonValue]
-    lines: NotRequired[JsonValue]
-    visibleText: NotRequired[JsonValue]
+    The browser also sends seat/label detail keys; they stay in the dict and reach
+    the failure message and `proof.json` unchanged.
+    """
+
+    contained: bool
+    separated: bool
+    noHiddenClip: bool
+    visibleLinesNotEmpty: bool
+    noEllipsis: bool
+    fallbackPreservesFullLabel: bool
+    withinSurface: bool
+    labelFixtureOverlaps: list[JsonValue]
 
 
 class _LayoutChecks(TypedDict):
-    """`page.evaluate` layout payload keys read by the layout assertions."""
+    """`page.evaluate` layout payload keys read by the layout assertions.
+
+    The browser also sends rect and fixture detail keys; they stay in the dict and
+    reach `proof.json` unchanged.
+    """
 
     lineChecks: list[_LineCheck]
-    overlaps: JsonValue
-    surfaceFitsViewport: NotRequired[JsonValue]
+    overlaps: list[JsonValue]
+    surfaceFitsViewport: NotRequired[bool]
     surfaceRect: NotRequired[JsonValue]
     viewportRect: NotRequired[JsonValue]
-    fixtureRects: NotRequired[JsonValue]
-    tokenCount: NotRequired[JsonValue]
 
 
 def _is_line_check(value: JsonValue) -> TypeGuard[_LineCheck]:
-    return isinstance(value, dict) and all(key in value for key in _LINE_CHECK_KEYS)
+    return (
+        isinstance(value, dict)
+        and all(isinstance(value.get(key), bool) for key in _LINE_CHECK_BOOL_KEYS)
+        and isinstance(value.get("labelFixtureOverlaps"), list)
+    )
 
 
 def _is_layout_checks(value: JsonValue) -> TypeGuard[_LayoutChecks]:
+    if not isinstance(value, dict):
+        return False
+    line_checks = value.get("lineChecks")
     return (
-        isinstance(value, dict)
-        and "lineChecks" in value
-        and "overlaps" in value
-        and isinstance(value["lineChecks"], list)
-        and all(_is_line_check(check) for check in value["lineChecks"])
+        isinstance(line_checks, list)
+        and all(_is_line_check(check) for check in line_checks)
+        and isinstance(value.get("overlaps"), list)
+        and isinstance(value.get("surfaceFitsViewport", False), bool)
     )
 
 

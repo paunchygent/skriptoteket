@@ -11,7 +11,6 @@ import argparse
 import json
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TypedDict, TypeGuard
 
 from playwright.sync_api import Page, sync_playwright
 from pydantic import JsonValue
@@ -54,13 +53,6 @@ def parse_args(argv: Sequence[str] | None = None) -> tuple[argparse.Namespace, l
     return parser.parse_known_args(argv)
 
 
-class _InvariantRecord(TypedDict, total=False):
-    """Matrix record fields read by the invariant gate; other keys stay unread."""
-
-    case_id: JsonValue
-    invariant_violations: JsonValue
-
-
 def collect_trace_payload(page: Page) -> JsonValue:
     """Collect the canonical launch-trace artifact payload from the browser."""
 
@@ -89,39 +81,22 @@ def fail_if_matrix_invariants_red(payload: JsonValue) -> None:
     matrix = payload.get("matrix_summaries", [])
     if not isinstance(matrix, list):
         raise TypeError(f"matrix_summaries is not iterable: {type(matrix).__name__}")
-    failing: list[_InvariantRecord] = []
+    failing: list[str] = []
     for record in matrix:
-        record = _parse_invariant_record(record)
-        if record.get("invariant_violations"):
-            failing.append(record)
+        if not isinstance(record, dict):
+            raise TypeError(f"matrix_summaries entry is not an object: {type(record).__name__}")
+        violations = record.get("invariant_violations")
+        if violations:
+            failing.append(f"{record['case_id']}: {_join_violations(violations)}")
     if not failing:
         return
-    details = "; ".join(
-        f"{record['case_id']}: {_invariant_violations_text(record)}" for record in failing
-    )
-    raise AssertionError(f"PR-0213 launch trace parity invariant failures -> {details}")
+    raise AssertionError(f"PR-0213 launch trace parity invariant failures -> {'; '.join(failing)}")
 
 
-def _parse_invariant_record(value: JsonValue) -> _InvariantRecord:
-    if not isinstance(value, dict):
-        raise TypeError(f"matrix_summaries entry is not an object: {type(value).__name__}")
-    record: _InvariantRecord = {}
-    if "case_id" in value:
-        record["case_id"] = value["case_id"]
-    if "invariant_violations" in value:
-        record["invariant_violations"] = value["invariant_violations"]
-    return record
-
-
-def _is_str_list(value: JsonValue) -> TypeGuard[list[str]]:
-    return isinstance(value, list) and all(isinstance(item, str) for item in value)
-
-
-def _invariant_violations_text(record: _InvariantRecord) -> str:
-    violations = record["invariant_violations"]
-    if isinstance(violations, (dict, str)) or _is_str_list(violations):
-        return ", ".join(violations)
-    raise TypeError("matrix_summaries invariant_violations is not a list of strings")
+def _join_violations(violations: JsonValue) -> str:
+    if not isinstance(violations, list) or not all(isinstance(v, str) for v in violations):
+        raise TypeError("matrix_summaries invariant_violations is not a list of strings")
+    return ", ".join(str(v) for v in violations)
 
 
 def run(argv: Sequence[str] | None = None) -> LaunchTraceSummaryArtifacts:

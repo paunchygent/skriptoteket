@@ -18,7 +18,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import TypedDict, TypeGuard
+from typing import TypedDict
 from uuid import uuid4
 
 from playwright.sync_api import Browser, Download, Page, Route, sync_playwright
@@ -60,31 +60,43 @@ class _Case:
     route: str
 
 
-_DETAILS_KEYS = (
-    "state",
-    "ariaBusy",
-    "ariaDisabled",
-    "ariaLabel",
-    "href",
-    "cursor",
-    "spinnerVisible",
-)
-
-
 class _DetailsPayload(TypedDict):
-    """Browser `details` payload keys read by the handoff assertions."""
+    """Browser `details` payload: the handoff action's DOM attributes and spinner state."""
 
-    state: JsonValue
-    ariaBusy: JsonValue
-    ariaDisabled: JsonValue
-    ariaLabel: JsonValue
-    href: JsonValue
-    cursor: JsonValue
-    spinnerVisible: JsonValue
+    state: str | None
+    ariaBusy: str | None
+    ariaDisabled: str | None
+    ariaLabel: str | None
+    href: str | None
+    cursor: str
+    spinnerVisible: bool
 
 
-def _is_details_payload(value: JsonValue) -> TypeGuard[_DetailsPayload]:
-    return isinstance(value, dict) and all(key in value for key in _DETAILS_KEYS)
+def _str_or_none(obj: dict[str, JsonValue], key: str) -> str | None:
+    value = obj[key]
+    if value is not None and not isinstance(value, str):
+        raise TypeError(f"Expected {key} to be a string or null, got {type(value).__name__}.")
+    return value
+
+
+def _parse_details(obj: dict[str, JsonValue]) -> _DetailsPayload:
+    cursor = obj["cursor"]
+    spinner_visible = obj["spinnerVisible"]
+    if not isinstance(cursor, str):
+        raise TypeError(f"Expected cursor to be a string, got {type(cursor).__name__}.")
+    if not isinstance(spinner_visible, bool):
+        raise TypeError(
+            f"Expected spinnerVisible to be a boolean, got {type(spinner_visible).__name__}."
+        )
+    return {
+        "state": _str_or_none(obj, "state"),
+        "ariaBusy": _str_or_none(obj, "ariaBusy"),
+        "ariaDisabled": _str_or_none(obj, "ariaDisabled"),
+        "ariaLabel": _str_or_none(obj, "ariaLabel"),
+        "href": _str_or_none(obj, "href"),
+        "cursor": cursor,
+        "spinnerVisible": spinner_visible,
+    }
 
 
 class _CaseResult(TypedDict):
@@ -278,7 +290,12 @@ def _rect(page: Page) -> dict[str, float]:
     rect = page.locator('[data-skriptoteket-share-pdf-download="owned"]').bounding_box()
     if rect is None:
         raise AssertionError("PDF download action is not visible.")
-    return {key: float(rect[key]) for key in ("x", "y", "width", "height")}
+    return {
+        "x": float(rect["x"]),
+        "y": float(rect["y"]),
+        "width": float(rect["width"]),
+        "height": float(rect["height"]),
+    }
 
 
 def _details(page: Page) -> _DetailsPayload:
@@ -303,9 +320,7 @@ def _details(page: Page) -> _DetailsPayload:
     )
     if not isinstance(details, dict):
         raise AssertionError("Expected browser details object.")
-    if not _is_details_payload(details):
-        raise TypeError(f"browser details payload is missing keys: {details!r}")
-    return details
+    return _parse_details(details)
 
 
 def _assert_stable_geometry(*rects: dict[str, float]) -> None:
