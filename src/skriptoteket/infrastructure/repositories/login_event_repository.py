@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import delete, select
@@ -57,5 +56,7 @@ class PostgreSQLLoginEventRepository(LoginEventRepositoryProtocol):
     async def delete_expired(self, *, cutoff: datetime) -> int:
         stmt = delete(LoginEventModel).where(LoginEventModel.created_at < cutoff)
         result = await self._session.execute(stmt)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return int(cast(CursorResult[object], result).rowcount or 0)
+        return int(result.rowcount or 0)

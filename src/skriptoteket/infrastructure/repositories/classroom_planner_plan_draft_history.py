@@ -7,9 +7,9 @@ snapshots without broadening the plan-draft repository class.
 
 from __future__ import annotations
 
-from typing import Any, cast
 from uuid import UUID
 
+from pydantic import JsonValue
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
@@ -24,6 +24,7 @@ from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
 )
 from skriptoteket.infrastructure.repositories.classroom_planner_plan_draft_mapping import (
     create_workspace_snapshot,
+    parse_workspace_snapshot,
 )
 
 
@@ -57,7 +58,7 @@ class PlanDraftHistoryPersistence:
         history = history[: undo_index + 1]
 
         if not history or history[-1] != snapshot:
-            history.append(snapshot)
+            history.append(dict(snapshot))
             history = history[-self._history_limit :]
             model.history_stack = history
             model.undo_index = len(history) - 1
@@ -66,16 +67,17 @@ class PlanDraftHistoryPersistence:
         self,
         *,
         model: PlanDraftModel,
-        snapshot: dict[str, Any],
+        snapshot: JsonValue,
     ) -> None:
         """Apply a historical snapshot to the active draft model."""
+        parsed = parse_workspace_snapshot(snapshot)
         if model.draft_kind == PlanDraftKind.GROUPING.value:
-            template_id = snapshot.get("template_id")
+            template_id = parsed.get("template_id")
             model.template_id = UUID(str(template_id)) if template_id else None
-        model.smart_enabled = bool(snapshot.get("smart_enabled", False))
-        model.use_history = bool(snapshot.get("use_history", False))
+        model.smart_enabled = bool(parsed.get("smart_enabled", False))
+        model.use_history = bool(parsed.get("use_history", False))
         model.grouping_seating_distance_enabled = bool(
-            snapshot.get("grouping_seating_distance_enabled", False)
+            parsed.get("grouping_seating_distance_enabled", False)
         )
 
         await self.replace_related_collection(
@@ -88,7 +90,7 @@ class PlanDraftHistoryPersistence:
                     sort_order=group["sort_order"],
                     name_is_custom=group.get("name_is_custom", False),
                 )
-                for group in cast(list[dict[str, Any]], snapshot["groups"])
+                for group in parsed["groups"]
             ],
         )
         await self.replace_related_collection(
@@ -99,7 +101,7 @@ class PlanDraftHistoryPersistence:
                     student_id=assignment["student_id"],
                     group_id=assignment["group_id"],
                 )
-                for assignment in cast(list[dict[str, Any]], snapshot["group_assignments"])
+                for assignment in parsed["group_assignments"]
             ],
         )
         await self.replace_related_collection(
@@ -110,7 +112,7 @@ class PlanDraftHistoryPersistence:
                     student_id=assignment["student_id"],
                     seat_id=assignment["seat_id"],
                 )
-                for assignment in cast(list[dict[str, Any]], snapshot.get("seat_assignments", []))
+                for assignment in parsed.get("seat_assignments", [])
             ],
         )
         if model.revision is None:
