@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from typing import TYPE_CHECKING
 
 from .protocols import (
@@ -69,30 +69,61 @@ class DockerVolumesClientAdapter(DockerVolumesClientProtocol):
     def __init__(self, volumes: VolumeCollection) -> None:
         self._volumes = volumes
 
-    def create(self, **kwargs: object) -> DockerVolumeProtocol:
-        create_volume: Callable[..., Volume] = self._volumes.create
-        return DockerVolumeAdapter(create_volume(**kwargs))
+    def create(self, *, labels: dict[str, str]) -> DockerVolumeProtocol:
+        return DockerVolumeAdapter(self._volumes.create(labels=labels))
 
-    def list(self, **kwargs: object) -> list[DockerVolumeProtocol]:
-        list_volumes: Callable[..., list[Volume]] = self._volumes.list
-        return [DockerVolumeAdapter(volume) for volume in list_volumes(**kwargs)]
+    def list(self, *, filters: dict[str, str | list[str] | bool]) -> list[DockerVolumeProtocol]:
+        return [DockerVolumeAdapter(volume) for volume in self._volumes.list(filters=filters)]
 
 
 class DockerContainersClientAdapter(DockerContainersClientProtocol):
     def __init__(self, containers: ContainerCollection) -> None:
         self._containers = containers
 
-    def create(self, **kwargs: object) -> DockerContainerProtocol:
-        create_container: Callable[..., Container] = self._containers.create
-        return DockerContainerAdapter(create_container(**kwargs))
+    def create(
+        self,
+        *,
+        image: str,
+        environment: dict[str, str],
+        command: list[str],
+        working_dir: str,
+        network_mode: str,
+        user: str,
+        cap_drop: list[str],
+        pids_limit: int,
+        read_only: bool,
+        tmpfs: dict[str, str],
+        volumes: dict[str, dict[str, str]],
+        mem_limit: str,
+        nano_cpus: int,
+        labels: dict[str, str],
+    ) -> DockerContainerProtocol:
+        return DockerContainerAdapter(
+            self._containers.create(
+                image=image,
+                environment=environment,
+                command=command,
+                working_dir=working_dir,
+                network_mode=network_mode,
+                user=user,
+                cap_drop=cap_drop,
+                pids_limit=pids_limit,
+                read_only=read_only,
+                tmpfs=tmpfs,
+                volumes=volumes,
+                mem_limit=mem_limit,
+                nano_cpus=nano_cpus,
+                labels=labels,
+            )
+        )
 
-    def get(self, *args: object, **kwargs: object) -> DockerContainerProtocol:
-        get_container: Callable[..., Container] = self._containers.get
-        return DockerContainerAdapter(get_container(*args, **kwargs))
-
-    def list(self, **kwargs: object) -> list[DockerContainerProtocol]:
-        list_containers: Callable[..., list[Container]] = self._containers.list
-        return [DockerContainerAdapter(container) for container in list_containers(**kwargs)]
+    def list(
+        self, *, all: bool, filters: dict[str, str | list[str] | bool]
+    ) -> list[DockerContainerProtocol]:
+        return [
+            DockerContainerAdapter(container)
+            for container in self._containers.list(all=all, filters=filters)
+        ]
 
 
 class DockerClientAdapter(DockerClientProtocol):

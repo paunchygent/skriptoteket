@@ -33,17 +33,34 @@ class DockerVolumeProtocol(Protocol):
 
 
 class DockerVolumesClientProtocol(Protocol):
-    def create(self, **kwargs: object) -> DockerVolumeProtocol: ...
+    def create(self, *, labels: dict[str, str]) -> DockerVolumeProtocol: ...
 
-    def list(self, **kwargs: object) -> list[DockerVolumeProtocol]: ...
+    def list(self, *, filters: dict[str, str | list[str] | bool]) -> list[DockerVolumeProtocol]: ...
 
 
 class DockerContainersClientProtocol(Protocol):
-    def create(self, **kwargs: object) -> DockerContainerProtocol: ...
+    def create(
+        self,
+        *,
+        image: str,
+        environment: dict[str, str],
+        command: list[str],
+        working_dir: str,
+        network_mode: str,
+        user: str,
+        cap_drop: list[str],
+        pids_limit: int,
+        read_only: bool,
+        tmpfs: dict[str, str],
+        volumes: dict[str, dict[str, str]],
+        mem_limit: str,
+        nano_cpus: int,
+        labels: dict[str, str],
+    ) -> DockerContainerProtocol: ...
 
-    def get(self, *args: object, **kwargs: object) -> DockerContainerProtocol: ...
-
-    def list(self, **kwargs: object) -> list[DockerContainerProtocol]: ...
+    def list(
+        self, *, all: bool, filters: dict[str, str | list[str] | bool]
+    ) -> list[DockerContainerProtocol]: ...
 
 
 class DockerClientProtocol(Protocol):

@@ -188,7 +188,6 @@ module = [
     "pandas.*",
     "pypdfium2.*",
     "lxml.*",
-    "tinycss2.*",
 ]
 ignore_missing_imports = true
 
@@ -265,7 +264,7 @@ lint-exclude = [
 lint-src = [".", "src"]
 typecheck-includes = []
 typecheck-search-paths = ["src", "stubs"]
-untyped-modules = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*", "tinycss2.*"]
+untyped-modules = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
 
 [tool.repository-governance.owners]
 service = ["skriptoteket"]
@@ -579,7 +578,7 @@ select = ["E", "F", "I", "W"]
 python-version = "3.13"
 project-includes = []
 search-path = ["src", "stubs"]
-ignore-missing-imports = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*", "tinycss2.*"]
+ignore-missing-imports = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal --durations=10 --import-mode=importlib"
 asyncio_mode = "auto"

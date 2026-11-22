@@ -7,6 +7,7 @@ the domain models and deterministic snapshot dictionaries used by persistence.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import NotRequired, TypedDict
 
 from pydantic import JsonValue
@@ -31,36 +32,40 @@ from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
 class WorkspaceSnapshotGroup(TypedDict):
     """One serialized group entry inside a persisted workspace history snapshot."""
 
-    id: JsonValue
-    name: JsonValue
-    sort_order: JsonValue
-    name_is_custom: NotRequired[JsonValue]
+    id: str
+    name: str
+    sort_order: int
+    name_is_custom: bool
 
 
 class WorkspaceSnapshotGroupAssignment(TypedDict):
     """One serialized student-to-group entry inside a history snapshot."""
 
-    student_id: JsonValue
-    group_id: JsonValue
+    student_id: str
+    group_id: str
 
 
 class WorkspaceSnapshotSeatAssignment(TypedDict):
     """One serialized student-to-seat entry inside a history snapshot."""
 
-    student_id: JsonValue
-    seat_id: JsonValue
+    student_id: str
+    seat_id: str
 
 
 class WorkspaceSnapshot(TypedDict):
-    """Serialized workspace state stored in the draft history JSONB stack."""
+    """Serialized workspace state stored in the draft history JSONB stack.
 
-    smart_enabled: NotRequired[JsonValue]
-    use_history: NotRequired[JsonValue]
-    grouping_seating_distance_enabled: NotRequired[JsonValue]
+    `template_id` is written only for grouping drafts; the parser leaves it out
+    when the stored snapshot has no such key.
+    """
+
+    smart_enabled: bool
+    use_history: bool
+    grouping_seating_distance_enabled: bool
     groups: list[WorkspaceSnapshotGroup]
     group_assignments: list[WorkspaceSnapshotGroupAssignment]
-    seat_assignments: NotRequired[list[WorkspaceSnapshotSeatAssignment]]
-    template_id: NotRequired[JsonValue]
+    seat_assignments: list[WorkspaceSnapshotSeatAssignment]
+    template_id: NotRequired[str | None]
 
 
 def to_draft(model: PlanDraftModel) -> PlanDraft:
@@ -181,24 +186,49 @@ def create_workspace_snapshot(workspace: DraftWorkspace) -> WorkspaceSnapshot:
 
 
 def parse_workspace_snapshot(value: JsonValue) -> WorkspaceSnapshot:
-    """Narrow a JSON history-stack entry back into the workspace snapshot shape."""
+    """Narrow a JSON history-stack entry back into the workspace snapshot shape.
+
+    Missing flags default to False and a missing seat list to empty, as the
+    undo/redo path always treated them. Missing `groups`/`group_assignments`
+    keys or wrong container types raise.
+    """
     if not isinstance(value, dict):
         raise TypeError("workspace history snapshot must be a dict")
     snapshot: WorkspaceSnapshot = {
+        "smart_enabled": bool(value.get("smart_enabled", False)),
+        "use_history": bool(value.get("use_history", False)),
+        "grouping_seating_distance_enabled": bool(
+            value.get("grouping_seating_distance_enabled", False)
+        ),
         "groups": _snapshot_groups(value["groups"]),
         "group_assignments": _snapshot_group_assignments(value["group_assignments"]),
+        "seat_assignments": _snapshot_seat_assignments(value.get("seat_assignments", [])),
     }
-    if "smart_enabled" in value:
-        snapshot["smart_enabled"] = value["smart_enabled"]
-    if "use_history" in value:
-        snapshot["use_history"] = value["use_history"]
-    if "grouping_seating_distance_enabled" in value:
-        snapshot["grouping_seating_distance_enabled"] = value["grouping_seating_distance_enabled"]
-    if "seat_assignments" in value:
-        snapshot["seat_assignments"] = _snapshot_seat_assignments(value["seat_assignments"])
     if "template_id" in value:
-        snapshot["template_id"] = value["template_id"]
+        template_id = value["template_id"]
+        snapshot["template_id"] = str(template_id) if template_id else None
     return snapshot
+
+
+def _snapshot_str(entry: Mapping[str, JsonValue], key: str) -> str:
+    field = entry[key]
+    if not isinstance(field, str):
+        raise TypeError(f"workspace history snapshot {key} must be a string")
+    return field
+
+
+def _snapshot_int(entry: Mapping[str, JsonValue], key: str) -> int:
+    field = entry[key]
+    if not isinstance(field, int):
+        raise TypeError(f"workspace history snapshot {key} must be an integer")
+    return field
+
+
+def _snapshot_bool(entry: Mapping[str, JsonValue], key: str) -> bool:
+    field = entry.get(key, False)
+    if not isinstance(field, bool):
+        raise TypeError(f"workspace history snapshot {key} must be a boolean")
+    return field
 
 
 def _snapshot_groups(value: JsonValue) -> list[WorkspaceSnapshotGroup]:
@@ -208,14 +238,14 @@ def _snapshot_groups(value: JsonValue) -> list[WorkspaceSnapshotGroup]:
     for entry in value:
         if not isinstance(entry, dict):
             raise TypeError("workspace history snapshot group must be a dict")
-        group: WorkspaceSnapshotGroup = {
-            "id": entry["id"],
-            "name": entry["name"],
-            "sort_order": entry["sort_order"],
-        }
-        if "name_is_custom" in entry:
-            group["name_is_custom"] = entry["name_is_custom"]
-        groups.append(group)
+        groups.append(
+            {
+                "id": _snapshot_str(entry, "id"),
+                "name": _snapshot_str(entry, "name"),
+                "sort_order": _snapshot_int(entry, "sort_order"),
+                "name_is_custom": _snapshot_bool(entry, "name_is_custom"),
+            }
+        )
     return groups
 
 
@@ -226,7 +256,12 @@ def _snapshot_group_assignments(value: JsonValue) -> list[WorkspaceSnapshotGroup
     for entry in value:
         if not isinstance(entry, dict):
             raise TypeError("workspace history snapshot group assignment must be a dict")
-        assignments.append({"student_id": entry["student_id"], "group_id": entry["group_id"]})
+        assignments.append(
+            {
+                "student_id": _snapshot_str(entry, "student_id"),
+                "group_id": _snapshot_str(entry, "group_id"),
+            }
+        )
     return assignments
 
 
@@ -237,5 +272,10 @@ def _snapshot_seat_assignments(value: JsonValue) -> list[WorkspaceSnapshotSeatAs
     for entry in value:
         if not isinstance(entry, dict):
             raise TypeError("workspace history snapshot seat assignment must be a dict")
-        assignments.append({"student_id": entry["student_id"], "seat_id": entry["seat_id"]})
+        assignments.append(
+            {
+                "student_id": _snapshot_str(entry, "student_id"),
+                "seat_id": _snapshot_str(entry, "seat_id"),
+            }
+        )
     return assignments

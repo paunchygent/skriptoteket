@@ -171,8 +171,7 @@ def _serialize_grid_compatible_rule(*, rule: tinycss2.ast.Node) -> str:
             )
             spacer = " " if prelude else ""
             return f"@{rule.at_keyword}{spacer}{prelude}{{{nested}}}"
-    serialized: str = tinycss2.serialize([rule])
-    return serialized
+    return tinycss2.serialize([rule])
 
 
 def _serialize_grid_compatible_declarations(content: str | list[tinycss2.ast.Node]) -> str:

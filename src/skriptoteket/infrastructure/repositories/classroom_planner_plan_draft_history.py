@@ -73,12 +73,10 @@ class PlanDraftHistoryPersistence:
         parsed = parse_workspace_snapshot(snapshot)
         if model.draft_kind == PlanDraftKind.GROUPING.value:
             template_id = parsed.get("template_id")
-            model.template_id = UUID(str(template_id)) if template_id else None
-        model.smart_enabled = bool(parsed.get("smart_enabled", False))
-        model.use_history = bool(parsed.get("use_history", False))
-        model.grouping_seating_distance_enabled = bool(
-            parsed.get("grouping_seating_distance_enabled", False)
-        )
+            model.template_id = UUID(template_id) if template_id else None
+        model.smart_enabled = parsed["smart_enabled"]
+        model.use_history = parsed["use_history"]
+        model.grouping_seating_distance_enabled = parsed["grouping_seating_distance_enabled"]
 
         await self.replace_related_collection(
             model=model,
@@ -88,7 +86,7 @@ class PlanDraftHistoryPersistence:
                     group_id=group["id"],
                     name=group["name"],
                     sort_order=group["sort_order"],
-                    name_is_custom=group.get("name_is_custom", False),
+                    name_is_custom=group["name_is_custom"],
                 )
                 for group in parsed["groups"]
             ],
@@ -112,7 +110,7 @@ class PlanDraftHistoryPersistence:
                     student_id=assignment["student_id"],
                     seat_id=assignment["seat_id"],
                 )
-                for assignment in parsed.get("seat_assignments", [])
+                for assignment in parsed["seat_assignments"]
             ],
         )
         if model.revision is None:
