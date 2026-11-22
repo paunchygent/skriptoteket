@@ -198,8 +198,11 @@ def test_accepts_huleedu_status_ok_artifact_without_retaining_raw_identity() -> 
 
 def test_rejects_missing_sanitized_signed_context_claim() -> None:
     payload = _huleedu_artifact()
-    signed_claims = payload["proof"]["signed_context_claims"]  # type: ignore[index]
-    signed_claims["subject_matches_realm_subject"] = False  # type: ignore[index]
+    proof = payload["proof"]
+    assert isinstance(proof, dict)
+    signed_claims = proof["signed_context_claims"]
+    assert isinstance(signed_claims, dict)
+    signed_claims["subject_matches_realm_subject"] = False
 
     with pytest.raises(LifecycleProofValidationError, match="subject_matches_realm_subject"):
         validate_huleedu_task_0327_artifact(payload, artifact_path=Path("/tmp/artifact.json"))
@@ -207,11 +210,12 @@ def test_rejects_missing_sanitized_signed_context_claim() -> None:
 
 def test_rejects_missing_direct_action_landing() -> None:
     payload = _huleedu_artifact()
-    proof = payload["proof"]  # type: ignore[index]
-    proof["actions"] = [  # type: ignore[index]
-        action
-        for action in proof["actions"]  # type: ignore[index]
-        if action["name"] != "email_verification_direct_landing"
+    proof = payload["proof"]
+    assert isinstance(proof, dict)
+    actions = proof["actions"]
+    assert isinstance(actions, list)
+    proof["actions"] = [
+        action for action in actions if action["name"] != "email_verification_direct_landing"
     ]
 
     with pytest.raises(LifecycleProofValidationError, match="email_verification_direct_landing"):
@@ -260,6 +264,10 @@ def test_build_manifest_retains_only_sanitized_decision_evidence() -> None:
     assert RAW_SUBJECT not in serialized
     assert RAW_EMAIL not in serialized
     assert manifest["status"] == "ok"
-    assert manifest["upstream_huleedu_task_0327"]["validated"] is True  # type: ignore[index]
-    assert manifest["redaction_checks"]["raw_realm_subject_id_retained"] is False  # type: ignore[index]
+    upstream = manifest["upstream_huleedu_task_0327"]
+    assert isinstance(upstream, dict)
+    assert upstream["validated"] is True
+    redaction_checks = manifest["redaction_checks"]
+    assert isinstance(redaction_checks, dict)
+    assert redaction_checks["raw_realm_subject_id_retained"] is False
     assert_manifest_redacted(manifest, forbidden_values=[RAW_SUBJECT, RAW_EMAIL])

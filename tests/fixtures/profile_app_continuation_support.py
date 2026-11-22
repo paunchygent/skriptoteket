@@ -15,12 +15,12 @@ import base64
 import json
 from collections.abc import Iterable, Mapping
 from datetime import datetime
-from typing import cast
 from uuid import UUID, uuid4
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
 from dishka import Provider, Scope, provide
+from pydantic import JsonValue
 
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppProjectionResolver
 from skriptoteket.config import Settings
@@ -60,8 +60,6 @@ from skriptoteket.protocols.identity import (
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.identity_fixtures import make_user, make_user_profile
 
-JsonScalar = str | int | float | bool | None
-JsonValue = JsonScalar | list["JsonValue"] | dict[str, "JsonValue"]
 JsonObject = dict[str, JsonValue]
 
 CONTEXT_SUBJECT = "huleedu-teacher-subject"
@@ -269,6 +267,12 @@ class ProfileRepositoryStub:
         return self.result
 
 
+def _require_user_repository_stub(users: UserRepositoryProtocol) -> UserRepositoryStub:
+    if not isinstance(users, UserRepositoryStub):
+        raise TypeError("users must be a UserRepositoryStub when projections are not provided")
+    return users
+
+
 class ProfileContinuationApiProvider(Provider):
     def __init__(
         self,
@@ -287,9 +291,10 @@ class ProfileContinuationApiProvider(Provider):
         self._clock = clock
         self._users = users
         self._profiles = profiles
-        stub_users = cast(UserRepositoryStub, users)
-        self._projections = projections or stub_users.projections
-        self._projection_events = projection_events or stub_users.projection_events
+        self._projections = projections or _require_user_repository_stub(users).projections
+        self._projection_events = (
+            projection_events or _require_user_repository_stub(users).projection_events
+        )
         self._id_generator = id_generator or IdGeneratorStub()
         self._auth_outcomes = auth_outcomes or AuthOutcomeRecorderStub()
         self._uow = UnitOfWorkStub()

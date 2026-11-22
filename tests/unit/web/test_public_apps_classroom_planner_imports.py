@@ -12,6 +12,9 @@ import httpx
 import pytest
 from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
+from starlette.middleware.base import RequestResponseEndpoint
+from starlette.requests import Request
+from starlette.responses import Response
 from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.classroom_planner.handlers.imports import (
@@ -149,7 +152,9 @@ def app(
     app = FastAPI()
 
     @app.middleware("http")
-    async def attach_correlation_id(request, call_next):  # type: ignore[no-untyped-def]
+    async def attach_correlation_id(
+        request: Request, call_next: RequestResponseEndpoint
+    ) -> Response:
         header_value = request.headers.get("X-Correlation-ID")
         if header_value:
             request.state.correlation_id = UUID(header_value)

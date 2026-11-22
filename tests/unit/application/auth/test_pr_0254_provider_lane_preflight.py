@@ -11,6 +11,8 @@ Relationships:
 
 from __future__ import annotations
 
+from typing import Literal
+
 import pytest
 
 from scripts._pr_0254_auth_cutover_browser import LoopbackLane
@@ -20,9 +22,9 @@ from scripts.playwright_pr_0254_auth_cutover import (
 )
 
 
-def _lane(name: str, *, host: str, login_origin: str) -> LoopbackLane:
+def _lane(name: Literal["localhost", "127"], *, host: str, login_origin: str) -> LoopbackLane:
     return LoopbackLane(
-        name=name,  # type: ignore[arg-type]
+        name=name,
         base_url=f"http://{host}:5173",
         huleedu_login_origin=login_origin,
         huleedu_auth_origin=f"http://{host}:8080",

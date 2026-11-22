@@ -5,7 +5,6 @@ import io
 import json
 import logging
 from collections.abc import Callable
-from typing import cast
 from uuid import UUID
 
 import pytest
@@ -56,22 +55,19 @@ def _http_scope(*, headers: dict[str, str] | None = None) -> Scope:
     for key, value in (headers or {}).items():
         raw_headers.append((key.lower().encode("ascii"), value.encode("ascii")))
 
-    return cast(
-        Scope,
-        {
-            "type": "http",
-            "asgi": {"version": "3.0"},
-            "http_version": "1.1",
-            "method": "GET",
-            "scheme": "http",
-            "path": "/healthz",
-            "raw_path": b"/healthz",
-            "query_string": b"",
-            "headers": raw_headers,
-            "client": ("127.0.0.1", 12345),
-            "server": ("test", 80),
-        },
-    )
+    return {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "GET",
+        "scheme": "http",
+        "path": "/healthz",
+        "raw_path": b"/healthz",
+        "query_string": b"",
+        "headers": raw_headers,
+        "client": ("127.0.0.1", 12345),
+        "server": ("test", 80),
+    }
 
 
 async def _receive() -> Message:

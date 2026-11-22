@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime, timezone
-from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -26,7 +25,9 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "WHERE table_name = 'sandbox_snapshots'"
             )
         )
-        columns = _column_map([cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()])
+        columns = _column_map(
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
+        )
         assert columns["id"] == ("uuid", "NO")
         assert columns["tool_id"] == ("uuid", "NO")
         assert columns["draft_head_id"] == ("uuid", "NO")

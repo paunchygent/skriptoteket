@@ -9,12 +9,11 @@ Relationships:
     - Complements the websocket integration test that proves middleware wiring.
 """
 
-from types import SimpleNamespace
-from typing import cast
 from unittest.mock import AsyncMock
 
 import pytest
 from fastapi import WebSocket
+from starlette.types import Message
 
 from skriptoteket.config import Settings
 from skriptoteket.web.dishka_dependencies import resolve_from_websocket
@@ -25,9 +24,17 @@ async def test_resolve_from_websocket_reads_websocket_state_container() -> None:
     container = AsyncMock()
     expected = Settings()
     container.get.return_value = expected
-    websocket = cast(
-        WebSocket,
-        SimpleNamespace(state=SimpleNamespace(dishka_container=container)),
+
+    async def receive() -> Message:
+        return {"type": "websocket.connect"}
+
+    async def send(message: Message) -> None:
+        return None
+
+    websocket = WebSocket(
+        scope={"type": "websocket", "state": {"dishka_container": container}},
+        receive=receive,
+        send=send,
     )
 
     resolved = await resolve_from_websocket(websocket, Settings)

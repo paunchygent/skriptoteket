@@ -13,7 +13,6 @@ Relationships:
 from __future__ import annotations
 
 from hashlib import sha256
-from typing import cast
 from uuid import uuid4
 
 import httpx
@@ -57,12 +56,13 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_transcript
 )
 
 
-class TransportFailingHttpClient:
-    """Fake httpx client that simulates producer transport failure."""
+def _transport_failing_client() -> httpx.AsyncClient:
+    """Real httpx client whose transport simulates producer transport failure."""
 
-    async def post(self, *_args: object, **_kwargs: object) -> httpx.Response:
-        request = httpx.Request("POST", "https://sir-convert.local/v2/convert/jobs")
+    def fail(request: httpx.Request) -> httpx.Response:
         raise httpx.ConnectError("connection refused", request=request)
+
+    return httpx.AsyncClient(transport=httpx.MockTransport(fail))
 
 
 @pytest.mark.unit
@@ -304,7 +304,7 @@ async def test_product_export_maps_producer_transport_failure_to_failed_state() 
             api_key="test-key",
             timeout_seconds=1.0,
         ),
-        client=cast(httpx.AsyncClient, TransportFailingHttpClient()),
+        client=_transport_failing_client(),
     )
     await fx.seed_transcript(
         actor_id=actor.id,

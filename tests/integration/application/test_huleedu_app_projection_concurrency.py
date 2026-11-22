@@ -20,6 +20,7 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.sql.elements import ColumnElement
 
 from skriptoteket.application.identity.huleedu_app_projection import (
     HuleEduAppProjectionResolver,
@@ -135,10 +136,12 @@ async def _resolve_in_isolated_session(
         return await _resolver(session).resolve(context=context, correlation_id=correlation_id)
 
 
-async def _count_rows(session: AsyncSession, model: type[object], *criteria: object) -> int:
+async def _count_rows(
+    session: AsyncSession, model: type[object], *criteria: ColumnElement[bool]
+) -> int:
     stmt = select(func.count()).select_from(model)
     for criterion in criteria:
-        stmt = stmt.where(criterion)  # type: ignore[arg-type]
+        stmt = stmt.where(criterion)
     return int(await session.scalar(stmt))
 
 

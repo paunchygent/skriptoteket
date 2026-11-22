@@ -16,7 +16,7 @@ from __future__ import annotations
 import io
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
-from typing import cast
+from typing import TypedDict
 from uuid import UUID, uuid4
 
 import pytest
@@ -44,7 +44,7 @@ from skriptoteket.application.curated_apps.document_converter_projects import (
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.web.api.v1 import (
     apps_conversion_hub_document_converter_project_previews as api,
 )
@@ -120,27 +120,62 @@ class FakeRegistry:
         return SimpleNamespace(app_id=app_id, min_role=Role.USER)
 
 
+class _RenderPreviewCall(TypedDict):
+    actor: User
+    manifest: DocumentConverterProjectManifest
+    files: list[DocumentConverterProjectUploadedFile]
+
+
 class FakeRenderPreviewHandler:
     def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[_RenderPreviewCall] = []
 
-    async def handle(self, **kwargs) -> DocumentConverterProjectPreviewResult:
-        self.calls.append(kwargs)
+    async def handle(
+        self,
+        *,
+        actor: User,
+        manifest: DocumentConverterProjectManifest,
+        files: list[DocumentConverterProjectUploadedFile],
+    ) -> DocumentConverterProjectPreviewResult:
+        self.calls.append({"actor": actor, "manifest": manifest, "files": files})
         return _preview_result()
 
 
 class FakeGetPreviewHandler:
-    async def handle(self, **kwargs) -> DocumentConverterProjectPreviewResult:
-        return _preview_result(preview_id=cast(object, kwargs["preview_id"]))
+    async def handle(
+        self, *, actor: User, preview_id: UUID
+    ) -> DocumentConverterProjectPreviewResult:
+        return _preview_result(preview_id=preview_id)
+
+
+class _PreviewArtifactCall(TypedDict):
+    actor: User
+    preview_id: UUID
+    artifact_id: UUID
+    filename_stem: str | None
 
 
 class FakeDownloadPreviewArtifactHandler:
     def __init__(self, *, filename: str = "preview.pdf") -> None:
         self.filename = filename
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[_PreviewArtifactCall] = []
 
-    async def handle(self, **kwargs) -> DocumentConverterStoredArtifact:
-        self.calls.append(kwargs)
+    async def handle(
+        self,
+        *,
+        actor: User,
+        preview_id: UUID,
+        artifact_id: UUID,
+        filename_stem: str | None = None,
+    ) -> DocumentConverterStoredArtifact:
+        self.calls.append(
+            {
+                "actor": actor,
+                "preview_id": preview_id,
+                "artifact_id": artifact_id,
+                "filename_stem": filename_stem,
+            }
+        )
         return DocumentConverterStoredArtifact(
             filename=self.filename,
             content_type="application/pdf",
@@ -151,10 +186,24 @@ class FakeDownloadPreviewArtifactHandler:
 class FakeSavePreviewArtifactHandler:
     def __init__(self, *, filename: str = "preview.pdf") -> None:
         self.filename = filename
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[_PreviewArtifactCall] = []
 
-    async def handle(self, **kwargs) -> SaveDocumentConverterProjectPreviewArtifactResult:
-        self.calls.append(kwargs)
+    async def handle(
+        self,
+        *,
+        actor: User,
+        preview_id: UUID,
+        artifact_id: UUID,
+        filename_stem: str | None = None,
+    ) -> SaveDocumentConverterProjectPreviewArtifactResult:
+        self.calls.append(
+            {
+                "actor": actor,
+                "preview_id": preview_id,
+                "artifact_id": artifact_id,
+                "filename_stem": filename_stem,
+            }
+        )
         return SaveDocumentConverterProjectPreviewArtifactResult(
             vault_artifact=ConversionHubSavedVaultArtifact(
                 file_id=uuid4(),
@@ -167,9 +216,11 @@ class FakeSavePreviewArtifactHandler:
 
 
 class FakeDiscardPreviewHandler:
-    async def handle(self, **kwargs) -> DiscardDocumentConverterProjectPreviewResult:
+    async def handle(
+        self, *, actor: User, preview_id: UUID
+    ) -> DiscardDocumentConverterProjectPreviewResult:
         return DiscardDocumentConverterProjectPreviewResult(
-            preview_id=cast(object, kwargs["preview_id"]),
+            preview_id=preview_id,
             status=DocumentConverterProjectPreviewStatus.DISCARDED,
         )
 
@@ -195,9 +246,9 @@ async def test_render_project_preview_accepts_scoped_html_css_project() -> None:
 
     assert result.status is DocumentConverterProjectPreviewStatus.SUCCEEDED
     assert result.output_mode is DocumentConverterProjectOutputMode.COMBINED_PDF
-    manifest = cast(DocumentConverterProjectManifest, handler.calls[0]["manifest"])
+    manifest = handler.calls[0]["manifest"]
     assert manifest.output_mode is DocumentConverterProjectOutputMode.COMBINED_PDF
-    uploads = cast(list[DocumentConverterProjectUploadedFile], handler.calls[0]["files"])
+    uploads = handler.calls[0]["files"]
     assert [upload.filename for upload in uploads] == ["worksheet.html", "style.css", "logo.png"]
 
 
@@ -292,11 +343,11 @@ async def test_discard_project_preview_uses_preview_id_only() -> None:
     assert result.status is DocumentConverterProjectPreviewStatus.DISCARDED
 
 
-def _preview_result(preview_id: object | None = None) -> DocumentConverterProjectPreviewResult:
+def _preview_result(preview_id: UUID | None = None) -> DocumentConverterProjectPreviewResult:
     artifact_id = uuid4()
     created_at = datetime(2026, 6, 25, tzinfo=timezone.utc)
     return DocumentConverterProjectPreviewResult(
-        preview_id=cast(UUID, preview_id) if preview_id is not None else uuid4(),
+        preview_id=preview_id if preview_id is not None else uuid4(),
         status=DocumentConverterProjectPreviewStatus.SUCCEEDED,
         output_mode=DocumentConverterProjectOutputMode.COMBINED_PDF,
         created_at=created_at,

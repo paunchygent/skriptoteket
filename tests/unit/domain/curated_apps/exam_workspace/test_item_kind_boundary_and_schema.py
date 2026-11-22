@@ -6,7 +6,7 @@ schema forbids empty text segments, and null text in a batch without gaps.
 """
 
 import pytest
-from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
+from jsonschema import Draft202012Validator
 from pydantic import ValidationError
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_prompt import (

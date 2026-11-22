@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from uuid import uuid4
+from collections.abc import Mapping
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -22,11 +23,14 @@ from skriptoteket.protocols.llm import (
     EditOpsPatchOp,
     EditOpsPreviewCommand,
 )
+from skriptoteket.protocols.llm_captures import LlmCaptureKind
 from tests.fixtures.identity_fixtures import make_user
 
 
 class StubCaptureStore:
-    async def write_capture(self, *, kind: str, capture_id, payload) -> None:  # type: ignore[no-untyped-def]
+    async def write_capture(
+        self, *, kind: LlmCaptureKind, capture_id: UUID, payload: Mapping[str, object]
+    ) -> None:
         return
 
 

@@ -1,11 +1,22 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import TypeIs
 
 import pytest
 
 from skriptoteket.config import Settings
-from skriptoteket.observability.health import HealthPayload, build_health_response, check_smtp
+from skriptoteket.observability.health import (
+    HealthPayload,
+    PublicHealthPayload,
+    build_health_response,
+    check_smtp,
+)
+
+
+def _is_detailed_payload(
+    payload: HealthPayload | PublicHealthPayload,
+) -> TypeIs[HealthPayload]:
+    return "checks" in payload and "dependencies" in payload
 
 
 def test_build_health_response_degraded_when_smtp_degraded() -> None:
@@ -18,7 +29,8 @@ def test_build_health_response_degraded_when_smtp_degraded() -> None:
         smtp_status="degraded",
         smtp_error="SMTP unreachable",
     )
-    detailed_payload = cast(HealthPayload, payload)
+    assert _is_detailed_payload(payload)
+    detailed_payload = payload
 
     assert status_code == 503
     assert detailed_payload["status"] == "degraded"
@@ -36,7 +48,8 @@ def test_build_health_response_unhealthy_when_database_unhealthy() -> None:
         smtp_status="healthy",
         smtp_error=None,
     )
-    detailed_payload = cast(HealthPayload, payload)
+    assert _is_detailed_payload(payload)
+    detailed_payload = payload
 
     assert status_code == 503
     assert detailed_payload["status"] == "unhealthy"

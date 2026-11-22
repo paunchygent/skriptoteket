@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import cast
 
 import pytest
 from alembic import command
@@ -25,7 +24,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
             )
         )
         job_columns = _column_map(
-            [cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()]
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
         )
         assert job_columns["id"] == ("uuid", "NO")
         assert job_columns["run_id"] == ("uuid", "NO")
@@ -73,7 +72,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
             )
         )
         run_columns = _column_map(
-            [cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()]
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
         )
         assert run_columns["requested_at"] == ("timestamp with time zone", "NO")
         assert run_columns["started_at"] == ("timestamp with time zone", "YES")
