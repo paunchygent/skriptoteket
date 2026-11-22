@@ -15,12 +15,27 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
 import requests
+from pydantic import JsonValue, TypeAdapter
 
 from scripts._playwright_config import get_config
 from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
+
+
+class _IdResult(TypedDict):
+    id: str
+
+
+class _DraftResult(TypedDict):
+    id: str
+    template_id: str | None
+    draft_kind: str
+
+
+_ID_RESULT = TypeAdapter(_IdResult)
+_DRAFT_RESULT = TypeAdapter(_DraftResult)
 
 
 def _api_base_url(base_url: str) -> str:
@@ -49,7 +64,8 @@ def _create_roster(
         timeout=30,
     )
     response.raise_for_status()
-    return response.json()["id"]
+    roster: JsonValue = response.json()
+    return _ID_RESULT.validate_python(roster)["id"]
 
 
 def _create_template(
@@ -75,7 +91,8 @@ def _create_template(
         timeout=30,
     )
     response.raise_for_status()
-    return response.json()["id"]
+    template: JsonValue = response.json()
+    return _ID_RESULT.validate_python(template)["id"]
 
 
 def _resolve_draft(
@@ -86,7 +103,7 @@ def _resolve_draft(
     roster_id: str,
     draft_kind: str,
     template_id: str | None,
-) -> dict[str, Any]:
+) -> _DraftResult:
     """Resolve a draft for one class and kind."""
 
     response = session.post(
@@ -100,7 +117,8 @@ def _resolve_draft(
         timeout=30,
     )
     response.raise_for_status()
-    return response.json()
+    draft: JsonValue = response.json()
+    return _DRAFT_RESULT.validate_python(draft)
 
 
 def main() -> None:

@@ -22,6 +22,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from playwright.sync_api import Page, expect, sync_playwright
+from pydantic import JsonValue
 
 from scripts._playwright_auth import login_via_auth_entry
 from scripts._playwright_browser import launch_chromium
@@ -37,9 +38,15 @@ SUCCESS_SELECTORS = {
     "exam": '[data-test="exam-workspace-frame"]',
     "transcript": '[data-test="transcript-host-layout"]',
 }
-VIEWPORT = {"label": "desktop", "width": 1512, "height": 900}
-JsonValue = str | int | float | bool | None | dict[str, "JsonValue"] | list["JsonValue"]
+VIEWPORT_LABEL = "desktop"
+VIEWPORT_WIDTH = 1512
+VIEWPORT_HEIGHT = 900
 JsonObject = dict[str, JsonValue]
+VIEWPORT: JsonObject = {
+    "label": VIEWPORT_LABEL,
+    "width": VIEWPORT_WIDTH,
+    "height": VIEWPORT_HEIGHT,
+}
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
@@ -158,7 +165,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "artifact_dir": str(artifact_dir),
         "base_url": config.base_url,
         "command": "pdm run python -m scripts.authenticated_app_identity_split",
-        "identity_paths": IDENTITY_PATHS,
+        "identity_paths": dict[str, JsonValue](IDENTITY_PATHS),
         "product_identity_realm": "skriptoteket_standalone",
         "status": "running",
         "timestamp_utc": datetime.now(tz=UTC).isoformat(),
@@ -168,12 +175,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
-        captures: list[JsonObject] = []
+        captures: list[JsonValue] = []
         try:
             for mode in ("exam", "transcript"):
                 context = browser.new_context(
                     base_url=config.base_url,
-                    viewport={"width": VIEWPORT["width"], "height": VIEWPORT["height"]},
+                    viewport={"width": VIEWPORT_WIDTH, "height": VIEWPORT_HEIGHT},
                 )
                 page = context.new_page()
                 page.set_default_timeout(args.timeout_seconds * 1_000)

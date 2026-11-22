@@ -3,12 +3,14 @@ from __future__ import annotations
 import argparse
 import json
 import uuid
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
 import httpx
+from pydantic import JsonValue, TypeAdapter
 
 from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
 
@@ -17,15 +19,91 @@ DEFAULT_SCENARIO_DIR = Path("scripts/edit_ops_scenarios")
 DEFAULT_RECORD_ROOT = Path(".artifacts/edit-ops-harness")
 
 
+class _ScenarioPayload(TypedDict):
+    tool_id: NotRequired[str | None]
+    tool_slug: NotRequired[str | None]
+    message: NotRequired[str | None]
+    active_file: NotRequired[str]
+    selection: NotRequired[dict[str, JsonValue] | None]
+    cursor: NotRequired[dict[str, JsonValue] | None]
+    ops: NotRequired[list[JsonValue] | None]
+
+
+class _EditorBootPayload(TypedDict):
+    source_code: NotRequired[JsonValue]
+    entrypoint: NotRequired[JsonValue]
+    settings_schema: NotRequired[JsonValue]
+    input_schema: NotRequired[JsonValue]
+    usage_instructions: NotRequired[JsonValue]
+
+
+class _ToolRef(TypedDict):
+    slug: NotRequired[JsonValue]
+    id: NotRequired[JsonValue]
+
+
+class _ToolsPayload(TypedDict):
+    tools: NotRequired[JsonValue]
+
+
+class _EditOpsResponse(TypedDict):
+    ops: NotRequired[JsonValue]
+
+
+class _OkResult(TypedDict):
+    ok: NotRequired[JsonValue]
+
+
+class _PreviewMeta(TypedDict):
+    base_hash: NotRequired[JsonValue]
+    patch_id: NotRequired[JsonValue]
+
+
+class _PreviewResult(_OkResult):
+    meta: NotRequired[_PreviewMeta]
+
+
+_SCENARIO_PAYLOAD = TypeAdapter(_ScenarioPayload)
+_EDITOR_BOOT = TypeAdapter(_EditorBootPayload)
+_TOOL_LIST = TypeAdapter(list[_ToolRef])
+_TOOLS_PAYLOAD = TypeAdapter(_ToolsPayload)
+_EDIT_OPS_RESPONSE = TypeAdapter(_EditOpsResponse)
+_PREVIEW_RESULT = TypeAdapter(_PreviewResult)
+_APPLY_RESULT = TypeAdapter(_OkResult)
+
+
+def _expect_object(value: JsonValue, *, context: str) -> dict[str, JsonValue]:
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected a JSON object for {context}, got {type(value).__name__}")
+    return value
+
+
+def _expect_str(value: JsonValue) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"Expected a string, got {type(value).__name__}")
+    return value
+
+
+def _text_field(value: JsonValue) -> str:
+    if isinstance(value, str):
+        return value
+    if not value:
+        return ""
+    raise TypeError(f"Expected text content, got {type(value).__name__}")
+
+
 def _utc_now_iso() -> str:
     return datetime.now(tz=timezone.utc).isoformat()
 
 
-def _read_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+def _read_json(path: Path) -> dict[str, JsonValue]:
+    data: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected a top-level JSON object in {path}")
+    return data
 
 
-def _write_json(path: Path, payload: Any) -> None:
+def _write_json(path: Path, payload: object) -> None:
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
@@ -45,23 +123,23 @@ def _load_env(path: Path) -> dict[str, str]:
     return data
 
 
-def _stringify_schema(schema: Any) -> str:
+def _stringify_schema(schema: JsonValue) -> str:
     if schema is None:
         return ""
     return json.dumps(schema, ensure_ascii=False, indent=2)
 
 
-def _build_virtual_files(editor_boot: dict[str, Any]) -> dict[str, str]:
+def _build_virtual_files(editor_boot: _EditorBootPayload) -> dict[str, JsonValue]:
     return {
-        "tool.py": editor_boot.get("source_code") or "",
-        "entrypoint.txt": editor_boot.get("entrypoint") or "",
+        "tool.py": _text_field(editor_boot.get("source_code")),
+        "entrypoint.txt": _text_field(editor_boot.get("entrypoint")),
         "settings_schema.json": _stringify_schema(editor_boot.get("settings_schema")),
         "input_schema.json": _stringify_schema(editor_boot.get("input_schema")),
-        "usage_instructions.md": editor_boot.get("usage_instructions") or "",
+        "usage_instructions.md": _text_field(editor_boot.get("usage_instructions")),
     }
 
 
-def _select_tool_id_by_slug(tools: list[dict[str, Any]], slug: str) -> str | None:
+def _select_tool_id_by_slug(tools: Sequence[_ToolRef], slug: str) -> str | None:
     for tool in tools:
         if tool.get("slug") == slug:
             return str(tool.get("id"))
@@ -74,20 +152,21 @@ class Scenario:
     tool_slug: str | None
     message: str | None
     active_file: str
-    selection: dict[str, int] | None
-    cursor: dict[str, int] | None
-    ops: list[dict[str, Any]] | None
+    selection: dict[str, JsonValue] | None
+    cursor: dict[str, JsonValue] | None
+    ops: list[JsonValue] | None
 
     @classmethod
-    def from_payload(cls, payload: dict[str, Any]) -> "Scenario":
+    def from_payload(cls, payload: Mapping[str, JsonValue]) -> "Scenario":
+        data = _SCENARIO_PAYLOAD.validate_python(payload)
         return cls(
-            tool_id=payload.get("tool_id"),
-            tool_slug=payload.get("tool_slug"),
-            message=payload.get("message"),
-            active_file=payload.get("active_file", "tool.py"),
-            selection=payload.get("selection"),
-            cursor=payload.get("cursor"),
-            ops=payload.get("ops"),
+            tool_id=data.get("tool_id"),
+            tool_slug=data.get("tool_slug"),
+            message=data.get("message"),
+            active_file=data.get("active_file", "tool.py"),
+            selection=data.get("selection"),
+            cursor=data.get("cursor"),
+            ops=data.get("ops"),
         )
 
 
@@ -113,23 +192,25 @@ class HarnessClient:
         method: str,
         path: str,
         *,
-        payload: dict[str, Any] | None,
+        payload: dict[str, JsonValue] | None,
         correlation_id: str,
-    ) -> dict[str, Any]:
+    ) -> dict[str, JsonValue]:
         headers = {
             "X-Correlation-ID": correlation_id,
         }
         response = self._client.request(method, path, json=payload, headers=headers)
         response.raise_for_status()
-        return response.json()
+        data: JsonValue = response.json()
+        return _expect_object(data, context=f"{method} {path}")
 
-    def get(self, path: str, *, correlation_id: str) -> dict[str, Any]:
+    def get(self, path: str, *, correlation_id: str) -> dict[str, JsonValue]:
         headers = {
             "X-Correlation-ID": correlation_id,
         }
         response = self._client.get(path, headers=headers)
         response.raise_for_status()
-        return response.json()
+        data: JsonValue = response.json()
+        return _expect_object(data, context=f"GET {path}")
 
 
 def _load_scenario(path: Path) -> Scenario:
@@ -149,7 +230,7 @@ def _mode_choices() -> list[str]:
     return ["generate", "preview", "apply", "full"]
 
 
-def _print_result(label: str, payload: dict[str, Any]) -> None:
+def _print_result(label: str, payload: _OkResult) -> None:
     print(f"{label}: ok={payload.get('ok', 'n/a')}")
 
 
@@ -215,16 +296,20 @@ def main() -> int:
     client = HarnessClient(base_url=args.base_url, email=email, correlation_id=correlation_id)
     try:
         if tool_id is None:
-            tools_payload = client.get("/api/v1/admin/tools", correlation_id=correlation_id)
-            tools = tools_payload.get("tools", [])
+            tools_payload = _TOOLS_PAYLOAD.validate_python(
+                client.get("/api/v1/admin/tools", correlation_id=correlation_id)
+            )
+            tools = _TOOL_LIST.validate_python(tools_payload.get("tools", []))
             if not tool_slug:
                 raise SystemExit("Provide tool_id or tool_slug (scenario or CLI).")
             tool_id = _select_tool_id_by_slug(tools, tool_slug)
             if tool_id is None:
-                available = ", ".join(sorted(t.get("slug", "") for t in tools))
+                available = ", ".join(sorted(_expect_str(t.get("slug", "")) for t in tools))
                 raise SystemExit(f"Tool slug not found: {tool_slug}. Available: {available}")
 
-        boot_payload = client.get(f"/api/v1/editor/tools/{tool_id}", correlation_id=correlation_id)
+        boot_payload = _EDITOR_BOOT.validate_python(
+            client.get(f"/api/v1/editor/tools/{tool_id}", correlation_id=correlation_id)
+        )
         virtual_files = _build_virtual_files(boot_payload)
 
         if output_record_dir:
@@ -242,11 +327,11 @@ def main() -> int:
             )
             _write_json(output_record_dir / "virtual_files.json", virtual_files)
 
-        ops = scenario.ops
+        ops: JsonValue = scenario.ops
         if args.mode in {"generate", "full"}:
             if not scenario.message:
                 raise SystemExit("Scenario missing message for generate/full mode.")
-            edit_ops_request = {
+            edit_ops_request: dict[str, JsonValue] = {
                 "tool_id": tool_id,
                 "message": scenario.message,
                 "active_file": scenario.active_file,
@@ -257,11 +342,13 @@ def main() -> int:
             if scenario.cursor:
                 edit_ops_request["cursor"] = scenario.cursor
 
-            edit_ops_response = client.request(
-                "POST",
-                "/api/v1/editor/edit-ops",
-                payload=edit_ops_request,
-                correlation_id=correlation_id,
+            edit_ops_response = _EDIT_OPS_RESPONSE.validate_python(
+                client.request(
+                    "POST",
+                    "/api/v1/editor/edit-ops",
+                    payload=edit_ops_request,
+                    correlation_id=correlation_id,
+                )
             )
             if output_record_dir:
                 _write_json(output_record_dir / "edit_ops.request.json", edit_ops_request)
@@ -275,7 +362,7 @@ def main() -> int:
             if not ops:
                 raise SystemExit("No ops provided for preview/apply.")
 
-            preview_request = {
+            preview_request: dict[str, JsonValue] = {
                 "tool_id": tool_id,
                 "active_file": scenario.active_file,
                 "virtual_files": virtual_files,
@@ -286,11 +373,13 @@ def main() -> int:
             if scenario.cursor:
                 preview_request["cursor"] = scenario.cursor
 
-            preview_response = client.request(
-                "POST",
-                "/api/v1/editor/edit-ops/preview",
-                payload=preview_request,
-                correlation_id=correlation_id,
+            preview_response = _PREVIEW_RESULT.validate_python(
+                client.request(
+                    "POST",
+                    "/api/v1/editor/edit-ops/preview",
+                    payload=preview_request,
+                    correlation_id=correlation_id,
+                )
             )
             if output_record_dir:
                 _write_json(output_record_dir / "preview.request.json", preview_request)
@@ -301,16 +390,18 @@ def main() -> int:
                 return 1
 
             if args.mode in {"apply", "full"}:
-                meta = preview_response.get("meta", {})
+                meta = preview_response.get("meta", _PreviewMeta())
                 apply_request = dict(preview_request)
                 apply_request["base_hash"] = meta.get("base_hash")
                 apply_request["patch_id"] = meta.get("patch_id")
 
-                apply_response = client.request(
-                    "POST",
-                    "/api/v1/editor/edit-ops/apply",
-                    payload=apply_request,
-                    correlation_id=correlation_id,
+                apply_response = _APPLY_RESULT.validate_python(
+                    client.request(
+                        "POST",
+                        "/api/v1/editor/edit-ops/apply",
+                        payload=apply_request,
+                        correlation_id=correlation_id,
+                    )
                 )
                 if output_record_dir:
                     _write_json(output_record_dir / "apply.request.json", apply_request)
@@ -365,11 +456,13 @@ def _run_replay(
 
     client = HarnessClient(base_url=base_url, email=email, correlation_id=correlation_id)
     try:
-        preview_response = client.request(
-            "POST",
-            "/api/v1/editor/edit-ops/preview",
-            payload=preview_request,
-            correlation_id=correlation_id,
+        preview_response = _PREVIEW_RESULT.validate_python(
+            client.request(
+                "POST",
+                "/api/v1/editor/edit-ops/preview",
+                payload=preview_request,
+                correlation_id=correlation_id,
+            )
         )
         if output_record_dir:
             _write_json(output_record_dir / "preview.request.json", preview_request)
@@ -380,16 +473,18 @@ def _run_replay(
             return 1
 
         if mode in {"apply", "full"}:
-            meta = preview_response.get("meta", {})
+            meta = preview_response.get("meta", _PreviewMeta())
             apply_request = dict(preview_request)
             apply_request["base_hash"] = meta.get("base_hash")
             apply_request["patch_id"] = meta.get("patch_id")
 
-            apply_response = client.request(
-                "POST",
-                "/api/v1/editor/edit-ops/apply",
-                payload=apply_request,
-                correlation_id=correlation_id,
+            apply_response = _APPLY_RESULT.validate_python(
+                client.request(
+                    "POST",
+                    "/api/v1/editor/edit-ops/apply",
+                    payload=apply_request,
+                    correlation_id=correlation_id,
+                )
             )
             if output_record_dir:
                 _write_json(output_record_dir / "apply.request.json", apply_request)

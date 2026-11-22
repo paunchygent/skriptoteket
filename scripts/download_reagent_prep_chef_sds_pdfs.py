@@ -23,11 +23,12 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 from urllib.parse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
+from pydantic import JsonValue, TypeAdapter, ValidationError
 
 BASE_URL = "https://www.carlroth.com"
 SEARCH_PATH = "/com/en/search/"
@@ -234,6 +235,37 @@ class ThrottledHttpClient:
         time.sleep(delay)
 
 
+class _HazardEntry(TypedDict):
+    key: str
+    display_name: NotRequired[JsonValue]
+    search_aliases: NotRequired[JsonValue]
+
+
+class _OverrideEntry(TypedDict):
+    product_urls: NotRequired[JsonValue]
+    prepend_queries: NotRequired[JsonValue]
+
+
+class _OverridesPayload(TypedDict):
+    targets: NotRequired[JsonValue]
+
+
+class _StateTarget(TypedDict):
+    status: NotRequired[JsonValue]
+
+
+class _StatePayload(TypedDict):
+    updated_at: NotRequired[str]
+    targets: NotRequired[dict[str, JsonValue]]
+
+
+_HAZARD_ENTRY = TypeAdapter(_HazardEntry)
+_OVERRIDE_ENTRY = TypeAdapter(_OverrideEntry)
+_OVERRIDES_PAYLOAD = TypeAdapter(_OverridesPayload)
+_STATE_TARGET = TypeAdapter(_StateTarget)
+_STATE_PAYLOAD = TypeAdapter(_StatePayload)
+
+
 class TargetCatalog:
     """Loads and resolves target compounds from hazards + gaps documents."""
 
@@ -268,14 +300,17 @@ class TargetCatalog:
             return targets[:max_targets]
         return targets
 
-    def _load_hazards(self) -> dict[str, dict[str, Any]]:
-        payload = json.loads(self._hazards_path.read_text(encoding="utf-8"))
+    def _load_hazards(self) -> dict[str, _HazardEntry]:
+        payload: JsonValue = json.loads(self._hazards_path.read_text(encoding="utf-8"))
         if not isinstance(payload, list):
             raise RuntimeError(f"Unexpected hazards payload in {self._hazards_path}")
-        out: dict[str, dict[str, Any]] = {}
+        out: dict[str, _HazardEntry] = {}
         for item in payload:
-            if isinstance(item, dict) and isinstance(item.get("key"), str):
-                out[str(item["key"])] = item
+            try:
+                hazard = _HAZARD_ENTRY.validate_python(item)
+            except ValidationError:
+                continue
+            out[hazard["key"]] = hazard
         return out
 
     def _load_missing_markdown_keys(self) -> list[str]:
@@ -411,12 +446,15 @@ class StateStore:
         self._path = state_path
         self._path.parent.mkdir(parents=True, exist_ok=True)
 
-    def load(self) -> dict[str, Any]:
+    def load(self) -> _StatePayload:
         if not self._path.is_file():
-            return {"updated_at": _utc_now_iso(), "targets": {}}
-        return json.loads(self._path.read_text(encoding="utf-8"))
+            return _StatePayload(updated_at=_utc_now_iso(), targets={})
+        payload: JsonValue = json.loads(self._path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise RuntimeError(f"Unexpected state payload in {self._path}")
+        return _STATE_PAYLOAD.validate_python(payload)
 
-    def save(self, *, payload: dict[str, Any]) -> None:
+    def save(self, *, payload: _StatePayload) -> None:
         payload["updated_at"] = _utc_now_iso()
         self._path.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True),
@@ -585,7 +623,7 @@ def _normalize_whitespace(value: str) -> str:
     return " ".join(value.split())
 
 
-def _build_search_queries(*, hazard: dict[str, Any]) -> list[str]:
+def _build_search_queries(*, hazard: _HazardEntry) -> list[str]:
     queries: list[str] = []
 
     search_aliases = hazard.get("search_aliases")
@@ -626,8 +664,10 @@ def _load_target_overrides(*, path: Path) -> dict[str, TargetOverride]:
     if not path.is_file():
         return {}
 
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    targets_payload = payload.get("targets")
+    payload: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Invalid overrides payload in {path}")
+    targets_payload = _OVERRIDES_PAYLOAD.validate_python(payload).get("targets")
     if not isinstance(targets_payload, dict):
         raise RuntimeError(f"Invalid overrides payload in {path}")
 
@@ -635,8 +675,9 @@ def _load_target_overrides(*, path: Path) -> dict[str, TargetOverride]:
     for key, entry in targets_payload.items():
         if not isinstance(key, str) or not isinstance(entry, dict):
             continue
-        urls = entry.get("product_urls")
-        queries = entry.get("prepend_queries")
+        override = _OVERRIDE_ENTRY.validate_python(entry)
+        urls = override.get("product_urls")
+        queries = override.get("prepend_queries")
         if not isinstance(urls, list):
             urls = []
         if not isinstance(queries, list):
@@ -713,7 +754,10 @@ def main() -> None:
 
     state_store = StateStore(state_path=args.state_path)
     state_payload = state_store.load()
-    target_state = state_payload.setdefault("targets", {})
+    raw_target_state = state_payload.setdefault("targets", {})
+    if not isinstance(raw_target_state, dict):
+        raise RuntimeError(f"State payload 'targets' must be an object in {args.state_path}")
+    target_state: dict[str, JsonValue] = raw_target_state
 
     throttle_policy = ThrottlePolicy(
         min_delay_seconds=args.min_delay_seconds,
@@ -748,12 +792,12 @@ def main() -> None:
             if (
                 not args.force
                 and isinstance(existing, dict)
-                and existing.get("status") == "downloaded"
+                and _STATE_TARGET.validate_python(existing).get("status") == "downloaded"
             ):
                 continue
 
             outcome = pipeline.run_target(target=target)
-            target_state[target.key] = asdict(outcome)
+            target_state[target.key] = json.loads(json.dumps(asdict(outcome)))
             outcomes.append(outcome)
             state_store.save(payload=state_payload)
             print(f"[sds_download] key={target.key} status={outcome.status}")

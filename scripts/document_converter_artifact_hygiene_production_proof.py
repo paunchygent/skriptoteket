@@ -22,12 +22,14 @@ import io
 import json
 import time
 import zipfile
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
-from dishka import Scope
+from dishka import AsyncContainer, Scope
+from pydantic import JsonValue, TypeAdapter
 from pypdf import PdfReader
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,7 +92,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def write_json(path: Path, payload: dict[str, Any]) -> None:
+def write_json(path: Path, payload: dict[str, JsonValue]) -> None:
     """Write a stable JSON evidence file."""
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, default=str),
@@ -108,7 +110,7 @@ def marker_hits_in_bytes(content: bytes) -> list[str]:
     return sorted(marker for marker in FORBIDDEN_MARKERS if marker.encode("utf-8") in content)
 
 
-def inspect_pdf(content: bytes) -> dict[str, Any]:
+def inspect_pdf(content: bytes) -> dict[str, JsonValue]:
     """Inspect PDF text and metadata for forbidden markers."""
     reader = PdfReader(io.BytesIO(content))
     extracted_text = "\n".join(page.extract_text() or "" for page in reader.pages)
@@ -116,16 +118,16 @@ def inspect_pdf(content: bytes) -> dict[str, Any]:
     metadata = reader.metadata or {}
     metadata_text = "\n".join(str(value) for value in metadata.values() if value is not None)
     return {
-        "metadata_marker_hits": marker_hits_in_text(metadata_text),
+        "metadata_marker_hits": [hit for hit in marker_hits_in_text(metadata_text)],
         "page_count": len(reader.pages),
         "text_excerpt": compact_text[:320],
-        "text_marker_hits": marker_hits_in_text(compact_text),
+        "text_marker_hits": [hit for hit in marker_hits_in_text(compact_text)],
     }
 
 
-def inspect_zip_text_members(content: bytes) -> dict[str, Any]:
+def inspect_zip_text_members(content: bytes) -> dict[str, JsonValue]:
     """Inspect text-like ZIP members such as DOCX XML for forbidden markers."""
-    hits: dict[str, list[str]] = {}
+    hits: dict[str, JsonValue] = {}
     member_count = 0
     with zipfile.ZipFile(io.BytesIO(content)) as archive:
         for name in archive.namelist():
@@ -135,7 +137,7 @@ def inspect_zip_text_members(content: bytes) -> dict[str, Any]:
             text = archive.read(name).decode("utf-8", errors="replace")
             member_hits = marker_hits_in_text(text)
             if member_hits:
-                hits[name] = member_hits
+                hits[name] = [hit for hit in member_hits]
     return {"zip_member_count": member_count, "zip_text_marker_hits": hits}
 
 
@@ -146,17 +148,17 @@ def inspect_artifact(
     filename: str,
     content_type: str,
     content: bytes,
-) -> dict[str, Any]:
+) -> dict[str, JsonValue]:
     """Persist one artifact and return redacted hygiene inspection metadata."""
     suffix = Path(filename).suffix or ".bin"
     artifact_path = output_dir / f"{label}{suffix}"
     artifact_path.write_bytes(content)
     raw_hits = marker_hits_in_bytes(content)
-    result: dict[str, Any] = {
+    result: dict[str, JsonValue] = {
         "content_type": content_type,
         "filename": filename,
         "path": str(artifact_path),
-        "raw_marker_hits": raw_hits,
+        "raw_marker_hits": [hit for hit in raw_hits],
         "sha256": sha256(content).hexdigest(),
         "size_bytes": len(content),
     }
@@ -164,13 +166,16 @@ def inspect_artifact(
         result["pdf"] = inspect_pdf(content)
     if suffix.lower() in {".docx", ".pptx", ".xlsx", ".zip"}:
         result["zip"] = inspect_zip_text_members(content)
-    result["forbidden_marker_hits"] = sorted(
-        set(marker_hits_in_text(json.dumps(result, ensure_ascii=False)) + raw_hits)
-    )
+    result["forbidden_marker_hits"] = [
+        hit
+        for hit in sorted(
+            set(marker_hits_in_text(json.dumps(result, ensure_ascii=False)) + raw_hits)
+        )
+    ]
     return result
 
 
-async def load_actor(container: Any) -> User:
+async def load_actor(container: AsyncContainer) -> User:
     """Select one active production user for owner-scoped handler proof."""
     async with container(scope=Scope.REQUEST) as request:
         session = await request.get(AsyncSession)
@@ -246,18 +251,18 @@ img { width: 32mm; height: 32mm; border: 1mm solid #0e8f5a; }
 
 
 async def run_project_preview(
-    container: Any,
+    container: AsyncContainer,
     *,
     actor: User,
     output_dir: Path,
-) -> dict[str, Any]:
+) -> dict[str, JsonValue]:
     """Render and download project-preview artifacts through production handlers."""
     manifest, files = build_project_fixture()
     async with container(scope=Scope.REQUEST) as request:
         render = await request.get(RenderDocumentConverterProjectPreviewHandler)
         download = await request.get(DownloadDocumentConverterProjectPreviewArtifactHandler)
         preview = await render.handle(actor=actor, manifest=manifest, files=files)
-        artifacts = []
+        artifacts: list[JsonValue] = []
         for index, artifact_ref in enumerate(preview.artifacts):
             artifact = await download.handle(
                 actor=actor,
@@ -283,12 +288,12 @@ async def run_project_preview(
 
 
 async def run_single_file_conversion(
-    container: Any,
+    container: AsyncContainer,
     *,
     actor: User,
     output_dir: Path,
     timeout_seconds: int,
-) -> dict[str, Any]:
+) -> dict[str, JsonValue]:
     """Submit and download one Sir Convert-backed HTML-to-DOCX artifact."""
     spec = ConversionHubJobSpecV2(
         source_format=ConversionHubSourceFormatV2.HTML,
@@ -365,18 +370,45 @@ async def run_single_file_conversion(
         }
 
 
-def assert_clean(summary: dict[str, Any]) -> None:
+class _ArtifactSummary(TypedDict):
+    filename: NotRequired[JsonValue]
+    forbidden_marker_hits: NotRequired[JsonValue]
+
+
+class _BranchSummary(TypedDict):
+    artifacts: NotRequired[JsonValue]
+    artifact: NotRequired[JsonValue]
+
+
+class _ProofSummary(TypedDict):
+    project_preview: _BranchSummary
+    single_file: _BranchSummary
+
+
+_ARTIFACT_SUMMARY = TypeAdapter(_ArtifactSummary)
+_PROOF_SUMMARY = TypeAdapter(_ProofSummary)
+
+
+def assert_clean(summary: Mapping[str, object]) -> None:
     """Fail if any retained artifact inspection found forbidden markers."""
+    parsed = _PROOF_SUMMARY.validate_python(summary)
     dirty: list[str] = []
-    for branch_name in ("project_preview", "single_file"):
-        branch = summary[branch_name]
+    for branch_name, branch in (
+        ("project_preview", parsed["project_preview"]),
+        ("single_file", parsed["single_file"]),
+    ):
         artifacts = branch.get("artifacts") or [branch.get("artifact")]
+        if not isinstance(artifacts, list):
+            raise TypeError(f"summary[{branch_name}] artifacts must be a JSON list")
         for artifact in artifacts:
             if not artifact:
                 continue
-            hits = artifact.get("forbidden_marker_hits") or []
+            if not isinstance(artifact, dict):
+                raise TypeError(f"summary[{branch_name}] artifact must be a JSON object")
+            record = _ARTIFACT_SUMMARY.validate_python(artifact)
+            hits = record.get("forbidden_marker_hits") or []
             if hits:
-                dirty.append(f"{branch_name}:{artifact.get('filename')}:{hits}")
+                dirty.append(f"{branch_name}:{record.get('filename')}:{hits}")
     if dirty:
         raise AssertionError("Forbidden marker hits found: " + "; ".join(dirty))
 
@@ -390,10 +422,10 @@ async def run() -> int:
     container = create_container(settings)
     try:
         actor = await load_actor(container)
-        summary: dict[str, Any] = {
+        summary: dict[str, JsonValue] = {
             "actor_id_hash": sha256(str(actor.id).encode("utf-8")).hexdigest()[:16],
             "artifact_dir": str(output_dir),
-            "forbidden_markers": list(FORBIDDEN_MARKERS),
+            "forbidden_markers": [marker for marker in FORBIDDEN_MARKERS],
             "settings": {
                 "environment": settings.ENVIRONMENT,
                 "service_name": settings.SERVICE_NAME,

@@ -20,10 +20,13 @@ import argparse
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
+
+from pydantic import JsonValue, TypeAdapter, ValidationError
 
 DEFAULT_INDEX_PATH = Path("data/reagent_prep_chef/sds/index.json")
 DEFAULT_HAZARDS_PATH = Path(
@@ -88,6 +91,16 @@ class ExtractionIssue:
     message: str
 
 
+class ClpSummary(TypedDict):
+    """CLP classification fields extracted from SDS section 2."""
+
+    classification: list[str]
+    h_codes: list[str]
+    p_codes: list[str]
+    pictograms: list[str]
+    signal_word: str | None
+
+
 @dataclass(frozen=True, slots=True)
 class SdsShortcard:
     """Portal-focused shortcard extracted from one SDS markdown document."""
@@ -109,7 +122,7 @@ class SdsShortcard:
     version: str | None
     revision_date: str | None
     replaced_version: str | None
-    clp: dict[str, Any]
+    clp: ClpSummary
     ppe_default: list[str]
     ppe_notes: dict[str, str | None]
     spill_notes: str | None
@@ -144,8 +157,29 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _load_json(path: Path) -> object:
-    return json.loads(path.read_text(encoding="utf-8"))
+class _IndexPayload(TypedDict):
+    entries: NotRequired[JsonValue]
+
+
+class _IndexEntry(TypedDict):
+    md_file_name: NotRequired[JsonValue]
+    provider: NotRequired[JsonValue]
+
+
+class _HazardEntry(TypedDict):
+    key: str
+    display_name: NotRequired[JsonValue]
+    ppe: NotRequired[JsonValue]
+
+
+_INDEX_PAYLOAD = TypeAdapter(_IndexPayload)
+_INDEX_ENTRY = TypeAdapter(_IndexEntry)
+_HAZARD_ENTRY = TypeAdapter(_HazardEntry)
+
+
+def _load_json(path: Path) -> JsonValue:
+    data: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    return data
 
 
 def _normalize_line(value: str) -> str:
@@ -596,27 +630,31 @@ def main() -> None:
     index_payload = _load_json(args.index_path)
     if not isinstance(index_payload, dict):
         raise SystemExit(f"Unexpected index payload: {args.index_path}")
-    entries_payload = index_payload.get("entries")
+    index_entries = _INDEX_PAYLOAD.validate_python(index_payload)
+    entries_payload = index_entries.get("entries")
     if not isinstance(entries_payload, dict):
         raise SystemExit(f"Unexpected index entries payload: {args.index_path}")
 
     hazards_payload = _load_json(args.hazards_path)
     if not isinstance(hazards_payload, list):
         raise SystemExit(f"Unexpected hazards payload: {args.hazards_path}")
-    hazards_by_key = {
-        str(item.get("key")): item
-        for item in hazards_payload
-        if isinstance(item, dict) and isinstance(item.get("key"), str)
-    }
+    hazards_by_key: dict[str, _HazardEntry] = {}
+    for item in hazards_payload:
+        try:
+            hazard_record = _HAZARD_ENTRY.validate_python(item)
+        except ValidationError:
+            continue
+        hazards_by_key[hazard_record["key"]] = hazard_record
 
     shortcards: list[SdsShortcard] = []
     issue_counts_by_code: dict[str, int] = {}
     files_with_issues: list[str] = []
 
     for sds_ref in sorted(entries_payload):
-        entry = entries_payload[sds_ref]
-        if not isinstance(entry, dict):
+        raw_entry = entries_payload[sds_ref]
+        if not isinstance(raw_entry, dict):
             continue
+        entry = _INDEX_ENTRY.validate_python(raw_entry)
         md_file_name = str(entry.get("md_file_name") or "").strip()
         if not md_file_name:
             continue
@@ -631,12 +669,13 @@ def main() -> None:
             continue
 
         markdown_text = md_path.read_text(encoding="utf-8")
-        hazard = hazards_by_key.get(sds_ref, {})
-        display_name = str(hazard.get("display_name") or sds_ref)
+        hazard = hazards_by_key.get(sds_ref)
+        display_name = sds_ref if hazard is None else str(hazard.get("display_name") or sds_ref)
+        ppe_source: JsonValue = hazard.get("ppe") if hazard is not None else None
+        if not isinstance(ppe_source, Iterable):
+            raise TypeError(f"Expected iterable 'ppe' for hazard {sds_ref}")
         ppe_default = [
-            str(item).strip()
-            for item in (hazard.get("ppe") if isinstance(hazard, dict) else [])
-            if isinstance(item, str) and item.strip()
+            str(item).strip() for item in ppe_source if isinstance(item, str) and item.strip()
         ]
         provider = str(entry.get("provider") or "unknown")
         shortcard, issues = _extract_shortcard(

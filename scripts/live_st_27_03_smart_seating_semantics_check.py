@@ -20,14 +20,16 @@ import argparse
 import json
 import sys
 import time
+from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
 from statistics import mean
-from typing import Any
+from typing import NotRequired, TypedDict
 from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
+from pydantic import JsonValue, TypeAdapter
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
@@ -85,10 +87,71 @@ def _create_api_session(*, api_base_url: str, email: str) -> tuple[requests.Sess
     return auth.api_session, "huleedu-gateway-context"
 
 
-def _api_get(session: requests.Session, *, api_base_url: str, path: str) -> dict[str, Any]:
+class _TemplateRef(TypedDict):
+    id: str
+    name: NotRequired[JsonValue]
+
+
+class _TemplateDetail(TypedDict):
+    id: str
+    seats: JsonValue
+
+
+class _RosterResult(TypedDict):
+    id: str
+    name: str
+
+
+class _DraftResult(TypedDict):
+    id: str
+
+
+class _RevisionFields(TypedDict):
+    revision: NotRequired[JsonValue]
+
+
+class _RevisionPayload(TypedDict):
+    revision: NotRequired[JsonValue]
+    draft: NotRequired[_RevisionFields]
+
+
+class _ExportJob(TypedDict):
+    job_id: str
+
+
+class _ExportJobStatus(TypedDict):
+    status: str
+    error: NotRequired[JsonValue]
+
+
+class _SmartRunResult(TypedDict):
+    status: str
+    used_history: bool
+    message: str
+    workspace: dict[str, JsonValue]
+
+
+_TEMPLATE_LIST = TypeAdapter(list[_TemplateRef])
+_TEMPLATE_DETAIL = TypeAdapter(_TemplateDetail)
+_ROSTER_RESULT = TypeAdapter(_RosterResult)
+_DRAFT_RESULT = TypeAdapter(_DraftResult)
+_REVISION_PAYLOAD = TypeAdapter(_RevisionPayload)
+_EXPORT_JOB = TypeAdapter(_ExportJob)
+_EXPORT_JOB_STATUS = TypeAdapter(_ExportJobStatus)
+_SMART_RUN_RESULT = TypeAdapter(_SmartRunResult)
+
+
+def _expect_object(value: JsonValue, *, context: str) -> dict[str, JsonValue]:
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected a JSON object for {context}, got {type(value).__name__}")
+    return value
+
+
+def _api_get(session: requests.Session, *, api_base_url: str, path: str) -> JsonValue:
     response = session.get(f"{api_base_url}{path}", timeout=30)
     response.raise_for_status()
-    return response.json()
+    data: JsonValue = response.json()
+    return data
 
 
 def _api_mutate(
@@ -98,8 +161,8 @@ def _api_mutate(
     csrf_token: str,
     method: str,
     path: str,
-    payload: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+    payload: Mapping[str, JsonValue] | None = None,
+) -> JsonValue:
     response = session.request(
         method=method,
         url=f"{api_base_url}{path}",
@@ -108,14 +171,21 @@ def _api_mutate(
         timeout=30,
     )
     response.raise_for_status()
-    return response.json() if response.content else {}
+    data: JsonValue = response.json() if response.content else {}
+    return data
 
 
-def _workspace_revision(payload: dict[str, Any]) -> int:
-    if "revision" in payload:
-        return int(payload["revision"])
-    if "draft" in payload and "revision" in payload["draft"]:
-        return int(payload["draft"]["revision"])
+def _workspace_revision(payload: Mapping[str, object]) -> int:
+    parsed = _REVISION_PAYLOAD.validate_python(payload)
+    revision: JsonValue | None = None
+    if "revision" in parsed:
+        revision = parsed["revision"]
+    else:
+        draft = parsed.get("draft")
+        if draft is not None and "revision" in draft:
+            revision = draft["revision"]
+    if isinstance(revision, (int, float, str)):
+        return int(revision)
     raise AssertionError(f"Payload does not expose a draft revision: {payload.keys()}")
 
 
@@ -125,28 +195,32 @@ def _create_roster(
     api_base_url: str,
     csrf_token: str,
     name: str,
-) -> dict[str, Any]:
-    return _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="POST",
-        path="/api/v1/apps/classroom.group-seating-studio/rosters",
-        payload={
-            "name": name,
-            "students": [
-                {"id": student_id(student_name), "display_name": student_name}
-                for student_name in SA24D_STUDENT_NAMES
-            ],
-        },
+) -> _RosterResult:
+    return _ROSTER_RESULT.validate_python(
+        _api_mutate(
+            session,
+            api_base_url=api_base_url,
+            csrf_token=csrf_token,
+            method="POST",
+            path="/api/v1/apps/classroom.group-seating-studio/rosters",
+            payload={
+                "name": name,
+                "students": [
+                    {"id": student_id(student_name), "display_name": student_name}
+                    for student_name in SA24D_STUDENT_NAMES
+                ],
+            },
+        )
     )
 
 
-def _get_g20_template(session: requests.Session, *, api_base_url: str) -> dict[str, Any]:
-    templates = _api_get(
-        session,
-        api_base_url=api_base_url,
-        path="/api/v1/apps/classroom.group-seating-studio/templates",
+def _get_g20_template(session: requests.Session, *, api_base_url: str) -> _TemplateDetail:
+    templates = _TEMPLATE_LIST.validate_python(
+        _api_get(
+            session,
+            api_base_url=api_base_url,
+            path="/api/v1/apps/classroom.group-seating-studio/templates",
+        )
     )
     matching_template = next(
         (template for template in templates if template.get("name") == "G20"),
@@ -154,12 +228,15 @@ def _get_g20_template(session: requests.Session, *, api_base_url: str) -> dict[s
     )
     if matching_template is None:
         raise AssertionError("Missing live G20 template.")
-    template = _api_get(
-        session,
-        api_base_url=api_base_url,
-        path=f"/api/v1/apps/classroom.group-seating-studio/templates/{matching_template['id']}",
+    template = _TEMPLATE_DETAIL.validate_python(
+        _api_get(
+            session,
+            api_base_url=api_base_url,
+            path=f"/api/v1/apps/classroom.group-seating-studio/templates/{matching_template['id']}",
+        )
     )
-    if len(template["seats"]) != 31:
+    seats = template["seats"]
+    if not isinstance(seats, (list, dict, str)) or len(seats) != 31:
         raise AssertionError("Live G20 template no longer matches the canonical 31-seat room.")
     return template
 
@@ -171,14 +248,16 @@ def _create_seating_draft(
     csrf_token: str,
     roster_id: str,
     template_id: str,
-) -> dict[str, Any]:
-    return _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="POST",
-        path="/api/v1/apps/classroom.group-seating-studio/drafts/seating/new",
-        payload={"roster_id": roster_id, "template_id": template_id},
+) -> _DraftResult:
+    return _DRAFT_RESULT.validate_python(
+        _api_mutate(
+            session,
+            api_base_url=api_base_url,
+            csrf_token=csrf_token,
+            method="POST",
+            path="/api/v1/apps/classroom.group-seating-studio/drafts/seating/new",
+            payload={"roster_id": roster_id, "template_id": template_id},
+        )
     )
 
 
@@ -189,15 +268,18 @@ def _patch_draft(
     csrf_token: str,
     draft_id: str,
     expected_revision: int,
-    **fields: Any,
-) -> dict[str, Any]:
-    return _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="PATCH",
-        path=f"/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}",
-        payload={"expected_revision": expected_revision, **fields},
+    **fields: JsonValue,
+) -> dict[str, JsonValue]:
+    return _expect_object(
+        _api_mutate(
+            session,
+            api_base_url=api_base_url,
+            csrf_token=csrf_token,
+            method="PATCH",
+            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}",
+            payload={"expected_revision": expected_revision, **fields},
+        ),
+        context="draft patch",
     )
 
 
@@ -244,24 +326,28 @@ def _create_export_checkpoint(
     csrf_token: str,
     draft_id: str,
 ) -> None:
-    job = _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="POST",
-        path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs",
-        payload={
-            "export_kind": "pdf",
-            "layout_id": "pretty_brutalist_poster",
-            "paper_size": "a3_landscape",
-        },
+    job = _EXPORT_JOB.validate_python(
+        _api_mutate(
+            session,
+            api_base_url=api_base_url,
+            csrf_token=csrf_token,
+            method="POST",
+            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs",
+            payload={
+                "export_kind": "pdf",
+                "layout_id": "pretty_brutalist_poster",
+                "paper_size": "a3_landscape",
+            },
+        )
     )
     job_id = job["job_id"]
     for _ in range(90):
-        status_payload = _api_get(
-            session,
-            api_base_url=api_base_url,
-            path=f"/api/v1/apps/classroom.group-seating-studio/exports/jobs/{job_id}",
+        status_payload = _EXPORT_JOB_STATUS.validate_python(
+            _api_get(
+                session,
+                api_base_url=api_base_url,
+                path=f"/api/v1/apps/classroom.group-seating-studio/exports/jobs/{job_id}",
+            )
         )
         if status_payload["status"] == "succeeded":
             return
@@ -278,14 +364,16 @@ def _run_smart_seating(
     csrf_token: str,
     draft_id: str,
     expected_revision: int,
-) -> dict[str, Any]:
-    return _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="POST",
-        path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
-        payload={"expected_revision": expected_revision},
+) -> _SmartRunResult:
+    return _SMART_RUN_RESULT.validate_python(
+        _api_mutate(
+            session,
+            api_base_url=api_base_url,
+            csrf_token=csrf_token,
+            method="POST",
+            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
+            payload={"expected_revision": expected_revision},
+        )
     )
 
 
@@ -313,7 +401,7 @@ def main() -> None:
     )
 
     template = _get_g20_template(session, api_base_url=api_base_url)
-    topology = build_topology(template)
+    topology = build_topology(dict(template))
     run_name_suffix = uuid4().hex[:6]
     roster = _create_roster(
         session,
@@ -328,6 +416,7 @@ def main() -> None:
         roster_id=roster["id"],
         template_id=template["id"],
     )
+    draft_id = draft["id"]
     _patch_smart_rules(
         session,
         api_base_url=api_base_url,
@@ -336,30 +425,30 @@ def main() -> None:
         expected_revision=0,
     )
 
-    workspace = draft
+    workspace: Mapping[str, object] = dict(draft)
     for offset in range(_HISTORY_CHECKPOINT_COUNT):
         workspace = _patch_draft(
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
-            draft_id=draft["id"],
+            draft_id=draft_id,
             expected_revision=_workspace_revision(workspace),
             smart_enabled=True,
             use_history=True,
-            seat_assignments=rotated_assignments(template, offset),
+            seat_assignments=rotated_assignments(dict(template), offset),
         )
         _create_export_checkpoint(
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
-            draft_id=draft["id"],
+            draft_id=draft_id,
         )
 
     workspace = _patch_draft(
         session,
         api_base_url=api_base_url,
         csrf_token=csrf_token,
-        draft_id=draft["id"],
+        draft_id=draft_id,
         expected_revision=_workspace_revision(workspace),
         smart_enabled=True,
         use_history=True,
@@ -372,7 +461,7 @@ def main() -> None:
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
-            draft_id=draft["id"],
+            draft_id=draft_id,
             expected_revision=_workspace_revision(workspace),
         )
         if result["status"] != "applied":
@@ -427,7 +516,7 @@ def main() -> None:
     summary = {
         "runs": args.runs,
         "roster_name": roster["name"],
-        "draft_id": draft["id"],
+        "draft_id": draft_id,
         "unique_layout_count": unique_layout_count,
         "min_distinct_seat_count": min(distinct_seat_counts.values()),
         "near_teacher_distinct_seat_counts": near_teacher_distinct_seat_counts,
