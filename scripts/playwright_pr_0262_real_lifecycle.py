@@ -19,11 +19,19 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TypedDict, TypeGuard
 from urllib.parse import quote, urlparse
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
-from playwright.sync_api import APIRequestContext, Page, Playwright, expect, sync_playwright
+from playwright.sync_api import (
+    APIRequestContext,
+    Page,
+    Playwright,
+    Route,
+    expect,
+    sync_playwright,
+)
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_huleedu_auth import (
@@ -62,13 +70,81 @@ REQUIRED_TRUE_CLAIMS = (
 )
 
 
+def _json_object(value: JsonValue, *, label: str) -> dict[str, JsonValue]:
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected {label} to be a JSON object, got {type(value).__name__}.")
+    return value
+
+
+class _ContinuationLocalUser(TypedDict):
+    """Continuation `local_user` keys this proof reads."""
+
+    role: JsonValue
+    id: JsonValue
+
+
+class _ContinuationProfile(TypedDict):
+    """Continuation `profile` keys this proof reads."""
+
+    user_id: JsonValue
+
+
+class _ContinuationPayload(TypedDict):
+    """Continuation response keys this proof reads."""
+
+    local_user: _ContinuationLocalUser
+    profile: _ContinuationProfile
+
+
+class _ProbeClaims(TypedDict, total=False):
+    """Probe `claims` keys this proof reads; extra keys pass through."""
+
+    realm_subject_id_present: JsonValue
+    subject_claim_present: JsonValue
+    subject_matches_realm_subject: JsonValue
+    linked_identity_realm_present: JsonValue
+    linked_identity_matches_realm_subject: JsonValue
+    email_present: JsonValue
+    email_verified: JsonValue
+    active_app: JsonValue
+    active_product_identity_realm: JsonValue
+
+
+def _parse_local_user(value: JsonValue) -> _ContinuationLocalUser:
+    obj = _json_object(value, label="continuation local_user")
+    return {"role": obj["role"], "id": obj["id"]}
+
+
+def _parse_profile(value: JsonValue) -> _ContinuationProfile:
+    obj = _json_object(value, label="continuation profile")
+    return {"user_id": obj["user_id"]}
+
+
+def _parse_continuation_payload(value: JsonValue) -> _ContinuationPayload:
+    obj = _json_object(value, label="continuation payload")
+    return {
+        "local_user": _parse_local_user(obj["local_user"]),
+        "profile": _parse_profile(obj["profile"]),
+    }
+
+
+def _is_probe_claims(value: JsonValue) -> TypeGuard[_ProbeClaims]:
+    return isinstance(value, dict)
+
+
+def _parse_probe_claims(value: JsonValue) -> _ProbeClaims:
+    if not _is_probe_claims(value):
+        raise TypeError(f"Expected probe claims to be a JSON object, got {type(value).__name__}.")
+    return value
+
+
 def _verify_api_surfaces(
     playwright: Playwright,
     *,
     backend_url: str,
     signed_headers: dict[str, str],
     expected_local_role: RoleName,
-) -> tuple[dict[str, object], dict[str, object], dict[str, object], dict[str, object]]:
+) -> tuple[dict[str, JsonValue], dict[str, JsonValue], dict[str, JsonValue], dict[str, JsonValue]]:
     request_context: APIRequestContext | None = None
     try:
         request_context = playwright.request.new_context(base_url=backend_url)
@@ -86,7 +162,8 @@ def _verify_api_surfaces(
         if probe.status != 200:
             raise AssertionError(f"Expected diagnostics probe 200, got {probe.status}")
 
-        continuation_payload = continuation.json()
+        continuation_body: JsonValue = continuation.json()
+        continuation_payload = _parse_continuation_payload(continuation_body)
         local_user = continuation_payload["local_user"]
         profile = continuation_payload["profile"]
         observed_role = local_user["role"]
@@ -97,7 +174,10 @@ def _verify_api_surfaces(
         if profile["user_id"] != local_user["id"]:
             raise AssertionError("Continuation profile does not match the local user.")
 
-        probe_claims = probe.json()["claims"]
+        probe_body: JsonValue = probe.json()
+        probe_claims = _parse_probe_claims(
+            _json_object(probe_body, label="probe payload")["claims"]
+        )
         for key in REQUIRED_TRUE_CLAIMS:
             if probe_claims.get(key) is not True:
                 raise AssertionError(f"Live probe claim {key} was not true.")
@@ -126,7 +206,15 @@ def _verify_api_surfaces(
                 "claims": {
                     "active_app": probe_claims["active_app"],
                     "active_product_identity_realm": probe_claims["active_product_identity_realm"],
-                    **{key: probe_claims[key] for key in REQUIRED_TRUE_CLAIMS},
+                    "realm_subject_id_present": probe_claims["realm_subject_id_present"],
+                    "subject_claim_present": probe_claims["subject_claim_present"],
+                    "subject_matches_realm_subject": probe_claims["subject_matches_realm_subject"],
+                    "linked_identity_realm_present": probe_claims["linked_identity_realm_present"],
+                    "linked_identity_matches_realm_subject": probe_claims[
+                        "linked_identity_matches_realm_subject"
+                    ],
+                    "email_present": probe_claims["email_present"],
+                    "email_verified": probe_claims["email_verified"],
                 },
             },
         )
@@ -135,7 +223,7 @@ def _verify_api_surfaces(
             request_context.dispose()
 
 
-def _fulfill_json(route: Any, payload: dict[str, object], *, status: int = 200) -> None:
+def _fulfill_json(route: Route, payload: dict[str, JsonValue], *, status: int = 200) -> None:
     route.fulfill(
         status=status, headers={"content-type": "application/json"}, body=json.dumps(payload)
     )
@@ -155,7 +243,7 @@ def _install_browser_auth_routes(
         "access-control-allow-credentials": "true",
     }
 
-    def huleedu_session(route: Any) -> None:
+    def huleedu_session(route: Route) -> None:
         route.fulfill(
             status=200,
             headers=cors_headers,
@@ -182,15 +270,15 @@ def _install_browser_auth_routes(
             ),
         )
 
-    def huleedu_csrf(route: Any) -> None:
+    def huleedu_csrf(route: Route) -> None:
         route.fulfill(
             status=200, headers=cors_headers, body=json.dumps({"csrf_token": "csrf-token"})
         )
 
-    def app_continuation(route: Any) -> None:
+    def app_continuation(route: Route) -> None:
         route.continue_(headers={**route.request.headers, **signed_headers})
 
-    def my_tools(route: Any) -> None:
+    def my_tools(route: Route) -> None:
         _fulfill_json(route, {"tools": []})
 
     page.route("https://api.hule.education/v1/auth/session", huleedu_session)

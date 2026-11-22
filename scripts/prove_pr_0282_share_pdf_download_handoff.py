@@ -15,12 +15,14 @@ Relationships:
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TypedDict, TypeGuard
 from uuid import uuid4
 
 from playwright.sync_api import Browser, Download, Page, Route, sync_playwright
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -50,31 +52,78 @@ PDF_BYTES = b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n%%EOF\n"
 PDF_ROUTE_PATTERN = "**/share/classroom/*/download.pdf"
 
 
+@dataclass(frozen=True)
+class _Case:
+    html: str
+    width: int
+    height: int
+    route: str
+
+
+_DETAILS_KEYS = (
+    "state",
+    "ariaBusy",
+    "ariaDisabled",
+    "ariaLabel",
+    "href",
+    "cursor",
+    "spinnerVisible",
+)
+
+
+class _DetailsPayload(TypedDict):
+    """Browser `details` payload keys read by the handoff assertions."""
+
+    state: JsonValue
+    ariaBusy: JsonValue
+    ariaDisabled: JsonValue
+    ariaLabel: JsonValue
+    href: JsonValue
+    cursor: JsonValue
+    spinnerVisible: JsonValue
+
+
+def _is_details_payload(value: JsonValue) -> TypeGuard[_DetailsPayload]:
+    return isinstance(value, dict) and all(key in value for key in _DETAILS_KEYS)
+
+
+class _CaseResult(TypedDict):
+    download_event_count_after_duplicate_attempts: int
+    download_filename: str
+    idle_details: _DetailsPayload
+    busy_details: _DetailsPayload
+    recovered_details: _DetailsPayload
+    idle_rect: dict[str, float]
+    busy_rect: dict[str, float]
+    recovered_rect: dict[str, float]
+    screenshots: dict[str, str]
+
+
 def main() -> None:
     """Run the PR-0282 browser-handoff proof."""
 
     run_dir = OUTPUT_ROOT / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     run_dir.mkdir(parents=True, exist_ok=False)
     cases = {
-        "grouping_desktop": _build_case(
+        "grouping_desktop": _Case(
             html=_render_grouping_html(),
             width=1200,
             height=800,
             route="/proof/grouping-desktop",
         ),
-        "grouping_mobile": _build_case(
+        "grouping_mobile": _Case(
             html=_render_grouping_html(),
             width=390,
             height=760,
             route="/proof/grouping-mobile",
         ),
-        "seating_desktop": _build_case(
+        "seating_desktop": _Case(
             html=_render_seating_html(),
             width=1200,
             height=800,
             route="/proof/seating-desktop",
         ),
-        "seating_mobile": _build_case(
+        "seating_mobile": _Case(
             html=_render_seating_html(),
             width=390,
             height=760,
@@ -82,12 +131,19 @@ def main() -> None:
         ),
     }
 
-    proof: dict[str, object] = {}
+    proof: dict[str, _CaseResult] = {}
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
         try:
             for case_id, case in cases.items():
-                proof[case_id] = _run_case(browser=browser, output_dir=run_dir, **case)
+                proof[case_id] = _run_case(
+                    browser=browser,
+                    output_dir=run_dir,
+                    html=case.html,
+                    width=case.width,
+                    height=case.height,
+                    route=case.route,
+                )
         finally:
             browser.close()
 
@@ -99,15 +155,6 @@ def main() -> None:
     print(f"pr-0282-download-handoff-proof: ok artifacts={run_dir}")
 
 
-def _build_case(*, html: str, width: int, height: int, route: str) -> dict[str, Any]:
-    return {
-        "html": html,
-        "width": width,
-        "height": height,
-        "route": route,
-    }
-
-
 def _run_case(
     *,
     browser: Browser,
@@ -116,7 +163,7 @@ def _run_case(
     width: int,
     height: int,
     route: str,
-) -> dict[str, object]:
+) -> _CaseResult:
     context = browser.new_context(
         accept_downloads=True, viewport={"width": width, "height": height}
     )
@@ -234,8 +281,8 @@ def _rect(page: Page) -> dict[str, float]:
     return {key: float(rect[key]) for key in ("x", "y", "width", "height")}
 
 
-def _details(page: Page) -> dict[str, object]:
-    details = page.evaluate(
+def _details(page: Page) -> _DetailsPayload:
+    details: JsonValue = page.evaluate(
         """() => {
           const action = document.querySelector('[data-skriptoteket-share-pdf-download="owned"]');
           const spinner = document.querySelector('.share-download-pdf__spinner');
@@ -256,6 +303,8 @@ def _details(page: Page) -> dict[str, object]:
     )
     if not isinstance(details, dict):
         raise AssertionError("Expected browser details object.")
+    if not _is_details_payload(details):
+        raise TypeError(f"browser details payload is missing keys: {details!r}")
     return details
 
 
@@ -267,7 +316,7 @@ def _assert_stable_geometry(*rects: dict[str, float]) -> None:
                 raise AssertionError(f"Action {key} changed from {baseline[key]} to {rect[key]}.")
 
 
-def _assert_busy_details(details: dict[str, object]) -> None:
+def _assert_busy_details(details: _DetailsPayload) -> None:
     expected = {
         "state": "busy",
         "ariaBusy": "true",
@@ -281,12 +330,13 @@ def _assert_busy_details(details: dict[str, object]) -> None:
         raise AssertionError(f"Unexpected busy details: {details!r}")
 
 
-def _assert_recovered_details(details: dict[str, object]) -> None:
+def _assert_recovered_details(details: _DetailsPayload) -> None:
     if details["state"] != "idle":
         raise AssertionError(f"Expected idle recovery, got {details!r}")
-    for attr in ("ariaBusy", "ariaDisabled"):
-        if details[attr] is not None:
-            raise AssertionError(f"Expected cleared {attr}, got {details!r}")
+    if details["ariaBusy"] is not None:
+        raise AssertionError(f"Expected cleared ariaBusy, got {details!r}")
+    if details["ariaDisabled"] is not None:
+        raise AssertionError(f"Expected cleared ariaDisabled, got {details!r}")
     if not isinstance(details["href"], str) or not details["href"].endswith("/download.pdf"):
         raise AssertionError(f"Expected restored PDF href, got {details!r}")
     if details["spinnerVisible"] is not False:
