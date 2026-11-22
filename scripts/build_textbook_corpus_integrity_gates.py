@@ -18,6 +18,10 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from scripts.textbook_corpus_integrity_runtime import (
+    IntegrityGateRow,
+    IntegrityReport,
+    IntegritySummary,
+    IssueRow,
     ValidationBundle,
     build_pristine,
     build_pristine_copy,
@@ -30,6 +34,10 @@ from scripts.textbook_corpus_integrity_runtime import (
 
 __all__ = [
     "ValidationBundle",
+    "IssueRow",
+    "IntegrityReport",
+    "IntegrityGateRow",
+    "IntegritySummary",
     "validate_integrity_gates",
     "run_integrity_gates",
     "run_integrity_validation",

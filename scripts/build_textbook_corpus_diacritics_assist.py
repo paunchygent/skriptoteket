@@ -27,12 +27,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from bisect import bisect_right
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol, TypedDict
 
 import yaml
+from pydantic import JsonValue
 
 DEFAULT_PRIMARY_BASE_URL = "http://127.0.0.1:18085"
 DEFAULT_FALLBACK_BASE_URL = "https://api.languagetool.org"
@@ -169,6 +170,112 @@ ELEMENT_SYMBOLS = {
 }
 
 
+class CheckResponsePayload(TypedDict, total=False):
+    """Subset of a LanguageTool check response read by the clients.
+
+    The v1 client reads ``errors``; the v2 client reads ``matches``. Both are
+    tolerated as missing and validated with ``isinstance`` after ``.get``.
+    """
+
+    errors: list[JsonValue]
+    matches: list[JsonValue]
+
+
+class LanguageToolMatchPayload(TypedDict):
+    """One LanguageTool match entry normalized at the parse boundary."""
+
+    offset: int
+    length: int
+    replacements: list[str]
+    rule_id: str
+    message: str
+
+
+class ReplacementPayload(TypedDict):
+    """One match ``replacements`` object entry normalized at the parse boundary."""
+
+    value: str
+
+
+class MatchRulePayload(TypedDict, total=False):
+    """Subset of one match ``rule`` object read during normalization."""
+
+    id: str
+
+
+def _parse_check_response(value: JsonValue) -> CheckResponsePayload:
+    """Build the check-response view from a parsed JSON object.
+
+    The HTTP readers already refuse non-object JSON with ``RuntimeError``;
+    this narrows defensively and would only fire on misuse.
+    """
+    if not isinstance(value, dict):
+        raise TypeError(f"Expected JSON object for check response, got {type(value).__name__}")
+    payload = CheckResponsePayload()
+    errors = value.get("errors")
+    if isinstance(errors, list):
+        payload["errors"] = errors
+    matches = value.get("matches")
+    if isinstance(matches, list):
+        payload["matches"] = matches
+    return payload
+
+
+def _parse_replacement_payload(value: JsonValue) -> ReplacementPayload | None:
+    """Parse one ``replacements`` object entry; unusable entries yield ``None``."""
+    if not isinstance(value, dict):
+        return None
+    replacement = value.get("value")
+    if not isinstance(replacement, str) or not replacement:
+        return None
+    return ReplacementPayload(value=replacement)
+
+
+def _parse_rule_payload(value: JsonValue) -> MatchRulePayload | None:
+    """Parse one match ``rule`` object; non-objects yield ``None``."""
+    if not isinstance(value, dict):
+        return None
+    payload = MatchRulePayload()
+    rule_id = value.get("id")
+    if isinstance(rule_id, str):
+        payload["id"] = rule_id
+    return payload
+
+
+def _parse_match_payload(value: JsonValue) -> LanguageToolMatchPayload | None:
+    """Parse one match entry; non-objects are skipped like the old dict filter."""
+    if not isinstance(value, dict):
+        return None
+
+    replacements: list[str] = []
+    replacements_obj = value.get("replacements")
+    if isinstance(replacements_obj, list):
+        for item in replacements_obj:
+            replacement = _parse_replacement_payload(item)
+            if replacement is not None:
+                replacements.append(replacement["value"])
+            elif isinstance(item, str) and item:
+                replacements.append(item)
+
+    rule_id = ""
+    rule = _parse_rule_payload(value.get("rule"))
+    if rule is not None:
+        rule_id = rule.get("id", "")
+    if not rule_id:
+        rule_id_obj = value.get("rule_id")
+        if isinstance(rule_id_obj, str):
+            rule_id = rule_id_obj
+
+    message_obj = value.get("message")
+    return LanguageToolMatchPayload(
+        offset=_as_positive_int(value.get("offset")),
+        length=_as_positive_int(value.get("length")),
+        replacements=replacements,
+        rule_id=rule_id,
+        message=message_obj if isinstance(message_obj, str) else "",
+    )
+
+
 class LanguageToolClientProtocol(Protocol):
     """Protocol for LanguageTool-compatible check clients."""
 
@@ -229,8 +336,7 @@ class TextChunk:
     text: str
 
 
-@dataclass(frozen=True, slots=True)
-class RunSummary:
+class RunSummary(TypedDict):
     """Summary payload written after proposal generation."""
 
     generated_at: str
@@ -272,7 +378,12 @@ class HuleEduV1LanguageToolClient(LanguageToolClientProtocol):
         errors_obj = response_payload.get("errors")
         if not isinstance(errors_obj, list):
             return []
-        return [_normalize_match(item) for item in errors_obj if isinstance(item, dict)]
+        matches: list[LanguageToolMatch] = []
+        for item in errors_obj:
+            match_payload = _parse_match_payload(item)
+            if match_payload is not None:
+                matches.append(_normalize_match(match_payload))
+        return matches
 
 
 class LanguageToolV2Client(LanguageToolClientProtocol):
@@ -302,7 +413,12 @@ class LanguageToolV2Client(LanguageToolClientProtocol):
         matches_obj = response_payload.get("matches")
         if not isinstance(matches_obj, list):
             return []
-        return [_normalize_match(item) for item in matches_obj if isinstance(item, dict)]
+        matches: list[LanguageToolMatch] = []
+        for item in matches_obj:
+            match_payload = _parse_match_payload(item)
+            if match_payload is not None:
+                matches.append(_normalize_match(match_payload))
+        return matches
 
 
 def _parse_args() -> argparse.Namespace:
@@ -342,7 +458,9 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _read_json_response(*, request: urllib.request.Request, timeout_s: float) -> dict[str, Any]:
+def _read_json_response(
+    *, request: urllib.request.Request, timeout_s: float
+) -> CheckResponsePayload:
     try:
         with urllib.request.urlopen(request, timeout=timeout_s) as response:
             body = response.read().decode("utf-8", errors="replace")
@@ -357,47 +475,21 @@ def _read_json_response(*, request: urllib.request.Request, timeout_s: float) ->
         raise RuntimeError(f"Timeout for {request.full_url}: {exc}") from exc
 
     try:
-        payload = json.loads(body)
+        payload: JsonValue = json.loads(body)
     except json.JSONDecodeError as exc:
         raise RuntimeError(f"Invalid JSON from {request.full_url}") from exc
     if not isinstance(payload, dict):
         raise RuntimeError(f"Unexpected JSON shape from {request.full_url}: {type(payload)}")
-    return payload
+    return _parse_check_response(payload)
 
 
-def _normalize_match(match_obj: dict[str, Any]) -> LanguageToolMatch:
-    offset = _as_positive_int(match_obj.get("offset"))
-    length = _as_positive_int(match_obj.get("length"))
-    replacements_obj = match_obj.get("replacements")
-    replacements: list[str] = []
-    if isinstance(replacements_obj, list):
-        for item in replacements_obj:
-            if isinstance(item, dict):
-                value = item.get("value")
-                if isinstance(value, str) and value:
-                    replacements.append(value)
-            elif isinstance(item, str) and item:
-                replacements.append(item)
-
-    rule_id = ""
-    rule_obj = match_obj.get("rule")
-    if isinstance(rule_obj, dict):
-        rule_id_obj = rule_obj.get("id")
-        if isinstance(rule_id_obj, str):
-            rule_id = rule_id_obj
-    if not rule_id:
-        rule_id_obj = match_obj.get("rule_id")
-        if isinstance(rule_id_obj, str):
-            rule_id = rule_id_obj
-
-    message_obj = match_obj.get("message")
-    message = message_obj if isinstance(message_obj, str) else ""
+def _normalize_match(match_obj: LanguageToolMatchPayload) -> LanguageToolMatch:
     return LanguageToolMatch(
-        offset=offset,
-        length=length,
-        replacements=tuple(replacements),
-        rule_id=rule_id,
-        message=message,
+        offset=match_obj["offset"],
+        length=match_obj["length"],
+        replacements=tuple(match_obj["replacements"]),
+        rule_id=match_obj["rule_id"],
+        message=match_obj["message"],
     )
 
 
@@ -672,44 +764,107 @@ def suggest_diacritics_patches(
     return suggestions, requests_made, failed_chunks
 
 
+class AssistPatchSource(TypedDict):
+    """``source`` block of a diacritics patch payload."""
+
+    line_no: int
+    expected_original: str
+
+
+class AssistPatchChange(TypedDict):
+    """``change`` block of a diacritics patch payload."""
+
+    mode: str
+    replacement: str
+
+
+class AssistPatchReview(TypedDict):
+    """``review`` block of a diacritics patch payload."""
+
+    decision: str
+    notes: str
+
+
+class AssistPatchPayload(TypedDict):
+    """One diacritics patch YAML document built by `_patch_payload`."""
+
+    version: int
+    patch_id: str
+    issue_id: str
+    status: str
+    author: str
+    verifier: str
+    verified_at: str
+    rationale: str
+    source: AssistPatchSource
+    change: AssistPatchChange
+    review: AssistPatchReview
+    metadata: dict[str, JsonValue]
+
+
+class SuggestionsReport(TypedDict):
+    """Machine-readable suggestions report written by `run`."""
+
+    generated_at: str
+    input_markdown: str
+    language: str
+    service_name: str
+    service_base_url: str
+    request_count: int
+    failed_chunk_count: int
+    suggestion_count: int
+    suggestions: list[AssistPatchPayload]
+
+
 def _patch_payload(
     *,
     suggestion: DiacriticsPatchSuggestion,
     service_name: str,
     service_base_url: str,
     language: str,
-) -> dict[str, Any]:
-    return {
-        "version": 1,
-        "patch_id": suggestion.patch_id,
-        "issue_id": suggestion.issue_id,
-        "status": "proposed",
-        "author": "",
-        "verifier": "",
-        "verified_at": "",
-        "rationale": "LanguageTool diacritics-only suggestion. Manual verification required.",
-        "source": {
-            "line_no": suggestion.line_no,
-            "expected_original": suggestion.expected_original,
-        },
-        "change": {
-            "mode": "replace_line",
-            "replacement": suggestion.replacement_line,
-        },
-        "review": {
-            "decision": "pending",
-            "notes": "",
-        },
-        "metadata": {
+) -> AssistPatchPayload:
+    replacements_meta: list[JsonValue] = [
+        {
+            "offset": item.offset,
+            "length": item.length,
+            "before": item.before,
+            "after": item.after,
+            "rule_id": item.rule_id,
+            "message": item.message,
+        }
+        for item in suggestion.replacements
+    ]
+    return AssistPatchPayload(
+        version=1,
+        patch_id=suggestion.patch_id,
+        issue_id=suggestion.issue_id,
+        status="proposed",
+        author="",
+        verifier="",
+        verified_at="",
+        rationale="LanguageTool diacritics-only suggestion. Manual verification required.",
+        source=AssistPatchSource(
+            line_no=suggestion.line_no,
+            expected_original=suggestion.expected_original,
+        ),
+        change=AssistPatchChange(
+            mode="replace_line",
+            replacement=suggestion.replacement_line,
+        ),
+        review=AssistPatchReview(
+            decision="pending",
+            notes="",
+        ),
+        metadata={
             "service_name": service_name,
             "service_base_url": service_base_url,
             "language": language,
-            "replacements": [asdict(item) for item in suggestion.replacements],
+            "replacements": replacements_meta,
         },
-    }
+    )
 
 
-def _write_yaml(path: Path, payload: dict[str, Any], *, dry_run: bool) -> None:
+def _write_yaml(path: Path, payload: AssistPatchPayload, *, dry_run: bool) -> None:
     if dry_run:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -717,7 +872,7 @@ def _write_yaml(path: Path, payload: dict[str, Any], *, dry_run: bool) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _write_json(path: Path, payload: dict[str, Any], *, dry_run: bool) -> None:
+def _write_json(path: Path, payload: SuggestionsReport | RunSummary, *, dry_run: bool) -> None:
     if dry_run:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -800,7 +955,7 @@ def run(
 
     patch_dir = output_dir / "manual_fixes"
     report_dir = output_dir / "reports"
-    rows = []
+    rows: list[AssistPatchPayload] = []
     for suggestion in suggestions:
         payload = _patch_payload(
             suggestion=suggestion,
@@ -811,17 +966,17 @@ def run(
         rows.append(payload)
         _write_yaml(patch_dir / f"{suggestion.issue_id}.yaml", payload, dry_run=dry_run)
 
-    suggestions_json = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "input_markdown": str(input_markdown),
-        "language": language,
-        "service_name": client.service_name,
-        "service_base_url": client.base_url,
-        "request_count": request_count,
-        "failed_chunk_count": failed_chunk_count,
-        "suggestion_count": len(suggestions),
-        "suggestions": rows,
-    }
+    suggestions_json = SuggestionsReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        input_markdown=str(input_markdown),
+        language=language,
+        service_name=client.service_name,
+        service_base_url=client.base_url,
+        request_count=request_count,
+        failed_chunk_count=failed_chunk_count,
+        suggestion_count=len(suggestions),
+        suggestions=rows,
+    )
     _write_json(
         report_dir / f"{input_markdown.stem}.diacritics-suggestions.json",
         suggestions_json,
@@ -842,7 +997,7 @@ def run(
     )
     _write_json(
         report_dir / f"{input_markdown.stem}.diacritics-summary.json",
-        asdict(summary),
+        summary,
         dry_run=dry_run,
     )
     return summary
@@ -866,7 +1021,7 @@ def main() -> None:
     )
     print(
         json.dumps(
-            asdict(summary),
+            summary,
             ensure_ascii=False,
             sort_keys=True,
         )

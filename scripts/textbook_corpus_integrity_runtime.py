@@ -14,20 +14,110 @@ from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
-from scripts.textbook_corpus_integrity_gates_core import build_gate_results
+from pydantic import JsonValue
+
+from scripts.textbook_corpus_integrity_gates_core import (
+    IssueRow,
+    build_gate_results,
+    parse_issue_row,
+)
 from scripts.textbook_corpus_integrity_models import DEFAULT_OUTPUT_DIR
+
+
+class IntegrityFinding(TypedDict):
+    """One gate finding serialized into an integrity report."""
+
+    code: str
+    severity: str
+    line_no: int | None
+    message: str
+
+
+class IntegrityGateRow(TypedDict):
+    """One gate result serialized into an integrity report."""
+
+    gate: str
+    passed: bool
+    critical_count: int
+    warning_count: int
+    metrics: dict[str, int]
+    findings: list[IntegrityFinding]
+
+
+class IntegritySummary(TypedDict):
+    """Aggregate gate counters in an integrity report."""
+
+    all_critical_gates_passed: bool
+    gate_count: int
+    critical_findings_total: int
+    warning_findings_total: int
+
+
+class IntegrityGateSummary(TypedDict):
+    """Pass/fail gate counters in an integrity report."""
+
+    all_passed: bool
+    failed_gates: int
+    passed_gates: int
+
+
+class IntegrityReport(TypedDict):
+    """Machine-readable integrity report written by `validate_integrity_gates`."""
+
+    generated_at: str
+    input_markdown: str
+    manual_queue_path: str
+    issue_ledger_path: str | None
+    passed: bool
+    summary: IntegritySummary
+    gate_summary: IntegrityGateSummary
+    failed_gates: list[str]
+    gates: list[IntegrityGateRow]
+    artifact_paths: NotRequired[dict[str, str]]
+
+
+class PristineBuildSummary(TypedDict):
+    """Summary counters in a pristine build report."""
+
+    all_critical_gates_passed: bool
+    all_passed: bool
+
+
+class PristineBuildReport(TypedDict):
+    """Machine-readable report written by `build_pristine`."""
+
+    generated_at: str
+    passed: bool
+    summary: PristineBuildSummary
+    input_markdown: str
+    pristine_markdown: str
+    pristine_report: NotRequired[str]
+
+
+class IntegrityReportView(TypedDict, total=False):
+    """Report-shaped mapping read defensively by pristine-build/checklist paths.
+
+    The loaded or caller-supplied report keeps ``JsonValue`` fields so the
+    readers' own ``isinstance`` checks degrade malformed content exactly like
+    the untyped ``dict.get`` reads did.
+    """
+
+    generated_at: JsonValue
+    summary: JsonValue
+    gates: JsonValue
 
 
 @dataclass(frozen=True, slots=True)
 class ValidationBundle:
     """Compatibility envelope for validation/build caller contracts."""
 
-    report: dict[str, Any]
+    report: IntegrityReport
     all_critical_gates_passed: bool
 
 
@@ -55,21 +145,22 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+def _read_jsonl(path: Path) -> list[IssueRow]:
     if not path.exists():
         return []
-    rows: list[dict[str, Any]] = []
+    rows: list[IssueRow] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
         if not stripped:
             continue
-        parsed = json.loads(stripped)
-        if isinstance(parsed, dict):
-            rows.append(parsed)
+        parsed: JsonValue = json.loads(stripped)
+        row = parse_issue_row(parsed)
+        if row is not None:
+            rows.append(row)
     return rows
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
+def _write_json(path: Path, payload: IntegrityReport | PristineBuildReport) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
@@ -77,11 +168,38 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     )
 
 
-def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+def _write_jsonl(path: Path, rows: Sequence[Mapping[str, JsonValue]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def _int_or_zero(value: JsonValue) -> int:
+    candidate = value or 0
+    if isinstance(candidate, (dict, list)):
+        raise TypeError(
+            f"int() argument must be a string or a real number, not {type(candidate).__name__!r}"
+        )
+    return int(candidate)
+
+
+def _parse_report_view(value: JsonValue) -> IntegrityReportView | None:
+    """Build the defensively-read report view; non-objects yield ``None``.
+
+    Returning ``None`` preserves the old ``isinstance(parsed, dict)`` gate so a
+    non-object payload still falls back to a fresh validation run.
+    """
+    if not isinstance(value, dict):
+        return None
+    view = IntegrityReportView()
+    if "generated_at" in value:
+        view["generated_at"] = value["generated_at"]
+    if "summary" in value:
+        view["summary"] = value["summary"]
+    if "gates" in value:
+        view["gates"] = value["gates"]
+    return view
 
 
 def _resolve_input_path(
@@ -134,7 +252,12 @@ def _report_paths(
     return resolved_report.resolve(), resolved_checklist.resolve(), findings_path.resolve()
 
 
-def _write_checklist(path: Path, *, report: dict[str, Any], input_markdown: Path) -> None:
+def _write_checklist(
+    path: Path,
+    *,
+    report: IntegrityReport | IntegrityReportView,
+    input_markdown: Path,
+) -> None:
     summary = report.get("summary")
     summary_obj = summary if isinstance(summary, dict) else {}
     gate_rows = report.get("gates")
@@ -166,7 +289,7 @@ def write_validation_artifacts(
     *,
     output_dir: Path,
     input_markdown: Path,
-    report: dict[str, Any],
+    report: IntegrityReport,
     report_path: Path | None = None,
     checklist_path: Path | None = None,
 ) -> dict[str, str]:
@@ -178,7 +301,7 @@ def write_validation_artifacts(
         checklist_path=checklist_path,
     )
 
-    flattened_findings: list[dict[str, Any]] = []
+    flattened_findings: list[dict[str, JsonValue]] = []
     gate_rows = report.get("gates")
     if isinstance(gate_rows, list):
         for gate_row in gate_rows:
@@ -191,13 +314,18 @@ def write_validation_artifacts(
             for finding in findings:
                 if not isinstance(finding, dict):
                     continue
-                row = dict(finding)
-                row["gate"] = gate_code
+                row: dict[str, JsonValue] = {
+                    "code": finding["code"],
+                    "severity": finding["severity"],
+                    "line_no": finding["line_no"],
+                    "message": finding["message"],
+                    "gate": gate_code,
+                }
                 flattened_findings.append(row)
 
     flattened_findings.sort(
         key=lambda row: (
-            int(row.get("line_no") or 0),
+            _int_or_zero(row.get("line_no")),
             str(row.get("gate") or ""),
             str(row.get("code") or ""),
         )
@@ -226,7 +354,7 @@ def validate_integrity_gates(
     report_path: Path | None = None,
     checklist_path: Path | None = None,
     output_dir: Path | None = None,
-) -> dict[str, Any]:
+) -> IntegrityReport:
     """Run integrity validators and write report/checklist artifacts."""
     resolved_input = _resolve_input_path(
         input_markdown=input_markdown,
@@ -255,36 +383,44 @@ def validate_integrity_gates(
     )
     all_critical_gates_passed = all(gate.passed for gate in gate_results)
 
-    report: dict[str, Any] = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "input_markdown": str(resolved_input),
-        "manual_queue_path": str(resolved_manual_queue),
-        "issue_ledger_path": str(resolved_issue_ledger) if resolved_issue_ledger else None,
-        "passed": all_critical_gates_passed,
-        "summary": {
-            "all_critical_gates_passed": all_critical_gates_passed,
-            "gate_count": len(gate_results),
-            "critical_findings_total": sum(gate.critical_count for gate in gate_results),
-            "warning_findings_total": sum(gate.warning_count for gate in gate_results),
-        },
-        "gate_summary": {
-            "all_passed": all_critical_gates_passed,
-            "failed_gates": sum(1 for gate in gate_results if not gate.passed),
-            "passed_gates": sum(1 for gate in gate_results if gate.passed),
-        },
-        "failed_gates": [gate.gate for gate in gate_results if not gate.passed],
-        "gates": [
-            {
-                "gate": gate.gate,
-                "passed": gate.passed,
-                "critical_count": gate.critical_count,
-                "warning_count": gate.warning_count,
-                "metrics": gate.metrics,
-                "findings": [asdict(finding) for finding in gate.findings],
-            }
+    report = IntegrityReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        input_markdown=str(resolved_input),
+        manual_queue_path=str(resolved_manual_queue),
+        issue_ledger_path=str(resolved_issue_ledger) if resolved_issue_ledger else None,
+        passed=all_critical_gates_passed,
+        summary=IntegritySummary(
+            all_critical_gates_passed=all_critical_gates_passed,
+            gate_count=len(gate_results),
+            critical_findings_total=sum(gate.critical_count for gate in gate_results),
+            warning_findings_total=sum(gate.warning_count for gate in gate_results),
+        ),
+        gate_summary=IntegrityGateSummary(
+            all_passed=all_critical_gates_passed,
+            failed_gates=sum(1 for gate in gate_results if not gate.passed),
+            passed_gates=sum(1 for gate in gate_results if gate.passed),
+        ),
+        failed_gates=[gate.gate for gate in gate_results if not gate.passed],
+        gates=[
+            IntegrityGateRow(
+                gate=gate.gate,
+                passed=gate.passed,
+                critical_count=gate.critical_count,
+                warning_count=gate.warning_count,
+                metrics=gate.metrics,
+                findings=[
+                    IntegrityFinding(
+                        code=finding.code,
+                        severity=finding.severity,
+                        line_no=finding.line_no,
+                        message=finding.message,
+                    )
+                    for finding in gate.findings
+                ],
+            )
             for gate in gate_results
         ],
-    }
+    )
     artifact_paths = write_validation_artifacts(
         output_dir=resolved_output_dir,
         input_markdown=resolved_input,
@@ -298,14 +434,64 @@ def validate_integrity_gates(
     return report
 
 
-def run_integrity_gates(**kwargs: Any) -> dict[str, Any]:
+def run_integrity_gates(
+    *,
+    input_markdown: Path | None = None,
+    restored_markdown: Path | None = None,
+    markdown_path: Path | None = None,
+    manual_queue_path: Path | None = None,
+    manual_queue: Path | None = None,
+    unresolved_manual_queue_path: Path | None = None,
+    issue_ledger_path: Path | None = None,
+    issue_ledger: Path | None = None,
+    report_path: Path | None = None,
+    checklist_path: Path | None = None,
+    output_dir: Path | None = None,
+) -> IntegrityReport:
     """Compatibility alias for validation entrypoint."""
-    return validate_integrity_gates(**kwargs)
+    return validate_integrity_gates(
+        input_markdown=input_markdown,
+        restored_markdown=restored_markdown,
+        markdown_path=markdown_path,
+        manual_queue_path=manual_queue_path,
+        manual_queue=manual_queue,
+        unresolved_manual_queue_path=unresolved_manual_queue_path,
+        issue_ledger_path=issue_ledger_path,
+        issue_ledger=issue_ledger,
+        report_path=report_path,
+        checklist_path=checklist_path,
+        output_dir=output_dir,
+    )
 
 
-def run_integrity_validation(**kwargs: Any) -> ValidationBundle:
+def run_integrity_validation(
+    *,
+    input_markdown: Path | None = None,
+    restored_markdown: Path | None = None,
+    markdown_path: Path | None = None,
+    manual_queue_path: Path | None = None,
+    manual_queue: Path | None = None,
+    unresolved_manual_queue_path: Path | None = None,
+    issue_ledger_path: Path | None = None,
+    issue_ledger: Path | None = None,
+    report_path: Path | None = None,
+    checklist_path: Path | None = None,
+    output_dir: Path | None = None,
+) -> ValidationBundle:
     """Compatibility wrapper used by callers expecting a structured bundle."""
-    report = validate_integrity_gates(**kwargs)
+    report = validate_integrity_gates(
+        input_markdown=input_markdown,
+        restored_markdown=restored_markdown,
+        markdown_path=markdown_path,
+        manual_queue_path=manual_queue_path,
+        manual_queue=manual_queue,
+        unresolved_manual_queue_path=unresolved_manual_queue_path,
+        issue_ledger_path=issue_ledger_path,
+        issue_ledger=issue_ledger,
+        report_path=report_path,
+        checklist_path=checklist_path,
+        output_dir=output_dir,
+    )
     summary = report.get("summary")
     summary_obj = summary if isinstance(summary, dict) else {}
     return ValidationBundle(
@@ -325,14 +511,14 @@ def build_pristine(
     issue_ledger_path: Path | None = None,
     issue_ledger: Path | None = None,
     validation_report_path: Path | None = None,
-    validation_report: dict[str, Any] | None = None,
+    validation_report: IntegrityReport | IntegrityReportView | None = None,
     output_markdown: Path | None = None,
     pristine_markdown_path: Path | None = None,
     pristine_path: Path | None = None,
     report_path: Path | None = None,
     checklist_path: Path | None = None,
     output_dir: Path | None = None,
-) -> dict[str, Any]:
+) -> PristineBuildReport:
     """Build pristine markdown copy only when integrity gates pass."""
     resolved_input = _resolve_input_path(
         input_markdown=input_markdown,
@@ -341,10 +527,10 @@ def build_pristine(
     )
     resolved_output_dir = (output_dir or DEFAULT_OUTPUT_DIR).resolve()
 
-    report = validation_report
+    report: IntegrityReport | IntegrityReportView | None = validation_report
     if report is None and validation_report_path is not None and validation_report_path.exists():
-        parsed = json.loads(validation_report_path.read_text(encoding="utf-8"))
-        report = parsed if isinstance(parsed, dict) else None
+        parsed: JsonValue = json.loads(validation_report_path.read_text(encoding="utf-8"))
+        report = _parse_report_view(parsed)
     if report is None:
         report = validate_integrity_gates(
             input_markdown=resolved_input,
@@ -381,16 +567,16 @@ def build_pristine(
         report_path
         or resolved_output_dir / "pristine" / f"{resolved_input.stem}.pristine-report.json"
     ).resolve()
-    build_report: dict[str, Any] = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "passed": True,
-        "summary": {
-            "all_critical_gates_passed": True,
-            "all_passed": True,
-        },
-        "input_markdown": str(resolved_input),
-        "pristine_markdown": str(pristine_output_path),
-    }
+    build_report = PristineBuildReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        passed=True,
+        summary=PristineBuildSummary(
+            all_critical_gates_passed=True,
+            all_passed=True,
+        ),
+        input_markdown=str(resolved_input),
+        pristine_markdown=str(pristine_output_path),
+    )
     _write_json(build_report_path, build_report)
     if checklist_path is not None:
         _write_checklist(checklist_path.resolve(), report=report, input_markdown=resolved_input)
@@ -400,32 +586,60 @@ def build_pristine(
 def build_pristine_copy(
     *,
     output_dir: Path | None = None,
-    **kwargs: Any,
-) -> dict[str, Any]:
+    input_markdown: Path | None = None,
+    restored_markdown: Path | None = None,
+    markdown_path: Path | None = None,
+    manual_queue_path: Path | None = None,
+    manual_queue: Path | None = None,
+    unresolved_manual_queue_path: Path | None = None,
+    issue_ledger_path: Path | None = None,
+    issue_ledger: Path | None = None,
+    validation_report_path: Path | None = None,
+    validation_report: IntegrityReport | IntegrityReportView | None = None,
+    report: IntegrityReport | IntegrityReportView | None = None,
+    output_markdown: Path | None = None,
+    pristine_markdown_path: Path | None = None,
+    pristine_path: Path | None = None,
+    checklist_path: Path | None = None,
+) -> PristineBuildReport:
     """Compatibility wrapper that includes pristine report output path."""
     resolved_output_dir = (output_dir or DEFAULT_OUTPUT_DIR).resolve()
     resolved_input = _resolve_input_path(
-        input_markdown=kwargs.get("input_markdown"),
-        restored_markdown=kwargs.get("restored_markdown"),
-        markdown_path=kwargs.get("markdown_path"),
+        input_markdown=input_markdown,
+        restored_markdown=restored_markdown,
+        markdown_path=markdown_path,
     )
     resolved_report_path = (
         resolved_output_dir / "pristine" / f"{resolved_input.stem}.pristine-report.json"
     ).resolve()
 
-    forward_kwargs = dict(kwargs)
-    effective_report = forward_kwargs.pop("validation_report", None) or forward_kwargs.pop(
-        "report", None
-    )
+    effective_report = validation_report or report
     build_report = build_pristine(
+        input_markdown=input_markdown,
+        restored_markdown=restored_markdown,
+        markdown_path=markdown_path,
+        manual_queue_path=manual_queue_path,
+        manual_queue=manual_queue,
+        unresolved_manual_queue_path=unresolved_manual_queue_path,
+        issue_ledger_path=issue_ledger_path,
+        issue_ledger=issue_ledger,
+        validation_report_path=validation_report_path,
         validation_report=effective_report,
+        output_markdown=output_markdown,
+        pristine_markdown_path=pristine_markdown_path,
+        pristine_path=pristine_path,
         output_dir=resolved_output_dir,
         report_path=resolved_report_path,
-        **forward_kwargs,
+        checklist_path=checklist_path,
     )
-    result = dict(build_report)
-    result["pristine_report"] = str(resolved_report_path)
-    return result
+    return PristineBuildReport(
+        generated_at=build_report["generated_at"],
+        passed=build_report["passed"],
+        summary=build_report["summary"],
+        input_markdown=build_report["input_markdown"],
+        pristine_markdown=build_report["pristine_markdown"],
+        pristine_report=str(resolved_report_path),
+    )
 
 
 def main() -> None:

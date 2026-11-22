@@ -11,37 +11,42 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import TypedDict
 
 import pytest
 
 from scripts.build_textbook_corpus_integrity_gates import (
+    IntegrityGateRow,
+    IntegrityReport,
+    IntegritySummary,
+    IssueRow,
     build_pristine_copy,
     run_integrity_validation,
     write_validation_artifacts,
 )
 
 
-class _GateFinding(TypedDict):
+class _CanonicalFinding(TypedDict):
     code: str
     severity: str
     line_no: int | None
 
 
-class _Gate(TypedDict):
+class _CanonicalGate(TypedDict):
     gate: str
     passed: bool
     critical_count: int
     warning_count: int
     metrics: dict[str, int]
-    findings: list[_GateFinding]
+    findings: list[_CanonicalFinding]
 
 
-class _GateReport(TypedDict):
-    gates: list[_Gate]
+class _CanonicalReport(TypedDict):
+    summary: IntegritySummary
+    gates: list[_CanonicalGate]
 
 
-def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+def _write_jsonl(path: Path, rows: list[IssueRow]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
@@ -53,7 +58,7 @@ def _write_markdown(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
-def _gate(report: _GateReport, gate_name: str) -> _Gate:
+def _gate(report: IntegrityReport, gate_name: str) -> IntegrityGateRow:
     for gate in report["gates"]:
         if gate.get("gate") == gate_name:
             return gate
@@ -177,14 +182,13 @@ def _multiple_answer_heading_blocks_markdown() -> str:
     )
 
 
-def _critical_manual_issue(code: str) -> dict[str, Any]:
-    return {
-        "code": code,
-        "line_no": 42,
-        "severity": "critical",
-        "manual_required": True,
-        "line_text": "Corrupted span",
-    }
+def _critical_manual_issue(code: str) -> IssueRow:
+    return IssueRow(
+        code=code,
+        line_no=42,
+        severity="critical",
+        manual_required=True,
+    )
 
 
 def test_validate_passes_with_ordered_anchors_and_no_critical_unresolved(
@@ -406,28 +410,28 @@ def test_validate_report_fields_and_gate_summary_are_deterministic(tmp_path: Pat
         output_dir=tmp_path / "deterministic-two",
     )
 
-    def _canonical(report: dict[str, Any]) -> dict[str, Any]:
-        return {
-            "summary": report["summary"],
-            "gates": [
-                {
-                    "gate": gate["gate"],
-                    "passed": gate["passed"],
-                    "critical_count": gate["critical_count"],
-                    "warning_count": gate["warning_count"],
-                    "metrics": gate["metrics"],
-                    "findings": [
-                        {
-                            "code": finding["code"],
-                            "severity": finding["severity"],
-                            "line_no": finding["line_no"],
-                        }
+    def _canonical(report: IntegrityReport) -> _CanonicalReport:
+        return _CanonicalReport(
+            summary=report["summary"],
+            gates=[
+                _CanonicalGate(
+                    gate=gate["gate"],
+                    passed=gate["passed"],
+                    critical_count=gate["critical_count"],
+                    warning_count=gate["warning_count"],
+                    metrics=gate["metrics"],
+                    findings=[
+                        _CanonicalFinding(
+                            code=finding["code"],
+                            severity=finding["severity"],
+                            line_no=finding["line_no"],
+                        )
                         for finding in gate["findings"]
                     ],
-                }
+                )
                 for gate in report["gates"]
             ],
-        }
+        )
 
     assert _canonical(run_one.report) == _canonical(run_two.report)
 

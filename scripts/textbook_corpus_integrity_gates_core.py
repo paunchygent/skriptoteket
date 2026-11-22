@@ -11,7 +11,10 @@ Relationships:
 from __future__ import annotations
 
 import unicodedata
-from typing import Any
+from collections.abc import Sequence
+from typing import TypedDict
+
+from pydantic import JsonValue
 
 from scripts.textbook_corpus_integrity_models import (
     CRITICAL_SEVERITIES,
@@ -22,6 +25,43 @@ from scripts.textbook_corpus_integrity_models import (
     GateFinding,
     GateResult,
 )
+
+
+class IssueRow(TypedDict, total=False):
+    """One manual-queue or issue-ledger row read by the issue-policy gate.
+
+    Every field is tolerated defensively: the gate coerces arbitrary JSON values
+    with ``str``/``bool``/``isinstance`` rather than trusting the on-disk types.
+    """
+
+    code: JsonValue
+    severity: JsonValue
+    status: JsonValue
+    manual_required: JsonValue
+    line_no: JsonValue
+
+
+def parse_issue_row(value: JsonValue) -> IssueRow | None:
+    """Parse one JSONL row into an `IssueRow`; non-objects are skipped.
+
+    The gate helpers coerce each field defensively, so the parse copies the
+    declared keys verbatim instead of pre-validating them, exactly like the
+    untyped ``isinstance(obj, dict)`` filter plus ``row.get`` reads did.
+    """
+    if not isinstance(value, dict):
+        return None
+    row = IssueRow()
+    if "code" in value:
+        row["code"] = value["code"]
+    if "severity" in value:
+        row["severity"] = value["severity"]
+    if "status" in value:
+        row["status"] = value["status"]
+    if "manual_required" in value:
+        row["manual_required"] = value["manual_required"]
+    if "line_no" in value:
+        row["line_no"] = value["line_no"]
+    return row
 
 
 def _build_gate_result(
@@ -220,14 +260,14 @@ def _number_sequence_findings(
     return findings, gap_count, duplicate_count, regression_count
 
 
-def _row_issue_key(row: dict[str, Any]) -> tuple[str, int]:
+def _row_issue_key(row: IssueRow) -> tuple[str, int]:
     code = str(row.get("code") or "").strip()
     line_no_raw = row.get("line_no")
     line_no = line_no_raw if isinstance(line_no_raw, int) else 0
     return code, line_no
 
 
-def _is_unresolved_critical_row(row: dict[str, Any]) -> bool:
+def _is_unresolved_critical_row(row: IssueRow) -> bool:
     severity = str(row.get("severity") or "").strip().casefold()
     status = str(row.get("status") or "unresolved").strip().casefold()
     manual_required = bool(row.get("manual_required"))
@@ -448,8 +488,8 @@ def gate_answer_key_mapping_coverage(lines: list[str]) -> GateResult:
 
 
 def gate_unresolved_critical_issue_policy(
-    manual_queue: list[dict[str, Any]],
-    issue_ledger: list[dict[str, Any]],
+    manual_queue: Sequence[IssueRow],
+    issue_ledger: Sequence[IssueRow],
 ) -> GateResult:
     """Block when unresolved critical issues remain or queue/ledger drift exists."""
     findings: list[GateFinding] = []
@@ -513,8 +553,8 @@ def gate_unresolved_critical_issue_policy(
 def build_gate_results(
     *,
     lines: list[str],
-    manual_queue: list[dict[str, Any]],
-    issue_ledger: list[dict[str, Any]],
+    manual_queue: Sequence[IssueRow],
+    issue_ledger: Sequence[IssueRow],
 ) -> list[GateResult]:
     """Evaluate all integrity gates in deterministic order."""
     return [

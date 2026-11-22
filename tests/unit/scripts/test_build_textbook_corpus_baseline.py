@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 import pytest
+from pydantic import JsonValue
 
-from scripts.build_textbook_corpus_baseline import build_baseline
+from scripts.build_textbook_corpus_baseline import (
+    ServiceJob,
+    ServiceJobResult,
+    build_baseline,
+)
 
 
 class FakeServiceClient:
@@ -19,17 +23,20 @@ class FakeServiceClient:
         self.result_calls: list[str] = []
         self.artifact_calls: list[str] = []
 
-    def get_job(self, job_id: str) -> dict[str, Any]:
+    def get_job(self, job_id: str) -> ServiceJobResult:
         self.job_calls.append(job_id)
-        return {
-            "api_version": "v2",
-            "job": {
-                "job_id": job_id,
-                "status": "succeeded",
+        return ServiceJobResult(
+            raw={
+                "api_version": "v2",
+                "job": {
+                    "job_id": job_id,
+                    "status": "succeeded",
+                },
             },
-        }
+            job=ServiceJob(status="succeeded"),
+        )
 
-    def get_result(self, job_id: str) -> dict[str, Any]:
+    def get_result(self, job_id: str) -> dict[str, JsonValue]:
         self.result_calls.append(job_id)
         return {
             "api_version": "v2",

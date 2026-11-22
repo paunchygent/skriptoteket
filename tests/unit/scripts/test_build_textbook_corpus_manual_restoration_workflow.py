@@ -9,13 +9,14 @@ import pytest
 import yaml
 
 from scripts.build_textbook_corpus_manual_restoration_workflow import (
+    ManualQueueRow,
     apply_patches,
     generate_packets,
     validate_patches,
 )
 
 
-def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
+def _write_jsonl(path: Path, rows: list[ManualQueueRow]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
@@ -31,7 +32,6 @@ def test_generate_packets_creates_unique_issue_ids_and_templates(tmp_path: Path)
                 "code": "long_line_extreme",
                 "line_no": 10,
                 "severity": "high",
-                "manual_required": True,
                 "protected_zone": True,
                 "message": "x",
                 "line_text": "A",
@@ -40,7 +40,6 @@ def test_generate_packets_creates_unique_issue_ids_and_templates(tmp_path: Path)
                 "code": "heading_artifact_dots",
                 "line_no": 12,
                 "severity": "medium",
-                "manual_required": True,
                 "protected_zone": False,
                 "message": "y",
                 "line_text": "B",
