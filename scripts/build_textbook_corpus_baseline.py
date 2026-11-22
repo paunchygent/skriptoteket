@@ -33,30 +33,10 @@ TERMINAL_STATUSES = {"succeeded", "failed", "canceled", "cancelled"}
 RECONCILE_ERROR_CODES = {"job_timeout", "job_poll_window_exceeded"}
 
 
-class ManifestFilePayload(TypedDict, total=False):
-    """Subset of a manifest file read by fixed keys during baseline snapshotting."""
+class ServiceJob(TypedDict):
+    """The nested ``job`` object of a v2 job reply, as read during reconciliation."""
 
-    source_root: JsonValue
-    entries: JsonValue
-
-
-class ManifestEntryPayload(TypedDict, total=False):
-    """One manifest entry read by fixed keys during baseline snapshotting."""
-
-    source_file_path: JsonValue
-    output_path: JsonValue
-    job_id: JsonValue
-    status: JsonValue
-    error_code: JsonValue
-    pipeline_used: JsonValue
-    source_format: JsonValue
-    target_format: JsonValue
-
-
-class ServiceJob(TypedDict, total=False):
-    """Subset of a v2 job object read during reconciliation."""
-
-    status: JsonValue
+    status: str | None
 
 
 class ReconciliationRow(TypedDict):
@@ -122,9 +102,9 @@ _SerializablePayload = Mapping[str, JsonValue] | BaselineReport | ChecksumsRepor
 class ServiceJobResult:
     """A v2 job response: raw payload for provenance plus the parsed job view.
 
-    ``raw`` keeps the full response object so the provenance files written by
-    ``build_baseline`` contain every key the service returned, exactly like the
-    untyped ``_as_object(response.json())`` save did.
+    ``raw`` keeps the full reply so the provenance files written by
+    ``build_baseline`` contain every key the service returned. ``job`` is the
+    reply's nested ``job`` object, read like the pre-task ``reply["job"]["status"]``.
     """
 
     raw: dict[str, JsonValue]
@@ -182,14 +162,15 @@ class ServiceClient(ServiceClientProtocol):
         response = self._session.get(f"{self._base_url}/v2/convert/jobs/{job_id}", timeout=30)
         response.raise_for_status()
         payload: JsonValue = response.json()
-        return ServiceJobResult(raw=_as_object(payload), job=_parse_service_job(payload))
+        return parse_service_job_reply(payload)
 
     def get_result(self, job_id: str) -> dict[str, JsonValue]:
         response = self._session.get(
             f"{self._base_url}/v2/convert/jobs/{job_id}/result", timeout=30
         )
         response.raise_for_status()
-        return _as_object(response.json())
+        payload: JsonValue = response.json()
+        return _as_object(payload)
 
     def fetch_artifact(self, job_id: str) -> bytes:
         response = self._session.get(
@@ -204,50 +185,41 @@ def _as_object(value: object) -> dict[str, JsonValue]:
     return value if isinstance(value, dict) else {}
 
 
-def _parse_manifest_payload(value: JsonValue) -> ManifestFilePayload:
-    """Build the manifest view; non-objects yield an empty view like ``_as_object``."""
-    payload = ManifestFilePayload()
-    if not isinstance(value, dict):
-        return payload
-    if "source_root" in value:
-        payload["source_root"] = value["source_root"]
-    if "entries" in value:
-        payload["entries"] = value["entries"]
-    return payload
+def parse_service_job_reply(payload: JsonValue) -> ServiceJobResult:
+    """Parse a v2 job reply: keep the whole reply and read the nested ``job`` status."""
+    raw = _as_object(payload)
+    job_obj = _as_object(raw.get("job"))
+    return ServiceJobResult(
+        raw=raw, job=ServiceJob(status=_as_optional_string(job_obj.get("status")))
+    )
 
 
-def _parse_manifest_entry(value: JsonValue) -> ManifestEntryPayload:
-    """Build one manifest entry view; non-objects yield an empty view."""
-    item = ManifestEntryPayload()
-    if not isinstance(value, dict):
-        return item
-    if "source_file_path" in value:
-        item["source_file_path"] = value["source_file_path"]
-    if "output_path" in value:
-        item["output_path"] = value["output_path"]
-    if "job_id" in value:
-        item["job_id"] = value["job_id"]
-    if "status" in value:
-        item["status"] = value["status"]
-    if "error_code" in value:
-        item["error_code"] = value["error_code"]
-    if "pipeline_used" in value:
-        item["pipeline_used"] = value["pipeline_used"]
-    if "source_format" in value:
-        item["source_format"] = value["source_format"]
-    if "target_format" in value:
-        item["target_format"] = value["target_format"]
-    return item
-
-
-def _parse_service_job(value: JsonValue) -> ServiceJob:
-    """Build the parsed ``job`` view; non-objects yield an empty view."""
-    job = ServiceJob()
-    if not isinstance(value, dict):
-        return job
-    if "status" in value:
-        job["status"] = value["status"]
-    return job
+def _parse_manifest_entries(manifest_name: str, payload: JsonValue) -> list[ManifestEntry]:
+    """Parse one manifest file; a non-object or missing/non-list ``entries`` yields no entries."""
+    manifest = _as_object(payload)
+    source_root_obj = manifest.get("source_root")
+    source_root = source_root_obj if isinstance(source_root_obj, str) else None
+    entries_obj = manifest.get("entries")
+    if not isinstance(entries_obj, list):
+        return []
+    entries: list[ManifestEntry] = []
+    for row in entries_obj:
+        item = _as_object(row)
+        entries.append(
+            ManifestEntry(
+                manifest_name=manifest_name,
+                source_root=source_root,
+                source_file_path=_as_optional_string(item.get("source_file_path")),
+                output_path=_as_optional_string(item.get("output_path")),
+                job_id=_as_optional_string(item.get("job_id")),
+                status=_as_optional_string(item.get("status")),
+                error_code=_as_optional_string(item.get("error_code")),
+                pipeline_used=_as_optional_string(item.get("pipeline_used")),
+                source_format=_as_optional_string(item.get("source_format")),
+                target_format=_as_optional_string(item.get("target_format")),
+            )
+        )
+    return entries
 
 
 def _parse_args() -> argparse.Namespace:
@@ -290,36 +262,11 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _read_json(path: Path) -> ManifestFilePayload:
-    payload: JsonValue = json.loads(path.read_text(encoding="utf-8"))
-    return _parse_manifest_payload(payload)
-
-
 def _load_manifest_entries(source_dir: Path, manifest_glob: str) -> list[ManifestEntry]:
     entries: list[ManifestEntry] = []
     for manifest_path in sorted(source_dir.glob(manifest_glob)):
-        payload = _read_json(manifest_path)
-        source_root_obj = payload.get("source_root")
-        source_root = str(source_root_obj) if isinstance(source_root_obj, str) else None
-        entries_obj = payload.get("entries")
-        if not isinstance(entries_obj, list):
-            continue
-        for row in entries_obj:
-            item = _parse_manifest_entry(row)
-            entries.append(
-                ManifestEntry(
-                    manifest_name=manifest_path.name,
-                    source_root=source_root,
-                    source_file_path=_as_optional_string(item.get("source_file_path")),
-                    output_path=_as_optional_string(item.get("output_path")),
-                    job_id=_as_optional_string(item.get("job_id")),
-                    status=_as_optional_string(item.get("status")),
-                    error_code=_as_optional_string(item.get("error_code")),
-                    pipeline_used=_as_optional_string(item.get("pipeline_used")),
-                    source_format=_as_optional_string(item.get("source_format")),
-                    target_format=_as_optional_string(item.get("target_format")),
-                )
-            )
+        payload: JsonValue = json.loads(manifest_path.read_text(encoding="utf-8"))
+        entries.extend(_parse_manifest_entries(manifest_path.name, payload))
     return entries
 
 
@@ -498,9 +445,7 @@ def build_baseline(
                 try:
                     job_response = service_client.get_job(entry.job_id or "")
                     result_payload = service_client.get_result(entry.job_id or "")
-                    reconciled_status = (
-                        _as_optional_string(job_response.job.get("status")) or entry.status
-                    )
+                    reconciled_status = job_response.job["status"] or entry.status
 
                     if entry.job_id:
                         _save_json(

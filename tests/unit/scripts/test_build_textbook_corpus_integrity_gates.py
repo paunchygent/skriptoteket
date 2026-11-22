@@ -14,12 +14,12 @@ from pathlib import Path
 from typing import TypedDict
 
 import pytest
+from pydantic import JsonValue
 
 from scripts.build_textbook_corpus_integrity_gates import (
     IntegrityGateRow,
     IntegrityReport,
     IntegritySummary,
-    IssueRow,
     build_pristine_copy,
     run_integrity_validation,
     write_validation_artifacts,
@@ -46,7 +46,7 @@ class _CanonicalReport(TypedDict):
     gates: list[_CanonicalGate]
 
 
-def _write_jsonl(path: Path, rows: list[IssueRow]) -> None:
+def _write_jsonl(path: Path, rows: list[dict[str, JsonValue]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         for row in rows:
@@ -182,13 +182,14 @@ def _multiple_answer_heading_blocks_markdown() -> str:
     )
 
 
-def _critical_manual_issue(code: str) -> IssueRow:
-    return IssueRow(
-        code=code,
-        line_no=42,
-        severity="critical",
-        manual_required=True,
-    )
+def _critical_manual_issue(code: str) -> dict[str, JsonValue]:
+    return {
+        "code": code,
+        "line_no": 42,
+        "severity": "critical",
+        "manual_required": True,
+        "line_text": "Corrupted span",
+    }
 
 
 def test_validate_passes_with_ordered_anchors_and_no_critical_unresolved(

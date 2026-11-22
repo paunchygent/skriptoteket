@@ -27,41 +27,37 @@ from scripts.textbook_corpus_integrity_models import (
 )
 
 
-class IssueRow(TypedDict, total=False):
-    """One manual-queue or issue-ledger row read by the issue-policy gate.
+class IssueRow(TypedDict):
+    """One manual-queue or issue-ledger row, with the fields the issue-policy gate reads.
 
-    Every field is tolerated defensively: the gate coerces arbitrary JSON values
-    with ``str``/``bool``/``isinstance`` rather than trusting the on-disk types.
+    `parse_issue_row` applies the coercions the gate has always applied to the
+    on-disk values, so the stored types are the coerced ones.
     """
 
-    code: JsonValue
-    severity: JsonValue
-    status: JsonValue
-    manual_required: JsonValue
-    line_no: JsonValue
+    code: str
+    severity: str
+    status: str
+    manual_required: bool
+    line_no: int
 
 
 def parse_issue_row(value: JsonValue) -> IssueRow | None:
     """Parse one JSONL row into an `IssueRow`; non-objects are skipped.
 
-    The gate helpers coerce each field defensively, so the parse copies the
-    declared keys verbatim instead of pre-validating them, exactly like the
-    untyped ``isinstance(obj, dict)`` filter plus ``row.get`` reads did.
+    A missing or falsy ``code``/``severity`` becomes ``""``, a missing or falsy
+    ``status`` becomes ``"unresolved"``, ``manual_required`` is coerced with
+    ``bool`` and a non-int ``line_no`` becomes ``0``, as the gate did on read.
     """
     if not isinstance(value, dict):
         return None
-    row = IssueRow()
-    if "code" in value:
-        row["code"] = value["code"]
-    if "severity" in value:
-        row["severity"] = value["severity"]
-    if "status" in value:
-        row["status"] = value["status"]
-    if "manual_required" in value:
-        row["manual_required"] = value["manual_required"]
-    if "line_no" in value:
-        row["line_no"] = value["line_no"]
-    return row
+    line_no = value.get("line_no")
+    return IssueRow(
+        code=str(value.get("code") or ""),
+        severity=str(value.get("severity") or ""),
+        status=str(value.get("status") or "unresolved"),
+        manual_required=bool(value.get("manual_required")),
+        line_no=line_no if isinstance(line_no, int) else 0,
+    )
 
 
 def _build_gate_result(
@@ -261,17 +257,13 @@ def _number_sequence_findings(
 
 
 def _row_issue_key(row: IssueRow) -> tuple[str, int]:
-    code = str(row.get("code") or "").strip()
-    line_no_raw = row.get("line_no")
-    line_no = line_no_raw if isinstance(line_no_raw, int) else 0
-    return code, line_no
+    return row["code"].strip(), row["line_no"]
 
 
 def _is_unresolved_critical_row(row: IssueRow) -> bool:
-    severity = str(row.get("severity") or "").strip().casefold()
-    status = str(row.get("status") or "unresolved").strip().casefold()
-    manual_required = bool(row.get("manual_required"))
-    if not manual_required:
+    severity = row["severity"].strip().casefold()
+    status = row["status"].strip().casefold()
+    if not row["manual_required"]:
         return False
     if severity not in CRITICAL_SEVERITIES:
         return False
@@ -496,13 +488,7 @@ def gate_unresolved_critical_issue_policy(
     unresolved_critical_rows = [row for row in manual_queue if _is_unresolved_critical_row(row)]
 
     if unresolved_critical_rows:
-        codes = sorted(
-            {
-                str(row.get("code") or "unknown")
-                for row in unresolved_critical_rows
-                if str(row.get("code") or "").strip()
-            }
-        )
+        codes = sorted({row["code"] for row in unresolved_critical_rows if row["code"].strip()})
         findings.append(
             GateFinding(
                 code="unresolved_critical_issues_present",

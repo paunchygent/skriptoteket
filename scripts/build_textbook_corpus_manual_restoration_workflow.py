@@ -31,62 +31,19 @@ PATCH_VERSION = 1
 PATCH_STATUS_ALLOWED = {"proposed", "approved", "rejected"}
 
 
-class ManualQueueRow(TypedDict, total=False):
-    """One manual-queue JSONL row read by fixed keys during issue loading.
+class ManualQueueRow(TypedDict):
+    """One manual-queue JSONL row with the fields issue loading reads.
 
-    Every field is tolerated defensively: the loader coerces arbitrary JSON
-    values with ``str``/``bool``/``isinstance`` rather than trusting the
-    on-disk types.
+    `_parse_manual_queue_row` applies the loader's coercions, so the stored
+    types are the coerced ones.
     """
 
-    code: JsonValue
-    line_no: JsonValue
-    severity: JsonValue
-    protected_zone: JsonValue
-    message: JsonValue
-    line_text: JsonValue
-
-
-class PatchSourcePayload(TypedDict, total=False):
-    """Subset of a patch ``source`` object read during validation/apply."""
-
-    line_no: JsonValue
-    expected_original: JsonValue
-
-
-class PatchChangePayload(TypedDict, total=False):
-    """Subset of a patch ``change`` object read during validation/apply."""
-
-    mode: JsonValue
-    replacement: JsonValue
-
-
-class PatchReviewPayload(TypedDict, total=False):
-    """Subset of a patch ``review`` object read during validation."""
-
-    decision: JsonValue
-    notes: JsonValue
-
-
-class ManualPatchPayload(TypedDict, total=False):
-    """One manual patch YAML document read by fixed keys.
-
-    Nested ``source``/``change``/``review`` objects are parsed into their own
-    payload views only when the raw value is an object, so validation keeps
-    distinguishing "missing or non-object" from "object with bad fields"
-    exactly like the untyped reader did.
-    """
-
-    version: JsonValue
-    patch_id: JsonValue
-    issue_id: JsonValue
-    status: JsonValue
-    author: JsonValue
-    verifier: JsonValue
-    verified_at: JsonValue
-    source: PatchSourcePayload
-    change: PatchChangePayload
-    review: PatchReviewPayload
+    code: str
+    line_no: int
+    severity: str
+    protected_zone: bool
+    message: str
+    line_text: str
 
 
 class IssueIndexRow(TypedDict):
@@ -224,98 +181,38 @@ class PatchValidation:
     status: str | None
     valid: bool
     errors: list[str]
-    payload: ManualPatchPayload | None
+    approved: ApprovedPatch | None
+
+
+@dataclass(frozen=True, slots=True)
+class ApprovedPatch:
+    """The fields `apply_patches` reads from a valid approved patch."""
+
+    patch_id: str
+    issue_id: str
+    line_no: int
+    expected_original: str
+    replacement: str
 
 
 def _parse_manual_queue_row(value: JsonValue) -> ManualQueueRow | None:
     """Parse one JSONL row; non-objects are skipped like the old dict filter.
 
-    Fields are copied verbatim: ``_load_workflow_issues`` applies the same
-    ``str``/``bool``/``int`` coercions the untyped reader did.
+    A missing or falsy ``code`` reads as ``"UNKNOWN"`` and ``severity`` as
+    ``"unknown"``, ``message``/``line_text`` as ``""``; a non-int ``line_no``
+    reads as ``0`` and ``protected_zone`` is coerced with ``bool``.
     """
     if not isinstance(value, dict):
         return None
-    row = ManualQueueRow()
-    if "code" in value:
-        row["code"] = value["code"]
-    if "line_no" in value:
-        row["line_no"] = value["line_no"]
-    if "severity" in value:
-        row["severity"] = value["severity"]
-    if "protected_zone" in value:
-        row["protected_zone"] = value["protected_zone"]
-    if "message" in value:
-        row["message"] = value["message"]
-    if "line_text" in value:
-        row["line_text"] = value["line_text"]
-    return row
-
-
-def _parse_patch_source(value: JsonValue) -> PatchSourcePayload | None:
-    """Parse a patch ``source`` block; non-objects yield ``None`` (missing)."""
-    if not isinstance(value, dict):
-        return None
-    payload = PatchSourcePayload()
-    if "line_no" in value:
-        payload["line_no"] = value["line_no"]
-    if "expected_original" in value:
-        payload["expected_original"] = value["expected_original"]
-    return payload
-
-
-def _parse_patch_change(value: JsonValue) -> PatchChangePayload | None:
-    """Parse a patch ``change`` block; non-objects yield ``None`` (missing)."""
-    if not isinstance(value, dict):
-        return None
-    payload = PatchChangePayload()
-    if "mode" in value:
-        payload["mode"] = value["mode"]
-    if "replacement" in value:
-        payload["replacement"] = value["replacement"]
-    return payload
-
-
-def _parse_patch_review(value: JsonValue) -> PatchReviewPayload | None:
-    """Parse a patch ``review`` block; non-objects yield ``None`` (missing)."""
-    if not isinstance(value, dict):
-        return None
-    payload = PatchReviewPayload()
-    if "decision" in value:
-        payload["decision"] = value["decision"]
-    if "notes" in value:
-        payload["notes"] = value["notes"]
-    return payload
-
-
-def _parse_manual_patch_payload(value: JsonValue) -> ManualPatchPayload | None:
-    """Parse one patch YAML document; non-objects yield ``None``."""
-    if not isinstance(value, dict):
-        return None
-    payload = ManualPatchPayload()
-    if "version" in value:
-        payload["version"] = value["version"]
-    if "patch_id" in value:
-        payload["patch_id"] = value["patch_id"]
-    if "issue_id" in value:
-        payload["issue_id"] = value["issue_id"]
-    if "status" in value:
-        payload["status"] = value["status"]
-    if "author" in value:
-        payload["author"] = value["author"]
-    if "verifier" in value:
-        payload["verifier"] = value["verifier"]
-    if "verified_at" in value:
-        payload["verified_at"] = value["verified_at"]
-    source = _parse_patch_source(value.get("source"))
-    if source is not None:
-        payload["source"] = source
-    change = _parse_patch_change(value.get("change"))
-    if change is not None:
-        payload["change"] = change
-    review = _parse_patch_review(value.get("review"))
-    if review is not None:
-        payload["review"] = review
-    return payload
+    line_no = value.get("line_no")
+    return ManualQueueRow(
+        code=str(value.get("code") or "UNKNOWN"),
+        line_no=int(line_no) if isinstance(line_no, int) else 0,
+        severity=str(value.get("severity") or "unknown"),
+        protected_zone=bool(value.get("protected_zone")),
+        message=str(value.get("message") or ""),
+        line_text=str(value.get("line_text") or ""),
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -393,15 +290,6 @@ def _issue_to_json(issue: WorkflowIssue) -> IssueIndexRow:
     }
 
 
-def _int_or_zero(value: JsonValue | None) -> int:
-    candidate = value or 0
-    if isinstance(candidate, (dict, list)):
-        raise TypeError(
-            f"int() argument must be a string or a real number, not {type(candidate).__name__!r}"
-        )
-    return int(candidate)
-
-
 def _build_issue_id(index: int, code: str, line_no: int) -> str:
     normalized_code = "".join(ch for ch in code.upper() if ch.isalnum() or ch == "_")
     return f"ISSUE-{index:05d}-L{line_no:05d}-{normalized_code}"
@@ -411,17 +299,14 @@ def _load_workflow_issues(manual_queue_path: Path) -> list[WorkflowIssue]:
     rows = _read_jsonl(manual_queue_path)
     issues: list[WorkflowIssue] = []
     for index, row in enumerate(rows, start=1):
-        code = str(row.get("code") or "UNKNOWN")
-        line_no_obj = row.get("line_no")
-        line_no = int(line_no_obj) if isinstance(line_no_obj, int) else 0
         issue = WorkflowIssue(
-            issue_id=_build_issue_id(index=index, code=code, line_no=line_no),
-            code=code,
-            line_no=line_no,
-            severity=str(row.get("severity") or "unknown"),
-            protected_zone=bool(row.get("protected_zone")),
-            message=str(row.get("message") or ""),
-            line_text=str(row.get("line_text") or ""),
+            issue_id=_build_issue_id(index=index, code=row["code"], line_no=row["line_no"]),
+            code=row["code"],
+            line_no=row["line_no"],
+            severity=row["severity"],
+            protected_zone=row["protected_zone"],
+            message=row["message"],
+            line_text=row["line_text"],
         )
         issues.append(issue)
     return issues
@@ -494,15 +379,19 @@ def generate_packets(
     return issue_index_payload
 
 
-def _read_yaml_file(path: Path) -> ManualPatchPayload | None:
+def _read_yaml_file(path: Path) -> dict[str, JsonValue] | None:
     try:
         payload: JsonValue = yaml.safe_load(path.read_text(encoding="utf-8"))
     except yaml.YAMLError:
         return None
-    return _parse_manual_patch_payload(payload)
+    return payload if isinstance(payload, dict) else None
 
 
-def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> PatchValidation:
+def _validate_patch_payload(path: Path, payload: dict[str, JsonValue] | None) -> PatchValidation:
+    """Validate one parsed patch document; this is the narrowing step for its fields.
+
+    A valid approved patch also yields the `ApprovedPatch` that `apply_patches` uses.
+    """
     errors: list[str] = []
     if payload is None:
         return PatchValidation(
@@ -512,7 +401,7 @@ def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> P
             status=None,
             valid=False,
             errors=["invalid_yaml_or_non_object"],
-            payload=None,
+            approved=None,
         )
 
     patch_id = payload.get("patch_id")
@@ -533,7 +422,7 @@ def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> P
         errors.append("missing_issue_id")
     if not isinstance(status, str) or status not in PATCH_STATUS_ALLOWED:
         errors.append("invalid_status")
-    if source is None:
+    if not isinstance(source, dict):
         errors.append("missing_source")
     else:
         source_line_no = source.get("line_no")
@@ -541,14 +430,14 @@ def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> P
             errors.append("invalid_source_line_no")
         if not isinstance(source.get("expected_original"), str):
             errors.append("invalid_expected_original")
-    if change is None:
+    if not isinstance(change, dict):
         errors.append("missing_change")
     else:
         if change.get("mode") != "replace_line":
             errors.append("unsupported_change_mode")
         if not isinstance(change.get("replacement"), str):
             errors.append("invalid_replacement")
-    if review is None:
+    if not isinstance(review, dict):
         errors.append("missing_review")
 
     if status == "approved":
@@ -566,8 +455,33 @@ def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> P
             errors.append("self_approval_not_allowed")
         if not isinstance(verified_at, str) or verified_at.strip() == "":
             errors.append("approved_missing_verified_at")
-        if review is None or review.get("decision") != "approved":
+        if not isinstance(review, dict) or review.get("decision") != "approved":
             errors.append("approved_missing_review_decision")
+
+    approved: ApprovedPatch | None = None
+    if (
+        not errors
+        and status == "approved"
+        and isinstance(patch_id, str)
+        and isinstance(issue_id, str)
+        and isinstance(source, dict)
+        and isinstance(change, dict)
+    ):
+        line_no = source.get("line_no")
+        expected_original = source.get("expected_original")
+        replacement = change.get("replacement")
+        if (
+            isinstance(line_no, int)
+            and isinstance(expected_original, str)
+            and isinstance(replacement, str)
+        ):
+            approved = ApprovedPatch(
+                patch_id=patch_id,
+                issue_id=issue_id,
+                line_no=int(line_no),
+                expected_original=expected_original,
+                replacement=replacement,
+            )
 
     return PatchValidation(
         file_path=str(path),
@@ -576,16 +490,20 @@ def _validate_patch_payload(path: Path, payload: ManualPatchPayload | None) -> P
         status=status if isinstance(status, str) else None,
         valid=not errors,
         errors=errors,
-        payload=payload,
+        approved=approved,
     )
+
+
+def _validate_patch_dir(patch_dir: Path) -> list[PatchValidation]:
+    return [
+        _validate_patch_payload(path, _read_yaml_file(path))
+        for path in sorted(patch_dir.glob("*.yaml"))
+    ]
 
 
 def validate_patches(*, patch_dir: Path, report_path: Path) -> PatchValidationReport:
     """Validate patch schema and cross-file uniqueness rules."""
-    results: list[PatchValidation] = []
-    for path in sorted(patch_dir.glob("*.yaml")):
-        payload = _read_yaml_file(path)
-        results.append(_validate_patch_payload(path, payload))
+    results = _validate_patch_dir(patch_dir)
 
     issue_ids_seen: set[str] = set()
     patch_ids_seen: set[str] = set()
@@ -659,16 +577,11 @@ def apply_patches(
     original_lines = input_text.splitlines()
     lines = list(original_lines)
 
-    patch_rows: list[ManualPatchPayload] = []
-    for file_path in sorted(patch_dir.glob("*.yaml")):
-        payload = _read_yaml_file(file_path)
-        if payload is None:
-            continue
-        if payload.get("status") != "approved":
-            continue
-        patch_rows.append(payload)
+    patch_rows = [
+        result.approved for result in _validate_patch_dir(patch_dir) if result.approved is not None
+    ]
 
-    patch_rows.sort(key=_patch_sort_key)
+    patch_rows.sort(key=lambda row: (row.line_no, row.patch_id))
 
     seen_issue_ids: set[str] = set()
     seen_line_nos: set[int] = set()
@@ -676,13 +589,11 @@ def apply_patches(
     applied: list[AppliedRow] = []
 
     for row in patch_rows:
-        patch_id = str(row.get("patch_id") or "")
-        issue_id = str(row.get("issue_id") or "")
-        source = row.get("source") or PatchSourcePayload()
-        change = row.get("change") or PatchChangePayload()
-        line_no = _int_or_zero(source.get("line_no"))
-        expected = str(source.get("expected_original") or "")
-        replacement = str(change.get("replacement") or "")
+        patch_id = row.patch_id
+        issue_id = row.issue_id
+        line_no = row.line_no
+        expected = row.expected_original
+        replacement = row.replacement
 
         if issue_id in seen_issue_ids:
             apply_failures.append(ApplyFailureRow(patch_id=patch_id, error="duplicate_issue_id"))
@@ -748,11 +659,6 @@ def apply_patches(
     return report
 
 
-def _patch_sort_key(row: ManualPatchPayload) -> tuple[int, str]:
-    source = row.get("source") or PatchSourcePayload()
-    return (_int_or_zero(source.get("line_no")), str(row.get("patch_id") or ""))
-
-
 def main() -> None:
     args = _parse_args()
     if args.command == "generate-packets":
@@ -769,11 +675,11 @@ def main() -> None:
         return
 
     if args.command == "validate-patches":
-        report = validate_patches(
+        validation = validate_patches(
             patch_dir=args.patch_dir.resolve(),
             report_path=args.report_path.resolve(),
         )
-        summary = report["summary"]
+        summary = validation["summary"]
         print(
             "[textbook_manual_workflow] "
             f"validated={summary['files_total']} valid={summary['valid_total']} "
@@ -784,7 +690,7 @@ def main() -> None:
         return
 
     if args.command == "apply-patches":
-        report = apply_patches(
+        apply_report = apply_patches(
             input_markdown=args.input_markdown.resolve(),
             patch_dir=args.patch_dir.resolve(),
             output_markdown=args.output_markdown.resolve(),
@@ -793,7 +699,7 @@ def main() -> None:
         )
         print(
             "[textbook_manual_workflow] "
-            f"applied={report['applied_count']} failures={report['failure_count']}"
+            f"applied={apply_report['applied_count']} failures={apply_report['failure_count']}"
         )
         return
 

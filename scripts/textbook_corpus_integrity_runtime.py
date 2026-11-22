@@ -14,11 +14,9 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import NotRequired, TypedDict
 
 from pydantic import JsonValue
 
@@ -28,89 +26,21 @@ from scripts.textbook_corpus_integrity_gates_core import (
     parse_issue_row,
 )
 from scripts.textbook_corpus_integrity_models import DEFAULT_OUTPUT_DIR
-
-
-class IntegrityFinding(TypedDict):
-    """One gate finding serialized into an integrity report."""
-
-    code: str
-    severity: str
-    line_no: int | None
-    message: str
-
-
-class IntegrityGateRow(TypedDict):
-    """One gate result serialized into an integrity report."""
-
-    gate: str
-    passed: bool
-    critical_count: int
-    warning_count: int
-    metrics: dict[str, int]
-    findings: list[IntegrityFinding]
-
-
-class IntegritySummary(TypedDict):
-    """Aggregate gate counters in an integrity report."""
-
-    all_critical_gates_passed: bool
-    gate_count: int
-    critical_findings_total: int
-    warning_findings_total: int
-
-
-class IntegrityGateSummary(TypedDict):
-    """Pass/fail gate counters in an integrity report."""
-
-    all_passed: bool
-    failed_gates: int
-    passed_gates: int
-
-
-class IntegrityReport(TypedDict):
-    """Machine-readable integrity report written by `validate_integrity_gates`."""
-
-    generated_at: str
-    input_markdown: str
-    manual_queue_path: str
-    issue_ledger_path: str | None
-    passed: bool
-    summary: IntegritySummary
-    gate_summary: IntegrityGateSummary
-    failed_gates: list[str]
-    gates: list[IntegrityGateRow]
-    artifact_paths: NotRequired[dict[str, str]]
-
-
-class PristineBuildSummary(TypedDict):
-    """Summary counters in a pristine build report."""
-
-    all_critical_gates_passed: bool
-    all_passed: bool
-
-
-class PristineBuildReport(TypedDict):
-    """Machine-readable report written by `build_pristine`."""
-
-    generated_at: str
-    passed: bool
-    summary: PristineBuildSummary
-    input_markdown: str
-    pristine_markdown: str
-    pristine_report: NotRequired[str]
-
-
-class IntegrityReportView(TypedDict, total=False):
-    """Report-shaped mapping read defensively by pristine-build/checklist paths.
-
-    The loaded or caller-supplied report keeps ``JsonValue`` fields so the
-    readers' own ``isinstance`` checks degrade malformed content exactly like
-    the untyped ``dict.get`` reads did.
-    """
-
-    generated_at: JsonValue
-    summary: JsonValue
-    gates: JsonValue
+from scripts.textbook_corpus_integrity_reports import (
+    IntegrityFinding,
+    IntegrityGateRow,
+    IntegrityGateSummary,
+    IntegrityReport,
+    IntegrityReportView,
+    IntegritySummary,
+    PristineBuildReport,
+    PristineBuildSummary,
+    parse_report_view,
+    report_view,
+    write_checklist,
+    write_json,
+    write_validation_artifacts,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,48 +90,6 @@ def _read_jsonl(path: Path) -> list[IssueRow]:
     return rows
 
 
-def _write_json(path: Path, payload: IntegrityReport | PristineBuildReport) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
-
-
-def _write_jsonl(path: Path, rows: Sequence[Mapping[str, JsonValue]]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as handle:
-        for row in rows:
-            handle.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
-
-
-def _int_or_zero(value: JsonValue) -> int:
-    candidate = value or 0
-    if isinstance(candidate, (dict, list)):
-        raise TypeError(
-            f"int() argument must be a string or a real number, not {type(candidate).__name__!r}"
-        )
-    return int(candidate)
-
-
-def _parse_report_view(value: JsonValue) -> IntegrityReportView | None:
-    """Build the defensively-read report view; non-objects yield ``None``.
-
-    Returning ``None`` preserves the old ``isinstance(parsed, dict)`` gate so a
-    non-object payload still falls back to a fresh validation run.
-    """
-    if not isinstance(value, dict):
-        return None
-    view = IntegrityReportView()
-    if "generated_at" in value:
-        view["generated_at"] = value["generated_at"]
-    if "summary" in value:
-        view["summary"] = value["summary"]
-    if "gates" in value:
-        view["gates"] = value["gates"]
-    return view
-
-
 def _resolve_input_path(
     *,
     input_markdown: Path | None = None,
@@ -235,110 +123,6 @@ def _resolve_issue_ledger_path(
     if candidate is None:
         return None
     return candidate.resolve()
-
-
-def _report_paths(
-    *,
-    input_markdown: Path,
-    output_dir: Path,
-    report_path: Path | None,
-    checklist_path: Path | None,
-) -> tuple[Path, Path, Path]:
-    reports_dir = output_dir / "reports"
-    stem = input_markdown.stem
-    resolved_report = report_path or reports_dir / f"{stem}.integrity-report.json"
-    resolved_checklist = checklist_path or reports_dir / f"{stem}.integrity-checklist.md"
-    findings_path = reports_dir / f"{stem}.integrity-findings.jsonl"
-    return resolved_report.resolve(), resolved_checklist.resolve(), findings_path.resolve()
-
-
-def _write_checklist(
-    path: Path,
-    *,
-    report: IntegrityReport | IntegrityReportView,
-    input_markdown: Path,
-) -> None:
-    summary = report.get("summary")
-    summary_obj = summary if isinstance(summary, dict) else {}
-    gate_rows = report.get("gates")
-    gates = gate_rows if isinstance(gate_rows, list) else []
-    lines = [
-        "# Textbook Corpus Integrity Checklist",
-        "",
-        f"- Input markdown: `{input_markdown}`",
-        f"- Generated at: `{report.get('generated_at', '')}`",
-        f"- All critical gates passed: `{summary_obj.get('all_critical_gates_passed', False)}`",
-        "",
-        "## Gate Results",
-        "",
-    ]
-    for gate in gates:
-        if not isinstance(gate, dict):
-            continue
-        lines.append(
-            "- "
-            f"`{gate.get('gate', 'unknown')}`: passed={gate.get('passed')} "
-            f"critical={gate.get('critical_count', 0)} "
-            f"warning={gate.get('warning_count', 0)}"
-        )
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
-
-
-def write_validation_artifacts(
-    *,
-    output_dir: Path,
-    input_markdown: Path,
-    report: IntegrityReport,
-    report_path: Path | None = None,
-    checklist_path: Path | None = None,
-) -> dict[str, str]:
-    """Write machine-readable and human-readable validation artifacts."""
-    resolved_report, resolved_checklist, findings_path = _report_paths(
-        input_markdown=input_markdown,
-        output_dir=output_dir,
-        report_path=report_path,
-        checklist_path=checklist_path,
-    )
-
-    flattened_findings: list[dict[str, JsonValue]] = []
-    gate_rows = report.get("gates")
-    if isinstance(gate_rows, list):
-        for gate_row in gate_rows:
-            if not isinstance(gate_row, dict):
-                continue
-            gate_code = str(gate_row.get("gate") or "unknown")
-            findings = gate_row.get("findings")
-            if not isinstance(findings, list):
-                continue
-            for finding in findings:
-                if not isinstance(finding, dict):
-                    continue
-                row: dict[str, JsonValue] = {
-                    "code": finding["code"],
-                    "severity": finding["severity"],
-                    "line_no": finding["line_no"],
-                    "message": finding["message"],
-                    "gate": gate_code,
-                }
-                flattened_findings.append(row)
-
-    flattened_findings.sort(
-        key=lambda row: (
-            _int_or_zero(row.get("line_no")),
-            str(row.get("gate") or ""),
-            str(row.get("code") or ""),
-        )
-    )
-
-    _write_json(resolved_report, report)
-    _write_jsonl(findings_path, flattened_findings)
-    _write_checklist(resolved_checklist, report=report, input_markdown=input_markdown)
-    return {
-        "report_json": str(resolved_report),
-        "findings_jsonl": str(findings_path),
-        "checklist_md": str(resolved_checklist),
-    }
 
 
 def validate_integrity_gates(
@@ -430,7 +214,7 @@ def validate_integrity_gates(
     )
     report["artifact_paths"] = artifact_paths
     if report_path is not None:
-        _write_json(report_path.resolve(), report)
+        write_json(report_path.resolve(), report)
     return report
 
 
@@ -492,11 +276,9 @@ def run_integrity_validation(
         checklist_path=checklist_path,
         output_dir=output_dir,
     )
-    summary = report.get("summary")
-    summary_obj = summary if isinstance(summary, dict) else {}
     return ValidationBundle(
         report=report,
-        all_critical_gates_passed=bool(summary_obj.get("all_critical_gates_passed")),
+        all_critical_gates_passed=report["summary"]["all_critical_gates_passed"],
     )
 
 
@@ -511,7 +293,7 @@ def build_pristine(
     issue_ledger_path: Path | None = None,
     issue_ledger: Path | None = None,
     validation_report_path: Path | None = None,
-    validation_report: IntegrityReport | IntegrityReportView | None = None,
+    validation_report: IntegrityReport | None = None,
     output_markdown: Path | None = None,
     pristine_markdown_path: Path | None = None,
     pristine_path: Path | None = None,
@@ -527,12 +309,14 @@ def build_pristine(
     )
     resolved_output_dir = (output_dir or DEFAULT_OUTPUT_DIR).resolve()
 
-    report: IntegrityReport | IntegrityReportView | None = validation_report
+    report: IntegrityReportView | None = (
+        report_view(validation_report) if validation_report is not None else None
+    )
     if report is None and validation_report_path is not None and validation_report_path.exists():
         parsed: JsonValue = json.loads(validation_report_path.read_text(encoding="utf-8"))
-        report = _parse_report_view(parsed)
+        report = parse_report_view(parsed)
     if report is None:
-        report = validate_integrity_gates(
+        fresh_report = validate_integrity_gates(
             input_markdown=resolved_input,
             manual_queue_path=_resolve_manual_queue_path(
                 manual_queue_path=manual_queue_path,
@@ -547,10 +331,9 @@ def build_pristine(
             report_path=report_path,
             checklist_path=checklist_path,
         )
+        report = report_view(fresh_report)
 
-    summary = report.get("summary")
-    summary_obj = summary if isinstance(summary, dict) else {}
-    if not bool(summary_obj.get("all_critical_gates_passed")):
+    if not report["all_critical_gates_passed"]:
         raise SystemExit("Pristine build blocked: integrity gates failed.")
 
     pristine_output_path = (
@@ -577,9 +360,9 @@ def build_pristine(
         input_markdown=str(resolved_input),
         pristine_markdown=str(pristine_output_path),
     )
-    _write_json(build_report_path, build_report)
+    write_json(build_report_path, build_report)
     if checklist_path is not None:
-        _write_checklist(checklist_path.resolve(), report=report, input_markdown=resolved_input)
+        write_checklist(checklist_path.resolve(), report=report, input_markdown=resolved_input)
     return build_report
 
 
@@ -595,8 +378,8 @@ def build_pristine_copy(
     issue_ledger_path: Path | None = None,
     issue_ledger: Path | None = None,
     validation_report_path: Path | None = None,
-    validation_report: IntegrityReport | IntegrityReportView | None = None,
-    report: IntegrityReport | IntegrityReportView | None = None,
+    validation_report: IntegrityReport | None = None,
+    report: IntegrityReport | None = None,
     output_markdown: Path | None = None,
     pristine_markdown_path: Path | None = None,
     pristine_path: Path | None = None,
@@ -654,19 +437,18 @@ def main() -> None:
             report_path=args.report_path.resolve() if args.report_path else None,
             checklist_path=args.checklist_path.resolve() if args.checklist_path else None,
         )
-        summary = report.get("summary")
-        summary_obj = summary if isinstance(summary, dict) else {}
+        summary = report["summary"]
         print(
             "[textbook_integrity_gates] "
-            f"all_critical_gates_passed={summary_obj.get('all_critical_gates_passed')} "
-            f"critical_findings_total={summary_obj.get('critical_findings_total')}"
+            f"all_critical_gates_passed={summary['all_critical_gates_passed']} "
+            f"critical_findings_total={summary['critical_findings_total']}"
         )
-        if not bool(summary_obj.get("all_critical_gates_passed")):
+        if not summary["all_critical_gates_passed"]:
             raise SystemExit(1)
         return
 
     if args.command == "build-pristine":
-        report = build_pristine(
+        build_report = build_pristine(
             input_markdown=args.input_markdown.resolve(),
             manual_queue_path=args.manual_queue.resolve(),
             issue_ledger_path=args.issue_ledger.resolve() if args.issue_ledger else None,
@@ -677,7 +459,7 @@ def main() -> None:
         )
         print(
             "[textbook_integrity_gates] "
-            f"pristine_built={report.get('pristine_markdown')} passed={report.get('passed')}"
+            f"pristine_built={build_report['pristine_markdown']} passed={build_report['passed']}"
         )
         return
 

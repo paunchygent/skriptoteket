@@ -17,11 +17,14 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from scripts.textbook_corpus_integrity_runtime import (
+from scripts.textbook_corpus_integrity_gates_core import IssueRow
+from scripts.textbook_corpus_integrity_reports import (
     IntegrityGateRow,
     IntegrityReport,
     IntegritySummary,
-    IssueRow,
+    write_validation_artifacts,
+)
+from scripts.textbook_corpus_integrity_runtime import (
     ValidationBundle,
     build_pristine,
     build_pristine_copy,
@@ -29,7 +32,6 @@ from scripts.textbook_corpus_integrity_runtime import (
     run_integrity_gates,
     run_integrity_validation,
     validate_integrity_gates,
-    write_validation_artifacts,
 )
 
 __all__ = [

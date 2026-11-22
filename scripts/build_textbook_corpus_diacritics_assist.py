@@ -181,36 +181,8 @@ class CheckResponsePayload(TypedDict, total=False):
     matches: list[JsonValue]
 
 
-class LanguageToolMatchPayload(TypedDict):
-    """One LanguageTool match entry normalized at the parse boundary."""
-
-    offset: int
-    length: int
-    replacements: list[str]
-    rule_id: str
-    message: str
-
-
-class ReplacementPayload(TypedDict):
-    """One match ``replacements`` object entry normalized at the parse boundary."""
-
-    value: str
-
-
-class MatchRulePayload(TypedDict, total=False):
-    """Subset of one match ``rule`` object read during normalization."""
-
-    id: str
-
-
-def _parse_check_response(value: JsonValue) -> CheckResponsePayload:
-    """Build the check-response view from a parsed JSON object.
-
-    The HTTP readers already refuse non-object JSON with ``RuntimeError``;
-    this narrows defensively and would only fire on misuse.
-    """
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected JSON object for check response, got {type(value).__name__}")
+def _parse_check_response(value: dict[str, JsonValue]) -> CheckResponsePayload:
+    """Keep the ``errors`` and ``matches`` lists of a check response object."""
     payload = CheckResponsePayload()
     errors = value.get("errors")
     if isinstance(errors, list):
@@ -219,61 +191,6 @@ def _parse_check_response(value: JsonValue) -> CheckResponsePayload:
     if isinstance(matches, list):
         payload["matches"] = matches
     return payload
-
-
-def _parse_replacement_payload(value: JsonValue) -> ReplacementPayload | None:
-    """Parse one ``replacements`` object entry; unusable entries yield ``None``."""
-    if not isinstance(value, dict):
-        return None
-    replacement = value.get("value")
-    if not isinstance(replacement, str) or not replacement:
-        return None
-    return ReplacementPayload(value=replacement)
-
-
-def _parse_rule_payload(value: JsonValue) -> MatchRulePayload | None:
-    """Parse one match ``rule`` object; non-objects yield ``None``."""
-    if not isinstance(value, dict):
-        return None
-    payload = MatchRulePayload()
-    rule_id = value.get("id")
-    if isinstance(rule_id, str):
-        payload["id"] = rule_id
-    return payload
-
-
-def _parse_match_payload(value: JsonValue) -> LanguageToolMatchPayload | None:
-    """Parse one match entry; non-objects are skipped like the old dict filter."""
-    if not isinstance(value, dict):
-        return None
-
-    replacements: list[str] = []
-    replacements_obj = value.get("replacements")
-    if isinstance(replacements_obj, list):
-        for item in replacements_obj:
-            replacement = _parse_replacement_payload(item)
-            if replacement is not None:
-                replacements.append(replacement["value"])
-            elif isinstance(item, str) and item:
-                replacements.append(item)
-
-    rule_id = ""
-    rule = _parse_rule_payload(value.get("rule"))
-    if rule is not None:
-        rule_id = rule.get("id", "")
-    if not rule_id:
-        rule_id_obj = value.get("rule_id")
-        if isinstance(rule_id_obj, str):
-            rule_id = rule_id_obj
-
-    message_obj = value.get("message")
-    return LanguageToolMatchPayload(
-        offset=_as_positive_int(value.get("offset")),
-        length=_as_positive_int(value.get("length")),
-        replacements=replacements,
-        rule_id=rule_id,
-        message=message_obj if isinstance(message_obj, str) else "",
-    )
 
 
 class LanguageToolClientProtocol(Protocol):
@@ -300,6 +217,43 @@ class LanguageToolMatch:
     replacements: tuple[str, ...]
     rule_id: str
     message: str
+
+
+def _parse_match(value: JsonValue) -> LanguageToolMatch | None:
+    """Parse one match entry; non-objects are skipped like the old dict filter."""
+    if not isinstance(value, dict):
+        return None
+
+    replacements: list[str] = []
+    replacements_obj = value.get("replacements")
+    if isinstance(replacements_obj, list):
+        for item in replacements_obj:
+            if isinstance(item, dict):
+                replacement = item.get("value")
+                if isinstance(replacement, str) and replacement:
+                    replacements.append(replacement)
+            elif isinstance(item, str) and item:
+                replacements.append(item)
+
+    rule_id = ""
+    rule_obj = value.get("rule")
+    if isinstance(rule_obj, dict):
+        rule_id_obj = rule_obj.get("id")
+        if isinstance(rule_id_obj, str):
+            rule_id = rule_id_obj
+    if not rule_id:
+        rule_id_obj = value.get("rule_id")
+        if isinstance(rule_id_obj, str):
+            rule_id = rule_id_obj
+
+    message_obj = value.get("message")
+    return LanguageToolMatch(
+        offset=_as_positive_int(value.get("offset")),
+        length=_as_positive_int(value.get("length")),
+        replacements=tuple(replacements),
+        rule_id=rule_id,
+        message=message_obj if isinstance(message_obj, str) else "",
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -380,9 +334,9 @@ class HuleEduV1LanguageToolClient(LanguageToolClientProtocol):
             return []
         matches: list[LanguageToolMatch] = []
         for item in errors_obj:
-            match_payload = _parse_match_payload(item)
-            if match_payload is not None:
-                matches.append(_normalize_match(match_payload))
+            match = _parse_match(item)
+            if match is not None:
+                matches.append(match)
         return matches
 
 
@@ -415,9 +369,9 @@ class LanguageToolV2Client(LanguageToolClientProtocol):
             return []
         matches: list[LanguageToolMatch] = []
         for item in matches_obj:
-            match_payload = _parse_match_payload(item)
-            if match_payload is not None:
-                matches.append(_normalize_match(match_payload))
+            match = _parse_match(item)
+            if match is not None:
+                matches.append(match)
         return matches
 
 
@@ -481,16 +435,6 @@ def _read_json_response(
     if not isinstance(payload, dict):
         raise RuntimeError(f"Unexpected JSON shape from {request.full_url}: {type(payload)}")
     return _parse_check_response(payload)
-
-
-def _normalize_match(match_obj: LanguageToolMatchPayload) -> LanguageToolMatch:
-    return LanguageToolMatch(
-        offset=match_obj["offset"],
-        length=match_obj["length"],
-        replacements=tuple(match_obj["replacements"]),
-        rule_id=match_obj["rule_id"],
-        message=match_obj["message"],
-    )
 
 
 def _as_positive_int(value: object) -> int:
