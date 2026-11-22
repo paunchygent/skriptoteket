@@ -7,16 +7,17 @@ import asyncio
 import json
 from collections.abc import Coroutine
 from pathlib import Path
-from typing import Any
 from uuid import UUID
 
 import httpx
+from pydantic import JsonValue
 
 from scripts.labeling_feasibility import grouping, methods, postconv, report
-from scripts.labeling_feasibility.api import OpenAIClient
-from scripts.labeling_feasibility.method_models import Grouping
+from scripts.labeling_feasibility.api import OpenAIClient, response_body
+from scripts.labeling_feasibility.converted import converted_exam
+from scripts.labeling_feasibility.method_models import Grouping, grouping_b_output
 from scripts.labeling_feasibility.render import png_data_url, render_docx_pages
-from scripts.labeling_feasibility.requests import MethodResult
+from scripts.labeling_feasibility.requests import MethodResult, run_summary, saved_method
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, tooling_caller
@@ -91,9 +92,9 @@ async def _probe(client: OpenAIClient, evidence_dir: Path) -> None:
 
 async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
     """Find the largest accepted question count per Decisions request."""
-    results = []
+    results: list[dict[str, object]] = []
     for count in (100, 250, 500, 1000, 2000):
-        questions = [
+        questions: list[dict[str, JsonValue]] = [
             {
                 "type": "predicate",
                 "name": f"q{index:04d}",
@@ -104,12 +105,12 @@ async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
         record = await client.decisions(
             label=f"limit-{count}", input_value="1 2 3", questions=questions
         )
-        listed = record.body.get("answers") if isinstance(record.body, dict) else None
+        listed = response_body(record.body).get("answers")
         results.append(
             {
                 "questions": count,
                 "status": record.status_code,
-                "usage": record.usage,
+                "usage": dict(record.usage),
                 "duration_seconds": record.duration_seconds,
                 "error": None if record.ok else record.body,
                 "answers": len(listed) if isinstance(listed, list) and record.ok else 0,
@@ -126,6 +127,10 @@ async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
     _write(evidence_dir / "probe" / "decisions_question_limit.json", results)
 
 
+def _load_json(path: Path) -> JsonValue:
+    return json.loads(path.read_text())
+
+
 def _save(path: Path, result: MethodResult, output: object) -> None:
     _write(
         path,
@@ -137,14 +142,6 @@ def _save(path: Path, result: MethodResult, output: object) -> None:
     )
 
 
-def _grouping_json(output: object) -> object:
-    if isinstance(output, Grouping):
-        return output.to_json()
-    if isinstance(output, dict) and isinstance(output.get("grouping"), Grouping):
-        return {**output, "grouping": output["grouping"].to_json()}
-    return output
-
-
 def _method_jobs(
     client: OpenAIClient,
     label: str,
@@ -153,8 +150,8 @@ def _method_jobs(
     chunks: tuple[DocxChunk, ...],
     grouping_a: Grouping | None,
     grouping_b: Grouping,
-) -> dict[str, Coroutine[Any, Any, MethodResult]]:
-    jobs: dict[str, Coroutine[Any, Any, MethodResult]] = {
+) -> dict[str, Coroutine[object, object, MethodResult]]:
+    jobs: dict[str, Coroutine[object, object, MethodResult]] = {
         "kind_b": methods.kind(client, f"{label}/kind_b", grouping_b, chunks)
     }
     if grouping_a is not None:
@@ -177,7 +174,10 @@ def _method_jobs(
 
 
 async def _run_jobs(
-    jobs: dict[str, Coroutine[Any, Any, MethodResult]], wanted: set[str], exam_dir: Path, label: str
+    jobs: dict[str, Coroutine[object, object, MethodResult]],
+    wanted: set[str],
+    exam_dir: Path,
+    label: str,
 ) -> None:
     selected = {name: job for name, job in jobs.items() if not wanted or name in wanted}
     for name, job in jobs.items():
@@ -206,11 +206,10 @@ async def _label_exam(
         grouping.grouping_a(client, f"{label}/grouping_a", chunks),
         grouping.grouping_b(client, f"{label}/grouping_b", chunks),
     )
-    result_a, result_b = first
-    _save(exam_dir / "grouping_a.json", result_a, _grouping_json(result_a.output))
-    _save(exam_dir / "grouping_b.json", result_b, _grouping_json(result_b.output))
-    grouping_a = result_a.output if isinstance(result_a.output, Grouping) else None
-    grouping_b = result_b.output["grouping"]
+    result_a, grouping_a = first[0]
+    result_b, grouping_b = first[1]
+    _save(exam_dir / "grouping_a.json", result_a, result_a.output)
+    _save(exam_dir / "grouping_b.json", result_b, result_b.output)
     jobs = _method_jobs(client, label, docx, scratch, chunks, grouping_a, grouping_b)
     await _run_jobs(jobs, wanted, exam_dir, label)
 
@@ -219,9 +218,11 @@ async def _label_exam_b2(
     client: OpenAIClient, chunks: tuple[DocxChunk, ...], exam_dir: Path, label: str
 ) -> None:
     """Variant added after the B results: Grouping B with each chunk quoted in its question."""
-    result = await grouping.grouping_b(client, f"{label}/grouping_b2", chunks, quote_chunks=True)
-    _save(exam_dir / "grouping_b2.json", result, _grouping_json(result.output))
-    kind = await methods.kind(client, f"{label}/kind_b2", result.output["grouping"], chunks)
+    result, grouping_b2 = await grouping.grouping_b(
+        client, f"{label}/grouping_b2", chunks, quote_chunks=True
+    )
+    _save(exam_dir / "grouping_b2.json", result, result.output)
+    kind = await methods.kind(client, f"{label}/kind_b2", grouping_b2, chunks)
     _save(exam_dir / "kind_b2.json", kind, kind.output)
     print(label, "done", {"grouping_b2": result.summary()["ok"], "kind_b2": kind.summary()["ok"]})
 
@@ -235,14 +236,14 @@ async def _retry_failed_exam(
         path.stem
         for path in exam_dir.glob("*.json")
         if not path.stem.startswith(("grouping_", "attempt"))
-        and not json.loads(path.read_text())["summary"]["ok"]
+        and not run_summary(saved_method(_load_json(path))["summary"])["ok"]
     }
     if not failed:
         return
     for name in failed:
         (exam_dir / f"{name}.json").rename(exam_dir / f"attempt1-{name}.json")
-    saved_a = json.loads((exam_dir / "grouping_a.json").read_text())["output"]
-    saved_b = json.loads((exam_dir / "grouping_b.json").read_text())["output"]["grouping"]
+    saved_a: JsonValue = json.loads((exam_dir / "grouping_a.json").read_text())["output"]
+    output_b: JsonValue = json.loads((exam_dir / "grouping_b.json").read_text())["output"]
     grouping_a = (
         Grouping.from_json(saved_a)
         if isinstance(saved_a, dict) and "questions" in saved_a
@@ -251,7 +252,13 @@ async def _retry_failed_exam(
     chunks = PythonDocxExamChunker().chunk(content=docx.read_bytes()).chunks
     label = f"{run_dir.name}/{docx.stem}"
     jobs = _method_jobs(
-        client, label, docx, scratch, chunks, grouping_a, Grouping.from_json(saved_b)
+        client,
+        label,
+        docx,
+        scratch,
+        chunks,
+        grouping_a,
+        Grouping.from_json(grouping_b_output(output_b)["grouping"]),
     )
     await _run_jobs(jobs, failed, exam_dir, f"{label} retry")
 
@@ -259,7 +266,7 @@ async def _retry_failed_exam(
 async def _postconv_exam(client: OpenAIClient, docx: Path, run_dir: Path) -> None:
     gold, chunks, reference = report.load_reference(docx)
     for name in postconv.RECORDED_CONVERSIONS[docx.stem]:
-        recording = json.loads((postconv.RECORDINGS / name).read_text())
+        recording = converted_exam(json.loads((postconv.RECORDINGS / name).read_text()))
         if not recording["items"]:
             continue
         label = f"{run_dir.name}/{docx.stem}/{name}"

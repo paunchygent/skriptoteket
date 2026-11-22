@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
-from typing import Any
+from pydantic import JsonValue
 
 from scripts.labeling_feasibility.api import (
     CallRecord,
+    DecisionAnswer,
     OpenAIClient,
     responses_output_json,
 )
-from scripts.labeling_feasibility.method_models import Context, Grouping, Question
+from scripts.labeling_feasibility.method_models import (
+    Context,
+    Grouping,
+    Question,
+    _json_list,
+    _json_str,
+    _json_str_list,
+)
 from scripts.labeling_feasibility.requests import MethodResult, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
@@ -49,7 +57,7 @@ def render_chunks(chunks: tuple[DocxChunk, ...]) -> str:
     return "\n".join(f"[{chunk.anchor}] ({chunk.kind}) {chunk.marked_text}" for chunk in chunks)
 
 
-def _choices(labels: tuple[tuple[str, str], ...]) -> list[dict[str, str]]:
+def _choices(labels: tuple[tuple[str, str], ...]) -> list[JsonValue]:
     return [{"value": value, "description": description} for value, description in labels]
 
 
@@ -72,7 +80,7 @@ Rules:
 - Question ids are q1, q2, ... in source order.
 - Judge structure from layout, numbering and instructions, not from the subject matter."""
 
-GROUPING_SCHEMA: dict[str, Any] = {
+GROUPING_SCHEMA: dict[str, JsonValue] = {
     "type": "object",
     "properties": {
         "title_anchors": {"type": "array", "items": {"type": "string"}},
@@ -122,7 +130,7 @@ GROUPING_SCHEMA: dict[str, Any] = {
 
 async def grouping_a(
     client: OpenAIClient, label: str, chunks: tuple[DocxChunk, ...], effort: str = "low"
-) -> MethodResult:
+) -> tuple[MethodResult, Grouping | None]:
     record = await client.responses(
         label=label,
         model=GROUPING_MODEL,
@@ -135,42 +143,65 @@ async def grouping_a(
     )
     output = responses_output_json(record) if record.ok else None
     grouping = _grouping_from_manifest(output, chunks) if isinstance(output, dict) else None
-    return MethodResult([record], grouping)
+    return MethodResult([record], grouping.to_json() if grouping else None), grouping
 
 
-def _grouping_from_manifest(manifest: dict[str, Any], chunks: tuple[DocxChunk, ...]) -> Grouping:
+def _grouping_from_manifest(
+    manifest: dict[str, JsonValue], chunks: tuple[DocxChunk, ...]
+) -> Grouping:
     known = {chunk.anchor for chunk in chunks}
-    invalid: list[str] = []
+    invalid: list[JsonValue] = []
 
-    def valid(anchors: list[str]) -> list[str]:
-        invalid.extend(anchor for anchor in anchors if anchor not in known)
-        return [anchor for anchor in anchors if anchor in known]
+    def valid(anchors: list[JsonValue]) -> list[str]:
+        kept: list[str] = []
+        for anchor in anchors:
+            if not isinstance(anchor, str):
+                # `anchor in known` raised TypeError on unhashable entries; hashable
+                # non-strings were recorded as invalid anchors.
+                hash(anchor)
+                invalid.append(anchor)
+            elif anchor in known:
+                kept.append(anchor)
+            else:
+                invalid.append(anchor)
+        return kept
 
-    questions = [
-        Question(
-            id=entry["id"],
-            anchors=valid(entry["anchors"]),
-            key_anchors=valid(entry["answer_key_anchors"]),
-            subpart_anchors=valid(entry["subpart_anchors"]),
+    questions_value = manifest["questions"]
+    contexts_value = manifest["shared_contexts"]
+    if not isinstance(questions_value, list) or not isinstance(contexts_value, list):
+        raise TypeError("manifest questions and shared_contexts must be JSON arrays")
+    questions: list[Question] = []
+    for entry in questions_value:
+        if not isinstance(entry, dict):
+            raise TypeError("manifest questions must be JSON objects")
+        questions.append(
+            Question(
+                id=_json_str(entry["id"], "question id"),
+                anchors=valid(_json_list(entry["anchors"], "question anchors")),
+                key_anchors=valid(_json_list(entry["answer_key_anchors"], "answer_key_anchors")),
+                subpart_anchors=valid(_json_list(entry["subpart_anchors"], "subpart_anchors")),
+            )
         )
-        for entry in manifest["questions"]
-    ]
-    contexts = [
-        Context(
-            anchor=entry["anchor"],
-            scope=entry["scope"],
-            owner=entry["owner"],
-            governs=entry["governs"],
+    contexts: list[Context] = []
+    for entry in contexts_value:
+        if not isinstance(entry, dict):
+            raise TypeError("manifest shared_contexts must be JSON objects")
+        if not valid([entry["anchor"]]):
+            continue
+        contexts.append(
+            Context(
+                anchor=_json_str(entry["anchor"], "context anchor"),
+                scope=_json_str(entry["scope"], "context scope"),
+                owner=_json_str(entry["owner"], "context owner"),
+                governs=_json_str_list(entry["governs"], "context governs"),
+            )
         )
-        for entry in manifest["shared_contexts"]
-        if valid([entry["anchor"]])
-    ]
     return Grouping(
         method="grouping_a",
         questions=questions,
         contexts=contexts,
-        title=valid(manifest["title_anchors"]),
-        other=valid(manifest["other_anchors"]),
+        title=valid(_json_list(manifest["title_anchors"], "title_anchors")),
+        other=valid(_json_list(manifest["other_anchors"], "other_anchors")),
         invalid_anchors=invalid,
     )
 
@@ -190,12 +221,20 @@ def _role_instructions(chunks: tuple[DocxChunk, ...], index: int, *, quote_chunk
     return f"{asked}\nThe chunk reads: {chunk.marked_text}\nThe chunk before it reads: {previous}"
 
 
+def _choice_or(answer: DecisionAnswer | None, default: str) -> str:
+    """A Decisions choice value; a missing or non-string answer reads as the default."""
+    if answer is None:
+        return default
+    choice = answer.get("choice")
+    return choice if isinstance(choice, str) else default
+
+
 async def grouping_b(
     client: OpenAIClient, label: str, chunks: tuple[DocxChunk, ...], *, quote_chunks: bool = False
-) -> MethodResult:
+) -> tuple[MethodResult, Grouping]:
     """Decisions-only grouping; quote_chunks repeats each chunk and its predecessor in its question."""
     text = render_chunks(chunks)
-    role_questions = [
+    role_questions: list[dict[str, JsonValue]] = [
         {
             "type": "choice",
             "name": f"role_{_short(chunk.anchor)}",
@@ -206,14 +245,14 @@ async def grouping_b(
     ]
     role_calls, role_answers = await decide(client, f"{label}-roles", text, role_questions)
     roles = {
-        chunk.anchor: role_answers.get(f"role_{_short(chunk.anchor)}", {}).get("choice", "other")
+        chunk.anchor: _choice_or(role_answers.get(f"role_{_short(chunk.anchor)}"), "other")
         for chunk in chunks
     }
     shared = [chunk.anchor for chunk in chunks if roles[chunk.anchor] == "shared_context"]
     scope_calls: list[CallRecord] = []
     scopes: dict[str, str] = {}
     if shared:
-        scope_questions = [
+        scope_questions: list[dict[str, JsonValue]] = [
             {
                 "type": "choice",
                 "name": f"scope_{_short(anchor)}",
@@ -224,14 +263,20 @@ async def grouping_b(
         ]
         scope_calls, scope_answers = await decide(client, f"{label}-scope", text, scope_questions)
         scopes = {
-            anchor: scope_answers.get(f"scope_{_short(anchor)}", {}).get("choice", "following_run")
+            anchor: _choice_or(scope_answers.get(f"scope_{_short(anchor)}"), "following_run")
             for anchor in shared
         }
     grouping = build_grouping_from_roles(chunks, roles, scopes)
-    return MethodResult(
+    result = MethodResult(
         role_calls + scope_calls,
-        {"grouping": grouping, "roles": roles, "scopes": scopes, "answers": role_answers},
+        {
+            "grouping": grouping.to_json(),
+            "roles": roles,
+            "scopes": scopes,
+            "answers": role_answers,
+        },
     )
+    return result, grouping
 
 
 def build_grouping_from_roles(
