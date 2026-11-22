@@ -15,7 +15,10 @@ from __future__ import annotations
 from html import escape
 from html.parser import HTMLParser
 from types import TracebackType
-from typing import Any, cast
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import tinycss2
 
 _GRID_DISPLAY_VALUES = {"grid", "inline-grid"}
 _GRID_PROPERTY_PREFIX = "grid"
@@ -143,20 +146,20 @@ class _GridCompatibilityHtmlParser(HTMLParser):
 
 
 def _soften_grid_css_with_tinycss2(*, css_text: str) -> str:
-    import tinycss2  # type: ignore[import-untyped]
+    import tinycss2
 
     rules = tinycss2.parse_stylesheet(css_text, skip_comments=True, skip_whitespace=True)
     return "".join(_serialize_grid_compatible_rule(rule=rule) for rule in rules)
 
 
-def _serialize_grid_compatible_rule(*, rule: Any) -> str:
-    import tinycss2  # type: ignore[import-untyped]
+def _serialize_grid_compatible_rule(*, rule: tinycss2.ast.Node) -> str:
+    import tinycss2
 
-    if rule.type == "qualified-rule":
+    if isinstance(rule, tinycss2.ast.QualifiedRule):
         selector = tinycss2.serialize(rule.prelude).strip()
         declarations = _serialize_grid_compatible_declarations(rule.content)
         return f"{selector}{{{declarations}}}" if selector and declarations else ""
-    if rule.type == "at-rule" and rule.content is not None:
+    if isinstance(rule, tinycss2.ast.AtRule) and rule.content is not None:
         keyword = rule.at_keyword.lower()
         prelude = tinycss2.serialize(rule.prelude).strip()
         if keyword in {"media", "supports", "layer"}:
@@ -168,16 +171,17 @@ def _serialize_grid_compatible_rule(*, rule: Any) -> str:
             )
             spacer = " " if prelude else ""
             return f"@{rule.at_keyword}{spacer}{prelude}{{{nested}}}"
-    return cast(str, tinycss2.serialize([rule]))
+    serialized: str = tinycss2.serialize([rule])
+    return serialized
 
 
-def _serialize_grid_compatible_declarations(content: Any) -> str:
-    import tinycss2  # type: ignore[import-untyped]
+def _serialize_grid_compatible_declarations(content: str | list[tinycss2.ast.Node]) -> str:
+    import tinycss2
 
     declarations = tinycss2.parse_blocks_contents(content, skip_comments=True, skip_whitespace=True)
     serialized: list[str] = []
     for declaration in declarations:
-        if declaration.type != "declaration":
+        if not isinstance(declaration, tinycss2.ast.Declaration):
             serialized.append(tinycss2.serialize([declaration]))
             continue
         name = declaration.lower_name

@@ -14,8 +14,9 @@ from __future__ import annotations
 import io
 import logging
 import re
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Protocol
 
 from skriptoteket.protocols.documents import PdfTextExtractionProbe, PdfTextExtractorProtocol
 
@@ -38,6 +39,26 @@ class _PdfProbeStats:
     table_count: int
     graphic_object_count: int
     image_count: int
+
+
+class _PdfPlumberPage(Protocol):
+    """The pdfplumber page surface this probe reads."""
+
+    def extract_text(self) -> str | None: ...
+
+    def find_tables(self) -> Sequence[object]: ...
+
+    @property
+    def images(self) -> Sequence[object]: ...
+
+    @property
+    def lines(self) -> Sequence[object]: ...
+
+    @property
+    def rects(self) -> Sequence[object]: ...
+
+    @property
+    def curves(self) -> Sequence[object]: ...
 
 
 class PdfPlumberTextExtractor(PdfTextExtractorProtocol):
@@ -95,7 +116,7 @@ class PdfPlumberTextExtractor(PdfTextExtractorProtocol):
         return probe.text
 
 
-def _collect_probe_stats(pages: list[Any]) -> _PdfProbeStats:
+def _collect_probe_stats(pages: Iterable[_PdfPlumberPage]) -> _PdfProbeStats:
     page_texts: list[str] = []
     table_count = 0
     graphic_object_count = 0

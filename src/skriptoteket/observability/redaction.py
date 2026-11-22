@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
-
-from structlog.types import EventDict, WrappedLogger
+from collections.abc import Mapping, MutableMapping
 
 REDACTED = "[REDACTED]"
 
@@ -128,7 +126,7 @@ def redact_value(value: object) -> object:
     return value
 
 
-def redact_event_dict(event_dict: EventDict) -> EventDict:
+def redact_event_dict(event_dict: MutableMapping[str, object]) -> dict[str, object]:
     """Apply redaction to a structlog event dict."""
     return {
         key: (REDACTED if _should_redact_value(value) else value)
@@ -139,8 +137,8 @@ def redact_event_dict(event_dict: EventDict) -> EventDict:
 
 
 def redact_sensitive_data(
-    logger: WrappedLogger, method_name: str, event_dict: EventDict
-) -> EventDict:
+    logger: object, method_name: str, event_dict: MutableMapping[str, object]
+) -> MutableMapping[str, object]:
     """Structlog processor that redacts sensitive values (keys + nested structures)."""
     del logger, method_name
     return redact_event_dict(event_dict)

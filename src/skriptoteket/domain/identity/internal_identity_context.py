@@ -12,9 +12,9 @@ Relationships:
 
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, StrictBool, field_validator
 
 INTERNAL_IDENTITY_CONTEXT_VERSION = 1
 INTERNAL_IDENTITY_CONTEXT_VERSION_HEADER = "X-HuleEdu-Identity-Context-Version"
@@ -42,7 +42,7 @@ class InternalIdentityContextV1(BaseModel):
     iat: int
     exp: int
     jti: str = Field(min_length=1)
-    active_context: dict[str, Any] | None = None
+    active_context: dict[str, JsonValue] | None = None
     feature_flags: list[str] = Field(default_factory=list)
     source_app: str | None = None
     active_app: str | None = None

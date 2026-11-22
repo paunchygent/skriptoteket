@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
-from typing import Any
+from collections.abc import Callable, Iterable
+from typing import TYPE_CHECKING
 
 from .protocols import (
     DockerClientProtocol,
@@ -11,9 +11,14 @@ from .protocols import (
     DockerVolumesClientProtocol,
 )
 
+if TYPE_CHECKING:
+    from docker import DockerClient
+    from docker.models.containers import Container, ContainerCollection
+    from docker.models.volumes import Volume, VolumeCollection
+
 
 class DockerVolumeAdapter(DockerVolumeProtocol):
-    def __init__(self, volume: Any) -> None:
+    def __init__(self, volume: Volume) -> None:
         self._volume = volume
 
     @property
@@ -25,7 +30,7 @@ class DockerVolumeAdapter(DockerVolumeProtocol):
 
 
 class DockerContainerAdapter(DockerContainerProtocol):
-    def __init__(self, container: Any) -> None:
+    def __init__(self, container: Container) -> None:
         self._container = container
 
     @property
@@ -61,32 +66,37 @@ class DockerContainerAdapter(DockerContainerProtocol):
 
 
 class DockerVolumesClientAdapter(DockerVolumesClientProtocol):
-    def __init__(self, volumes: Any) -> None:
+    def __init__(self, volumes: VolumeCollection) -> None:
         self._volumes = volumes
 
     def create(self, **kwargs: object) -> DockerVolumeProtocol:
-        return DockerVolumeAdapter(self._volumes.create(**kwargs))
+        create_volume: Callable[..., Volume] = self._volumes.create
+        return DockerVolumeAdapter(create_volume(**kwargs))
 
     def list(self, **kwargs: object) -> list[DockerVolumeProtocol]:
-        return [DockerVolumeAdapter(volume) for volume in self._volumes.list(**kwargs)]
+        list_volumes: Callable[..., list[Volume]] = self._volumes.list
+        return [DockerVolumeAdapter(volume) for volume in list_volumes(**kwargs)]
 
 
 class DockerContainersClientAdapter(DockerContainersClientProtocol):
-    def __init__(self, containers: Any) -> None:
+    def __init__(self, containers: ContainerCollection) -> None:
         self._containers = containers
 
     def create(self, **kwargs: object) -> DockerContainerProtocol:
-        return DockerContainerAdapter(self._containers.create(**kwargs))
+        create_container: Callable[..., Container] = self._containers.create
+        return DockerContainerAdapter(create_container(**kwargs))
 
     def get(self, *args: object, **kwargs: object) -> DockerContainerProtocol:
-        return DockerContainerAdapter(self._containers.get(*args, **kwargs))
+        get_container: Callable[..., Container] = self._containers.get
+        return DockerContainerAdapter(get_container(*args, **kwargs))
 
     def list(self, **kwargs: object) -> list[DockerContainerProtocol]:
-        return [DockerContainerAdapter(container) for container in self._containers.list(**kwargs)]
+        list_containers: Callable[..., list[Container]] = self._containers.list
+        return [DockerContainerAdapter(container) for container in list_containers(**kwargs)]
 
 
 class DockerClientAdapter(DockerClientProtocol):
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: DockerClient) -> None:
         self._client = client
         self._containers = DockerContainersClientAdapter(client.containers)
         self._volumes = DockerVolumesClientAdapter(client.volumes)

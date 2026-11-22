@@ -15,7 +15,6 @@ from __future__ import annotations
 import csv
 import io
 import logging
-from typing import Any
 
 import pdfplumber
 
@@ -181,7 +180,7 @@ class ClassListDocumentExtractor(DocumentTextExtractorProtocol):
             logger.error("Failed to parse XLS: %s", e)
             return []
 
-    def _stringify_cell(self, cell: Any) -> str:
+    def _stringify_cell(self, cell: object) -> str:
         if cell is None:
             return ""
         if isinstance(cell, bool):

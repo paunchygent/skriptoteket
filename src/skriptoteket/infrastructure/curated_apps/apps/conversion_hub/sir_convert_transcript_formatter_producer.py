@@ -19,7 +19,6 @@ import json
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
 
 import httpx
 
@@ -255,11 +254,20 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         path: str,
         *,
         message_fallback: str,
+        params: dict[str, int],
+        headers: dict[str, str],
+        data: dict[str, str],
+        files: dict[str, tuple[str, io.BytesIO, str]],
         job_id: str | None = None,
-        **kwargs: Any,
     ) -> httpx.Response:
         try:
-            return await self._client.post(path, **kwargs)
+            return await self._client.post(
+                path,
+                params=params,
+                headers=headers,
+                data=data,
+                files=files,
+            )
         except httpx.RequestError as exc:
             raise _extract_transport_error(
                 exc,
@@ -272,11 +280,11 @@ class SirConvertTranscriptFormatterProducerV2(ConversionHubTranscriptFormatterPr
         path: str,
         *,
         message_fallback: str,
+        headers: dict[str, str],
         job_id: str | None = None,
-        **kwargs: Any,
     ) -> httpx.Response:
         try:
-            return await self._client.get(path, **kwargs)
+            return await self._client.get(path, headers=headers)
         except httpx.RequestError as exc:
             raise _extract_transport_error(
                 exc,
