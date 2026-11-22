@@ -27,16 +27,16 @@ class _ScenarioPayload(TypedDict):
 
 
 class _EditorBootPayload(TypedDict):
-    source_code: NotRequired[JsonValue]
-    entrypoint: NotRequired[JsonValue]
+    source_code: NotRequired[str | None]
+    entrypoint: NotRequired[str | None]
     settings_schema: NotRequired[JsonValue]
     input_schema: NotRequired[JsonValue]
-    usage_instructions: NotRequired[JsonValue]
+    usage_instructions: NotRequired[str | None]
 
 
 class _ToolRef(TypedDict):
-    slug: NotRequired[JsonValue]
-    id: NotRequired[JsonValue]
+    slug: NotRequired[str]
+    id: NotRequired[str]
 
 
 class _ToolsPayload(TypedDict):
@@ -60,14 +60,6 @@ _TOOL_LIST = TypeAdapter(list[_ToolRef])
 _TOOLS_PAYLOAD = TypeAdapter(_ToolsPayload)
 _CAPTURE_FILE = TypeAdapter(_CaptureFile)
 _CAPTURE_PAYLOAD = TypeAdapter(_CapturePayload)
-
-
-def _text_field(value: JsonValue) -> str:
-    if isinstance(value, str):
-        return value
-    if not value:
-        return ""
-    raise TypeError(f"Expected text content, got {type(value).__name__}")
 
 
 @dataclass(frozen=True)
@@ -129,11 +121,11 @@ def _stringify_schema(schema: JsonValue) -> str:
 
 def _build_virtual_files(editor_boot: _EditorBootPayload) -> dict[str, JsonValue]:
     return {
-        "tool.py": _text_field(editor_boot.get("source_code")),
-        "entrypoint.txt": _text_field(editor_boot.get("entrypoint")),
+        "tool.py": editor_boot.get("source_code") or "",
+        "entrypoint.txt": editor_boot.get("entrypoint") or "",
         "settings_schema.json": _stringify_schema(editor_boot.get("settings_schema")),
         "input_schema.json": _stringify_schema(editor_boot.get("input_schema")),
-        "usage_instructions.md": _text_field(editor_boot.get("usage_instructions")),
+        "usage_instructions.md": editor_boot.get("usage_instructions") or "",
     }
 
 

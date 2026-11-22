@@ -119,6 +119,20 @@ class DownloadOutcome:
     fallback_queries: tuple[str, ...]
 
 
+def _outcome_state(outcome: DownloadOutcome) -> dict[str, JsonValue]:
+    """Return the state-file record of one outcome (tuples become JSON lists)."""
+    return {
+        "key": outcome.key,
+        "status": outcome.status,
+        "reason": outcome.reason,
+        "selected_query": outcome.selected_query,
+        "selected_product_url": outcome.selected_product_url,
+        "selected_sds_url": outcome.selected_sds_url,
+        "saved_path": outcome.saved_path,
+        "fallback_queries": [query for query in outcome.fallback_queries],
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class TargetOverride:
     """Manual per-target overrides validated from Carl Roth product pages.
@@ -237,7 +251,7 @@ class ThrottledHttpClient:
 
 class _HazardEntry(TypedDict):
     key: str
-    display_name: NotRequired[JsonValue]
+    display_name: NotRequired[str | None]
     search_aliases: NotRequired[JsonValue]
 
 
@@ -254,16 +268,10 @@ class _StateTarget(TypedDict):
     status: NotRequired[JsonValue]
 
 
-class _StatePayload(TypedDict):
-    updated_at: NotRequired[str]
-    targets: NotRequired[dict[str, JsonValue]]
-
-
 _HAZARD_ENTRY = TypeAdapter(_HazardEntry)
 _OVERRIDE_ENTRY = TypeAdapter(_OverrideEntry)
 _OVERRIDES_PAYLOAD = TypeAdapter(_OverridesPayload)
 _STATE_TARGET = TypeAdapter(_StateTarget)
-_STATE_PAYLOAD = TypeAdapter(_StatePayload)
 
 
 class TargetCatalog:
@@ -284,7 +292,7 @@ class TargetCatalog:
             hazard = hazards.get(key)
             if hazard is None:
                 continue
-            display_name = str(hazard.get("display_name") or key)
+            display_name = hazard.get("display_name") or key
             search_queries = _build_search_queries(hazard=hazard)
             if not search_queries:
                 continue
@@ -446,15 +454,15 @@ class StateStore:
         self._path = state_path
         self._path.parent.mkdir(parents=True, exist_ok=True)
 
-    def load(self) -> _StatePayload:
+    def load(self) -> dict[str, JsonValue]:
         if not self._path.is_file():
-            return _StatePayload(updated_at=_utc_now_iso(), targets={})
+            return {"updated_at": _utc_now_iso(), "targets": {}}
         payload: JsonValue = json.loads(self._path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
             raise RuntimeError(f"Unexpected state payload in {self._path}")
-        return _STATE_PAYLOAD.validate_python(payload)
+        return payload
 
-    def save(self, *, payload: _StatePayload) -> None:
+    def save(self, *, payload: dict[str, JsonValue]) -> None:
         payload["updated_at"] = _utc_now_iso()
         self._path.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True),
@@ -632,7 +640,7 @@ def _build_search_queries(*, hazard: _HazardEntry) -> list[str]:
             if isinstance(alias, str) and alias.strip():
                 queries.append(alias.strip())
 
-    display_name = str(hazard.get("display_name") or "").strip()
+    display_name = (hazard.get("display_name") or "").strip()
     if display_name:
         cleaned = re.sub(r"\s*\([^)]*\)", "", display_name).strip()
         if cleaned:
@@ -797,7 +805,7 @@ def main() -> None:
                 continue
 
             outcome = pipeline.run_target(target=target)
-            target_state[target.key] = json.loads(json.dumps(asdict(outcome)))
+            target_state[target.key] = _outcome_state(outcome)
             outcomes.append(outcome)
             state_store.save(payload=state_payload)
             print(f"[sds_download] key={target.key} status={outcome.status}")

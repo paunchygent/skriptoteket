@@ -30,16 +30,16 @@ class _ScenarioPayload(TypedDict):
 
 
 class _EditorBootPayload(TypedDict):
-    source_code: NotRequired[JsonValue]
-    entrypoint: NotRequired[JsonValue]
+    source_code: NotRequired[str | None]
+    entrypoint: NotRequired[str | None]
     settings_schema: NotRequired[JsonValue]
     input_schema: NotRequired[JsonValue]
-    usage_instructions: NotRequired[JsonValue]
+    usage_instructions: NotRequired[str | None]
 
 
 class _ToolRef(TypedDict):
-    slug: NotRequired[JsonValue]
-    id: NotRequired[JsonValue]
+    slug: NotRequired[str]
+    id: NotRequired[str]
 
 
 class _ToolsPayload(TypedDict):
@@ -51,12 +51,12 @@ class _EditOpsResponse(TypedDict):
 
 
 class _OkResult(TypedDict):
-    ok: NotRequired[JsonValue]
+    ok: NotRequired[bool]
 
 
 class _PreviewMeta(TypedDict):
-    base_hash: NotRequired[JsonValue]
-    patch_id: NotRequired[JsonValue]
+    base_hash: NotRequired[str]
+    patch_id: NotRequired[str]
 
 
 class _PreviewResult(_OkResult):
@@ -76,20 +76,6 @@ def _expect_object(value: JsonValue, *, context: str) -> dict[str, JsonValue]:
     if not isinstance(value, dict):
         raise TypeError(f"Expected a JSON object for {context}, got {type(value).__name__}")
     return value
-
-
-def _expect_str(value: JsonValue) -> str:
-    if not isinstance(value, str):
-        raise TypeError(f"Expected a string, got {type(value).__name__}")
-    return value
-
-
-def _text_field(value: JsonValue) -> str:
-    if isinstance(value, str):
-        return value
-    if not value:
-        return ""
-    raise TypeError(f"Expected text content, got {type(value).__name__}")
 
 
 def _utc_now_iso() -> str:
@@ -131,11 +117,11 @@ def _stringify_schema(schema: JsonValue) -> str:
 
 def _build_virtual_files(editor_boot: _EditorBootPayload) -> dict[str, JsonValue]:
     return {
-        "tool.py": _text_field(editor_boot.get("source_code")),
-        "entrypoint.txt": _text_field(editor_boot.get("entrypoint")),
+        "tool.py": editor_boot.get("source_code") or "",
+        "entrypoint.txt": editor_boot.get("entrypoint") or "",
         "settings_schema.json": _stringify_schema(editor_boot.get("settings_schema")),
         "input_schema.json": _stringify_schema(editor_boot.get("input_schema")),
-        "usage_instructions.md": _text_field(editor_boot.get("usage_instructions")),
+        "usage_instructions.md": editor_boot.get("usage_instructions") or "",
     }
 
 
@@ -234,6 +220,57 @@ def _print_result(label: str, payload: _OkResult) -> None:
     print(f"{label}: ok={payload.get('ok', 'n/a')}")
 
 
+def _run_preview_apply(
+    client: HarnessClient,
+    *,
+    preview_request: dict[str, JsonValue],
+    mode: str,
+    correlation_id: str,
+    output_record_dir: Path | None,
+) -> bool:
+    """Run preview (and apply in apply/full mode); return False when a step is not ok.
+
+    The recorded response files hold the full parsed HTTP response; the typed
+    views only drive control flow.
+    """
+    preview_raw = client.request(
+        "POST",
+        "/api/v1/editor/edit-ops/preview",
+        payload=preview_request,
+        correlation_id=correlation_id,
+    )
+    preview_response = _PREVIEW_RESULT.validate_python(preview_raw)
+    if output_record_dir:
+        _write_json(output_record_dir / "preview.request.json", preview_request)
+        _write_json(output_record_dir / "preview.response.json", preview_raw)
+
+    _print_result("preview", preview_response)
+    if not preview_response.get("ok"):
+        return False
+
+    if mode in {"apply", "full"}:
+        meta = preview_response.get("meta", _PreviewMeta())
+        apply_request = dict(preview_request)
+        apply_request["base_hash"] = meta.get("base_hash")
+        apply_request["patch_id"] = meta.get("patch_id")
+
+        apply_raw = client.request(
+            "POST",
+            "/api/v1/editor/edit-ops/apply",
+            payload=apply_request,
+            correlation_id=correlation_id,
+        )
+        apply_response = _APPLY_RESULT.validate_python(apply_raw)
+        if output_record_dir:
+            _write_json(output_record_dir / "apply.request.json", apply_request)
+            _write_json(output_record_dir / "apply.response.json", apply_raw)
+
+        _print_result("apply", apply_response)
+        if not apply_response.get("ok"):
+            return False
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Edit-ops harness (generate/preview/apply).")
     parser.add_argument(
@@ -304,7 +341,7 @@ def main() -> int:
                 raise SystemExit("Provide tool_id or tool_slug (scenario or CLI).")
             tool_id = _select_tool_id_by_slug(tools, tool_slug)
             if tool_id is None:
-                available = ", ".join(sorted(_expect_str(t.get("slug", "")) for t in tools))
+                available = ", ".join(sorted(t.get("slug", "") for t in tools))
                 raise SystemExit(f"Tool slug not found: {tool_slug}. Available: {available}")
 
         boot_payload = _EDITOR_BOOT.validate_python(
@@ -342,19 +379,17 @@ def main() -> int:
             if scenario.cursor:
                 edit_ops_request["cursor"] = scenario.cursor
 
-            edit_ops_response = _EDIT_OPS_RESPONSE.validate_python(
-                client.request(
-                    "POST",
-                    "/api/v1/editor/edit-ops",
-                    payload=edit_ops_request,
-                    correlation_id=correlation_id,
-                )
+            edit_ops_raw = client.request(
+                "POST",
+                "/api/v1/editor/edit-ops",
+                payload=edit_ops_request,
+                correlation_id=correlation_id,
             )
             if output_record_dir:
                 _write_json(output_record_dir / "edit_ops.request.json", edit_ops_request)
-                _write_json(output_record_dir / "edit_ops.response.json", edit_ops_response)
+                _write_json(output_record_dir / "edit_ops.response.json", edit_ops_raw)
 
-            ops = edit_ops_response.get("ops")
+            ops = _EDIT_OPS_RESPONSE.validate_python(edit_ops_raw).get("ops")
             if not ops:
                 raise SystemExit("Edit-ops response contained no ops.")
 
@@ -373,43 +408,14 @@ def main() -> int:
             if scenario.cursor:
                 preview_request["cursor"] = scenario.cursor
 
-            preview_response = _PREVIEW_RESULT.validate_python(
-                client.request(
-                    "POST",
-                    "/api/v1/editor/edit-ops/preview",
-                    payload=preview_request,
-                    correlation_id=correlation_id,
-                )
-            )
-            if output_record_dir:
-                _write_json(output_record_dir / "preview.request.json", preview_request)
-                _write_json(output_record_dir / "preview.response.json", preview_response)
-
-            _print_result("preview", preview_response)
-            if not preview_response.get("ok"):
+            if not _run_preview_apply(
+                client,
+                preview_request=preview_request,
+                mode=args.mode,
+                correlation_id=correlation_id,
+                output_record_dir=output_record_dir,
+            ):
                 return 1
-
-            if args.mode in {"apply", "full"}:
-                meta = preview_response.get("meta", _PreviewMeta())
-                apply_request = dict(preview_request)
-                apply_request["base_hash"] = meta.get("base_hash")
-                apply_request["patch_id"] = meta.get("patch_id")
-
-                apply_response = _APPLY_RESULT.validate_python(
-                    client.request(
-                        "POST",
-                        "/api/v1/editor/edit-ops/apply",
-                        payload=apply_request,
-                        correlation_id=correlation_id,
-                    )
-                )
-                if output_record_dir:
-                    _write_json(output_record_dir / "apply.request.json", apply_request)
-                    _write_json(output_record_dir / "apply.response.json", apply_response)
-
-                _print_result("apply", apply_response)
-                if not apply_response.get("ok"):
-                    return 1
 
         if output_record_dir:
             _write_json(
@@ -456,43 +462,14 @@ def _run_replay(
 
     client = HarnessClient(base_url=base_url, email=email, correlation_id=correlation_id)
     try:
-        preview_response = _PREVIEW_RESULT.validate_python(
-            client.request(
-                "POST",
-                "/api/v1/editor/edit-ops/preview",
-                payload=preview_request,
-                correlation_id=correlation_id,
-            )
-        )
-        if output_record_dir:
-            _write_json(output_record_dir / "preview.request.json", preview_request)
-            _write_json(output_record_dir / "preview.response.json", preview_response)
-
-        _print_result("preview", preview_response)
-        if not preview_response.get("ok"):
+        if not _run_preview_apply(
+            client,
+            preview_request=preview_request,
+            mode=mode,
+            correlation_id=correlation_id,
+            output_record_dir=output_record_dir,
+        ):
             return 1
-
-        if mode in {"apply", "full"}:
-            meta = preview_response.get("meta", _PreviewMeta())
-            apply_request = dict(preview_request)
-            apply_request["base_hash"] = meta.get("base_hash")
-            apply_request["patch_id"] = meta.get("patch_id")
-
-            apply_response = _APPLY_RESULT.validate_python(
-                client.request(
-                    "POST",
-                    "/api/v1/editor/edit-ops/apply",
-                    payload=apply_request,
-                    correlation_id=correlation_id,
-                )
-            )
-            if output_record_dir:
-                _write_json(output_record_dir / "apply.request.json", apply_request)
-                _write_json(output_record_dir / "apply.response.json", apply_response)
-
-            _print_result("apply", apply_response)
-            if not apply_response.get("ok"):
-                return 1
 
         if output_record_dir:
             _write_json(

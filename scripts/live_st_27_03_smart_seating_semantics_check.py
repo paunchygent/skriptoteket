@@ -19,17 +19,13 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import time
-from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
 from statistics import mean
-from typing import NotRequired, TypedDict
 from urllib.parse import urlparse
 from uuid import uuid4
 
 import requests
-from pydantic import JsonValue, TypeAdapter
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SRC_ROOT = REPO_ROOT / "src"
@@ -37,18 +33,24 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session  # noqa: E402
+from scripts._smart_seating_semantics_api import (  # noqa: E402
+    create_export_checkpoint,
+    create_roster,
+    create_seating_draft,
+    get_g20_template,
+    patch_draft,
+    patch_smart_rules,
+    run_smart_seating,
+)
 from scripts._smart_seating_semantics_support import (  # noqa: E402
-    KEEP_APART_STUDENT_IDS,
     KEEP_NEAR_STUDENT_IDS,
     MIN_NEAR_TEACHER_DISTINCT_SEAT_COUNT,
     MIN_NEAR_TEACHER_ROTATION_POOL_SIZE,
     NEAR_TEACHER_STUDENT_IDS,
-    SA24D_STUDENT_NAMES,
     RunSummary,
     build_topology,
     near_teacher_pool_seat_ids,
     rotated_assignments,
-    student_id,
     validate_workspace,
 )
 
@@ -87,296 +89,6 @@ def _create_api_session(*, api_base_url: str, email: str) -> tuple[requests.Sess
     return auth.api_session, "huleedu-gateway-context"
 
 
-class _TemplateRef(TypedDict):
-    id: str
-    name: NotRequired[JsonValue]
-
-
-class _TemplateDetail(TypedDict):
-    id: str
-    seats: JsonValue
-
-
-class _RosterResult(TypedDict):
-    id: str
-    name: str
-
-
-class _DraftResult(TypedDict):
-    id: str
-
-
-class _RevisionFields(TypedDict):
-    revision: NotRequired[JsonValue]
-
-
-class _RevisionPayload(TypedDict):
-    revision: NotRequired[JsonValue]
-    draft: NotRequired[_RevisionFields]
-
-
-class _ExportJob(TypedDict):
-    job_id: str
-
-
-class _ExportJobStatus(TypedDict):
-    status: str
-    error: NotRequired[JsonValue]
-
-
-class _SmartRunResult(TypedDict):
-    status: str
-    used_history: bool
-    message: str
-    workspace: dict[str, JsonValue]
-
-
-_TEMPLATE_LIST = TypeAdapter(list[_TemplateRef])
-_TEMPLATE_DETAIL = TypeAdapter(_TemplateDetail)
-_ROSTER_RESULT = TypeAdapter(_RosterResult)
-_DRAFT_RESULT = TypeAdapter(_DraftResult)
-_REVISION_PAYLOAD = TypeAdapter(_RevisionPayload)
-_EXPORT_JOB = TypeAdapter(_ExportJob)
-_EXPORT_JOB_STATUS = TypeAdapter(_ExportJobStatus)
-_SMART_RUN_RESULT = TypeAdapter(_SmartRunResult)
-
-
-def _expect_object(value: JsonValue, *, context: str) -> dict[str, JsonValue]:
-    if not isinstance(value, dict):
-        raise TypeError(f"Expected a JSON object for {context}, got {type(value).__name__}")
-    return value
-
-
-def _api_get(session: requests.Session, *, api_base_url: str, path: str) -> JsonValue:
-    response = session.get(f"{api_base_url}{path}", timeout=30)
-    response.raise_for_status()
-    data: JsonValue = response.json()
-    return data
-
-
-def _api_mutate(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    method: str,
-    path: str,
-    payload: Mapping[str, JsonValue] | None = None,
-) -> JsonValue:
-    response = session.request(
-        method=method,
-        url=f"{api_base_url}{path}",
-        json=payload,
-        headers={"X-CSRF-Token": csrf_token},
-        timeout=30,
-    )
-    response.raise_for_status()
-    data: JsonValue = response.json() if response.content else {}
-    return data
-
-
-def _workspace_revision(payload: Mapping[str, object]) -> int:
-    parsed = _REVISION_PAYLOAD.validate_python(payload)
-    revision: JsonValue | None = None
-    if "revision" in parsed:
-        revision = parsed["revision"]
-    else:
-        draft = parsed.get("draft")
-        if draft is not None and "revision" in draft:
-            revision = draft["revision"]
-    if isinstance(revision, (int, float, str)):
-        return int(revision)
-    raise AssertionError(f"Payload does not expose a draft revision: {payload.keys()}")
-
-
-def _create_roster(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    name: str,
-) -> _RosterResult:
-    return _ROSTER_RESULT.validate_python(
-        _api_mutate(
-            session,
-            api_base_url=api_base_url,
-            csrf_token=csrf_token,
-            method="POST",
-            path="/api/v1/apps/classroom.group-seating-studio/rosters",
-            payload={
-                "name": name,
-                "students": [
-                    {"id": student_id(student_name), "display_name": student_name}
-                    for student_name in SA24D_STUDENT_NAMES
-                ],
-            },
-        )
-    )
-
-
-def _get_g20_template(session: requests.Session, *, api_base_url: str) -> _TemplateDetail:
-    templates = _TEMPLATE_LIST.validate_python(
-        _api_get(
-            session,
-            api_base_url=api_base_url,
-            path="/api/v1/apps/classroom.group-seating-studio/templates",
-        )
-    )
-    matching_template = next(
-        (template for template in templates if template.get("name") == "G20"),
-        None,
-    )
-    if matching_template is None:
-        raise AssertionError("Missing live G20 template.")
-    template = _TEMPLATE_DETAIL.validate_python(
-        _api_get(
-            session,
-            api_base_url=api_base_url,
-            path=f"/api/v1/apps/classroom.group-seating-studio/templates/{matching_template['id']}",
-        )
-    )
-    seats = template["seats"]
-    if not isinstance(seats, (list, dict, str)) or len(seats) != 31:
-        raise AssertionError("Live G20 template no longer matches the canonical 31-seat room.")
-    return template
-
-
-def _create_seating_draft(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    roster_id: str,
-    template_id: str,
-) -> _DraftResult:
-    return _DRAFT_RESULT.validate_python(
-        _api_mutate(
-            session,
-            api_base_url=api_base_url,
-            csrf_token=csrf_token,
-            method="POST",
-            path="/api/v1/apps/classroom.group-seating-studio/drafts/seating/new",
-            payload={"roster_id": roster_id, "template_id": template_id},
-        )
-    )
-
-
-def _patch_draft(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    draft_id: str,
-    expected_revision: int,
-    **fields: JsonValue,
-) -> dict[str, JsonValue]:
-    return _expect_object(
-        _api_mutate(
-            session,
-            api_base_url=api_base_url,
-            csrf_token=csrf_token,
-            method="PATCH",
-            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/{draft_id}",
-            payload={"expected_revision": expected_revision, **fields},
-        ),
-        context="draft patch",
-    )
-
-
-def _patch_smart_rules(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    roster_id: str,
-    expected_revision: int,
-) -> None:
-    _api_mutate(
-        session,
-        api_base_url=api_base_url,
-        csrf_token=csrf_token,
-        method="PATCH",
-        path=f"/api/v1/apps/classroom.group-seating-studio/rosters/{roster_id}/smart-rules",
-        payload={
-            "expected_revision": expected_revision,
-            "seating_preferences": [
-                {"student_id": student_id, "near_teacher": True}
-                for student_id in sorted(NEAR_TEACHER_STUDENT_IDS)
-            ],
-            "relationship_rules": [
-                {
-                    "id": "apart-a",
-                    "kind": "keep_apart",
-                    "student_ids": list(KEEP_APART_STUDENT_IDS),
-                },
-                {
-                    "id": "near-b",
-                    "kind": "keep_near",
-                    "student_ids": list(KEEP_NEAR_STUDENT_IDS),
-                },
-            ],
-        },
-    )
-
-
-def _create_export_checkpoint(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    draft_id: str,
-) -> None:
-    job = _EXPORT_JOB.validate_python(
-        _api_mutate(
-            session,
-            api_base_url=api_base_url,
-            csrf_token=csrf_token,
-            method="POST",
-            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/exports/jobs",
-            payload={
-                "export_kind": "pdf",
-                "layout_id": "pretty_brutalist_poster",
-                "paper_size": "a3_landscape",
-            },
-        )
-    )
-    job_id = job["job_id"]
-    for _ in range(90):
-        status_payload = _EXPORT_JOB_STATUS.validate_python(
-            _api_get(
-                session,
-                api_base_url=api_base_url,
-                path=f"/api/v1/apps/classroom.group-seating-studio/exports/jobs/{job_id}",
-            )
-        )
-        if status_payload["status"] == "succeeded":
-            return
-        if status_payload["status"] == "failed":
-            raise AssertionError(f"Seating export job failed: {status_payload.get('error')}")
-        time.sleep(1)
-    raise AssertionError("Timed out waiting for a live seating export checkpoint.")
-
-
-def _run_smart_seating(
-    session: requests.Session,
-    *,
-    api_base_url: str,
-    csrf_token: str,
-    draft_id: str,
-    expected_revision: int,
-) -> _SmartRunResult:
-    return _SMART_RUN_RESULT.validate_python(
-        _api_mutate(
-            session,
-            api_base_url=api_base_url,
-            csrf_token=csrf_token,
-            method="POST",
-            path=f"/api/v1/apps/classroom.group-seating-studio/drafts/seating/{draft_id}/smart-run",
-            payload={"expected_revision": expected_revision},
-        )
-    )
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Live G20 / SA24D smart-seating semantics proof")
     parser.add_argument(
@@ -400,16 +112,16 @@ def main() -> None:
         email=email,
     )
 
-    template = _get_g20_template(session, api_base_url=api_base_url)
-    topology = build_topology(dict(template))
+    template = get_g20_template(session, api_base_url=api_base_url)
+    topology = build_topology(template)
     run_name_suffix = uuid4().hex[:6]
-    roster = _create_roster(
+    roster = create_roster(
         session,
         api_base_url=api_base_url,
         csrf_token=csrf_token,
         name=f"ST27-03 Semantics {run_name_suffix}",
     )
-    draft = _create_seating_draft(
+    draft = create_seating_draft(
         session,
         api_base_url=api_base_url,
         csrf_token=csrf_token,
@@ -417,7 +129,7 @@ def main() -> None:
         template_id=template["id"],
     )
     draft_id = draft["id"]
-    _patch_smart_rules(
+    patch_smart_rules(
         session,
         api_base_url=api_base_url,
         csrf_token=csrf_token,
@@ -425,31 +137,31 @@ def main() -> None:
         expected_revision=0,
     )
 
-    workspace: Mapping[str, object] = dict(draft)
+    revision = draft["revision"]
     for offset in range(_HISTORY_CHECKPOINT_COUNT):
-        workspace = _patch_draft(
+        revision = patch_draft(
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
             draft_id=draft_id,
-            expected_revision=_workspace_revision(workspace),
+            expected_revision=revision,
             smart_enabled=True,
             use_history=True,
-            seat_assignments=rotated_assignments(dict(template), offset),
+            seat_assignments=rotated_assignments(template, offset),
         )
-        _create_export_checkpoint(
+        create_export_checkpoint(
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
             draft_id=draft_id,
         )
 
-    workspace = _patch_draft(
+    revision = patch_draft(
         session,
         api_base_url=api_base_url,
         csrf_token=csrf_token,
         draft_id=draft_id,
-        expected_revision=_workspace_revision(workspace),
+        expected_revision=revision,
         smart_enabled=True,
         use_history=True,
         seat_assignments=[],
@@ -457,12 +169,12 @@ def main() -> None:
 
     samples: list[RunSummary] = []
     for _ in range(args.runs):
-        result = _run_smart_seating(
+        result = run_smart_seating(
             session,
             api_base_url=api_base_url,
             csrf_token=csrf_token,
             draft_id=draft_id,
-            expected_revision=_workspace_revision(workspace),
+            expected_revision=revision,
         )
         if result["status"] != "applied":
             raise AssertionError(f"Unexpected smart-run status: {result}")
@@ -471,6 +183,7 @@ def main() -> None:
         if result["message"] != "Smart placering klar med stöd av tidigare exporter.":
             raise AssertionError(f"Unexpected live smart-run message: {result['message']}")
         workspace = result["workspace"]
+        revision = workspace["draft"]["revision"]
         samples.append(validate_workspace(workspace=workspace, topology=topology))
 
     unique_layout_count = len({sample.layout_signature for sample in samples})
@@ -525,7 +238,7 @@ def main() -> None:
             sample.keep_apart_mean_distance for sample in samples
         ),
         "min_keep_apart_mean_distance": min(sample.keep_apart_mean_distance for sample in samples),
-        "final_revision": _workspace_revision(workspace),
+        "final_revision": revision,
         "near_teacher_pool_seat_ids": sorted(teacher_pool_seat_ids),
         "occupied_near_teacher_pool_seat_ids": sorted(occupied_near_teacher_pool_seat_ids),
         "keep_near_modes": sorted(keep_near_modes),

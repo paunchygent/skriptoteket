@@ -162,13 +162,13 @@ class _IndexPayload(TypedDict):
 
 
 class _IndexEntry(TypedDict):
-    md_file_name: NotRequired[JsonValue]
-    provider: NotRequired[JsonValue]
+    md_file_name: NotRequired[str | None]
+    provider: NotRequired[str | None]
 
 
 class _HazardEntry(TypedDict):
     key: str
-    display_name: NotRequired[JsonValue]
+    display_name: NotRequired[str | None]
     ppe: NotRequired[JsonValue]
 
 
@@ -655,7 +655,7 @@ def main() -> None:
         if not isinstance(raw_entry, dict):
             continue
         entry = _INDEX_ENTRY.validate_python(raw_entry)
-        md_file_name = str(entry.get("md_file_name") or "").strip()
+        md_file_name = (entry.get("md_file_name") or "").strip()
         if not md_file_name:
             continue
         md_path = args.markdown_dir / md_file_name
@@ -670,14 +670,14 @@ def main() -> None:
 
         markdown_text = md_path.read_text(encoding="utf-8")
         hazard = hazards_by_key.get(sds_ref)
-        display_name = sds_ref if hazard is None else str(hazard.get("display_name") or sds_ref)
+        display_name = sds_ref if hazard is None else (hazard.get("display_name") or sds_ref)
         ppe_source: JsonValue = hazard.get("ppe") if hazard is not None else None
         if not isinstance(ppe_source, Iterable):
             raise TypeError(f"Expected iterable 'ppe' for hazard {sds_ref}")
         ppe_default = [
             str(item).strip() for item in ppe_source if isinstance(item, str) and item.strip()
         ]
-        provider = str(entry.get("provider") or "unknown")
+        provider = entry.get("provider") or "unknown"
         shortcard, issues = _extract_shortcard(
             sds_ref=sds_ref,
             provider=provider,

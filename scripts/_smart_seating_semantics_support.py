@@ -7,7 +7,6 @@ canonical smart-seating semantics checks.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from statistics import mean
@@ -93,19 +92,21 @@ def student_id(name: str) -> str:
     return name.lower().replace(" ", "-")
 
 
-class _SeatPayload(TypedDict):
+class SeatPayload(TypedDict):
     id: str
     x: int
     y: int
     zone: NotRequired[str | None]
 
 
-class _TemplatePayload(TypedDict):
+class TemplatePayload(TypedDict):
+    """One room template as `GET .../templates/{id}` returns it (`RoomTemplateDto`)."""
+
     id: str
     name: str
     grid_cols: int
     grid_rows: int
-    seats: list[_SeatPayload]
+    seats: list[SeatPayload]
     fixtures: list[dict[str, JsonValue]]
 
 
@@ -114,23 +115,24 @@ class _SeatAssignmentPayload(TypedDict):
     seat_id: str
 
 
-class _WorkspacePayload(TypedDict):
-    draft: _WorkspaceDraftPayload
-    seat_assignments: list[_SeatAssignmentPayload]
-
-
-class _WorkspaceDraftPayload(TypedDict):
+class WorkspaceDraftPayload(TypedDict):
     revision: int
 
 
-_TEMPLATE_PAYLOAD = TypeAdapter(_TemplatePayload)
-_WORKSPACE_PAYLOAD = TypeAdapter(_WorkspacePayload)
+class WorkspacePayload(TypedDict):
+    """One draft workspace as the draft endpoints return it (`DraftWorkspaceResponse`)."""
+
+    draft: WorkspaceDraftPayload
+    seat_assignments: list[_SeatAssignmentPayload]
 
 
-def build_topology(template_payload: Mapping[str, object]) -> SeatTopology:
+TEMPLATE_PAYLOAD = TypeAdapter(TemplatePayload)
+WORKSPACE_PAYLOAD = TypeAdapter(WorkspacePayload)
+
+
+def build_topology(payload: TemplatePayload) -> SeatTopology:
     """Build live-room topology from the template payload returned by the API."""
 
-    payload = _TEMPLATE_PAYLOAD.validate_python(template_payload)
     template = RoomTemplate(
         id=UUID(payload["id"]),
         owner_user_id=uuid4(),
@@ -149,10 +151,9 @@ def build_topology(template_payload: Mapping[str, object]) -> SeatTopology:
     )
 
 
-def rotated_assignments(template_payload: Mapping[str, object], offset: int) -> list[JsonValue]:
+def rotated_assignments(payload: TemplatePayload, offset: int) -> list[JsonValue]:
     """Return one deterministic rotated history fixture for the live draft."""
 
-    payload = _TEMPLATE_PAYLOAD.validate_python(template_payload)
     seat_ids = [seat["id"] for seat in payload["seats"]]
     rotated_seat_ids = seat_ids[offset:] + seat_ids[:offset]
     return [
@@ -169,14 +170,14 @@ def near_teacher_pool_seat_ids(topology: SeatTopology) -> frozenset[str]:
 
 def validate_workspace(
     *,
-    workspace: Mapping[str, object],
+    workspace: WorkspacePayload,
     topology: SeatTopology,
 ) -> RunSummary:
     """Validate one live smart-run result against the canonical room semantics."""
 
-    parsed = _WORKSPACE_PAYLOAD.validate_python(workspace)
     assignments = {
-        assignment["student_id"]: assignment["seat_id"] for assignment in parsed["seat_assignments"]
+        assignment["student_id"]: assignment["seat_id"]
+        for assignment in workspace["seat_assignments"]
     }
     if any(
         assignments[student_id] not in near_teacher_pool_seat_ids(topology)
@@ -208,7 +209,7 @@ def validate_workspace(
     if keep_apart_mean_distance < MIN_KEEP_APART_MEAN_DISTANCE:
         raise AssertionError("Keep-apart cluster lost too much mean pairwise spread.")
     return RunSummary(
-        revision=parsed["draft"]["revision"],
+        revision=workspace["draft"]["revision"],
         assignments_by_student=assignments,
         keep_apart_block_count=keep_apart_block_count,
         keep_apart_mean_distance=keep_apart_mean_distance,
