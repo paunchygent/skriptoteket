@@ -3,15 +3,108 @@
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from typing import Any
+from typing import TypedDict
+
+from pydantic import JsonValue
 
 from scripts.exam_conversion_eval.gold import GoldExam, GoldItem
+from scripts.labeling_feasibility.api import DecisionAnswer, json_float
 from scripts.labeling_feasibility.converted import ConvertedExam, ConvertedItem
+from scripts.labeling_feasibility.method_models import Grouping, Question
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
+from scripts.labeling_feasibility.requests import SlotsOutput
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 PROBABILITY_BANDS = ((0.99, 1.01), (0.95, 0.99), (0.8, 0.95), (0.0, 0.8))
 SCORE_BANDS = ((0.0, 0.25), (0.25, 0.75), (0.75, 2.01))
+
+
+class BoundaryScore(TypedDict):
+    gold_items: int
+    pred_questions: int
+    exact_items: int
+    exact_item_indexes: list[int]
+    split_items: int
+    merged_questions: int
+    misassigned_anchors: list[str]
+    lost_anchors: list[str]
+    duplicated_anchors: list[str]
+    invalid_anchors: list[JsonValue]
+    title_correct: bool
+
+
+class ScopeScore(TypedDict):
+    ref_edges: int
+    pred_edges: int
+    edge_precision: float | None
+    edge_recall: float | None
+    wrong_edges: int
+    missed_edges: int
+    shared_found: int
+    shared_ref: int
+    shared_pred: int
+    shared_owned_by_question_in_ref: list[str]
+
+
+class FacitScore(TypedDict):
+    ref_keys: int
+    correct: int
+    accuracy: float | None
+
+
+class GroupingScore(TypedDict):
+    boundary: BoundaryScore
+    scope: ScopeScore
+    facit: FacitScore
+
+
+class KindRow(TypedDict):
+    item: int
+    gold: str
+    pred: JsonValue
+    p: float
+    exact_group: bool
+
+
+class KindScores(TypedDict):
+    accuracy: float | None
+    accuracy_exact_groups: float | None
+    confusion: dict[str, int]
+    calibration: dict[str, dict[str, int]]
+    rows: list[KindRow]
+
+
+class SlotsScore(TypedDict):
+    scored_lines: int
+    excluded_lines: int
+    accuracy: float | None
+    precision: float | None
+    recall: float | None
+    confusion: dict[str, int]
+    calibration: dict[str, dict[str, int]]
+
+
+class PointsScore(TypedDict):
+    n: int
+    correct: int
+    accuracy: float | None
+    wrong: list[dict[str, JsonValue]]
+
+
+class FacitPlacementScore(TypedDict):
+    ref_keys: int
+    asked: int
+    decisions_correct: int
+    positional_code_correct: int
+    grouping_own_correct: int
+
+
+class BaselineScore(TypedDict):
+    items: int
+    kind_accuracy: float | None
+    kind_confusion: dict[str, int]
+    points_accuracy: float | None
+    keyed_accuracy: float | None
 
 
 def _band(value: float, bands: tuple[tuple[float, float], ...]) -> str:
@@ -24,14 +117,14 @@ def _band(value: float, bands: tuple[tuple[float, float], ...]) -> str:
 class GroupingMatch:
     """Map predicted questions onto reference items by owned-anchor overlap."""
 
-    def __init__(self, reference: Reference, grouping: dict[str, Any]):
+    def __init__(self, reference: Reference, grouping: Grouping):
         self.reference = reference
         self.grouping = grouping
-        self.questions = grouping["questions"]
-        self.owned = {q["id"]: set(q["anchors"]) | set(q["key_anchors"]) for q in self.questions}
-        self.context_governs = defaultdict(set)
-        for context in grouping["contexts"]:
-            self.context_governs[context["anchor"]].update(context["governs"])
+        self.questions: list[Question] = grouping.questions
+        self.owned = {q.id: set(q.anchors) | set(q.key_anchors) for q in self.questions}
+        self.context_governs: defaultdict[str, set[str]] = defaultdict(set)
+        for context in grouping.contexts:
+            self.context_governs[context.anchor].update(context.governs)
         self.ref_owner = reference.owner_of()
         self.question_to_item: dict[str, int | None] = {}
         for qid, anchors in self.owned.items():
@@ -54,7 +147,7 @@ class GroupingMatch:
         pred_content = qid is not None and anchor in self.owned.get(qid, set())
         return (ref_content and pred_single) or (ref_single and pred_content)
 
-    def boundary(self) -> dict[str, Any]:
+    def boundary(self) -> BoundaryScore:
         ref = self.reference
         scored = set(self.ref_owner) | set(ref.shared)
         exact, exact_items = 0, []
@@ -99,11 +192,11 @@ class GroupingMatch:
             "misassigned_anchors": misassigned,
             "lost_anchors": lost,
             "duplicated_anchors": duplicated,
-            "invalid_anchors": self.grouping.get("invalid_anchors", []),
-            "title_correct": sorted(self.grouping["title"]) == sorted(ref.title),
+            "invalid_anchors": self.grouping.invalid_anchors,
+            "title_correct": sorted(self.grouping.title) == sorted(ref.title),
         }
 
-    def scope(self) -> dict[str, Any]:
+    def scope(self) -> ScopeScore:
         ref = self.reference
         ref_edges = {(a, i) for a, run in ref.shared.items() if len(run) > 1 for i in run}
         pred_edges = set()
@@ -127,11 +220,9 @@ class GroupingMatch:
             "shared_owned_by_question_in_ref": sorted(pred_multi & set(self.ref_owner)),
         }
 
-    def facit(self) -> dict[str, Any]:
+    def facit(self) -> FacitScore:
         keys = {a: item.index for item in self.reference.items for a in item.key}
-        assigned = {
-            a: qid for qid, q in ((q["id"], q) for q in self.questions) for a in q["key_anchors"]
-        }
+        assigned = {a: q.id for q in self.questions for a in q.key_anchors}
         correct = sum(
             1
             for a, owner in keys.items()
@@ -145,20 +236,20 @@ def _ratio(numerator: int, denominator: int) -> float | None:
 
 
 def kind_scores(
-    match: GroupingMatch, answers: dict[str, dict[str, Any]], exact_items: set[int]
-) -> dict[str, Any]:
-    confusion: Counter[tuple[str, str]] = Counter()
+    match: GroupingMatch, answers: dict[str, DecisionAnswer], exact_items: set[int]
+) -> KindScores:
+    confusion: Counter[tuple[str, JsonValue]] = Counter()
     bands: dict[str, list[int]] = defaultdict(lambda: [0, 0])
-    rows = []
+    rows: list[KindRow] = []
     for item in match.reference.items:
         qid = match.item_to_question[item.index]
         answer = answers.get(f"kind_{qid}") if qid else None
         predicted = answer.get("choice", "refusal") if answer else "missing"
-        probability = 0.0
-        if answer:
-            probability = max(
-                (p["probability"] for p in answer.get("probabilities", [])), default=0.0
-            )
+        probability = (
+            max((p["probability"] for p in answer.get("probabilities", [])), default=0.0)
+            if answer
+            else 0.0
+        )
         confusion[(item.kind, predicted)] += 1
         correct = predicted == item.kind
         band = _band(probability, PROBABILITY_BANDS)
@@ -188,8 +279,10 @@ def kind_scores(
 
 
 def ambiguity_scores(
-    match: GroupingMatch, answers: dict[str, dict[str, Any]], kind_rows: list[dict[str, Any]]
-) -> dict[str, Any]:
+    match: GroupingMatch,
+    answers: dict[str, DecisionAnswer],
+    kind_rows: list[KindRow],
+) -> dict[str, dict[str, int]]:
     by_item = {row["item"]: row for row in kind_rows}
     bands: dict[str, list[int]] = defaultdict(lambda: [0, 0, 0])
     for item in match.reference.items:
@@ -209,8 +302,8 @@ def ambiguity_scores(
 
 
 def slot_scores(
-    reference: Reference, gold: GoldExam, chunks: tuple[DocxChunk, ...], output: dict[str, Any]
-) -> dict[str, Any]:
+    reference: Reference, gold: GoldExam, chunks: tuple[DocxChunk, ...], output: SlotsOutput
+) -> SlotsScore:
     text = {chunk.anchor: chunk.marked_text for chunk in chunks}
     owner = reference.owner_of()
     gold_lines: dict[int, list[tuple[list[str], bool]]] = {}
@@ -234,9 +327,10 @@ def slot_scores(
         if truth is None:
             excluded += 1
             continue
-        predicted = answer["probability"] >= 0.5
+        probability = answer["probability"]
+        predicted = probability >= 0.5
         confusion[f"{'T' if truth else 'F'}{'T' if predicted else 'F'}"] += 1
-        confidence = max(answer["probability"], 1 - answer["probability"])
+        confidence = max(probability, 1 - probability)
         band = _band(confidence, PROBABILITY_BANDS)
         bands[band][0] += 1
         bands[band][1] += int(truth == predicted)
@@ -261,7 +355,7 @@ def _slot_truth(line: list[str], gold_lines: list[tuple[list[str], bool]]) -> bo
     return best_gap if best >= 0.6 else None
 
 
-def points_scores(match: GroupingMatch, answers: dict[str, dict[str, Any]]) -> dict[str, Any]:
+def points_scores(match: GroupingMatch, answers: dict[str, DecisionAnswer]) -> PointsScore:
     correct = total = 0
     wrong = []
     for item in match.reference.items:
@@ -271,7 +365,11 @@ def points_scores(match: GroupingMatch, answers: dict[str, dict[str, Any]]) -> d
         answer = answers.get(f"points_{qid}") if qid else None
         total += 1
         value = answer.get("choice") if answer else None
-        if value is not None and value != "unknown" and float(value) == float(item.points):
+        if (
+            value is not None
+            and value != "unknown"
+            and json_float(value, "points choice") == float(item.points)
+        ):
             correct += 1
         else:
             wrong.append({"item": item.index, "gold": item.points, "pred": value})
@@ -279,21 +377,22 @@ def points_scores(match: GroupingMatch, answers: dict[str, dict[str, Any]]) -> d
 
 
 def facit_placement_scores(
-    match: GroupingMatch, output: dict[str, Any], chunks: tuple[DocxChunk, ...]
-) -> dict[str, Any]:
+    match: GroupingMatch, answers: dict[str, DecisionAnswer], chunks: tuple[DocxChunk, ...]
+) -> FacitPlacementScore:
     keys = {a: item.index for item in match.reference.items for a in item.key}
     order = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    starts = {
-        q["id"]: min((order[a] for a in q["anchors"]), default=10**9) for q in match.questions
-    }
+    starts = {q.id: min((order[a] for a in q.anchors), default=10**9) for q in match.questions}
     decided = positional = own = asked = 0
-    assigned = {a: q["id"] for q in match.questions for a in q["key_anchors"]}
+    assigned = {a: q.id for q in match.questions for a in q.key_anchors}
     for anchor, owner in keys.items():
-        answer = output["answers"].get(f"facit_{anchor.replace('body:', '')}")
+        answer = answers.get(f"facit_{anchor.replace('body:', '')}")
         if answer is None:
             continue
         asked += 1
-        decided += int(match.question_to_item.get(answer.get("choice", "")) == owner)
+        choice = answer.get("choice")
+        decided += int(
+            match.question_to_item.get(choice if isinstance(choice, str) else "") == owner
+        )
         before = [qid for qid, start in starts.items() if start < order[anchor]]
         nearest = max(before, key=starts.__getitem__) if before else None
         positional += int(nearest is not None and match.question_to_item.get(nearest) == owner)
@@ -309,7 +408,7 @@ def facit_placement_scores(
 
 def converter_baseline(
     reference: Reference, gold: GoldExam, recording: ConvertedExam
-) -> dict[str, Any]:
+) -> BaselineScore:
     """Score today's whole-exam converter output (kind, points, keyed content) on the same items."""
     owner = reference.owner_of()
     by_item: dict[int, ConvertedItem] = {}

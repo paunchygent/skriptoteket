@@ -15,8 +15,13 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
+    DraftGroup,
+    DraftWorkspace,
+    GroupAssignment,
+    PlanDraft,
     PlanDraftKind,
     PlanDraftStatus,
+    SeatAssignment,
 )
 from skriptoteket.domain.identity.models import AuthProvider, Role
 from skriptoteket.infrastructure.db.models.classroom_planner_plan_draft import (
@@ -252,3 +257,87 @@ async def test_get_class_workspace_draft_summary_separates_tasks_and_history(
         *(item.id for item in summary.grouping_history),
         *(item.id for item in summary.seating_history),
     }
+
+
+@pytest.mark.integration
+async def test_undo_and_redo_restore_saved_workspace_snapshots(
+    db_session: AsyncSession,
+    planner_owner_id: UUID,
+    now: datetime,
+) -> None:
+    """Undo and redo re-apply the stored snapshots to flags, groups and assignments."""
+
+    roster_id = uuid4()
+    db_session.add(
+        RosterModel(
+            id=roster_id,
+            owner_user_id=planner_owner_id,
+            name="8A",
+            students=[{"id": "s-1", "display_name": "Ada"}],
+            created_at=now,
+            updated_at=now,
+        )
+    )
+    await db_session.flush()
+
+    draft = PlanDraft(
+        id=uuid4(),
+        owner_user_id=planner_owner_id,
+        roster_id=roster_id,
+        draft_kind=PlanDraftKind.GROUPING,
+        smart_enabled=False,
+        use_history=False,
+        grouping_seating_distance_enabled=False,
+        last_opened_at=now,
+        created_at=now,
+        updated_at=now,
+    )
+    first = DraftWorkspace(
+        draft=draft,
+        groups=[DraftGroup(id="g-1", name="Grupp 1", sort_order=0)],
+        group_assignments=[GroupAssignment(student_id="s-1", group_id="g-1")],
+        seat_assignments=[SeatAssignment(student_id="s-1", seat_id="seat-1")],
+    )
+    second = DraftWorkspace(
+        draft=draft.model_copy(
+            update={
+                "smart_enabled": True,
+                "use_history": True,
+                "grouping_seating_distance_enabled": True,
+            }
+        ),
+        groups=[
+            DraftGroup(id="g-2", name="Eget namn", sort_order=1, name_is_custom=True),
+            DraftGroup(id="g-1", name="Grupp 1", sort_order=0),
+        ],
+        group_assignments=[GroupAssignment(student_id="s-1", group_id="g-2")],
+    )
+
+    repository = PostgreSQLPlanDraftRepository(db_session)
+    await repository.save_workspace(workspace=first)
+    await repository.save_workspace(workspace=second)
+
+    undone = await repository.undo(draft_id=draft.id)
+
+    assert undone is not None
+    assert undone.draft.smart_enabled is False
+    assert undone.draft.use_history is False
+    assert undone.draft.grouping_seating_distance_enabled is False
+    assert undone.draft.template_id is None
+    assert [(group.id, group.name_is_custom) for group in undone.groups] == [("g-1", False)]
+    assert [(a.student_id, a.group_id) for a in undone.group_assignments] == [("s-1", "g-1")]
+    assert [(a.student_id, a.seat_id) for a in undone.seat_assignments] == [("s-1", "seat-1")]
+    assert undone.history_status.can_redo is True
+
+    redone = await repository.redo(draft_id=draft.id)
+
+    assert redone is not None
+    assert redone.draft.smart_enabled is True
+    assert redone.draft.use_history is True
+    assert redone.draft.grouping_seating_distance_enabled is True
+    assert {(group.id, group.name, group.name_is_custom) for group in redone.groups} == {
+        ("g-1", "Grupp 1", False),
+        ("g-2", "Eget namn", True),
+    }
+    assert [(a.student_id, a.group_id) for a in redone.group_assignments] == [("s-1", "g-2")]
+    assert redone.seat_assignments == []

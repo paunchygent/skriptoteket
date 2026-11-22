@@ -9,10 +9,11 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
 
 from playwright.sync_api import Page, sync_playwright
+from pydantic import JsonValue
 
 from scripts._flunk_out_frenzy_launch_trace_summary import (
     DEFAULT_BASELINE_ARTIFACT_PATH,
@@ -52,17 +53,18 @@ def parse_args(argv: Sequence[str] | None = None) -> tuple[argparse.Namespace, l
     return parser.parse_known_args(argv)
 
 
-def collect_trace_payload(page: Page) -> dict[str, Any]:
+def collect_trace_payload(page: Page) -> JsonValue:
     """Collect the canonical launch-trace artifact payload from the browser."""
 
-    return page.evaluate(
+    payload: JsonValue = page.evaluate(
         """async () => {
           return window.__FOF_DEBUG__.buildLaunchToDropTraceArtifact();
         }"""
     )
+    return payload
 
 
-def write_artifact(artifact_dir: Path, payload: dict[str, Any]) -> Path:
+def write_artifact(artifact_dir: Path, payload: JsonValue) -> Path:
     """Persist the collected launch-trace artifact payload and return the file path."""
 
     artifact_dir.mkdir(parents=True, exist_ok=True)
@@ -71,20 +73,30 @@ def write_artifact(artifact_dir: Path, payload: dict[str, Any]) -> Path:
     return output_path
 
 
-def fail_if_matrix_invariants_red(payload: dict[str, Any]) -> None:
+def fail_if_matrix_invariants_red(payload: JsonValue) -> None:
     """Raise when any canonical launch-trace matrix invariant is violated."""
 
-    failing = [
-        record
-        for record in payload.get("matrix_summaries", [])
-        if record.get("invariant_violations")
-    ]
+    if not isinstance(payload, dict):
+        raise TypeError(f"launch-trace payload is not an object: {type(payload).__name__}")
+    matrix = payload.get("matrix_summaries", [])
+    if not isinstance(matrix, list):
+        raise TypeError(f"matrix_summaries is not iterable: {type(matrix).__name__}")
+    failing: list[str] = []
+    for record in matrix:
+        if not isinstance(record, dict):
+            raise TypeError(f"matrix_summaries entry is not an object: {type(record).__name__}")
+        violations = record.get("invariant_violations")
+        if violations:
+            failing.append(f"{record['case_id']}: {_join_violations(violations)}")
     if not failing:
         return
-    details = "; ".join(
-        f"{record['case_id']}: {', '.join(record['invariant_violations'])}" for record in failing
-    )
-    raise AssertionError(f"PR-0213 launch trace parity invariant failures -> {details}")
+    raise AssertionError(f"PR-0213 launch trace parity invariant failures -> {'; '.join(failing)}")
+
+
+def _join_violations(violations: JsonValue) -> str:
+    if not isinstance(violations, list) or not all(isinstance(v, str) for v in violations):
+        raise TypeError("matrix_summaries invariant_violations is not a list of strings")
+    return ", ".join(str(v) for v in violations)
 
 
 def run(argv: Sequence[str] | None = None) -> LaunchTraceSummaryArtifacts:

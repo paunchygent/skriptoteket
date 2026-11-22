@@ -5,7 +5,7 @@
 groups = ["default", "analysis", "dev", "docs", "llm", "monorepo-tools", "repository-governance-tooling", "tui"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.1"
-content_hash = "sha256:86f0179a0a1d066e74e021b497fbb25e24b3ac9eca53a7afb6a50a470bb8d3cd"
+content_hash = "sha256:f977275b49db2b1aa2aa0978ca4036f7abba82b88b702cbbb4d29130b22322aa"
 
 [[metadata.targets]]
 requires_python = ">=3.13,<3.15"
@@ -4116,6 +4116,20 @@ dependencies = [
 files = [
     {file = "types_docker-7.1.0.20260403-py3-none-any.whl", hash = "sha256:42ba325d9eac27f3589608c196c16505711bce01e49a5bd898c4ebd67a1bd5df"},
     {file = "types_docker-7.1.0.20260403.tar.gz", hash = "sha256:add0f6631fec8349ce0b62cddb20d335b17c56df8eec03f7bfba32a821f91c7d"},
+]
+
+[[package]]
+name = "types-jsonschema"
+version = "4.26.0.20261006"
+requires_python = ">=3.10"
+summary = "Typing stubs for jsonschema"
+groups = ["monorepo-tools"]
+dependencies = [
+    "referencing",
+]
+files = [
+    {file = "types_jsonschema-4.26.0.20261006-py3-none-any.whl", hash = "sha256:29301f4e65e3928540cdf5e23ad716e38bb0c0b416a48dada213edd3d70206ec"},
+    {file = "types_jsonschema-4.26.0.20261006.tar.gz", hash = "sha256:3eb7db61b6819d40addfdaac7173e749071a7d4a9a4394f0c844598ec84b2500"},
 ]
 
 [[package]]

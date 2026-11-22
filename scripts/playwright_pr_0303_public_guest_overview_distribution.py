@@ -18,15 +18,19 @@ import argparse
 import json
 import re
 import time
+from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import TypedDict
 
 from playwright.sync_api import Locator, Page, Route, expect, sync_playwright
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import focus_workspace_mode, wait_for_app_heading
 from scripts._playwright_config import get_config
 from scripts._playwright_huleedu_auth import temporary_vite_server
+from scripts._playwright_json import json_array, json_int, json_object, json_str
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0303-public-guest-overview-distribution")
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
@@ -54,6 +58,21 @@ def _first_visible(page: Page, selector: str) -> Locator:
     raise AssertionError(f"No visible element matched {selector!r}.")
 
 
+class _SelectOption(TypedDict):
+    """Option keys read from the browser select element."""
+
+    value: str
+    label: str
+
+
+def _parse_select_options(value: JsonValue) -> list[_SelectOption]:
+    options: list[_SelectOption] = []
+    for item in json_array(value, label="select options"):
+        obj = json_object(item, label="select option")
+        options.append({"value": str(obj["value"]), "label": json_str(obj, "label")})
+    return options
+
+
 def _wait_for_select_option(page: Page, *, selector: str, label: str) -> str:
     """Wait for a select option containing a label and return its value."""
 
@@ -63,15 +82,16 @@ def _wait_for_select_option(page: Page, *, selector: str, label: str) -> str:
             select = selects.nth(index)
             if not select.is_visible():
                 continue
-            options = select.evaluate(
+            options_value: JsonValue = select.evaluate(
                 """element => Array.from(element.options).map(option => ({
                     value: option.value,
                     label: option.label,
                 }))"""
             )
+            options = _parse_select_options(options_value)
             for option in options:
                 if option["value"] and label in option["label"]:
-                    return str(option["value"])
+                    return option["value"]
         page.wait_for_timeout(150)
     raise AssertionError(f"{label!r} did not appear in {selector!r}.")
 
@@ -142,19 +162,105 @@ def _select_overview_assets(page: Page, *, roster_name: str, template_name: str)
     expect(template_select).to_have_value(template_value)
 
 
-def _install_public_distribution_routes(page: Page) -> dict[str, list[dict[str, Any]]]:
+class _GroupingDraftSnapshot(TypedDict):
+    """`grouping_draft` snapshot keys read by the parity assertions."""
+
+    roster_local_id: str
+    template_local_id: str | None
+    revision: int
+
+
+class _SnapshotAsset(TypedDict):
+    """Roster/classroom asset keys read by the parity assertions."""
+
+    local_id: str
+    name: str
+
+
+class _RequestSnapshot(TypedDict):
+    """Request `snapshot` keys this proof reads."""
+
+    grouping_draft: _GroupingDraftSnapshot | None
+    rosters: list[_SnapshotAsset]
+    templates: list[_SnapshotAsset]
+    current_screen: str
+
+
+class _HelperRequest(TypedDict):
+    """Public helper request keys the parity assertions read."""
+
+    snapshot: _RequestSnapshot
+    expected_revision: int
+
+
+@dataclass(frozen=True)
+class _CapturedHelperRequest:
+    """Captured helper request body plus the share/export kind parsed from the URL.
+
+    The body stays raw until the parity assertions parse it, so intercepting a
+    request never fails on fields only those assertions read.
+    """
+
+    payload: dict[str, JsonValue]
+    kind: str
+
+
+def _parse_grouping_draft(value: JsonValue) -> _GroupingDraftSnapshot | None:
+    if not value:
+        return None
+    obj = json_object(value, label="grouping_draft")
+    template_local_id = obj["template_local_id"]
+    if template_local_id is not None:
+        template_local_id = json_str(obj, "template_local_id")
+    return {
+        "roster_local_id": json_str(obj, "roster_local_id"),
+        "template_local_id": template_local_id,
+        "revision": json_int(obj, "revision"),
+    }
+
+
+def _parse_snapshot_assets(value: JsonValue, *, label: str) -> list[_SnapshotAsset]:
+    assets: list[_SnapshotAsset] = []
+    for item in json_array(value, label=label):
+        obj = json_object(item, label=f"{label} entry")
+        assets.append({"local_id": json_str(obj, "local_id"), "name": json_str(obj, "name")})
+    return assets
+
+
+def _parse_helper_request(obj: dict[str, JsonValue]) -> _HelperRequest:
+    snapshot = json_object(obj["snapshot"], label="request snapshot")
+    return {
+        "snapshot": {
+            "grouping_draft": _parse_grouping_draft(snapshot["grouping_draft"]),
+            "rosters": _parse_snapshot_assets(snapshot["rosters"], label="rosters"),
+            "templates": _parse_snapshot_assets(snapshot["templates"], label="templates"),
+            "current_screen": json_str(
+                json_object(snapshot["ui_state"], label="ui_state"), "current_screen"
+            ),
+        },
+        "expected_revision": json_int(obj, "expected_revision"),
+    }
+
+
+def _request_payload(route: Route) -> dict[str, JsonValue]:
+    payload: JsonValue = route.request.post_data_json
+    if not isinstance(payload, dict):
+        payload = json.loads(route.request.post_data or "{}")
+    return json_object(payload, label="helper request payload")
+
+
+def _install_public_distribution_routes(
+    page: Page,
+) -> dict[str, list[_CapturedHelperRequest]]:
     """Capture public share/export helper payloads and return deterministic results."""
 
-    captured: dict[str, list[dict[str, Any]]] = {"share": [], "export": []}
+    captured: dict[str, list[_CapturedHelperRequest]] = {"share": [], "export": []}
 
     def share_handler(route: Route) -> None:
-        payload = route.request.post_data_json
-        if not isinstance(payload, dict):
-            payload = json.loads(route.request.post_data or "{}")
+        payload = _request_payload(route)
         match = re.search(r"/(grouping|seating)/share$", route.request.url)
         kind = match.group(1) if match else "unknown"
-        payload = {**payload, "__kind": kind}
-        captured["share"].append(payload)
+        captured["share"].append(_CapturedHelperRequest(payload=payload, kind=kind))
         share_number = len(captured["share"])
         artifact = {
             "id": f"pr-0303-share-{share_number}",
@@ -191,12 +297,10 @@ def _install_public_distribution_routes(page: Page) -> dict[str, list[dict[str, 
         )
 
     def export_handler(route: Route) -> None:
-        payload = route.request.post_data_json
-        if not isinstance(payload, dict):
-            payload = json.loads(route.request.post_data or "{}")
+        payload = _request_payload(route)
         match = re.search(r"/(grouping|seating)/export$", route.request.url)
         kind = match.group(1) if match else "unknown"
-        captured["export"].append({**payload, "__kind": kind})
+        captured["export"].append(_CapturedHelperRequest(payload=payload, kind=kind))
         route.fulfill(
             status=200,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -246,21 +350,26 @@ def _open_grouping_workspace_and_create_link(page: Page) -> None:
 
 
 def _assert_snapshot_targets(
-    payload: dict[str, Any], *, roster_name: str, template_name: str
+    request: _CapturedHelperRequest, *, roster_name: str, template_name: str
 ) -> None:
     """Assert a captured public helper request uses the selected overview state."""
 
-    if payload.get("__kind") != "grouping":
-        raise AssertionError(f"Expected grouping helper request, got {payload.get('__kind')!r}.")
+    if request.kind != "grouping":
+        raise AssertionError(f"Expected grouping helper request, got {request.kind!r}.")
+    payload = _parse_helper_request(request.payload)
     snapshot = payload["snapshot"]
-    draft = snapshot["grouping_draft"]
-    if not draft:
+    grouping_draft = snapshot["grouping_draft"]
+    if grouping_draft is None:
         raise AssertionError("Expected captured request snapshot to include a grouping draft.")
     roster = next(
-        entry for entry in snapshot["rosters"] if entry["local_id"] == draft["roster_local_id"]
+        entry
+        for entry in snapshot["rosters"]
+        if entry["local_id"] == grouping_draft["roster_local_id"]
     )
     template = next(
-        entry for entry in snapshot["templates"] if entry["local_id"] == draft["template_local_id"]
+        entry
+        for entry in snapshot["templates"]
+        if entry["local_id"] == grouping_draft["template_local_id"]
     )
     if roster["name"] != roster_name:
         raise AssertionError(f"Expected selected roster {roster_name!r}, got {roster['name']!r}.")
@@ -268,12 +377,12 @@ def _assert_snapshot_targets(
         raise AssertionError(
             f"Expected selected classroom {template_name!r}, got {template['name']!r}."
         )
-    if snapshot["ui_state"]["current_screen"] != "class-workspace":
+    if snapshot["current_screen"] != "class-workspace":
         raise AssertionError(
             f"Expected overview request to preserve class-workspace screen, got "
-            f"{snapshot['ui_state']['current_screen']!r}."
+            f"{snapshot['current_screen']!r}."
         )
-    if payload["expected_revision"] != draft["revision"]:
+    if payload["expected_revision"] != grouping_draft["revision"]:
         raise AssertionError(
             "Expected helper request revision to match the prepared grouping draft."
         )

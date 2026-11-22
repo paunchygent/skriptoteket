@@ -1,18 +1,20 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import MutableMapping
 from typing import Literal
 
 import structlog
-from structlog.types import EventDict, WrappedLogger
 
 from skriptoteket.observability.redaction import redact_sensitive_data
 
 LogFormat = Literal["json", "console"]
 
 
-def _add_service_context(*, service_name: str, environment: str):
-    def processor(logger: WrappedLogger, method_name: str, event_dict: EventDict) -> EventDict:
+def _add_service_context(*, service_name: str, environment: str) -> structlog.types.Processor:
+    def processor(
+        logger: object, method_name: str, event_dict: MutableMapping[str, object]
+    ) -> MutableMapping[str, object]:
         event_dict["service.name"] = service_name
         event_dict["deployment.environment"] = environment
         return event_dict
@@ -20,7 +22,9 @@ def _add_service_context(*, service_name: str, environment: str):
     return processor
 
 
-def _add_trace_context(logger: WrappedLogger, method_name: str, event_dict: EventDict) -> EventDict:
+def _add_trace_context(
+    logger: object, method_name: str, event_dict: MutableMapping[str, object]
+) -> MutableMapping[str, object]:
     try:
         from opentelemetry import trace
 

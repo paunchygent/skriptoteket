@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import delete, func, select, update
@@ -127,8 +126,10 @@ class PostgreSQLToolSessionTurnRepository(ToolSessionTurnRepositoryProtocol):
             ToolSessionTurnModel.tool_session_id == tool_session_id
         )
         result = await self._session.execute(stmt)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return int(cast(CursorResult[object], result).rowcount or 0)
+        return int(result.rowcount or 0)
 
     async def _get_by_id(self, *, turn_id: UUID) -> ToolSessionTurn:
         stmt = select(ToolSessionTurnModel).where(ToolSessionTurnModel.id == turn_id)

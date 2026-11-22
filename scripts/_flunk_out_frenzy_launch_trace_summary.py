@@ -19,7 +19,26 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from json import JSONDecodeError
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
+
+from pydantic import JsonValue
+
+from scripts._flunk_out_frenzy_launch_trace_drift import (
+    CaseDrift,
+    build_case_drift,
+    evaluate_numeric_drift,
+    evaluate_optional_step_drift,
+)
+from scripts._flunk_out_frenzy_launch_trace_payload import (
+    BaselineMatrixRecord,
+    BaselinePayload,
+    MatrixSummaryRecord,
+    Number,
+    TraceStep,
+    has_trace_top_level_keys,
+    parse_baseline_payload,
+    parse_trace_payload,
+)
 
 DEFAULT_BASELINE_ARTIFACT_PATH = Path(
     "frontend/apps/skriptoteket/.artifacts/flunk-out-frenzy-launch-to-drop/"
@@ -39,10 +58,58 @@ BASELINE_MISSING = "missing"
 BASELINE_UNREADABLE = "unreadable"
 BASELINE_INCOMPATIBLE = "schema_incompatible"
 
-STEP_DELTA_ATTENTION_THRESHOLD = 2
-STEP_DELTA_BLOCKED_THRESHOLD = 5
-PERCENT_DRIFT_ATTENTION_THRESHOLD = 0.05
-PERCENT_DRIFT_BLOCKED_THRESHOLD = 0.15
+
+class SpotlightRow(TypedDict):
+    trace_row_index: int
+    step_index: int
+    phase: str
+    reasons: list[str]
+    seam_transition: JsonValue
+    handoff_to_board_step: int | None
+    first_board_collision_step: int | None
+
+
+class CaseSummary(TypedDict):
+    case_id: str
+    hold_profile: str
+    case_verdict: str
+    phase_order_observed: list[str]
+    sw16_exit_observed: bool
+    handoff_to_board_step: int | None
+    first_board_collision_step: int | None
+    seam_transition_count: int
+    strike_classification: str
+    peak_speed: Number
+    min_vy: Number
+    max_displacement_px: Number
+    case_blockers: list[str]
+    case_attentions: list[str]
+    anomaly_flags: list[str]
+    spotlight_rows: list[SpotlightRow]
+    drift: CaseDrift
+
+
+class RunSummary(TypedDict):
+    run_verdict: str
+    baseline_status: str
+    case_counts: dict[str, int]
+    blocked_reasons: list[str]
+    attention_flags: list[str]
+
+
+class SummaryMetadata(TypedDict):
+    generated_at_utc: str
+    raw_artifact_path: str
+    baseline_artifact_path: str
+    baseline_override_used: bool
+    baseline_status: str
+    source_metadata: JsonValue
+
+
+class TraceSummaryPayload(TypedDict):
+    metadata: SummaryMetadata
+    case_summaries: list[CaseSummary]
+    run_summary: RunSummary
 
 
 @dataclass(frozen=True)
@@ -54,15 +121,16 @@ class LaunchTraceSummaryArtifacts:
     summary_markdown_path: Path
 
 
-def load_trace_payload(path: Path) -> dict[str, Any]:
+def load_trace_payload(path: Path) -> JsonValue:
     """Load and return a launch-trace artifact payload from disk."""
 
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    return payload
 
 
 def resolve_baseline_payload(
     baseline_artifact_path: Path,
-) -> tuple[str, dict[str, Any] | None]:
+) -> tuple[str, BaselinePayload | None]:
     """Resolve the baseline artifact payload and return status plus payload."""
 
     if not baseline_artifact_path.exists():
@@ -72,39 +140,37 @@ def resolve_baseline_payload(
         payload = load_trace_payload(baseline_artifact_path)
     except (OSError, JSONDecodeError, ValueError):
         return BASELINE_UNREADABLE, None
-    if not _is_trace_payload_shape(payload):
+    if not has_trace_top_level_keys(payload):
         return BASELINE_INCOMPATIBLE, None
-    return BASELINE_AVAILABLE, payload
+    return BASELINE_AVAILABLE, parse_baseline_payload(payload)
 
 
 def build_trace_summary(
-    raw_payload: dict[str, Any],
+    raw_payload: JsonValue,
     *,
     raw_artifact_path: Path,
     baseline_artifact_path: Path = DEFAULT_BASELINE_ARTIFACT_PATH,
     baseline_override_used: bool = False,
-) -> dict[str, Any]:
+) -> TraceSummaryPayload:
     """Build the deterministic operator summary for a launch-trace payload."""
 
-    if not _is_trace_payload_shape(raw_payload):
+    if not has_trace_top_level_keys(raw_payload):
         raise ValueError("Raw launch-trace payload is missing required top-level fields.")
+    payload = parse_trace_payload(raw_payload)
 
-    baseline_status, baseline_payload = resolve_baseline_payload(baseline_artifact_path)
-    baseline_matrix = _matrix_by_case_id(baseline_payload) if baseline_payload else {}
-    baseline_traces = baseline_payload.get("traces", {}) if baseline_payload else {}
+    baseline_status, baseline = resolve_baseline_payload(baseline_artifact_path)
+    baseline_matrix = {} if baseline is None else baseline["matrix_summaries"]
+    baseline_traces = {} if baseline is None else baseline["traces"]
 
-    case_summaries: list[dict[str, Any]] = []
-    for record in raw_payload["matrix_summaries"]:
+    case_summaries: list[CaseSummary] = []
+    for record in payload["matrix_summaries"]:
         case_id = record["case_id"]
-        trace_steps = raw_payload["traces"][case_id]
-        baseline_record = baseline_matrix.get(case_id)
-        baseline_steps = baseline_traces.get(case_id)
         case_summaries.append(
             _build_case_summary(
                 record=record,
-                trace_steps=trace_steps,
-                baseline_record=baseline_record,
-                baseline_steps=baseline_steps,
+                trace_steps=payload["traces"][case_id],
+                baseline_record=baseline_matrix.get(case_id),
+                baseline_steps=baseline_traces.get(case_id),
                 baseline_status=baseline_status,
             )
         )
@@ -117,7 +183,7 @@ def build_trace_summary(
             "baseline_artifact_path": str(baseline_artifact_path),
             "baseline_override_used": baseline_override_used,
             "baseline_status": baseline_status,
-            "source_metadata": raw_payload.get("metadata", {}),
+            "source_metadata": payload.get("metadata", {}),
         },
         "case_summaries": case_summaries,
         "run_summary": run_summary,
@@ -128,7 +194,7 @@ def write_trace_summary_artifacts(
     artifact_dir: Path,
     *,
     raw_artifact_path: Path,
-    summary_payload: dict[str, Any],
+    summary_payload: TraceSummaryPayload,
 ) -> LaunchTraceSummaryArtifacts:
     """Persist the summary JSON/Markdown artifacts and return their paths."""
 
@@ -150,7 +216,7 @@ def write_trace_summary_artifacts(
     )
 
 
-def build_trace_summary_markdown(summary_payload: dict[str, Any]) -> str:
+def build_trace_summary_markdown(summary_payload: TraceSummaryPayload) -> str:
     """Render the operator summary payload as concise Markdown."""
 
     run_summary = summary_payload["run_summary"]
@@ -200,7 +266,7 @@ def build_trace_summary_markdown(summary_payload: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def fail_if_summary_gate_blocked(summary_payload: dict[str, Any]) -> None:
+def fail_if_summary_gate_blocked(summary_payload: TraceSummaryPayload) -> None:
     """Raise when the run-level launch-trace decision gate is blocked."""
 
     run_summary = summary_payload["run_summary"]
@@ -213,12 +279,12 @@ def fail_if_summary_gate_blocked(summary_payload: dict[str, Any]) -> None:
 
 def _build_case_summary(
     *,
-    record: dict[str, Any],
-    trace_steps: list[dict[str, Any]],
-    baseline_record: dict[str, Any] | None,
-    baseline_steps: list[dict[str, Any]] | None,
+    record: MatrixSummaryRecord,
+    trace_steps: list[TraceStep],
+    baseline_record: BaselineMatrixRecord | None,
+    baseline_steps: list[TraceStep] | None,
     baseline_status: str,
-) -> dict[str, Any]:
+) -> CaseSummary:
     seam_transition_count = sum(step["seam_transition"] is not None for step in trace_steps)
     spotlight_rows = _build_spotlight_rows(trace_steps)
     anomaly_flags: list[str] = []
@@ -246,7 +312,7 @@ def _build_case_summary(
             blockers.append("seam_transition_count_drift")
             anomaly_flags.append("seam_transition_count_drift")
 
-        _evaluate_optional_step_drift(
+        evaluate_optional_step_drift(
             field_name="handoff_to_board_step",
             current_value=record["handoff_to_board_step"],
             baseline_value=baseline_record["handoff_to_board_step"],
@@ -254,7 +320,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_optional_step_drift(
+        evaluate_optional_step_drift(
             field_name="first_board_collision_step",
             current_value=record["first_board_collision_step"],
             baseline_value=baseline_record["first_board_collision_step"],
@@ -262,7 +328,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_numeric_drift(
+        evaluate_numeric_drift(
             field_name="peak_speed",
             current_value=float(record["peak_speed"]),
             baseline_value=float(baseline_record["peak_speed"]),
@@ -270,7 +336,7 @@ def _build_case_summary(
             attentions=attentions,
             anomaly_flags=anomaly_flags,
         )
-        _evaluate_numeric_drift(
+        evaluate_numeric_drift(
             field_name="max_displacement_px",
             current_value=float(record["max_displacement_px"]),
             baseline_value=float(baseline_record["max_displacement_px"]),
@@ -302,47 +368,11 @@ def _build_case_summary(
         "case_attentions": attentions,
         "anomaly_flags": sorted(set(anomaly_flags)),
         "spotlight_rows": spotlight_rows,
-        "drift": {
-            "phase_order_observed": {
-                "current": record["phase_order_observed"],
-                "baseline": None
-                if baseline_record is None
-                else baseline_record["phase_order_observed"],
-                "matches_baseline": None
-                if baseline_record is None
-                else record["phase_order_observed"] == baseline_record["phase_order_observed"],
-            },
-            "handoff_to_board_step": _build_optional_step_drift(
-                current_value=record["handoff_to_board_step"],
-                baseline_value=None
-                if baseline_record is None
-                else baseline_record["handoff_to_board_step"],
-            ),
-            "first_board_collision_step": _build_optional_step_drift(
-                current_value=record["first_board_collision_step"],
-                baseline_value=None
-                if baseline_record is None
-                else baseline_record["first_board_collision_step"],
-            ),
-            "peak_speed": _build_numeric_drift(
-                current_value=float(record["peak_speed"]),
-                baseline_value=None
-                if baseline_record is None
-                else float(baseline_record["peak_speed"]),
-            ),
-            "max_displacement_px": _build_numeric_drift(
-                current_value=float(record["max_displacement_px"]),
-                baseline_value=None
-                if baseline_record is None
-                else float(baseline_record["max_displacement_px"]),
-            ),
-        },
+        "drift": build_case_drift(record, baseline_record),
     }
 
 
-def _build_run_summary(
-    case_summaries: list[dict[str, Any]], baseline_status: str
-) -> dict[str, Any]:
+def _build_run_summary(case_summaries: list[CaseSummary], baseline_status: str) -> RunSummary:
     counts = {
         CASE_PASS: sum(case["case_verdict"] == CASE_PASS for case in case_summaries),
         CASE_ATTENTION: sum(case["case_verdict"] == CASE_ATTENTION for case in case_summaries),
@@ -370,8 +400,8 @@ def _build_run_summary(
     }
 
 
-def _build_spotlight_rows(trace_steps: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    spotlight_by_row_index: dict[int, dict[str, Any]] = {}
+def _build_spotlight_rows(trace_steps: list[TraceStep]) -> list[SpotlightRow]:
+    spotlight_by_row_index: dict[int, SpotlightRow] = {}
     seen_phases: set[str] = set()
     first_handoff_row: int | None = None
     first_preimpact_row: int | None = None
@@ -410,100 +440,6 @@ def _build_spotlight_rows(trace_steps: list[dict[str, Any]]) -> list[dict[str, A
         }
 
     return [spotlight_by_row_index[index] for index in sorted(spotlight_by_row_index)]
-
-
-def _evaluate_optional_step_drift(
-    *,
-    field_name: str,
-    current_value: int | None,
-    baseline_value: int | None,
-    blockers: list[str],
-    attentions: list[str],
-    anomaly_flags: list[str],
-) -> None:
-    if current_value is None and baseline_value is None:
-        return
-    if current_value is None or baseline_value is None:
-        blockers.append(f"{field_name}_presence_drift")
-        anomaly_flags.append(f"{field_name}_presence_drift")
-        return
-
-    delta = abs(current_value - baseline_value)
-    if delta > STEP_DELTA_BLOCKED_THRESHOLD:
-        blockers.append(f"{field_name}_drift_blocked")
-        anomaly_flags.append(f"{field_name}_drift")
-    elif delta > STEP_DELTA_ATTENTION_THRESHOLD:
-        attentions.append(f"{field_name}_drift_attention")
-        anomaly_flags.append(f"{field_name}_drift")
-
-
-def _evaluate_numeric_drift(
-    *,
-    field_name: str,
-    current_value: float,
-    baseline_value: float,
-    blockers: list[str],
-    attentions: list[str],
-    anomaly_flags: list[str],
-) -> None:
-    delta_ratio = _delta_ratio(current_value, baseline_value)
-    if delta_ratio is None:
-        return
-    if delta_ratio > PERCENT_DRIFT_BLOCKED_THRESHOLD:
-        blockers.append(f"{field_name}_drift_blocked")
-        anomaly_flags.append(f"{field_name}_drift")
-    elif delta_ratio > PERCENT_DRIFT_ATTENTION_THRESHOLD:
-        attentions.append(f"{field_name}_drift_attention")
-        anomaly_flags.append(f"{field_name}_drift")
-
-
-def _build_numeric_drift(
-    *,
-    current_value: float,
-    baseline_value: float | None,
-) -> dict[str, Any]:
-    delta_ratio = None if baseline_value is None else _delta_ratio(current_value, baseline_value)
-    delta_absolute = None if baseline_value is None else current_value - baseline_value
-    return {
-        "current": current_value,
-        "baseline": baseline_value,
-        "delta_absolute": delta_absolute,
-        "delta_ratio": delta_ratio,
-    }
-
-
-def _build_optional_step_drift(
-    *,
-    current_value: int | None,
-    baseline_value: int | None,
-) -> dict[str, Any]:
-    if current_value is None or baseline_value is None:
-        delta_absolute = None
-    else:
-        delta_absolute = current_value - baseline_value
-    return {
-        "current": current_value,
-        "baseline": baseline_value,
-        "delta_absolute": delta_absolute,
-    }
-
-
-def _delta_ratio(current_value: float, baseline_value: float) -> float | None:
-    if baseline_value == 0:
-        if current_value == 0:
-            return 0.0
-        return 1.0
-    return abs(current_value - baseline_value) / abs(baseline_value)
-
-
-def _matrix_by_case_id(payload: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
-    if payload is None:
-        return {}
-    return {record["case_id"]: record for record in payload["matrix_summaries"]}
-
-
-def _is_trace_payload_shape(payload: dict[str, Any]) -> bool:
-    return "matrix_summaries" in payload and "traces" in payload
 
 
 def _format_optional_int(value: int | None) -> str:

@@ -15,7 +15,10 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import Role
 from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
-from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
+from skriptoteket.domain.scripting.tool_session_turns import (
+    ToolSessionTurn,
+    ToolSessionTurnStatus,
+)
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -129,12 +132,12 @@ def _make_session(*, tool_id: UUID, user_id: UUID) -> ToolSession:
     )
 
 
-def _make_turn(*, tool_session_id: UUID, status: str) -> ToolSessionTurn:
+def _make_turn(*, tool_session_id: UUID, status: ToolSessionTurnStatus) -> ToolSessionTurn:
     now = datetime(2025, 1, 1, tzinfo=timezone.utc)
     return ToolSessionTurn(
         id=uuid4(),
         tool_session_id=tool_session_id,
-        status=status,  # type: ignore[arg-type]
+        status=status,
         failure_outcome=None,
         provider=None,
         correlation_id=None,

@@ -68,7 +68,7 @@ def test_import_source_chunker_sends_each_format_to_its_reader():
     assert len(word_chunks) >= 2
     docx_fake = RecordingChunker(word_chunks[0])
     pdf_fake = RecordingChunker(word_chunks[1])
-    dispatcher = ImportSourceChunker(docx=docx_fake, pdf=pdf_fake)  # type: ignore[arg-type]
+    dispatcher = ImportSourceChunker(docx=docx_fake, pdf=pdf_fake)
 
     pdf_bytes = b"%PDF-1.7 fake"
     docx_bytes = b"PK\x03\x04 fake docx zip"
@@ -83,7 +83,7 @@ def test_import_labeler_source_sends_each_format_to_its_projector():
     pdf_source = PythonDocxLabelerMarkdown().source(content=DOCX_CORPUS.read_bytes())
     docx_fake = RecordingLabelerSource(docx_source)
     pdf_fake = RecordingLabelerSource(pdf_source)
-    dispatcher = ImportLabelerSource(docx=docx_fake, pdf=pdf_fake)  # type: ignore[arg-type]
+    dispatcher = ImportLabelerSource(docx=docx_fake, pdf=pdf_fake)
 
     pdf_bytes = b"%PDF-1.7 fake"
     docx_bytes = b"PK\x03\x04 fake docx zip"

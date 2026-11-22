@@ -12,9 +12,6 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import cast
-
 import pytest
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
@@ -104,7 +101,9 @@ def test_create_app_registers_host_validation_and_security_headers(
     assert CorrelationMiddleware in middleware_by_class
     assert SecurityHeadersMiddleware in middleware_by_class
     assert TrustedHostMiddleware in middleware_by_class
-    assert set(cast(Sequence[str], trusted_host_entry.kwargs["allowed_hosts"])) == {
+    allowed_hosts = trusted_host_entry.kwargs["allowed_hosts"]
+    assert isinstance(allowed_hosts, list)
+    assert set(allowed_hosts) == {
         "localhost",
         "127.0.0.1",
         "skriptoteket.hule.education",

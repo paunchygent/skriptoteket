@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import cast
 
 import pytest
 from alembic import command
@@ -24,7 +23,9 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "WHERE table_name = 'tool_session_turns'"
             )
         )
-        columns = _column_map([cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()])
+        columns = _column_map(
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
+        )
         assert columns["id"] == ("uuid", "NO")
         assert columns["tool_session_id"] == ("uuid", "NO")
         assert columns["status"] == ("character varying", "NO")
@@ -62,7 +63,7 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
             )
         )
         message_columns = _column_map(
-            [cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()]
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
         )
         assert message_columns["id"] == ("uuid", "NO")
         assert message_columns["tool_session_id"] == ("uuid", "NO")

@@ -8,13 +8,16 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
+
+from pydantic import JsonValue
 
 from scripts.exam_conversion_eval.gold import GoldExam
-from scripts.labeling_feasibility.api import OpenAIClient
+from scripts.labeling_feasibility.api import DecisionAnswer, OpenAIClient
+from scripts.labeling_feasibility.converted import ConvertedExam, ConvertedItem
 from scripts.labeling_feasibility.evaluate import _keyed_equal
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
-from scripts.labeling_feasibility.requests import MethodResult, decide
+from scripts.labeling_feasibility.requests import MethodResult, answers_json, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 RECORDINGS = Path("tests/fixtures/exam_conversion/docx_key_provenance_v14")
@@ -29,7 +32,19 @@ RECORDED_CONVERSIONS: dict[str, tuple[str, ...]] = {
 }
 
 
-def visible_lines(item: dict[str, Any]) -> list[str]:
+class RouteRow(TypedDict):
+    item: int
+    truth: str
+    pred: JsonValue
+
+
+class RoutesScore(TypedDict):
+    n: int
+    correct: int
+    rows: list[RouteRow]
+
+
+def visible_lines(item: ConvertedItem) -> list[str]:
     """Current producer body lines; gaps shown as [___], choices rendered separately."""
     lines: list[str] = []
     for row in item["body"]:
@@ -43,7 +58,7 @@ def visible_lines(item: dict[str, Any]) -> list[str]:
     return [line for line in lines if line.strip()]
 
 
-def render_item(index: int, item: dict[str, Any], text: dict[str, str], *, with_kind: bool) -> str:
+def render_item(index: int, item: ConvertedItem, text: dict[str, str], *, with_kind: bool) -> str:
     lines = [f"### Item i{index}", "Source:"]
     lines += [f"[{anchor}] {text[anchor]}" for anchor in item["source_anchors"] if anchor in text]
     lines.append("Student-visible item:")
@@ -56,12 +71,12 @@ def render_item(index: int, item: dict[str, Any], text: dict[str, str], *, with_
     return "\n".join(lines)
 
 
-def exam_instructions(recording: dict[str, Any]) -> list[str]:
+def exam_instructions(recording: ConvertedExam) -> list[str]:
     return [line for entry in recording["instructions"] for line in entry["text"].split("\n")]
 
 
 async def check_conversion(
-    client: OpenAIClient, label: str, recording: dict[str, Any], chunks: tuple[DocxChunk, ...]
+    client: OpenAIClient, label: str, recording: ConvertedExam, chunks: tuple[DocxChunk, ...]
 ) -> MethodResult:
     text = {chunk.anchor: chunk.marked_text for chunk in chunks}
     items = recording["items"]
@@ -69,45 +84,47 @@ async def check_conversion(
     rendered = f"Exam-level instructions shown to students:\n{shown}\n\n" + "\n\n".join(
         render_item(i, item, text, with_kind=False) for i, item in enumerate(items)
     )
-    questions = []
+    questions: list[dict[str, JsonValue]] = []
     for index in range(len(items)):
-        questions += [
-            {
-                "type": "predicate",
-                "name": f"leak_i{index}",
-                "instructions": f"The student-visible text of item i{index} (title and body, not its options) "
-                "reveals a correct answer, a keyed value or a sample answer that the student should produce.",
-            },
-            {
-                "type": "predicate",
-                "name": f"labels_i{index}",
-                "instructions": f"Item i{index} carries labels the exam platform owns: a question number, a points "
-                "label, option letters or numbers on its options, printed blank markers such as runs of "
-                "underscores, or answer-key labels.",
-            },
-            {
-                "type": "predicate",
-                "name": f"missing_i{index}",
-                "instructions": f"The source shows an instruction, word bank, passage or other wording that the "
-                f"student needs for item i{index}, and it is missing from both the student-visible item and "
-                "the exam-level instructions.",
-            },
-        ]
+        questions.extend(
+            [
+                {
+                    "type": "predicate",
+                    "name": f"leak_i{index}",
+                    "instructions": f"The student-visible text of item i{index} (title and body, not its options) "
+                    "reveals a correct answer, a keyed value or a sample answer that the student should produce.",
+                },
+                {
+                    "type": "predicate",
+                    "name": f"labels_i{index}",
+                    "instructions": f"Item i{index} carries labels the exam platform owns: a question number, a points "
+                    "label, option letters or numbers on its options, printed blank markers such as runs of "
+                    "underscores, or answer-key labels.",
+                },
+                {
+                    "type": "predicate",
+                    "name": f"missing_i{index}",
+                    "instructions": f"The source shows an instruction, word bank, passage or other wording that the "
+                    f"student needs for item i{index}, and it is missing from both the student-visible item and "
+                    "the exam-level instructions.",
+                },
+            ]
+        )
     calls, answers = await decide(client, label, rendered, questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def route_retries(
     client: OpenAIClient,
     label: str,
-    recording: dict[str, Any],
+    recording: ConvertedExam,
     chunks: tuple[DocxChunk, ...],
     failed: list[int],
 ) -> MethodResult:
     text = {chunk.anchor: chunk.marked_text for chunk in chunks}
     items = recording["items"]
     rendered = "\n\n".join(render_item(i, items[i], text, with_kind=True) for i in failed)
-    questions = [
+    questions: list[dict[str, JsonValue]] = [
         {
             "type": "choice",
             "name": f"route_i{index}",
@@ -128,15 +145,15 @@ async def route_retries(
         for index in failed
     ]
     calls, answers = await decide(client, label, rendered, questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 # Evaluator side: gold joins here only.
 
 
-def map_items(reference: Reference, recording: dict[str, Any]) -> dict[int, int]:
+def map_items(reference: Reference, recording: ConvertedExam) -> dict[int, int]:
     owner = reference.owner_of()
-    mapping = {}
+    mapping: dict[int, int] = {}
     for index, item in enumerate(recording["items"]):
         votes = Counter(owner[a] for a in item["source_anchors"] if a in owner)
         if votes:
@@ -145,7 +162,7 @@ def map_items(reference: Reference, recording: dict[str, Any]) -> dict[int, int]
 
 
 def check_truth(
-    gold: GoldExam, recording: dict[str, Any], item: dict[str, Any], gold_index: int
+    gold: GoldExam, recording: ConvertedExam, item: ConvertedItem, gold_index: int
 ) -> dict[str, bool]:
     """Principles 6-8 of TASK-SKRIPT-39-05-03 judged against gold, per converted item."""
     source = gold.questions[gold_index]
@@ -201,7 +218,7 @@ def check_truth(
     return {"leak": leak, "labels": labels, "missing": missing}
 
 
-def failed_items(gold: GoldExam, recording: dict[str, Any], mapping: dict[int, int]) -> list[int]:
+def failed_items(gold: GoldExam, recording: ConvertedExam, mapping: dict[int, int]) -> list[int]:
     failed = []
     for index, gold_index in mapping.items():
         item, source = recording["items"][index], gold.questions[gold_index]
@@ -216,8 +233,11 @@ def failed_items(gold: GoldExam, recording: dict[str, Any], mapping: dict[int, i
 
 
 def score_checks(
-    gold: GoldExam, recording: dict[str, Any], mapping: dict[int, int], answers: dict[str, Any]
-) -> dict[str, Any]:
+    gold: GoldExam,
+    recording: ConvertedExam,
+    mapping: dict[int, int],
+    answers: dict[str, DecisionAnswer],
+) -> dict[str, dict[str, int]]:
     counts: dict[str, Counter[str]] = {name: Counter() for name in ("leak", "labels", "missing")}
     for index, gold_index in mapping.items():
         truth = check_truth(gold, recording, recording["items"][index], gold_index)
@@ -232,9 +252,12 @@ def score_checks(
 
 
 def score_routes(
-    gold: GoldExam, recording: dict[str, Any], mapping: dict[int, int], answers: dict[str, Any]
-) -> dict[str, Any]:
-    rows = []
+    gold: GoldExam,
+    recording: ConvertedExam,
+    mapping: dict[int, int],
+    answers: dict[str, DecisionAnswer],
+) -> RoutesScore:
+    rows: list[RouteRow] = []
     for name, answer in answers.items():
         index = int(name.removeprefix("route_i"))
         truth = (

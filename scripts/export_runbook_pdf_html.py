@@ -4,20 +4,34 @@ import argparse
 import html
 import re
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
 import markdown
 import yaml
 from markdown.extensions.toc import slugify
+from pydantic import TypeAdapter
+
+
+class _Frontmatter(TypedDict):
+    title: NotRequired[object]
+    id: NotRequired[object]
+    owners: NotRequired[object]
+    status: NotRequired[object]
+    created: NotRequired[object]
+    updated: NotRequired[object]
+    system: NotRequired[object]
+
+
+_FRONTMATTER = TypeAdapter(_Frontmatter)
 
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def _split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
+def _split_frontmatter(text: str) -> tuple[_Frontmatter, str]:
     if not text.startswith("---\n"):
-        return {}, text
+        return _Frontmatter(), text
 
     end_marker = "\n---\n"
     end = text.find(end_marker, 4)
@@ -31,7 +45,7 @@ def _split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
     if not isinstance(frontmatter, dict):
         raise ValueError("Frontmatter must be a YAML mapping.")
 
-    return frontmatter, body
+    return _FRONTMATTER.validate_python(frontmatter), body
 
 
 def _split_h2_sections(markdown_body: str) -> tuple[str, list[tuple[str, str]]]:

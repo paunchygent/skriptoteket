@@ -509,9 +509,9 @@ def _anchor_from_fixtures(
 
 
 def _best_wall(*, fixtures: list[RoomFixture], bounds: _Bounds) -> TeachingEdge:
-    scores = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
+    scores: dict[TeachingEdge, float] = {"top": 0.0, "bottom": 0.0, "left": 0.0, "right": 0.0}
     for fixture in fixtures:
-        wall_distances = {
+        wall_distances: dict[TeachingEdge, float] = {
             "top": float(fixture.y),
             "bottom": float(max(bounds.max_y - (fixture.y + fixture.height), 0.0)),
             "left": float(fixture.x),
@@ -523,7 +523,7 @@ def _best_wall(*, fixtures: list[RoomFixture], bounds: _Bounds) -> TeachingEdge:
                 scores[wall] += 1.0
             scores[wall] -= distance * 0.01
     winning_wall = max(scores.items(), key=lambda item: (item[1], item[0]))[0]
-    return winning_wall  # type: ignore[return-value]
+    return winning_wall
 
 
 def _fixture_center(fixture: RoomFixture) -> tuple[float, float]:

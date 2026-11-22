@@ -3,17 +3,63 @@ from __future__ import annotations
 import argparse
 import json
 import uuid
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
 import httpx
+from pydantic import JsonValue, TypeAdapter
 
 from scripts._playwright_huleedu_auth import create_signed_huleedu_api_session
 
 DEFAULT_BASE_URL = "http://127.0.0.1:8000"
 DEFAULT_RECORD_ROOT = Path(".artifacts/chat-edit-ops-context")
+
+
+class _ScenarioPayload(TypedDict):
+    tool_id: NotRequired[str | None]
+    tool_slug: NotRequired[str | None]
+    chat_message: NotRequired[str]
+    edit_ops_message: NotRequired[str]
+    active_file: NotRequired[str]
+
+
+class _EditorBootPayload(TypedDict):
+    source_code: NotRequired[str | None]
+    entrypoint: NotRequired[str | None]
+    settings_schema: NotRequired[JsonValue]
+    input_schema: NotRequired[JsonValue]
+    usage_instructions: NotRequired[str | None]
+
+
+class _ToolRef(TypedDict):
+    slug: NotRequired[str]
+    id: NotRequired[str]
+
+
+class _ToolsPayload(TypedDict):
+    tools: NotRequired[JsonValue]
+
+
+class _CaptureFile(TypedDict):
+    payload: NotRequired[JsonValue]
+
+
+class _CapturePayload(TypedDict):
+    base_hash: NotRequired[JsonValue]
+    base_hashes: NotRequired[JsonValue]
+    virtual_files_source: NotRequired[JsonValue]
+    omitted_virtual_file_ids: NotRequired[JsonValue]
+
+
+_SCENARIO_PAYLOAD = TypeAdapter(_ScenarioPayload)
+_EDITOR_BOOT = TypeAdapter(_EditorBootPayload)
+_TOOL_LIST = TypeAdapter(list[_ToolRef])
+_TOOLS_PAYLOAD = TypeAdapter(_ToolsPayload)
+_CAPTURE_FILE = TypeAdapter(_CaptureFile)
+_CAPTURE_PAYLOAD = TypeAdapter(_CapturePayload)
 
 
 @dataclass(frozen=True)
@@ -25,13 +71,14 @@ class Scenario:
     active_file: str
 
     @classmethod
-    def from_payload(cls, payload: dict[str, Any]) -> "Scenario":
+    def from_payload(cls, payload: Mapping[str, JsonValue]) -> "Scenario":
+        data = _SCENARIO_PAYLOAD.validate_python(payload)
         return cls(
-            tool_id=payload.get("tool_id"),
-            tool_slug=payload.get("tool_slug"),
-            chat_message=payload.get("chat_message", ""),
-            edit_ops_message=payload.get("edit_ops_message", ""),
-            active_file=payload.get("active_file", "tool.py"),
+            tool_id=data.get("tool_id"),
+            tool_slug=data.get("tool_slug"),
+            chat_message=data.get("chat_message", ""),
+            edit_ops_message=data.get("edit_ops_message", ""),
+            active_file=data.get("active_file", "tool.py"),
         )
 
 
@@ -39,11 +86,14 @@ def _utc_now_iso() -> str:
     return datetime.now(tz=timezone.utc).isoformat()
 
 
-def _read_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+def _read_json(path: Path) -> dict[str, JsonValue]:
+    data: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected a top-level JSON object in {path}")
+    return data
 
 
-def _write_json(path: Path, payload: Any) -> None:
+def _write_json(path: Path, payload: JsonValue) -> None:
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True),
         encoding="utf-8",
@@ -63,13 +113,13 @@ def _load_env(path: Path) -> dict[str, str]:
     return data
 
 
-def _stringify_schema(schema: Any) -> str:
+def _stringify_schema(schema: JsonValue) -> str:
     if schema is None:
         return ""
     return json.dumps(schema, ensure_ascii=False, indent=2)
 
 
-def _build_virtual_files(editor_boot: dict[str, Any]) -> dict[str, str]:
+def _build_virtual_files(editor_boot: _EditorBootPayload) -> dict[str, JsonValue]:
     return {
         "tool.py": editor_boot.get("source_code") or "",
         "entrypoint.txt": editor_boot.get("entrypoint") or "",
@@ -79,7 +129,7 @@ def _build_virtual_files(editor_boot: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _select_tool_id_by_slug(tools: list[dict[str, Any]], slug: str) -> str | None:
+def _select_tool_id_by_slug(tools: Sequence[_ToolRef], slug: str) -> str | None:
     for tool in tools:
         if tool.get("slug") == slug:
             return str(tool.get("id"))
@@ -94,25 +144,44 @@ def _resolve_record_dir(base: Path | None) -> Path:
     return record_dir
 
 
-def _load_capture_payload(path: Path) -> dict[str, Any] | None:
+def _load_capture_payload(path: Path) -> _CapturePayload | None:
     if not path.exists():
         return None
-    data = json.loads(path.read_text(encoding="utf-8"))
-    return data.get("payload")
+    data: JsonValue = json.loads(path.read_text(encoding="utf-8"))
+    payload = _CAPTURE_FILE.validate_python(data).get("payload")
+    if payload is None:
+        return None
+    return _CAPTURE_PAYLOAD.validate_python(payload)
 
 
-def _summarize_capture(path: Path, label: str) -> dict[str, Any]:
+@dataclass(frozen=True)
+class _CaptureSummary:
+    found: bool
+    base_hash: JsonValue
+    payload: dict[str, JsonValue]
+
+
+def _summarize_capture(path: Path, label: str) -> _CaptureSummary:
     payload = _load_capture_payload(path)
     if payload is None:
-        return {"label": label, "found": False}
-    return {
-        "label": label,
-        "found": True,
-        "base_hash": payload.get("base_hash"),
-        "base_hashes": payload.get("base_hashes"),
-        "virtual_files_source": payload.get("virtual_files_source"),
-        "omitted_virtual_file_ids": payload.get("omitted_virtual_file_ids"),
-    }
+        return _CaptureSummary(
+            found=False,
+            base_hash=None,
+            payload={"label": label, "found": False},
+        )
+    base_hash = payload.get("base_hash")
+    return _CaptureSummary(
+        found=True,
+        base_hash=base_hash,
+        payload={
+            "label": label,
+            "found": True,
+            "base_hash": base_hash,
+            "base_hashes": payload.get("base_hashes"),
+            "virtual_files_source": payload.get("virtual_files_source"),
+            "omitted_virtual_file_ids": payload.get("omitted_virtual_file_ids"),
+        },
+    )
 
 
 def main() -> int:
@@ -153,7 +222,10 @@ def main() -> int:
                 headers={"X-Correlation-ID": chat_correlation_id},
             )
             tools_payload.raise_for_status()
-            tools = tools_payload.json().get("tools", [])
+            tools_body: JsonValue = tools_payload.json()
+            tools = _TOOL_LIST.validate_python(
+                _TOOLS_PAYLOAD.validate_python(tools_body).get("tools", [])
+            )
             if not scenario.tool_slug:
                 raise SystemExit("Provide tool_id or tool_slug")
             tool_id = _select_tool_id_by_slug(tools, scenario.tool_slug)
@@ -167,9 +239,10 @@ def main() -> int:
         }
         boot_payload = client.get(f"/api/v1/editor/tools/{tool_id}", headers=boot_headers)
         boot_payload.raise_for_status()
-        virtual_files = _build_virtual_files(boot_payload.json())
+        boot_data: JsonValue = boot_payload.json()
+        virtual_files = _build_virtual_files(_EDITOR_BOOT.validate_python(boot_data))
 
-        chat_payload = {
+        chat_payload: dict[str, JsonValue] = {
             "message": scenario.chat_message,
             "active_file": scenario.active_file,
             "virtual_files": virtual_files,
@@ -190,7 +263,7 @@ def main() -> int:
                 if line:
                     break
 
-        edit_ops_payload = {
+        edit_ops_payload: dict[str, JsonValue] = {
             "tool_id": tool_id,
             "message": scenario.edit_ops_message,
             "active_file": scenario.active_file,
@@ -209,7 +282,7 @@ def main() -> int:
         except httpx.ReadTimeout:
             edit_ops_response = None
 
-        record = {
+        record: dict[str, JsonValue] = {
             "captured_at": _utc_now_iso(),
             "tool_id": tool_id,
             "chat_correlation_id": chat_correlation_id,
@@ -224,7 +297,8 @@ def main() -> int:
         _write_json(output_record_dir / "chat.request.json", chat_payload)
         _write_json(output_record_dir / "edit_ops.request.json", edit_ops_payload)
         if edit_ops_response is not None:
-            _write_json(output_record_dir / "edit_ops.response.json", edit_ops_response.json())
+            edit_ops_data: JsonValue = edit_ops_response.json()
+            _write_json(output_record_dir / "edit_ops.response.json", edit_ops_data)
         else:
             _write_json(output_record_dir / "edit_ops.response.json", {"error": "read_timeout"})
 
@@ -239,19 +313,19 @@ def main() -> int:
             / "capture.json"
         )
 
-        summary = {
-            "chat_capture": _summarize_capture(chat_capture, "chat"),
-            "edit_ops_capture": _summarize_capture(edit_ops_capture, "edit_ops"),
+        chat_summary = _summarize_capture(chat_capture, "chat")
+        edit_ops_summary = _summarize_capture(edit_ops_capture, "edit_ops")
+        summary: dict[str, JsonValue] = {
+            "chat_capture": chat_summary.payload,
+            "edit_ops_capture": edit_ops_summary.payload,
         }
         _write_json(output_record_dir / "capture_summary.json", summary)
 
         print(f"record_dir={output_record_dir}")
         print(f"chat_correlation_id={chat_correlation_id}")
         print(f"edit_ops_correlation_id={edit_ops_correlation_id}")
-        if summary["chat_capture"].get("found") and summary["edit_ops_capture"].get("found"):
-            chat_hash = summary["chat_capture"].get("base_hash")
-            edit_hash = summary["edit_ops_capture"].get("base_hash")
-            print(f"base_hash_match={chat_hash == edit_hash}")
+        if chat_summary.found and edit_ops_summary.found:
+            print(f"base_hash_match={chat_summary.base_hash == edit_ops_summary.base_hash}")
         elif edit_ops_response is None:
             print("edit_ops_status=read_timeout")
         return 0

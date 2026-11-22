@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import io
 from types import SimpleNamespace
-from typing import cast
+from typing import TypedDict
 from uuid import uuid4
 
 import pytest
@@ -35,10 +35,11 @@ from skriptoteket.application.curated_apps.document_converter import (
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
     ConversionHubUpload,
+    JobSpecBuilder,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role
+from skriptoteket.domain.identity.models import Role, User
 from skriptoteket.web.api.v1 import apps_conversion_hub as api
 from tests.fixtures.identity_fixtures import make_user
 
@@ -73,13 +74,39 @@ class FakeRegistry:
         return SimpleNamespace(app_id=app_id, min_role=Role.USER)
 
 
+class _SubmitJobCall(TypedDict):
+    actor: User
+    spec: ConversionHubJobSpecV2
+    uploads: list[ConversionHubUpload]
+    wait_seconds: int
+    correlation_id: str | None
+    build_job_spec: JobSpecBuilder
+
+
 class FakeDocumentConverterSubmitHandler:
     def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
+        self.calls: list[_SubmitJobCall] = []
 
-    async def handle(self, **kwargs) -> DocumentConverterSubmitResult:
-        self.calls.append(kwargs)
-        uploads = cast(list[ConversionHubUpload], kwargs["uploads"])
+    async def handle(
+        self,
+        *,
+        actor: User,
+        spec: ConversionHubJobSpecV2,
+        uploads: list[ConversionHubUpload],
+        wait_seconds: int,
+        correlation_id: str | None,
+        build_job_spec: JobSpecBuilder,
+    ) -> DocumentConverterSubmitResult:
+        self.calls.append(
+            {
+                "actor": actor,
+                "spec": spec,
+                "uploads": uploads,
+                "wait_seconds": wait_seconds,
+                "correlation_id": correlation_id,
+                "build_job_spec": build_job_spec,
+            }
+        )
         return DocumentConverterSubmitResult(
             jobs=[
                 DocumentConverterSubmittedJob(
@@ -120,7 +147,7 @@ async def test_submit_document_converter_jobs_accepts_general_batch_up_to_ten() 
 
     assert [job.input_filename for job in result.jobs] == ["one.html", "two.html"]
     assert {job.producer for job in result.jobs} == {DocumentConverterProducerKind.LOCAL}
-    uploads = cast(list[ConversionHubUpload], handler.calls[0]["uploads"])
+    uploads = handler.calls[0]["uploads"]
     assert [upload.filename for upload in uploads] == ["one.html", "two.html"]
 
 

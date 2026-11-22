@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any
+from pydantic import JsonValue
 
 from scripts.labeling_feasibility.api import OpenAIClient
 from scripts.labeling_feasibility.method_models import Grouping
-from scripts.labeling_feasibility.requests import MethodResult, decide
+from scripts.labeling_feasibility.requests import MethodResult, answers_json, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 KIND_LABELS: tuple[tuple[str, str], ...] = (
@@ -51,7 +51,7 @@ POINT_VALUES = (
 )
 
 
-def _choices(labels: tuple[tuple[str, str], ...]) -> list[dict[str, str]]:
+def _choices(labels: tuple[tuple[str, str], ...]) -> list[JsonValue]:
     return [{"value": value, "description": description} for value, description in labels]
 
 
@@ -85,7 +85,7 @@ def render_questions(
     return "\n\n".join(blocks)
 
 
-def kind_questions(grouping: Grouping) -> list[dict[str, Any]]:
+def kind_questions(grouping: Grouping) -> list[dict[str, JsonValue]]:
     return [
         {
             "type": "choice",
@@ -105,7 +105,7 @@ async def kind(
     calls, answers = await decide(
         client, label, render_questions(grouping, chunks), kind_questions(grouping)
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def kind_with_images(
@@ -115,20 +115,19 @@ async def kind_with_images(
     chunks: tuple[DocxChunk, ...],
     images: list[str],
 ) -> MethodResult:
-    content: list[dict[str, Any]] = [
-        {"type": "input_text", "text": render_questions(grouping, chunks)}
-    ]
-    content += [{"type": "input_image", "image_url": image} for image in images]
+    content: list[JsonValue] = [{"type": "input_text", "text": render_questions(grouping, chunks)}]
+    for image in images:
+        content.append({"type": "input_image", "image_url": image})
     calls, answers = await decide(
         client, label, [{"role": "user", "content": content}], kind_questions(grouping)
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def ambiguity(
     client: OpenAIClient, label: str, grouping: Grouping, chunks: tuple[DocxChunk, ...]
 ) -> MethodResult:
-    questions = [
+    questions: list[dict[str, JsonValue]] = [
         {
             "type": "score",
             "name": f"ambiguity_{question.id}",
@@ -148,7 +147,7 @@ async def ambiguity(
         for question in grouping.questions
     ]
     calls, answers = await decide(client, label, render_questions(grouping, chunks), questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 def answer_lines(grouping: Grouping, chunks: tuple[DocxChunk, ...]) -> list[str]:
@@ -166,7 +165,7 @@ async def answer_slots(
     client: OpenAIClient, label: str, grouping: Grouping, chunks: tuple[DocxChunk, ...]
 ) -> MethodResult:
     lines = answer_lines(grouping, chunks)
-    questions = [
+    questions: list[dict[str, JsonValue]] = [
         {
             "type": "predicate",
             "name": f"slot_{line.replace('body:', '').replace('#', '_')}",
@@ -179,7 +178,8 @@ async def answer_slots(
     calls, answers = await decide(
         client, label, render_questions(grouping, chunks, line_ids=True), questions
     )
-    return MethodResult(calls, {"lines": lines, "answers": answers})
+    asked: list[JsonValue] = [line for line in lines]
+    return MethodResult(calls, {"lines": asked, "answers": answers_json(answers)})
 
 
 # Placements.
@@ -206,7 +206,7 @@ async def facit_attachment(
     starts = _first_position(grouping, chunks)
     ranked = sorted(grouping.questions, key=lambda q: starts[q.id])
     keys = sorted({a for q in grouping.questions for a in q.key_anchors}, key=order.__getitem__)
-    questions = []
+    questions: list[dict[str, JsonValue]] = []
     for anchor in keys:
         before = [q.id for q in ranked if starts[q.id] < order[anchor]][-5:]
         after = [q.id for q in ranked if starts[q.id] > order[anchor]][:2]
@@ -226,13 +226,14 @@ async def facit_attachment(
     calls, answers = await decide(
         client, label, render_marked_document(grouping, chunks), questions
     )
-    return MethodResult(calls, {"keys": keys, "answers": answers})
+    asked_keys: list[JsonValue] = [key for key in keys]
+    return MethodResult(calls, {"keys": asked_keys, "answers": answers_json(answers)})
 
 
 async def points(
     client: OpenAIClient, label: str, grouping: Grouping, chunks: tuple[DocxChunk, ...]
 ) -> MethodResult:
-    questions = [
+    questions: list[dict[str, JsonValue]] = [
         {
             "type": "choice",
             "name": f"points_{question.id}",
@@ -253,4 +254,4 @@ async def points(
     calls, answers = await decide(
         client, label, render_marked_document(grouping, chunks), questions
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))

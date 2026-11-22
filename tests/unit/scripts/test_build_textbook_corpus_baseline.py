@@ -4,11 +4,15 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
 
 import pytest
+from pydantic import JsonValue
 
-from scripts.build_textbook_corpus_baseline import build_baseline
+from scripts.build_textbook_corpus_baseline import (
+    ServiceJobResult,
+    build_baseline,
+    parse_service_job_reply,
+)
 
 
 class FakeServiceClient:
@@ -19,17 +23,20 @@ class FakeServiceClient:
         self.result_calls: list[str] = []
         self.artifact_calls: list[str] = []
 
-    def get_job(self, job_id: str) -> dict[str, Any]:
+    def get_job(self, job_id: str) -> ServiceJobResult:
         self.job_calls.append(job_id)
-        return {
-            "api_version": "v2",
-            "job": {
-                "job_id": job_id,
-                "status": "succeeded",
-            },
-        }
+        # The real v2 reply shape goes through the same parser the HTTP client uses.
+        return parse_service_job_reply(
+            {
+                "api_version": "v2",
+                "job": {
+                    "job_id": job_id,
+                    "status": "succeeded",
+                },
+            }
+        )
 
-    def get_result(self, job_id: str) -> dict[str, Any]:
+    def get_result(self, job_id: str) -> dict[str, JsonValue]:
         self.result_calls.append(job_id)
         return {
             "api_version": "v2",
@@ -154,6 +161,25 @@ def test_build_baseline_reconciles_timeout_job_and_fetches_artifact(tmp_path: Pa
     assert row["status_reconciled"] == "succeeded"
     assert row["fetched_artifact_snapshot_path"] == "raw/outputs/fetched/jobv2_timeout.md"
     assert row["issues"] == []
+
+    saved_job = json.loads(
+        (output_dir / "provenance/jobs/jobv2_timeout.job.json").read_text(encoding="utf-8")
+    )
+    assert saved_job == {
+        "api_version": "v2",
+        "job": {"job_id": "jobv2_timeout", "status": "succeeded"},
+    }
+
+
+def test_parse_service_job_reply_reads_nested_job_status_and_keeps_raw_reply() -> None:
+    reply: dict[str, JsonValue] = {"api_version": "v2", "job": {"status": " succeeded "}}
+
+    parsed = parse_service_job_reply(reply)
+
+    assert parsed.job["status"] == "succeeded"
+    assert parsed.raw == reply
+    assert parse_service_job_reply({"status": "succeeded"}).job["status"] is None
+    assert parse_service_job_reply(["not", "an", "object"]).job["status"] is None
 
 
 def test_build_baseline_marks_reconciliation_skipped_without_service_client(tmp_path: Path) -> None:

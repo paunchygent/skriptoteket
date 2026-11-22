@@ -8,7 +8,10 @@ import pytest
 
 from skriptoteket.application.editor.chat_history_handler import EditorChatHistoryHandler
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessage
+from skriptoteket.domain.scripting.tool_session_messages import (
+    ChatMessageRole,
+    ToolSessionMessage,
+)
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.domain.scripting.tool_sessions import ToolSession
 from skriptoteket.protocols.llm import EditorChatHistoryQuery
@@ -72,7 +75,7 @@ def _make_message(
     *,
     tool_session_id: UUID,
     turn_id: UUID,
-    role: str,
+    role: ChatMessageRole,
     content: str,
     created_at: datetime,
     meta: dict[str, object] | None = None,
@@ -82,7 +85,7 @@ def _make_message(
         tool_session_id=tool_session_id,
         turn_id=turn_id,
         message_id=uuid4(),
-        role=role,  # type: ignore[arg-type]
+        role=role,
         content=content,
         meta=meta,
         sequence=1,

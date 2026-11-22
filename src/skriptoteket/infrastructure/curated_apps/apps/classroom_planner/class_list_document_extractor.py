@@ -15,7 +15,7 @@ from __future__ import annotations
 import csv
 import io
 import logging
-from typing import Any
+from typing import TYPE_CHECKING
 
 import pdfplumber
 
@@ -25,6 +25,30 @@ from skriptoteket.protocols.classroom_planner_imports import (
     ExtractedDocumentText,
 )
 from skriptoteket.protocols.sir_convert_a_lot_v2 import SirConvertALotClientV2Protocol
+
+if TYPE_CHECKING:
+    from datetime import date, datetime, time, timedelta
+    from decimal import Decimal
+
+    from openpyxl.cell.rich_text import CellRichText
+    from openpyxl.worksheet.formula import ArrayFormula, DataTableFormula
+
+    # openpyxl `iter_rows(values_only=True)` cell values; xlrd `cell_value` returns `str`.
+    type SpreadsheetCellValue = (
+        bool
+        | int
+        | float
+        | Decimal
+        | str
+        | CellRichText
+        | datetime
+        | date
+        | time
+        | timedelta
+        | DataTableFormula
+        | ArrayFormula
+        | None
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +205,7 @@ class ClassListDocumentExtractor(DocumentTextExtractorProtocol):
             logger.error("Failed to parse XLS: %s", e)
             return []
 
-    def _stringify_cell(self, cell: Any) -> str:
+    def _stringify_cell(self, cell: SpreadsheetCellValue) -> str:
         if cell is None:
             return ""
         if isinstance(cell, bool):

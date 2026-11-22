@@ -367,7 +367,7 @@ def _extract_pdf_text(pdf_content: bytes) -> str:
 
 
 def _rendered_page_color_ratios(*, pdf_path) -> dict[str, float]:
-    import pypdfium2 as pdfium  # type: ignore[import-untyped]
+    import pypdfium2 as pdfium
 
     document = pdfium.PdfDocument(str(pdf_path))
     bitmap = document[0].render(scale=2, optimize_mode="print", rev_byteorder=True)

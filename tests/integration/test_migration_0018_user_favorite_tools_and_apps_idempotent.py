@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import asyncio
-from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -25,7 +24,9 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "WHERE table_name = 'user_favorite_tools'"
             )
         )
-        columns = _column_map([cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()])
+        columns = _column_map(
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
+        )
         assert columns["user_id"] == ("uuid", "NO")
         assert columns["tool_id"] == ("uuid", "NO")
         assert columns["created_at"] == ("timestamp with time zone", "NO")
@@ -37,7 +38,9 @@ async def _smoke_schema(*, engine: AsyncEngine) -> None:
                 "WHERE table_name = 'user_favorite_apps'"
             )
         )
-        columns = _column_map([cast(tuple[str, str, str], tuple(row)) for row in result.fetchall()])
+        columns = _column_map(
+            [(str(row[0]), str(row[1]), str(row[2])) for row in result.fetchall()]
+        )
         assert columns["user_id"] == ("uuid", "NO")
         assert columns["app_id"] == ("character varying", "NO")
         assert columns["created_at"] == ("timestamp with time zone", "NO")

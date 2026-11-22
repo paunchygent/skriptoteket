@@ -11,6 +11,7 @@ import json
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import TypedDict
 
 from pydantic import JsonValue
 
@@ -42,6 +43,60 @@ _RESPONSES_OUTPUT = 0.50
 _DECISIONS_INPUT = 0.10
 
 
+class UsageDetails(TypedDict, total=False):
+    cached_tokens: JsonValue
+    cache_write_tokens: JsonValue
+    reasoning_tokens: JsonValue
+
+
+class UsageInfo(TypedDict, total=False):
+    input_tokens: JsonValue
+    input_tokens_details: UsageDetails
+    output_tokens: JsonValue
+    output_tokens_details: JsonValue
+
+
+def usage_details(value: JsonValue | None, *, tolerate_non_object: bool) -> UsageDetails:
+    """Token-count details; a falsy non-object reads as empty like the old ``or {}``."""
+    if not isinstance(value, dict):
+        if value and not tolerate_non_object:
+            raise TypeError("usage token details must be a JSON object")
+        return {}
+    details: UsageDetails = {}
+    if "cached_tokens" in value:
+        details["cached_tokens"] = value["cached_tokens"]
+    if "cache_write_tokens" in value:
+        details["cache_write_tokens"] = value["cache_write_tokens"]
+    if "reasoning_tokens" in value:
+        details["reasoning_tokens"] = value["reasoning_tokens"]
+    return details
+
+
+def _usage_info(value: JsonValue | None) -> UsageInfo:
+    info: UsageInfo = {}
+    if not isinstance(value, dict):
+        return info
+    if "input_tokens" in value:
+        info["input_tokens"] = value["input_tokens"]
+    if "output_tokens" in value:
+        info["output_tokens"] = value["output_tokens"]
+    if "input_tokens_details" in value:
+        info["input_tokens_details"] = usage_details(
+            value["input_tokens_details"], tolerate_non_object=True
+        )
+    if "output_tokens_details" in value:
+        info["output_tokens_details"] = value["output_tokens_details"]
+    return info
+
+
+def _usage_object(body: JsonValue) -> dict[str, JsonValue]:
+    """The usage object verbatim for evidence files, or empty when absent."""
+    if not isinstance(body, dict):
+        return {}
+    usage = body.get("usage")
+    return usage if isinstance(usage, dict) else {}
+
+
 @dataclass
 class CallRecord:
     endpoint: str
@@ -58,20 +113,22 @@ class CallRecord:
 
     @property
     def usage(self) -> dict[str, JsonValue]:
-        if not isinstance(self.body, dict):
-            return {}
-        usage = self.body.get("usage")
-        return usage if isinstance(usage, dict) else {}
+        """The provider's usage object as received; evidence files keep it whole."""
+        return _usage_object(self.body)
+
+    @property
+    def usage_info(self) -> UsageInfo:
+        """The usage fields the cost and summary arithmetic reads."""
+        return _usage_info(self.usage)
 
     def cost_usd(self) -> float | None:
-        usage = self.usage
+        usage = self.usage_info
         input_tokens = usage.get("input_tokens")
         if not isinstance(input_tokens, int):
             return None
         if self.endpoint == "decisions":
             return input_tokens * _DECISIONS_INPUT / 1_000_000
-        details = usage.get("input_tokens_details")
-        detail_map = details if isinstance(details, dict) else {}
+        detail_map = usage.get("input_tokens_details") or {}
         cached = _count(detail_map.get("cached_tokens"))
         written = _count(detail_map.get("cache_write_tokens"))
         uncached = input_tokens - cached - written
@@ -105,6 +162,83 @@ def _count(value: JsonValue | None) -> int:
     """A token count that is missing or malformed counts as zero in this estimate."""
 
     return value if isinstance(value, int) else 0
+
+
+def json_int(value: JsonValue | None, field_name: str) -> int:
+    """A numeric JSON field coerced with ``int()``; a falsy value counts as zero."""
+    if not value:
+        return 0
+    if not isinstance(value, (int, float, str)):
+        raise TypeError(f"{field_name} must be a JSON number or numeric string")
+    return int(value)
+
+
+def json_float(value: JsonValue, field_name: str) -> float:
+    """A Decisions answer field passed through ``float()``: a number or numeric string."""
+    if not isinstance(value, (int, float, str)):
+        raise TypeError(f"{field_name} must be a JSON number or numeric string")
+    return float(value)
+
+
+class ProbabilityEntry(TypedDict, total=False):
+    probability: float
+    value: JsonValue
+
+
+class DecisionAnswer(TypedDict, total=False):
+    """One Decisions answer object narrowed to the fields the evaluators read."""
+
+    name: str
+    type: str
+    choice: JsonValue
+    score: str | float
+    probability: float
+    probabilities: list[ProbabilityEntry]
+
+
+def _probability_entries(value: JsonValue) -> list[ProbabilityEntry]:
+    if not isinstance(value, list):
+        raise TypeError("decisions answer probabilities must be a JSON array")
+    entries: list[ProbabilityEntry] = []
+    for entry in value:
+        if not isinstance(entry, dict):
+            raise TypeError("decisions answer probability entries must be JSON objects")
+        probability = entry.get("probability")
+        if not isinstance(probability, (int, float)):
+            raise TypeError("decisions answer probability entries need a numeric probability")
+        narrowed: ProbabilityEntry = {"probability": probability}
+        if "value" in entry:
+            narrowed["value"] = entry["value"]
+        entries.append(narrowed)
+    return entries
+
+
+def decision_answer(value: JsonValue) -> DecisionAnswer | None:
+    """A Decisions answer object narrowed field by field; None when it is not an object."""
+    if not isinstance(value, dict):
+        return None
+    answer: DecisionAnswer = {}
+    name = value.get("name")
+    if isinstance(name, str):
+        answer["name"] = name
+    answer_type = value.get("type")
+    if isinstance(answer_type, str):
+        answer["type"] = answer_type
+    if "choice" in value:
+        answer["choice"] = value["choice"]
+    if "score" in value:
+        score = value["score"]
+        if not isinstance(score, (int, float, str)):
+            raise TypeError("decisions answer score must be a number or numeric string")
+        answer["score"] = score
+    if "probability" in value:
+        probability = value["probability"]
+        if not isinstance(probability, (int, float)):
+            raise TypeError("decisions answer probability must be a JSON number")
+        answer["probability"] = probability
+    if "probabilities" in value:
+        answer["probabilities"] = _probability_entries(value["probabilities"])
+    return answer
 
 
 class OpenAIClient:
@@ -212,41 +346,92 @@ class OpenAIClient:
         return await self._post(DoorOperation.RESPONSES, "responses", label, payload, summary)
 
 
-def responses_output_json(record: CallRecord) -> JsonValue | None:
-    """Parse the structured output text of a completed Responses call."""
-    body = record.body
+class OutputPart(TypedDict, total=False):
+    type: str
+    text: str
+
+
+class OutputItem(TypedDict, total=False):
+    content: list[OutputPart]
+
+
+def _output_part(value: JsonValue) -> OutputPart | None:
+    if not isinstance(value, dict):
+        return None
+    part: OutputPart = {}
+    part_type = value.get("type")
+    if isinstance(part_type, str):
+        part["type"] = part_type
+    text = value.get("text")
+    if isinstance(text, str):
+        part["text"] = text
+    return part
+
+
+def _output_item(value: JsonValue) -> OutputItem | None:
+    if not isinstance(value, dict):
+        return None
+    item: OutputItem = {}
+    content = value.get("content")
+    if isinstance(content, list):
+        item["content"] = [part for part in (_output_part(p) for p in content) if part is not None]
+    return item
+
+
+def _output_items(body: JsonValue) -> list[OutputItem] | None:
+    """The reply's output items, or None when the body has no output array."""
     if not isinstance(body, dict):
         return None
     output = body.get("output")
     if not isinstance(output, list):
         return None
-    for item in output:
-        if not isinstance(item, dict):
-            continue
+    return [item for item in (_output_item(value) for value in output) if item is not None]
+
+
+def responses_output_json(record: CallRecord) -> JsonValue | None:
+    """Parse the structured output text of a completed Responses call."""
+    items = _output_items(record.body)
+    if items is None:
+        return None
+    for item in items:
         content = item.get("content")
-        if not isinstance(content, list):
+        if content is None:
             continue
         for part in content:
-            if not isinstance(part, dict):
-                continue
             if part.get("type") == "output_text":
                 text = part.get("text")
-                return json.loads(text) if isinstance(text, str) else None
+                return json.loads(text) if text is not None else None
     return None
 
 
-def decision_answers(record: CallRecord) -> dict[str, dict[str, JsonValue]]:
-    body = record.body
+def listed_answers(body: JsonValue) -> list[JsonValue]:
+    """The reply's ``answers`` array, or empty when the body has none."""
     if not isinstance(body, dict):
-        return {}
+        return []
     listed = body.get("answers")
-    if not isinstance(listed, list):
-        return {}
+    return listed if isinstance(listed, list) else []
+
+
+def decision_answers(record: CallRecord) -> dict[str, dict[str, JsonValue]]:
+    """The reply's answer objects by name, each kept whole for the saved evidence."""
     found: dict[str, dict[str, JsonValue]] = {}
-    for answer in listed:
+    for answer in listed_answers(record.body):
         if not isinstance(answer, dict):
             continue
         name = answer.get("name")
         if isinstance(name, str):
             found[name] = answer
     return found
+
+
+def answer_map(value: JsonValue) -> dict[str, DecisionAnswer]:
+    """A saved or live Decisions answer map narrowed answer by answer."""
+    if not isinstance(value, dict):
+        raise TypeError("decisions answers must be a JSON object")
+    answers: dict[str, DecisionAnswer] = {}
+    for name, raw in value.items():
+        narrowed = decision_answer(raw)
+        if narrowed is None:
+            raise TypeError(f"decisions answer {name} must be a JSON object")
+        answers[name] = narrowed
+    return answers

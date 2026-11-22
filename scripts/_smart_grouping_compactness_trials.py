@@ -14,7 +14,8 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import asdict
 from statistics import mean
-from typing import Any
+
+from pydantic import JsonValue
 
 from scripts._smart_grouping_compactness_models import (
     CandidateReport,
@@ -101,7 +102,7 @@ def run_candidate(
     )
 
 
-def candidate_report_payload(candidate_report: CandidateReport) -> dict[str, Any]:
+def candidate_report_payload(candidate_report: CandidateReport) -> dict[str, JsonValue]:
     """Convert one report into a JSON-friendly payload."""
 
     return asdict(candidate_report)

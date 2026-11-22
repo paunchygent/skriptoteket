@@ -10,8 +10,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from statistics import mean
-from typing import Any
+from typing import NotRequired, TypedDict
 from uuid import UUID, uuid4
+
+from pydantic import JsonValue, TypeAdapter
 
 from skriptoteket.domain.curated_apps.classroom_planner.models import (
     RoomFixture,
@@ -90,17 +92,55 @@ def student_id(name: str) -> str:
     return name.lower().replace(" ", "-")
 
 
-def build_topology(template_payload: dict[str, Any]) -> SeatTopology:
+class SeatPayload(TypedDict):
+    id: str
+    x: int
+    y: int
+    zone: NotRequired[str | None]
+
+
+class TemplatePayload(TypedDict):
+    """One room template as `GET .../templates/{id}` returns it (`RoomTemplateDto`)."""
+
+    id: str
+    name: str
+    grid_cols: int
+    grid_rows: int
+    seats: list[SeatPayload]
+    fixtures: list[dict[str, JsonValue]]
+
+
+class _SeatAssignmentPayload(TypedDict):
+    student_id: str
+    seat_id: str
+
+
+class WorkspaceDraftPayload(TypedDict):
+    revision: int
+
+
+class WorkspacePayload(TypedDict):
+    """One draft workspace as the draft endpoints return it (`DraftWorkspaceResponse`)."""
+
+    draft: WorkspaceDraftPayload
+    seat_assignments: list[_SeatAssignmentPayload]
+
+
+TEMPLATE_PAYLOAD = TypeAdapter(TemplatePayload)
+WORKSPACE_PAYLOAD = TypeAdapter(WorkspacePayload)
+
+
+def build_topology(payload: TemplatePayload) -> SeatTopology:
     """Build live-room topology from the template payload returned by the API."""
 
     template = RoomTemplate(
-        id=UUID(template_payload["id"]),
+        id=UUID(payload["id"]),
         owner_user_id=uuid4(),
-        name=template_payload["name"],
-        grid_cols=template_payload["grid_cols"],
-        grid_rows=template_payload["grid_rows"],
-        seats=[Seat.model_validate(seat) for seat in template_payload["seats"]],
-        fixtures=[RoomFixture.model_validate(fixture) for fixture in template_payload["fixtures"]],
+        name=payload["name"],
+        grid_cols=payload["grid_cols"],
+        grid_rows=payload["grid_rows"],
+        seats=[Seat.model_validate(seat) for seat in payload["seats"]],
+        fixtures=[RoomFixture.model_validate(fixture) for fixture in payload["fixtures"]],
         created_at=_now(),
         updated_at=_now(),
     )
@@ -111,10 +151,10 @@ def build_topology(template_payload: dict[str, Any]) -> SeatTopology:
     )
 
 
-def rotated_assignments(template_payload: dict[str, Any], offset: int) -> list[dict[str, str]]:
+def rotated_assignments(payload: TemplatePayload, offset: int) -> list[JsonValue]:
     """Return one deterministic rotated history fixture for the live draft."""
 
-    seat_ids = [seat["id"] for seat in template_payload["seats"]]
+    seat_ids = [seat["id"] for seat in payload["seats"]]
     rotated_seat_ids = seat_ids[offset:] + seat_ids[:offset]
     return [
         {"student_id": student_id(student_name), "seat_id": seat_id}
@@ -130,7 +170,7 @@ def near_teacher_pool_seat_ids(topology: SeatTopology) -> frozenset[str]:
 
 def validate_workspace(
     *,
-    workspace: dict[str, Any],
+    workspace: WorkspacePayload,
     topology: SeatTopology,
 ) -> RunSummary:
     """Validate one live smart-run result against the canonical room semantics."""

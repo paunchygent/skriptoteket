@@ -19,11 +19,19 @@ import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 from urllib.parse import quote, urlparse
 
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
-from playwright.sync_api import APIRequestContext, Page, Playwright, expect, sync_playwright
+from playwright.sync_api import (
+    APIRequestContext,
+    Page,
+    Playwright,
+    Route,
+    expect,
+    sync_playwright,
+)
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_huleedu_auth import (
@@ -35,6 +43,7 @@ from scripts._playwright_huleedu_auth import (
     temporary_backend_server,
     temporary_vite_server,
 )
+from scripts._playwright_json import json_object, json_str
 from scripts._pr_0262_lifecycle_manifest import (
     DEFAULT_PROBE_PATH,
     DEFAULT_REALM,
@@ -62,13 +71,50 @@ REQUIRED_TRUE_CLAIMS = (
 )
 
 
+class _Continuation(TypedDict):
+    """`ProfileAppContinuationResponse` values this proof reads."""
+
+    role: str
+    local_user_id: str
+    profile_user_id: str
+
+
+class _ProbeClaims(TypedDict):
+    """`HuleEduInternalIdentityProbeClaims` values this proof saves."""
+
+    active_app: str
+    active_product_identity_realm: str
+
+
+def _parse_continuation(value: JsonValue) -> _Continuation:
+    obj = json_object(value, label="continuation payload")
+    local_user = json_object(obj["local_user"], label="continuation local_user")
+    profile = json_object(obj["profile"], label="continuation profile")
+    return {
+        "role": json_str(local_user, "role"),
+        "local_user_id": json_str(local_user, "id"),
+        "profile_user_id": json_str(profile, "user_id"),
+    }
+
+
+def _parse_probe_claims(value: JsonValue) -> _ProbeClaims:
+    claims = json_object(value, label="probe claims")
+    for key in REQUIRED_TRUE_CLAIMS:
+        if claims.get(key) is not True:
+            raise AssertionError(f"Live probe claim {key} was not true.")
+    return {
+        "active_app": json_str(claims, "active_app"),
+        "active_product_identity_realm": json_str(claims, "active_product_identity_realm"),
+    }
+
+
 def _verify_api_surfaces(
     playwright: Playwright,
     *,
     backend_url: str,
     signed_headers: dict[str, str],
     expected_local_role: RoleName,
-) -> tuple[dict[str, object], dict[str, object], dict[str, object], dict[str, object]]:
+) -> tuple[dict[str, JsonValue], dict[str, JsonValue], dict[str, JsonValue], dict[str, JsonValue]]:
     request_context: APIRequestContext | None = None
     try:
         request_context = playwright.request.new_context(base_url=backend_url)
@@ -86,21 +132,18 @@ def _verify_api_surfaces(
         if probe.status != 200:
             raise AssertionError(f"Expected diagnostics probe 200, got {probe.status}")
 
-        continuation_payload = continuation.json()
-        local_user = continuation_payload["local_user"]
-        profile = continuation_payload["profile"]
-        observed_role = local_user["role"]
+        continuation_body: JsonValue = continuation.json()
+        continuation_payload = _parse_continuation(continuation_body)
+        observed_role = continuation_payload["role"]
         if observed_role != expected_local_role:
             raise AssertionError(
                 f"Expected local role {expected_local_role}, got {observed_role!r}"
             )
-        if profile["user_id"] != local_user["id"]:
+        if continuation_payload["profile_user_id"] != continuation_payload["local_user_id"]:
             raise AssertionError("Continuation profile does not match the local user.")
 
-        probe_claims = probe.json()["claims"]
-        for key in REQUIRED_TRUE_CLAIMS:
-            if probe_claims.get(key) is not True:
-                raise AssertionError(f"Live probe claim {key} was not true.")
+        probe_body: JsonValue = probe.json()
+        probe_claims = _parse_probe_claims(json_object(probe_body, label="probe payload")["claims"])
 
         return (
             {
@@ -110,7 +153,7 @@ def _verify_api_surfaces(
             },
             {
                 "projection_resolved": True,
-                "local_user_id_present": bool(local_user["id"]),
+                "local_user_id_present": bool(continuation_payload["local_user_id"]),
                 "profile_user_matches_local_user": True,
                 "projection_subject_matched_session_claim": True,
                 "product_identity_realm": DEFAULT_REALM,
@@ -126,7 +169,7 @@ def _verify_api_surfaces(
                 "claims": {
                     "active_app": probe_claims["active_app"],
                     "active_product_identity_realm": probe_claims["active_product_identity_realm"],
-                    **{key: probe_claims[key] for key in REQUIRED_TRUE_CLAIMS},
+                    **{key: True for key in REQUIRED_TRUE_CLAIMS},
                 },
             },
         )
@@ -135,7 +178,7 @@ def _verify_api_surfaces(
             request_context.dispose()
 
 
-def _fulfill_json(route: Any, payload: dict[str, object], *, status: int = 200) -> None:
+def _fulfill_json(route: Route, payload: dict[str, JsonValue], *, status: int = 200) -> None:
     route.fulfill(
         status=status, headers={"content-type": "application/json"}, body=json.dumps(payload)
     )
@@ -155,7 +198,7 @@ def _install_browser_auth_routes(
         "access-control-allow-credentials": "true",
     }
 
-    def huleedu_session(route: Any) -> None:
+    def huleedu_session(route: Route) -> None:
         route.fulfill(
             status=200,
             headers=cors_headers,
@@ -182,15 +225,15 @@ def _install_browser_auth_routes(
             ),
         )
 
-    def huleedu_csrf(route: Any) -> None:
+    def huleedu_csrf(route: Route) -> None:
         route.fulfill(
             status=200, headers=cors_headers, body=json.dumps({"csrf_token": "csrf-token"})
         )
 
-    def app_continuation(route: Any) -> None:
+    def app_continuation(route: Route) -> None:
         route.continue_(headers={**route.request.headers, **signed_headers})
 
-    def my_tools(route: Any) -> None:
+    def my_tools(route: Route) -> None:
         _fulfill_json(route, {"tools": []})
 
     page.route("https://api.hule.education/v1/auth/session", huleedu_session)

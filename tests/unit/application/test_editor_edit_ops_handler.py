@@ -31,6 +31,7 @@ from skriptoteket.domain.llm_door import (
 from skriptoteket.protocols.llm import (
     EditOpsCommand,
     EditOpsCursor,
+    EditorLlmFailureKind,
     EditorLlmProviderError,
     LLMChatOpsResponse,
 )
@@ -200,11 +201,13 @@ async def test_edit_ops_context_window_exceeded_gives_the_over_budget_answer() -
 @pytest.mark.unit
 @pytest.mark.asyncio
 @pytest.mark.parametrize("kind", ["timeout", "request_failed", "http_status", "invalid_response"])
-async def test_edit_ops_other_provider_failures_give_the_invalid_ops_answer(kind: str) -> None:
+async def test_edit_ops_other_provider_failures_give_the_invalid_ops_answer(
+    kind: EditorLlmFailureKind,
+) -> None:
     actor = make_user(role=Role.CONTRIBUTOR)
     harness = make_harness(settings=make_settings(LLM_CHAT_OPS_ENABLED=True), actor_id=actor.id)
     harness.provider.complete_chat_ops.side_effect = EditorLlmProviderError(
-        kind=kind,  # type: ignore[arg-type]
+        kind=kind,
         status_code=502 if kind == "http_status" else None,
     )
 

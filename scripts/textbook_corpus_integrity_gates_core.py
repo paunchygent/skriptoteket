@@ -11,7 +11,10 @@ Relationships:
 from __future__ import annotations
 
 import unicodedata
-from typing import Any
+from collections.abc import Sequence
+from typing import TypedDict
+
+from pydantic import JsonValue
 
 from scripts.textbook_corpus_integrity_models import (
     CRITICAL_SEVERITIES,
@@ -22,6 +25,39 @@ from scripts.textbook_corpus_integrity_models import (
     GateFinding,
     GateResult,
 )
+
+
+class IssueRow(TypedDict):
+    """One manual-queue or issue-ledger row, with the fields the issue-policy gate reads.
+
+    `parse_issue_row` applies the coercions the gate has always applied to the
+    on-disk values, so the stored types are the coerced ones.
+    """
+
+    code: str
+    severity: str
+    status: str
+    manual_required: bool
+    line_no: int
+
+
+def parse_issue_row(value: JsonValue) -> IssueRow | None:
+    """Parse one JSONL row into an `IssueRow`; non-objects are skipped.
+
+    A missing or falsy ``code``/``severity`` becomes ``""``, a missing or falsy
+    ``status`` becomes ``"unresolved"``, ``manual_required`` is coerced with
+    ``bool`` and a non-int ``line_no`` becomes ``0``, as the gate did on read.
+    """
+    if not isinstance(value, dict):
+        return None
+    line_no = value.get("line_no")
+    return IssueRow(
+        code=str(value.get("code") or ""),
+        severity=str(value.get("severity") or ""),
+        status=str(value.get("status") or "unresolved"),
+        manual_required=bool(value.get("manual_required")),
+        line_no=line_no if isinstance(line_no, int) else 0,
+    )
 
 
 def _build_gate_result(
@@ -220,18 +256,14 @@ def _number_sequence_findings(
     return findings, gap_count, duplicate_count, regression_count
 
 
-def _row_issue_key(row: dict[str, Any]) -> tuple[str, int]:
-    code = str(row.get("code") or "").strip()
-    line_no_raw = row.get("line_no")
-    line_no = line_no_raw if isinstance(line_no_raw, int) else 0
-    return code, line_no
+def _row_issue_key(row: IssueRow) -> tuple[str, int]:
+    return row["code"].strip(), row["line_no"]
 
 
-def _is_unresolved_critical_row(row: dict[str, Any]) -> bool:
-    severity = str(row.get("severity") or "").strip().casefold()
-    status = str(row.get("status") or "unresolved").strip().casefold()
-    manual_required = bool(row.get("manual_required"))
-    if not manual_required:
+def _is_unresolved_critical_row(row: IssueRow) -> bool:
+    severity = row["severity"].strip().casefold()
+    status = row["status"].strip().casefold()
+    if not row["manual_required"]:
         return False
     if severity not in CRITICAL_SEVERITIES:
         return False
@@ -448,21 +480,15 @@ def gate_answer_key_mapping_coverage(lines: list[str]) -> GateResult:
 
 
 def gate_unresolved_critical_issue_policy(
-    manual_queue: list[dict[str, Any]],
-    issue_ledger: list[dict[str, Any]],
+    manual_queue: Sequence[IssueRow],
+    issue_ledger: Sequence[IssueRow],
 ) -> GateResult:
     """Block when unresolved critical issues remain or queue/ledger drift exists."""
     findings: list[GateFinding] = []
     unresolved_critical_rows = [row for row in manual_queue if _is_unresolved_critical_row(row)]
 
     if unresolved_critical_rows:
-        codes = sorted(
-            {
-                str(row.get("code") or "unknown")
-                for row in unresolved_critical_rows
-                if str(row.get("code") or "").strip()
-            }
-        )
+        codes = sorted({row["code"] for row in unresolved_critical_rows if row["code"].strip()})
         findings.append(
             GateFinding(
                 code="unresolved_critical_issues_present",
@@ -513,8 +539,8 @@ def gate_unresolved_critical_issue_policy(
 def build_gate_results(
     *,
     lines: list[str],
-    manual_queue: list[dict[str, Any]],
-    issue_ledger: list[dict[str, Any]],
+    manual_queue: Sequence[IssueRow],
+    issue_ledger: Sequence[IssueRow],
 ) -> list[GateResult]:
     """Evaluate all integrity gates in deterministic order."""
     return [

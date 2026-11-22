@@ -240,3 +240,43 @@ def test_build_trace_summary_flags_attention_for_step_drift_with_baseline(tmp_pa
     assert (
         "handoff_to_board_step_drift_attention" in summary["case_summaries"][0]["case_attentions"]
     )
+
+
+def test_build_trace_summary_keeps_integer_metrics_and_null_steps_from_browser_payload(
+    tmp_path: Path,
+) -> None:
+    raw_payload = _make_trace_payload()
+    record = raw_payload["matrix_summaries"][0]
+    record.update(
+        peak_speed=0,
+        max_displacement_px=0,
+        min_vy=0,
+        handoff_to_board_step=None,
+        first_board_collision_step=None,
+    )
+    baseline_path = _write_payload(tmp_path / "baseline.json", raw_payload)
+
+    summary = module.build_trace_summary(
+        raw_payload,
+        raw_artifact_path=tmp_path / "raw.json",
+        baseline_artifact_path=baseline_path,
+    )
+
+    case = summary["case_summaries"][0]
+    assert case["peak_speed"] == 0 and isinstance(case["peak_speed"], int)
+    assert case["handoff_to_board_step"] is None
+    assert case["drift"]["handoff_to_board_step"]["delta_absolute"] is None
+    assert case["drift"]["peak_speed"]["delta_ratio"] == 0.0
+    assert case["case_verdict"] == module.CASE_PASS
+
+
+def test_build_trace_summary_rejects_non_numeric_metric(tmp_path: Path) -> None:
+    raw_payload = _make_trace_payload()
+    raw_payload["matrix_summaries"][0]["peak_speed"] = None
+
+    with pytest.raises(TypeError, match="peak_speed is not a number"):
+        module.build_trace_summary(
+            raw_payload,
+            raw_artifact_path=tmp_path / "raw.json",
+            baseline_artifact_path=tmp_path / "missing-baseline.json",
+        )

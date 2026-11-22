@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 from uuid import uuid4
 
-from playwright.sync_api import Page, expect, sync_playwright
+from playwright.sync_api import Page, Route, expect, sync_playwright
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_huleedu_auth import (
@@ -54,7 +54,7 @@ def _install_slow_logout_route(page: Page, *, base_url: str) -> None:
         "access-control-allow-credentials": "true",
     }
 
-    def slow_logout(route) -> None:  # type: ignore[no-untyped-def]
+    def slow_logout(route: Route) -> None:
         time.sleep(11.25)
         try:
             route.fulfill(

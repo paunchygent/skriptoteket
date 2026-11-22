@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
 from uuid import UUID
 
 from pydantic import JsonValue
@@ -75,8 +74,10 @@ class PostgreSQLToolSessionMessageRepository(ToolSessionMessageRepositoryProtoco
             .values(**values)
         )
         result = await self._session.execute(stmt)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return bool(cast(CursorResult[object], result).rowcount)
+        return bool(result.rowcount)
 
     async def list_by_turn_ids(
         self,
@@ -125,5 +126,7 @@ class PostgreSQLToolSessionMessageRepository(ToolSessionMessageRepositoryProtoco
             ToolSessionMessageModel.tool_session_id == tool_session_id
         )
         result = await self._session.execute(stmt)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return int(cast(CursorResult[object], result).rowcount or 0)
+        return int(result.rowcount or 0)

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-11-22'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-11-22T13:48:29+00:00'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: TASK-SKRIPT-REP-0071#closeout
 task_kind: repository
 lead_role: implementation-specialist
 acceptance_criteria:
@@ -71,3 +75,12 @@ fails the gate while mypy and vue-tsc keep covering their existing scope.
 | DCT-01 | Every permitted ignore is a coded single-line Pyrefly ignore with a reason comment; bare `# type: ignore` and `cast` stay forbidden. (TASK-SKILL-REP-0591)                                                                          |
 | DCT-02 | A governed repository whose typecheck does not run Pyrefly adds a typecheck producer `pyrefly check --config pyproject.toml --only explicit-any`; its other type checkers stay unchanged (Olof, 22 Nov 2026). (TASK-SKILL-REP-0591) |
 | DCT-03 | A test double or fixture typed `Any` is rewritten to the real class, a Protocol, or `object`; the typing reference gains no test-double exception (Olof, 22 Nov 2026). (TASK-SKILL-REP-0591)                                        |
+
+## Closeout
+
+The task removed every explicit `Any`, `cast(` call and bare `# type: ignore` from the repository's tracked Python files; at review, Pyrefly 1.4.1 reported zero `explicit-any` errors across all 2,479 tracked files and the tracked-file scan found no `cast(` or `# type: ignore`. After the runtime release it synced the shared Pyrefly settings, declared `typecheck-includes` as `src`, `tests`, `scripts`, `migrations` and `runner`, and kept a `typecheck-python` composite in which mypy keeps its existing cohort targets while Pyrefly checks the whole `typecheck-includes` with `explicit-any` as an error.
+
+- `evidence/results/26b1792e-d350-4431-b47c-cf66990e3767.json` — unit 1 review of `4517ef148..870525d6b`: `changes_requested`, findings F1–F9. Closed by repair commits `8f0b774f0` (F4, F5, F6), `053b3cf28` (F1, F8, F9), `8d53bdad9` (F2, F7, F9), `fc545f9f9` (F3, F8) and `f621bd14d` (F9).
+- `evidence/rereview-task-skript-rep-0071-f621bd14d.md` — rereview of head `f621bd14d` with repair commits `053b3cf28`, `8d53bdad9` and `fc545f9f9`: `approved` for F1, F2 and F3; the record did not decide F4–F9.
+- `evidence/review-task-skript-rep-0071-post-release-493a73009.md` — post-release review of `493a73009`: `changes_requested`, finding F1 (the composite appended mypy's positional cohort targets to Pyrefly, so `scripts`, `migrations`, `runner` and the rest of `tests` were not checked). Closed by repair commit `f0594693c`, which put `{args}` on mypy only.
+- `evidence/rereview-task-skript-rep-0071-f1-f0594693c.md` — rereview of `f0594693c`, decided `2026-11-22T13:48:29+00:00`: `approved`; unscoped `pdm run typecheck` rejected an explicit-`Any` probe in each of the five configured roots and passed clean once the probes were removed.

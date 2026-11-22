@@ -17,18 +17,98 @@ import argparse
 import hashlib
 import json
 import os
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol, TypedDict
 
 import requests
+from pydantic import JsonValue
 
 DEFAULT_SERVICE_URL = "http://127.0.0.1:28085"
 DEFAULT_OUTPUT_DIR = Path(".artifacts/textbook_corpus/baseline")
 DEFAULT_MANIFEST_GLOB = "sir_convert_a_lot_manifest*.json"
 TERMINAL_STATUSES = {"succeeded", "failed", "canceled", "cancelled"}
 RECONCILE_ERROR_CODES = {"job_timeout", "job_poll_window_exceeded"}
+
+
+class ServiceJob(TypedDict):
+    """The nested ``job`` object of a v2 job reply, as read during reconciliation."""
+
+    status: str | None
+
+
+class ReconciliationRow(TypedDict):
+    """One reconciliation outcome row in the baseline report."""
+
+    manifest_name: str
+    job_id: str | None
+    status_manifest: str | None
+    status_reconciled: str | None
+    error_code_manifest: str | None
+    reconcile_attempted: bool
+    source_file_path: str | None
+    source_snapshot_path: str | None
+    output_path: str | None
+    local_output_exists: bool
+    local_output_snapshot_path: str | None
+    fetched_artifact_snapshot_path: str | None
+    pipeline_used: str | None
+    source_format: str | None
+    target_format: str | None
+    issues: list[str]
+
+
+class BaselineReport(TypedDict):
+    """Machine-readable reconciliation report written by `build_baseline`."""
+
+    generated_at: str
+    source_dir: str
+    manifest_glob: str
+    entries_total: int
+    summary: dict[str, int]
+    reconciliation_rows: list[ReconciliationRow]
+
+
+class ChecksumFileRow(TypedDict):
+    """One file checksum row in the baseline checksums report."""
+
+    relative_path: str
+    source_path: str | None
+    sha256: str
+    size_bytes: int
+
+
+class ChecksumsReport(TypedDict):
+    """Machine-readable checksum report written by `build_baseline`."""
+
+    generated_at: str
+    output_dir: str
+    files: list[ChecksumFileRow]
+
+
+class BaselineArtifacts(TypedDict):
+    """Return envelope of `build_baseline` holding the two written reports."""
+
+    report: BaselineReport
+    checksums: ChecksumsReport
+
+
+_SerializablePayload = Mapping[str, JsonValue] | BaselineReport | ChecksumsReport
+
+
+@dataclass(frozen=True, slots=True)
+class ServiceJobResult:
+    """A v2 job response: raw payload for provenance plus the parsed job view.
+
+    ``raw`` keeps the full reply so the provenance files written by
+    ``build_baseline`` contain every key the service returned. ``job`` is the
+    reply's nested ``job`` object, read like the pre-task ``reply["job"]["status"]``.
+    """
+
+    raw: dict[str, JsonValue]
+    job: ServiceJob
 
 
 @dataclass(frozen=True, slots=True)
@@ -60,10 +140,10 @@ class SnapshotRecord:
 class ServiceClientProtocol(Protocol):
     """Protocol for job reconciliation calls."""
 
-    def get_job(self, job_id: str) -> dict[str, Any]:
+    def get_job(self, job_id: str) -> ServiceJobResult:
         """Return v2 job payload for a job id."""
 
-    def get_result(self, job_id: str) -> dict[str, Any]:
+    def get_result(self, job_id: str) -> dict[str, JsonValue]:
         """Return v2 result payload for a job id."""
 
     def fetch_artifact(self, job_id: str) -> bytes:
@@ -78,17 +158,19 @@ class ServiceClient(ServiceClientProtocol):
         self._session = requests.Session()
         self._session.headers.update({"X-API-Key": api_key})
 
-    def get_job(self, job_id: str) -> dict[str, Any]:
+    def get_job(self, job_id: str) -> ServiceJobResult:
         response = self._session.get(f"{self._base_url}/v2/convert/jobs/{job_id}", timeout=30)
         response.raise_for_status()
-        return _as_object(response.json())
+        payload: JsonValue = response.json()
+        return parse_service_job_reply(payload)
 
-    def get_result(self, job_id: str) -> dict[str, Any]:
+    def get_result(self, job_id: str) -> dict[str, JsonValue]:
         response = self._session.get(
             f"{self._base_url}/v2/convert/jobs/{job_id}/result", timeout=30
         )
         response.raise_for_status()
-        return _as_object(response.json())
+        payload: JsonValue = response.json()
+        return _as_object(payload)
 
     def fetch_artifact(self, job_id: str) -> bytes:
         response = self._session.get(
@@ -99,8 +181,45 @@ class ServiceClient(ServiceClientProtocol):
         return response.content
 
 
-def _as_object(value: object) -> dict[str, Any]:
+def _as_object(value: object) -> dict[str, JsonValue]:
     return value if isinstance(value, dict) else {}
+
+
+def parse_service_job_reply(payload: JsonValue) -> ServiceJobResult:
+    """Parse a v2 job reply: keep the whole reply and read the nested ``job`` status."""
+    raw = _as_object(payload)
+    job_obj = _as_object(raw.get("job"))
+    return ServiceJobResult(
+        raw=raw, job=ServiceJob(status=_as_optional_string(job_obj.get("status")))
+    )
+
+
+def _parse_manifest_entries(manifest_name: str, payload: JsonValue) -> list[ManifestEntry]:
+    """Parse one manifest file; a non-object or missing/non-list ``entries`` yields no entries."""
+    manifest = _as_object(payload)
+    source_root_obj = manifest.get("source_root")
+    source_root = source_root_obj if isinstance(source_root_obj, str) else None
+    entries_obj = manifest.get("entries")
+    if not isinstance(entries_obj, list):
+        return []
+    entries: list[ManifestEntry] = []
+    for row in entries_obj:
+        item = _as_object(row)
+        entries.append(
+            ManifestEntry(
+                manifest_name=manifest_name,
+                source_root=source_root,
+                source_file_path=_as_optional_string(item.get("source_file_path")),
+                output_path=_as_optional_string(item.get("output_path")),
+                job_id=_as_optional_string(item.get("job_id")),
+                status=_as_optional_string(item.get("status")),
+                error_code=_as_optional_string(item.get("error_code")),
+                pipeline_used=_as_optional_string(item.get("pipeline_used")),
+                source_format=_as_optional_string(item.get("source_format")),
+                target_format=_as_optional_string(item.get("target_format")),
+            )
+        )
+    return entries
 
 
 def _parse_args() -> argparse.Namespace:
@@ -143,36 +262,11 @@ def _sha256_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def _read_json(path: Path) -> dict[str, Any]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    return _as_object(payload)
-
-
 def _load_manifest_entries(source_dir: Path, manifest_glob: str) -> list[ManifestEntry]:
     entries: list[ManifestEntry] = []
     for manifest_path in sorted(source_dir.glob(manifest_glob)):
-        payload = _read_json(manifest_path)
-        source_root_obj = payload.get("source_root")
-        source_root = str(source_root_obj) if isinstance(source_root_obj, str) else None
-        entries_obj = payload.get("entries")
-        if not isinstance(entries_obj, list):
-            continue
-        for row in entries_obj:
-            item = _as_object(row)
-            entries.append(
-                ManifestEntry(
-                    manifest_name=manifest_path.name,
-                    source_root=source_root,
-                    source_file_path=_as_optional_string(item.get("source_file_path")),
-                    output_path=_as_optional_string(item.get("output_path")),
-                    job_id=_as_optional_string(item.get("job_id")),
-                    status=_as_optional_string(item.get("status")),
-                    error_code=_as_optional_string(item.get("error_code")),
-                    pipeline_used=_as_optional_string(item.get("pipeline_used")),
-                    source_format=_as_optional_string(item.get("source_format")),
-                    target_format=_as_optional_string(item.get("target_format")),
-                )
-            )
+        payload: JsonValue = json.loads(manifest_path.read_text(encoding="utf-8"))
+        entries.extend(_parse_manifest_entries(manifest_path.name, payload))
     return entries
 
 
@@ -243,7 +337,7 @@ def _safe_slug(value: str) -> str:
     return "".join(ch if ch.isalnum() or ch in {"-", "_", "."} else "_" for ch in value)
 
 
-def _save_json(payload: dict[str, Any], destination: Path, dry_run: bool) -> None:
+def _save_json(payload: _SerializablePayload, destination: Path, dry_run: bool) -> None:
     if dry_run:
         return
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -275,7 +369,7 @@ def build_baseline(
     fetch_missing_artifacts: bool,
     allow_overwrite: bool,
     dry_run: bool,
-) -> dict[str, Any]:
+) -> BaselineArtifacts:
     _ensure_output_dir_safe(
         output_dir=output_dir,
         allow_overwrite=allow_overwrite,
@@ -285,7 +379,7 @@ def build_baseline(
     manifest_paths = sorted(source_dir.glob(manifest_glob))
     entries = _load_manifest_entries(source_dir, manifest_glob)
     checksum_records: list[SnapshotRecord] = []
-    reconciliation_rows: list[dict[str, Any]] = []
+    reconciliation_rows: list[ReconciliationRow] = []
 
     for manifest_path in manifest_paths:
         _copy_bytes(
@@ -340,8 +434,8 @@ def build_baseline(
 
         reconciled_status = entry.status
         reconcile_attempted = False
-        job_payload: dict[str, Any] | None = None
-        result_payload: dict[str, Any] | None = None
+        job_response: ServiceJobResult | None = None
+        result_payload: dict[str, JsonValue] | None = None
 
         if _needs_reconciliation(entry):
             reconcile_attempted = True
@@ -349,14 +443,13 @@ def build_baseline(
                 issues.append("reconciliation_skipped_missing_api_key")
             else:
                 try:
-                    job_payload = service_client.get_job(entry.job_id or "")
+                    job_response = service_client.get_job(entry.job_id or "")
                     result_payload = service_client.get_result(entry.job_id or "")
-                    job_obj = _as_object(job_payload.get("job"))
-                    reconciled_status = _as_optional_string(job_obj.get("status")) or entry.status
+                    reconciled_status = job_response.job["status"] or entry.status
 
                     if entry.job_id:
                         _save_json(
-                            job_payload,
+                            job_response.raw,
                             output_dir / "provenance/jobs" / f"{entry.job_id}.job.json",
                             dry_run,
                         )
@@ -416,31 +509,31 @@ def build_baseline(
             }
         )
 
-    report_payload = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "source_dir": str(source_dir),
-        "manifest_glob": manifest_glob,
-        "entries_total": len(entries),
-        "summary": _summarize_rows(reconciliation_rows),
-        "reconciliation_rows": reconciliation_rows,
-    }
-    checksums_payload = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "output_dir": str(output_dir),
-        "files": [
-            {
-                "relative_path": record.relative_path,
-                "source_path": record.source_path,
-                "sha256": record.sha256,
-                "size_bytes": record.size_bytes,
-            }
+    report_payload = BaselineReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        source_dir=str(source_dir),
+        manifest_glob=manifest_glob,
+        entries_total=len(entries),
+        summary=_summarize_rows(reconciliation_rows),
+        reconciliation_rows=reconciliation_rows,
+    )
+    checksums_payload = ChecksumsReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        output_dir=str(output_dir),
+        files=[
+            ChecksumFileRow(
+                relative_path=record.relative_path,
+                source_path=record.source_path,
+                sha256=record.sha256,
+                size_bytes=record.size_bytes,
+            )
             for record in sorted(checksum_records, key=lambda item: item.relative_path)
         ],
-    }
+    )
 
     _save_json(report_payload, output_dir / "provenance/reconciliation-report.json", dry_run)
     _save_json(checksums_payload, output_dir / "checksums.json", dry_run)
-    return {"report": report_payload, "checksums": checksums_payload}
+    return BaselineArtifacts(report=report_payload, checksums=checksums_payload)
 
 
 def _target_suffix(target_format: str | None) -> str:
@@ -450,7 +543,7 @@ def _target_suffix(target_format: str | None) -> str:
     return lookup.get(target_format.lower(), ".bin")
 
 
-def _summarize_rows(rows: list[dict[str, Any]]) -> dict[str, int]:
+def _summarize_rows(rows: Sequence[ReconciliationRow]) -> dict[str, int]:
     summary: dict[str, int] = {
         "reconcile_attempted": 0,
         "local_output_exists": 0,
@@ -491,9 +584,9 @@ def main() -> None:
         dry_run=bool(args.dry_run),
     )
 
-    report_summary = _as_object(_as_object(payload["report"]).get("summary"))
+    report_summary = payload["report"]["summary"]
     print(f"[textbook_baseline] output_dir={output_dir}")
-    print(f"[textbook_baseline] entries_total={_as_object(payload['report']).get('entries_total')}")
+    print(f"[textbook_baseline] entries_total={payload['report']['entries_total']}")
     print(
         f"[textbook_baseline] summary={json.dumps(report_summary, ensure_ascii=False, sort_keys=True)}"
     )

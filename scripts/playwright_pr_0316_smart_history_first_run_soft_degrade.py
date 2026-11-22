@@ -17,13 +17,15 @@ from __future__ import annotations
 import json
 import time
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 
 from playwright.sync_api import Page, sync_playwright
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from scripts._playwright_classroom_planner import login_to_app
 from scripts._playwright_config import get_config
+from scripts._playwright_json import json_int, json_object, json_str
 
 ARTIFACTS_DIR = Path(".artifacts/playwright-pr-0316-smart-history-first-run")
 FAILURE_SCREENSHOT_PATH = ARTIFACTS_DIR / "failure.png"
@@ -32,10 +34,44 @@ API_PREFIX = f"/api/v1/apps/{APP_ID}"
 CSRF_TOKEN: str | None = None
 
 
+class _DraftBody(TypedDict):
+    """`PlanDraftDto` keys read by the Smart-history proof."""
+
+    id: str
+    draft_kind: str
+    revision: int
+    smart_enabled: bool
+    use_history: bool
+    grouping_seating_distance_enabled: bool
+
+
+def _json_bool(obj: dict[str, JsonValue], key: str) -> bool:
+    value = obj[key]
+    if not isinstance(value, bool):
+        raise TypeError(f"Expected {key} to be a boolean, got {type(value).__name__}.")
+    return value
+
+
+def _parse_draft_body(value: JsonValue) -> _DraftBody:
+    obj = json_object(value, label="draft")
+    return {
+        "id": json_str(obj, "id"),
+        "draft_kind": json_str(obj, "draft_kind"),
+        "revision": json_int(obj, "revision"),
+        "smart_enabled": _json_bool(obj, "smart_enabled"),
+        "use_history": _json_bool(obj, "use_history"),
+        "grouping_seating_distance_enabled": _json_bool(obj, "grouping_seating_distance_enabled"),
+    }
+
+
+def _parse_workspace_draft(value: JsonValue) -> _DraftBody:
+    return _parse_draft_body(json_object(value, label="workspace")["draft"])
+
+
 def _load_csrf_token(page: Page) -> dict[str, str]:
     """Fetch the shared HuleEdu CSRF token for browser-session writes."""
 
-    result = page.evaluate(
+    result_value: JsonValue = page.evaluate(
         """async () => {
             const locationUrl = new URL(window.location.href);
             const candidates = [`${locationUrl.origin}/v1/auth/csrf`];
@@ -69,9 +105,10 @@ def _load_csrf_token(page: Page) -> dict[str, str]:
             return { ok: false, attempts };
         }"""
     )
+    result = json_object(result_value, label="csrf probe result")
     if not result["ok"]:
         raise AssertionError(f"Could not fetch shared CSRF token: {result['attempts']!r}")
-    return {"source": result["source"], "token": result["token"]}
+    return {"source": json_str(result, "source"), "token": json_str(result, "token")}
 
 
 def _api_json(
@@ -79,14 +116,14 @@ def _api_json(
     *,
     path: str,
     method: str = "GET",
-    payload: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+    payload: dict[str, JsonValue] | None = None,
+) -> dict[str, JsonValue]:
     """Run one authenticated same-origin API request from the browser page."""
 
     if payload is not None and CSRF_TOKEN is None:
         raise AssertionError("CSRF token must be loaded before unsafe API requests.")
 
-    result = page.evaluate(
+    result_value: JsonValue = page.evaluate(
         """async ({ path, method, payload, csrfToken }) => {
             const headers = { "Accept": "application/json" };
             const init = { method, credentials: "include", headers };
@@ -112,6 +149,7 @@ def _api_json(
             "csrfToken": CSRF_TOKEN,
         },
     )
+    result = json_object(result_value, label="api result")
     if not result["ok"]:
         raise AssertionError(f"{method} {path} returned {result['status']}: {result['body']!r}")
     body = result["body"]
@@ -169,19 +207,19 @@ def _create_draft(
     kind: str,
     roster_id: str,
     template_id: str,
-) -> dict[str, Any]:
+) -> _DraftBody:
     """Create one explicit seating or grouping draft."""
 
     path = f"{API_PREFIX}/drafts/{kind}/new"
-    payload: dict[str, Any] = {"roster_id": roster_id}
+    payload: dict[str, JsonValue] = {"roster_id": roster_id}
     if kind == "seating":
         payload["template_id"] = template_id
     else:
         payload["template_id"] = None
-    return _api_json(page, path=path, method="POST", payload=payload)
+    return _parse_draft_body(_api_json(page, path=path, method="POST", payload=payload))
 
 
-def _ensure_smart_history_on(page: Page, *, draft: dict[str, Any]) -> dict[str, Any]:
+def _ensure_smart_history_on(page: Page, *, draft: _DraftBody) -> _DraftBody:
     """Patch only when a draft is not already in the desired Smart state."""
 
     wants_patch = not draft["smart_enabled"] or not draft["use_history"]
@@ -191,7 +229,7 @@ def _ensure_smart_history_on(page: Page, *, draft: dict[str, Any]) -> dict[str, 
     if not wants_patch and not wants_grouping_distance_off:
         return draft
 
-    payload: dict[str, Any] = {
+    payload: dict[str, JsonValue] = {
         "expected_revision": draft["revision"],
         "smart_enabled": True,
         "use_history": True,
@@ -204,17 +242,17 @@ def _ensure_smart_history_on(page: Page, *, draft: dict[str, Any]) -> dict[str, 
         method="PATCH",
         payload=payload,
     )
-    return workspace["draft"]
+    return _parse_workspace_draft(workspace)
 
 
 def _run_smart(
     page: Page,
     *,
     kind: str,
-    draft: dict[str, Any],
+    draft: _DraftBody,
     expected_used_history: bool,
-) -> dict[str, Any]:
-    """Run Smart for one draft and assert the PR-0316 payload shape."""
+) -> _DraftBody:
+    """Run Smart for one draft, assert the PR-0316 payload shape, return the run's draft."""
 
     result = _api_json(
         page,
@@ -233,21 +271,22 @@ def _run_smart(
     message = str(result.get("message") or "")
     if not expected_used_history and "historik" in message.lower():
         raise AssertionError(f"First-run {kind} message still looks history-blocked: {message!r}")
-    if not isinstance(result.get("workspace"), dict):
+    workspace = result.get("workspace")
+    if not isinstance(workspace, dict):
         raise AssertionError(f"Expected {kind} smart run to return a workspace.")
-    return result
+    return _parse_workspace_draft(workspace)
 
 
-def _share_draft(page: Page, *, kind: str, result: dict[str, Any]) -> dict[str, Any]:
+def _share_draft(page: Page, *, kind: str, draft: _DraftBody) -> str:
     """Create one authenticated share, which records the Smart-history checkpoint."""
 
-    draft = result["workspace"]["draft"]
-    return _api_json(
+    share = _api_json(
         page,
         path=f"{API_PREFIX}/drafts/{kind}/{draft['id']}/share",
         method="POST",
         payload={"expected_revision": draft["revision"]},
     )
+    return json_str(json_object(share["artifact"], label="share.artifact"), "id")
 
 
 def _run_kind(
@@ -256,7 +295,7 @@ def _run_kind(
     kind: str,
     roster_id: str,
     template_id: str,
-) -> dict[str, Any]:
+) -> dict[str, JsonValue]:
     """Verify first-run soft degrade and checkpoint-backed follow-up for one kind."""
 
     first_draft = _ensure_smart_history_on(
@@ -268,13 +307,13 @@ def _run_kind(
             template_id=template_id,
         ),
     )
-    first_result = _run_smart(
+    first_run_draft = _run_smart(
         page,
         kind=kind,
         draft=first_draft,
         expected_used_history=False,
     )
-    share = _share_draft(page, kind=kind, result=first_result)
+    share_artifact_id = _share_draft(page, kind=kind, draft=first_run_draft)
 
     second_draft = _ensure_smart_history_on(
         page,
@@ -285,7 +324,7 @@ def _run_kind(
             template_id=template_id,
         ),
     )
-    second_result = _run_smart(
+    second_run_draft = _run_smart(
         page,
         kind=kind,
         draft=second_draft,
@@ -293,12 +332,12 @@ def _run_kind(
     )
     return {
         "first_draft_id": first_draft["id"],
-        "first_revision_after_run": first_result["workspace"]["draft"]["revision"],
-        "first_used_history": first_result["used_history"],
-        "share_artifact_id": share["artifact"]["id"],
+        "first_revision_after_run": first_run_draft["revision"],
+        "first_used_history": False,
+        "share_artifact_id": share_artifact_id,
         "second_draft_id": second_draft["id"],
-        "second_revision_after_run": second_result["workspace"]["draft"]["revision"],
-        "second_used_history": second_result["used_history"],
+        "second_revision_after_run": second_run_draft["revision"],
+        "second_used_history": True,
     }
 
 

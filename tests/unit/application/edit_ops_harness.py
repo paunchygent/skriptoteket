@@ -72,7 +72,7 @@ class DummyChatOpsBudgetResolver(ChatOpsBudgetResolverProtocol):
 def make_settings(**overrides: object) -> Settings:
     """Settings with the door key the enabled AI features require."""
 
-    return Settings(HULEEDU_INTERNAL_API_KEY="test-internal-key", **overrides)  # type: ignore[arg-type]
+    return Settings(HULEEDU_INTERNAL_API_KEY="test-internal-key").model_copy(update=overrides)
 
 
 def virtual_files() -> dict[VirtualFileId, str]:

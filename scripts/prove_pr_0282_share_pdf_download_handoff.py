@@ -15,12 +15,14 @@ Relationships:
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import TypedDict
 from uuid import uuid4
 
 from playwright.sync_api import Browser, Download, Page, Route, sync_playwright
+from pydantic import JsonValue
 
 from scripts._playwright_browser import launch_chromium
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
@@ -50,31 +52,90 @@ PDF_BYTES = b"%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n%%EOF\n"
 PDF_ROUTE_PATTERN = "**/share/classroom/*/download.pdf"
 
 
+@dataclass(frozen=True)
+class _Case:
+    html: str
+    width: int
+    height: int
+    route: str
+
+
+class _DetailsPayload(TypedDict):
+    """Browser `details` payload: the handoff action's DOM attributes and spinner state."""
+
+    state: str | None
+    ariaBusy: str | None
+    ariaDisabled: str | None
+    ariaLabel: str | None
+    href: str | None
+    cursor: str
+    spinnerVisible: bool
+
+
+def _str_or_none(obj: dict[str, JsonValue], key: str) -> str | None:
+    value = obj[key]
+    if value is not None and not isinstance(value, str):
+        raise TypeError(f"Expected {key} to be a string or null, got {type(value).__name__}.")
+    return value
+
+
+def _parse_details(obj: dict[str, JsonValue]) -> _DetailsPayload:
+    cursor = obj["cursor"]
+    spinner_visible = obj["spinnerVisible"]
+    if not isinstance(cursor, str):
+        raise TypeError(f"Expected cursor to be a string, got {type(cursor).__name__}.")
+    if not isinstance(spinner_visible, bool):
+        raise TypeError(
+            f"Expected spinnerVisible to be a boolean, got {type(spinner_visible).__name__}."
+        )
+    return {
+        "state": _str_or_none(obj, "state"),
+        "ariaBusy": _str_or_none(obj, "ariaBusy"),
+        "ariaDisabled": _str_or_none(obj, "ariaDisabled"),
+        "ariaLabel": _str_or_none(obj, "ariaLabel"),
+        "href": _str_or_none(obj, "href"),
+        "cursor": cursor,
+        "spinnerVisible": spinner_visible,
+    }
+
+
+class _CaseResult(TypedDict):
+    download_event_count_after_duplicate_attempts: int
+    download_filename: str
+    idle_details: _DetailsPayload
+    busy_details: _DetailsPayload
+    recovered_details: _DetailsPayload
+    idle_rect: dict[str, float]
+    busy_rect: dict[str, float]
+    recovered_rect: dict[str, float]
+    screenshots: dict[str, str]
+
+
 def main() -> None:
     """Run the PR-0282 browser-handoff proof."""
 
     run_dir = OUTPUT_ROOT / datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     run_dir.mkdir(parents=True, exist_ok=False)
     cases = {
-        "grouping_desktop": _build_case(
+        "grouping_desktop": _Case(
             html=_render_grouping_html(),
             width=1200,
             height=800,
             route="/proof/grouping-desktop",
         ),
-        "grouping_mobile": _build_case(
+        "grouping_mobile": _Case(
             html=_render_grouping_html(),
             width=390,
             height=760,
             route="/proof/grouping-mobile",
         ),
-        "seating_desktop": _build_case(
+        "seating_desktop": _Case(
             html=_render_seating_html(),
             width=1200,
             height=800,
             route="/proof/seating-desktop",
         ),
-        "seating_mobile": _build_case(
+        "seating_mobile": _Case(
             html=_render_seating_html(),
             width=390,
             height=760,
@@ -82,12 +143,19 @@ def main() -> None:
         ),
     }
 
-    proof: dict[str, object] = {}
+    proof: dict[str, _CaseResult] = {}
     with sync_playwright() as playwright:
         browser = launch_chromium(playwright)
         try:
             for case_id, case in cases.items():
-                proof[case_id] = _run_case(browser=browser, output_dir=run_dir, **case)
+                proof[case_id] = _run_case(
+                    browser=browser,
+                    output_dir=run_dir,
+                    html=case.html,
+                    width=case.width,
+                    height=case.height,
+                    route=case.route,
+                )
         finally:
             browser.close()
 
@@ -99,15 +167,6 @@ def main() -> None:
     print(f"pr-0282-download-handoff-proof: ok artifacts={run_dir}")
 
 
-def _build_case(*, html: str, width: int, height: int, route: str) -> dict[str, Any]:
-    return {
-        "html": html,
-        "width": width,
-        "height": height,
-        "route": route,
-    }
-
-
 def _run_case(
     *,
     browser: Browser,
@@ -116,7 +175,7 @@ def _run_case(
     width: int,
     height: int,
     route: str,
-) -> dict[str, object]:
+) -> _CaseResult:
     context = browser.new_context(
         accept_downloads=True, viewport={"width": width, "height": height}
     )
@@ -231,11 +290,16 @@ def _rect(page: Page) -> dict[str, float]:
     rect = page.locator('[data-skriptoteket-share-pdf-download="owned"]').bounding_box()
     if rect is None:
         raise AssertionError("PDF download action is not visible.")
-    return {key: float(rect[key]) for key in ("x", "y", "width", "height")}
+    return {
+        "x": float(rect["x"]),
+        "y": float(rect["y"]),
+        "width": float(rect["width"]),
+        "height": float(rect["height"]),
+    }
 
 
-def _details(page: Page) -> dict[str, object]:
-    details = page.evaluate(
+def _details(page: Page) -> _DetailsPayload:
+    details: JsonValue = page.evaluate(
         """() => {
           const action = document.querySelector('[data-skriptoteket-share-pdf-download="owned"]');
           const spinner = document.querySelector('.share-download-pdf__spinner');
@@ -256,7 +320,7 @@ def _details(page: Page) -> dict[str, object]:
     )
     if not isinstance(details, dict):
         raise AssertionError("Expected browser details object.")
-    return details
+    return _parse_details(details)
 
 
 def _assert_stable_geometry(*rects: dict[str, float]) -> None:
@@ -267,7 +331,7 @@ def _assert_stable_geometry(*rects: dict[str, float]) -> None:
                 raise AssertionError(f"Action {key} changed from {baseline[key]} to {rect[key]}.")
 
 
-def _assert_busy_details(details: dict[str, object]) -> None:
+def _assert_busy_details(details: _DetailsPayload) -> None:
     expected = {
         "state": "busy",
         "ariaBusy": "true",
@@ -281,12 +345,13 @@ def _assert_busy_details(details: dict[str, object]) -> None:
         raise AssertionError(f"Unexpected busy details: {details!r}")
 
 
-def _assert_recovered_details(details: dict[str, object]) -> None:
+def _assert_recovered_details(details: _DetailsPayload) -> None:
     if details["state"] != "idle":
         raise AssertionError(f"Expected idle recovery, got {details!r}")
-    for attr in ("ariaBusy", "ariaDisabled"):
-        if details[attr] is not None:
-            raise AssertionError(f"Expected cleared {attr}, got {details!r}")
+    if details["ariaBusy"] is not None:
+        raise AssertionError(f"Expected cleared ariaBusy, got {details!r}")
+    if details["ariaDisabled"] is not None:
+        raise AssertionError(f"Expected cleared ariaDisabled, got {details!r}")
     if not isinstance(details["href"], str) or not details["href"].endswith("/download.pdf"):
         raise AssertionError(f"Expected restored PDF href, got {details!r}")
     if details["spinnerVisible"] is not False:

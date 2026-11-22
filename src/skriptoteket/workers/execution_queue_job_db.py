@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import cast
 from uuid import UUID
 
 import structlog
@@ -59,15 +58,11 @@ async def load_execution_context(
     id_generator: IdGeneratorProtocol,
 ) -> JobExecutionContext:
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        runs = cast(ToolRunRepositoryProtocol, await request.get(ToolRunRepositoryProtocol))
-        versions = cast(
-            ToolVersionRepositoryProtocol, await request.get(ToolVersionRepositoryProtocol)
-        )
-        users = cast(UserRepositoryProtocol, await request.get(UserRepositoryProtocol))
-        sessions = cast(
-            ToolSessionRepositoryProtocol, await request.get(ToolSessionRepositoryProtocol)
-        )
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        runs: ToolRunRepositoryProtocol = await request.get(ToolRunRepositoryProtocol)
+        versions: ToolVersionRepositoryProtocol = await request.get(ToolVersionRepositoryProtocol)
+        users: UserRepositoryProtocol = await request.get(UserRepositoryProtocol)
+        sessions: ToolSessionRepositoryProtocol = await request.get(ToolSessionRepositoryProtocol)
 
         async with uow:
             run = await runs.get_by_id(run_id=run_id)
@@ -152,12 +147,10 @@ async def finalize_job(
     id_generator: IdGeneratorProtocol,
 ) -> bool:
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        runs = cast(ToolRunRepositoryProtocol, await request.get(ToolRunRepositoryProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
-        sessions = cast(
-            ToolSessionRepositoryProtocol, await request.get(ToolSessionRepositoryProtocol)
-        )
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        runs: ToolRunRepositoryProtocol = await request.get(ToolRunRepositoryProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
+        sessions: ToolSessionRepositoryProtocol = await request.get(ToolSessionRepositoryProtocol)
 
         async with uow:
             current_job = await jobs.get_by_run_id(run_id=run.id)
@@ -236,9 +229,9 @@ async def requeue_missing_adoptable_container(
     backoff = timedelta(seconds=max(1, backoff_seconds))
     next_available_at = now + backoff
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        runs = cast(ToolRunRepositoryProtocol, await request.get(ToolRunRepositoryProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        runs: ToolRunRepositoryProtocol = await request.get(ToolRunRepositoryProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
         async with uow:
             current_job = await jobs.get_by_run_id(run_id=run.id)
             if current_job is None:
@@ -270,9 +263,9 @@ async def finalize_job_as_failed(
 ) -> None:
     now = clock.now()
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        runs = cast(ToolRunRepositoryProtocol, await request.get(ToolRunRepositoryProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        runs: ToolRunRepositoryProtocol = await request.get(ToolRunRepositoryProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
 
         async with uow:
             run = await runs.get_by_id(run_id=run_id)
@@ -310,8 +303,8 @@ async def heartbeat_once(
     lease_ttl: timedelta,
 ) -> bool:
     async with container(scope=Scope.REQUEST) as request:
-        uow = cast(UnitOfWorkProtocol, await request.get(UnitOfWorkProtocol))
-        jobs = cast(ToolRunJobRepositoryProtocol, await request.get(ToolRunJobRepositoryProtocol))
+        uow: UnitOfWorkProtocol = await request.get(UnitOfWorkProtocol)
+        jobs: ToolRunJobRepositoryProtocol = await request.get(ToolRunJobRepositoryProtocol)
         async with uow:
             return await jobs.heartbeat(
                 job_id=job_id,

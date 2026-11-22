@@ -16,7 +16,6 @@ from __future__ import annotations
 import io
 from datetime import datetime, timezone
 from types import SimpleNamespace
-from typing import cast
 from uuid import uuid4
 
 import pytest
@@ -28,8 +27,6 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobStatus,
     ConversionHubOutputFormatV2,
     ConversionHubSourceFormatV2,
-    ConversionHubSubmitResult,
-    ConversionHubSubmittedJob,
 )
 from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
     ConversionHubSavedVaultArtifact,
@@ -57,6 +54,14 @@ from skriptoteket.web.api.v1 import (
     apps_conversion_hub_document_converter_saved_files as api_saved_files,
 )
 from tests.fixtures.identity_fixtures import make_user
+from tests.unit.web.conversion_hub.document_converter_api_test_support import (
+    FakeCreateHandler,
+    FakeDownloadHandler,
+    FakeGetDocumentConverterHandler,
+    FakeListSavedFilesHandler,
+    FakeSaveHandler,
+    FakeSubmitSavedFileHandler,
+)
 
 
 def _unwrap_dishka(fn):
@@ -87,74 +92,6 @@ def _upload(*, filename: str, content: bytes, content_type: str) -> UploadFile:
 class FakeRegistry:
     def get_by_app_id(self, *, app_id: str):
         return SimpleNamespace(app_id=app_id, min_role=Role.USER)
-
-
-class FakeCreateHandler:
-    def __init__(self) -> None:
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs) -> ConversionHubSubmitResult:
-        self.calls.append(kwargs)
-        return ConversionHubSubmitResult(
-            jobs=[
-                ConversionHubSubmittedJob(
-                    input_filename="source.html",
-                    job_id=uuid4(),
-                    status=ConversionHubJobStatus.QUEUED,
-                    error=None,
-                )
-            ]
-        )
-
-
-class FakeGetDocumentConverterHandler:
-    def __init__(self, result: DocumentConverterJobStatusResult) -> None:
-        self.result = result
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs) -> DocumentConverterJobStatusResult:
-        self.calls.append(kwargs)
-        return self.result
-
-
-class FakeDownloadHandler:
-    def __init__(self, *, filename: str = "converted.pdf") -> None:
-        self.filename = filename
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs):
-        self.calls.append(kwargs)
-        return (self.filename, "application/pdf", b"%PDF-1.7")
-
-
-class FakeSaveHandler:
-    def __init__(self, result: SaveDocumentConverterArtifactResult) -> None:
-        self.result = result
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs) -> SaveDocumentConverterArtifactResult:
-        self.calls.append(kwargs)
-        return self.result
-
-
-class FakeListSavedFilesHandler:
-    def __init__(self, result: ListDocumentConverterSavedFilesResult) -> None:
-        self.result = result
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs) -> ListDocumentConverterSavedFilesResult:
-        self.calls.append(kwargs)
-        return self.result
-
-
-class FakeSubmitSavedFileHandler:
-    def __init__(self, result: DocumentConverterSubmitResult) -> None:
-        self.result = result
-        self.calls: list[dict[str, object]] = []
-
-    async def handle(self, **kwargs) -> DocumentConverterSubmitResult:
-        self.calls.append(kwargs)
-        return self.result
 
 
 @pytest.mark.unit
@@ -204,7 +141,7 @@ async def test_submit_document_converter_job_accepts_one_upload() -> None:
     assert len(result.jobs) == 1
     assert result.jobs[0].input_filename == "source.html"
     assert handler.calls[0]["spec"] == spec
-    uploads = cast(list[ConversionHubUpload], handler.calls[0]["uploads"])
+    uploads = handler.calls[0]["uploads"]
     assert isinstance(uploads[0], ConversionHubUpload)
     assert uploads[0].filename == "source.html"
     assert uploads[0].file_bytes == b"<h1>Hej</h1>"

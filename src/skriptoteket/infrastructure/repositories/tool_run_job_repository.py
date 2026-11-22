@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import and_, select, update
@@ -172,9 +171,10 @@ class PostgreSQLToolRunJobRepository(ToolRunJobRepositoryProtocol):
             )
         )
         result = await self._session.execute(stmt)
-        cursor_result = cast(CursorResult, result)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return bool(cursor_result.rowcount and cursor_result.rowcount > 0)
+        return bool(result.rowcount and result.rowcount > 0)
 
     async def clear_stale_leases(self, *, now: datetime) -> int:
         stmt = (
@@ -190,6 +190,7 @@ class PostgreSQLToolRunJobRepository(ToolRunJobRepositoryProtocol):
             )
         )
         result = await self._session.execute(stmt)
-        cursor_result = cast(CursorResult, result)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
         await self._session.flush()
-        return int(cursor_result.rowcount or 0)
+        return int(result.rowcount or 0)

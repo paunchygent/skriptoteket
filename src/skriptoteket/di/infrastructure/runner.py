@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dishka import Provider, Scope, provide
+from dishka import AnyOf, Provider, Scope, provide
 
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.runner.artifact_manager import FilesystemArtifactManager
@@ -78,7 +78,7 @@ class InfrastructureRunnerProvider(Provider):
         capacity: RunnerCapacityLimiter,
         artifacts: ArtifactManagerProtocol,
         contract_selector: RunnerContractSelectorProtocol,
-    ) -> ToolRunnerProtocol:
+    ) -> AnyOf[ToolRunnerProtocol, ToolRunnerAdoptionProtocol]:
         limits = DockerRunnerLimits(
             cpu_limit=settings.RUNNER_CPU_LIMIT,
             memory_limit=settings.RUNNER_MEMORY_LIMIT,
@@ -108,7 +108,3 @@ class InfrastructureRunnerProvider(Provider):
             artifacts=artifacts,
             session_files=session_files,
         )
-
-    @provide(scope=Scope.APP)
-    def tool_runner_adoption(self, runner: ToolRunnerProtocol) -> ToolRunnerAdoptionProtocol:
-        return runner  # type: ignore[return-value]

@@ -73,7 +73,7 @@ class LimitsApiProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def course_catalog(self) -> GetExamCourseCatalogHandlerProtocol:
-        return _StubCourseCatalogHandler()  # type: ignore[return-value]
+        return _StubCourseCatalogHandler()
 
 
 @pytest.fixture

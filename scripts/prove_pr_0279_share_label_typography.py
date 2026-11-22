@@ -17,11 +17,12 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict, TypeGuard
 from uuid import uuid4
 
+from playwright.sync_api import Browser, Playwright, ViewportSize, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import sync_playwright
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.classroom_planner.exports import (
     PosterSceneFixture,
@@ -101,17 +102,79 @@ def main() -> None:
     print(f"pr-0279-proof: ok {run_dir}")
 
 
+_LINE_CHECK_BOOL_KEYS = (
+    "contained",
+    "separated",
+    "noHiddenClip",
+    "visibleLinesNotEmpty",
+    "noEllipsis",
+    "fallbackPreservesFullLabel",
+    "withinSurface",
+)
+
+
+class _LineCheck(TypedDict):
+    """`lineChecks` entry keys read by the layout assertions.
+
+    The browser also sends seat/label detail keys; they stay in the dict and reach
+    the failure message and `proof.json` unchanged.
+    """
+
+    contained: bool
+    separated: bool
+    noHiddenClip: bool
+    visibleLinesNotEmpty: bool
+    noEllipsis: bool
+    fallbackPreservesFullLabel: bool
+    withinSurface: bool
+    labelFixtureOverlaps: list[JsonValue]
+
+
+class _LayoutChecks(TypedDict):
+    """`page.evaluate` layout payload keys read by the layout assertions.
+
+    The browser also sends rect and fixture detail keys; they stay in the dict and
+    reach `proof.json` unchanged.
+    """
+
+    lineChecks: list[_LineCheck]
+    overlaps: list[JsonValue]
+    surfaceFitsViewport: NotRequired[bool]
+    surfaceRect: NotRequired[JsonValue]
+    viewportRect: NotRequired[JsonValue]
+
+
+def _is_line_check(value: JsonValue) -> TypeGuard[_LineCheck]:
+    return (
+        isinstance(value, dict)
+        and all(isinstance(value.get(key), bool) for key in _LINE_CHECK_BOOL_KEYS)
+        and isinstance(value.get("labelFixtureOverlaps"), list)
+    )
+
+
+def _is_layout_checks(value: JsonValue) -> TypeGuard[_LayoutChecks]:
+    if not isinstance(value, dict):
+        return False
+    line_checks = value.get("lineChecks")
+    return (
+        isinstance(line_checks, list)
+        and all(_is_line_check(check) for check in line_checks)
+        and isinstance(value.get("overlaps"), list)
+        and isinstance(value.get("surfaceFitsViewport", False), bool)
+    )
+
+
 def _capture_and_assert(
     *,
-    browser: Any,
+    browser: Browser,
     html: str,
     output_path: Path,
-    viewport: dict[str, int],
-) -> dict[str, object]:
+    viewport: ViewportSize,
+) -> _LayoutChecks:
     page = browser.new_page(viewport=viewport)
     page.set_content(html, wait_until="load")
     require_surface_fit = viewport["width"] == 1200 and viewport["height"] == 630
-    checks = page.evaluate(
+    checks_value: JsonValue = page.evaluate(
         """() => {
             const toRect = (element) => {
               const rect = element.getBoundingClientRect();
@@ -240,9 +303,13 @@ def _capture_and_assert(
             };
         }"""
     )
-    failures = [
-        check
-        for check in checks["lineChecks"]
+    if not _is_layout_checks(checks_value):
+        raise TypeError(
+            f"layout checks payload has unexpected shape: {type(checks_value).__name__}"
+        )
+    checks = checks_value
+    failures = []
+    for check in checks["lineChecks"]:
         if not (
             check["contained"]
             and check["separated"]
@@ -252,8 +319,8 @@ def _capture_and_assert(
             and check["fallbackPreservesFullLabel"]
             and check["withinSurface"]
             and not check["labelFixtureOverlaps"]
-        )
-    ]
+        ):
+            failures.append(check)
     if failures:
         raise AssertionError(f"Seat label layout failures: {failures}")
     if require_surface_fit and not checks["surfaceFitsViewport"]:
@@ -357,7 +424,7 @@ def _find_chromium_headless_shell() -> str | None:
     return None
 
 
-def _launch_chromium(playwright: Any) -> Any:
+def _launch_chromium(playwright: Playwright) -> Browser:
     try:
         return playwright.chromium.launch(headless=True)
     except PlaywrightError:

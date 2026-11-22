@@ -113,6 +113,7 @@ monorepo-tools = [
     "shellcheck-py",
     "types-xlrd>=2.0.0.20260518",
     "types-defusedxml>=0.7.0.20260504",
+    "types-jsonschema>=4.26.0.20261006",
 ]
 
 # "Dev everything" extras that are useful locally but not required in prod images.
@@ -261,7 +262,7 @@ lint-exclude = [
     "jupyter_scripts",
 ]
 lint-src = [".", "src"]
-typecheck-includes = []
+typecheck-includes = ["src", "tests", "scripts", "migrations", "runner"]
 typecheck-search-paths = ["src", "stubs"]
 untyped-modules = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
 
@@ -335,8 +336,8 @@ test = "frontend-test"
 name = "backend-typecheck"
 intent = "typecheck"
 project = "."
-command = "mypy"
-arguments = ["--config-file", "pyproject.toml"]
+command = "typecheck-python"
+arguments = []
 
 [[tool.repository-governance.quality.producers]]
 name = "backend-test"
@@ -450,6 +451,12 @@ fe-gen-api-types = { composite = [
     "python -m scripts.export_openapi_v1",
     "pnpm -C frontend --filter @skriptoteket/spa gen:api-types",
     "python -m scripts.export_native_exam_document_versions",
+] }
+
+# Python typecheck producer: mypy takes the cohort targets; Pyrefly takes none and checks project-includes
+typecheck-python = { composite = [
+    "mypy --config-file pyproject.toml {args}",
+    "pyrefly check --config ${PDM_PROJECT_ROOT}/pyproject.toml --only explicit-any",
 ] }
 
 # Frontend (full SPA; ADR-0027/ADR-0029)
@@ -575,9 +582,12 @@ src = [".", "src"]
 select = ["E", "F", "I", "W"]
 [tool.pyrefly]
 python-version = "3.13"
-project-includes = []
+project-includes = ["src", "tests", "scripts", "migrations", "runner"]
 search-path = ["src", "stubs"]
 ignore-missing-imports = ["yaml.*", "pypdf.*", "pandas.*", "pypdfium2.*", "lxml.*", "testcontainers.*"]
+
+[tool.pyrefly.errors]
+explicit-any = "error"
 [tool.pytest.ini_options]
 addopts = "-n auto --dist worksteal --durations=10 --import-mode=importlib"
 asyncio_mode = "auto"

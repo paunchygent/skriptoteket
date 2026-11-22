@@ -8,7 +8,6 @@ Purpose:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import cast
 from uuid import UUID
 
 from sqlalchemy import select, update
@@ -75,4 +74,6 @@ class PostgreSQLPasswordResetTokenRepository(PasswordResetTokenRepositoryProtoco
             )
             .values(used_at=used_at)
         )
-        return int(cast(CursorResult[object], result).rowcount or 0)
+        if not isinstance(result, CursorResult):
+            raise TypeError("expected CursorResult from a DML statement")
+        return int(result.rowcount or 0)

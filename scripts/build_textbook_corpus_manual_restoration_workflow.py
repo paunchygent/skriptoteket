@@ -17,16 +17,145 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from dataclasses import asdict, dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import NotRequired, TypedDict
 
 import yaml
+from pydantic import JsonValue
 
 ISSUE_VERSION = 1
 PATCH_VERSION = 1
 PATCH_STATUS_ALLOWED = {"proposed", "approved", "rejected"}
+
+
+class ManualQueueRow(TypedDict):
+    """One manual-queue JSONL row with the fields issue loading reads.
+
+    `_parse_manual_queue_row` applies the loader's coercions, so the stored
+    types are the coerced ones.
+    """
+
+    code: str
+    line_no: int
+    severity: str
+    protected_zone: bool
+    message: str
+    line_text: str
+
+
+class IssueIndexRow(TypedDict):
+    """Serialized form of one `WorkflowIssue` in packets and the issue index."""
+
+    issue_id: str
+    code: str
+    line_no: int
+    severity: str
+    protected_zone: bool
+    message: str
+    line_text: str
+
+
+class IssueIndexReport(TypedDict):
+    """Issue-index JSON report returned by `generate_packets`."""
+
+    generated_at: str
+    manual_queue_path: str
+    issue_count: int
+    packet_count: int
+    issues: list[IssueIndexRow]
+
+
+class PacketAssignment(TypedDict):
+    """``assignment`` block of one issue packet YAML document."""
+
+    owner: str
+    verifier: str
+
+
+class PacketPayload(TypedDict):
+    """One issue packet YAML document written by `generate_packets`."""
+
+    version: int
+    packet_id: str
+    generated_at: str
+    manual_queue_path: str
+    assignment: PacketAssignment
+    issue_ids: list[str]
+    issues: list[IssueIndexRow]
+
+
+class PatchValidationSummary(TypedDict):
+    """Summary block of the patch validation report."""
+
+    files_total: int
+    valid_total: int
+    invalid_total: int
+    approved_total: int
+    rejected_total: int
+    proposed_total: int
+    cross_file_errors: int
+
+
+class PatchValidationResultRow(TypedDict):
+    """One per-file row in the patch validation report."""
+
+    file_path: str
+    patch_id: str | None
+    issue_id: str | None
+    status: str | None
+    valid: bool
+    errors: list[str]
+
+
+class CrossFileErrorRow(TypedDict):
+    """One cross-file uniqueness error in the patch validation report."""
+
+    file: str
+    error: str
+
+
+class PatchValidationReport(TypedDict):
+    """Machine-readable patch validation report written to JSON."""
+
+    generated_at: str
+    patch_dir: str
+    summary: PatchValidationSummary
+    results: list[PatchValidationResultRow]
+    cross_file_errors: list[CrossFileErrorRow]
+
+
+class AppliedRow(TypedDict):
+    """One successfully applied patch row in the apply report."""
+
+    patch_id: str
+    issue_id: str
+    line_no: int
+
+
+class ApplyFailureRow(TypedDict):
+    """One failed patch application row in the apply report."""
+
+    patch_id: str
+    error: str
+    line_no: NotRequired[int]
+
+
+class PatchApplyReport(TypedDict, total=False):
+    """Apply report written to JSON; checksum fields only appear on success."""
+
+    generated_at: str
+    input_markdown: str
+    output_markdown: str
+    snapshot_path: str
+    input_sha256: str
+    output_sha256: str
+    applied_count: int
+    failure_count: int
+    applied: list[AppliedRow]
+    failures: list[ApplyFailureRow]
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,7 +181,38 @@ class PatchValidation:
     status: str | None
     valid: bool
     errors: list[str]
-    payload: dict[str, Any] | None
+    approved: ApprovedPatch | None
+
+
+@dataclass(frozen=True, slots=True)
+class ApprovedPatch:
+    """The fields `apply_patches` reads from a valid approved patch."""
+
+    patch_id: str
+    issue_id: str
+    line_no: int
+    expected_original: str
+    replacement: str
+
+
+def _parse_manual_queue_row(value: JsonValue) -> ManualQueueRow | None:
+    """Parse one JSONL row; non-objects are skipped like the old dict filter.
+
+    A missing or falsy ``code`` reads as ``"UNKNOWN"`` and ``severity`` as
+    ``"unknown"``, ``message``/``line_text`` as ``""``; a non-int ``line_no``
+    reads as ``0`` and ``protected_zone`` is coerced with ``bool``.
+    """
+    if not isinstance(value, dict):
+        return None
+    line_no = value.get("line_no")
+    return ManualQueueRow(
+        code=str(value.get("code") or "UNKNOWN"),
+        line_no=int(line_no) if isinstance(line_no, int) else 0,
+        severity=str(value.get("severity") or "unknown"),
+        protected_zone=bool(value.get("protected_zone")),
+        message=str(value.get("message") or ""),
+        line_text=str(value.get("line_text") or ""),
+    )
 
 
 def _parse_args() -> argparse.Namespace:
@@ -87,29 +247,47 @@ def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _read_jsonl(path: Path) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
+def _read_jsonl(path: Path) -> list[ManualQueueRow]:
+    rows: list[ManualQueueRow] = []
     for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
         if not stripped:
             continue
-        obj = json.loads(stripped)
-        if isinstance(obj, dict):
-            rows.append(obj)
+        obj: JsonValue = json.loads(stripped)
+        row = _parse_manual_queue_row(obj)
+        if row is not None:
+            rows.append(row)
     return rows
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
+_JsonReportPayload = IssueIndexReport | PatchValidationReport | PatchApplyReport
+
+_YamlReportPayload = Mapping[str, JsonValue] | PacketPayload
+
+
+def _write_json(path: Path, payload: _JsonReportPayload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
 
-def _write_yaml(path: Path, payload: dict[str, Any]) -> None:
+def _write_yaml(path: Path, payload: _YamlReportPayload) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = yaml.safe_dump(payload, sort_keys=False, allow_unicode=True)
     path.write_text(text, encoding="utf-8")
+
+
+def _issue_to_json(issue: WorkflowIssue) -> IssueIndexRow:
+    return {
+        "issue_id": issue.issue_id,
+        "code": issue.code,
+        "line_no": issue.line_no,
+        "severity": issue.severity,
+        "protected_zone": issue.protected_zone,
+        "message": issue.message,
+        "line_text": issue.line_text,
+    }
 
 
 def _build_issue_id(index: int, code: str, line_no: int) -> str:
@@ -121,17 +299,14 @@ def _load_workflow_issues(manual_queue_path: Path) -> list[WorkflowIssue]:
     rows = _read_jsonl(manual_queue_path)
     issues: list[WorkflowIssue] = []
     for index, row in enumerate(rows, start=1):
-        code = str(row.get("code") or "UNKNOWN")
-        line_no_obj = row.get("line_no")
-        line_no = int(line_no_obj) if isinstance(line_no_obj, int) else 0
         issue = WorkflowIssue(
-            issue_id=_build_issue_id(index=index, code=code, line_no=line_no),
-            code=code,
-            line_no=line_no,
-            severity=str(row.get("severity") or "unknown"),
-            protected_zone=bool(row.get("protected_zone")),
-            message=str(row.get("message") or ""),
-            line_text=str(row.get("line_text") or ""),
+            issue_id=_build_issue_id(index=index, code=row["code"], line_no=row["line_no"]),
+            code=row["code"],
+            line_no=row["line_no"],
+            severity=row["severity"],
+            protected_zone=row["protected_zone"],
+            message=row["message"],
+            line_text=row["line_text"],
         )
         issues.append(issue)
     return issues
@@ -143,7 +318,7 @@ def generate_packets(
     output_dir: Path,
     packet_size: int,
     scaffold_patches: bool,
-) -> dict[str, Any]:
+) -> IssueIndexReport:
     """Generate deterministic issue packets and optional patch templates."""
     issues = _load_workflow_issues(manual_queue_path)
     packets_dir = output_dir / "packets"
@@ -154,23 +329,21 @@ def generate_packets(
         packet_count += 1
         packet_issues = issues[start_idx : start_idx + packet_size]
         packet_id = f"PKT-{packet_count:04d}"
-        payload = {
-            "version": ISSUE_VERSION,
-            "packet_id": packet_id,
-            "generated_at": datetime.now(UTC).isoformat(),
-            "manual_queue_path": str(manual_queue_path),
-            "assignment": {
-                "owner": "",
-                "verifier": "",
-            },
-            "issue_ids": [item.issue_id for item in packet_issues],
-            "issues": [asdict(item) for item in packet_issues],
-        }
+        packet_issue_rows: list[IssueIndexRow] = [_issue_to_json(item) for item in packet_issues]
+        payload = PacketPayload(
+            version=ISSUE_VERSION,
+            packet_id=packet_id,
+            generated_at=datetime.now(UTC).isoformat(),
+            manual_queue_path=str(manual_queue_path),
+            assignment=PacketAssignment(owner="", verifier=""),
+            issue_ids=[item.issue_id for item in packet_issues],
+            issues=packet_issue_rows,
+        )
         _write_yaml(packets_dir / f"{packet_id}.yaml", payload)
 
     if scaffold_patches:
         for issue in issues:
-            patch_payload = {
+            patch_payload: dict[str, JsonValue] = {
                 "version": PATCH_VERSION,
                 "patch_id": f"PATCH-{issue.issue_id}",
                 "issue_id": issue.issue_id,
@@ -194,28 +367,31 @@ def generate_packets(
             }
             _write_yaml(fixes_dir / f"{issue.issue_id}.yaml", patch_payload)
 
-    issue_index_payload = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "manual_queue_path": str(manual_queue_path),
-        "issue_count": len(issues),
-        "packet_count": packet_count,
-        "issues": [asdict(item) for item in issues],
-    }
+    issue_index_rows: list[IssueIndexRow] = [_issue_to_json(item) for item in issues]
+    issue_index_payload = IssueIndexReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        manual_queue_path=str(manual_queue_path),
+        issue_count=len(issues),
+        packet_count=packet_count,
+        issues=issue_index_rows,
+    )
     _write_json(output_dir / "issue-index.json", issue_index_payload)
     return issue_index_payload
 
 
-def _read_yaml_file(path: Path) -> dict[str, Any] | None:
+def _read_yaml_file(path: Path) -> dict[str, JsonValue] | None:
     try:
-        payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+        payload: JsonValue = yaml.safe_load(path.read_text(encoding="utf-8"))
     except yaml.YAMLError:
         return None
-    if isinstance(payload, dict):
-        return payload
-    return None
+    return payload if isinstance(payload, dict) else None
 
 
-def _validate_patch_payload(path: Path, payload: dict[str, Any] | None) -> PatchValidation:
+def _validate_patch_payload(path: Path, payload: dict[str, JsonValue] | None) -> PatchValidation:
+    """Validate one parsed patch document; this is the narrowing step for its fields.
+
+    A valid approved patch also yields the `ApprovedPatch` that `apply_patches` uses.
+    """
     errors: list[str] = []
     if payload is None:
         return PatchValidation(
@@ -225,7 +401,7 @@ def _validate_patch_payload(path: Path, payload: dict[str, Any] | None) -> Patch
             status=None,
             valid=False,
             errors=["invalid_yaml_or_non_object"],
-            payload=None,
+            approved=None,
         )
 
     patch_id = payload.get("patch_id")
@@ -249,7 +425,8 @@ def _validate_patch_payload(path: Path, payload: dict[str, Any] | None) -> Patch
     if not isinstance(source, dict):
         errors.append("missing_source")
     else:
-        if not isinstance(source.get("line_no"), int) or source.get("line_no") <= 0:
+        source_line_no = source.get("line_no")
+        if not isinstance(source_line_no, int) or source_line_no <= 0:
             errors.append("invalid_source_line_no")
         if not isinstance(source.get("expected_original"), str):
             errors.append("invalid_expected_original")
@@ -281,6 +458,31 @@ def _validate_patch_payload(path: Path, payload: dict[str, Any] | None) -> Patch
         if not isinstance(review, dict) or review.get("decision") != "approved":
             errors.append("approved_missing_review_decision")
 
+    approved: ApprovedPatch | None = None
+    if (
+        not errors
+        and status == "approved"
+        and isinstance(patch_id, str)
+        and isinstance(issue_id, str)
+        and isinstance(source, dict)
+        and isinstance(change, dict)
+    ):
+        line_no = source.get("line_no")
+        expected_original = source.get("expected_original")
+        replacement = change.get("replacement")
+        if (
+            isinstance(line_no, int)
+            and isinstance(expected_original, str)
+            and isinstance(replacement, str)
+        ):
+            approved = ApprovedPatch(
+                patch_id=patch_id,
+                issue_id=issue_id,
+                line_no=int(line_no),
+                expected_original=expected_original,
+                replacement=replacement,
+            )
+
     return PatchValidation(
         file_path=str(path),
         patch_id=patch_id if isinstance(patch_id, str) else None,
@@ -288,59 +490,67 @@ def _validate_patch_payload(path: Path, payload: dict[str, Any] | None) -> Patch
         status=status if isinstance(status, str) else None,
         valid=not errors,
         errors=errors,
-        payload=payload,
+        approved=approved,
     )
 
 
-def validate_patches(*, patch_dir: Path, report_path: Path) -> dict[str, Any]:
+def _validate_patch_dir(patch_dir: Path) -> list[PatchValidation]:
+    return [
+        _validate_patch_payload(path, _read_yaml_file(path))
+        for path in sorted(patch_dir.glob("*.yaml"))
+    ]
+
+
+def validate_patches(*, patch_dir: Path, report_path: Path) -> PatchValidationReport:
     """Validate patch schema and cross-file uniqueness rules."""
-    results: list[PatchValidation] = []
-    for path in sorted(patch_dir.glob("*.yaml")):
-        payload = _read_yaml_file(path)
-        results.append(_validate_patch_payload(path, payload))
+    results = _validate_patch_dir(patch_dir)
 
     issue_ids_seen: set[str] = set()
     patch_ids_seen: set[str] = set()
-    cross_file_errors: list[dict[str, str]] = []
+    cross_file_errors: list[CrossFileErrorRow] = []
     for result in results:
         if result.issue_id:
             if result.issue_id in issue_ids_seen:
                 cross_file_errors.append(
-                    {"file": result.file_path, "error": "duplicate_issue_id_across_files"}
+                    CrossFileErrorRow(
+                        file=result.file_path, error="duplicate_issue_id_across_files"
+                    )
                 )
             issue_ids_seen.add(result.issue_id)
         if result.patch_id:
             if result.patch_id in patch_ids_seen:
                 cross_file_errors.append(
-                    {"file": result.file_path, "error": "duplicate_patch_id_across_files"}
+                    CrossFileErrorRow(
+                        file=result.file_path, error="duplicate_patch_id_across_files"
+                    )
                 )
             patch_ids_seen.add(result.patch_id)
 
-    report = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "patch_dir": str(patch_dir),
-        "summary": {
-            "files_total": len(results),
-            "valid_total": sum(1 for item in results if item.valid),
-            "invalid_total": sum(1 for item in results if not item.valid),
-            "approved_total": sum(1 for item in results if item.status == "approved"),
-            "rejected_total": sum(1 for item in results if item.status == "rejected"),
-            "proposed_total": sum(1 for item in results if item.status == "proposed"),
-            "cross_file_errors": len(cross_file_errors),
-        },
-        "results": [
-            {
-                "file_path": item.file_path,
-                "patch_id": item.patch_id,
-                "issue_id": item.issue_id,
-                "status": item.status,
-                "valid": item.valid,
-                "errors": item.errors,
-            }
+    report = PatchValidationReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        patch_dir=str(patch_dir),
+        summary=PatchValidationSummary(
+            files_total=len(results),
+            valid_total=sum(1 for item in results if item.valid),
+            invalid_total=sum(1 for item in results if not item.valid),
+            approved_total=sum(1 for item in results if item.status == "approved"),
+            rejected_total=sum(1 for item in results if item.status == "rejected"),
+            proposed_total=sum(1 for item in results if item.status == "proposed"),
+            cross_file_errors=len(cross_file_errors),
+        ),
+        results=[
+            PatchValidationResultRow(
+                file_path=item.file_path,
+                patch_id=item.patch_id,
+                issue_id=item.issue_id,
+                status=item.status,
+                valid=item.valid,
+                errors=item.errors,
+            )
             for item in results
         ],
-        "cross_file_errors": cross_file_errors,
-    }
+        cross_file_errors=cross_file_errors,
+    )
     _write_json(report_path, report)
     return report
 
@@ -352,7 +562,7 @@ def apply_patches(
     output_markdown: Path,
     report_path: Path,
     snapshot_path: Path,
-) -> dict[str, Any]:
+) -> PatchApplyReport:
     """Apply approved patches deterministically to a copy of markdown lines."""
     validation_report = validate_patches(
         patch_dir=patch_dir,
@@ -367,75 +577,63 @@ def apply_patches(
     original_lines = input_text.splitlines()
     lines = list(original_lines)
 
-    patch_rows: list[dict[str, Any]] = []
-    for file_path in sorted(patch_dir.glob("*.yaml")):
-        payload = _read_yaml_file(file_path)
-        if payload is None:
-            continue
-        if payload.get("status") != "approved":
-            continue
-        patch_rows.append(payload)
+    patch_rows = [
+        result.approved for result in _validate_patch_dir(patch_dir) if result.approved is not None
+    ]
 
-    patch_rows.sort(
-        key=lambda row: (
-            int(_as_object(row.get("source")).get("line_no") or 0),
-            str(row.get("patch_id") or ""),
-        )
-    )
+    patch_rows.sort(key=lambda row: (row.line_no, row.patch_id))
 
     seen_issue_ids: set[str] = set()
     seen_line_nos: set[int] = set()
-    apply_failures: list[dict[str, Any]] = []
-    applied: list[dict[str, Any]] = []
+    apply_failures: list[ApplyFailureRow] = []
+    applied: list[AppliedRow] = []
 
     for row in patch_rows:
-        patch_id = str(row.get("patch_id") or "")
-        issue_id = str(row.get("issue_id") or "")
-        source = _as_object(row.get("source"))
-        change = _as_object(row.get("change"))
-        line_no = int(source.get("line_no") or 0)
-        expected = str(source.get("expected_original") or "")
-        replacement = str(change.get("replacement") or "")
+        patch_id = row.patch_id
+        issue_id = row.issue_id
+        line_no = row.line_no
+        expected = row.expected_original
+        replacement = row.replacement
 
         if issue_id in seen_issue_ids:
-            apply_failures.append({"patch_id": patch_id, "error": "duplicate_issue_id"})
+            apply_failures.append(ApplyFailureRow(patch_id=patch_id, error="duplicate_issue_id"))
             continue
         seen_issue_ids.add(issue_id)
 
         if line_no in seen_line_nos:
-            apply_failures.append({"patch_id": patch_id, "error": "duplicate_line_no"})
+            apply_failures.append(ApplyFailureRow(patch_id=patch_id, error="duplicate_line_no"))
             continue
         seen_line_nos.add(line_no)
 
         if line_no <= 0 or line_no > len(lines):
-            apply_failures.append({"patch_id": patch_id, "error": "line_out_of_range"})
+            apply_failures.append(ApplyFailureRow(patch_id=patch_id, error="line_out_of_range"))
             continue
 
         current = lines[line_no - 1]
         if current != expected:
             apply_failures.append(
-                {
-                    "patch_id": patch_id,
-                    "error": "expected_original_mismatch",
-                    "line_no": line_no,
-                }
+                ApplyFailureRow(
+                    patch_id=patch_id,
+                    error="expected_original_mismatch",
+                    line_no=line_no,
+                )
             )
             continue
 
         lines[line_no - 1] = replacement
-        applied.append({"patch_id": patch_id, "issue_id": issue_id, "line_no": line_no})
+        applied.append(AppliedRow(patch_id=patch_id, issue_id=issue_id, line_no=line_no))
 
     if apply_failures:
-        report = {
-            "generated_at": datetime.now(UTC).isoformat(),
-            "input_markdown": str(input_markdown),
-            "output_markdown": str(output_markdown),
-            "snapshot_path": str(snapshot_path),
-            "applied_count": len(applied),
-            "failure_count": len(apply_failures),
-            "applied": applied,
-            "failures": apply_failures,
-        }
+        report = PatchApplyReport(
+            generated_at=datetime.now(UTC).isoformat(),
+            input_markdown=str(input_markdown),
+            output_markdown=str(output_markdown),
+            snapshot_path=str(snapshot_path),
+            applied_count=len(applied),
+            failure_count=len(apply_failures),
+            applied=applied,
+            failures=apply_failures,
+        )
         _write_json(report_path, report)
         raise SystemExit("Patch application failed. See apply report for details.")
 
@@ -445,24 +643,20 @@ def apply_patches(
     output_markdown.parent.mkdir(parents=True, exist_ok=True)
     output_markdown.write_text(output_text, encoding="utf-8")
 
-    report = {
-        "generated_at": datetime.now(UTC).isoformat(),
-        "input_markdown": str(input_markdown),
-        "output_markdown": str(output_markdown),
-        "snapshot_path": str(snapshot_path),
-        "input_sha256": _sha256_text(input_text),
-        "output_sha256": _sha256_text(output_text),
-        "applied_count": len(applied),
-        "failure_count": 0,
-        "applied": applied,
-        "failures": [],
-    }
+    report = PatchApplyReport(
+        generated_at=datetime.now(UTC).isoformat(),
+        input_markdown=str(input_markdown),
+        output_markdown=str(output_markdown),
+        snapshot_path=str(snapshot_path),
+        input_sha256=_sha256_text(input_text),
+        output_sha256=_sha256_text(output_text),
+        applied_count=len(applied),
+        failure_count=0,
+        applied=applied,
+        failures=[],
+    )
     _write_json(report_path, report)
     return report
-
-
-def _as_object(value: object) -> dict[str, Any]:
-    return value if isinstance(value, dict) else {}
 
 
 def main() -> None:
@@ -481,11 +675,11 @@ def main() -> None:
         return
 
     if args.command == "validate-patches":
-        report = validate_patches(
+        validation = validate_patches(
             patch_dir=args.patch_dir.resolve(),
             report_path=args.report_path.resolve(),
         )
-        summary = report["summary"]
+        summary = validation["summary"]
         print(
             "[textbook_manual_workflow] "
             f"validated={summary['files_total']} valid={summary['valid_total']} "
@@ -496,7 +690,7 @@ def main() -> None:
         return
 
     if args.command == "apply-patches":
-        report = apply_patches(
+        apply_report = apply_patches(
             input_markdown=args.input_markdown.resolve(),
             patch_dir=args.patch_dir.resolve(),
             output_markdown=args.output_markdown.resolve(),
@@ -505,7 +699,7 @@ def main() -> None:
         )
         print(
             "[textbook_manual_workflow] "
-            f"applied={report['applied_count']} failures={report['failure_count']}"
+            f"applied={apply_report['applied_count']} failures={apply_report['failure_count']}"
         )
         return
 

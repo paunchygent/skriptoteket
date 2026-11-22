@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from collections.abc import Iterable
 
 from pydantic import JsonValue as PydanticJsonValue
 from pydantic import TypeAdapter, ValidationError
@@ -89,17 +89,24 @@ def _issues_from_validation_error(
     return issues
 
 
+_JSON_VALUE_ADAPTER: TypeAdapter[PydanticJsonValue] = TypeAdapter(PydanticJsonValue)
+
+
+def _require_json_value(value: object) -> PydanticJsonValue:
+    return _JSON_VALUE_ADAPTER.validate_python(value)
+
+
 def _issue_from_domain_validation_error(
     *,
     schema: SchemaName,
     exc: DomainError,
 ) -> SchemaValidationIssue:
-    details = exc.details or None
+    details = {key: _require_json_value(value) for key, value in exc.details.items()} or None
     return SchemaValidationIssue(
         schema=schema,
         path=None,
         message=exc.message,
-        details=details,  # type: ignore[arg-type]
+        details=details,
     )
 
 
@@ -108,11 +115,12 @@ def _issues_from_upload_limit_error(
     schema: SchemaName,
     exc: DomainError,
 ) -> list[SchemaValidationIssue]:
-    details: dict[str, Any] = exc.details or {}
+    details = exc.details
     index = details.get("index")
     field_name = details.get("field")
-    upload_max_files = details.get("upload_max_files")
     violations = details.get("violations") or []
+    if not isinstance(violations, Iterable):
+        raise TypeError("DomainError 'violations' detail must be iterable")
 
     issues: list[SchemaValidationIssue] = []
     for key in violations:
@@ -122,6 +130,7 @@ def _issues_from_upload_limit_error(
         if isinstance(index, int):
             path = f"/{index}/{key}"
         value = details.get(key)
+        upload_max_files = details.get("upload_max_files")
         message = (
             f"File field '{field_name}' has {key}={value}, but server upload limit is "
             f"{upload_max_files}."
@@ -134,8 +143,8 @@ def _issues_from_upload_limit_error(
                 details={
                     "field": str(field_name) if field_name is not None else None,
                     "key": key,
-                    "value": value,
-                    "upload_max_files": upload_max_files,
+                    "value": _require_json_value(value),
+                    "upload_max_files": _require_json_value(upload_max_files),
                 },
             )
         )
