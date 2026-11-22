@@ -12,6 +12,7 @@ closeout_review:
   record: inline
   status: not_started
 task_kind: repository
+lead_role: implementation-specialist
 acceptance_criteria:
   - 'Given the repository''s tracked Python files, when `pyrefly check --error explicit-any --only explicit-any` runs over them with Pyrefly 1.4.1, then it reports no error, and rg finds no `cast(` call or `# type: ignore` comment outside an exception recorded in this task.'
   - 'Given the released repository-governance runtime with explicit-any as an error, when the settings sync has run and `pdm run typecheck` runs, then a Pyrefly producer checks the typecheck-includes and passes, and a disposable module with `def f(x: Any) -> None` makes it fail.'
