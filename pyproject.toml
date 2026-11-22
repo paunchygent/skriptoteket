@@ -453,9 +453,9 @@ fe-gen-api-types = { composite = [
     "python -m scripts.export_native_exam_document_versions",
 ] }
 
-# Python typecheck producer: mypy as before, then Pyrefly explicit-any over the same targets
+# Python typecheck producer: mypy takes the cohort targets; Pyrefly takes none and checks project-includes
 typecheck-python = { composite = [
-    "mypy --config-file ${PDM_PROJECT_ROOT}/pyproject.toml",
+    "mypy --config-file pyproject.toml {args}",
     "pyrefly check --config ${PDM_PROJECT_ROOT}/pyproject.toml --only explicit-any",
 ] }
 
