@@ -27,6 +27,7 @@ from scripts.labeling_feasibility.postconv import RoutesScore
 from scripts.labeling_feasibility.projection import Reference, project
 from scripts.labeling_feasibility.requests import (
     RunSummary,
+    facit_answers,
     run_summary,
     saved_method,
     slots_output,
@@ -204,7 +205,7 @@ def evaluate_exam_run(
         facit_saved = saved["facit_a"]
         if facit_saved:
             result["facit_a"] = evaluate.facit_placement_scores(
-                match, answer_map(facit_saved["output"]), chunks
+                match, facit_answers(facit_saved["output"]), chunks
             )
         points_saved = saved["points_a"]
         if points_saved:

@@ -13,11 +13,11 @@ import httpx
 from pydantic import JsonValue
 
 from scripts.labeling_feasibility import grouping, methods, postconv, report
-from scripts.labeling_feasibility.api import OpenAIClient, response_body
+from scripts.labeling_feasibility.api import OpenAIClient, listed_answers
 from scripts.labeling_feasibility.converted import converted_exam
 from scripts.labeling_feasibility.method_models import Grouping, grouping_b_output
 from scripts.labeling_feasibility.render import png_data_url, render_docx_pages
-from scripts.labeling_feasibility.requests import MethodResult, run_summary, saved_method
+from scripts.labeling_feasibility.requests import MethodResult, saved_method, summary_ok
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.llm_door import AiDailyLimit, AiDailyLimitReached, tooling_caller
@@ -105,15 +105,14 @@ async def _probe_limits(client: OpenAIClient, evidence_dir: Path) -> None:
         record = await client.decisions(
             label=f"limit-{count}", input_value="1 2 3", questions=questions
         )
-        listed = response_body(record.body).get("answers")
         results.append(
             {
                 "questions": count,
                 "status": record.status_code,
-                "usage": dict(record.usage),
+                "usage": record.usage,
                 "duration_seconds": record.duration_seconds,
                 "error": None if record.ok else record.body,
-                "answers": len(listed) if isinstance(listed, list) and record.ok else 0,
+                "answers": len(listed_answers(record.body)) if record.ok else 0,
             }
         )
         print(
@@ -236,7 +235,7 @@ async def _retry_failed_exam(
         path.stem
         for path in exam_dir.glob("*.json")
         if not path.stem.startswith(("grouping_", "attempt"))
-        and not run_summary(saved_method(_load_json(path))["summary"])["ok"]
+        and not summary_ok(saved_method(_load_json(path))["summary"])
     }
     if not failed:
         return

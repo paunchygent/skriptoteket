@@ -44,6 +44,13 @@ def slots_output(value: JsonValue) -> SlotsOutput:
     return {"lines": asked, "answers": answer_map(value["answers"])}
 
 
+def facit_answers(value: JsonValue) -> dict[str, DecisionAnswer]:
+    """The answers of a saved facit output; the evaluator reads no other field of it."""
+    if not isinstance(value, dict):
+        raise TypeError("facit output must be a JSON object")
+    return answer_map(value["answers"])
+
+
 class RunSummary(TypedDict, total=False):
     """The summary block of a saved method file."""
 
@@ -92,6 +99,13 @@ def _summary_cost(saved: dict[str, JsonValue]) -> float | None:
     return value
 
 
+def summary_ok(value: JsonValue) -> bool:
+    """Whether a saved method summary records every call as ok; reads only ``ok``."""
+    if not isinstance(value, dict):
+        raise TypeError("saved summary must be a JSON object")
+    return bool(value["ok"])
+
+
 class SavedMethodFile(TypedDict, total=False):
     """A ``{summary, calls, output}`` file written for one labeling method."""
 
@@ -111,7 +125,7 @@ def saved_method(value: JsonValue) -> SavedMethodFile:
 @dataclass
 class MethodResult:
     calls: list[CallRecord]
-    output: object
+    output: JsonValue
 
     def summary(self) -> RunSummary:
         usage = [call.usage for call in self.calls]
@@ -132,12 +146,17 @@ class MethodResult:
         }
 
 
+def answers_json(answers: Mapping[str, dict[str, JsonValue]]) -> dict[str, JsonValue]:
+    """The answer objects by name, as the saved method output holds them."""
+    return {name: answer for name, answer in answers.items()}
+
+
 async def decide(
     client: OpenAIClient,
     label: str,
     input_value: str | Sequence[Mapping[str, JsonValue]],
     questions: Sequence[Mapping[str, JsonValue]],
-) -> tuple[list[CallRecord], dict[str, DecisionAnswer]]:
+) -> tuple[list[CallRecord], dict[str, dict[str, JsonValue]]]:
     """Send independent questions, split into concurrent requests at the observed size limit."""
     batches = [
         questions[start : start + MAX_QUESTIONS_PER_REQUEST]
@@ -149,7 +168,7 @@ async def decide(
             for index, batch in enumerate(batches)
         )
     )
-    answers: dict[str, DecisionAnswer] = {}
+    answers: dict[str, dict[str, JsonValue]] = {}
     for record in records:
         answers.update(decision_answers(record))
     return list(records), answers

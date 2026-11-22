@@ -6,7 +6,7 @@ from pydantic import JsonValue
 
 from scripts.labeling_feasibility.api import OpenAIClient
 from scripts.labeling_feasibility.method_models import Grouping
-from scripts.labeling_feasibility.requests import MethodResult, decide
+from scripts.labeling_feasibility.requests import MethodResult, answers_json, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 KIND_LABELS: tuple[tuple[str, str], ...] = (
@@ -105,7 +105,7 @@ async def kind(
     calls, answers = await decide(
         client, label, render_questions(grouping, chunks), kind_questions(grouping)
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def kind_with_images(
@@ -121,7 +121,7 @@ async def kind_with_images(
     calls, answers = await decide(
         client, label, [{"role": "user", "content": content}], kind_questions(grouping)
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def ambiguity(
@@ -147,7 +147,7 @@ async def ambiguity(
         for question in grouping.questions
     ]
     calls, answers = await decide(client, label, render_questions(grouping, chunks), questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 def answer_lines(grouping: Grouping, chunks: tuple[DocxChunk, ...]) -> list[str]:
@@ -178,7 +178,8 @@ async def answer_slots(
     calls, answers = await decide(
         client, label, render_questions(grouping, chunks, line_ids=True), questions
     )
-    return MethodResult(calls, {"lines": lines, "answers": answers})
+    asked: list[JsonValue] = [line for line in lines]
+    return MethodResult(calls, {"lines": asked, "answers": answers_json(answers)})
 
 
 # Placements.
@@ -225,7 +226,8 @@ async def facit_attachment(
     calls, answers = await decide(
         client, label, render_marked_document(grouping, chunks), questions
     )
-    return MethodResult(calls, {"keys": keys, "answers": answers})
+    asked_keys: list[JsonValue] = [key for key in keys]
+    return MethodResult(calls, {"keys": asked_keys, "answers": answers_json(answers)})
 
 
 async def points(
@@ -252,4 +254,4 @@ async def points(
     calls, answers = await decide(
         client, label, render_marked_document(grouping, chunks), questions
     )
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))

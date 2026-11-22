@@ -6,8 +6,8 @@ from pydantic import JsonValue
 
 from scripts.labeling_feasibility.api import (
     CallRecord,
-    DecisionAnswer,
     OpenAIClient,
+    decision_answer,
     responses_output_json,
 )
 from scripts.labeling_feasibility.method_models import (
@@ -18,7 +18,7 @@ from scripts.labeling_feasibility.method_models import (
     _json_str,
     _json_str_list,
 )
-from scripts.labeling_feasibility.requests import MethodResult, decide
+from scripts.labeling_feasibility.requests import MethodResult, answers_json, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 GROUPING_MODEL = "gpt-6-luna"
@@ -221,11 +221,12 @@ def _role_instructions(chunks: tuple[DocxChunk, ...], index: int, *, quote_chunk
     return f"{asked}\nThe chunk reads: {chunk.marked_text}\nThe chunk before it reads: {previous}"
 
 
-def _choice_or(answer: DecisionAnswer | None, default: str) -> str:
+def _choice_or(answer: dict[str, JsonValue] | None, default: str) -> str:
     """A Decisions choice value; a missing or non-string answer reads as the default."""
-    if answer is None:
+    narrowed = decision_answer(answer)
+    if narrowed is None:
         return default
-    choice = answer.get("choice")
+    choice = narrowed.get("choice")
     return choice if isinstance(choice, str) else default
 
 
@@ -267,15 +268,15 @@ async def grouping_b(
             for anchor in shared
         }
     grouping = build_grouping_from_roles(chunks, roles, scopes)
-    result = MethodResult(
-        role_calls + scope_calls,
-        {
-            "grouping": grouping.to_json(),
-            "roles": roles,
-            "scopes": scopes,
-            "answers": role_answers,
-        },
-    )
+    roles_json: dict[str, JsonValue] = {anchor: role for anchor, role in roles.items()}
+    scopes_json: dict[str, JsonValue] = {anchor: scope for anchor, scope in scopes.items()}
+    output: dict[str, JsonValue] = {
+        "grouping": grouping.to_json(),
+        "roles": roles_json,
+        "scopes": scopes_json,
+        "answers": answers_json(role_answers),
+    }
+    result = MethodResult(role_calls + scope_calls, output)
     return result, grouping
 
 

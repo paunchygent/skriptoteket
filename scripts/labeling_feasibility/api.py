@@ -43,27 +43,6 @@ _RESPONSES_OUTPUT = 0.50
 _DECISIONS_INPUT = 0.10
 
 
-class ResponseBody(TypedDict, total=False):
-    """A provider reply body, declaring only the keys readers inspect."""
-
-    usage: JsonValue
-    answers: JsonValue
-    output: JsonValue
-
-
-def response_body(value: JsonValue) -> ResponseBody:
-    body: ResponseBody = {}
-    if not isinstance(value, dict):
-        return body
-    if "usage" in value:
-        body["usage"] = value["usage"]
-    if "answers" in value:
-        body["answers"] = value["answers"]
-    if "output" in value:
-        body["output"] = value["output"]
-    return body
-
-
 class UsageDetails(TypedDict, total=False):
     cached_tokens: JsonValue
     cache_write_tokens: JsonValue
@@ -110,9 +89,11 @@ def _usage_info(value: JsonValue | None) -> UsageInfo:
     return info
 
 
-def _raw_usage(body: JsonValue) -> dict[str, JsonValue]:
+def _usage_object(body: JsonValue) -> dict[str, JsonValue]:
     """The usage object verbatim for evidence files, or empty when absent."""
-    usage = response_body(body).get("usage")
+    if not isinstance(body, dict):
+        return {}
+    usage = body.get("usage")
     return usage if isinstance(usage, dict) else {}
 
 
@@ -131,11 +112,17 @@ class CallRecord:
         return self.status_code == 200 and isinstance(self.body, dict)
 
     @property
-    def usage(self) -> UsageInfo:
-        return _usage_info(response_body(self.body).get("usage"))
+    def usage(self) -> dict[str, JsonValue]:
+        """The provider's usage object as received; evidence files keep it whole."""
+        return _usage_object(self.body)
+
+    @property
+    def usage_info(self) -> UsageInfo:
+        """The usage fields the cost and summary arithmetic reads."""
+        return _usage_info(self.usage)
 
     def cost_usd(self) -> float | None:
-        usage = self.usage
+        usage = self.usage_info
         input_tokens = usage.get("input_tokens")
         if not isinstance(input_tokens, int):
             return None
@@ -164,7 +151,7 @@ class CallRecord:
             "status_code": self.status_code,
             "duration_seconds": round(self.duration_seconds, 3),
             "headers": headers,
-            "usage": _raw_usage(self.body),
+            "usage": self.usage,
             "cost_usd": self.cost_usd(),
             "request_summary": summary,
             "body": self.body,
@@ -360,8 +347,8 @@ class OpenAIClient:
 
 
 class OutputPart(TypedDict, total=False):
-    type: JsonValue
-    text: JsonValue
+    type: str
+    text: str
 
 
 class OutputItem(TypedDict, total=False):
@@ -372,10 +359,12 @@ def _output_part(value: JsonValue) -> OutputPart | None:
     if not isinstance(value, dict):
         return None
     part: OutputPart = {}
-    if "type" in value:
-        part["type"] = value["type"]
-    if "text" in value:
-        part["text"] = value["text"]
+    part_type = value.get("type")
+    if isinstance(part_type, str):
+        part["type"] = part_type
+    text = value.get("text")
+    if isinstance(text, str):
+        part["text"] = text
     return part
 
 
@@ -389,34 +378,49 @@ def _output_item(value: JsonValue) -> OutputItem | None:
     return item
 
 
-def responses_output_json(record: CallRecord) -> JsonValue | None:
-    """Parse the structured output text of a completed Responses call."""
-    output = response_body(record.body).get("output")
+def _output_items(body: JsonValue) -> list[OutputItem] | None:
+    """The reply's output items, or None when the body has no output array."""
+    if not isinstance(body, dict):
+        return None
+    output = body.get("output")
     if not isinstance(output, list):
         return None
-    for item_value in output:
-        item = _output_item(item_value)
-        if item is None:
-            continue
+    return [item for item in (_output_item(value) for value in output) if item is not None]
+
+
+def responses_output_json(record: CallRecord) -> JsonValue | None:
+    """Parse the structured output text of a completed Responses call."""
+    items = _output_items(record.body)
+    if items is None:
+        return None
+    for item in items:
         content = item.get("content")
-        if not isinstance(content, list):
+        if content is None:
             continue
         for part in content:
             if part.get("type") == "output_text":
                 text = part.get("text")
-                return json.loads(text) if isinstance(text, str) else None
+                return json.loads(text) if text is not None else None
     return None
 
 
-def decision_answers(record: CallRecord) -> dict[str, DecisionAnswer]:
-    listed = response_body(record.body).get("answers")
-    if not isinstance(listed, list):
-        return {}
-    found: dict[str, DecisionAnswer] = {}
-    for answer in listed:
-        narrowed = decision_answer(answer)
-        if narrowed is not None and "name" in narrowed:
-            found[narrowed["name"]] = narrowed
+def listed_answers(body: JsonValue) -> list[JsonValue]:
+    """The reply's ``answers`` array, or empty when the body has none."""
+    if not isinstance(body, dict):
+        return []
+    listed = body.get("answers")
+    return listed if isinstance(listed, list) else []
+
+
+def decision_answers(record: CallRecord) -> dict[str, dict[str, JsonValue]]:
+    """The reply's answer objects by name, each kept whole for the saved evidence."""
+    found: dict[str, dict[str, JsonValue]] = {}
+    for answer in listed_answers(record.body):
+        if not isinstance(answer, dict):
+            continue
+        name = answer.get("name")
+        if isinstance(name, str):
+            found[name] = answer
     return found
 
 

@@ -17,7 +17,7 @@ from scripts.labeling_feasibility.api import DecisionAnswer, OpenAIClient
 from scripts.labeling_feasibility.converted import ConvertedExam, ConvertedItem
 from scripts.labeling_feasibility.evaluate import _keyed_equal
 from scripts.labeling_feasibility.projection import Reference, _covers, _f1, tokens
-from scripts.labeling_feasibility.requests import MethodResult, decide
+from scripts.labeling_feasibility.requests import MethodResult, answers_json, decide
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 
 RECORDINGS = Path("tests/fixtures/exam_conversion/docx_key_provenance_v14")
@@ -111,7 +111,7 @@ async def check_conversion(
             ]
         )
     calls, answers = await decide(client, label, rendered, questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 async def route_retries(
@@ -145,7 +145,7 @@ async def route_retries(
         for index in failed
     ]
     calls, answers = await decide(client, label, rendered, questions)
-    return MethodResult(calls, answers)
+    return MethodResult(calls, answers_json(answers))
 
 
 # Evaluator side: gold joins here only.
