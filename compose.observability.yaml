@@ -3,8 +3,12 @@
 # Lifecycle: Independent from application - can be started/stopped separately
 #
 # Usage:
-#   docker compose -f compose.observability.yaml up -d
-#   docker compose -f compose.observability.yaml down
+#   Start or recreate (up) only with the secrets overlay, wrapped by
+#   agent-secrets; the single quotes make the preserve list expand inside the
+#   process agent-secrets starts:
+#     agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env="$AGENT_SECRETS_VARIABLES" docker compose -f compose.observability.yaml -f compose.secrets.observability.yaml up -d'
+#   Diagnostics and stop use this base file alone (no secrets):
+#     sudo docker compose -f compose.observability.yaml ps|logs|stop
 #
 # Prerequisites:
 #   - External network: docker network create hule-network

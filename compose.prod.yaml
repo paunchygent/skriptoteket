@@ -1,11 +1,12 @@
 ---
 # Production deployment for home server (hemma.hule.education)
 # Usage:
-#   Deploy/recreate (build, up, migrate, readiness smoke) goes through the
-#   checked-in wrappers only:
-#     pdm run hemma-deploy                  (scripts/hemma_deploy_start.sh ->
-#       scripts/hemma_deploy_and_verify_seating_export.sh)
-#     pdm run hemma-deploy-share-previews   (scripts/hemma_deploy_and_verify_share_previews.sh)
+#   Deploy/recreate (build, up, migrate, readiness smoke) goes only through
+#   the launcher scripts/hemma_deploy_start.sh, which syncs the Hemma checkout
+#   to origin/main and starts the deploy worker under
+#   `agent-secrets run --set skriptoteket-prod`. Never start a worker directly:
+#     pdm run hemma-deploy                  (starts scripts/hemma_deploy_and_verify_seating_export.sh)
+#     pdm run hemma-deploy-share-previews   (starts scripts/hemma_deploy_and_verify_share_previews.sh)
 #   Diagnostics on the running stack use this base file alone (no secrets):
 #     sudo docker compose -f compose.prod.yaml ps|logs|stop
 #
