@@ -144,6 +144,8 @@ def _run_launcher(
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
     env["CALLS"] = str(calls_log)
     env["SSH_TARGET"] = str(target)
+    # The removed override must be ignored: the ssh stub exits 93 on any other path.
+    env["SKRIPTOTEKET_HEMMA_REPO_DIR"] = str(tmp_path / "elsewhere")
     result = subprocess.run(
         [
             "bash",
