@@ -116,8 +116,7 @@ def seed_script_bank(
     Example (SSH into server):
         ssh hemma
         cd ~/apps/skriptoteket
-        docker exec -e PYTHONPATH=/app/src skriptoteket-web \\
-            pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod
+        pdm run hemma-seed-script-bank -- --dry-run --profile prod
     """
     asyncio.run(
         _seed_script_bank_async(

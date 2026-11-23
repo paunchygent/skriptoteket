@@ -1,8 +1,10 @@
 """Unit tests for PR-0254 auth-cutover command configuration.
 
 Purpose:
-    Prove the PR-0254 one-command smoke resolves the dedicated lifecycle proof
-    account before falling back to generic bootstrap credentials.
+    Prove the PR-0254 one-command smoke resolves credentials from the canonical
+    environment variables: the lifecycle-proof email lane still resolves, while
+    the password only comes from PLAYWRIGHT_PASSWORD /
+    BOOTSTRAP_SUPERUSER_PASSWORD (the retired proof password alias is ignored).
 
 Relationships:
     - Exercises `scripts.playwright_pr_0254_auth_cutover` credential selection.
@@ -24,24 +26,25 @@ from scripts.playwright_pr_0254_auth_cutover import (
 )
 
 
-def test_credentials_prefer_lifecycle_proof_env_over_bootstrap(
+def test_credentials_prefer_lifecycle_proof_email_and_bootstrap_password(
     monkeypatch,
 ) -> None:
     monkeypatch.delenv("PLAYWRIGHT_EMAIL", raising=False)
     monkeypatch.delenv("PLAYWRIGHT_PASSWORD", raising=False)
     monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL", "proof@example.test")
     monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD", "proof-password")
+    monkeypatch.setenv("BOOTSTRAP_SUPERUSER_PASSWORD", "bootstrap-password")
     dotenv = {
         "SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL": "dotenv-proof@example.test",
         "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "dotenv-proof-password",
         "BOOTSTRAP_SUPERUSER_EMAIL": "bootstrap@example.test",
-        "BOOTSTRAP_SUPERUSER_PASSWORD": "bootstrap-password",
+        "BOOTSTRAP_SUPERUSER_PASSWORD": "dotenv-bootstrap-password",
     }
 
     email, password = _credentials(email=None, password=None, dotenv=dotenv)
 
     assert email == "proof@example.test"
-    assert password == "proof-password"
+    assert password == "bootstrap-password"
 
 
 def test_credentials_prefer_playwright_env_over_lifecycle_proof(

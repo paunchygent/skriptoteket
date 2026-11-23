@@ -104,11 +104,14 @@ pdm run seed-script-bank --no-publish --profile dev
 
 ### Source: Körning (produktion via Docker)
 
-Kör i `skriptoteket-web`-containern (så att du får rätt `DATABASE_URL` och samma runtime deps som tjänsten):
+Kör på Hemma i produktions-checkouten `~/apps/skriptoteket`. pdm-skriptet hämtar
+`BOOTSTRAP_SUPERUSER_*` ur `skriptoteket-prod`-setet via `agent-secrets` och kör
+modulen i `web`-containern (så att du får rätt `DATABASE_URL` och samma runtime
+deps som tjänsten):
 
 ```bash
-sudo docker exec -it skriptoteket-web pdm run seed-script-bank --dry-run --profile prod
-sudo docker exec -it skriptoteket-web pdm run seed-script-bank --profile prod
+pdm run hemma-seed-script-bank -- --dry-run --profile prod
+pdm run hemma-seed-script-bank -- --profile prod
 ```
 
 Tips: Kör `--slug ...` när du bara vill uppdatera ett specifikt verktyg.

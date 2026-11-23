@@ -522,6 +522,7 @@ ltm-validate = "python -m scripts.check_long_term_memory_entries"
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
 hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
 hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --script scripts/hemma_deploy_and_verify_share_previews.sh"
+hemma-seed-script-bank = { cmd = "agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml exec -e PYTHONPATH=/app/src -e BOOTSTRAP_SUPERUSER_EMAIL -e BOOTSTRAP_SUPERUSER_PASSWORD web pdm run python -m skriptoteket.cli seed-script-bank \"$@\"' bash" }
 
 # Hemma staging (rootless project skriptoteket-dev beside HuleEdu staging)
 hemma-dev = "python -m scripts.hemma_dev"
