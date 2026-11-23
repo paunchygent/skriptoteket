@@ -57,7 +57,7 @@ def seed_script_bank(
         prompt=True,
         help=(
             "Admin/superuser email for audit fields. "
-            "Use BOOTSTRAP_SUPERUSER_EMAIL from the SERVER's .env (e.g. admin@hule.education)."
+            "Use the BOOTSTRAP_SUPERUSER_EMAIL environment variable (e.g. admin@hule.education)."
         ),
     ),
     actor_password: str = typer.Option(
@@ -67,7 +67,8 @@ def seed_script_bank(
         hide_input=True,
         help=(
             "Password for the admin/superuser account. "
-            "Use BOOTSTRAP_SUPERUSER_PASSWORD from the SERVER's .env."
+            "Use the BOOTSTRAP_SUPERUSER_PASSWORD environment variable "
+            "(the seed-script-bank pdm script runs through agent-secrets)."
         ),
     ),
     slug: list[str] = typer.Option(
@@ -107,8 +108,10 @@ def seed_script_bank(
     """Seed curated repo scripts into the database (idempotent by tool slug).
 
     This command must be run ON THE SERVER or inside the Docker container where
-    the database is accessible. The superuser credentials are stored in the server's
-    .env file (BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD).
+    the database is accessible. The superuser credentials come from the process
+    environment (BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD);
+    the `seed-script-bank` pdm script supplies them through
+    `agent-secrets run --set skriptoteket-operator`.
 
     Example (SSH into server):
         ssh hemma

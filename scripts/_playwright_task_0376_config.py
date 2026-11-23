@@ -86,11 +86,12 @@ def parse_args(argv: Sequence[str] | None = None) -> ProofConfig:
 
     dotenv = _read_dotenv(Path(args.dotenv))
     email = args.email or os.environ.get("PLAYWRIGHT_EMAIL") or dotenv.get("PLAYWRIGHT_EMAIL")
-    password = (
-        args.password or os.environ.get("PLAYWRIGHT_PASSWORD") or dotenv.get("PLAYWRIGHT_PASSWORD")
-    )
+    password = args.password or os.environ.get("PLAYWRIGHT_PASSWORD")
     if not email or not password:
-        parser.error("Missing credentials. Provide --email/--password or PLAYWRIGHT_* values.")
+        parser.error(
+            "Missing credentials. Provide --email/--password or PLAYWRIGHT_* environment "
+            "variables (the password is never read from .env; the email may come from --dotenv)."
+        )
 
     return ProofConfig(
         base_url=_normalize_origin(

@@ -29,6 +29,7 @@ def test_transcript_live_proof_exits_before_copying_media_when_preflight_blocks(
         "SIR_CONVERT_REMOTE_INFERENCE_PROOF_LANE",
     ):
         monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("PLAYWRIGHT_PASSWORD", "super-secret-password")
     audio_path = tmp_path / "source.mp3"
     audio_path.write_bytes(b"not-real-audio")
     dotenv_path = tmp_path / ".env"
@@ -36,7 +37,6 @@ def test_transcript_live_proof_exits_before_copying_media_when_preflight_blocks(
         "\n".join(
             [
                 "PLAYWRIGHT_EMAIL=proof@example.test",
-                "PLAYWRIGHT_PASSWORD=super-secret-password",
             ]
         ),
         encoding="utf-8",
@@ -86,6 +86,7 @@ def test_transcript_live_proof_blocks_split_gateway_and_producer_lanes_before_co
         "SIR_CONVERT_REMOTE_INFERENCE_PROOF_LANE",
     ):
         monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("PLAYWRIGHT_PASSWORD", "super-secret-password")
     audio_path = tmp_path / "source.mp3"
     audio_path.write_bytes(b"not-real-audio")
     monkeypatch.setattr(
@@ -97,7 +98,6 @@ def test_transcript_live_proof_blocks_split_gateway_and_producer_lanes_before_co
         "\n".join(
             [
                 "PLAYWRIGHT_EMAIL=proof@example.test",
-                "PLAYWRIGHT_PASSWORD=super-secret-password",
                 "SIR_CONVERT_REMOTE_INFERENCE_PROOF_LANE=hemma-remote-proof",
                 "SIR_CONVERT_REMOTE_INFERENCE_BACKEND_URL=http://host.docker.internal:28085",
                 "SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:8085",
@@ -147,6 +147,7 @@ def test_transcript_live_proof_blocks_running_producer_mismatch_before_copying_m
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv("PLAYWRIGHT_PASSWORD", "super-secret-password")
     audio_path = tmp_path / "source.mp3"
     audio_path.write_bytes(b"not-real-audio")
     monkeypatch.setattr(
@@ -175,7 +176,6 @@ def test_transcript_live_proof_blocks_running_producer_mismatch_before_copying_m
         "\n".join(
             [
                 "PLAYWRIGHT_EMAIL=proof@example.test",
-                "PLAYWRIGHT_PASSWORD=super-secret-password",
                 "SIR_CONVERT_REMOTE_INFERENCE_PROOF_LANE=hemma-remote-proof",
                 "SIR_CONVERT_REMOTE_INFERENCE_BACKEND_URL=http://host.docker.internal:28085",
                 "SIR_CONVERT_A_LOT_V2_BASE_URL=http://host.docker.internal:28085",

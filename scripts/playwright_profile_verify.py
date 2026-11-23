@@ -5,11 +5,27 @@ import os
 import sys
 from pathlib import Path
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 from playwright.sync_api import sync_playwright
 
-# Load environment variables
-load_dotenv()
+# .env supplies configuration only; passwords reach this process through the
+# environment (TASK-SKRIPT-REP-0074).
+_DOTENV_EXCLUDED = frozenset(
+    {
+        "BOOTSTRAP_SUPERUSER_PASSWORD",
+        "PLAYWRIGHT_PASSWORD",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD",
+    }
+)
+
+
+def _load_dotenv_config(path: Path = Path(".env")) -> None:
+    for key, value in dotenv_values(path).items():
+        if value is not None and key not in _DOTENV_EXCLUDED:
+            os.environ.setdefault(key, value)
+
+
+_load_dotenv_config()
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:5173")
 EMAIL = os.getenv("BOOTSTRAP_SUPERUSER_EMAIL", "")
@@ -20,7 +36,10 @@ ARTIFACTS_DIR = Path(__file__).parent.parent / ".artifacts" / "profile-verify"
 
 def main() -> int:
     if not EMAIL or not PASSWORD:
-        print("ERROR: BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD required in .env")
+        print(
+            "ERROR: BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD required; "
+            "the password comes from the environment only (never .env)."
+        )
         return 1
 
     ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)

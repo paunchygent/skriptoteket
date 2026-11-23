@@ -45,14 +45,12 @@ def _get_credentials(*, dotenv: dict[str, str]) -> tuple[str | None, str | None]
     """Resolve eval harness credentials (bootstrap superuser preferred)."""
 
     email = os.environ.get("BOOTSTRAP_SUPERUSER_EMAIL") or dotenv.get("BOOTSTRAP_SUPERUSER_EMAIL")
-    password = os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD") or dotenv.get(
-        "BOOTSTRAP_SUPERUSER_PASSWORD"
-    )
+    password = os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD")
     if email is not None or password is not None:
         return email, password
 
     email = os.environ.get("PLAYWRIGHT_EMAIL") or dotenv.get("PLAYWRIGHT_EMAIL")
-    password = os.environ.get("PLAYWRIGHT_PASSWORD") or dotenv.get("PLAYWRIGHT_PASSWORD")
+    password = os.environ.get("PLAYWRIGHT_PASSWORD")
     return email, password
 
 
@@ -89,7 +87,7 @@ def parse_args() -> HarnessConfig:
         "--password",
         default=default_password,
         help=(
-            "Login password (default: BOOTSTRAP_SUPERUSER_PASSWORD, fallback PLAYWRIGHT_PASSWORD, from env/dotenv)."
+            "Login password (default: BOOTSTRAP_SUPERUSER_PASSWORD from env, fallback PLAYWRIGHT_PASSWORD from env)."
         ),
     )
     parser.add_argument(
@@ -122,8 +120,10 @@ def parse_args() -> HarnessConfig:
     if not args.email or not args.password:
         parser.error(
             "Missing credentials. Either:\n"
-            "  1) Set BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD in --dotenv (recommended)\n"
-            "  2) Export them as environment variables\n"
+            "  1) Export BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD as environment "
+            "variables (recommended; the password is never read from .env)\n"
+            "  2) Export PLAYWRIGHT_EMAIL/PLAYWRIGHT_PASSWORD as environment variables "
+            "(the password is never read from .env)\n"
             "  3) Pass --email and --password"
         )
 
