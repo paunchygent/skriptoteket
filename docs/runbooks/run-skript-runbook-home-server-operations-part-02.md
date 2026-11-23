@@ -123,7 +123,7 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observabilit
 Note: `docker compose restart` does **not** re-read `.env`. For env var changes use a recreate:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --no-deps --force-recreate web'"
 ```
 
 Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
@@ -133,7 +133,7 @@ the target service. Conversion Hub, for example, requires `SIR_CONVERT_A_LOT_V2_
 If the change affects worker configuration, recreate worker too:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate worker"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --no-deps --force-recreate worker'"
 ```
 
 ### Disk Space / Session Cleanup

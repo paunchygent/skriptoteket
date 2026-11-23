@@ -174,7 +174,7 @@ GRANT ALL PRIVILEGES ON DATABASE huleedu_spellchecker TO huleedu_user;
 ### Source: Skriptoteket
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && git pull && agent-secrets run --set skriptoteket-prod -- docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --build"
 ```
 
 ### Source: HuleEdu
