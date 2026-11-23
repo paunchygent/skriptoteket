@@ -47,22 +47,40 @@ require_env() {
   fi
 }
 
+load_env_config() {
+  # Read one named, non-secret configuration setting from .env. A value already
+  # present in the environment wins; secrets never come from .env.
+  local key="$1" line value
+  line="$(grep -E "^[[:space:]]*(export[[:space:]]+)?${key}=" .env | tail -n 1 || true)"
+  if [[ -n "$line" && -z "${!key:-}" ]]; then
+    value="${line#*=}"
+    if [[ "$value" =~ ^\"(.*)\"$ || "$value" =~ ^\'(.*)\'$ ]]; then
+      value="${BASH_REMATCH[1]}"
+    fi
+    export "${key}=${value}"
+  fi
+}
+
 if [[ ! -f .env ]]; then
   echo "Missing .env in $ROOT_DIR." >&2
   exit 1
 fi
 
-require_clean_git_checkout
-sync_checkout_to_origin_main
+if [[ "${1:-}" != "--deploy-phase" ]]; then
+  require_clean_git_checkout
+  sync_checkout_to_origin_main
 
-if [[ -z "${AGENT_SECRETS_VARIABLES:-}" ]]; then
-  # .env carries configuration only; secrets come from the agent-secrets set.
-  set -a
-  # shellcheck disable=SC1091
-  source .env
-  set +a
-  exec agent-secrets run --set skriptoteket-prod -- bash "$0" "$@"
+  # Secrets reach the deploy phase only through the production set. This exec
+  # is unconditional: an inherited AGENT_SECRETS_VARIABLES never satisfies it.
+  exec agent-secrets run --set skriptoteket-prod -- bash "$0" --deploy-phase "$@"
 fi
+shift
+
+# .env carries configuration only; read just the non-secret names this script
+# uses instead of sourcing the whole file.
+load_env_config BOOTSTRAP_SUPERUSER_EMAIL
+load_env_config SIR_CONVERT_A_LOT_V2_BASE_URL
+load_env_config HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR
 
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
@@ -99,10 +117,11 @@ echo "==> Applying database migrations"
 "${COMPOSE[@]}" exec -T -e PYTHONPATH=/app/src web pdm run db-upgrade
 
 echo "==> Running local seating export smoke"
-sudo docker exec \
+sudo --preserve-env="BOOTSTRAP_SUPERUSER_EMAIL,BOOTSTRAP_SUPERUSER_PASSWORD" \
+  docker exec \
   -e PYTHONPATH=/app/src \
-  -e BOOTSTRAP_SUPERUSER_EMAIL="${BOOTSTRAP_SUPERUSER_EMAIL}" \
-  -e BOOTSTRAP_SUPERUSER_PASSWORD="${BOOTSTRAP_SUPERUSER_PASSWORD}" \
+  -e BOOTSTRAP_SUPERUSER_EMAIL \
+  -e BOOTSTRAP_SUPERUSER_PASSWORD \
   skriptoteket-web \
   pdm run python -m skriptoteket.cli smoke-seating-export-readiness \
   --correlation-id "${CORRELATION_PREFIX}-smoke" \
