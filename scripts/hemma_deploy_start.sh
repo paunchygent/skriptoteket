@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Launch the canonical Hemma deploy script as a detached remote process.
 # The launcher first syncs the remote checkout to origin/main so the worker it
-# opens is always the merged revision. The remote raw log remains
+# opens is always the merged revision, then starts that worker under
+# `agent-secrets run --set skriptoteket-prod`. The remote raw log remains
 # authoritative; this launcher only hands off cleanly, prints PID/log
 # breadcrumbs, and exits.
 
@@ -94,7 +95,9 @@ run_stamp="$(date +%Y%m%d-%H%M%S)"
 log_path="$repo_dir/.artifacts/hemma-deploy-${run_stamp}.log"
 pid_path="$repo_dir/.artifacts/hemma-deploy-${run_stamp}.pid"
 
-nohup /bin/bash "$script_path" >"$log_path" 2>&1 </dev/null &
+# The worker is a fixed child: it reads secrets only from the production set
+# this launcher opens it under, and never syncs or re-enters itself.
+nohup agent-secrets run --set skriptoteket-prod -- /bin/bash "$script_path" >"$log_path" 2>&1 </dev/null &
 pid="$!"
 printf '%s\n' "$pid" >"$pid_path"
 

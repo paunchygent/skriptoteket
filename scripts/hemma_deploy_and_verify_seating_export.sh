@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Canonical on-host deploy + seating-export readiness gate for Hemma.
-# Run this from ~/apps/skriptoteket.
+# Start it only with `pdm run hemma-deploy`: the launcher
+# (scripts/hemma_deploy_start.sh) syncs the checkout to origin/main and opens
+# this worker under the production secrets set.
 
 set -euo pipefail
 
@@ -16,29 +18,6 @@ RUN_STAMP="$(date +%Y%m%d-%H%M%S)"
 CORRELATION_PREFIX="pr-0146-seat-export-${RUN_STAMP}"
 ARTIFACT_DIR="${ROOT_DIR}/.artifacts/pr-0146-seat-export-cutover-${RUN_STAMP}"
 
-require_clean_git_checkout() {
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "Refusing to deploy with local git changes in ${ROOT_DIR}." >&2
-    exit 1
-  fi
-}
-
-sync_checkout_to_origin_main() {
-  local current_branch
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
-
-  if [[ "$current_branch" != "main" ]]; then
-    echo "==> Switching deployment checkout from ${current_branch} to main"
-    git checkout main
-  fi
-
-  echo "==> Fetching latest origin/main"
-  git fetch origin main
-  echo "==> Fast-forwarding local main to origin/main"
-  git pull --ff-only origin main
-  echo "==> Deploying commit $(git rev-parse HEAD)"
-}
-
 require_env() {
   local key="$1"
   if [[ -z "${!key:-}" ]]; then
@@ -47,40 +26,28 @@ require_env() {
   fi
 }
 
-load_env_config() {
-  # Read one named, non-secret configuration setting from .env. A value already
-  # present in the environment wins; secrets never come from .env.
-  local key="$1" line value
-  line="$(grep -E "^[[:space:]]*(export[[:space:]]+)?${key}=" .env | tail -n 1 || true)"
-  if [[ -n "$line" && -z "${!key:-}" ]]; then
-    value="${line#*=}"
-    if [[ "$value" =~ ^\"(.*)\"$ || "$value" =~ ^\'(.*)\'$ ]]; then
-      value="${BASH_REMATCH[1]}"
-    fi
-    export "${key}=${value}"
-  fi
-}
+if [[ $# -gt 0 ]]; then
+  echo "This worker takes no arguments; start it with pdm run hemma-deploy." >&2
+  exit 2
+fi
 
 if [[ ! -f .env ]]; then
   echo "Missing .env in $ROOT_DIR." >&2
   exit 1
 fi
 
-if [[ "${1:-}" != "--deploy-phase" ]]; then
-  require_clean_git_checkout
-  sync_checkout_to_origin_main
-
-  # Secrets reach the deploy phase only through the production set. This exec
-  # is unconditional: an inherited AGENT_SECRETS_VARIABLES never satisfies it.
-  exec agent-secrets run --set skriptoteket-prod -- bash "$0" --deploy-phase "$@"
-fi
-shift
-
-# .env carries configuration only; read just the non-secret names this script
-# uses instead of sourcing the whole file.
-load_env_config BOOTSTRAP_SUPERUSER_EMAIL
-load_env_config SIR_CONVERT_A_LOT_V2_BASE_URL
-load_env_config HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR
+# .env carries configuration only. One dotenv parser reads just the named,
+# non-secret settings this worker uses; a value already in the environment wins.
+config="$(pdm run python scripts/hemma_deploy_config.py .env \
+  BOOTSTRAP_SUPERUSER_EMAIL \
+  SIR_CONVERT_A_LOT_V2_BASE_URL \
+  HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR)"
+while IFS='=' read -r name value; do
+  [[ -n "$name" ]] || continue
+  if [[ -z "${!name:-}" ]]; then
+    export "${name}=${value}"
+  fi
+done <<<"$config"
 
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
