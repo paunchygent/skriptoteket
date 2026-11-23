@@ -1,28 +1,30 @@
 #!/usr/bin/env bash
-# Launch the canonical Hemma deploy script as a detached remote process.
-# The launcher first syncs the remote checkout to origin/main so the worker it
-# opens is always the merged revision, then starts that worker under
-# `agent-secrets run --set skriptoteket-prod`. The remote raw log remains
-# authoritative; this launcher only hands off cleanly, prints PID/log
-# breadcrumbs, and exits.
+# Launch one of the two checked-in Hemma deploy workers as a detached remote
+# process. The launcher first syncs the remote checkout to origin/main so the
+# worker it opens is always the merged revision, then starts that worker under
+# `agent-secrets run --set skriptoteket-prod`. Only the named modes below
+# select a worker; no path or environment override exists, so the production
+# set reaches no other program. The remote raw log remains authoritative; this
+# launcher only hands off cleanly, prints PID/log breadcrumbs, and exits.
 
 set -euo pipefail
 
 SSH_HOST="${SKRIPTOTEKET_HEMMA_HOST:-hemma}"
 REMOTE_REPO_DIR="${SKRIPTOTEKET_HEMMA_REPO_DIR:-/home/paunchygent/apps/skriptoteket}"
-REMOTE_SCRIPT_REL="${SKRIPTOTEKET_HEMMA_DEPLOY_SCRIPT:-scripts/hemma_deploy_and_verify_seating_export.sh}"
+MODE="seating-export"
 
 usage() {
   cat <<EOF
-Usage: pdm run hemma-deploy [--host <ssh-host>] [--repo-dir <remote-repo-dir>] [--script <remote-script-relpath>]
+Usage: pdm run hemma-deploy [--host <ssh-host>] [--repo-dir <remote-repo-dir>] [--mode seating-export|share-previews]
 
-Starts the checked-in Hemma deploy/readiness script as a detached remote process.
+Starts a checked-in Hemma deploy/readiness worker as a detached remote process.
 
 Options:
   --host      SSH host alias to use (default: ${SSH_HOST})
   --repo-dir  Remote Skriptoteket checkout path (default: ${REMOTE_REPO_DIR})
-  --script    Deploy script path relative to the remote repo root
-              (default: ${REMOTE_SCRIPT_REL})
+  --mode      Deploy mode (default: seating-export):
+                seating-export  scripts/hemma_deploy_and_verify_seating_export.sh
+                share-previews  scripts/hemma_deploy_and_verify_share_previews.sh
   --help      Show this help text
 EOF
 }
@@ -37,9 +39,9 @@ while [[ $# -gt 0 ]]; do
       REMOTE_REPO_DIR="$2"
       shift 2
       ;;
-    --script)
-      REMOTE_SCRIPT_REL="$2"
-      shift 2
+    --mode)
+      MODE="${2:-}"
+      shift $(( $# > 1 ? 2 : 1 ))
       ;;
     --help|-h)
       usage
@@ -52,6 +54,20 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+case "$MODE" in
+  seating-export)
+    REMOTE_SCRIPT_REL="scripts/hemma_deploy_and_verify_seating_export.sh"
+    ;;
+  share-previews)
+    REMOTE_SCRIPT_REL="scripts/hemma_deploy_and_verify_share_previews.sh"
+    ;;
+  *)
+    echo "Unknown deploy mode: ${MODE} (expected seating-export or share-previews)" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
 
 ssh "$SSH_HOST" /bin/bash -s -- "$REMOTE_REPO_DIR" "$REMOTE_SCRIPT_REL" <<'EOF'
 set -euo pipefail
@@ -82,9 +98,6 @@ git fetch origin main
 git pull --ff-only origin main
 
 script_path="$repo_dir/$script_rel"
-if [[ "$script_rel" = /* ]]; then
-  script_path="$script_rel"
-fi
 
 if [[ ! -f "$script_path" ]]; then
   echo "Remote deploy script not found after syncing origin/main: $script_path" >&2
