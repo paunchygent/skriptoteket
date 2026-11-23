@@ -26,13 +26,13 @@ EOF
 ssh hemma "cd ~/apps/skriptoteket && git pull && sudo docker compose -f compose.prod.yaml --profile build-only build runner"
 
 ### Deploy web + worker (app + queue consumer)
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --build'"
 ```
 
 If you only changed Conversion Hub env vars, recreating `web` is sufficient:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --no-deps --force-recreate web'"
 ```
 
 If you need to run the production export verification steps manually after a deploy:
@@ -88,7 +88,7 @@ Expected results:
 Use when `compose.prod.yaml` changes (networks, volumes, environment).
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --force-recreate'"
 ```
 
 ### Rollback
@@ -101,7 +101,7 @@ ssh hemma "cd ~/apps/skriptoteket && git log --oneline -10"
 ssh hemma "cd ~/apps/skriptoteket && git checkout <commit-hash>"
 
 ### Rebuild and restart
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --build"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --build'"
 ```
 
 ### Data
@@ -151,7 +151,7 @@ ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'DROP DATABA
 ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'CREATE DATABASE skriptoteket;'"
 
 ### Restart and run migrations
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d'"
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec web pdm run db-upgrade"
 ```
 
@@ -280,7 +280,7 @@ ssh hemma "sudo docker network inspect hule-network --format '{{json .Containers
 ssh hemma "sudo docker network connect hule-network skriptoteket-web"
 
 ### Permanent fix: redeploy with compose.prod.yaml
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --force-recreate"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --force-recreate'"
 ```
 
 ### 307 Redirect to HTTP Instead of HTTPS

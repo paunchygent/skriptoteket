@@ -30,7 +30,26 @@ PRODUCTION_CHECKOUT = Path("/home/paunchygent/apps/skriptoteket")
 ROOTLESS_DOCKER_HOST = "unix:///run/user/1000/docker.sock"
 COMPOSE_PROJECT = "skriptoteket-dev"
 COMPOSE_FILE = "compose.hemma-dev.yaml"
+COMPOSE_SECRETS_OVERLAY = "compose.secrets.hemma-dev.yaml"
+SECRETS_SET = "skriptoteket-staging"
 COMPOSE: tuple[str, ...] = ("docker", "compose", "-f", COMPOSE_FILE, "-p", COMPOSE_PROJECT)
+# Compose verbs that create containers (up, one-off run) load the secrets
+# overlay and run through agent-secrets; ps/stop/down/status use the base file.
+COMPOSE_WITH_SECRETS: tuple[str, ...] = (
+    "agent-secrets",
+    "run",
+    "--set",
+    SECRETS_SET,
+    "--",
+    "docker",
+    "compose",
+    "-f",
+    COMPOSE_FILE,
+    "-f",
+    COMPOSE_SECRETS_OVERLAY,
+    "-p",
+    COMPOSE_PROJECT,
+)
 HULEEDU_NETWORK = "huleedu-dev_hule-network"
 HEALTHY_SERVICES: tuple[str, ...] = ("db", "web", "worker")
 WAIT_TIMEOUT_SECONDS = "300"
@@ -58,7 +77,7 @@ COMPOSE_OVERRIDE_VARIABLES = (
 )
 
 DB_UP: tuple[str, ...] = (
-    *COMPOSE,
+    *COMPOSE_WITH_SECRETS,
     "up",
     "-d",
     "--no-build",
@@ -68,7 +87,7 @@ DB_UP: tuple[str, ...] = (
     "db",
 )
 DB_UPGRADE: tuple[str, ...] = (
-    *COMPOSE,
+    *COMPOSE_WITH_SECRETS,
     "run",
     "--rm",
     "--no-deps",
@@ -78,7 +97,7 @@ DB_UPGRADE: tuple[str, ...] = (
     "db-upgrade",
 )
 APP_UP: tuple[str, ...] = (
-    *COMPOSE,
+    *COMPOSE_WITH_SECRETS,
     "up",
     "-d",
     "--no-build",
@@ -92,7 +111,7 @@ APP_UP: tuple[str, ...] = (
 # production worker does. The pdm script entries set PYTHONPATH=src, which
 # replaces pdm's __pypackages__ loader path inside the image.
 WEB_CLI: tuple[str, ...] = (
-    *COMPOSE,
+    *COMPOSE_WITH_SECRETS,
     "run",
     "--rm",
     "--no-deps",

@@ -8,6 +8,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 COMPOSE=(sudo docker compose -f compose.prod.yaml)
+COMPOSE_SECRETS=(
+  sudo --preserve-env="${AGENT_SECRETS_VARIABLES:-}"
+  docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml
+)
 RUN_STAMP="$(date +%Y%m%d-%H%M%S)"
 ARTIFACT_DIR="${ROOT_DIR}/.artifacts/pr-0277-share-previews-cutover-${RUN_STAMP}"
 
@@ -50,10 +54,17 @@ fi
 require_clean_git_checkout
 sync_checkout_to_origin_main
 
-set -a
-# shellcheck disable=SC1091
-source .env
-set +a
+if [[ -z "${AGENT_SECRETS_VARIABLES:-}" ]]; then
+  # .env carries configuration only; secrets come from the agent-secrets set.
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+  unset BOOTSTRAP_SUPERUSER_PASSWORD EMAIL_SMTP_PASSWORD GRAFANA_ADMIN_PASSWORD \
+    HULEEDU_INTERNAL_API_KEY SECRET_KEY SIR_CONVERT_A_LOT_V2_API_KEY \
+    SKRIPTOTEKET_DB_PASSWORD SKRIPTOTEKET_DEV_DB_PASSWORD
+  exec agent-secrets run --set skriptoteket-prod -- bash "$0" "$@"
+fi
 
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
@@ -74,7 +85,7 @@ mkdir -p "$ARTIFACT_DIR"
 echo "==> Writing PR-0277 share-preview artifacts to ${ARTIFACT_DIR}"
 
 echo "==> Deploying Skriptoteket web + worker"
-"${COMPOSE[@]}" up -d --build web worker
+"${COMPOSE_SECRETS[@]}" up -d --build web worker
 
 echo "==> Applying database migrations"
 "${COMPOSE[@]}" exec -T -e PYTHONPATH=/app/src web pdm run db-upgrade

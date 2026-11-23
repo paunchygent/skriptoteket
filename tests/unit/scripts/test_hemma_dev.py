@@ -60,7 +60,17 @@ def is_volume_removal(command: Command) -> bool:
 
 
 def is_compose(command: Command) -> bool:
-    return command[:2] == ("docker", "compose")
+    return any(
+        command[index : index + 2] == ("docker", "compose") for index in range(len(command) - 1)
+    )
+
+
+def is_secrets_wrapped(command: Command) -> bool:
+    return command[:5] == ("agent-secrets", "run", "--set", hemma_dev.SECRETS_SET, "--")
+
+
+def compose_verb(command: Command) -> str:
+    return command[len(hemma_dev.COMPOSE_WITH_SECRETS)]
 
 
 class FakeHost:
@@ -125,6 +135,22 @@ def test_start_upgrades_database_before_web_and_applies_import_before_fixture_an
     assert order == sorted(order)
     assert "--apply" in fake.commands[fake.index(is_proof_import)]
     assert all(env["DOCKER_HOST"] == hemma_dev.ROOTLESS_DOCKER_HOST for env in fake.environments)
+
+
+def test_start_wraps_every_container_creating_compose_path_through_agent_secrets() -> None:
+    fake = FakeHost()
+
+    assert hemma_dev.main(["start"], host=fake.host) == 0
+
+    wrapped = [command for command in fake.commands if is_secrets_wrapped(command)]
+    assert [compose_verb(command) for command in wrapped] == ["up", "run", "up", "run", "run"]
+    assert all(hemma_dev.COMPOSE_SECRETS_OVERLAY in command for command in wrapped)
+    unwrapped_compose = [
+        command
+        for command in fake.commands
+        if is_compose(command) and not is_secrets_wrapped(command)
+    ]
+    assert all(hemma_dev.COMPOSE_SECRETS_OVERLAY not in command for command in unwrapped_compose)
 
 
 def test_failed_db_upgrade_stops_before_web_starts() -> None:
@@ -194,6 +220,16 @@ def test_stop_stops_the_frontend_and_keeps_volumes() -> None:
 
     assert fake.ran(is_vite_stop)
     assert not fake.ran(is_volume_removal)
+
+
+def test_stop_status_and_down_never_touch_the_secrets_overlay() -> None:
+    for action in ("stop", "status"):
+        fake = FakeHost()
+
+        hemma_dev.main([action], host=fake.host)
+
+        assert not fake.ran(is_secrets_wrapped)
+        assert all(hemma_dev.COMPOSE_SECRETS_OVERLAY not in command for command in fake.commands)
 
 
 def test_failed_frontend_dependency_install_stops_the_build() -> None:

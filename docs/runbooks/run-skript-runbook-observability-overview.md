@@ -43,7 +43,7 @@ The observability stack runs independently via `compose.observability.yaml`.
 
 ```bash
 ### Start observability stack
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml up -d"
+ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.observability.yaml -f compose.secrets.observability.yaml up -d'"
 
 ### Stop observability stack
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observability.yaml down"
