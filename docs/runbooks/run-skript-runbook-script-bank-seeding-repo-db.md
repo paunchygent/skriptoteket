@@ -104,10 +104,13 @@ pdm run seed-script-bank --no-publish --profile dev
 
 ### Source: Körning (produktion via Docker)
 
-Kör på Hemma i produktions-checkouten `~/apps/skriptoteket`. pdm-skriptet hämtar
-`BOOTSTRAP_SUPERUSER_*` ur `skriptoteket-prod`-setet via `agent-secrets` och kör
-modulen i `web`-containern (så att du får rätt `DATABASE_URL` och samma runtime
-deps som tjänsten):
+Kör på Hemma i produktions-checkouten `~/apps/skriptoteket`.
+`BOOTSTRAP_SUPERUSER_EMAIL` är obligatorisk vanlig projektkonfiguration i
+produktions-checkoutens `.env` (ingen hemlighet). Bara
+`BOOTSTRAP_SUPERUSER_PASSWORD` kommer från Bitwarden: hemligheten
+`skriptoteket-superuser-password` i `skriptoteket-prod`-setet, som pdm-skriptet
+hämtar via `agent-secrets`. Skriptet kör modulen i `web`-containern (så att du
+får rätt `DATABASE_URL` och samma runtime deps som tjänsten):
 
 ```bash
 pdm run hemma-seed-script-bank -- --dry-run --profile prod

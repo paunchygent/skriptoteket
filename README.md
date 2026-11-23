@@ -155,15 +155,20 @@ Typical flow on Hemma (the production checkout is `~/apps/skriptoteket`):
 
 ```bash
 # Configure (.env holds non-secret configuration; secrets come from the
-# skriptoteket-prod agent-secrets set through the deploy wrappers)
+# skriptoteket-prod agent-secrets set through the deploy launcher)
 cp .env.example.prod .env
 
 # Deploy or recreate: build, up, db-upgrade and the readiness smoke all run
-# through the checked-in wrappers — never a base-only `docker compose up`
-pdm run hemma-deploy                  # scripts/hemma_deploy_start.sh
-pdm run hemma-deploy-share-previews   # scripts/hemma_deploy_and_verify_share_previews.sh
+# through the launcher scripts/hemma_deploy_start.sh, which syncs the Hemma
+# checkout to origin/main and starts the deploy worker under
+# `agent-secrets run --set skriptoteket-prod` — never a base-only
+# `docker compose up` and never a deploy worker started directly
+pdm run hemma-deploy                  # starts scripts/hemma_deploy_and_verify_seating_export.sh
+pdm run hemma-deploy-share-previews   # starts scripts/hemma_deploy_and_verify_share_previews.sh
 
-# Seed the script bank (runs inside the web container via compose exec)
+# Seed the script bank (runs inside the web container via compose exec;
+# BOOTSTRAP_SUPERUSER_EMAIL is configuration in .env, and only
+# BOOTSTRAP_SUPERUSER_PASSWORD comes from the skriptoteket-prod set)
 pdm run hemma-seed-script-bank -- --dry-run --profile prod
 pdm run hemma-seed-script-bank -- --profile prod
 

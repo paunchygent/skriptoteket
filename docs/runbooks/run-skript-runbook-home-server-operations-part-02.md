@@ -123,14 +123,11 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observabilit
 
 Note: `docker compose restart` does **not** re-read `.env` or the injected
 secret environment. For env var changes, redeploy through the canonical
-wrapper — recreation is never a hand-run `docker compose up`:
+launcher from a local checkout — recreation is never a hand-run
+`docker compose up` and never a deploy worker started directly:
 
 ```bash
-### Detached from a local checkout:
 pdm run hemma-deploy
-
-### Directly on Hemma:
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
 ```
 
 Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
@@ -245,21 +242,23 @@ ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 ### Production Env Checklist
 
 Before deploying, confirm the `skriptoteket-prod` agent-secrets set carries the
-secrets (injected through the deploy wrappers, never read from `.env`) and the
-production env file carries the non-secret keys `compose.prod.yaml` forwards
-into the containers.
+secrets (injected through the deploy launcher, never read from `.env`) and the
+production checkout's `.env` carries the non-secret keys `compose.prod.yaml`
+forwards into the containers.
 
 Secrets (`skriptoteket-prod` set):
 
 - `SKRIPTOTEKET_DB_PASSWORD`
 - `SECRET_KEY`
-- `BOOTSTRAP_SUPERUSER_EMAIL` and `BOOTSTRAP_SUPERUSER_PASSWORD`
+- `BOOTSTRAP_SUPERUSER_PASSWORD` (Bitwarden secret `skriptoteket-superuser-password`)
 - `EMAIL_SMTP_PASSWORD` (when the SMTP provider is enabled)
 - `HULEEDU_INTERNAL_API_KEY` (LLM provider door)
 - `SIR_CONVERT_A_LOT_V2_API_KEY`
 
 Configuration (`.env`):
 
+- `BOOTSTRAP_SUPERUSER_EMAIL` (required; the deploy checks and the script-bank
+  seed read it from `.env`, and it is not a secret)
 - `SIR_CONVERT_A_LOT_V2_BASE_URL`
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
 - `ALLOWED_HOSTS`
@@ -352,9 +351,13 @@ The canonical local operator entrypoint is:
 pdm run hemma-deploy
 ```
 
-That command launches the checked-in on-host script
-`scripts/hemma_deploy_and_verify_seating_export.sh` on Hemma as a detached
-remote process. It prints:
+That command runs `scripts/hemma_deploy_start.sh`, which first syncs the Hemma
+checkout to `origin/main` and then starts the on-host worker
+`scripts/hemma_deploy_and_verify_seating_export.sh` under
+`agent-secrets run --set skriptoteket-prod` as a detached remote process.
+`pdm run hemma-deploy-share-previews` does the same with
+`scripts/hemma_deploy_and_verify_share_previews.sh`. These launchers are the
+only deploy routes; never start a deploy worker directly. The launcher prints:
 
 - the remote PID
 - the authoritative remote raw-log path
@@ -362,11 +365,12 @@ remote process. It prints:
 - the suggested `pdm run hemma-deploy-monitor -- <remote-log-path>` follow
   command
 
-The detached launcher exists only to hand off cleanly. The actual deploy logic
-remains in the on-host script, which is intentionally fail-closed. It:
+The launcher selects the revision (`origin/main`) and the secret set before it
+starts the worker. The deploy logic remains in the on-host worker, which is
+intentionally fail-closed. It:
 
-- fast-forwards a clean Hemma checkout to the latest `origin/main`
-- builds/redeploys Skriptoteket with `compose.prod.yaml`
+- builds/redeploys Skriptoteket with `compose.prod.yaml` and the
+  `compose.secrets.prod.yaml` overlay
 - runs `pdm run db-upgrade` inside `skriptoteket-web`
 - runs the mandatory local seating-export smoke and fails if the export does not reach immediate
   local terminal success with a Vault-backed download
@@ -389,12 +393,3 @@ The monitor is best-effort only. It replays the existing milestone/failure
 lines from the authoritative raw remote log, then follows new output and
 filters it to the existing `==>` milestone lines plus obvious failure patterns.
 It is not a second source of deploy truth.
-
-### Direct on-host fallback / debugging
-
-If the local launcher path is unavailable or if you need direct break-glass
-debugging on Hemma, run the on-host script directly:
-
-```bash
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
-```

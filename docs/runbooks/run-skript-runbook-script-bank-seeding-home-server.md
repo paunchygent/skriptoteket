@@ -26,16 +26,21 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Superuser credentials come from the `skriptoteket-prod` agent-secrets set
-(`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`), injected by the
-`hemma-seed-script-bank` pdm script — never stored in `.env`.
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-### Command Template (recommended: from local machine)
+### Command Template (on Hemma)
 
 Run on Hemma in the production checkout `~/apps/skriptoteket`. The
 `hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
 through `agent-secrets` and runs the seed module inside the `web` container via
-`docker compose -f compose.prod.yaml exec`:
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
 pdm run hemma-seed-script-bank -- <FLAGS>
@@ -111,16 +116,21 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Superuser credentials come from the `skriptoteket-prod` agent-secrets set
-(`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`), injected by the
-`hemma-seed-script-bank` pdm script — never stored in `.env`.
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-### Command Template (recommended: from local machine)
+### Command Template (on Hemma)
 
 Run on Hemma in the production checkout `~/apps/skriptoteket`. The
 `hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
 through `agent-secrets` and runs the seed module inside the `web` container via
-`docker compose -f compose.prod.yaml exec`:
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
 pdm run hemma-seed-script-bank -- <FLAGS>
@@ -228,16 +238,21 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Superuser credentials come from the `skriptoteket-prod` agent-secrets set
-(`BOOTSTRAP_SUPERUSER_EMAIL` / `BOOTSTRAP_SUPERUSER_PASSWORD`), injected by the
-`hemma-seed-script-bank` pdm script — never stored in `.env`.
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-### Command Template (recommended: from local machine)
+### Command Template (on Hemma)
 
 Run on Hemma in the production checkout `~/apps/skriptoteket`. The
 `hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
 through `agent-secrets` and runs the seed module inside the `web` container via
-`docker compose -f compose.prod.yaml exec`:
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
 pdm run hemma-seed-script-bank -- <FLAGS>

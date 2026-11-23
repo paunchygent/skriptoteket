@@ -11,35 +11,31 @@ root: RUN-SKRIPT-runbook-home-server-operations
 part: 3
 ---
 
-```bash
-ssh hemma /bin/bash -s <<'EOF'
-set -euo pipefail
-cd /home/paunchygent/apps/skriptoteket
-./scripts/hemma_deploy_and_verify_seating_export.sh
-EOF
-```
-
 ### Manual Deploy Steps (fallback / debugging)
 
-Recreation (`up`, `--force-recreate`, one-off `run`) goes through the checked-in
-deploy wrappers — never a hand-run `docker compose up`. On Hemma, run the
-on-host script directly; from a local checkout, `pdm run hemma-deploy` launches
-it detached:
+Recreation (`up`, `--force-recreate`, one-off `run`) goes only through the
+deploy launchers from a local checkout. Never hand-run `docker compose up` and
+never start a deploy worker directly on Hemma: the launcher syncs the Hemma
+checkout to `origin/main` before it starts the worker under
+`agent-secrets run --set skriptoteket-prod`.
 
 ```bash
 ### Deploy web + worker (app + queue consumer), build runner image, migrate,
 ### and run the readiness smoke:
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
+pdm run hemma-deploy
 
 ### Same deploy plus the share-previews verification:
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_share_previews.sh"
+pdm run hemma-deploy-share-previews
 ```
 
 Diagnostics and `exec` on the running stack use the base file and read no
 secret: `sudo docker compose -f compose.prod.yaml ps|logs|stop`.
 
 If you need to run the production export verification step manually after a
-deploy, inject the bootstrap credentials by name — never as command arguments:
+deploy, pass the bootstrap names to the container by name — never as command
+arguments. `BOOTSTRAP_SUPERUSER_EMAIL` is plain configuration that Compose reads
+from the production checkout's `.env`; only `BOOTSTRAP_SUPERUSER_PASSWORD` comes
+from the `skriptoteket-prod` set:
 
 ```bash
 ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml exec -e PYTHONPATH=/app/src -e BOOTSTRAP_SUPERUSER_EMAIL -e BOOTSTRAP_SUPERUSER_PASSWORD web pdm run python -m skriptoteket.cli smoke-seating-export-readiness' > /tmp/skriptoteket-seat-export-smoke.json"
@@ -90,33 +86,24 @@ Expected results:
 ### Deploy with Force Recreate
 
 Use when `compose.prod.yaml` changes (networks, volumes, environment).
-Recreation goes through the checked-in deploy wrappers — never a hand-run
-`docker compose up`:
+Recreation goes only through the deploy launcher from a local checkout — never
+a hand-run `docker compose up` and never a deploy worker started directly:
 
 ```bash
-### Detached from a local checkout:
 pdm run hemma-deploy
-
-### Directly on Hemma:
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
 ```
 
 ### Rollback
 
-```bash
-### Check available commits
-ssh hemma "cd ~/apps/skriptoteket && git log --oneline -10"
+Recovery deploys a fixed commit on `main`: revert or fix the faulty change,
+merge it to `main`, and run `pdm run hemma-deploy`. The launcher always deploys
+`origin/main`; checking out an older commit on Hemma does not change what it
+deploys.
 
-### Checkout previous version
-ssh hemma "cd ~/apps/skriptoteket && git checkout <commit-hash>"
-
-### Redeploy that revision with its own deploy script
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
-```
-
-The `compose.secrets.prod.yaml` overlay exists only on revisions that carry it.
-A rollback to a revision without the overlay deploys exactly as that revision's
-own deploy script and runbooks describe; do not mix files across revisions.
+A rollback to a revision older than the `compose.secrets.prod.yaml` overlay is
+not supported once the credential lines are removed from the production `.env`:
+such a revision has no route to its secrets. Never restore dotenv copies of
+secrets to make an older revision run.
 
 ### Data
 
@@ -164,9 +151,9 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml do
 ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'DROP DATABASE IF EXISTS skriptoteket;'"
 ssh hemma "sudo docker exec -it shared-postgres psql -U postgres -c 'CREATE DATABASE skriptoteket;'"
 
-### Recreate and run migrations through the deploy wrapper (build, up,
-### db-upgrade and the readiness smoke are all part of it)
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
+### Recreate and run migrations through the deploy launcher from a local
+### checkout (build, up, db-upgrade and the readiness smoke are all part of it)
+pdm run hemma-deploy
 ```
 
 Then follow:
@@ -293,8 +280,8 @@ ssh hemma "sudo docker network inspect hule-network --format '{{json .Containers
 ### If missing, reconnect manually (temporary fix)
 ssh hemma "sudo docker network connect hule-network skriptoteket-web"
 
-### Permanent fix: redeploy through the checked-in wrapper
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
+### Permanent fix: redeploy through the deploy launcher from a local checkout
+pdm run hemma-deploy
 ```
 
 ### 307 Redirect to HTTP Instead of HTTPS

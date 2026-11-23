@@ -174,12 +174,10 @@ GRANT ALL PRIVILEGES ON DATABASE huleedu_spellchecker TO huleedu_user;
 ### Source: Skriptoteket
 
 ```bash
-### Deploy through the checked-in wrapper (fast-forwards a clean checkout to
-### origin/main, injects the skriptoteket-prod secret set through
-### sudo --preserve-env, builds, migrates and runs the readiness smoke)
-ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
-
-### Or detached from a local checkout:
+### Deploy from a local checkout through the launcher. It syncs the Hemma
+### checkout to origin/main, then starts the deploy worker under
+### agent-secrets run --set skriptoteket-prod; the worker builds, migrates and
+### runs the readiness smoke. Never start the worker directly on Hemma.
 pdm run hemma-deploy
 ```
 
