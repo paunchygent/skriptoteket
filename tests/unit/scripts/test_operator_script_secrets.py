@@ -2,9 +2,10 @@
 
 Domain purpose:
     Prove every operator command that reads BOOTSTRAP_SUPERUSER_PASSWORD,
-    HULEEDU_INTERNAL_API_KEY or SIR_CONVERT_A_LOT_V2_API_KEY runs through
+    HULEEDU_INTERNAL_API_KEY, SIR_CONVERT_A_LOT_V2_API_KEY, PLAYWRIGHT_PASSWORD
+    or SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD runs through
     `agent-secrets run --set skriptoteket-operator` via its pdm script, and that
-    the changed credential helpers never fall back to .env for the password.
+    the changed credential helpers never fall back to .env for a password.
 
 Relationships:
     - Guards the EPIC-SKILL-18 leaf: secrets reach processes through
@@ -16,6 +17,8 @@ from __future__ import annotations
 import os
 import tomllib
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -30,6 +33,10 @@ WRAPPED_PDM_SCRIPTS = {
     "labeling-feasibility": "python -m scripts.labeling_feasibility",
     "item-type-labeler-live": "python -m scripts.item_type_labeler_live",
     "textbook-corpus-baseline": "python -m scripts.build_textbook_corpus_baseline",
+    "transcript-parity-proof": "python -m scripts.transcript_parity_proof_launcher",
+    "audio-transcription-reattempt-proof": (
+        "python -m scripts.audio_transcription_retryable_reattempt_public_proof"
+    ),
     "auth-edge-bootstrap-preflight": "python -m skriptoteket.cli auth-edge-bootstrap-preflight",
     "seed-script-bank": "python -m skriptoteket.cli seed-script-bank",
 }
@@ -38,6 +45,8 @@ SECRET_ENV_VARS = (
     "BOOTSTRAP_SUPERUSER_PASSWORD",
     "HULEEDU_INTERNAL_API_KEY",
     "SIR_CONVERT_A_LOT_V2_API_KEY",
+    "PLAYWRIGHT_PASSWORD",
+    "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD",
 )
 
 
@@ -178,10 +187,18 @@ def test_profile_verify_dotenv_load_keeps_config_but_not_the_password(
         dotenv_path.write_text(
             "BASE_URL=http://example.test\n"
             "BOOTSTRAP_SUPERUSER_EMAIL=dev@example.test\n"
-            "BOOTSTRAP_SUPERUSER_PASSWORD=dotenv-secret\n",
+            "BOOTSTRAP_SUPERUSER_PASSWORD=dotenv-secret\n"
+            "PLAYWRIGHT_PASSWORD=dotenv-secret\n"
+            "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD=dotenv-secret\n",
             encoding="utf-8",
         )
-        for key in ("BASE_URL", "BOOTSTRAP_SUPERUSER_EMAIL", "BOOTSTRAP_SUPERUSER_PASSWORD"):
+        for key in (
+            "BASE_URL",
+            "BOOTSTRAP_SUPERUSER_EMAIL",
+            "BOOTSTRAP_SUPERUSER_PASSWORD",
+            "PLAYWRIGHT_PASSWORD",
+            "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD",
+        ):
             os.environ.pop(key, None)
 
         playwright_profile_verify._load_dotenv_config(dotenv_path)
@@ -189,6 +206,133 @@ def test_profile_verify_dotenv_load_keeps_config_but_not_the_password(
         assert os.environ["BASE_URL"] == "http://example.test"
         assert os.environ["BOOTSTRAP_SUPERUSER_EMAIL"] == "dev@example.test"
         assert os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD") is None
+        assert os.environ.get("PLAYWRIGHT_PASSWORD") is None
+        assert os.environ.get("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD") is None
     finally:
         os.environ.clear()
         os.environ.update(snapshot)
+
+
+def test_playwright_config_never_reads_playwright_password_from_dotenv(monkeypatch) -> None:
+    from scripts._playwright_config import _get_credentials
+
+    for key in (
+        "PLAYWRIGHT_EMAIL",
+        "PLAYWRIGHT_PASSWORD",
+        "BOOTSTRAP_SUPERUSER_EMAIL",
+        "BOOTSTRAP_SUPERUSER_PASSWORD",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    dotenv = {
+        "PLAYWRIGHT_EMAIL": "smoke@example.test",
+        "PLAYWRIGHT_PASSWORD": "dotenv-secret",
+    }
+
+    email, password = _get_credentials(dotenv=dotenv)
+
+    assert email == "smoke@example.test"
+    assert password is None
+
+
+def test_playwright_config_reads_playwright_password_from_env(monkeypatch) -> None:
+    from scripts._playwright_config import _get_credentials
+
+    monkeypatch.setenv("PLAYWRIGHT_PASSWORD", "env-secret")
+    dotenv = {"PLAYWRIGHT_PASSWORD": "dotenv-secret"}
+
+    _, password = _get_credentials(dotenv=dotenv)
+
+    assert password == "env-secret"
+
+
+def test_pr_0254_credentials_never_read_secret_passwords_from_dotenv(monkeypatch) -> None:
+    from scripts.playwright_pr_0254_auth_cutover import _credentials
+
+    for key in (
+        "PLAYWRIGHT_EMAIL",
+        "PLAYWRIGHT_PASSWORD",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD",
+        "BOOTSTRAP_SUPERUSER_EMAIL",
+        "BOOTSTRAP_SUPERUSER_PASSWORD",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    dotenv = {
+        "PLAYWRIGHT_EMAIL": "smoke@example.test",
+        "PLAYWRIGHT_PASSWORD": "dotenv-secret",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL": "proof@example.test",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "dotenv-secret",
+    }
+
+    email, password = _credentials(email=None, password=None, dotenv=dotenv)
+
+    assert email == "smoke@example.test"
+    assert password is None
+
+
+def test_pr_0254_credentials_read_lifecycle_proof_password_from_env(monkeypatch) -> None:
+    from scripts.playwright_pr_0254_auth_cutover import _credentials
+
+    for key in ("PLAYWRIGHT_EMAIL", "PLAYWRIGHT_PASSWORD"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD", "env-secret")
+    dotenv = {"SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "dotenv-secret"}
+
+    _, password = _credentials(email=None, password=None, dotenv=dotenv)
+
+    assert password == "env-secret"
+
+
+def test_ai_prompt_eval_never_reads_playwright_password_from_dotenv(monkeypatch) -> None:
+    from scripts.ai_prompt_eval.cli import _get_credentials
+
+    for key in (
+        "PLAYWRIGHT_EMAIL",
+        "PLAYWRIGHT_PASSWORD",
+        "BOOTSTRAP_SUPERUSER_EMAIL",
+        "BOOTSTRAP_SUPERUSER_PASSWORD",
+    ):
+        monkeypatch.delenv(key, raising=False)
+    dotenv = {
+        "PLAYWRIGHT_EMAIL": "smoke@example.test",
+        "PLAYWRIGHT_PASSWORD": "dotenv-secret",
+    }
+
+    email, password = _get_credentials(dotenv=dotenv)
+
+    assert email == "smoke@example.test"
+    assert password is None
+
+
+def test_task_0376_config_never_reads_playwright_password_from_dotenv(
+    monkeypatch, tmp_path: Path
+) -> None:
+    from scripts._playwright_task_0376_config import parse_args
+
+    for key in ("PLAYWRIGHT_EMAIL", "PLAYWRIGHT_PASSWORD", "DOTENV_PATH"):
+        monkeypatch.delenv(key, raising=False)
+    dotenv_path = tmp_path / ".env.prod-smoke"
+    dotenv_path.write_text(
+        "PLAYWRIGHT_EMAIL=smoke@example.test\nPLAYWRIGHT_PASSWORD=dotenv-secret\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit):
+        parse_args(["--dotenv", str(dotenv_path)])
+
+
+def test_task_0376_config_reads_playwright_password_from_env(monkeypatch, tmp_path: Path) -> None:
+    from scripts._playwright_task_0376_config import parse_args
+
+    monkeypatch.delenv("PLAYWRIGHT_EMAIL", raising=False)
+    monkeypatch.setenv("PLAYWRIGHT_PASSWORD", "env-secret")
+    dotenv_path = tmp_path / ".env.prod-smoke"
+    dotenv_path.write_text(
+        "PLAYWRIGHT_EMAIL=smoke@example.test\nPLAYWRIGHT_PASSWORD=dotenv-secret\n",
+        encoding="utf-8",
+    )
+
+    config = parse_args(["--dotenv", str(dotenv_path)])
+
+    assert config.email == "smoke@example.test"
+    assert config.password == "env-secret"

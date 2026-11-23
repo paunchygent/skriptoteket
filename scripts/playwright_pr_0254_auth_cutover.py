@@ -128,9 +128,7 @@ def _credentials(
     resolved_password = (
         password
         or os.environ.get("PLAYWRIGHT_PASSWORD")
-        or dotenv.get("PLAYWRIGHT_PASSWORD")
         or os.environ.get("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD")
-        or dotenv.get("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD")
         or os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD")
     )
     return resolved_email, resolved_password
@@ -275,9 +273,9 @@ def _parse_args(argv: Sequence[str] | None = None) -> AuthCutoverConfig:
     email, password = _credentials(email=args.email, password=args.password, dotenv=dotenv)
     if not email or not password:
         parser.error(
-            "Missing credentials. Provide --email/--password, PLAYWRIGHT_* values in "
-            "--dotenv, or BOOTSTRAP_SUPERUSER_* values in the environment "
-            "(BOOTSTRAP_SUPERUSER_PASSWORD is never read from .env)."
+            "Missing credentials. Provide --email/--password, or set PLAYWRIGHT_*, "
+            "SKRIPTOTEKET_LIFECYCLE_PROOF_* or BOOTSTRAP_SUPERUSER_* values in the "
+            "environment (passwords are never read from .env; emails may come from --dotenv)."
         )
 
     primary_lane = LoopbackLane(

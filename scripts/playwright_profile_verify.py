@@ -8,9 +8,15 @@ from pathlib import Path
 from dotenv import dotenv_values
 from playwright.sync_api import sync_playwright
 
-# .env supplies configuration only; BOOTSTRAP_SUPERUSER_PASSWORD reaches this
-# process through the environment (TASK-SKRIPT-REP-0074).
-_DOTENV_EXCLUDED = frozenset({"BOOTSTRAP_SUPERUSER_PASSWORD"})
+# .env supplies configuration only; passwords reach this process through the
+# environment (TASK-SKRIPT-REP-0074).
+_DOTENV_EXCLUDED = frozenset(
+    {
+        "BOOTSTRAP_SUPERUSER_PASSWORD",
+        "PLAYWRIGHT_PASSWORD",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD",
+    }
+)
 
 
 def _load_dotenv_config(path: Path = Path(".env")) -> None:

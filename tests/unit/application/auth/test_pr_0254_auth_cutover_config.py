@@ -24,14 +24,16 @@ from scripts.playwright_pr_0254_auth_cutover import (
 )
 
 
-def test_credentials_prefer_lifecycle_proof_dotenv_over_bootstrap(
+def test_credentials_prefer_lifecycle_proof_env_over_bootstrap(
     monkeypatch,
 ) -> None:
     monkeypatch.delenv("PLAYWRIGHT_EMAIL", raising=False)
     monkeypatch.delenv("PLAYWRIGHT_PASSWORD", raising=False)
+    monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL", "proof@example.test")
+    monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD", "proof-password")
     dotenv = {
-        "SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL": "proof@example.test",
-        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "proof-password",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_EMAIL": "dotenv-proof@example.test",
+        "SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "dotenv-proof-password",
         "BOOTSTRAP_SUPERUSER_EMAIL": "bootstrap@example.test",
         "BOOTSTRAP_SUPERUSER_PASSWORD": "bootstrap-password",
     }
