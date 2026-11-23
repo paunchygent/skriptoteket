@@ -884,5 +884,6 @@ def test_pdm_command_exposes_transcript_parity_launcher() -> None:
 
     assert (
         pyproject["tool"]["pdm"]["scripts"]["transcript-parity-proof"]
-        == "python -m scripts.transcript_parity_proof_launcher"
+        == "agent-secrets run --set skriptoteket-operator -- "
+        "python -m scripts.transcript_parity_proof_launcher"
     )

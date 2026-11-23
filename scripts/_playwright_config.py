@@ -1,6 +1,9 @@
 """Shared configuration for Playwright test scripts.
 
 Reads from CLI args first, then environment variables, then a dotenv file.
+Passwords (PLAYWRIGHT_PASSWORD, BOOTSTRAP_SUPERUSER_PASSWORD) are read from the
+process environment only; they are never taken from a dotenv file
+(TASK-SKRIPT-REP-0074).
 
 We keep BOOTSTRAP_SUPERUSER_* for local provisioning, but Playwright smoke tests may use a different
 account (e.g. admin in production) via PLAYWRIGHT_EMAIL / PLAYWRIGHT_PASSWORD or --email/--password.
@@ -37,19 +40,18 @@ def _get_credentials(*, dotenv: dict[str, str]) -> tuple[str | None, str | None]
     """Resolve Playwright login credentials.
 
     Priority (high → low):
-      1) PLAYWRIGHT_EMAIL / PLAYWRIGHT_PASSWORD
-      2) BOOTSTRAP_SUPERUSER_EMAIL / BOOTSTRAP_SUPERUSER_PASSWORD (legacy default)
-      3) Values from dotenv file (same keys, same priority order)
+      1) PLAYWRIGHT_EMAIL / PLAYWRIGHT_PASSWORD (the password is env-only and
+         never read from dotenv)
+      2) BOOTSTRAP_SUPERUSER_EMAIL / BOOTSTRAP_SUPERUSER_PASSWORD (legacy default;
+         the password is env-only and never read from dotenv)
     """
     email = os.environ.get("PLAYWRIGHT_EMAIL") or dotenv.get("PLAYWRIGHT_EMAIL")
-    password = os.environ.get("PLAYWRIGHT_PASSWORD") or dotenv.get("PLAYWRIGHT_PASSWORD")
+    password = os.environ.get("PLAYWRIGHT_PASSWORD")
     if email is not None or password is not None:
         return email, password
 
     email = os.environ.get("BOOTSTRAP_SUPERUSER_EMAIL") or dotenv.get("BOOTSTRAP_SUPERUSER_EMAIL")
-    password = os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD") or dotenv.get(
-        "BOOTSTRAP_SUPERUSER_PASSWORD"
-    )
+    password = os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD")
     return email, password
 
 
@@ -113,8 +115,8 @@ def get_config(argv: Sequence[str] | None = None) -> PlaywrightConfig:
         "--password",
         default=default_password,
         help=(
-            "Login password (default: PLAYWRIGHT_PASSWORD or BOOTSTRAP_SUPERUSER_PASSWORD "
-            "from env/dotenv)"
+            "Login password (default: PLAYWRIGHT_PASSWORD or "
+            "BOOTSTRAP_SUPERUSER_PASSWORD, both env-only)"
         ),
     )
 
@@ -123,10 +125,11 @@ def get_config(argv: Sequence[str] | None = None) -> PlaywrightConfig:
     if not args.email or not args.password:
         parser.error(
             "Missing credentials. Either:\n"
-            "  1. Set PLAYWRIGHT_EMAIL/PLAYWRIGHT_PASSWORD in --dotenv (recommended for prod)\n"
-            "  2. Set BOOTSTRAP_SUPERUSER_EMAIL/BOOTSTRAP_SUPERUSER_PASSWORD in --dotenv (dev)\n"
-            "  3. Export them as environment variables\n"
-            "  4. Pass --email and --password CLI arguments"
+            "  1. Export PLAYWRIGHT_EMAIL and PLAYWRIGHT_PASSWORD as environment variables "
+            "(recommended for prod; the password is never read from .env)\n"
+            "  2. Export BOOTSTRAP_SUPERUSER_EMAIL and BOOTSTRAP_SUPERUSER_PASSWORD as "
+            "environment variables (dev; the password is never read from .env)\n"
+            "  3. Pass --email and --password CLI arguments"
         )
 
     return PlaywrightConfig(

@@ -1,13 +1,21 @@
+---
 # Observability stack for home server (hemma.hule.education)
 # Lifecycle: Independent from application - can be started/stopped separately
 #
 # Usage:
-#   docker compose -f compose.observability.yaml up -d
-#   docker compose -f compose.observability.yaml down
+#   Start or recreate (up) only with the secrets overlay, wrapped by
+#   agent-secrets; the single quotes make the preserve list expand inside the
+#   process agent-secrets starts:
+#     agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env="$AGENT_SECRETS_VARIABLES" docker compose -f compose.observability.yaml -f compose.secrets.observability.yaml up -d'
+#   Diagnostics and stop use this base file alone (no secrets):
+#     sudo docker compose -f compose.observability.yaml ps|logs|stop
 #
 # Prerequisites:
 #   - External network: docker network create hule-network
 #   - Application running on hule-network (skriptoteket-web)
+#   - GRAFANA_ADMIN_PASSWORD reaches Grafana only through
+#     compose.secrets.observability.yaml on up paths, wrapped by
+#     `agent-secrets run --set skriptoteket-prod`
 
 name: skriptoteket-observability
 
@@ -107,7 +115,6 @@ services:
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_SERVER_ROOT_URL=https://grafana.hemma.hule.education

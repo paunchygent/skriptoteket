@@ -151,24 +151,34 @@ This repo includes a production-oriented Docker setup:
 - `Dockerfile.runner` builds the runner image used for tool execution.
 - `compose.prod.yaml` is a *home-server* deployment file, but works well as a template for municipal infrastructure.
 
-Typical flow:
+Typical flow on Hemma (the production checkout is `~/apps/skriptoteket`):
 
 ```bash
-# Configure
+# Configure (.env holds non-secret configuration; secrets come from the
+# skriptoteket-prod agent-secrets set through the deploy launcher)
 cp .env.example.prod .env
 
-# Build images
-docker compose -f compose.prod.yaml build web
-docker compose -f compose.prod.yaml --profile build-only build runner
+# Deploy or recreate: build, up, db-upgrade and the readiness smoke all run
+# through the launcher scripts/hemma_deploy_start.sh, which syncs the Hemma
+# checkout to origin/main and starts the deploy worker under
+# `agent-secrets run --set skriptoteket-prod` — never a base-only
+# `docker compose up` and never a deploy worker started directly
+pdm run hemma-deploy                  # starts scripts/hemma_deploy_and_verify_seating_export.sh
+pdm run hemma-deploy-share-previews   # starts scripts/hemma_deploy_and_verify_share_previews.sh
 
-# Start (web + worker; DB is expected to be provided externally in compose.prod.yaml)
-docker compose -f compose.prod.yaml up -d --build
+# Seed the script bank (runs inside the web container via compose exec;
+# BOOTSTRAP_SUPERUSER_EMAIL is configuration in .env, and only
+# BOOTSTRAP_SUPERUSER_PASSWORD comes from the skriptoteket-prod set)
+pdm run hemma-seed-script-bank -- --dry-run --profile prod
+pdm run hemma-seed-script-bank -- --profile prod
 
-# Migrate DB schema
-docker compose -f compose.prod.yaml exec -T web pdm run db-upgrade
+# Bootstrap first admin (interactive prompt; exec on the base file reads no secret)
+sudo docker compose -f compose.prod.yaml exec -it web pdm run bootstrap-superuser
 
-# Bootstrap first admin (Superuser)
-docker compose -f compose.prod.yaml exec -T web pdm run bootstrap-superuser
+# Diagnostics on the running stack (base file only, no secrets)
+sudo docker compose -f compose.prod.yaml ps
+sudo docker compose -f compose.prod.yaml logs -f web
+sudo docker compose -f compose.prod.yaml stop
 ```
 
 If you don’t use the repo’s home-server conventions (external `hule-network`, external `shared-postgres`, nginx-proxy
@@ -197,7 +207,7 @@ Common adaptations and where they live in the codebase:
 - **Branding/UI**: SPA in `frontend/apps/skriptoteket`; tokens/CSS live under
   `src/skriptoteket/web/static/css/` and `frontend/apps/skriptoteket/src/assets/`.
 - **Default tools**: add scripts in `src/skriptoteket/script_bank/` and seed them with `pdm run seed-script-bank` (see
-  `docs/runbooks/runbook-script-bank-seeding.md`).
+  `docs/runbooks/run-skript-runbook-script-bank-seeding-repo-db.md`).
 
 ## Key commands
 

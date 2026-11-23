@@ -161,9 +161,10 @@ def test_production_compose_wires_answer_key_provider_config_to_web_and_worker()
         "HULEEDU_LLM_PROVIDER_BASE_URL": (
             "${HULEEDU_LLM_PROVIDER_BASE_URL:-http://huleedu_llm_provider_service:8080}"
         ),
-        "HULEEDU_INTERNAL_API_KEY": "${HULEEDU_INTERNAL_API_KEY:-}",
     }
 
     for service_name in ("web", "worker"):
         environment = compose_payload["services"][service_name]["environment"]
         assert {key: environment[key] for key in expected_environment} == expected_environment
+        # The door key is a secret: compose.secrets.prod.yaml carries it.
+        assert "HULEEDU_INTERNAL_API_KEY" not in environment

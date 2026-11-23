@@ -47,8 +47,9 @@ Recommended CLI tools + install steps: see [ref-home-server-cli-tools.md](../ref
 ### Command Patterns (Use These)
 
 ```bash
-### 1) Compose commands (from repo root)
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml <command>"
+### 1) Compose diagnostics on the running stack (base file reads no secret;
+###    deploy/recreate goes through the checked-in wrappers, see "Deploy" below)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ps|logs|stop"
 
 ### 2) Run CLI inside web container (compose)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
@@ -120,21 +121,18 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observabilit
 ### nginx-proxy auto-reloads when containers change (no manual reload needed)
 ```
 
-Note: `docker compose restart` does **not** re-read `.env`. For env var changes use a recreate:
+Note: `docker compose restart` does **not** re-read `.env` or the injected
+secret environment. For env var changes, redeploy through the canonical
+launcher from a local checkout — recreation is never a hand-run
+`docker compose up` and never a deploy worker started directly:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate web"
+pdm run hemma-deploy
 ```
 
 Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
 the target service. Conversion Hub, for example, requires `SIR_CONVERT_A_LOT_V2_BASE_URL` and
 `SIR_CONVERT_A_LOT_V2_API_KEY` to be wired into both the `web` and `worker` service environments.
-
-If the change affects worker configuration, recreate worker too:
-
-```bash
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml up -d --no-deps --force-recreate worker"
-```
 
 ### Disk Space / Session Cleanup
 
@@ -243,17 +241,26 @@ ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 
 ### Production Env Checklist
 
-Before deploying, confirm the production env file includes the keys that `compose.prod.yaml` forwards into the
-containers.
+Before deploying, confirm the `skriptoteket-prod` agent-secrets set carries the
+secrets (injected through the deploy launcher, never read from `.env`) and the
+production checkout's `.env` carries the non-secret keys `compose.prod.yaml`
+forwards into the containers.
+
+Secrets (`skriptoteket-prod` set):
 
 - `SKRIPTOTEKET_DB_PASSWORD`
 - `SECRET_KEY`
-- SMTP / email keys as needed
-- LLM provider keys as needed
-- `SIR_CONVERT_A_LOT_V2_BASE_URL`
+- `BOOTSTRAP_SUPERUSER_PASSWORD` (Bitwarden secret `skriptoteket-superuser-password`)
+- `EMAIL_SMTP_PASSWORD` (when the SMTP provider is enabled)
+- `HULEEDU_INTERNAL_API_KEY` (LLM provider door)
 - `SIR_CONVERT_A_LOT_V2_API_KEY`
+
+Configuration (`.env`):
+
+- `BOOTSTRAP_SUPERUSER_EMAIL` (required; the deploy checks and the script-bank
+  seed read it from `.env`, and it is not a secret)
+- `SIR_CONVERT_A_LOT_V2_BASE_URL`
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
-- `BOOTSTRAP_SUPERUSER_EMAIL`
 - `ALLOWED_HOSTS`
 - `TRUSTED_PROXY_CIDRS` (exact nginx-proxy CIDR; feeds `FORWARDED_ALLOW_IPS` in `compose.prod.yaml`)
 - `HEALTHZ_DETAILED_RESPONSE`
@@ -344,9 +351,13 @@ The canonical local operator entrypoint is:
 pdm run hemma-deploy
 ```
 
-That command launches the checked-in on-host script
-`scripts/hemma_deploy_and_verify_seating_export.sh` on Hemma as a detached
-remote process. It prints:
+That command runs `scripts/hemma_deploy_start.sh`, which first syncs the Hemma
+checkout to `origin/main` and then starts the on-host worker
+`scripts/hemma_deploy_and_verify_seating_export.sh` under
+`agent-secrets run --set skriptoteket-prod` as a detached remote process.
+`pdm run hemma-deploy-share-previews` does the same with
+`scripts/hemma_deploy_and_verify_share_previews.sh`. These launchers are the
+only deploy routes; never start a deploy worker directly. The launcher prints:
 
 - the remote PID
 - the authoritative remote raw-log path
@@ -354,11 +365,12 @@ remote process. It prints:
 - the suggested `pdm run hemma-deploy-monitor -- <remote-log-path>` follow
   command
 
-The detached launcher exists only to hand off cleanly. The actual deploy logic
-remains in the on-host script, which is intentionally fail-closed. It:
+The launcher selects the revision (`origin/main`) and the secret set before it
+starts the worker. The deploy logic remains in the on-host worker, which is
+intentionally fail-closed. It:
 
-- fast-forwards a clean Hemma checkout to the latest `origin/main`
-- builds/redeploys Skriptoteket with `compose.prod.yaml`
+- builds/redeploys Skriptoteket with `compose.prod.yaml` and the
+  `compose.secrets.prod.yaml` overlay
 - runs `pdm run db-upgrade` inside `skriptoteket-web`
 - runs the mandatory local seating-export smoke and fails if the export does not reach immediate
   local terminal success with a Vault-backed download
@@ -381,8 +393,3 @@ The monitor is best-effort only. It replays the existing milestone/failure
 lines from the authoritative raw remote log, then follows new output and
 filters it to the existing `==>` milestone lines plus obvious failure patterns.
 It is not a second source of deploy truth.
-
-### Direct on-host fallback / debugging
-
-If the local launcher path is unavailable or if you need direct break-glass
-debugging on Hemma, run the on-host script directly:

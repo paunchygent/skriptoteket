@@ -26,29 +26,24 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Store these on the server in `~/apps/skriptoteket/.env` (**never** in this repo):
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL`
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD`
+### Command Template (on Hemma)
 
-### Command Template (recommended: from local machine)
-
-`sudo docker compose` reads `~/apps/skriptoteket/.env` for **variable substitution**, but it does **not**
-automatically inject all `.env` vars into the running container. For CLI commands we therefore:
-
-1. Source `.env` on the server (`set -a && source .env && set +a`)
-2. Pass only the needed env vars through `docker compose exec -e ...`
-
-Template:
+Run on Hemma in the production checkout `~/apps/skriptoteket`. The
+`hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
+through `agent-secrets` and runs the seed module inside the `web` container via
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank <FLAGS>'
+pdm run hemma-seed-script-bank -- <FLAGS>
 ```
 
 Common flags:
@@ -64,25 +59,13 @@ Common flags:
 Dry-run:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod'
+pdm run hemma-seed-script-bank -- --dry-run --profile prod
 ```
 
 Sync code changes from repo to existing tools:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --sync-code --profile prod'
+pdm run hemma-seed-script-bank -- --sync-code --profile prod
 ```
 
 ### Verification
@@ -133,29 +116,24 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Store these on the server in `~/apps/skriptoteket/.env` (**never** in this repo):
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL`
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD`
+### Command Template (on Hemma)
 
-### Command Template (recommended: from local machine)
-
-`sudo docker compose` reads `~/apps/skriptoteket/.env` for **variable substitution**, but it does **not**
-automatically inject all `.env` vars into the running container. For CLI commands we therefore:
-
-1. Source `.env` on the server (`set -a && source .env && set +a`)
-2. Pass only the needed env vars through `docker compose exec -e ...`
-
-Template:
+Run on Hemma in the production checkout `~/apps/skriptoteket`. The
+`hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
+through `agent-secrets` and runs the seed module inside the `web` container via
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank <FLAGS>'
+pdm run hemma-seed-script-bank -- <FLAGS>
 ```
 
 Common flags:
@@ -171,25 +149,13 @@ Common flags:
 Dry-run:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod'
+pdm run hemma-seed-script-bank -- --dry-run --profile prod
 ```
 
 Sync code changes from repo to existing tools:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --sync-code --profile prod'
+pdm run hemma-seed-script-bank -- --sync-code --profile prod
 ```
 
 ### Verification
@@ -272,29 +238,24 @@ Environment-specific runbook for seeding the script bank on the home server.
 
 ### Credentials (server-side)
 
-Store these on the server in `~/apps/skriptoteket/.env` (**never** in this repo):
+`BOOTSTRAP_SUPERUSER_EMAIL` is required plain project configuration in the
+production checkout's `.env`; it is not a secret. Only
+`BOOTSTRAP_SUPERUSER_PASSWORD` comes from Bitwarden: secret
+`skriptoteket-superuser-password` in the `skriptoteket-prod` agent-secrets set,
+injected by the `hemma-seed-script-bank` pdm script and never stored in `.env`.
+The email must identify an existing local admin or superuser.
 
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL`
-- `SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD`
+### Command Template (on Hemma)
 
-### Command Template (recommended: from local machine)
-
-`sudo docker compose` reads `~/apps/skriptoteket/.env` for **variable substitution**, but it does **not**
-automatically inject all `.env` vars into the running container. For CLI commands we therefore:
-
-1. Source `.env` on the server (`set -a && source .env && set +a`)
-2. Pass only the needed env vars through `docker compose exec -e ...`
-
-Template:
+Run on Hemma in the production checkout `~/apps/skriptoteket`. The
+`hemma-seed-script-bank` pdm script injects the `skriptoteket-prod` secret set
+through `agent-secrets` and runs the seed module inside the `web` container via
+`docker compose -f compose.prod.yaml exec`, which passes
+`BOOTSTRAP_SUPERUSER_EMAIL` from `.env` and `BOOTSTRAP_SUPERUSER_PASSWORD` from
+the set:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank <FLAGS>'
+pdm run hemma-seed-script-bank -- <FLAGS>
 ```
 
 Common flags:
@@ -310,25 +271,13 @@ Common flags:
 Dry-run:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --dry-run --profile prod'
+pdm run hemma-seed-script-bank -- --dry-run --profile prod
 ```
 
 Sync code changes from repo to existing tools:
 
 ```bash
-ssh hemma 'cd ~/apps/skriptoteket \
-  && set -a && source .env && set +a \
-  && sudo docker compose -f compose.prod.yaml exec -T \
-       -e PYTHONPATH=/app/src \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_EMAIL \
-       -e SKRIPTOTEKET_SCRIPT_BANK_ACTOR_PASSWORD \
-       web pdm run python -m skriptoteket.cli seed-script-bank --sync-code --profile prod'
+pdm run hemma-seed-script-bank -- --sync-code --profile prod
 ```
 
 ### Verification

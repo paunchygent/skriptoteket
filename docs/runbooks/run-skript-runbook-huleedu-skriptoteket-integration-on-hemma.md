@@ -174,7 +174,11 @@ GRANT ALL PRIVILEGES ON DATABASE huleedu_spellchecker TO huleedu_user;
 ### Source: Skriptoteket
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && git pull && docker compose -f compose.prod.yaml up -d --build"
+### Deploy from a local checkout through the launcher. It syncs the Hemma
+### checkout to origin/main, then starts the deploy worker under
+### agent-secrets run --set skriptoteket-prod; the worker builds, migrates and
+### runs the readiness smoke. Never start the worker directly on Hemma.
+pdm run hemma-deploy
 ```
 
 ### Source: HuleEdu

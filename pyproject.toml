@@ -433,18 +433,22 @@ backfill-classroom-share-previews = "sh -c 'PYTHONPATH=src:$PYTHONPATH python -m
 ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 pr-0252-auth-return = "python -m scripts.playwright_pr_0252_auth_return_to_origin"
 pr-0253-auth-retirement = "python -m scripts.playwright_pr_0253_auth_retirement"
-pr-0254-auth-cutover = "python -m scripts.playwright_pr_0254_auth_cutover"
-auth-cutover-proof = "python -m scripts.playwright_pr_0254_auth_cutover"
+pr-0254-auth-cutover = "agent-secrets run --set skriptoteket-operator -- python -m scripts.playwright_pr_0254_auth_cutover"
+auth-cutover-proof = "agent-secrets run --set skriptoteket-operator -- python -m scripts.playwright_pr_0254_auth_cutover"
 pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
 pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_matrix --start-backend --start-vite"
 pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --start-backend --start-vite"
-exam-conversion-eval = { cmd = "python -m scripts.exam_conversion_eval", env = { PYTHONPATH = "src" } }
+playwright-profile-verify = "agent-secrets run --set skriptoteket-operator -- python -m scripts.playwright_profile_verify"
+ai-prompt-eval = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m scripts.ai_prompt_eval.run_live_backend", env = { PYTHONPATH = "src" } }
+exam-conversion-eval = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m scripts.exam_conversion_eval", env = { PYTHONPATH = "src" } }
+labeling-feasibility = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m scripts.labeling_feasibility", env = { PYTHONPATH = "src" } }
+item-type-labeler-live = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m scripts.item_type_labeler_live", env = { PYTHONPATH = "src" } }
 build-answer-misspellings = { cmd = "python -m scripts.build_answer_misspellings", env = { PYTHONPATH = "src" } }
 build-exam-course-catalog = { cmd = "python -m scripts.build_exam_course_catalog", env = { PYTHONPATH = "src" } }
 exam-conversion-judge = { cmd = "python -m scripts.exam_conversion_eval.judge", env = { PYTHONPATH = "src" } }
-transcript-parity-proof = "python -m scripts.transcript_parity_proof_launcher"
-audio-transcription-reattempt-proof = "python -m scripts.audio_transcription_retryable_reattempt_public_proof"
+transcript-parity-proof = "agent-secrets run --set skriptoteket-operator -- python -m scripts.transcript_parity_proof_launcher"
+audio-transcription-reattempt-proof = "agent-secrets run --set skriptoteket-operator -- python -m scripts.audio_transcription_retryable_reattempt_public_proof"
 openapi-export-v1 = "python -m scripts.export_openapi_v1"
 export-native-exam-document-versions = "python -m scripts.export_native_exam_document_versions"
 fe-gen-api-types = { composite = [
@@ -517,7 +521,8 @@ ltm-validate = "python -m scripts.check_long_term_memory_entries"
 # Hemma production operator commands
 hemma-deploy = "bash ./scripts/hemma_deploy_start.sh"
 hemma-deploy-monitor = "bash ./scripts/hemma_deploy_monitor.sh"
-hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --script scripts/hemma_deploy_and_verify_share_previews.sh"
+hemma-deploy-share-previews = "bash ./scripts/hemma_deploy_start.sh --mode share-previews"
+hemma-seed-script-bank = { cmd = "agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml exec -e PYTHONPATH=/app/src -e BOOTSTRAP_SUPERUSER_EMAIL -e BOOTSTRAP_SUPERUSER_PASSWORD web pdm run python -m skriptoteket.cli seed-script-bank \"$@\"' bash" }
 
 # Hemma staging (rootless project skriptoteket-dev beside HuleEdu staging)
 hemma-dev = "python -m scripts.hemma_dev"
@@ -525,7 +530,7 @@ check-migration-test-coverage = "python -m scripts.check_migration_test_coverage
 sds-download-roth = "python -m scripts.download_reagent_prep_chef_sds_pdfs"
 sds-build-shortcards = "python -m scripts.build_reagent_prep_chef_sds_shortcards"
 sds-check-hazard-alignment = "python -m scripts.check_reagent_prep_chef_hazard_shortcard_alignment"
-textbook-corpus-baseline = "python -m scripts.build_textbook_corpus_baseline"
+textbook-corpus-baseline = "agent-secrets run --set skriptoteket-operator -- python -m scripts.build_textbook_corpus_baseline"
 textbook-corpus-mechanical = "python -m scripts.build_textbook_corpus_mechanical_cleanup"
 textbook-corpus-manual = "python -m scripts.build_textbook_corpus_manual_restoration_workflow"
 
@@ -547,14 +552,14 @@ bootstrap-superuser = { cmd = "python -m skriptoteket.cli bootstrap-superuser", 
 provision-user = { cmd = "python -m skriptoteket.cli provision-user", env = { PYTHONPATH = "src" } }
 consume-huleedu-subject-export = { cmd = "python -m skriptoteket.cli consume-huleedu-subject-export", env = { PYTHONPATH = "src" } }
 setup-staging-proof-fixture = { cmd = "python -m skriptoteket.cli setup-staging-proof-fixture", env = { PYTHONPATH = "src" } }
-auth-edge-bootstrap-preflight = { cmd = "python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
+auth-edge-bootstrap-preflight = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m skriptoteket.cli auth-edge-bootstrap-preflight", env = { PYTHONPATH = "src" } }
 send-feedback-emails = { cmd = "python -m skriptoteket.cli send-feedback-emails", env = { PYTHONPATH = "src" } }
 artifacts-prune = { cmd = "python -m skriptoteket.cli prune-artifacts", env = { PYTHONPATH = "src" } }
 cleanup-document-converter-project-previews = { cmd = "python -m skriptoteket.cli cleanup-document-converter-project-previews", env = { PYTHONPATH = "src" } }
 cleanup-session-files = { cmd = "python -m skriptoteket.cli cleanup-session-files", env = { PYTHONPATH = "src" } }
 cleanup-sandbox-snapshots = { cmd = "python -m skriptoteket.cli cleanup-sandbox-snapshots", env = { PYTHONPATH = "src" } }
 clear-all-session-files = { cmd = "python -m skriptoteket.cli clear-all-session-files", env = { PYTHONPATH = "src" } }
-seed-script-bank = { cmd = "python -m skriptoteket.cli seed-script-bank", env = { PYTHONPATH = "src" } }
+seed-script-bank = { cmd = "agent-secrets run --set skriptoteket-operator -- python -m skriptoteket.cli seed-script-bank", env = { PYTHONPATH = "src" } }
 run-execution-worker = { cmd = "python -m skriptoteket.cli run-execution-worker", env = { PYTHONPATH = "src" } }
 
 # Docker dev workflow (compose base + dev overrides)

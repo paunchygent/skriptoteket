@@ -17,12 +17,25 @@ from scripts._command_dispatch import (
     run_subprocess,
 )
 
+SECRETS_SET = "skriptoteket-prod"
 COMPOSE: tuple[str, ...] = ("docker", "compose", "-f", "compose.observability.yaml")
+# `up` creates containers and loads the secrets overlay through agent-secrets;
+# down/restart/logs/ps use the base file and read no secret.
+COMPOSE_WITH_SECRETS: tuple[str, ...] = (
+    "agent-secrets",
+    "run",
+    "--set",
+    SECRETS_SET,
+    "--",
+    *COMPOSE,
+    "-f",
+    "compose.secrets.observability.yaml",
+)
 
 COMMANDS: dict[str, CommandSpec] = {
     "start": CommandSpec(
         summary="Start the observability stack.",
-        commands=((*COMPOSE, "up", "-d"),),
+        commands=((*COMPOSE_WITH_SECRETS, "up", "-d"),),
     ),
     "stop": CommandSpec(
         summary="Stop the observability stack.",

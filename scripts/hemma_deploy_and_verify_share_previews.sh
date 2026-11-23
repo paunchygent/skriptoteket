@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Canonical on-host deploy + share-preview readiness gate for Hemma.
-# Run this from ~/apps/skriptoteket through `pdm run hemma-deploy-share-previews`.
+# Start it only with `pdm run hemma-deploy-share-previews`: the launcher
+# (scripts/hemma_deploy_start.sh) syncs the checkout to origin/main and opens
+# this worker under the production secrets set.
 
 set -euo pipefail
 
@@ -8,31 +10,12 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
 COMPOSE=(sudo docker compose -f compose.prod.yaml)
+COMPOSE_SECRETS=(
+  sudo --preserve-env="${AGENT_SECRETS_VARIABLES:-}"
+  docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml
+)
 RUN_STAMP="$(date +%Y%m%d-%H%M%S)"
 ARTIFACT_DIR="${ROOT_DIR}/.artifacts/pr-0277-share-previews-cutover-${RUN_STAMP}"
-
-require_clean_git_checkout() {
-  if ! git diff --quiet || ! git diff --cached --quiet; then
-    echo "Refusing to deploy with local git changes in ${ROOT_DIR}." >&2
-    exit 1
-  fi
-}
-
-sync_checkout_to_origin_main() {
-  local current_branch
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
-
-  if [[ "$current_branch" != "main" ]]; then
-    echo "==> Switching deployment checkout from ${current_branch} to main"
-    git checkout main
-  fi
-
-  echo "==> Fetching latest origin/main"
-  git fetch origin main
-  echo "==> Fast-forwarding local main to origin/main"
-  git pull --ff-only origin main
-  echo "==> Deploying commit $(git rev-parse HEAD)"
-}
 
 require_env() {
   local key="$1"
@@ -42,18 +25,27 @@ require_env() {
   fi
 }
 
+if [[ $# -gt 0 ]]; then
+  echo "This worker takes no arguments; start it with pdm run hemma-deploy-share-previews." >&2
+  exit 2
+fi
+
 if [[ ! -f .env ]]; then
   echo "Missing .env in $ROOT_DIR." >&2
   exit 1
 fi
 
-require_clean_git_checkout
-sync_checkout_to_origin_main
-
-set -a
-# shellcheck disable=SC1091
-source .env
-set +a
+# .env carries configuration only. One dotenv parser reads just the named,
+# non-secret settings this worker uses; a value already in the environment wins.
+config="$(pdm run python scripts/hemma_deploy_config.py .env \
+  BOOTSTRAP_SUPERUSER_EMAIL \
+  HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR)"
+while IFS='=' read -r name value; do
+  [[ -n "$name" ]] || continue
+  if [[ -z "${!name:-}" ]]; then
+    export "${name}=${value}"
+  fi
+done <<<"$config"
 
 export DOCKER_BUILDKIT=1
 export COMPOSE_DOCKER_CLI_BUILD=1
@@ -74,7 +66,7 @@ mkdir -p "$ARTIFACT_DIR"
 echo "==> Writing PR-0277 share-preview artifacts to ${ARTIFACT_DIR}"
 
 echo "==> Deploying Skriptoteket web + worker"
-"${COMPOSE[@]}" up -d --build web worker
+"${COMPOSE_SECRETS[@]}" up -d --build web worker
 
 echo "==> Applying database migrations"
 "${COMPOSE[@]}" exec -T -e PYTHONPATH=/app/src web pdm run db-upgrade

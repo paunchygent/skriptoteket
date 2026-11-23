@@ -1,13 +1,22 @@
 ---
 # Production deployment for home server (hemma.hule.education)
 # Usage:
-#   docker compose -f compose.prod.yaml build
-#   docker compose -f compose.prod.yaml up -d
+#   Deploy/recreate (build, up, migrate, readiness smoke) goes only through
+#   the launcher scripts/hemma_deploy_start.sh, which syncs the Hemma checkout
+#   to origin/main and starts the deploy worker under
+#   `agent-secrets run --set skriptoteket-prod`. Never start a worker directly:
+#     pdm run hemma-deploy                  (starts scripts/hemma_deploy_and_verify_seating_export.sh)
+#     pdm run hemma-deploy-share-previews   (starts scripts/hemma_deploy_and_verify_share_previews.sh)
+#   Diagnostics on the running stack use this base file alone (no secrets):
+#     sudo docker compose -f compose.prod.yaml ps|logs|stop
 #
 # Prerequisites:
 # - External network: docker network create hule-network
 # - External PostgreSQL: shared-postgres on hule-network
 # - Environment variables in .env (see .env.example.prod)
+# - Secrets reach containers only through compose.secrets.prod.yaml on
+#   up/build/recreate/run paths, wrapped by
+#   `agent-secrets run --set skriptoteket-prod`
 
 name: skriptoteket
 
@@ -23,8 +32,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
-      SECRET_KEY: ${SECRET_KEY}
       ENVIRONMENT: production
       COOKIE_SECURE: "true"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-skriptoteket.hule.education}
@@ -54,7 +61,6 @@ services:
       EMAIL_SMTP_HOST: ${EMAIL_SMTP_HOST:-mail.privateemail.com}
       EMAIL_SMTP_PORT: ${EMAIL_SMTP_PORT:-587}
       EMAIL_SMTP_USERNAME: ${EMAIL_SMTP_USERNAME:-}
-      EMAIL_SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD:-}
       EMAIL_SMTP_USE_TLS: ${EMAIL_SMTP_USE_TLS:-true}
       EMAIL_SMTP_TIMEOUT: ${EMAIL_SMTP_TIMEOUT:-30}
       EMAIL_DEFAULT_FROM_EMAIL: ${EMAIL_DEFAULT_FROM_EMAIL:-noreply@hule.education}
@@ -78,10 +84,10 @@ services:
       LLM_CHAT_OPS_REASONING_EFFORT: ${LLM_CHAT_OPS_REASONING_EFFORT:-low}
       LLM_CHAT_OPS_TEMPLATE_ID: ${LLM_CHAT_OPS_TEMPLATE_ID:-editor_chat_ops_v1}
       LLM_CHAT_OPS_TIMEOUT_SECONDS: ${LLM_CHAT_OPS_TIMEOUT_SECONDS:-120}
-      # Exam answer-key enablement; door address and key (shared with the editor AI above).
+      # Exam answer-key enablement and door address (the door key comes from the
+      # secrets overlay, shared with the editor AI above).
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://huleedu_llm_provider_service:8080}
-      HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
       # 1,000 concurrent AI calls (TASK-SKRIPT-41-01-04): uvicorn runs
       # WEB_CONCURRENCY processes. shared-postgres allows 100 connections for
       # every app on Hemma. Per process: pool + overflow + payload guard pool.
@@ -94,7 +100,6 @@ services:
       LLM_DOOR_MAX_CONNECTIONS: ${SKRIPTOTEKET_WEB_LLM_DOOR_MAX_CONNECTIONS:-260}
       # Conversion Hub -> Sir Convert-a-Lot v2
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
-      SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
       SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
       # nginx-proxy integration
@@ -134,7 +139,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
-      DATABASE_URL: postgresql+asyncpg://skriptoteket:${SKRIPTOTEKET_DB_PASSWORD}@shared-postgres:5432/skriptoteket
       ENVIRONMENT: production
       SERVICE_NAME: skriptoteket-worker
       RUNNER_IMAGE: skriptoteket-runner:latest
@@ -145,10 +149,10 @@ services:
       # Observability (requires compose.observability.yaml running)
       OTEL_TRACING_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
-      # Keep answer-key provider enablement and door credentials identical to web.
+      # Keep answer-key provider enablement and door address identical to web;
+      # the door key comes from the secrets overlay.
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://huleedu_llm_provider_service:8080}
-      HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
       # Eight AI jobs at once, each with at most eight door calls in flight
       # (TASK-SKRIPT-41-01-04); a job holds a connection only while it writes.
       LLM_WORKER_JOB_CONCURRENCY: ${SKRIPTOTEKET_LLM_WORKER_JOB_CONCURRENCY:-8}
@@ -163,7 +167,6 @@ services:
       # contract as web
       # so queue/CLI flows never depend on stale aliases or partial recreates.
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
-      SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
       SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
     command:
