@@ -47,8 +47,9 @@ Recommended CLI tools + install steps: see [ref-home-server-cli-tools.md](../ref
 ### Command Patterns (Use These)
 
 ```bash
-### 1) Compose commands (from repo root)
-ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml <command>"
+### 1) Compose diagnostics on the running stack (base file reads no secret;
+###    deploy/recreate goes through the checked-in wrappers, see "Deploy" below)
+ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml ps|logs|stop"
 
 ### 2) Run CLI inside web container (compose)
 ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.prod.yaml exec -T -e PYTHONPATH=/app/src web pdm run python -m skriptoteket.cli <command>"
@@ -120,21 +121,21 @@ ssh hemma "cd ~/apps/skriptoteket && sudo docker compose -f compose.observabilit
 ### nginx-proxy auto-reloads when containers change (no manual reload needed)
 ```
 
-Note: `docker compose restart` does **not** re-read `.env`. For env var changes use a recreate:
+Note: `docker compose restart` does **not** re-read `.env` or the injected
+secret environment. For env var changes, redeploy through the canonical
+wrapper — recreation is never a hand-run `docker compose up`:
 
 ```bash
-ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --no-deps --force-recreate web'"
+### Detached from a local checkout:
+pdm run hemma-deploy
+
+### Directly on Hemma:
+ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
 ```
 
 Important: updating the env file is not enough on its own. `compose.prod.yaml` must also pass the variable through to
 the target service. Conversion Hub, for example, requires `SIR_CONVERT_A_LOT_V2_BASE_URL` and
 `SIR_CONVERT_A_LOT_V2_API_KEY` to be wired into both the `web` and `worker` service environments.
-
-If the change affects worker configuration, recreate worker too:
-
-```bash
-ssh hemma "cd ~/apps/skriptoteket && agent-secrets run --set skriptoteket-prod -- bash -c 'sudo --preserve-env=\"\$AGENT_SECRETS_VARIABLES\" docker compose -f compose.prod.yaml -f compose.secrets.prod.yaml up -d --no-deps --force-recreate worker'"
-```
 
 ### Disk Space / Session Cleanup
 
@@ -243,17 +244,24 @@ ssh hemma "sudo docker exec nginx-proxy nginx -s reload"
 
 ### Production Env Checklist
 
-Before deploying, confirm the production env file includes the keys that `compose.prod.yaml` forwards into the
-containers.
+Before deploying, confirm the `skriptoteket-prod` agent-secrets set carries the
+secrets (injected through the deploy wrappers, never read from `.env`) and the
+production env file carries the non-secret keys `compose.prod.yaml` forwards
+into the containers.
+
+Secrets (`skriptoteket-prod` set):
 
 - `SKRIPTOTEKET_DB_PASSWORD`
 - `SECRET_KEY`
-- SMTP / email keys as needed
-- LLM provider keys as needed
-- `SIR_CONVERT_A_LOT_V2_BASE_URL`
+- `BOOTSTRAP_SUPERUSER_EMAIL` and `BOOTSTRAP_SUPERUSER_PASSWORD`
+- `EMAIL_SMTP_PASSWORD` (when the SMTP provider is enabled)
+- `HULEEDU_INTERNAL_API_KEY` (LLM provider door)
 - `SIR_CONVERT_A_LOT_V2_API_KEY`
+
+Configuration (`.env`):
+
+- `SIR_CONVERT_A_LOT_V2_BASE_URL`
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
-- `BOOTSTRAP_SUPERUSER_EMAIL`
 - `ALLOWED_HOSTS`
 - `TRUSTED_PROXY_CIDRS` (exact nginx-proxy CIDR; feeds `FORWARDED_ALLOW_IPS` in `compose.prod.yaml`)
 - `HEALTHZ_DETAILED_RESPONSE`
@@ -386,3 +394,7 @@ It is not a second source of deploy truth.
 
 If the local launcher path is unavailable or if you need direct break-glass
 debugging on Hemma, run the on-host script directly:
+
+```bash
+ssh hemma "cd ~/apps/skriptoteket && bash scripts/hemma_deploy_and_verify_seating_export.sh"
+```

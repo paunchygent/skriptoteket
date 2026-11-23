@@ -23,6 +23,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[3]
 
 AGENT_SECRETS_PREFIX = "agent-secrets run --set skriptoteket-operator -- "
+PROD_AGENT_SECRETS_PREFIX = "agent-secrets run --set skriptoteket-prod -- "
 
 WRAPPED_PDM_SCRIPTS = {
     "pr-0254-auth-cutover": "python -m scripts.playwright_pr_0254_auth_cutover",
@@ -39,6 +40,19 @@ WRAPPED_PDM_SCRIPTS = {
     ),
     "auth-edge-bootstrap-preflight": "python -m skriptoteket.cli auth-edge-bootstrap-preflight",
     "seed-script-bank": "python -m skriptoteket.cli seed-script-bank",
+}
+
+# Production operator scripts inject the skriptoteket-prod set and run the
+# seed inside the web container via `docker compose exec`, preserving the
+# injected variable names through sudo (agent-secrets runs on Hemma, not in
+# the web image).
+PROD_WRAPPED_PDM_SCRIPTS = {
+    "hemma-seed-script-bank": (
+        'bash -c \'sudo --preserve-env="$AGENT_SECRETS_VARIABLES" docker compose '
+        "-f compose.prod.yaml exec -e PYTHONPATH=/app/src -e BOOTSTRAP_SUPERUSER_EMAIL "
+        "-e BOOTSTRAP_SUPERUSER_PASSWORD web pdm run python -m skriptoteket.cli "
+        'seed-script-bank "$@"\' bash'
+    ),
 }
 
 SECRET_ENV_VARS = (
@@ -68,13 +82,16 @@ def test_secret_reading_operator_scripts_run_through_agent_secrets() -> None:
 
     for name, inner_command in WRAPPED_PDM_SCRIPTS.items():
         assert _script_commands(scripts[name]) == [f"{AGENT_SECRETS_PREFIX}{inner_command}"], name
+    for name, inner_command in PROD_WRAPPED_PDM_SCRIPTS.items():
+        expected = [f"{PROD_AGENT_SECRETS_PREFIX}{inner_command}"]
+        assert _script_commands(scripts[name]) == expected, name
 
     wrapped = {
         name
         for name, entry in scripts.items()
         if any("agent-secrets" in command for command in _script_commands(entry))
     }
-    assert wrapped == set(WRAPPED_PDM_SCRIPTS)
+    assert wrapped == set(WRAPPED_PDM_SCRIPTS) | set(PROD_WRAPPED_PDM_SCRIPTS)
 
 
 def test_pdm_script_env_overrides_survive_wrapping() -> None:
@@ -270,13 +287,13 @@ def test_pr_0254_credentials_never_read_secret_passwords_from_dotenv(monkeypatch
     assert password is None
 
 
-def test_pr_0254_credentials_read_lifecycle_proof_password_from_env(monkeypatch) -> None:
+def test_pr_0254_credentials_read_bootstrap_password_from_env(monkeypatch) -> None:
     from scripts.playwright_pr_0254_auth_cutover import _credentials
 
     for key in ("PLAYWRIGHT_EMAIL", "PLAYWRIGHT_PASSWORD"):
         monkeypatch.delenv(key, raising=False)
-    monkeypatch.setenv("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD", "env-secret")
-    dotenv = {"SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD": "dotenv-secret"}
+    monkeypatch.setenv("BOOTSTRAP_SUPERUSER_PASSWORD", "env-secret")
+    dotenv = {"BOOTSTRAP_SUPERUSER_PASSWORD": "dotenv-secret"}
 
     _, password = _credentials(email=None, password=None, dotenv=dotenv)
 

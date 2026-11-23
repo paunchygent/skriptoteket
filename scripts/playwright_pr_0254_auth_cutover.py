@@ -128,7 +128,6 @@ def _credentials(
     resolved_password = (
         password
         or os.environ.get("PLAYWRIGHT_PASSWORD")
-        or os.environ.get("SKRIPTOTEKET_LIFECYCLE_PROOF_PASSWORD")
         or os.environ.get("BOOTSTRAP_SUPERUSER_PASSWORD")
     )
     return resolved_email, resolved_password

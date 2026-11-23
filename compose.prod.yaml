@@ -1,8 +1,13 @@
 ---
 # Production deployment for home server (hemma.hule.education)
 # Usage:
-#   docker compose -f compose.prod.yaml build
-#   docker compose -f compose.prod.yaml up -d
+#   Deploy/recreate (build, up, migrate, readiness smoke) goes through the
+#   checked-in wrappers only:
+#     pdm run hemma-deploy                  (scripts/hemma_deploy_start.sh ->
+#       scripts/hemma_deploy_and_verify_seating_export.sh)
+#     pdm run hemma-deploy-share-previews   (scripts/hemma_deploy_and_verify_share_previews.sh)
+#   Diagnostics on the running stack use this base file alone (no secrets):
+#     sudo docker compose -f compose.prod.yaml ps|logs|stop
 #
 # Prerequisites:
 # - External network: docker network create hule-network
