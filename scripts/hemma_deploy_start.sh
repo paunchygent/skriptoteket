@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Launch the canonical Hemma deploy script as a detached remote process.
-# The remote raw log remains authoritative; this launcher only hands off
-# cleanly, prints PID/log breadcrumbs, and exits.
+# The launcher first syncs the remote checkout to origin/main so the worker it
+# opens is always the merged revision. The remote raw log remains
+# authoritative; this launcher only hands off cleanly, prints PID/log
+# breadcrumbs, and exits.
 
 set -euo pipefail
 
@@ -64,24 +66,27 @@ fi
 cd "$repo_dir"
 mkdir -p .artifacts
 
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "Refusing to deploy: local git changes in $repo_dir." >&2
+  exit 1
+fi
+
+current_branch="$(git rev-parse --abbrev-ref HEAD)"
+if [[ "$current_branch" != "main" ]]; then
+  echo "Switching remote checkout from ${current_branch} to main before deploy."
+  git checkout main
+fi
+echo "Syncing remote checkout to origin/main before deploy."
+git fetch origin main
+git pull --ff-only origin main
+
 script_path="$repo_dir/$script_rel"
 if [[ "$script_rel" = /* ]]; then
   script_path="$script_rel"
 fi
 
 if [[ ! -f "$script_path" ]]; then
-  current_branch="$(git rev-parse --abbrev-ref HEAD)"
-  if [[ "$current_branch" != "main" ]]; then
-    echo "Requested deploy script is missing; switching remote checkout from ${current_branch} to main."
-    git checkout main
-  fi
-  echo "Requested deploy script is missing; fast-forwarding remote main before retrying."
-  git fetch origin main
-  git pull --ff-only origin main
-fi
-
-if [[ ! -f "$script_path" ]]; then
-  echo "Remote deploy script not found: $script_path" >&2
+  echo "Remote deploy script not found after syncing origin/main: $script_path" >&2
   exit 1
 fi
 

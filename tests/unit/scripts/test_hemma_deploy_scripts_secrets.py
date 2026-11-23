@@ -1,15 +1,19 @@
 """Unit tests for the Hemma production deploy scripts' secrets wrapping.
 
 Purpose:
-    Prove that scripts/hemma_deploy_and_verify_*.sh run their compose `up` and
-    `build` paths through `agent-secrets run --set skriptoteket-prod` with
-    `sudo --preserve-env` and the compose.secrets.prod.yaml overlay, keep `exec`
-    on the base file, and take secrets from the set rather than `.env`.
+    Prove that scripts/hemma_deploy_and_verify_*.sh unconditionally re-exec
+    through `agent-secrets run --set skriptoteket-prod`, run their compose
+    `up` and `build` paths with `sudo --preserve-env` and the
+    compose.secrets.prod.yaml overlay, keep `exec` on the base file, and take
+    secrets from the set rather than `.env`. Also prove that
+    scripts/hemma_deploy_start.sh syncs the remote checkout before it opens
+    the deploy worker script.
 
 Relationships:
     - Exercises the real scripts in a sandboxed checkout with stubbed
-      `agent-secrets`, `sudo`, `docker` and `git` executables that record argv
-      and emulate `agent-secrets run` injection and `sudo env_reset`.
+      `agent-secrets`, `sudo`, `docker`, `git` and `ssh` executables that
+      record argv and emulate `agent-secrets run` injection and
+      `sudo env_reset`.
 """
 
 from __future__ import annotations
@@ -139,8 +143,10 @@ exec "${args[@]}"
 printf 'docker\\0' >>"$CALLS"
 printf '%s\\0' "$@" >>"$CALLS"
 printf '\\0' >>"$CALLS"
-printf 'SECRET_KEY=%s SKRIPTOTEKET_DB_PASSWORD=%s\\n' \
-  "${SECRET_KEY-<unset>}" "${SKRIPTOTEKET_DB_PASSWORD-<unset>}" >>"$ENVLOG"
+printf 'SECRET_KEY=%s SKRIPTOTEKET_DB_PASSWORD=%s'\
+' BOOTSTRAP_SUPERUSER_PASSWORD=%s BOOTSTRAP_SUPERUSER_EMAIL=%s\\n' \
+  "${SECRET_KEY-<unset>}" "${SKRIPTOTEKET_DB_PASSWORD-<unset>}" \
+  "${BOOTSTRAP_SUPERUSER_PASSWORD-<unset>}" "${BOOTSTRAP_SUPERUSER_EMAIL-<unset>}" >>"$ENVLOG"
 exit 0
 """,
     )
@@ -173,12 +179,18 @@ def _calls(log: Path) -> list[list[str]]:
 
 
 def _run_script(
-    script: Path, tmp_path: Path, calls: Path, env_log: Path
+    script: Path,
+    tmp_path: Path,
+    calls: Path,
+    env_log: Path,
+    extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
     env = {key: value for key, value in os.environ.items() if key != "AGENT_SECRETS_VARIABLES"}
     env["PATH"] = f"{tmp_path / 'bin'}:{env['PATH']}"
     env["CALLS"] = str(calls)
     env["ENVLOG"] = str(env_log)
+    if extra_env:
+        env.update(extra_env)
     return subprocess.run(
         ["bash", str(script)],
         check=False,
@@ -205,7 +217,9 @@ def test_deploy_runs_through_agent_secrets_and_passes_overlay_only_to_creating_p
     calls = _calls(calls_log)
 
     agent_calls = [call[1:] for call in calls if call[0] == "agent-secrets"]
-    assert agent_calls == [["run", "--set", "skriptoteket-prod", "--", "bash", str(script)]]
+    assert agent_calls == [
+        ["run", "--set", "skriptoteket-prod", "--", "bash", str(script), "--deploy-phase"]
+    ]
 
     docker_calls = [call[1:] for call in calls if call[0] == "docker"]
     sudo_calls = [call[1:] for call in calls if call[0] == "sudo"]
@@ -239,7 +253,34 @@ def test_deploy_runs_through_agent_secrets_and_passes_overlay_only_to_creating_p
             assert "SECRET_KEY=<unset>" in env_line
 
 
-def test_seating_export_smoke_takes_bootstrap_password_from_the_set(tmp_path: Path) -> None:
+@pytest.mark.parametrize("script_name", SCRIPTS)
+def test_inherited_agent_secrets_marker_never_skips_production_lookup(
+    tmp_path: Path, script_name: str
+) -> None:
+    """An inherited AGENT_SECRETS_VARIABLES is not provenance.
+
+    A caller already inside some other `agent-secrets run` still gets the
+    unconditional `agent-secrets run --set skriptoteket-prod` re-exec.
+    """
+    script, calls_log, env_log = _prepare_sandbox(tmp_path, script_name)
+
+    result = _run_script(
+        script,
+        tmp_path,
+        calls_log,
+        env_log,
+        extra_env={"AGENT_SECRETS_VARIABLES": "SOME_OTHER_SET_VARIABLE"},
+    )
+
+    assert result.returncode == 0, result.stderr
+    calls = _calls(calls_log)
+    agent_calls = [call[1:] for call in calls if call[0] == "agent-secrets"]
+    assert agent_calls == [
+        ["run", "--set", "skriptoteket-prod", "--", "bash", str(script), "--deploy-phase"]
+    ]
+
+
+def test_seating_export_smoke_passes_bootstrap_password_by_name(tmp_path: Path) -> None:
     script, calls_log, env_log = _prepare_sandbox(
         tmp_path, "hemma_deploy_and_verify_seating_export.sh"
     )
@@ -248,8 +289,112 @@ def test_seating_export_smoke_takes_bootstrap_password_from_the_set(tmp_path: Pa
 
     assert result.returncode == 0, result.stderr
     calls = _calls(calls_log)
-    docker_exec = [call for call in calls if call[0] == "docker" and call[1] == "exec"]
+
+    docker_calls = [call[1:] for call in calls if call[0] == "docker"]
+    docker_exec = [call for call in docker_calls if call[:1] == ["exec"]]
     assert len(docker_exec) == 1
-    assert "-e" in docker_exec[0]
-    assert "BOOTSTRAP_SUPERUSER_PASSWORD=set-bootstrap-password" in docker_exec[0]
+    exec_call = docker_exec[0]
+    # The variable is handed to docker by name only; no argv element carries
+    # the value.
+    assert "-e" in exec_call
+    assert "BOOTSTRAP_SUPERUSER_PASSWORD" in exec_call
+    assert "BOOTSTRAP_SUPERUSER_EMAIL" in exec_call
+    assert not any(part.startswith("BOOTSTRAP_SUPERUSER_PASSWORD=") for part in exec_call)
+    assert "set-bootstrap-password" not in exec_call
+
+    # sudo carried the variable through env_reset, so `docker exec -e NAME`
+    # resolves it from the caller's environment.
+    sudo_exec = [
+        call
+        for call in calls
+        if call[0] == "sudo"
+        and any(
+            call[index] == "docker" and call[index + 1] == "exec" for index in range(len(call) - 1)
+        )
+    ]
+    assert len(sudo_exec) == 1
+    preserve = [part for part in sudo_exec[0] if part.startswith("--preserve-env=")]
+    assert preserve == ["--preserve-env=BOOTSTRAP_SUPERUSER_EMAIL,BOOTSTRAP_SUPERUSER_PASSWORD"]
+
+    env_lines = env_log.read_text(encoding="utf-8").splitlines()
+    exec_index = next(i for i, call in enumerate(docker_calls) if call[:1] == ["exec"])
+    assert "BOOTSTRAP_SUPERUSER_PASSWORD=set-bootstrap-password" in env_lines[exec_index]
+    assert "BOOTSTRAP_SUPERUSER_EMAIL=admin@example.com" in env_lines[exec_index]
     assert not any("dotenv" in part for call in calls for part in call)
+
+
+@pytest.mark.parametrize("remote_branch", ["main", "task-branch"])
+def test_start_script_syncs_remote_checkout_before_opening_worker(
+    tmp_path: Path, remote_branch: str
+) -> None:
+    """hemma_deploy_start.sh fast-forwards origin/main before it opens the
+    worker script, so the first cutover never runs the pre-merge worker."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls_log = tmp_path / "calls.bin"
+    remote_repo = tmp_path / "remote"
+    worker = remote_repo / "scripts" / "hemma_deploy_and_verify_seating_export.sh"
+    worker.parent.mkdir(parents=True)
+    worker.write_text(
+        '#!/usr/bin/env bash\nprintf "worker\\0\\0" >>"$CALLS"\nsleep 2\n',
+        encoding="utf-8",
+    )
+
+    _write_stub(
+        bin_dir,
+        "ssh",
+        """#!/usr/bin/env bash
+printf 'ssh\\0' >>"$CALLS"
+printf '%s\\0' "$@" >>"$CALLS"
+printf '\\0' >>"$CALLS"
+shift
+[[ "$1" == "/bin/bash" && "$2" == "-s" && "$3" == "--" ]] || exit 92
+shift 3
+exec bash -s -- "$@"
+""",
+    )
+    _write_stub(
+        bin_dir,
+        "git",
+        """#!/usr/bin/env bash
+printf 'git\\0' >>"$CALLS"
+printf '%s\\0' "$@" >>"$CALLS"
+printf '\\0' >>"$CALLS"
+if [[ "$1" == "rev-parse" && "$2" == "--abbrev-ref" ]]; then echo "${GIT_BRANCH:-main}"; fi
+exit 0
+""",
+    )
+
+    env = {key: value for key, value in os.environ.items() if key != "AGENT_SECRETS_VARIABLES"}
+    env["PATH"] = f"{bin_dir}:{env['PATH']}"
+    env["CALLS"] = str(calls_log)
+    env["GIT_BRANCH"] = remote_branch
+    result = subprocess.run(
+        [
+            "bash",
+            str(REPOSITORY_ROOT / "scripts" / "hemma_deploy_start.sh"),
+            "--host",
+            "unused",
+            "--repo-dir",
+            str(remote_repo),
+        ],
+        check=False,
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stderr + result.stdout
+    calls = _calls(calls_log)
+    # The worker file already exists on the remote; the launcher must still
+    # sync first so it opens the merged revision.
+    fetch_index = next(i for i, call in enumerate(calls) if call[:2] == ["git", "fetch"])
+    pull_index = next(i for i, call in enumerate(calls) if call[:3] == ["git", "pull", "--ff-only"])
+    worker_index = next(i for i, call in enumerate(calls) if call == ["worker"])
+    assert fetch_index < pull_index < worker_index
+    if remote_branch != "main":
+        checkout_index = next(
+            i for i, call in enumerate(calls) if call[:3] == ["git", "checkout", "main"]
+        )
+        assert checkout_index < fetch_index
