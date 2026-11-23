@@ -1,3 +1,4 @@
+---
 # Observability stack for home server (hemma.hule.education)
 # Lifecycle: Independent from application - can be started/stopped separately
 #
@@ -8,6 +9,9 @@
 # Prerequisites:
 #   - External network: docker network create hule-network
 #   - Application running on hule-network (skriptoteket-web)
+#   - GRAFANA_ADMIN_PASSWORD reaches Grafana only through
+#     compose.secrets.observability.yaml on up paths, wrapped by
+#     `agent-secrets run --set skriptoteket-prod`
 
 name: skriptoteket-observability
 
@@ -107,7 +111,6 @@ services:
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_SERVER_ROOT_URL=https://grafana.hemma.hule.education

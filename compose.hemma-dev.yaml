@@ -8,7 +8,9 @@
 # Prerequisites on Hemma:
 # - HuleEdu staging (project huleedu-dev) owns the external network
 #   huleedu-dev_hule-network; its Gateway routes /api to skriptoteket-web:8000.
-# - The untracked checkout `.env` sets SKRIPTOTEKET_DEV_DB_PASSWORD.
+# - SKRIPTOTEKET_DEV_DB_PASSWORD and HULEEDU_INTERNAL_API_KEY reach containers
+#   only through compose.secrets.hemma-dev.yaml on up/run paths, wrapped by
+#   `agent-secrets run --set skriptoteket-staging`.
 # - Runbook: docs/runbooks/ (Skriptoteket staging on Hemma).
 
 ---
@@ -21,7 +23,6 @@ services:
     environment:
       POSTGRES_DB: skriptoteket
       POSTGRES_USER: skriptoteket
-      POSTGRES_PASSWORD: ${SKRIPTOTEKET_DEV_DB_PASSWORD:?required}
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -44,8 +45,6 @@ services:
       db:
         condition: service_healthy
     environment: &app-environment
-      DATABASE_URL: "postgresql+asyncpg://skriptoteket:\
-        ${SKRIPTOTEKET_DEV_DB_PASSWORD:?required}@db:5432/skriptoteket"
       ENVIRONMENT: staging
       COOKIE_SECURE: "false"
       PUBLIC_APP_BASE_URL: http://127.0.0.1:15173
@@ -63,14 +62,13 @@ services:
       HULEEDU_INTERNAL_IDENTITY_ISSUER: api_gateway_service
       HULEEDU_INTERNAL_IDENTITY_AUDIENCE: skriptoteket
       # Answer-key completion lane. Off unless the untracked staging .env sets
-      # LLM_ANSWER_KEY_ENABLED=true together with HULEEDU_INTERNAL_API_KEY.
+      # LLM_ANSWER_KEY_ENABLED=true; the door key comes from the secrets overlay.
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       # Editor AI (completion, chat, chat ops) through the door; off unless the staging .env sets them.
       LLM_COMPLETION_ENABLED: ${LLM_COMPLETION_ENABLED:-false}
       LLM_CHAT_ENABLED: ${LLM_CHAT_ENABLED:-false}
       LLM_CHAT_OPS_ENABLED: ${LLM_CHAT_OPS_ENABLED:-false}
       HULEEDU_LLM_PROVIDER_BASE_URL: ${HULEEDU_LLM_PROVIDER_BASE_URL:-http://llm_provider_service:8080}
-      HULEEDU_INTERNAL_API_KEY: ${HULEEDU_INTERNAL_API_KEY:-}
       # Staging runs web as several processes like production
       # (TASK-SKRIPT-41-01-04); its own Postgres keeps the default pools.
       WEB_CONCURRENCY: ${SKRIPTOTEKET_WEB_CONCURRENCY:-2}
