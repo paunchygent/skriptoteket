@@ -394,9 +394,9 @@ distribution = false
 
 [tool.pdm.scripts]
 # repository-governance:bindings:start
-setup = "/usr/bin/env -u PYTHONPATH -u PEP582_PACKAGES pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-bootstrap --repo-root ${PDM_PROJECT_ROOT}"
-new-worktree = "/usr/bin/env -u PYTHONPATH -u PEP582_PACKAGES pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-create --repo-root ${PDM_PROJECT_ROOT}"
-land-worktree = "/usr/bin/env -u PYTHONPATH -u PEP582_PACKAGES pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-land --repo-root ${PDM_PROJECT_ROOT}"
+setup = "/usr/bin/env -u PYTHONPATH pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-bootstrap --repo-root ${PDM_PROJECT_ROOT}"
+new-worktree = "/usr/bin/env -u PYTHONPATH pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-create --repo-root ${PDM_PROJECT_ROOT}"
+land-worktree = "/usr/bin/env -u PYTHONPATH pdm run --project ${HOME}/.codex/repository-governance-runtime cross-repo-worktree-land --repo-root ${PDM_PROJECT_ROOT}"
 format = "repository-governance-routine format --repo-root ${PDM_PROJECT_ROOT}"
 lint = "repository-governance-routine lint --repo-root ${PDM_PROJECT_ROOT}"
 typecheck = "repository-governance-routine typecheck --repo-root ${PDM_PROJECT_ROOT}"
@@ -569,7 +569,7 @@ dev-stack = "python -m scripts.dev_stack"
 obs-stack = "python -m scripts.obs_stack"
 
 # Pre-commit convenience
-precommit-install = "/usr/bin/env -u PYTHONPATH -u PEP582_PACKAGES pdm run --project ${HOME}/.codex/repository-governance-runtime repository-governance-hooks-install --repo-root ${PDM_PROJECT_ROOT}"
+precommit-install = "/usr/bin/env -u PYTHONPATH pdm run --project ${HOME}/.codex/repository-governance-runtime repository-governance-hooks-install --repo-root ${PDM_PROJECT_ROOT}"
 precommit-run = "pre-commit run --all-files"
 
 [build-system]
