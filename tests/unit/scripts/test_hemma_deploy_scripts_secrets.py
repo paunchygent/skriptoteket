@@ -228,6 +228,10 @@ def test_deploy_runs_through_agent_secrets_and_passes_overlay_only_to_creating_p
     env_lines = env_log.read_text(encoding="utf-8").splitlines()
     assert len(env_lines) == len(docker_calls)
     for call, env_line in zip(docker_calls, env_lines, strict=True):
+        # The scratch .env holds dotenv-* decoys for both names; the value the
+        # stub agent-secrets injects overwrites them, so the decoys never reach
+        # docker and the set value wins on the overlay paths.
+        assert "dotenv" not in env_line
         if "compose.secrets.prod.yaml" in call:
             assert "SECRET_KEY=set-secret-key" in env_line
             assert "SKRIPTOTEKET_DB_PASSWORD=set-db-password" in env_line

@@ -60,9 +60,6 @@ if [[ -z "${AGENT_SECRETS_VARIABLES:-}" ]]; then
   # shellcheck disable=SC1091
   source .env
   set +a
-  unset BOOTSTRAP_SUPERUSER_PASSWORD EMAIL_SMTP_PASSWORD GRAFANA_ADMIN_PASSWORD \
-    HULEEDU_INTERNAL_API_KEY SECRET_KEY SIR_CONVERT_A_LOT_V2_API_KEY \
-    SKRIPTOTEKET_DB_PASSWORD SKRIPTOTEKET_DEV_DB_PASSWORD
   exec agent-secrets run --set skriptoteket-prod -- bash "$0" "$@"
 fi
 
