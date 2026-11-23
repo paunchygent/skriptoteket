@@ -1,17 +1,19 @@
 """Unit tests for the Hemma production deploy scripts' secrets wrapping.
 
 Purpose:
-    Prove that scripts/hemma_deploy_and_verify_*.sh unconditionally re-exec
-    through `agent-secrets run --set skriptoteket-prod`, run their compose
-    `up` and `build` paths with `sudo --preserve-env` and the
-    compose.secrets.prod.yaml overlay, keep `exec` on the base file, and take
-    secrets from the set rather than `.env`. Also prove that
-    scripts/hemma_deploy_start.sh syncs the remote checkout before it opens
-    the deploy worker script.
+    Prove that scripts/hemma_deploy_start.sh syncs the remote checkout and
+    then starts the deploy worker under
+    `agent-secrets run --set skriptoteket-prod`, and that the workers
+    (scripts/hemma_deploy_and_verify_*.sh) are fixed children: they take no
+    re-entry switch, never sync the checkout or call agent-secrets, run their
+    compose `up` and `build` paths with `sudo --preserve-env` and the
+    compose.secrets.prod.yaml overlay, keep `exec` on the base file, take
+    secrets from the set rather than `.env`, and read their configuration
+    through the dotenv helper.
 
 Relationships:
     - Exercises the real scripts in a sandboxed checkout with stubbed
-      `agent-secrets`, `sudo`, `docker`, `git` and `ssh` executables that
+      `agent-secrets`, `sudo`, `docker`, `git`, `pdm` and `ssh` executables that
       record argv and emulate `agent-secrets run` injection and
       `sudo env_reset`.
 """
@@ -20,6 +22,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -53,6 +56,10 @@ def _prepare_sandbox(tmp_path: Path, script_name: str) -> tuple[Path, Path, Path
     scripts_dir.mkdir()
     script = scripts_dir / script_name
     script.write_text((REPOSITORY_ROOT / "scripts" / script_name).read_text(encoding="utf-8"))
+    helper = "hemma_deploy_config.py"
+    (scripts_dir / helper).write_text(
+        (REPOSITORY_ROOT / "scripts" / helper).read_text(encoding="utf-8"), encoding="utf-8"
+    )
 
     keys_dir = tmp_path / "keys"
     keys_dir.mkdir()
@@ -60,12 +67,13 @@ def _prepare_sandbox(tmp_path: Path, script_name: str) -> tuple[Path, Path, Path
         "test-key\n", encoding="utf-8"
     )
 
-    # .env keeps configuration; decoy secret values prove the set wins.
+    # .env keeps configuration, here with a quoted value and an inline
+    # comment; decoy secret values prove the set wins.
     (tmp_path / ".env").write_text(
         "\n".join(
             [
                 "BOOTSTRAP_SUPERUSER_EMAIL=admin@example.com",
-                f"HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR={keys_dir}",
+                f'HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_HOST_DIR="{keys_dir}" # shared config',
                 "SECRET_KEY=dotenv-secret-key",
                 "BOOTSTRAP_SUPERUSER_PASSWORD=dotenv-password",
                 "SKRIPTOTEKET_DB_PASSWORD=dotenv-db-password",
@@ -157,10 +165,16 @@ exit 0
 printf 'git\\0' >>"$CALLS"
 printf '%s\\0' "$@" >>"$CALLS"
 printf '\\0' >>"$CALLS"
-if [[ "$1" == "rev-parse" ]]; then
-  if [[ "$2" == "--abbrev-ref" ]]; then echo main; else echo deadbeef; fi
-fi
 exit 0
+""",
+    )
+    _write_stub(
+        bin_dir,
+        "pdm",
+        f"""#!/usr/bin/env bash
+[[ "$1" == run && "$2" == python ]] || exit 93
+shift 2
+exec {sys.executable} "$@"
 """,
     )
     return script, calls, env_log
@@ -184,15 +198,26 @@ def _run_script(
     calls: Path,
     env_log: Path,
     extra_env: dict[str, str] | None = None,
+    argv: list[str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    """Run the worker as the launcher does, under the stub production set."""
     env = {key: value for key, value in os.environ.items() if key != "AGENT_SECRETS_VARIABLES"}
     env["PATH"] = f"{tmp_path / 'bin'}:{env['PATH']}"
     env["CALLS"] = str(calls)
     env["ENVLOG"] = str(env_log)
     if extra_env:
         env.update(extra_env)
+    command = argv or [
+        "agent-secrets",
+        "run",
+        "--set",
+        "skriptoteket-prod",
+        "--",
+        "bash",
+        str(script),
+    ]
     return subprocess.run(
-        ["bash", str(script)],
+        command,
         check=False,
         cwd=tmp_path,
         env=env,
@@ -216,10 +241,11 @@ def test_deploy_runs_through_agent_secrets_and_passes_overlay_only_to_creating_p
     assert result.returncode == 0, result.stderr
     calls = _calls(calls_log)
 
-    agent_calls = [call[1:] for call in calls if call[0] == "agent-secrets"]
-    assert agent_calls == [
-        ["run", "--set", "skriptoteket-prod", "--", "bash", str(script), "--deploy-phase"]
+    # Only the launcher-equivalent call; the worker never re-enters or syncs.
+    assert [call for call in calls if call[0] == "agent-secrets"] == [
+        ["agent-secrets", "run", "--set", "skriptoteket-prod", "--", "bash", str(script)]
     ]
+    assert not [call for call in calls if call[0] == "git"]
 
     docker_calls = [call[1:] for call in calls if call[0] == "docker"]
     sudo_calls = [call[1:] for call in calls if call[0] == "sudo"]
@@ -254,13 +280,13 @@ def test_deploy_runs_through_agent_secrets_and_passes_overlay_only_to_creating_p
 
 
 @pytest.mark.parametrize("script_name", SCRIPTS)
-def test_inherited_agent_secrets_marker_never_skips_production_lookup(
+def test_worker_refuses_reentry_switch_under_inherited_marker(
     tmp_path: Path, script_name: str
 ) -> None:
-    """An inherited AGENT_SECRETS_VARIABLES is not provenance.
+    """A worker takes no re-entry switch.
 
-    A caller already inside some other `agent-secrets run` still gets the
-    unconditional `agent-secrets run --set skriptoteket-prod` re-exec.
+    Opened directly with the old `--deploy-phase` switch and an inherited
+    AGENT_SECRETS_VARIABLES, it stops before any sudo or docker call.
     """
     script, calls_log, env_log = _prepare_sandbox(tmp_path, script_name)
 
@@ -270,14 +296,18 @@ def test_inherited_agent_secrets_marker_never_skips_production_lookup(
         calls_log,
         env_log,
         extra_env={"AGENT_SECRETS_VARIABLES": "SOME_OTHER_SET_VARIABLE"},
+        argv=["bash", str(script), "--deploy-phase"],
     )
 
-    assert result.returncode == 0, result.stderr
-    calls = _calls(calls_log)
-    agent_calls = [call[1:] for call in calls if call[0] == "agent-secrets"]
-    assert agent_calls == [
-        ["run", "--set", "skriptoteket-prod", "--", "bash", str(script), "--deploy-phase"]
-    ]
+    assert result.returncode == 2
+    assert not calls_log.exists()
+
+
+@pytest.mark.parametrize("script_name", SCRIPTS)
+def test_worker_never_syncs_or_acquires_secrets_itself(script_name: str) -> None:
+    text = (REPOSITORY_ROOT / "scripts" / script_name).read_text(encoding="utf-8")
+    for forbidden in ("--deploy-phase", "git pull", "git fetch", "agent-secrets"):
+        assert forbidden not in text
 
 
 def test_seating_export_smoke_passes_bootstrap_password_by_name(tmp_path: Path) -> None:
@@ -324,11 +354,12 @@ def test_seating_export_smoke_passes_bootstrap_password_by_name(tmp_path: Path) 
 
 
 @pytest.mark.parametrize("remote_branch", ["main", "task-branch"])
-def test_start_script_syncs_remote_checkout_before_opening_worker(
+def test_start_script_syncs_then_opens_worker_under_production_set(
     tmp_path: Path, remote_branch: str
 ) -> None:
-    """hemma_deploy_start.sh fast-forwards origin/main before it opens the
-    worker script, so the first cutover never runs the pre-merge worker."""
+    """hemma_deploy_start.sh fast-forwards origin/main and then starts the
+    worker under the production set, so the first cutover never runs the
+    pre-merge worker and the worker always reads the store."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     calls_log = tmp_path / "calls.bin"
@@ -364,6 +395,17 @@ if [[ "$1" == "rev-parse" && "$2" == "--abbrev-ref" ]]; then echo "${GIT_BRANCH:
 exit 0
 """,
     )
+    _write_stub(
+        bin_dir,
+        "agent-secrets",
+        """#!/usr/bin/env bash
+printf 'agent-secrets\\0' >>"$CALLS"
+printf '%s\\0' "$@" >>"$CALLS"
+printf '\\0' >>"$CALLS"
+shift 4
+exec "$@"
+""",
+    )
 
     env = {key: value for key, value in os.environ.items() if key != "AGENT_SECRETS_VARIABLES"}
     env["PATH"] = f"{bin_dir}:{env['PATH']}"
@@ -391,8 +433,17 @@ exit 0
     # sync first so it opens the merged revision.
     fetch_index = next(i for i, call in enumerate(calls) if call[:2] == ["git", "fetch"])
     pull_index = next(i for i, call in enumerate(calls) if call[:3] == ["git", "pull", "--ff-only"])
+    agent_index = next(i for i, call in enumerate(calls) if call[0] == "agent-secrets")
     worker_index = next(i for i, call in enumerate(calls) if call == ["worker"])
-    assert fetch_index < pull_index < worker_index
+    assert fetch_index < pull_index < agent_index < worker_index
+    assert calls[agent_index][1:] == [
+        "run",
+        "--set",
+        "skriptoteket-prod",
+        "--",
+        "/bin/bash",
+        str(worker),
+    ]
     if remote_branch != "main":
         checkout_index = next(
             i for i, call in enumerate(calls) if call[:3] == ["git", "checkout", "main"]
