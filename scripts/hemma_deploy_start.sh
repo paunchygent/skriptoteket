@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 # Launch one of the two checked-in Hemma deploy workers as a detached remote
-# process. The launcher first syncs the remote checkout to origin/main so the
-# worker it opens is always the merged revision, then starts that worker under
-# `agent-secrets run --set skriptoteket-prod`. Only the named modes below
-# select a worker; no path or environment override exists, so the production
-# set reaches no other program. The remote raw log remains authoritative; this
-# launcher only hands off cleanly, prints PID/log breadcrumbs, and exits.
+# process. The launcher syncs the fixed production checkout to origin/main,
+# refuses unless that directory is its own Git root, HEAD equals the fetched
+# main and the mode's worker is tracked there, and only then opens that worker
+# from the Git root under `agent-secrets run --set skriptoteket-prod`. Neither
+# the checkout nor the worker path can be chosen by the caller, so the
+# production set reaches no other program. The remote raw log remains
+# authoritative; this launcher only hands off cleanly, prints PID/log
+# breadcrumbs, and exits.
 
 set -euo pipefail
 
 SSH_HOST="${SKRIPTOTEKET_HEMMA_HOST:-hemma}"
-REMOTE_REPO_DIR="${SKRIPTOTEKET_HEMMA_REPO_DIR:-/home/paunchygent/apps/skriptoteket}"
+REMOTE_REPO_DIR="/home/paunchygent/apps/skriptoteket"
 MODE="seating-export"
 
 usage() {
   cat <<EOF
-Usage: pdm run hemma-deploy [--host <ssh-host>] [--repo-dir <remote-repo-dir>] [--mode seating-export|share-previews]
+Usage: pdm run hemma-deploy [--host <ssh-host>] [--mode seating-export|share-previews]
 
-Starts a checked-in Hemma deploy/readiness worker as a detached remote process.
+Starts a checked-in Hemma deploy/readiness worker from the production checkout
+${REMOTE_REPO_DIR} as a detached remote process.
 
 Options:
   --host      SSH host alias to use (default: ${SSH_HOST})
-  --repo-dir  Remote Skriptoteket checkout path (default: ${REMOTE_REPO_DIR})
   --mode      Deploy mode (default: seating-export):
                 seating-export  scripts/hemma_deploy_and_verify_seating_export.sh
                 share-previews  scripts/hemma_deploy_and_verify_share_previews.sh
@@ -33,10 +35,6 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --host)
       SSH_HOST="$2"
-      shift 2
-      ;;
-    --repo-dir)
-      REMOTE_REPO_DIR="$2"
       shift 2
       ;;
     --mode)
@@ -81,6 +79,13 @@ if [[ ! -d "$repo_dir" ]]; then
 fi
 
 cd "$repo_dir"
+
+repo_root="$(git rev-parse --show-toplevel)"
+if [[ "$repo_root" != "$(pwd -P)" ]]; then
+  echo "Refusing to deploy: $repo_dir is not the root of its Git worktree ($repo_root)." >&2
+  exit 1
+fi
+
 mkdir -p .artifacts
 
 if ! git diff --quiet || ! git diff --cached --quiet; then
@@ -97,12 +102,17 @@ echo "Syncing remote checkout to origin/main before deploy."
 git fetch origin main
 git pull --ff-only origin main
 
-script_path="$repo_dir/$script_rel"
-
-if [[ ! -f "$script_path" ]]; then
-  echo "Remote deploy script not found after syncing origin/main: $script_path" >&2
+if [[ "$(git rev-parse HEAD)" != "$(git rev-parse FETCH_HEAD)" ]]; then
+  echo "Refusing to deploy: local main in $repo_root differs from the fetched origin/main." >&2
   exit 1
 fi
+
+if ! git ls-files --error-unmatch -- "$script_rel" >/dev/null 2>&1; then
+  echo "Refusing to deploy: $script_rel is not tracked at the synced revision in $repo_root." >&2
+  exit 1
+fi
+
+script_path="$repo_root/$script_rel"
 
 run_stamp="$(date +%Y%m%d-%H%M%S)"
 log_path="$repo_dir/.artifacts/hemma-deploy-${run_stamp}.log"

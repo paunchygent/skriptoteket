@@ -1,9 +1,7 @@
 """Unit tests for the Hemma production deploy scripts' secrets wrapping.
 
 Purpose:
-    Prove that scripts/hemma_deploy_start.sh accepts only its two named modes,
-    syncs the remote checkout and then starts that mode's fixed worker under
-    `agent-secrets run --set skriptoteket-prod`, and that the workers
+    Prove that the workers started by scripts/hemma_deploy_start.sh
     (scripts/hemma_deploy_and_verify_*.sh) are fixed children: they take no
     re-entry switch, never sync the checkout or call agent-secrets, run their
     compose `up` and `build` paths with `sudo --preserve-env` and the
@@ -13,9 +11,10 @@ Purpose:
 
 Relationships:
     - Exercises the real scripts in a sandboxed checkout with stubbed
-      `agent-secrets`, `sudo`, `docker`, `git`, `pdm` and `ssh` executables that
+      `agent-secrets`, `sudo`, `docker`, `git` and `pdm` executables that
       record argv and emulate `agent-secrets run` injection and
       `sudo env_reset`.
+    - The launcher itself is covered in test_hemma_deploy_start_launcher.py.
 """
 
 from __future__ import annotations
@@ -351,123 +350,3 @@ def test_seating_export_smoke_passes_bootstrap_password_by_name(tmp_path: Path) 
     assert "BOOTSTRAP_SUPERUSER_PASSWORD=set-bootstrap-password" in env_lines[exec_index]
     assert "BOOTSTRAP_SUPERUSER_EMAIL=admin@example.com" in env_lines[exec_index]
     assert not any("dotenv" in part for call in calls for part in call)
-
-
-def _run_launcher(
-    tmp_path: Path, *args: str, remote_branch: str = "main"
-) -> tuple[subprocess.CompletedProcess[str], list[list[str]], Path]:
-    """Run hemma_deploy_start.sh with stubbed ssh, git and agent-secrets
-    against a fake remote checkout that holds both checked-in workers."""
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    calls_log = tmp_path / "calls.bin"
-    calls_log.touch()
-    remote_repo = tmp_path / "remote"
-    (remote_repo / "scripts").mkdir(parents=True)
-    for script_name in SCRIPTS:
-        (remote_repo / "scripts" / script_name).write_text(
-            f'#!/usr/bin/env bash\nprintf "worker\\0{script_name}\\0\\0" >>"$CALLS"\nsleep 2\n',
-            encoding="utf-8",
-        )
-    for name, extra in (
-        (
-            "ssh",
-            'shift\n[[ "$1" == "/bin/bash" && "$2" == "-s" && "$3" == "--" ]] || exit 92\n'
-            'shift 3\nexec bash -s -- "$@"\n',
-        ),
-        (
-            "git",
-            'if [[ "$1" == "rev-parse" && "$2" == "--abbrev-ref" ]]; then '
-            'echo "${GIT_BRANCH:-main}"; fi\nexit 0\n',
-        ),
-        ("agent-secrets", 'shift 4\nexec "$@"\n'),
-    ):
-        _write_stub(
-            bin_dir,
-            name,
-            f"#!/usr/bin/env bash\nprintf '{name}\\0' >>\"$CALLS\"\n"
-            'printf \'%s\\0\' "$@" >>"$CALLS"\nprintf \'\\0\' >>"$CALLS"\n' + extra,
-        )
-
-    env = {key: value for key, value in os.environ.items() if key != "AGENT_SECRETS_VARIABLES"}
-    env["PATH"] = f"{bin_dir}:{env['PATH']}"
-    env["CALLS"] = str(calls_log)
-    env["GIT_BRANCH"] = remote_branch
-    result = subprocess.run(
-        [
-            "bash",
-            str(REPOSITORY_ROOT / "scripts" / "hemma_deploy_start.sh"),
-            "--host",
-            "unused",
-            "--repo-dir",
-            str(remote_repo),
-            *args,
-        ],
-        check=False,
-        cwd=tmp_path,
-        env=env,
-        capture_output=True,
-        text=True,
-    )
-    return result, _calls(calls_log), remote_repo
-
-
-@pytest.mark.parametrize("remote_branch", ["main", "task-branch"])
-@pytest.mark.parametrize(
-    ("mode_args", "script_name"),
-    [
-        ((), "hemma_deploy_and_verify_seating_export.sh"),
-        (("--mode", "seating-export"), "hemma_deploy_and_verify_seating_export.sh"),
-        (("--mode", "share-previews"), "hemma_deploy_and_verify_share_previews.sh"),
-    ],
-)
-def test_start_script_syncs_then_opens_mode_worker_under_production_set(
-    tmp_path: Path, remote_branch: str, mode_args: tuple[str, ...], script_name: str
-) -> None:
-    """hemma_deploy_start.sh fast-forwards origin/main and then starts the
-    fixed worker of the chosen mode under the production set, so the first
-    cutover never runs the pre-merge worker and the worker reads the store."""
-    result, calls, remote_repo = _run_launcher(tmp_path, *mode_args, remote_branch=remote_branch)
-
-    assert result.returncode == 0, result.stderr + result.stdout
-    fetch_index = next(i for i, call in enumerate(calls) if call[:2] == ["git", "fetch"])
-    pull_index = next(i for i, call in enumerate(calls) if call[:3] == ["git", "pull", "--ff-only"])
-    agent_index = next(i for i, call in enumerate(calls) if call[0] == "agent-secrets")
-    worker_index = next(i for i, call in enumerate(calls) if call[0] == "worker")
-    assert fetch_index < pull_index < agent_index < worker_index
-    assert calls[agent_index][1:] == [
-        "run",
-        "--set",
-        "skriptoteket-prod",
-        "--",
-        "/bin/bash",
-        str(remote_repo / "scripts" / script_name),
-    ]
-    assert calls[worker_index] == ["worker", script_name]
-    if remote_branch != "main":
-        checkout_index = next(
-            i for i, call in enumerate(calls) if call[:3] == ["git", "checkout", "main"]
-        )
-        assert checkout_index < fetch_index
-
-
-@pytest.mark.parametrize(
-    "args",
-    [
-        ("--mode", "rollback"),
-        ("--mode", "scripts/hemma_deploy_and_verify_share_previews.sh"),
-        ("--mode", "/tmp/old_worker.sh"),
-        ("--mode",),
-        ("--script", "scripts/hemma_deploy_and_verify_share_previews.sh"),
-    ],
-)
-def test_start_script_refuses_anything_but_named_modes_before_ssh(
-    tmp_path: Path, args: tuple[str, ...]
-) -> None:
-    """Only the two named modes select a worker: an unknown mode, a path and
-    the removed --script option exit 1 before ssh or any store lookup."""
-    result, calls, _ = _run_launcher(tmp_path, *args)
-
-    assert result.returncode == 1
-    assert "Unknown" in result.stderr
-    assert calls == []
